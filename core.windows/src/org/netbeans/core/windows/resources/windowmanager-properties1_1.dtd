@@ -1,0 +1,91 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+-//NetBeans//DTD Window Manager Properties 1.1//EN
+-->
+
+<!-- The root element for window manager properties. Consists of subelements
+     for specific properties.
+     Atribute "version" is optional versioning attribute, which in fact specifies
+     version of this DTD. Attribute is used to perform simple versioning
+     without the need to use time-consuming xml validation using this DTD.
+-->
+<!ELEMENT windowmanager (main_window?, screen?, ui-mode, active) >
+<!ATTLIST windowmanager
+    version CDATA #IMPLIED
+>
+
+<!-- Element "main-window" contains properties of main window.
+     "x" gives position of main window on screen on horizontal axis
+     left is 0, if value is "center" main window will be centered
+     horizontaly
+     "y" gives position of main window on screen on vertical axis
+     top is 0, if value is "center" main window will be centered
+     verticaly
+     "width" gives absolute width of main window
+     "height" gives absolute height of main window
+     "relative-width" gives relative width of main window, either width or
+     relative-width must be specified
+     "relative-height" gives relative width of main window, either height or
+     relative height must be specified
+     "maximize-if-width-bellow" and 
+     "maximize-if-height-bellow" are optional,
+     they specify limit on computed absolute width/height, 
+     IF min(screen.width, maximize-if-width-bellow) > main-window.width OR 
+        min(screen.height, maximize-if-height-bellow) > main-window.height THEN
+         IF screen.width > maximize-if-width-bellow AND screen.height > maximize-if-height-bellow THEN
+             set main window size to maximize-if-width-bellow, maximize-if-height-bellow
+         ELSE
+             let window maximized
+         ENDIF
+     ENDIF
+     It is simply to avoid set bounds bigger than screen size (width or height)
+-->
+<!ELEMENT main-window   EMPTY >
+<!ATTLIST main-window
+    x CDATA #REQUIRED
+    y CDATA #REQUIRED
+    width  CDATA #IMPLIED
+    height CDATA #IMPLIED
+    relative-width  CDATA #IMPLIED
+    relative-height CDATA #IMPLIED
+    maximize-if-width-bellow  CDATA #IMPLIED
+    maximize-if-height-bellow CDATA #IMPLIED
+>
+
+<!-- Element "screen" contains properties of screen.
+     "size" size of screen in pixels, format is width, height
+-->
+<!ELEMENT screen    EMPTY >
+<!ATTLIST screen
+    width  CDATA #REQUIRED
+    height CDATA #REQUIRED
+>
+
+<!-- Element "ui-mode" gives type of ui.
+     "ui" type of ui, possible values are "sdi","mdi"
+-->
+<!ELEMENT ui-mode    EMPTY >
+<!ATTLIST ui-mode
+    ui (sdi | mdi) #REQUIRED
+>
+
+<!-- Element "active" contains ID of active workspace.
+     "workspace" ID of active workspace
+-->
+<!ELEMENT active  EMPTY >
+<!ATTLIST active
+    workspace CDATA #IMPLIED
+>
+

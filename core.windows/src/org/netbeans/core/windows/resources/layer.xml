@@ -116,6 +116,9 @@ Microsystems, Inc. All Rights Reserved.
             	<file name="DTD_Window_Manager_1_0" url="nbresboot:/org/netbeans/core/windows/resources/windowmanager-properties1_0.dtd">
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Window Manager 1.0//EN"/>
             	</file>
+                <file name="DTD_Window_Manager_1_1" url="nbresboot:/org/netbeans/core/windows/resources/windowmanager-properties1_1.dtd">
+                        <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Window Manager 1.1//EN"/>
+                </file>
         	</folder>
     	</folder>
 	</folder>
