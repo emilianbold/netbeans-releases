@@ -110,10 +110,12 @@ public class AddWatchAction extends CallableSystemAction {
             bundle.getString ("CTL_Watch_Name_Mnemonic").charAt (0) // NOI18N
         );
         String t = Utils.getIdentifier ();
-        if (t != null) {
+        if (t != null)
             textField.setText (t);
-            textField.selectAll ();
-        }
+        else
+            textField.setText (watchHistory);
+        textField.selectAll ();
+            
         textLabel.setLabelFor (textField);
         textField.requestFocus ();
 
@@ -128,15 +130,26 @@ public class AddWatchAction extends CallableSystemAction {
 
         if (dd.getValue() != org.openide.DialogDescriptor.OK_OPTION) return;
         String watch = textField.getText();
-        if ((watch == null) || (watch.trim().length() == 0)) {
+        if ((watch == null) || (watch.trim ().length () == 0)) {
             return;
         }
-        Watch w = DebuggerManager.getDebuggerManager ().createWatch (
-            watch
-        );
-//        DebuggerManager.getDebuggerManager ().addFixedWatch(w);
+        
+        String s = watch;
+        int i = s.indexOf (',');
+        while (i > 0) {
+            String ss = s.substring (0, i).trim ();
+            if (ss.length () > 0)
+                DebuggerManager.getDebuggerManager ().createWatch (ss);
+            s = s.substring (i + 1);
+            i = s.indexOf (',');
+        }
+        s = s.trim ();
+        if (s.length () > 0)
+            DebuggerManager.getDebuggerManager ().createWatch (s);
+        
         watchHistory = watch;
         
+        // open watches view
         new WatchesAction ().actionPerformed (null);
     }
 }
