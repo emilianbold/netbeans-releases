@@ -83,7 +83,7 @@ public class PatternAnalyser extends Object implements Node.Cookie {
         this.referenceClassElement = referenceClassElement;   
     }
     
-    public void analyzeAll() {
+    public synchronized void analyzeAll() {
 
         if ( ignore ) {
             return;
