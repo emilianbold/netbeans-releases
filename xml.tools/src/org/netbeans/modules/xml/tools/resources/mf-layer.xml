@@ -114,6 +114,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="java">
             <file name="org-netbeans-modules-xml-tools-resources-xml_apis.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.tools.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif" />
                 <![CDATA[
                     <!DOCTYPE Library PUBLIC "-//NetBeans IDE//DTD JavaLibrary//EN" "http://www.netbeans.org/dtds/JavaLibrary-1_0.dtd">
 
@@ -127,6 +128,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Javadoc">
             <file name="org-netbeans-modules-xml-tools-resources-xml_apis.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.tools.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif" />
                 <![CDATA[
                     <!DOCTYPE Javadoc PUBLIC "-//NetBeans IDE//DTD JavadocLibrary//EN" "http://www.netbeans.org/dtds/JavadocLibrary-1_0.dtd">
 
