@@ -13,28 +13,32 @@
 
 package org.apache.tools.ant.module.run;
 
-import java.awt.EventQueue;
-import java.io.*;
-import java.util.*;
-
-import org.openide.*;
-import org.openide.awt.Actions;
-import org.openide.awt.StatusDisplayer;
-import org.openide.execution.ExecutorTask;
-import org.openide.filesystems.*;
-import org.openide.execution.ExecutionEngine;
-import org.openide.loaders.DataObject;
-import org.openide.util.*;
-import org.openide.windows.*;
-
-import org.w3c.dom.Element;
-
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.WeakHashMap;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
-import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.bridge.AntBridge;
+import org.openide.ErrorManager;
+import org.openide.LifecycleManager;
+import org.openide.awt.Actions;
+import org.openide.execution.ExecutionEngine;
+import org.openide.execution.ExecutorTask;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.io.ReaderInputStream;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
+import org.w3c.dom.Element;
 
 /** Executes an Ant Target asynchronously in the IDE.
  */
@@ -117,6 +121,7 @@ public final class TargetExecutor implements Runnable {
         final ExecutorTask task;
         synchronized (this) {
             // OutputWindow
+            if (AntSettings.getDefault().getAutoCloseTabs()) { // #47753
             synchronized (freeTabs) {
                 Iterator it = freeTabs.entrySet().iterator();
                 while (it.hasNext()) {
@@ -128,13 +133,14 @@ public final class TargetExecutor implements Runnable {
                         io = free;
                         io.getOut().reset();
                         io.getErr().reset();
-                        io.flushReader();
+                        // useless: io.flushReader();
                     } else {
                         // Discard it.
                         free.closeInputOutput();
                     }
                 }
                 freeTabs.clear();
+            }
             }
             if (io == null) {
                 io = IOProvider.getDefault().getIO(displayName, true);

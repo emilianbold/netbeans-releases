@@ -22,16 +22,19 @@ import java.util.List;
 import java.util.Properties;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import org.openide.*;
-import org.openide.options.SystemOption;
-import org.openide.util.*;
-
 import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.bridge.AntBridge;
 import org.apache.tools.ant.module.spi.AutomaticExtraClasspathProvider;
+import org.openide.ErrorManager;
 import org.openide.execution.NbClassPath;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.options.SystemOption;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 public class AntSettings extends SystemOption implements ChangeListener {
 
@@ -43,6 +46,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
     public static final String PROP_ANT_HOME = "antHome"; // NOI18N
     public static final String PROP_EXTRA_CLASSPATH = "extraClasspath"; // NOI18N
     public static final String PROP_AUTOMATIC_EXTRA_CLASSPATH = "automaticExtraClasspath"; // NOI18N
+    public static final String PROP_AUTO_CLOSE_TABS = "autoCloseTabs"; // NOI18N
     
     private static final long serialVersionUID = -4457782585534082966L;
     
@@ -61,6 +65,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
         setProperties (p);
         setSaveAll (true);
         setCustomDefs (new IntrospectedInfo ());
+        setAutoCloseTabs(true); // #47753
     }
 
     public String displayName () {
@@ -229,6 +234,14 @@ public class AntSettings extends SystemOption implements ChangeListener {
             defAECP = new NbClassPath((File[])items.toArray(new File[items.size()]));
         }
         return defAECP;
+    }
+    
+    public boolean getAutoCloseTabs() {
+        return ((Boolean) getProperty(PROP_AUTO_CLOSE_TABS)).booleanValue();
+    }
+    
+    public void setAutoCloseTabs(boolean b) {
+        putProperty(PROP_AUTO_CLOSE_TABS, Boolean.valueOf(b), true);
     }
     
 }
