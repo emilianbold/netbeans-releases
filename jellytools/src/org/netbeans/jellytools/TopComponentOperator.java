@@ -14,9 +14,11 @@ package org.netbeans.jellytools;
 
 import java.awt.Component;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.io.IOException;
 import javax.swing.JComponent;
-import org.netbeans.core.windows.view.ui.tabcontrol.TabLayoutModel;
+import javax.swing.SwingUtilities;
+import org.netbeans.swing.tabcontrol.*;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
 import org.netbeans.jellytools.actions.AttachWindowAction;
 import org.netbeans.jellytools.actions.CloneViewAction;
@@ -448,16 +450,18 @@ public class TopComponentOperator extends JComponentOperator {
     public void pushMenuOnTab(String popupPath) {
         this.makeComponentVisible();
         TabbedAdapter ta = findTabbedAdapter();
-        int index = ta.indexOfTopComponent((TopComponent)getSource());
-        JComponent tabsComp = ta.getTabsDisplayer().getComponent();
-        TabLayoutModel mdl = ta.getTabsDisplayer().getTabsUI().getLayoutModel();
+        int index = ta.indexOf((TopComponent)getSource());
         
-        Point p = tabsComp.getLocation();
-        int x = mdl.getX(index) + p.x;
-        int y = mdl.getY(index) + p.y;
+        Rectangle r = new Rectangle();
+        ta.getTabRect(index, r);
+        Point p = new Point (r.x + (r.width / 2), r.y + (r.height / 2));
+        
+        //Jirka, is this necessary?
+        Component tabsComp = ta.getComponentAt(p);
+        p = SwingUtilities.convertPoint(ta, p, tabsComp);
         
         // need a constant to satisfy that we are in tab
-        new JPopupMenuOperator(JPopupMenuOperator.callPopup(tabsComp, x+1, y)).pushMenu(popupPath);
+        new JPopupMenuOperator(JPopupMenuOperator.callPopup(tabsComp, p.x, p.y)).pushMenu(popupPath);
     }
     
     /** Returns TabbedAdapter component from parents hierarchy. 

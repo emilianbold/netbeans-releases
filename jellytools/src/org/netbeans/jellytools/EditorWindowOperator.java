@@ -12,8 +12,12 @@
  */
 package org.netbeans.jellytools;
 
+import java.awt.Component;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.Iterator;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
@@ -191,10 +195,25 @@ public class EditorWindowOperator extends JFrameOperator {
      */
     public boolean jumpLeft() {
         TabbedAdapter ta = getEditor().findTabbedAdapter();
-        JComponent tabsComp = ta.getTabsDisplayer().getComponent();
+        
         if(btLeft().isEnabled()) {
+            Rectangle r = new Rectangle();
+            for (int i=0; i < ta.getModel().size(); i++) {
+                ta.getTabRect(i, r);
+                if (r.width > 0 && r.height > 0) {
+                    //We've found the first visible tab
+                    break;
+                }
+            }
+            if (r.width < 0 || r.height < 0) {
+                return false;
+            }
+            Point p = new Point (r.x + (r.width / 2), r.y + (r.width / 2));
+            Component tabsComp = ta.getComponentAt(p);
+            p = SwingUtilities.convertPoint (ta, p, tabsComp);
+            
             // click left corner
-            new JComponentOperator(tabsComp).clickMouse(tabsComp.getX()+1, tabsComp.getY()+tabsComp.getHeight()/2, 1);
+            new JComponentOperator((JComponent)tabsComp).clickMouse(p.x, p.y, 1);
             return true;
         }
         return false;
