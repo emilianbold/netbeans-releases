@@ -173,11 +173,13 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="Window">
             <folder name="Debug">
-                <attr name="org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.shadow/org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.shadow" boolvalue="true" />
+                <attr name="org-netbeans-modules-debugger-ui-actions-CallStackViewAction.shadow/org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.shadow" boolvalue="true" />
                 <file name="org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.instance"/>
                 </file>
-                <attr name="org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.shadow/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.shadow" boolvalue="true" />
+                <attr name="org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.shadow/org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.shadow" boolvalue="true" />
+
+                <attr name="org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.shadow/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.shadow" boolvalue="true" />
                 <file name="org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance"/>
                 </file>
@@ -219,7 +221,7 @@ Microsystems, Inc. All Rights Reserved.
         <file name="CA-DOWN.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-MakeCallerCurrentAction.instance"/>
         </file>
-        <file name="SA-7.shadow">
+        <file name="SA-4.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.instance"/>
         </file>
         <file name="SA-8.shadow">

@@ -35,28 +35,33 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle" />
 
-                <file name="org-netbeans-modules-debugger-ui-actions-SessionsViewAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SessionsViewAction.instance"/>
-                </file>
-                <attr name="org-netbeans-modules-debugger-ui-actions-SessionsViewAction.shadow/org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.shadow" boolvalue="true" />
-                <file name="org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.instance"/>
-                </file>
-                <attr name="org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.shadow/org-netbeans-modules-debugger-ui-actions-CallStackViewAction.shadow" boolvalue="true" />
-                <file name="org-netbeans-modules-debugger-ui-actions-CallStackViewAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-CallStackViewAction.instance"/>
-                </file>
-                <attr name="org-netbeans-modules-debugger-ui-actions-CallStackViewAction.shadow/org-netbeans-modules-debugger-ui-actions-LocalsViewAction.shadow" boolvalue="true" />
                 <file name="org-netbeans-modules-debugger-ui-actions-LocalsViewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-LocalsViewAction.instance"/>
                 </file>
                 <attr name="org-netbeans-modules-debugger-ui-actions-LocalsViewAction.shadow/org-netbeans-modules-debugger-ui-actions-WatchesViewAction.shadow" boolvalue="true" />
+
                 <file name="org-netbeans-modules-debugger-ui-actions-WatchesViewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-WatchesViewAction.instance"/>
                 </file>
-                <attr name="org-netbeans-modules-debugger-ui-actions-WatchesViewAction.shadow/org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.shadow" boolvalue="true" />
+                <attr name="org-netbeans-modules-debugger-ui-actions-WatchesViewAction.shadow/org-netbeans-modules-debugger-ui-actions-CallStackViewAction.shadow" boolvalue="true" />
+
+                <file name="org-netbeans-modules-debugger-ui-actions-CallStackViewAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-CallStackViewAction.instance"/>
+                </file>
+                <attr name="org-netbeans-modules-debugger-ui-actions-CallStackViewAction.shadow/org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.shadow" boolvalue="true" />
+
                 <file name="org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.instance"/>
+                </file>
+                <attr name="org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.shadow/org-netbeans-modules-debugger-ui-actions-SessionsViewAction.shadow" boolvalue="true" />
+
+                <file name="org-netbeans-modules-debugger-ui-actions-SessionsViewAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SessionsViewAction.instance"/>
+                </file>
+                <attr name="org-netbeans-modules-debugger-ui-actions-SessionsViewAction.shadow/org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.shadow" boolvalue="true" />
+
+                <file name="org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.instance"/>
                 </file>
             </folder>
             <attr name="Debug/Separator3.instance" boolvalue="true" />
@@ -64,22 +69,22 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Shortcuts">
-        <file name="SA-1.shadow">
+        <file name="SA-6.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SessionsViewAction.instance"/>
         </file>
-        <file name="SA-2.shadow">
+        <file name="SA-7.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.instance"/>
         </file>
         <file name="SA-3.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-CallStackViewAction.instance"/>
         </file>
-        <file name="SA-4.shadow">
+        <file name="SA-1.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-LocalsViewAction.instance"/>
         </file>
-        <file name="SA-5.shadow">
+        <file name="SA-2.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-WatchesViewAction.instance"/>
         </file>
-        <file name="SA-6.shadow">
+        <file name="SA-5.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.instance"/>
         </file>
     </folder>
