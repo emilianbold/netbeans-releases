@@ -34,6 +34,12 @@ import org.apache.tools.ant.types.*;
  * if there is no suffix for this JAR.
  * You can control the available locales; brandings; and set of files which should
  * always be considered part of the localizable base kit.
+ * You can use the "branding" and "locale" subelements to control the branded
+ * and localized .jar files that will be produced.  Also, you can set the global
+ * properties "locjar_global_brands" and "locjar_global_locales" to comma-separated
+ * lists of branding or locale identifiers so that NetBeans-based projects can
+ * brand or localize NetBeans without having to maintain modified versions of all
+ * the individual Ant scripts
  * <p>Based on <code>&lt;zip&gt;</code> and <code>&lt;jar&gt;</code> tasks in Ant,
  * but not feasible to simply subclass or compose them.
  * @see <a href="http://www.netbeans.org/i18n/">NetBeans I18N documentation</a>
@@ -49,7 +55,7 @@ public class LocalizedJar extends MatchingTask {
     private boolean doCompress = false;
     private static long emptyCrc = new CRC32 ().getValue ();
     private List filesets = new LinkedList (); // List<FileSet>
-    private File manifest;    
+    private File manifest;
 
     /** Locale or branding specifier.
      * Represents a complete locale or branding suffix,
@@ -156,6 +162,9 @@ public class LocalizedJar extends MatchingTask {
         if (manifest != null && ! manifest.isFile ()) {
             throw new BuildException ("The specified manifest does not actually exist.");
         }
+
+	// Look for global locales or brandings to use. //
+	addGlobalLocaleAndBranding() ;
 
         //System.err.println ("Stage #1");
         // First find out which files need to be archived.
@@ -445,5 +454,46 @@ public class LocalizedJar extends MatchingTask {
             in1.close ();
         }
     } // end addToJar()
+
+  ////////////////////////////////////////////////////////////////////
+  // This section of code supports the feature that this class will //
+  // look for global properties that specify locales and brandings  //
+  // that should be used.					    //
+  protected void addGlobalLocaleAndBranding() {
+    addGlobals( getGlobalLocaleVarName(), locales) ;
+    addGlobals( getGlobalBrandingVarName(), brandings) ;
+  }
+
+  protected String getGlobalLocaleVarName() {
+    return( new String( "locjar_global_locales")) ;
+  }
+
+  protected String getGlobalBrandingVarName() {
+    return( new String( "locjar_global_brands")) ;
+  }
+
+  protected void addGlobals( String var_name,
+			     List list) {
+    String prop = null ;
+    StringTokenizer tokenizer = null ;
+    String tok = null ;
+    LocaleOrB lorb = null ;
+
+    // Foreach string in the global list. //
+    prop = getProject().getProperty( var_name) ;
+    if( prop != null && !prop.equals( "")) {
+      tokenizer = new StringTokenizer( prop, ", ") ;
+      while( tokenizer.hasMoreTokens()) { 
+	tok = tokenizer.nextToken() ;
+
+	// Add a new entry in the given list. //
+	lorb = new LocaleOrB() ;
+	lorb.setName( tok) ;
+	list.add( lorb) ;
+      }
+    }
+  }
+  //////////////////////////////////////////////////////////////////////
+
 
 }
