@@ -296,6 +296,10 @@ final class PersistenceHandler implements PersistenceObserver {
                     }
                     if (previous != null) {
                         WindowManagerImpl.getInstance().setPreviousModeForTopComponent(tc, mode, previous);
+                    } else {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                            new NullPointerException("Cannot find previous mode named '" + tcRefConfig.previousMode + "'")); 
+                        
                     }
                 }
             }

@@ -1628,37 +1628,62 @@ final class Central implements ControllerHandler {
     }
     
     private boolean moveTopComponentsIntoMode(ModeImpl mode, TopComponent[] tcs) {
+        return moveTopComponentsIntoMode(mode, tcs, -1);
+    }
+    
+    private boolean moveTopComponentsIntoMode(ModeImpl mode, TopComponent[] tcs, int index) {
         boolean moved = false;
+        boolean intoSliding = mode.getKind() == Constants.MODE_KIND_SLIDING;
+        ModeImpl prevMode = null;
         for(int i = 0; i < tcs.length; i++) {
             TopComponent tc = tcs[i];
             // XXX
             if(!mode.canContain(tc)) {
                 continue;
             }
-            if(removeTopComponentFromOtherModes(mode, tc)) {
-                moved = true;
-            }
-            model.addModeOpenedTopComponent(mode, tc);
-        }
-        model.setActiveMode(mode);
-        model.setModeSelectedTopComponent(mode, tcs[tcs.length - 1]);
-        return moved;
-    }
-    
-    private boolean moveTopComponentsIntoMode(ModeImpl mode, TopComponent[] tcs, int index) {
-        boolean moved = false;
-        for(int i = 0; i < tcs.length; i++) {
-            TopComponent tc = tcs[i];
-            if(!mode.canContain(tc)) {
-                continue;
+            for(Iterator it = model.getModes().iterator(); it.hasNext(); ) {
+                ModeImpl m = (ModeImpl)it.next();
+                if(model.containsModeTopComponent(m, tc)) {
+                    if (m.getKind() == Constants.MODE_KIND_SLIDING) {
+                        prevMode = model.getModeTopComponentPreviousMode(m, tc);
+                    } else {
+                        prevMode = m;
+                    }
+                    break;
+                }
             }
             if(removeTopComponentFromOtherModes(mode, tc)) {
                 moved = true;
             }
-            model.insertModeOpenedTopComponent(mode, tc, index);
+            if (index > -1) {
+                model.insertModeOpenedTopComponent(mode, tc, index);
+            } else {
+                model.addModeOpenedTopComponent(mode, tc);
+            }
+            if (prevMode != null && intoSliding) {
+                // remember previous mode and constraints for precise de-auto-hide
+                model.setModeTopComponentPreviousMode(mode, tc, prevMode);
+                model.setModeTopComponentPreviousConstraints(mode, tc, model.getModeConstraints(prevMode));
+            }
         }
-        model.setActiveMode(mode);
-        model.setModeSelectedTopComponent(mode, tcs[tcs.length - 1]);
+        if (! intoSliding) {
+            // make the target mode active after dragging..
+            model.setActiveMode(mode);
+            model.setModeSelectedTopComponent(mode, tcs[tcs.length - 1]);
+        } else {
+            // don't activate sliding modes, it means the component slides out, that's a bad thing..
+            // make some other desktop mode active
+            if(prevMode != null && prevMode == getActiveMode() 
+                   && prevMode.getOpenedTopComponents().isEmpty()) {
+                setSomeModeActive();
+            }
+            // check the drop mode if it was already used, if not, assign it some reasonable size, 
+            // according to the current component.
+            if (mode.getBounds().width == 0 && mode.getBounds().height == 0) {
+                // now we have the sliding mode in initial state
+                mode.setBounds(tcs[tcs.length - 1].getBounds());
+            }            
+        }
         return moved;
     }
 
@@ -1706,17 +1731,10 @@ final class Central implements ControllerHandler {
             model.addSlidingMode(targetMode, targetSide);
             model.setModeBounds(targetMode, new Rectangle(tc.getBounds()));
         }
-        moveTCWithoutActivation(targetMode, tc);
-        // remember previous mode and constraints for precise de-auto-hide
-        model.setModeTopComponentPreviousMode(targetMode, tc, source);
-        model.setModeTopComponentPreviousConstraints(targetMode, tc, model.getModeConstraints(source));
+
         ModeImpl oldActive = getActiveMode();
-        ModeImpl newActive;
-        if(source == oldActive && source.getOpenedTopComponents().isEmpty()) {
-            newActive = setSomeModeActive();
-        } else {
-            newActive = oldActive;
-        }        
+        moveTopComponentsIntoMode(targetMode, new TopComponent[] {tc});
+        ModeImpl newActive = getActiveMode();
         
         if(isVisible()) {
             viewRequestor.scheduleRequest(
@@ -1770,8 +1788,6 @@ final class Central implements ControllerHandler {
 //            debugLog("userDisabledAutoHide- removing " + source.getDisplayName());
             model.removeMode(source);
         }
-        //set active mode, to avoid stuff like issue #50767
-        setActiveMode(targetMode);
         
         if(isVisible()) {
             viewRequestor.scheduleRequest(
@@ -1781,19 +1797,7 @@ final class Central implements ControllerHandler {
             WindowManagerImpl.PROP_ACTIVE_MODE, null, getActiveMode());
     }
 
-    /** Moves given top component into given mode, but does not activate it
-     * or select it, in contrary to moveTopComponentsIntoMode methods
-     */
-    private boolean moveTCWithoutActivation(ModeImpl mode, TopComponent tc) {
-        if(!mode.canContain(tc)) {
-            return false;
-        }
-        if(!removeTopComponentFromOtherModes(mode, tc)) {
-            return false;
-        }
-        model.addModeOpenedTopComponent(mode, tc);
-        return true;
-    }
+
     
     
     public ModeImpl getModeTopComponentPreviousMode(TopComponent tc, ModeImpl currentSlidingMode) {
