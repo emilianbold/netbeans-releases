@@ -385,7 +385,8 @@ public class J2SEProjectProperties {
                     return;
                 }
             }
-            assert false : "Platform "+platform+" was not found!"; //NOI18N
+            // The platform does not exist. Perhaps this is project with broken references?
+            // Do not update target and source because nothing is known about the platform.
         }
     }
     
@@ -643,6 +644,8 @@ public class J2SEProjectProperties {
         
         // XXX Define in the LibraryManager
         private static final String LIBRARY_PREFIX = "${libs."; // NOI18N
+
+        private static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
         
         // Contains well known paths in the J2SEProject
         private static final String[][] WELL_KNOWN_PATHS = new String[][] {
@@ -672,33 +675,33 @@ public class J2SEProjectProperties {
                 
                 if ( wellKnownPathIndex != - 1 ) {
                     cpItem = new VisualClassPathItem( pe[i], VisualClassPathItem.TYPE_CLASSPATH, pe[i], WELL_KNOWN_PATHS[wellKnownPathIndex][1] );
-                }                
-                else if ( pe[i].startsWith( LIBRARY_PREFIX ) ) {
+                } else if ( pe[i].startsWith( LIBRARY_PREFIX ) ) {
                     // Library from library manager
                     //String eval = antProjectHelper.evaluate( getAntPropertyName( pe[i] ) );
                     String eval = pe[i].substring( LIBRARY_PREFIX.length(), pe[i].lastIndexOf('.') ); //NOI18N
                     Library lib = LibraryManager.getDefault().getLibrary (eval);
                     if (lib != null) {
                         cpItem = new VisualClassPathItem( lib, VisualClassPathItem.TYPE_LIBRARY, pe[i], eval );
+                    } else {
+                        cpItem = new VisualClassPathItem(null, VisualClassPathItem.TYPE_LIBRARY, pe[i], eval);
                     }
-                    else {
-                        //Invalid library. The lbirary was probably removed from system.
-                        cpItem = null;
-                    }
-                }
-                else {
-                    AntArtifact artifact = refHelper.getForeignFileReferenceAsArtifact( pe[i] );                     
+                } else if (pe[i].startsWith(ANT_ARTIFACT_PREFIX)) {
+                    AntArtifact artifact = refHelper.getForeignFileReferenceAsArtifact(pe[i]);
                     if ( artifact != null ) {
                         // Sub project artifact
-                        String eval = evaluator.getProperty(getAntPropertyName(pe[i]));
+                        String eval = artifact.getArtifactLocation().toString();
                         cpItem = new VisualClassPathItem( artifact, VisualClassPathItem.TYPE_ARTIFACT, pe[i], eval );
+                    } else {
+                        cpItem = new VisualClassPathItem(null, VisualClassPathItem.TYPE_ARTIFACT, pe[i], null);
                     }
-                    else {
-                        // Standalone jar or property
-                        String eval = evaluator.getProperty(getAntPropertyName(pe[i]));
-                        File f = antProjectHelper.resolveFile(eval);
-                        cpItem = new VisualClassPathItem( f, VisualClassPathItem.TYPE_JAR, pe[i], eval );
+                } else {
+                    // Standalone jar or property
+                    String eval = evaluator.getProperty(getAntPropertyName(pe[i]));
+                    File f = null;
+                    if (eval != null) {
+                        f = antProjectHelper.resolveFile(eval);
                     }
+                    cpItem = new VisualClassPathItem( f, VisualClassPathItem.TYPE_JAR, pe[i], eval );
                 }
                 if (cpItem!=null) {
                     cpItems.add( cpItem );
@@ -723,7 +726,8 @@ public class J2SEProjectProperties {
                         if (raw == null) {
                             // New file
                             File file = (File)vcpi.getObject();
-                            String reference = refHelper.createForeignFileReference(file, JavaProjectConstants.ARTIFACT_TYPE_JAR);
+                            // pass null as expected artifact type to always get file reference
+                            String reference = refHelper.createForeignFileReference(file, null);
                             sb.append(reference);
                         } else {
                             // Existing property
@@ -734,9 +738,13 @@ public class J2SEProjectProperties {
                         sb.append(vcpi.getRaw());
                         break;    
                     case VisualClassPathItem.TYPE_ARTIFACT:
-                        AntArtifact aa = (AntArtifact)vcpi.getObject();
-                        String reference = refHelper.createForeignFileReference( aa );
-                        sb.append( reference );
+                        if (vcpi.getObject() != null) {
+                            AntArtifact aa = (AntArtifact)vcpi.getObject();
+                            String reference = refHelper.createForeignFileReference( aa );
+                            sb.append( reference );
+                        } else {
+                            sb.append(vcpi.getRaw());
+                        }
                         break;
                     case VisualClassPathItem.TYPE_CLASSPATH:
                         sb.append( vcpi.getRaw() );
@@ -756,7 +764,6 @@ public class J2SEProjectProperties {
     private static class PlatformParser extends PropertyParser {
         
         public Object decode(String raw, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
-            
             JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();            
             for( int i = 0; i < platforms.length; i++ ) {
                 String normalizedName = (String)platforms[i].getProperties().get("platform.ant.name");
@@ -764,17 +771,20 @@ public class J2SEProjectProperties {
                     return platforms[i].getDisplayName();
                 }
             }
-
-            return JavaPlatformManager.getDefault().getDefaultPlatform().getDisplayName(); 
+            // if platform does not exist then return raw reference.
+            return raw;
         }
         
         public String encode(Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
             JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms ((String)value,
                     new Specification ("j2se",null));
-            if (platforms.length == 0)
-                return null;
-            else
+            if (platforms.length == 0) {
+                // platform for this project does not exist. broken reference? its displayname should 
+                // correspond to platform ID. so just return it:
+                return (String)value;
+            } else {
                 return (String) platforms[0].getProperties().get("platform.ant.name");  //NOI18N
+            }
         }
         
     }
