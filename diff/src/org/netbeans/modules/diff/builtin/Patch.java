@@ -462,23 +462,20 @@ public class Patch extends Reader {
     private static Difference[] parseUnifiedDiff(Reader in) throws IOException {
         BufferedReader br = new BufferedReader(in);
         ArrayList diffs = new ArrayList();
-        String line;
+        String line = null;
         do {
-            do {
+            while (line == null || !(line.startsWith(UNIFIED_MARK) &&
+                                     line.length() > UNIFIED_MARK.length() &&
+                                     line.endsWith(UNIFIED_MARK))) {
                 line = br.readLine();
-            } while (line != null && !(line.startsWith(UNIFIED_MARK) &&
-                                       line.length() > UNIFIED_MARK.length() &&
-                                       line.endsWith(UNIFIED_MARK)));
+                if (line == null) break;
+            }
             int[] intervals = new int[4];
             try {
                 readUnifiedNums(line, UNIFIED_MARK.length(), intervals);
             } catch (NumberFormatException nfex) {
                 throw new IOException(nfex.getLocalizedMessage());
             }
-            int[] firstInterval = new int[2];
-            int[] secondInterval = new int[2];
-            System.arraycopy(intervals, 0, firstInterval, 0, firstInterval.length);
-            System.arraycopy(intervals, 0, secondInterval, 0, secondInterval.length);
             line = fillUnidifChanges(intervals, br, diffs);
         } while (line != null);
         return (Difference[]) diffs.toArray(new Difference[diffs.size()]);
@@ -506,8 +503,8 @@ public class Patch extends Reader {
         if (end > 0) {
             values[3] = Integer.parseInt(str.substring(off, end).trim());
         } else throw new NumberFormatException("Missing final space.");
-        values[1] += values[0];
-        values[3] += values[2];
+        values[1] += values[0] - 1;
+        values[3] += values[2] - 1;
     }
 
     private static String fillUnidifChanges(int[] interval, BufferedReader br,
