@@ -78,7 +78,6 @@ public class OptionsAction extends CallableSystemAction {
         TopManager.getDefault().setStatusText(NbBundle.getBundle(OptionsAction.class).getString("MSG_Preparing_options"));
         OptionsPanel singleton = OptionsPanel.singleton();
         singleton.prepareNodes ();
-        TopManager.getDefault ().setStatusText (""); // NOI18N
                 
         // dock Options into its mode if needed
         final Workspace w = WindowManager.getDefault().getCurrentWorkspace();
@@ -119,6 +118,8 @@ public class OptionsAction extends CallableSystemAction {
                 optionPanel.open();
                 optionPanel.requestFocus();
                 optionPanel.requestDefaultFocus();
+                
+                TopManager.getDefault ().setStatusText (""); // NOI18N
             }
         });
     }
@@ -139,8 +140,7 @@ public class OptionsAction extends CallableSystemAction {
     }
 
     /** Options panel. Uses singleton pattern. */
-    public static final class OptionsPanel extends NbMainExplorer.SettingsTab 
-    implements Runnable {
+    public static final class OptionsPanel extends NbMainExplorer.SettingsTab {
         /** Name of mode in which options panel is docked by default */
         public static final String MODE_NAME = "options";
         /** Singleton instance of options panel */
@@ -151,9 +151,11 @@ public class OptionsAction extends CallableSystemAction {
         /** list of String[] that should be expanded when the tree is shown */
         private Collection toExpand;
         private transient boolean expanded;
+        /** root node to use */
+        private transient Node rootNode;
 
         private OptionsPanel () {
-            setRootContext (initRC ());
+            validateRootContext ();
             // show only name of top component is typical case
             putClientProperty(ModeImpl.NAMING_TYPE, ModeImpl.BOTH_ONLY_COMP_NAME);
             // Show without tab when alone in container cell.
@@ -244,13 +246,6 @@ public class OptionsAction extends CallableSystemAction {
             
             return view;
         }
-
-        public void addNotify () {
-            super.addNotify ();
-            
-            SwingUtilities.invokeLater(this);
-            org.openide.util.RequestProcessor.getDefault ().post (this, 500);
-        }
         
         public synchronized void prepareNodes () {
             if (toExpand != null) {
@@ -263,22 +258,12 @@ public class OptionsAction extends CallableSystemAction {
             
             expandNodes (root, 3, arr);
             
-            toExpand = new ArrayList (arr.size ());
-            
-            Iterator it = arr.iterator();
-            while (it.hasNext()) {
-                Node n = (Node)it.next();
-                toExpand.add (NodeOp.createPath (n, root));
-            }
+            toExpand = arr;
         }
             
         
-        public synchronized void run () {
-            if (!SwingUtilities.isEventDispatchThread ()) {
-                prepareNodes ();
-                SwingUtilities.invokeLater(this);
-                return;
-            }
+        protected synchronized void componentShowing () {
+            super.componentShowing ();
             
             if (expanded) {
                 return;
@@ -306,14 +291,11 @@ public class OptionsAction extends CallableSystemAction {
             return singleton;
         }
         
-        private Node initRC () {
-            Node rc;
-            if (!Boolean.getBoolean ("netbeans.options.old"))
-                rc = new OptionsFilterNode ();
-            else
-                rc = TopManager.getDefault().getPlaces().nodes().session();
-            
-            return rc;
+        private synchronized Node initRC () {
+            if (rootNode == null) {
+                rootNode = new OptionsFilterNode ();
+            }
+            return rootNode;
         }
 
         /** Expands the node in explorer.
@@ -488,24 +470,21 @@ public class OptionsAction extends CallableSystemAction {
                 
                 Node first = null;
                 while (it.hasNext()) {
-                    String[] path = (String[])it.next();
-
-                    try {
-                        Node n = NodeOp.findPath (root, path);
-                        if (first == null) {
-                            first = n;
-                        } 
-                        
-                        this.expandNode(n);
-                    } catch (NodeNotFoundException ex) {
-                        ex.printStackTrace();
+                    Node n = (Node)it.next();
+                    if (first == null) {
+                        first = n;
                     }
+                    
+                    this.expandNode(n);
                 }
 
                 if (first != null) {
                     collapseNode (first);
                     expandNode (first);
                 }
+                
+                // move to top
+                tree.scrollRowToVisible(0);
             }
         }
             
