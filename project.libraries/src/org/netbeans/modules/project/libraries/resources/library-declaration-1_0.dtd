@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-    Document   : library-declaration-1_0.dtd
-    Created on : April 23, 2003, 10:11 AM
-    Author     : Petr Kuzel, Tomas Zezula
-    Description:
-        It declaratively describes library content definition.
+    Declaratively describes library content definition.
 
     PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN"
     SYSTEM "http://www.netbeans.org/dtds/library-declaration-1_0.dtd"
@@ -17,11 +13,11 @@
         <description>Library providing lookup functionality.</description>
         <volume>
             <type>classpath</type>
-            <resource>modules/autoload/lookup.jar</resource>
+            <resource>nbinst:/modules/autoload/lookup.jar</resource>
         </volume>
         <volume>
             <type>javadoc</type>
-            <resource>file:////home/me/Projects/lookup/doc/standard-doclet/</resource>
+            <resource>file:/home/me/Projects/lookup/doc/standard-doclet/</resource>
         </volume>
     </library>
 -->
@@ -49,7 +45,7 @@
 <!-- The resource name of base bundle without an extension - a string.
  The bundle used to lookup the localized strings.
  The bundle is looked up by NbBundle.getBundle (String) method.
- Example of localizing bundle: org/netbeans/modules/junit/resources/Bundle -->
+ Example of localizing bundle: org.netbeans.modules.junit.resources.Bundle -->
 <!ELEMENT localizing-bundle (#PCDATA)>
 
 <!--- Volume is typed list of resources -->
@@ -60,13 +56,9 @@
  classpath, javadoc and src -->
 <!ELEMENT type (#PCDATA) >
 
-<!--- Volume resource coded as either absolute or relative URI
- In the case of absolute URI the URI is used as a absolute path.
- In the case of relative URI the URI is resolved from the NetBeans installation
- dircetory.
+<!--- Volume resource coded as absolute URI.
  Example:
- file:///usr/lib/java/xerces.jar is resolved to /usr/lib/java/xerces.jar
- modules/ext/junit.jar is resolved to ${ide.home}/modules/ext/junit.jar
+ file:/usr/lib/java/xerces.jar is resolved to /usr/lib/java/xerces.jar
+ nbinst:/modules/ext/junit.jar is resolved to /IDE-INSTALLATION/ide4/modules/ext/junit.jar
  -->
 <!ELEMENT resource (#PCDATA) >
-
