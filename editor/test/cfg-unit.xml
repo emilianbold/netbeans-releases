@@ -60,6 +60,7 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <include name="org/netbeans/modules/editor/AnnotationsUnitTestSuite.class"/>
                 <include name="org/netbeans/modules/editor/DocumentUnitTestSuite.class"/>
+                <include name="org/netbeans/modules/editor/openide/*.class"/>
             </patternset>
         </testset>
     </testbag>

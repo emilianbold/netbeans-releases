@@ -22,6 +22,9 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-fold.jar"/>
             <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-util.jar"/>
 
+            <!-- Some tests extend openide/text tests -->
+            <pathelement location="${nb_all}/openide/build/test/unit/classes"/>
+
             <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
             <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
             <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
@@ -39,6 +42,9 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
             <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-fold.jar"/>
             <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-util.jar"/>
+
+            <!-- Some tests extend openide/text tests -->
+            <pathelement location="${nb_all}/openide/build/test/unit/classes"/>
 
             <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
             <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
