@@ -402,7 +402,7 @@ public final class OpenProjectList {
         ArrayList result = new ArrayList( 10 );        
         
         RecommendedTemplates rt = (RecommendedTemplates)project.getLookup().lookup( RecommendedTemplates.class );
-        String rtNames[] = rt.getRecommendedTypes();
+        String rtNames[] = rt == null ? new String[0] : rt.getRecommendedTypes();
         PrivilegedTemplates pt = (PrivilegedTemplates)project.getLookup().lookup( PrivilegedTemplates.class );
         String ptNames[] = pt == null ? null : pt.getPrivilegedTemplates();
         ArrayList privilegedTemplates = new ArrayList( Arrays.asList( pt == null ? new String[0]: ptNames ) );
