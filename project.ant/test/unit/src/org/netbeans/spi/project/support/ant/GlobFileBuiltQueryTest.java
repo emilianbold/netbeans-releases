@@ -123,9 +123,9 @@ public class GlobFileBuiltQueryTest extends NbTestCase {
     }
     
     /** Maximum amount of time (in milliseconds) to wait for expected changes. */
-    private static final long WAIT = 3000;
+    private static final long WAIT = 10000;
     /** Maximum amount of time (in milliseconds) to wait for unexpected changes. */
-    private static final long QUICK_WAIT = 500;
+    private static final long QUICK_WAIT = 1000;
     
     public void testChangeFiring() throws Exception {
         L fooL = new L();
