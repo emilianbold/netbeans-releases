@@ -7,22 +7,18 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.form;
 
-import org.openide.filesystems.*;
-import org.openide.modules.ModuleInstall;
-
 import java.beans.*;
 import java.util.*;
+import org.openide.modules.ModuleInstall;
 
 /**
  * Module installation class for Form Editor
- *
- * @author Ian Formanek
  */
 public class FormEditorModule extends ModuleInstall
 {
@@ -53,17 +49,7 @@ public class FormEditorModule extends ModuleInstall
     }
 
     /** Module was uninstalled. */
-
     public void uninstalled() {
-        Repository rep = Repository.getDefault();
-
-        java.util.Enumeration enum = rep.getFileSystems();
-        while (enum.hasMoreElements()) {
-            FileSystem fs = (FileSystem) enum.nextElement();
-            if (fs instanceof GlobalJarFileSystem)
-                rep.removeFileSystem(fs);
-        }
-
         // Remove beaninfo search path.
         String[] sp = Introspector.getBeanInfoSearchPath();
         List paths = new ArrayList(Arrays.asList(sp));
@@ -71,4 +57,5 @@ public class FormEditorModule extends ModuleInstall
         paths.remove(BEANINFO_PATH_SWING);
         Introspector.setBeanInfoSearchPath((String[])paths.toArray(new String[paths.size()]));
     }
+
 }
