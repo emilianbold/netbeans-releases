@@ -101,21 +101,8 @@ public class J2SEProjectGenerator {
                     props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     props.put(propName,srcReference);
                     h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
-                }
-
-                if (testFolders.length == 0) {
-                    String testLoc = NbBundle.getMessage (J2SEProjectGenerator.class,"TXT_DefaultTestFolderName");
-                    File f = new File (dir,testLoc);
-                    f.mkdirs();
-                    String propName = "test.src.dir";
-                    Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-                    root.setAttribute ("id",propName);   //NOI18N
-                    testRoots.appendChild(root);
-                    EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    props.put(propName,testLoc);
-                    h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
-                }
-                else {
+                }                 
+                if (testFolders.length > 0) {
                     for (int i=0; i<testFolders.length; i++) {
                         if (!testFolders[i].exists()) {
                             testFolders[i].mkdirs();
