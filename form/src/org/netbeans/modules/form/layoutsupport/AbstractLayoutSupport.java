@@ -684,7 +684,6 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     protected final void updateLayoutInstance() {
         Container cont = layoutContext.getPrimaryContainer();
         Container contDel = layoutContext.getPrimaryContainerDelegate();
-        Component comps[] = contDel.getComponents();
 
         LayoutManager lm = null;
         try {
@@ -697,9 +696,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
         if (lm != null && metaLayout != null)
             metaLayout.updateInstance(lm);
     
-        clearContainer(cont, contDel);
-        setLayoutToContainer(cont, contDel);
-        addComponentsToContainer(cont, contDel, comps, 0);
+        layoutContext.updatePrimaryContainer();
     }
 
     protected final CodeStatement getSetLayoutStatement() {

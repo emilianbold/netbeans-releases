@@ -136,10 +136,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
     }
 
     public int getResizableDirections(Component component, int index) {
-        return LayoutSupportContext.RESIZE_UP
-               | LayoutSupportContext.RESIZE_DOWN
-               | LayoutSupportContext.RESIZE_LEFT
-               | LayoutSupportContext.RESIZE_RIGHT;
+        return RESIZE_UP | RESIZE_DOWN | RESIZE_LEFT | RESIZE_RIGHT;
     }
 
     public LayoutConstraints getResizedConstraints(Component component,

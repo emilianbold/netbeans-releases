@@ -30,6 +30,12 @@ import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
 public final class LayoutSupportManager implements LayoutSupportContext {
 
+    // possible component resizing directions (bit flag constants)
+    public static final int RESIZE_UP = 1;
+    public static final int RESIZE_DOWN = 2;
+    public static final int RESIZE_LEFT = 4;
+    public static final int RESIZE_RIGHT = 8;
+
     private LayoutSupportDelegate layoutDelegate;
 
     private RADVisualContainer metaContainer;
@@ -191,27 +197,6 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         newDelegate.addComponentsToContainer(cont, contDel, primaryComps, 0);
 
         layoutDelegate = newDelegate;
-    }
-
-    // setup primary container according to current layout and constraints
-    // parameters
-    public void setupPrimaryContainer() {
-        Container cont = getPrimaryContainer();
-        Container contDel = getPrimaryContainerDelegate();
-
-        layoutDelegate.clearContainer(cont, contDel);
-        layoutDelegate.setLayoutToContainer(cont, contDel);
-
-        RADVisualComponent[] components = metaContainer.getSubComponents();
-        if (components.length > 0) {
-            Component[] comps = new Component[components.length];
-            for (int i=0; i < components.length; i++) {
-                comps[i] = components[i].getComponent();
-                ensureFakePeerAttached(comps[i]);
-            }
-
-            layoutDelegate.addComponentsToContainer(cont, contDel, comps, 0);
-        }
     }
 
     public void clearPrimaryContainer() {
@@ -679,6 +664,25 @@ public final class LayoutSupportManager implements LayoutSupportContext {
     // return component instance of meta component
     public Component getPrimaryComponent(int index) {
         return metaContainer.getSubComponent(index).getComponent();
+    }
+
+    public void updatePrimaryContainer() {
+        Container cont = getPrimaryContainer();
+        Container contDel = getPrimaryContainerDelegate();
+
+        layoutDelegate.clearContainer(cont, contDel);
+        layoutDelegate.setLayoutToContainer(cont, contDel);
+
+        RADVisualComponent[] components = metaContainer.getSubComponents();
+        if (components.length > 0) {
+            Component[] comps = new Component[components.length];
+            for (int i=0; i < components.length; i++) {
+                comps[i] = components[i].getComponent();
+                ensureFakePeerAttached(comps[i]);
+            }
+
+            layoutDelegate.addComponentsToContainer(cont, contDel, comps, 0);
+        }
     }
 
     public void containerLayoutChanged(PropertyChangeEvent evt) {

@@ -23,6 +23,12 @@ import org.netbeans.modules.form.codestructure.*;
 
 public interface LayoutSupportDelegate {
 
+    // possible component resizing directions (bit flag constants)
+    public final int RESIZE_UP = 1;
+    public final int RESIZE_DOWN = 2;
+    public final int RESIZE_LEFT = 4;
+    public final int RESIZE_RIGHT = 8;
+
     // initialization
     public void initialize(LayoutSupportContext layoutContext,
                            LayoutManager lmInstance,

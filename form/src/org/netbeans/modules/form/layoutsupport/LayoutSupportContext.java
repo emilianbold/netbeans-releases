@@ -20,27 +20,45 @@ import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.form.codestructure.*;
 
 /**
+ * Interface providing necessary context for LayoutSupportDelegate
+ * implementations.
+ *
  * @author Tomas Pavek
  */
 
 public interface LayoutSupportContext {
 
-    // possible component resizing directions (bit flag constants)
-    public final int RESIZE_UP = 1;
-    public final int RESIZE_DOWN = 2;
-    public final int RESIZE_LEFT = 4;
-    public final int RESIZE_RIGHT = 8;
-
+    /** Returns the CodeStructure object to be used for reading/creating
+     * the "code image" of the layout configuration. */
     public CodeStructure getCodeStructure();
 
+    /** Returns the code expression of the primary container. */
     public CodeExpression getContainerCodeExpression();
+
+    /** Returns the code expression of primary container delegate. */
     public CodeExpression getContainerDelegateCodeExpression();
 
-    // getters for instances of container, container delegate, and subcomponents
+    /** Returns the primary container. This is the referential instance used
+     * in form metadata structures. */
     public Container getPrimaryContainer();
+
+    /** Returns the primary container delegate. */
     public Container getPrimaryContainerDelegate();
+
+    /** Returns the component of given index from primary container. */
     public Component getPrimaryComponent(int index);
 
+    /** This method should be called by layout delegate if a change requires
+     * to update the (primary) container layout completely (remove components,
+     * set new layout, add components again). To be used probably only in case
+     * the supported layout manager is not a bean (e.g. BoxLayout). */
+    public void updatePrimaryContainer();
+
+    /** This method should be called by layout delegate to notify about
+     * changing a property of container layout. */
     public void containerLayoutChanged(PropertyChangeEvent evt);
+
+    /** This method should be called by layout delegate to notify about
+      * changing a property of component layout constraint. */
     public void componentLayoutChanged(int index, PropertyChangeEvent evt);
 }
