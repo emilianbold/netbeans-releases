@@ -273,11 +273,16 @@ public class PropertiesDataNode extends DataNode {
                                                 public void run() throws IOException {
                                                     FileObject newFile = folder.createData(defaultFile.getName() + newName, PropertiesDataLoader.PROPERTIES_EXTENSION);
                                                     
-                                                    Writer writer = new PropertiesEditorSupport.NewLineWriter(newFile.getOutputStream(newFile.lock()), editor.getNewLineType());
+                                                    FileLock lock = newFile.lock();
+                                                    try {
+                                                        Writer writer = new PropertiesEditorSupport.NewLineWriter(newFile.getOutputStream(lock), editor.getNewLineType());
 
-                                                    writer.write(buffer[0]);
-                                                    writer.flush();
-                                                    writer.close();
+                                                        writer.write(buffer[0]);
+                                                        writer.flush();
+                                                        writer.close();
+                                                    } finally {
+                                                        lock.releaseLock();
+                                                    }
                                                 }
                                             });
                                         }
