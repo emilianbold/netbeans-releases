@@ -77,7 +77,7 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
     
     // add all inherited bindings
     Class parent = kitClass.getSuperclass();
-    Settings.KitAndValue[] kv = Settings.getValueHierarchy( parent, SettingNames.KEY_BINDING_LIST );
+    Settings.KitAndValue[] kv = Settings.getValueHierarchy( parent, Settings.KEY_BINDING_LIST );
     // go through all levels and add inherited bindings
     for( int i=kv.length - 1; i >= 0; i--)
       addKeyBindingList( treeMap, ((List)kv[i].value).iterator(), true );
@@ -474,6 +474,8 @@ private void actionsListValueChanged (javax.swing.event.ListSelectionEvent evt) 
 
 /*
  * Log
+ *  5    Gandalf-post-FCS1.4         3/17/00  Petr Nejedly    Rolled back to compile 
+ *       under post-FCS
  *  4    Gandalf-post-FCS1.3         3/16/00  Miloslav Metelka renamings
  *  3    Gandalf-post-FCS1.2         3/15/00  Miloslav Metelka reverted previous 
  *       version - ST error?
