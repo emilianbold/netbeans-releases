@@ -14,6 +14,13 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="core/javahelp" default="netbeans" basedir=".">
 
+    <property name="nbm_alias" value="nb_ide"/>
+    <property name="homepage.base" value="netbeans.org"/>
+    <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+    <property name="license.file" location="../../nbbuild/standard-nbm-license.txt"/>
+
+    <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar"/>
+    <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../../nbbuild/nbantext.jar"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../nbbuild/nbantext.jar"/>
     <property name="binroot" location="../../../nbextra"/>
     <property name="xmlparser" value="xerces.jar"/>
@@ -50,7 +57,25 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${binroot}/core/release/lib/ext/jh.jar" tofile="netbeans/modules/autoload/ext/jh-1.1.2_02.jar"/>
     </target>
 
-    <target name="netbeans" depends="jars,release"/>
+    <target name="netbeans" depends="jars,release">
+        <genlist targetname="nbm" outputfiledir="../../nbbuild/netbeans"/>
+    </target>
+
+    <target name="nbm" depends="netbeans">
+        <makenbm file="javahelp-api.nbm"
+                 topdir="."
+                 module="netbeans/modules/autoload/javahelp-api.jar"
+                 homepage="http://core.${homepage.base}/"
+                 distribution="http://${dist.base}/javahelp-api.nbm">
+            <license name="javahelp-api-license.txt">
+                <text>For the JavaHelp integration module itself:</text>
+                <file location="${license.file}"/>
+                <text>For the bundled JavaHelp runtime library:</text>
+                <file location="javahelp-license.txt"/>
+            </license>
+            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+        </makenbm>
+    </target>
 
     <target name="test-build" depends="jars">
         <mkdir dir="reload/ext"/>
@@ -68,6 +93,11 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </delete>
         <delete dir="netbeans"/>
+        <delete file="javahelp-api.nbm"/>
+        <delete dir="Info"/>
+    </target>
+
+    <target name="real-clean" depends="clean">
         <delete dir="reload"/>
     </target>
 
