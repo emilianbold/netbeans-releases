@@ -64,7 +64,6 @@ public interface Model {
     /** Adds mode. */ 
     public void addMode(ModeImpl mode, SplitConstraint[] constraints);
     /** Adds mode. */
-    public void addMode(ModeImpl mode, SplitConstraint[] constraint, boolean adjustToAllWeights);
     // XXX
     public void addModeToSide(ModeImpl mode, ModeImpl attachMode, String side);
     // XXX

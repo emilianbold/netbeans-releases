@@ -40,7 +40,7 @@ final class EditorSplitSubModel extends SplitSubModel {
         this.editorNode = new EditorNode(editorArea);
         
         // XXX The editor node has to be always present.
-        addNodeToTree(editorNode, new SplitConstraint[0], false);
+        addNodeToTree(editorNode, new SplitConstraint[0]);
     }
     
 
@@ -56,7 +56,7 @@ final class EditorSplitSubModel extends SplitSubModel {
 
     public boolean setEditorNodeConstraints(SplitConstraint[] editorNodeConstraints) {
         super.removeNodeFromTree(editorNode);
-        return addNodeToTree(editorNode, editorNodeConstraints, false);
+        return addNodeToTree(editorNode, editorNodeConstraints);
     }
     
     public SplitConstraint[] getEditorNodeConstraints() {

@@ -79,16 +79,12 @@ class SplitSubModel {
         return modeNode.getNodeConstraints();
     }
     
-    public boolean addMode(ModeImpl mode, SplitConstraint[] constraints) {
-        return addMode(mode, constraints, false);
-    }
-    
     /** Adds mode which is <code>Node</code>
      * with specified constraints designating the path in model.
      * <em>Note: It is important to know that adding of mode can affect the structure
      * the way, it can change constraints of already added modes (they could
      * be moved in that tree)</em> */
-    public boolean addMode(ModeImpl mode, SplitConstraint[] constraints, boolean adjustToAllWeights) {
+    public boolean addMode(ModeImpl mode, SplitConstraint[] constraints) {
         // PENDING do we support empty constraints?
         if(mode == null || constraints == null) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
@@ -109,7 +105,7 @@ class SplitSubModel {
             debugLog("modeNode=" + modeNode); // NOI18N
         }
 
-        return addNodeToTree(modeNode, constraints, adjustToAllWeights);
+        return addNodeToTree(modeNode, constraints);
     }
     
     // XXX
@@ -220,8 +216,7 @@ class SplitSubModel {
     }
 
     /** Adds node into the tree structure if there isn't yet. */
-    protected boolean addNodeToTree(Node addingNode, SplitConstraint[] constraints,
-    boolean adjustToAllWeights) {
+    protected boolean addNodeToTree(Node addingNode, SplitConstraint[] constraints) {
         if(isInTree(addingNode)) {
             return false;
         }
@@ -296,13 +291,12 @@ class SplitSubModel {
         
         // Finally add the node into tree.
         if(constraints.length == 0) {
-            splitNode.setChildAt(-1, 0.5D, addingNode, adjustToAllWeights);
+            splitNode.setChildAt(-1, 0.5D, addingNode);
         } else {
             splitNode.setChildAt(
                 constraints[constraints.length - 1].index,
                 constraints[constraints.length - 1].splitWeight,
-                addingNode,
-                adjustToAllWeights
+                addingNode
             );
         }
         
@@ -509,7 +503,7 @@ class SplitSubModel {
             return false;
         }
 
-        return addNodeToTree(addingNode, newConstraints, false);
+        return addNodeToTree(addingNode, newConstraints);
     }
     
     // XXX
@@ -895,16 +889,6 @@ class SplitSubModel {
         }
         
         public void setChildAt(int index, double splitWeight, Node child) {
-            setChildAt(index, splitWeight, child, false);
-        }
-
-        // XXX
-        /** @param adjustToAllWeights means that the adding weight is relative to 
-         *                          total weight already under this split. Thererfor
-         *                          the added weight has to be adjusted accordingly
-         *                          and possible also all the weights normalized
-         *                          (so there is none bigger than 1). */
-        public void setChildAt(int index, double splitWeight, Node child, boolean adjustToAllWeights) {
             // XXX -1 means, put it at the end.
             if(index == -1) {
                 if(index2child.isEmpty()) {
@@ -925,7 +909,7 @@ class SplitSubModel {
             // Finally add the new node.
             index2child.put(ind, child);
             // Also add it to child2splitWeight map
-            setChildSplitWeightImpl(child, splitWeight, adjustToAllWeights);
+            setChildSplitWeightImpl(child, splitWeight);
             child.setParent(this);
             
             verifyChildren();
@@ -965,34 +949,13 @@ class SplitSubModel {
                 return;
             }
             
-            setChildSplitWeightImpl(child, weight, false);
+            setChildSplitWeightImpl(child, weight);
         }
         
-        private void setChildSplitWeightImpl(Node child, double weight, boolean adjustToAllWeights) {
-            if(adjustToAllWeights) {
-                adjustAndAddToAllWeights(child, weight);
-            } else {
-                child2splitWeight.put(child, new Double(weight));
-            }
-        }
-        
-        private void adjustAndAddToAllWeights(Node child, double weight) {
-            double total = 0D;
-            for(Iterator it = child2splitWeight.values().iterator(); it.hasNext(); ) {
-                total += ((Double)it.next()).doubleValue();
-            }
-            if(total > 0D && weight < 1D) {
-                weight = weight * total / (1D - weight);
-            }
-            
-            if(weight > 1D) {
-                // Normalize weights
-                double ratio = 1D / weight;
-                normalizeWeights(ratio);
-                weight = 1D;
-            }
+        private void setChildSplitWeightImpl(Node child, double weight) {
             child2splitWeight.put(child, new Double(weight));
         }
+        
         
         private void normalizeWeights(double ratio) {
             for(Iterator it = child2splitWeight.entrySet().iterator(); it.hasNext(); ) {

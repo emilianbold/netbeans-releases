@@ -101,19 +101,15 @@ final class ModesSubModel {
     }
 
     public boolean addMode(ModeImpl mode, SplitConstraint[] constraints) {
-        return addMode(mode, constraints, false);
-    }
-    
-    public boolean addMode(ModeImpl mode, SplitConstraint[] constraints, boolean adjustToAllWeights) {
         if(modes.contains(mode)) {
             return false;
         }
 
         boolean result;
         if(mode.getKind() == Constants.MODE_KIND_EDITOR) {
-            result = editorSplitSubModel.getEditorArea().addMode(mode, constraints, adjustToAllWeights);
+            result = editorSplitSubModel.getEditorArea().addMode(mode, constraints);
         } else {
-            result = editorSplitSubModel.addMode(mode, constraints, adjustToAllWeights);
+            result = editorSplitSubModel.addMode(mode, constraints);
         }
 
         if(result) {

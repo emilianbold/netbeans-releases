@@ -202,11 +202,7 @@ final class DefaultModel implements Model {
         }
     }
     
-    public void addMode(ModeImpl mode, SplitConstraint[] constraints, boolean adjustToAllWeights) {
-        synchronized(LOCK_MODES) {
-            modesSubModel.addMode(mode, constraints, adjustToAllWeights);
-        }
-    }
+
     
     // XXX
     public void addModeToSide(ModeImpl mode, ModeImpl attachMode, String side) {
