@@ -105,22 +105,12 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
                                            catch (ThreadDeath td) {
                                                throw td;
                                            }
-                                           catch (java.net.BindException ex) {
-                                               // If the socket bind fails, log it. NetBeans will continue to loop 
-                                               // to find the first open socket
-                                               //
+                                           catch (Throwable ex) {
                                                ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ex);
                                                // couldn't start
                                                serverThread = null;
                                                inSetRunning = false;
-                                               httpserverSettings ().runFailure();
-                                           }
-                                           catch (Throwable ex) {
-                                               ex.printStackTrace();
-                                               // couldn't start
-                                               serverThread = null;
-                                               inSetRunning = false;
-                                               httpserverSettings ().runFailure();
+                                               httpserverSettings ().runFailure(ex);
                                            }
                                            finally {
                                                httpserverSettings ().setStartStopMessages(true);

@@ -183,26 +183,44 @@ public class HttpServerSettings extends SystemOption
         }
     }
 
-    /** Intended to be called by the thread which failed to start the server */
-    void runFailure() {
+    /** Intended to be called by the thread which failed to start the server. 
+     * It decides whether try to start server on next port or show appropriate
+     * error message.
+     */
+    void runFailure(Throwable t) {
         running = false;
-        currentRetries ++;
-        if (currentRetries <= MAX_START_RETRIES) {
-            setPort(getPort() + 1);
-            setRunning(true);
+        if (t instanceof IncompatibleClassChangeError) {
+            // likely there is a wrong servlet API version on CLASSPATH
+            DialogDisplayer.getDefault ().notify(new NotifyDescriptor.Message(
+               NbBundle.getMessage (HttpServerSettings.class, "MSG_HTTP_SERVER_incompatbleClasses"),
+               NotifyDescriptor.Message.WARNING_MESSAGE));
+        }
+        else if (t instanceof java.net.BindException) {
+            // can't open socket - we can retry
+            currentRetries ++;
+            if (currentRetries <= MAX_START_RETRIES) {
+                setPort(getPort() + 1);
+                setRunning(true);
+            }
+            else {
+                currentRetries = 0;
+                DialogDisplayer.getDefault ().notify(new NotifyDescriptor.Message(
+                                               NbBundle.getMessage (HttpServerSettings.class, "MSG_HTTP_SERVER_START_FAIL"),
+                                               NotifyDescriptor.Message.WARNING_MESSAGE));
+                int p = getPort ();
+                if (p < 1024 && inited && Utilities.isUnix()) {
+                    DialogDisplayer.getDefault ().notify(new NotifyDescriptor.Message(
+                                               NbBundle.getMessage (HttpServerSettings.class, "MSG_onlyRootOnUnix"),
+                                               NotifyDescriptor.WARNING_MESSAGE));
+                }
+
+            }
         }
         else {
-            currentRetries = 0;
+            // unknown problem
             DialogDisplayer.getDefault ().notify(new NotifyDescriptor.Message(
-                                               NbBundle.getBundle(HttpServerSettings.class).getString("MSG_HTTP_SERVER_START_FAIL"), // NOI18N
-                                               NotifyDescriptor.Message.WARNING_MESSAGE));
-            int p = getPort ();
-            if (p < 1024 && inited && Utilities.isUnix()) {
-                DialogDisplayer.getDefault ().notify(new NotifyDescriptor.Message(
-                                               NbBundle.getBundle(HttpServerSettings.class).getString("MSG_onlyRootOnUnix"), // NOI18N
-                                               NotifyDescriptor.WARNING_MESSAGE));
-            }
-
+               NbBundle.getMessage (HttpServerSettings.class, "MSG_HTTP_SERVER_START_FAIL_unknown"),
+               NotifyDescriptor.Message.WARNING_MESSAGE));
         }
     }
 
