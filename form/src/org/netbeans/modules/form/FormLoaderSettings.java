@@ -115,18 +115,21 @@ public class FormLoaderSettings extends SystemOption {
     /** If true, only editable properties are displayed in the ComponentInspector */
     private static boolean displayWritableOnly = true;
     /** Array of package names to search for property editors used in Form Editor */
-    private static String [] editorSearchPath;
+    private static String [] editorSearchPath =
+        { "org.netbeans.modules.form.editors2" }; // NOI18N
     /** Array of items [Class Name, Editor1, Editor2, ...] */
-    private static String [][] registeredEditors = new String [][] {
-        { "byte", "sun.beans.editors.ByteEditor" }, // NOI18N
-        { "short", "sun.beans.editors.ShortEditor" }, // NOI18N
-        { "integer", "sun.beans.editors.IntEditor" }, // NOI18N
-        { "long" ,"sun.beans.editors.LongEditor" }, // NOI18N
-        { "boolean", "sun.beans.editors.BoolEditor" }, // NOI18N
-        { "float", "sun.beans.editors.FloatEditor" }, // NOI18N
-        { "double", "sun.beans.editors.DoubleEditor" }, // NOI18N
-        { String[].class.getName(), "org.openide.explorer.propertysheet.editors.StringArrayEditor"}, // NOI18N
-    };
+    private static String [][] registeredEditors = new String [][] {{}};
+//    {
+//        { "byte", "sun.beans.editors.ByteEditor" }, // NOI18N
+//        { "short", "sun.beans.editors.ShortEditor" }, // NOI18N
+//        { "integer", "sun.beans.editors.IntEditor" }, // NOI18N
+//        { "long" ,"sun.beans.editors.LongEditor" }, // NOI18N
+//        { "boolean", "sun.beans.editors.BoolEditor" }, // NOI18N
+//        { "float", "sun.beans.editors.FloatEditor" }, // NOI18N
+//        { "double", "sun.beans.editors.DoubleEditor" }, // NOI18N
+//        { "char", "org.netbeans.beaninfo.editors.CharacterEditor" }, // NOI18N
+//        { String[].class.getName(), "org.openide.explorer.propertysheet.editors.StringArrayEditor"}, // NOI18N
+//    };
 
 //    private static int outputLevel = OUTPUT_NORMAL;
 
@@ -142,12 +145,12 @@ public class FormLoaderSettings extends SystemOption {
     private static final int MIN_GRID_X = 2;
     private static final int MIN_GRID_Y = 2;
 
-    static {
-        String[] defaultPath = java.beans.PropertyEditorManager.getEditorSearchPath();
-        editorSearchPath = new String[defaultPath.length + 1];
-        System.arraycopy(defaultPath, 0, editorSearchPath, 0, defaultPath.length);
-        editorSearchPath[editorSearchPath.length-1] = "org.netbeans.modules.form.editors2"; // NOI18N
-    }
+//    static {
+//        String[] defaultPath = java.beans.PropertyEditorManager.getEditorSearchPath();
+//        editorSearchPath = new String[defaultPath.length + 1];
+//        System.arraycopy(defaultPath, 0, editorSearchPath, 0, defaultPath.length);
+//        editorSearchPath[editorSearchPath.length-1] = "org.netbeans.modules.form.editors2"; // NOI18N
+//    }
 
     // ------------------------------------------
     // property access methods

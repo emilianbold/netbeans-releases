@@ -17,7 +17,7 @@ package org.netbeans.modules.form;
 import org.openide.TopManager;
 import org.openide.util.SharedClassObject; 
 
-import java.beans.PropertyEditor;
+import java.beans.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -25,28 +25,35 @@ import java.util.HashMap;
  *
  * @author   Ian Formanek
  */
-final public class FormPropertyEditorManager extends Object {
+final public class FormPropertyEditorManager extends Object
+{
     private static FormLoaderSettings formSettings = (FormLoaderSettings)
                    SharedClassObject.findObject(FormLoaderSettings.class, true);
+
     private static HashMap editorsCache = new HashMap(30);
+
     private static HashMap expliciteEditors = new HashMap(10);
 
+
     public static synchronized PropertyEditor findEditor(Class type) {
-        PropertyEditor[] eds = getAllEditors(type, false);
-        if (eds.length > 0) {
-            return eds[0];
-        } else {
-            return null;
+        Class[] edClasses = findEditorClasses(type);
+        if (edClasses.length > 0) {
+            PropertyEditor[] editors =
+                createEditorInstances(new Class[] { edClasses[0] }, type);
+            if (editors.length > 0)
+                return editors[0];
         }
+        return null;
     }
 
     public static synchronized void registerEditor(Class type, Class editorClass) {
-        Class[] currentEditors =(Class[]) expliciteEditors.get(getTypeName(type));
+        Class[] currentEditors = (Class[])expliciteEditors.get(getTypeName(type));
         Class[] newEditors;
         if (currentEditors == null) {
             newEditors = new Class[1];
             newEditors[0] = editorClass;
-        } else {
+        }
+        else {
             // check whether the editor is not already registered
             for (int i = 0; i < currentEditors.length; i++) {
                 if (currentEditors[i].equals(editorClass)) {
@@ -59,6 +66,16 @@ final public class FormPropertyEditorManager extends Object {
         }
         expliciteEditors.put(getTypeName(type), newEditors);
     }
+
+    public static synchronized PropertyEditor[] getAllEditors(Class type) {
+        return createEditorInstances(findEditorClasses(type), type);
+    }
+
+    synchronized static void clearEditorsCache() {
+        editorsCache.clear();
+    }
+
+    // -------
 
     private static String getTypeName(Class type) {
         String typeName = type.getName();
@@ -75,99 +92,104 @@ final public class FormPropertyEditorManager extends Object {
         return typeName;
     }
 
-    public static synchronized PropertyEditor[] getAllEditors(Class type, boolean allFromSearchPath) {
-        Class[] eds =(Class[])editorsCache.get(type);
-        if (eds != null) {
-            return createEditorInstances(eds, type);
-        }
+    private static Class[] findEditorClasses(Class type) {
+        // try the editors cache
+        Class[] edClasses = (Class[]) editorsCache.get(type);
+        if (edClasses != null)
+            return edClasses;
 
         ArrayList editorsList = new ArrayList(5);
 
-        String typeName = getTypeName(type);
-
-        // 1. try adding "Editor" to the class name. // NOI18N
-        String editorName = type.getName() + "Editor"; // NOI18N
-        try {
-            editorsList.add(Class.forName(editorName, true, TopManager.getDefault().currentClassLoader()));
-        } catch (Exception e) {
-            // Silently ignore any not found editors.
+        // 1st - try standard way through PropertyEditorManager
+        PropertyEditor stdPropEd = PropertyEditorManager.findEditor(type);
+        if (stdPropEd != null) {
+            editorsList.add(stdPropEd.getClass());
         }
+        else {
+            // 2nd - try the form editor's specific search path
+            String editorName = type.getName();
+            if (!editorName.startsWith("[")) { // not an array type
+                int dot = editorName.lastIndexOf('.');
+                if (dot > 0)
+                    editorName = editorName.substring(dot+1);
 
-        // Third try looking for <searchPath>.fooEditor
-        String[] searchPath = formSettings.getEditorSearchPath();
-
-        editorName = type.getName();
-        while (editorName.indexOf('.') > 0) {
-            editorName = editorName.substring(editorName.indexOf('.') + 1);
-        }
-        for (int i = 0; i < searchPath.length; i++) {
-            String name = searchPath[i] + "." + editorName + "Editor"; // NOI18N
-            try {
-                Class editorClass = Class.forName(name, true, TopManager.getDefault().currentClassLoader());
-                editorsList.add(editorClass);
-                if (!allFromSearchPath) {
-                    break; // stop on first found editor if allFromSearchPath is false
+                String[] searchPath = formSettings.getEditorSearchPath();
+                for (int i = 0; i < searchPath.length; i++) {
+                    String name = searchPath[i] + "." + editorName + "Editor"; // NOI18N
+                    try {
+                        Class edClass = Class.forName(name, true,
+                                TopManager.getDefault().currentClassLoader());
+                        editorsList.add(edClass);
+                        break; // stop on first found editor
+                    }
+                    catch (Exception e) {} // silently ignore not found editors
                 }
-            } catch (Exception e) {
-                // Silently ignore any not found editors.
             }
         }
 
-        // 2. use explicitly registered editors
-        String [][] registered = formSettings.getRegisteredEditors();
+        // 3rd - search in explicitly registered editors (in Options)
+        String typeName = getTypeName(type);
+        String[][] registered = formSettings.getRegisteredEditors();
         for (int i = 0; i < registered.length; i++) {
-            if (registered[i].length > 0) {
-                if (registered[i][0].equals(typeName)) {
-                    for (int j = 1; j < registered[i].length; j++) {
+            String[] typereg = registered[i];
+            if (typereg.length > 0) {
+                if (typereg[0].equals(typeName)) {
+                    for (int j = 1; j < typereg.length; j++) {
                         try {
-                            editorsList.add(Class.forName(registered[i][j], true, TopManager.getDefault().currentClassLoader()));
-                        } catch (Exception e) {
-                            // Silently ignore any errors.
-                            if (System.getProperty("netbeans.debug.exceptions") != null) e.printStackTrace();
+                            Class edClass = Class.forName(typereg[j], true,
+                                TopManager.getDefault().currentClassLoader());
+                            if (!editorsList.contains(edClass))
+                                editorsList.add(edClass);
+                        }
+                        catch (Exception e) { // ignore
+                            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                                e.printStackTrace();
                         }
                     }
                 }
             }
         }
 
-        // 3. use explicitly registered transient editors
-        Class[] explicite =(Class[]) expliciteEditors.get(typeName);
+        // 4th - search in editors registered using registerEditor(...)
+        Class[] explicite = (Class[]) expliciteEditors.get(typeName);
         if (explicite != null) {
             for (int i = 0; i < explicite.length; i++) {
-                editorsList.add(explicite[i]);
+                Class edClass = explicite[i];
+                if (!editorsList.contains(edClass))
+                    editorsList.add(edClass);
             }
         }
 
-        // 4. Fourth add the RADConnectionPropertyEditor as the default editor for all values
+        // 5th - add the RADConnectionPropertyEditor for all values
         editorsList.add(RADConnectionPropertyEditor.class);
 
-        Class[] editorsArray = new Class[editorsList.size()];
-        editorsList.toArray(editorsArray);
-        // Cache the list for future reuse
-        editorsCache.put(type, editorsArray);
-
-        return createEditorInstances(editorsArray, type);
+        edClasses = new Class[editorsList.size()];
+        editorsList.toArray(edClasses);
+        return edClasses;
     }
 
-    private static PropertyEditor[] createEditorInstances(Class[] editorClasses, Class propertyType) {
-        ArrayList instancesList = new ArrayList(editorClasses.length);
-        for (int i = 0; i < editorClasses.length; i++) {
-            if (RADConnectionPropertyEditor.class.isAssignableFrom(editorClasses[i])) { // ignore classes which do not implement java.beans.PropertyEditor
+    private static PropertyEditor[] createEditorInstances(Class[] edClasses,
+                                                          Class propertyType) {
+        ArrayList instancesList = new ArrayList(edClasses.length);
+
+        for (int i = 0; i < edClasses.length; i++) {
+            if (RADConnectionPropertyEditor.class.isAssignableFrom(edClasses[i])) {
                 instancesList.add(new RADConnectionPropertyEditor(propertyType));
-            } else if (java.beans.PropertyEditor.class.isAssignableFrom(editorClasses[i])) { // ignore classes which do not implement java.beans.PropertyEditor
+            }
+            else if (PropertyEditor.class.isAssignableFrom(edClasses[i])) {
                 try {
-                    instancesList.add(editorClasses[i].newInstance());
-                } catch (Exception e) {
-                    // Silently ignore any errors.
-                    if (System.getProperty("netbeans.debug.exceptions") != null) e.printStackTrace();
+                    instancesList.add(edClasses[i].newInstance());
+                }
+                catch (Exception e) { // ignore
+                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                        e.printStackTrace();
                 }
             }
+            // ignore classes which do not implement java.beans.PropertyEditor
         }
-        return(PropertyEditor[])instancesList.toArray(new PropertyEditor [instancesList.size()]);
-    }
 
-    synchronized static void clearEditorsCache() {
-        editorsCache.clear();
+        PropertyEditor[] editors = new PropertyEditor[instancesList.size()];
+        instancesList.toArray(editors);
+        return editors;
     }
-
 }

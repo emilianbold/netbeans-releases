@@ -240,7 +240,7 @@ public class FormPropertyEditor implements PropertyEditor,
     PropertyEditor[] getAllEditors() {
         if (allEditors == null) {
             PropertyEditor expliciteEditor = property.getExpliciteEditor();
-            allEditors = FormPropertyEditorManager.getAllEditors(property.getValueType(), false);
+            allEditors = FormPropertyEditorManager.getAllEditors(property.getValueType());
             if (expliciteEditor != null) {
                 PropertyEditor[] newAllEditors = new PropertyEditor[allEditors.length + 1];
                 newAllEditors[0] = expliciteEditor;

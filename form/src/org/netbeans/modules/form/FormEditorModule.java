@@ -18,8 +18,7 @@ import org.openide.filesystems.*;
 import org.openide.nodes.Node;
 import org.openide.modules.ModuleInstall;
 
-import org.netbeans.modules.form.actions.*;
-import org.netbeans.modules.form.palette.*;
+import org.netbeans.modules.form.palette.BeanInstaller;
 
 import java.beans.*;
 import java.io.File;
@@ -90,22 +89,6 @@ public class FormEditorModule extends ModuleInstall
         // register standard persistence managers
         PersistenceManager.registerManager(new TuborgPersistenceManager());
         PersistenceManager.registerManager(new GandalfPersistenceManager());
-
-        // XXX(-tdt) JDK "forgets" to provide a PropertyEditor for char and Character
-
-        PropertyEditor charEditor;
-
-        charEditor = PropertyEditorManager.findEditor(Character.TYPE);
-        if (charEditor == null)
-            FormPropertyEditorManager.registerEditor(
-                Character.TYPE,
-                org.netbeans.modules.form.editors.CharacterEditor.class);
-
-        charEditor = PropertyEditorManager.findEditor(Character.class);
-        if (charEditor == null)
-            FormPropertyEditorManager.registerEditor(
-                Character.class,
-                org.netbeans.modules.form.editors.CharacterEditor.class);
 
         FormPropertyEditorManager.registerEditor(
             javax.swing.KeyStroke.class,

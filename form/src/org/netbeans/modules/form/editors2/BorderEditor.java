@@ -676,7 +676,7 @@ public final class BorderEditor extends PropertyEditorSupport
 
             java.io.IOException lastEx = null;
             PropertyEditor editors[] = FormPropertyEditorManager.getAllEditors(
-                                                       prop.getValueType(), false);
+                                                           prop.getValueType());
 
             for (int i=0; i < editors.length && !valueRead; i++) {
                 PropertyEditor prEd = editors[i];
