@@ -73,14 +73,15 @@ public class ConnectAction extends DatabaseAction {
             try {
                 // add connection (if needed) and make the connection to SAMPLE database connected
                 PointbasePlus.addOrConnectAccordingToOption();
+                user = (String)nfo.getUser();
+                pwd = (String)nfo.getPassword();
+                rpwd = (Boolean)nfo.get(DatabaseNodeInfo.REMEMBER_PWD);
             } catch(Exception ex) {
                 if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
                     ex.printStackTrace();
             }
             
         if (user == null || pwd == null || !remember) {
-
-
 
             final ConnectPanel basePanel = new ConnectPanel(user);
             final SchemaPanel schemaPanel = new SchemaPanel(new Vector(), user);
