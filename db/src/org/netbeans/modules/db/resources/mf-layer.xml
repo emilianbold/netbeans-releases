@@ -48,9 +48,7 @@
                 <folder name="ServerAndExternalToolSettings">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.db.resources.Bundle"/>
                     <file name="DatabaseOption.shadow">
-<![CDATA[Services/org-netbeans-modules-db-explorer-DatabaseOption.settings
-SystemFileSystem
-]]>
+                        <attr name="originalFile" stringvalue="Services/org-netbeans-modules-db-explorer-DatabaseOption.settings"/>
                     </file>
                 </folder> <!-- ServerAndExternalToolSettings -->
             </folder> <!-- IDEConfiguration -->
