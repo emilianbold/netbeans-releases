@@ -93,8 +93,9 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         Iterator methods = referenceType.methods ().iterator ();
         while (methods.hasNext ()) {
             Method method = (Method) methods.next ();
-            if ( match (method.name (), breakpoint.getMethodName ()) &&
-                 method.location () != null
+            if ( (match (method.name (), breakpoint.getMethodName ()) ||
+                  breakpoint.getMethodName().equals("")) &&
+                  method.location () != null
             )
                 locations.add (method.location ());
         }
