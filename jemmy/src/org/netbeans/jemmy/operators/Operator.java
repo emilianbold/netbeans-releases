@@ -21,6 +21,7 @@ import org.netbeans.jemmy.Action;
 import org.netbeans.jemmy.ActionProducer;
 import org.netbeans.jemmy.CharBindingMap;
 import org.netbeans.jemmy.ClassReference;
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Outputable;
@@ -29,6 +30,8 @@ import org.netbeans.jemmy.QueueTool.QueueAction;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.Timeoutable;
 import org.netbeans.jemmy.Timeouts;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 
 import java.awt.Component;
 
@@ -60,6 +63,7 @@ public abstract class Operator extends Object
     private ComponentVisualizer visualizer;
     private StringComparator comparator;
     private QueueTool queueTool;
+    private boolean verification = false;
 
     /**
      * Inits environment.
@@ -113,6 +117,28 @@ public abstract class Operator extends Object
     public static StringComparator getDefaultStringComparator() {
 	return((StringComparator)JemmyProperties.
 	       getCurrentProperty("ComponentOperator.StringComparator"));
+    }
+
+    /**
+     * Defines weither newly created operators should perform operation verifications by default.
+     * @see #getDefaultVerification()
+     * @see #setVerification(boolean)
+     */
+    public static boolean setDefaultVerification(boolean verification) {
+	Boolean oldValue = (Boolean)(JemmyProperties.
+				     setCurrentProperty("Operator.Verification", 
+							new Boolean(verification)));
+	return((oldValue != null) ? oldValue.booleanValue() : false);
+    }
+
+    /**
+     * Says weither newly created operators perform operations verifications by default.
+     * @see #setDefaultVerification(boolean)
+     * @see #getVerification()
+     */
+    public static boolean getDefaultVerification() {
+	return(((Boolean)(JemmyProperties.
+			  getCurrentProperty("Operator.Verification"))).booleanValue());
     }
 
     /**
@@ -216,6 +242,7 @@ public abstract class Operator extends Object
 	operatorPkgs = new Vector ();
 	setDefaultStringComparator(new DefaultStringComparator(false, false));
 	addOperatorPackage("org.netbeans.jemmy.operators");
+	setDefaultVerification(false);
     }
 
     /**
@@ -244,6 +271,7 @@ public abstract class Operator extends Object
 	setVisualizer(anotherOperator.getVisualizer());
 	setDispatchingModel(anotherOperator.getDispatchingModel());
 	setComparator(anotherOperator.getComparator());
+	setVerification(anotherOperator.getVerification());
     }
 
     /**
@@ -351,6 +379,28 @@ public abstract class Operator extends Object
      */
     public void setComparator(StringComparator comparator) {
 	this.comparator = comparator;
+    }
+
+    /**
+     * Defines weither operator should perform operation verifications.
+     * @see #setDefaultVerification(boolean)
+     * @see #getDefaultVerification()
+     * @see #getVerification()
+     */
+    public boolean setVerification(boolean verification) {
+	boolean oldValue = this.verification;
+	this.verification = verification;
+	return(oldValue);
+    }
+
+    /**
+     * Says weither operator performs operation verifications.
+     * @see #setDefaultVerification(boolean)
+     * @see #getDefaultVerification()
+     * @see #setVerification(boolean)
+     */
+    public boolean getVerification() {
+	return(verification);
     }
 
     ////////////////////////////////////////////////////////
@@ -471,6 +521,31 @@ public abstract class Operator extends Object
 	result.put("Class", getSource().getClass().getName());
 	result.put("toString", getSource().toString());
 	return(result);
+    }
+
+    public void waitState(final ComponentChooser state) {
+	Waiter stateWaiter = new Waiter(new Waitable() {
+		public Object actionProduced(Object obj) {
+		    return(state.checkComponent(getSource()) ?
+			   "" : null);
+		}
+		public String getDescription() {
+		    return("Wait \"" + state.getDescription() + 
+			   "\" state to be reached");
+		}
+	    });
+	stateWaiter.setTimeouts(getTimeouts().cloneThis());
+	stateWaiter.getTimeouts().
+	    setTimeout("Waiter.WaitingTime",
+		       getTimeouts().
+		       getTimeout("ComponentOperator.WaitStateTimeout"));
+	stateWaiter.setOutput(getOutput().createErrorOutput());
+	try {
+	    stateWaiter.waitAction(null);
+	} catch(InterruptedException e) {
+	    throw(new JemmyException("Waiting of \"" + state.getDescription() +
+				     "\" state has been interrupted!"));
+	}
     }
 
     ////////////////////////////////////////////////////////
@@ -692,6 +767,7 @@ public abstract class Operator extends Object
 	setCharBindingMap(JemmyProperties.getProperties().getCharBindingMap());
 	setVisualizer(getDefaultComponentVisualizer());
 	setComparator(getDefaultStringComparator());
+	setVerification(getDefaultVerification());
     }
 
     private int nextDelimIndex(String path, String delim) {

@@ -452,3 +452,64 @@ org.netbeans.jemmy.operators.JColorChooserOperator
 org.netbeans.jemmy.operators.JPasswordFieldOperator
 org.netbeans.jemmy.operators.JProgressBarOperator
 org.netbeans.jemmy.operators.JRadioButtonMenuItemOperator
+
+#VERSION 1.0.12
+
+Solution to work with dynamic popups loading.
+JPopupMenuOperator:
+One more constructor, methods to wait popup by a chooser and menu item text. 
+
+21187 issue fix
+
+Workaround for Gnome window activization.
+Do this before any operators creation:
+ComponentOperator.setDefaultComponentVisualizer(new MouseVisualizer(MouseVisualizer.TOP, 0.5, 10, false));
+
+
+
+Some wait methods which could be used for test synchronization.
+
+Root one:
+Operator.waitState(ComponentChooser)
+Timeout value to wait the state defined by ComponentChooser parameter
+is defined by ComponentOperator.WaitStateTimeout timeout.
+
+Next some invoke waitState methods:
+AbstractButtonOperator.waitText(String)
+DialogOperator.waitTitle(String)
+FrameOperator.waitTitle(String)
+JComboBoxOperator.waitItemSelected(int)
+JComboBoxOperator.waitItemSelected(String)
+JLabelOperator.waitText(String)
+JListOperator.waitItemSelection(int, boolean)
+JListOperator.waitItem(String, int)
+JTableOperator.waitCell(String, int, int)
+JTextComponentOperator.waitText(String, int)
+JTextComponentOperator.waitText(String)
+JTextComponentOperator.waitCaretPosition(int)
+JTreeOperator.waitExpanded(TreePath)
+JTreeOperator.waitCollapsed(TreePath)
+JTreeOperator.waitVisible(TreePath)
+JTreeOperator.waitSelected(TreePath[])
+JTreeOperator.waitSelected(TreePath)
+JTreeOperator.waitRow(String, int)
+
+
+
+Post-operation verifications.
+If verification mode is on (Operator.getVerification() == true),
+post-verification is performed for some particular operations:
+text typing (JTextComponentOperator), combobox item selecting (JComboBoxOperator), 
+tree path selecting (JTreeOperator).
+Methods to work with verification mode:
+static Operator.getDefaultVerification()
+static Operator.setDefaultVerification(boolean)
+Operator.getVerification()
+Operator.setVerification(boolean)
+
+
+
+Safety feature. 
+Text component clearing now works through ActionProducer.
+
+21668 issue fix.

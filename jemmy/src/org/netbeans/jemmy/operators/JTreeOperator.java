@@ -69,6 +69,8 @@ import javax.swing.tree.TreeSelectionModel;
  * JTreeOperator.BeforeEditTimeout - time to sleep before edit click <BR>
  * JTreeOperator.WaitEditingTimeout - time to wait node editing <BR>
  * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
+ * ComponentOperator.WaitStateTimeout - time to wait for path to be expanded, collapsed, selected,
+ * time to wait for a text in a row <BR>
  * WindowWaiter.WaitWindowTimeout - time to wait popup window displayed <BR>
  * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>
  *
@@ -362,30 +364,7 @@ public class JTreeOperator extends JComponentOperator
 		clickMouse((int)point.getX(), (int)point.getY(), 2);
 	    }
 	}
-	Timeouts times = timeouts.cloneThis();
-	times.setTimeout("Waiter.WaitingTime", 
-			 timeouts.getTimeout("JTreeOperator.WaitNodeExpandedTimeout"));
-	times.setTimeout("Waiter.AfterWaitingTime", 
-			 timeouts.getTimeout("JTreeOperator.WaitAfterNodeExpandedTimeout"));
-	Waiter expandedWaiter = new Waiter(new Waitable() {
-	    public Object actionProduced(Object obj) {
-		if(isExpanded(((TreePath)obj))) {
-		    return("OK");
-		} else {
-		    return(null);
-		}
-	    }
-	    public String getDescription() {
-		return("Wait node expanded");
-	    }
-	});
-	expandedWaiter.setTimeouts(times);
-	expandedWaiter.setOutput(output.createErrorOutput());
-	try {
-	    expandedWaiter.waitAction(path);
-	} catch(InterruptedException e) {
-	    output.printStackTrace(e);
-	}
+	waitExpanded(path);
     }
 
     /**
@@ -407,27 +386,7 @@ public class JTreeOperator extends JComponentOperator
 	Object[] params = {path};
 	Class[] paramClasses = {path.getClass()};
 	getEventDispatcher().invokeExistingMethod("makeVisible", params, paramClasses, output);
-	Timeouts times = timeouts.cloneThis();
-	times.setTimeout("Waiter.WaitingTime", timeouts.getTimeout("JTreeOperator.WaitNodeVisibleTimeout"));
-	Waiter visibleWaiter = new Waiter(new Waitable() {
-	    public Object actionProduced(Object obj) {
-		if(isVisible((TreePath)obj)) {
-		    return("OK");
-		} else {
-		    return(null);
-		}
-	    }
-	    public String getDescription() {
-		return("Wait node visible");
-	    }
-	});
-	visibleWaiter.setTimeouts(times);
-	visibleWaiter.setOutput(output.createErrorOutput());
-	try {
-	    visibleWaiter.waitAction(path);
-	} catch(InterruptedException e) {
-	    output.printStackTrace(e);
-	}
+	waitVisible(path);
     }
 
     /**
@@ -871,30 +830,7 @@ public class JTreeOperator extends JComponentOperator
 		clickMouse((int)point.getX(), (int)point.getY(), 2);
 	    }
 	}
-	Timeouts times = timeouts.cloneThis();
-	times.setTimeout("Waiter.WaitingTime", 
-			 timeouts.getTimeout("JTreeOperator.WaitNodeCollapsedTimeout"));
-	times.setTimeout("Waiter.AfterWaitingTime", 
-			 timeouts.getTimeout("JTreeOperator.WaitAfterNodeExpandedTimeout"));
-	Waiter expandedWaiter = new Waiter(new Waitable() {
-	    public Object actionProduced(Object obj) {
-		if(!isExpanded((TreePath)obj)) {
-		    return("OK");
-		} else {
-		    return(null);
-		}
-	    }
-	    public String getDescription() {
-		return("Wait node collapsed");
-	    }
-	});
-	expandedWaiter.setTimeouts(times);
-	expandedWaiter.setOutput(output.createErrorOutput());
-	try {
-	    expandedWaiter.waitAction(path);
-	} catch(InterruptedException e) {
-	    output.printStackTrace(e);
-	}
+	waitCollapsed(path);
     }
 
     /**
@@ -911,11 +847,8 @@ public class JTreeOperator extends JComponentOperator
     public void selectPath(TreePath path) {
 	output.printLine("Selecting \"" + path.toString() + "\" path");
 	output.printGolden("Selecting path");
-	getEventDispatcher().setOutput(output.createErrorOutput());
-	Object[] params = {path};
-	Class[] paramClasses = {path.getClass()};
-	getEventDispatcher().invokeExistingMethod("clearSelection", null, null, output);
-	getEventDispatcher().invokeExistingMethod("addSelectionPath", params, paramClasses, output);
+	TreePath[] paths = {path};
+	selectPaths(paths);
     }
 
     /**
@@ -927,6 +860,7 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Selects some pathes.
+     * If verification mode is on, checks that right paths have been selected.
      */
     public void selectPaths(TreePath[] paths) {
 	output.printLine("Selecting paths:");
@@ -934,11 +868,11 @@ public class JTreeOperator extends JComponentOperator
 	    output.printLine("    " + paths[i].toString());
 	}
 	output.printGolden("Selecting paths");
-	getEventDispatcher().setOutput(output.createErrorOutput());
-	Object[] params = {paths};
-	Class[] paramClasses = {paths.getClass()};
-	getEventDispatcher().invokeExistingMethod("clearSelection", null, null, output);
-	getEventDispatcher().invokeExistingMethod("addSelectionPaths", params, paramClasses, output);
+	clearSelection();
+	addSelectionPaths(paths);
+ 	if(getVerification()) {
+	    waitSelected(paths);
+	}
     }
 
     /** 
@@ -1151,6 +1085,134 @@ public class JTreeOperator extends JComponentOperator
 	    getTreeCellEditor().makeBeingEdited(this, path);
 	}
 	getTreeCellEditor().enterNewValue(this, waitEditor(path), path, newValue);
+    }
+
+    /**
+     * Waits path to be expanded.
+     * @param path
+     */
+    public void waitExpanded(final TreePath path) {
+	getOutput().printLine("Wait \"" + path.toString() + "\" path to be expanded in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait \"" + path.toString() + "\" path to be expanded");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+		    return(isExpanded(path));
+		}
+		public String getDescription() {
+		    return("Has \"" + path.toString() + "\" path expanded");
+		}
+	    });
+    }
+
+    /**
+     * Waits path to be collapsed.
+     * @param path
+     */
+    public void waitCollapsed(final TreePath path) {
+	getOutput().printLine("Wait \"" + path.toString() + "\" path to be collapsed in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait \"" + path.toString() + "\" path to be collapsed");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+		    return(isCollapsed(path));
+		}
+		public String getDescription() {
+		    return("Has \"" + path.toString() + "\" path collapsed");
+		}
+	    });
+    }
+
+    /**
+     * Waits path to be visible.
+     * @param path
+     */
+    public void waitVisible(final TreePath path) {
+	getOutput().printLine("Wait \"" + path.toString() + "\" path to be visible in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait \"" + path.toString() + "\" path to be visible");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+		    return(isVisible(path));
+		}
+		public String getDescription() {
+		    return("Has \"" + path.toString() + "\" path visible");
+		}
+	    });
+    }
+
+    /**
+     * Waits some paths to be selected.
+     * @param paths
+     */
+    public void waitSelected(final TreePath[] paths) {
+	getOutput().printLine("Wait right selection in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait right selection");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+		    TreePath[] rpaths = getSelectionModel().getSelectionPaths();
+		    for(int i = 0; i < rpaths.length; i++) {
+			if(!rpaths[i].equals(paths[i])) {
+			    return(false);
+			}
+		    }
+		    return(true);
+		}
+		public String getDescription() {
+		    return("Has right selection");
+		}
+	    });
+    }
+
+    /**
+     * Waits path to be selected.
+     * @param path
+     */
+    public void waitSelected(final TreePath path) {
+	TreePath[] paths = {path};
+	waitSelected(paths);
+    }
+
+    /**
+     * Wat for text in certain row.
+     * @param rowText Text to be compared with row text be <code>getComparator()</code> comparator.
+     * @param row Row index. If -1, selected one is checked.
+     */
+    public void waitRow(String rowText, int row) {
+	getOutput().printLine("Wait \"" + rowText + "\" text in " +
+			      Integer.toString(row) + "'th line in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait \"" + rowText + " \" text in " +
+				Integer.toString(row) + "'th line");
+	waitState(new JTreeByItemFinder(rowText, row, getComparator()));
+    }
+
+    /**
+     * Returns information about component.
+     */
+    public Hashtable getDump() {
+	Hashtable result = super.getDump();
+	Object root = ((JTree)getSource()).getModel().getRoot();
+	result.put("Root", root.toString());
+	addChildrenToDump(result, "Node", root);
+	int minSelection = ((JTree)getSource()).getMinSelectionRow();
+	if( minSelection >= 0) {
+	    Object minObject = ((JTree)getSource()).
+		getPathForRow(minSelection).
+		getLastPathComponent();
+	    int maxSelection = ((JTree)getSource()).getMaxSelectionRow();
+	    if(maxSelection > minSelection) {
+		Object maxObject = ((JTree)getSource()).
+		    getPathForRow(maxSelection).
+		    getLastPathComponent();
+		result.put("Selection from", minObject.toString());
+		result.put("Selection to", maxObject.toString());
+	    } else {
+		result.put("Selection", minObject.toString());
+	    }
+	}
+	return(result);
     }
 
     ////////////////////////////////////////////////////////
@@ -2044,33 +2106,6 @@ public class JTreeOperator extends JComponentOperator
 	public String getDescription();
     }
  
-    /**
-     * Returns information about component.
-     */
-    public Hashtable getDump() {
-	Hashtable result = super.getDump();
-	Object root = ((JTree)getSource()).getModel().getRoot();
-	result.put("Root", root.toString());
-	addChildrenToDump(result, "Node", root);
-	int minSelection = ((JTree)getSource()).getMinSelectionRow();
-	if( minSelection >= 0) {
-	    Object minObject = ((JTree)getSource()).
-		getPathForRow(minSelection).
-		getLastPathComponent();
-	    int maxSelection = ((JTree)getSource()).getMaxSelectionRow();
-	    if(maxSelection > minSelection) {
-		Object maxObject = ((JTree)getSource()).
-		    getPathForRow(maxSelection).
-		    getLastPathComponent();
-		result.put("Selection from", minObject.toString());
-		result.put("Selection to", maxObject.toString());
-	    } else {
-		result.put("Selection", minObject.toString());
-	    }
-	}
-	return(result);
-    }
-
     class StringArrayPathChooser implements TreePathChooser {
 	String[] arr;
 	int[] indices;

@@ -91,6 +91,18 @@ public class jemmy_010 extends JemmyTest {
 		return(1);
 	    }
 
+	    final JDialogOperator frm2o = new JDialogOperator(frm2);
+	    new Thread(new Runnable() {
+		    public void run() {
+			try {
+			    Thread.sleep(1000);
+			    frm2o.setTitle("New Title");
+			} catch(InterruptedException e) {
+			}
+		    }
+		}).start();
+	    frm2o.waitTitle("New Title");
+
 	    finalize();
 	    return(0);
 	} catch(Exception e) {

@@ -49,6 +49,7 @@ import javax.swing.plaf.ButtonUI;
  * AbstractButtonOperator.PushButtonTimeout - time between button pressing and releasing<BR>
  * ComponentOperator.WaitComponentTimeout - time to wait button displayed <BR>
  * ComponentOperator.WaitComponentEnabledTimeout - time to wait button enabled <BR>
+ * ComponentOperator.WaitStateTimeout - time to wait for text <BR>
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -384,6 +385,17 @@ public class AbstractButtonOperator extends JComponentOperator
 	output.printGolden("Release button");
 	super.setOutput(output.createErrorOutput());
 	releaseMouse();
+    }
+
+    /**
+     * Waits for text. Uses getComparator() comparator.
+     * @param text Text to wait for.
+     */
+    public void waitText(String text) {
+	getOutput().printLine("Wait \"" + text + "\" text in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait \"" + text + "\" text");
+	waitState(new AbstractButtonByLabelFinder(text, getComparator()));
     }
 
     /**

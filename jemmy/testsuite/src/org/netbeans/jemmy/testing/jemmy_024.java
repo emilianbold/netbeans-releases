@@ -97,6 +97,7 @@ public class jemmy_024 extends JemmyTest {
 	    Demonstrator.nextStep("Change text of the \"4949\" cell to \"-1-1\"");
 
 	    tabOper.changeCellObject(49, 49, "-1-1");
+	    tabOper.waitCell("-1-1", 49, 49);
 
 	    if(!checkInside(tabOper, 
 			    tabOper.getSource().getWidth() - 10, 
@@ -198,6 +199,7 @@ public class jemmy_024 extends JemmyTest {
 	    Demonstrator.nextStep("Change \"49/4949\" path text to \"-1-1\"");
 
 	    TreePath path4949 = treeOper.findPath("49/4949", "/", true, true);
+	    treeOper.waitRow("4949", 100);
 
 	    treeOper.changePathObject(path4949, "-1-1");
 

@@ -113,6 +113,7 @@ public class ComponentOperator extends Operator
     private final static long WAIT_COMPONENT_TIMEOUT = 10000;
     private final static long WAIT_COMPONENT_ENABLED_TIMEOUT = 1000;
     private final static long WAIT_FOCUS_TIMEOUT = 10000;
+    private final static long WAIT_STATE_TIMEOUT = 5000;
 
     private Component source;
     private Timeouts timeouts;
@@ -255,6 +256,7 @@ public class ComponentOperator extends Operator
 	Timeouts.initDefault("ComponentOperator.AfterDragTimeout", AFTER_DRAG_TIMEOUT);
 	Timeouts.initDefault("ComponentOperator.WaitComponentTimeout", WAIT_COMPONENT_TIMEOUT);
 	Timeouts.initDefault("ComponentOperator.WaitComponentEnabledTimeout", WAIT_COMPONENT_ENABLED_TIMEOUT);
+	Timeouts.initDefault("ComponentOperator.WaitStateTimeout", WAIT_STATE_TIMEOUT);
     }
 
     /**

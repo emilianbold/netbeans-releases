@@ -125,6 +125,10 @@ public class jemmy_016 extends JemmyTest {
 		return(1);
 	    }
 
+	    lo.waitItem("two", 1);
+	    lo.waitItem("two", -1);
+	    lo.waitItemSelection(1, true);
+
 	    getOutput().printLine("getSelectedIndex returned " + Integer.toString(lo.getSelectedIndex()));
 	    if(lo.getSelectedIndex() != 1) {
 		getOutput().printLine("Expected                   1");

@@ -35,6 +35,7 @@ import java.util.Hashtable;
  * <BR><BR>Timeouts used: <BR>
  * FrameWaiter.WaitFrameTimeout - time to wait frame displayed <BR>
  * FrameWaiter.AfterFrameTimeout - time to sleep after frame has been dispayed <BR>
+ * ComponentOperator.WaitStateTimeout - time to wait for text <BR>
  *
  * @see org.netbeans.jemmy.Timeouts
  * 
@@ -119,6 +120,17 @@ public class FrameOperator extends WindowOperator {
      */
     public FrameOperator() {
 	this(0);
+    }
+
+    /**
+     * Waits for title. Uses getComparator() comparator.
+     * @param title Title to wait for.
+     */
+    public void waitTitle(final String title) {
+	getOutput().printLine("Wait \"" + title + "\" title of frame \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait \"" + title + "\" title");
+	waitState(new FrameByTitleChooser(title, getComparator()));
     }
 
     /**

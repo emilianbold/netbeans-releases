@@ -35,6 +35,7 @@ import java.util.Hashtable;
  * <BR><BR>Timeouts used: <BR>
  * DialogWaiter.WaitDialogTimeout - time to wait dialog displayed <BR>
  * DialogWaiter.AfterDialogTimeout - time to sleep after dialog has been dispayed <BR>
+ * ComponentOperator.WaitStateTimeout - time to wait for title <BR>
  *
  * @see org.netbeans.jemmy.Timeouts
  * 
@@ -186,6 +187,17 @@ public class DialogOperator extends WindowOperator {
      */
     public DialogOperator() {
 	this(0);
+    }
+
+    /**
+     * Waits for title. Uses getComparator() comparator.
+     * @param title Title to wait for.
+     */
+    public void waitTitle(final String title) {
+	getOutput().printLine("Wait \"" + title + "\" title of dialog \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait \"" + title + "\" title");
+	waitState(new DialogByTitleChooser(title, getComparator()));
     }
 
     /**

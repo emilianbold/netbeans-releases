@@ -72,6 +72,7 @@ import javax.swing.text.Keymap;
  * JTextComponentOperator.TypeTextTimeout - maximum time to type text <BR>
  * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
  * ComponentOperator.WaitFocusTimeout - time to wait component focus <BR>
+ * ComponentOperator.WaitStateTimeout - time to wait for text <BR>
  * JScrollBarOperator.OneScrollClickTimeout - time for one scroll click <BR>
  * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>
  *
@@ -455,6 +456,7 @@ public class JTextComponentOperator extends JComponentOperator
      * Types text. 
      * If component has not focus, does
      * mouse click on component center before.
+     * If verification mode is on, checks that right text has been typed.
      * @param text Text to be typed.
      * @see #typeText(String, int)
      * @throws TimeoutExpiredException
@@ -491,10 +493,14 @@ public class JTextComponentOperator extends JComponentOperator
 	times.setTimeout("ActionProducer.MaxActionTime",
 			 times.getTimeout("JTextComponentOperator.TypeTextTimeout"));
 	producer.setTimeouts(times);
+	int position = getCaretPosition();
 	try {
 	    producer.produceAction(text);
 	} catch(InterruptedException e) {
 	    output.printStackTrace(e);
+	}
+	if(getVerification()) {
+	    waitText(text, -1);
 	}
     }
 
@@ -515,6 +521,7 @@ public class JTextComponentOperator extends JComponentOperator
      * Changes caret position by left and right arrow keys pushing.
      * If component has not focus, does
      * mouse click on component center before.
+     * If verification mode is on, checks that caret has been moved to right position.
      * @param position Position to move caret to.
      * @see #changeCaretPosition(String, int, boolean)
      * @throws TimeoutExpiredException
@@ -553,6 +560,10 @@ public class JTextComponentOperator extends JComponentOperator
 	    producer.produceAction(new Integer(position));
 	} catch(InterruptedException e) {
 	    output.printStackTrace(e);
+	}
+
+	if(getVerification()) {
+	    waitCaretPosition(position);
 	}
     }
 
@@ -602,6 +613,8 @@ public class JTextComponentOperator extends JComponentOperator
 
     /**
      * Types text starting from known position.
+     * If verification mode is on, checks that right text has been typed
+     * and caret has been moved to right position.
      * @param text Text to be typed.
      * @param caretPosition Position to start type text
      * @see #typeText(String)
@@ -620,6 +633,10 @@ public class JTextComponentOperator extends JComponentOperator
 	}
 	changeCaretPosition(caretPosition);
 	typeText(text);
+	if(getVerification()) {
+	    waitText(text, caretPosition);
+	    waitCaretPosition(caretPosition + text.length());
+	}
     }
 
     /**
@@ -704,30 +721,96 @@ public class JTextComponentOperator extends JComponentOperator
 	timeouts.setTimeout("ComponentOperator.PushKeyTimeout", 
 			    timeouts.getTimeout("JTextComponentOperator.PushKeyTimeout"));
 	super.setTimeouts(timeouts);
+	//	System.out.println("clearText: hasFocus = " + hasFocus());
 	if(!hasFocus()) {
 	    makeComponentVisible();
 	    clickMouse(1);
 	}
+	Action deleteAction;
 	if(getClearingMode() == BACK_SPACE_CLEARING_MODE) {
-	    changeCaretPosition(getDocument().getLength());
-	    while(getCaretPosition() > 0) {
-		typeKey(KeyEvent.VK_BACK_SPACE, (char)KeyEvent.VK_BACK_SPACE, 0);
-	    }
+	    deleteAction = new Action() {
+		    public Object launch(Object param) {
+			changeCaretPosition(getDocument().getLength());
+			while(getCaretPosition() > 0) {
+			    if(!hasFocus()) {
+				getOutput().printError("Component does not have focus anymore\n    : " +
+						       getSource().toString());
+				return(null);
+			    }
+			    typeKey(KeyEvent.VK_BACK_SPACE, (char)KeyEvent.VK_BACK_SPACE, 0);
+			}
+			return(null);
+		    }
+		    public String getDescription() {
+			return("Text clearing");
+		    }
+		};
 	} else if(getClearingMode() == DELETE_CLEARING_MODE) {
-	    changeCaretPosition(0);
-	    while(getDocument().getLength() > 0) {
-		pushKey(KeyEvent.VK_DELETE, 0);
-	    }
+	    deleteAction = new Action() {
+		    public Object launch(Object param) {
+			changeCaretPosition(0);
+			while(getDocument().getLength() > 0) {
+			    if(!hasFocus()) {
+				getOutput().printError("Component does not have focus anymore\n    : " +
+						       getSource().toString());
+				return(null);
+			    }
+			    pushKey(KeyEvent.VK_DELETE, 0);
+			}
+			return(null);
+		    }
+		    public String getDescription() {
+			return("Text clearing");
+		    }
+		};
 	} else if(getClearingMode() == SELECT_AND_DELETE_CLEARING_MODE) {
-	    selectText(0, getDocument().getLength());
-	    pushKey(KeyEvent.VK_DELETE, 0);
+	    deleteAction = new Action() {
+		    public Object launch(Object param) {
+			selectText(0, getDocument().getLength());
+			pushKey(KeyEvent.VK_DELETE, 0);
+			return(null);
+		    }
+		    public String getDescription() {
+			return("Text clearing");
+		    }
+		};
 	} else {
-	    while(getCaretPosition() > 0) {
-		typeKey(KeyEvent.VK_BACK_SPACE, (char)KeyEvent.VK_BACK_SPACE, 0);
-	    }
-	    while(getDocument().getLength() > 0) {
-		pushKey(KeyEvent.VK_DELETE, 0);
-	    }
+	    deleteAction = new Action() {
+		    public Object launch(Object param) {
+			while(getCaretPosition() > 0) {
+			    if(!hasFocus()) {
+				getOutput().printError("Component does not have focus anymore\n    : " +
+						       getSource().toString());
+				return(null);
+			    }
+			    typeKey(KeyEvent.VK_BACK_SPACE, (char)KeyEvent.VK_BACK_SPACE, 0);
+			}
+			while(getDocument().getLength() > 0) {
+			    if(!hasFocus()) {
+				getOutput().printError("Component does not have focus anymore\n    : " +
+						       getSource().toString());
+				return(null);
+			    }
+			    pushKey(KeyEvent.VK_DELETE, 0);
+			}
+			return(null);
+		    }
+		    public String getDescription() {
+			return("Text clearing");
+		    }
+		};
+	}
+	ActionProducer clearer = new ActionProducer(deleteAction);
+	clearer.setOutput(getOutput().createErrorOutput());
+	clearer.setTimeouts(getTimeouts());
+	clearer.getTimeouts().
+	    setTimeout("ActionProducer.MaxActionTime",
+		       getTimeouts().
+		       getTimeout("JTextComponentOperator.TypeTextTimeout"));
+	try {
+	    clearer.produceAction(null);
+	} catch(InterruptedException e) {
+	    throw(new JemmyException("Text clearing has been interrupted", e));
 	}
     }
 
@@ -770,6 +853,65 @@ public class JTextComponentOperator extends JComponentOperator
 	    throw(new JemmyException("Exception during text operation with\n    : " +
 				     getSource().toString(), e));
 	}
+    }
+
+    /**
+     * Wait for text to be displayed starting from certain position.
+     * @param text
+     * @param position
+     */
+    public void waitText(final String text, final int position) {
+	getOutput().printLine("Wait \"" + text + "\" text starting from " +
+			      Integer.toString(position) + " position in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait \"" + text + "\" text starting from " +
+				Integer.toString(position) + " position");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+		    String alltext = getDisplayedText();
+		    if(position >= 0) {
+			return(alltext.substring(position, position + text.length()).
+			       equals(text));
+		    } else {
+			return(alltext.indexOf(text) >= 0);
+		    }
+		}
+		public String getDescription() {
+		    return("Has \"" + text + "\" text starting from " +
+			   Integer.toString(position) + " position");
+		}
+	    });
+    }
+
+    /**
+     * Waits for certain text.
+     * @param text Text to be compared by getComparator() comparator.
+     */
+    public void waitText(String text) {
+	getOutput().printLine("Wait \"" + text + "\" text in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait \"" + text + "\" text");
+	waitState(new JTextComponentByTextFinder(text, getComparator()));
+    }
+
+    /**
+     * Wait for caret to be moved to certain position.
+     * @param position
+     */
+    public void waitCaretPosition(final int position) {
+	getOutput().printLine("Wait caret to be at \"" + Integer.toString(position) + 
+			      " position in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait caret to be at \"" + Integer.toString(position) + 
+				" position");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+		    return(getCaretPosition() == position);
+		}
+		public String getDescription() {
+		    return("Has caret at " + Integer.toString(position) + " position");
+		}
+	    });
     }
 
     /**

@@ -14,6 +14,7 @@ public class JemmyTest extends org.netbeans.jemmy.Test {
 	    Dumper.dumpAll(System.getProperty("user.dir") +
 			   System.getProperty("file.separator") +
 			   "dump.xml");
+	    /*
 	    if(!System.getProperty("java.version").startsWith("1.2")) {
 		Object[] params = {System.getProperty("user.dir") +
 				   System.getProperty("file.separator") +
@@ -24,8 +25,6 @@ public class JemmyTest extends org.netbeans.jemmy.Test {
 				 params,
 				 classes);
 	    }
-	} catch(java.io.FileNotFoundException e) {
-	    getOutput().printStackTrace(e);
 	} catch(ClassNotFoundException e) {
 	    getOutput().printStackTrace(e);
 	} catch(java.lang.reflect.InvocationTargetException e) {
@@ -33,6 +32,9 @@ public class JemmyTest extends org.netbeans.jemmy.Test {
 	} catch(NoSuchMethodException e) {
 	    getOutput().printStackTrace(e);
 	} catch(IllegalAccessException e) {
+	    getOutput().printStackTrace(e);
+	    */
+	} catch(java.io.FileNotFoundException e) {
 	    getOutput().printStackTrace(e);
 	}
 	Window win;

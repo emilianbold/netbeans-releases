@@ -221,7 +221,14 @@ public class ActionProducer extends Thread
 	    times.setTimeout("Waiter.WaitingTime", 
 			     timeouts.getTimeout("ActionProducer.MaxActionTime"));
 	    waiter.setTimeouts(times);
-	    waiter.waitAction(null);
+	    try {
+		waiter.waitAction(null);
+	    } catch(TimeoutExpiredException e) {
+		output.printError("Timeout for \"" + getDescription() + 
+				  "\" action has been expired. Thread has been interrupted.");
+		interrupt();
+		throw(e);
+	    }
 	}
 	return(result);
     }

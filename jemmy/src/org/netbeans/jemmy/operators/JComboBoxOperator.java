@@ -60,6 +60,7 @@ import javax.swing.plaf.basic.ComboPopup;
  * JComboBoxOperator.WaitListTimeout - time to wait list opened <BR>
  * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
  * ComponentOperator.WaitComponentEnabledTimeout - time to wait component enabled <BR>
+ * ComponentOperator.WaitStateTimeout - time to wait for item to be selected <BR>
  * AbstractButtonOperator.PushButtonTimeout - time between combo button pressing and releasing<BR>
  * ComponentOperator.MouseClickTimeout - time between mouse pressing and releasing during item selecting<BR>
  * JTextComponentOperator.PushKeyTimeout - time between key pressing and releasing during text typing <BR>
@@ -391,6 +392,7 @@ implements Timeoutable, Outputable {
 
 	JListOperator lo = new JListOperator(waitList());
 	lo.copyEnvironment(this);
+	lo.setVerification(false);
 
 	timeouts.sleep("JComboBoxOperator.BeforeSelectingTimeout");
 
@@ -421,6 +423,7 @@ implements Timeoutable, Outputable {
 
     /**
      * Selects combobox item.
+     * If verification mode is on, checks that right item has been selected. 
      * @param index Item index.
      * @throws TimeoutExpiredException
      */
@@ -439,6 +442,10 @@ implements Timeoutable, Outputable {
 	timeouts.sleep("JComboBoxOperator.BeforeSelectingTimeout");
 
 	lo.clickOnItem(index, 1);
+
+	if(getVerification()) {
+	    waitItemSelected(index);
+	}
     }
 
     /**
@@ -476,6 +483,40 @@ implements Timeoutable, Outputable {
 	tfo.copyEnvironment(this);
 	tfo.enterText(text);
     }
+
+    /**
+     * Waits for item to be selected.
+     * @param index Item index.
+     */
+    public void waitItemSelected(final int index) {
+	getOutput().printLine("Wait " + Integer.toString(index) + 
+			      "'th item to be selected in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait " + Integer.toString(index) + 
+				"'th item to be selected");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+		    return(getSelectedIndex() == index);
+		}
+		public String getDescription() {
+		    return("Has " + Integer.toString(index) + "'th item selected");
+		}
+	    });
+    }
+
+    /**
+     * Waits for item to be selected. Uses getComparator() comparator.
+     * @param item.
+     */
+    public void waitItemSelected(final String item) {
+	getOutput().printLine("Wait \"" + item + 
+			      "\" item to be selected in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("WaitWait \"" + item + 
+				"\" item to be selected");
+	waitState(new JComboBoxByItemFinder(item, -1, getComparator()));
+
+   }
 
     /**
      * Returns information about component.

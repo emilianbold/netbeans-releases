@@ -34,6 +34,7 @@ import javax.swing.plaf.LabelUI;
 /**
  * <BR><BR>Timeouts used: <BR>
  * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
+ * ComponentOperator.WaitStateTimeout - time to wait for text <BR>
  *
  * @see org.netbeans.jemmy.Timeouts
  * @author Alexandre Iline (alexandre.iline@sun.com)
@@ -202,6 +203,17 @@ public class JLabelOperator extends JComponentOperator {
      */
     public static JLabel waitJLabel(Container cont, String text, boolean ce, boolean ccs) {
 	return(waitJLabel(cont, text, ce, ccs, 0));
+    }
+
+    /**
+     * Waits for text. Uses getComparator() comparator.
+     * @param text Text to wait for.
+     */
+    public void waitText(String text) {
+	getOutput().printLine("Wait \"" + text + "\" text in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait \"" + text + "\" text");
+	waitState(new JLabelByLabelFinder(text, getComparator()));
     }
 
     /**

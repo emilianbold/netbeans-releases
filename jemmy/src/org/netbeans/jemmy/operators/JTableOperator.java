@@ -62,6 +62,7 @@ import javax.swing.text.JTextComponent;
  * <BR><BR>Timeouts used: <BR>
  * JTableOperator.WaitEditingTimeout - time to wait cell editing<BR>
  * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
+ * ComponentOperator.WaitStateTimeout - time to wait for cell contents <BR>
  * JTextComponentOperator.ChangeCaretPositionTimeout - maximum time to chenge caret position <BR>
  * JTextComponentOperator.TypeTextTimeout - maximum time to type text <BR>
  * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>
@@ -619,6 +620,25 @@ implements Outputable, Timeoutable {
 					    (int)rect.getY(),
 					    (int)rect.getWidth(),
 					    (int)rect.getHeight());
+    }
+
+    /**
+     * Waits for certain cell contents.
+     * @param cellText Text comparing to cell text by <code>getComparator()</code> comparator.
+     * @param row Cell row. If -1, selected one is checked.
+     * @param row Cell column. If -1, selected one is checked.
+     */
+    public void waitCell(String cellText, int row, int column) {
+	getOutput().printLine("Wait \"" + cellText + "\" text at (" + 
+			      Integer.toString(row) + "," +
+			      Integer.toString(column) + ")" +
+			      " position in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait  \"" + cellText + "\" text at (" + 
+				Integer.toString(row) + "," +
+				Integer.toString(column) + ")" +
+				" position");
+	waitState(new JTableByCellFinder(cellText, row, column, getComparator()));
     }
 
     /**

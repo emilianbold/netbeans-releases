@@ -106,6 +106,7 @@ public class jemmy_001 extends JemmyTest {
 	    scroller.scrollToTop();
 
 	    operator_1.selectItem("editable_two", true, true);
+	    operator_1.waitItemSelected("editable_two");
 
 	    JComboBoxOperator.waitJComboBox(win, "editable_two", true, true, -1);
 

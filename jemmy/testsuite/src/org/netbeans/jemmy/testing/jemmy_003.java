@@ -44,6 +44,8 @@ public class jemmy_003 extends JemmyTest {
 
 	    Demonstrator.setTitle("jemmy_003 test");
 
+	    JLabelOperator lbo = new JLabelOperator(wino, "Button has not been pushed yet");
+
 	    for(int i = 0; i < 4; i++) {
 		for(int j = 0; j < 4; j++) {
 		    String bText = Integer.toString(i) + "-" + Integer.toString(j);
@@ -68,17 +70,21 @@ public class jemmy_003 extends JemmyTest {
 			return(1);
 		    }
 		    bo.push();
-		    JLabel lbl = JLabelOperator.waitJLabel(win, "Button \"" + bText + "\" has been pushed", true, true);
-		    JLabelOperator lbo = new JLabelOperator(wino);
-		    if(lbo.getSource() != lbl) {
-			getOutput().printError("Wrong");
-			getOutput().printErrLine(lbl.toString());
-			getOutput().printErrLine(lbo.getSource().toString());
-			finalize();
-			return(1);
-		    }
+		    lbo.waitText("Button \"" + bText + "\" has been pushed");
 		}
 	    }
+	    final JButtonOperator bbo = new JButtonOperator(wino, "0-0");
+	    new Thread(new Runnable() {
+		    public void run() {
+			try {
+			    Thread.sleep(1000);
+			    bbo.setText("New Text");
+			} catch(InterruptedException e) {
+			}
+		    }
+		}).start();
+	    bbo.waitText("New Text");
+
 
 	    Demonstrator.showFinalComment("Test passed");
 

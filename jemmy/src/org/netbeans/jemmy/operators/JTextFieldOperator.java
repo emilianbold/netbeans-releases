@@ -237,6 +237,14 @@ public class JTextFieldOperator extends JTextComponentOperator{
 	super.changeCaretPosition(position);
     }
 
+    public void waitText(String text, int position) {
+	super.waitText(removeNewLines(text), position);
+    }
+
+    public void waitText(String text) {
+	super.waitText(removeNewLines(text));
+    }
+
     ////////////////////////////////////////////////////////
     //Mapping                                             //
 
@@ -319,6 +327,19 @@ public class JTextFieldOperator extends JTextComponentOperator{
 
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
+
+    private String removeNewLines(String text) {
+	StringBuffer buff = new StringBuffer(text);
+	int i = 0;
+	while(i < buff.length()) {
+	    if(buff.charAt(i) != '\n') {
+		i++;
+	    } else {
+		buff.deleteCharAt(i);
+	    }
+	}
+	return(buff.toString());
+    }
 
     private static class JTextFieldFinder implements ComponentChooser {
 	ComponentChooser subFinder;

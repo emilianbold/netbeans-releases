@@ -68,7 +68,7 @@ public class MouseVisualizer extends DefaultVisualizer {
     /**
      * Creates a visualizer which clicks on window boder.
      * In case if <code>place == BOTTOM</code>, for example 
-     * clicks on (width * pointLocation, depth) coordinates.
+     * clicks on (width * pointLocation, height - depth) coordinates.
      * @param place One of the predefined value: TOP, BOTTOM, LEFT, RIGHT
      * @param pointLocation Proportial coordinates to click.
      * @param depth Distance from the border.

@@ -47,6 +47,7 @@ import javax.swing.plaf.ListUI;
 /**
  * <BR><BR>Timeouts used: <BR>
  * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
+ * ComponentOperator.WaitStateTimeout - time to wait for item, and for item to be selected <BR>
  * JScrollBarOperator.OneScrollClickTimeout - time for one scroll click <BR>
  * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>
  *
@@ -525,6 +526,42 @@ public class JListOperator extends JComponentOperator
      */
     public void scrollToItem(String item, boolean ce, boolean cc) {
 	scrollToItem(findItemIndex(item, ce, cc));
+    }
+
+    /**
+     * Waits for item to be selected.
+     * @param itemIndex
+     * @param selected Selected (true) or unselected (false).
+     */
+    public void waitItemSelection(final int itemIndex, final boolean selected) {
+	getOutput().printLine("Wait \"" + Integer.toString(itemIndex) + "\"'th item to be " +
+			      (selected ? "" : "un") + "selected in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait \"" + Integer.toString(itemIndex) + "\"'th item to be " +
+				(selected ? "" : "un") + "selected");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+		    return(isSelectedIndex(itemIndex) == selected);
+		}
+		public String getDescription() {
+		    return(Integer.toString(itemIndex) + "'th item has been " + 
+			   (selected ? "" : "un") + "selected");
+		}
+	    });
+    }
+
+    /**
+     * Waits for item. Uses getComparator() comparator.
+     * @param item
+     * @param itemIndex Index of item to check or -1 to check selected item.
+     */
+    public void waitItem(String item, int itemIndex) {
+	getOutput().printLine("Wait \"" + item + "\" at the " + Integer.toString(itemIndex) + 
+			      " position in component \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait \"" + item + "\" at the " + Integer.toString(itemIndex) + 
+				" position");
+	waitState(new JListByItemFinder(item, itemIndex, getComparator()));
     }
 
     /**

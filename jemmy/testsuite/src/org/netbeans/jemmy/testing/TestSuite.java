@@ -16,8 +16,12 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.Test;
+import org.netbeans.jemmy.TimeoutExpiredException;
+
+import org.netbeans.jemmy.operators.Operator;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
@@ -57,7 +61,9 @@ public class TestSuite extends Task {
     }
     public void execute() throws BuildException {
 	try {
-	    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyy.MM.dd_hh:mm:ss");
+	    QueueTool qt = new QueueTool();
+	    qt.setOutput(JemmyProperties.getCurrentOutput().createErrorOutput());
+	    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyyMMddhhmmss");
 	    String start = dateFormat.format(Calendar.getInstance().getTime());
 	    System.out.println("Start time: " + start);
 	    initDirs(start);
@@ -81,6 +87,10 @@ public class TestSuite extends Task {
 			    failed++;
 			}
 			System.out.flush();
+		    }
+		    try {
+			qt.waitEmpty(3000);
+		    } catch(TimeoutExpiredException e) {
 		    }
 		} catch(IOException e) {
 		    e.printStackTrace();
@@ -181,5 +191,6 @@ public class TestSuite extends Task {
 	    getCurrentTimeouts().
 	    loadDefaults(timeoutsFile.getAbsolutePath());
 	JemmyProperties.getProperties().initDispatchingModel(true, robot);
+	Operator.setDefaultVerification(true);
     }
 }
