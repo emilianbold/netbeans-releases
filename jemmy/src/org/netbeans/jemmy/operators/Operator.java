@@ -228,7 +228,7 @@ public abstract class Operator extends Object
     }
 
     static {
-	if((JemmyProperties.getCurrentDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) > 0) {
+	if((JemmyProperties.getCurrentDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) == 0) {
 	    setDefaultComponentVisualizer(new DefaultVisualizer());
 	} else {
 	    setDefaultComponentVisualizer(new MouseVisualizer());

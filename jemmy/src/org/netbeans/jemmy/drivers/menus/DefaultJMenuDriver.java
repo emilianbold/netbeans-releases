@@ -73,6 +73,11 @@ public class DefaultJMenuDriver extends SupportiveDriver implements MenuDriver {
 	}
     }
     private Object push(ComponentOperator oper, PathChooser chooser, int depth, boolean pressMouse) {
+        try {
+            oper.waitComponentEnabled();
+        } catch(InterruptedException e) {
+            throw(new JemmyException("Interrupted!", e));
+        }
 	if(depth > chooser.getDepth() - 1) {
 	    DriverManager.getButtonDriver(oper).push(oper);
 	    return(oper.getSource());
@@ -92,6 +97,11 @@ public class DefaultJMenuDriver extends SupportiveDriver implements MenuDriver {
 	} else {
 	    JMenuItemOperator mio = new JMenuItemOperator(item);
 	    mio.copyEnvironment(oper);
+            try {
+                mio.waitComponentEnabled();
+            } catch(InterruptedException e) {
+                throw(new JemmyException("Interrupted!", e));
+            }
 	    DriverManager.getButtonDriver(oper).push(mio);
 	    return(item);
 	}

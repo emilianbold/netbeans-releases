@@ -112,7 +112,7 @@ public class JemmyProperties {
      * @return New current properties.
      */
     public static JemmyProperties push() {
-	return((JemmyProperties)propStack.push(getProperties().cloneThis()));
+        return(push(getProperties().cloneThis()));
     }
 
     /**
@@ -320,6 +320,10 @@ public class JemmyProperties {
      */
     public static void main(String[] argv) {
 	System.out.println("Jemmy version : " + getVersion());
+    }
+
+    protected static JemmyProperties push(JemmyProperties props) {
+	return((JemmyProperties)propStack.push(props));
     }
 
     /**
@@ -633,20 +637,24 @@ public class JemmyProperties {
 	int i = 0;
 	while(keys.hasMoreElements()) {
 	    result[i] = (String)keys.nextElement();
+            i++;
 	}
 	return(result);
     }
 
-    private JemmyProperties cloneThis() {
-	JemmyProperties result = new JemmyProperties();
-	Enumeration keys = properties.keys();
-	while(keys.hasMoreElements()) {
-	    String elem = (String)keys.nextElement();
-	    result.setProperty(elem, getProperty(elem));
+    public void copyTo(JemmyProperties properties) {
+	String[] keys = getKeys();
+        for(int i = 0; i < keys.length; i++) {
+            properties.setProperty(keys[i], getProperty(keys[i]));
 	}
 	//some should be cloned
- 	result.setTimeouts(getTimeouts().cloneThis());
- 	result.setBundleManager(getBundleManager().cloneThis());
+ 	properties.setTimeouts(getTimeouts().cloneThis());
+ 	properties.setBundleManager(getBundleManager().cloneThis());
+    }
+
+    protected JemmyProperties cloneThis() {
+	JemmyProperties result = new JemmyProperties();
+        copyTo(result);
 	return(result);
     }
 
