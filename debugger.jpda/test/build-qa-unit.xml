@@ -168,7 +168,6 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${netbeans.home}/modules/autoload/openide-deprecated.jar"/>
             <pathelement location="${netbeans.home}/modules/autoload/openide-execution.jar"/>
             <pathelement location="${netbeans.home}/modules/autoload/java-src-model.jar"/>
-	    <pathelement location=""/>
 	</path>
     </target>
         
@@ -196,8 +195,13 @@ Microsystems, Inc. All Rights Reserved.
 	           <pathelement location="${netbeans.home}/modules/somemodule.jar"/>
  	      -->
             <pathelement location="${netbeans.home}/lib/openide.jar"/>
+            <pathelement location="${netbeans.home}/lib/openide-loaders.jar"/>
             <pathelement location="${netbeans.home}/modules/jpdaDebugger.jar"/>
             <pathelement location="${netbeans.home}/modules/autoload/debuggerCore.jar"/>
+            <pathelement location="${netbeans.home}/modules/autoload/openide-debugger.jar"/>
+            <pathelement location="${netbeans.home}/modules/autoload/openide-deprecated.jar"/>
+            <pathelement location="${netbeans.home}/modules/autoload/openide-execution.jar"/>
+            <pathelement location="${netbeans.home}/modules/autoload/java-src-model.jar"/>
 	    <!-- <pathelement location=""/> -->
    	</path>
     </target>
