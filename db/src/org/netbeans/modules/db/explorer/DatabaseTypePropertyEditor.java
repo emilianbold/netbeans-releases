@@ -106,12 +106,24 @@ public class DatabaseTypePropertyEditor implements PropertyEditor {
     }
 
     public void setValue (Object object) {
-        if (!(object instanceof Number)) {
+//        if (!(object instanceof Number)) {
+//            String message = MessageFormat.format(bundle.getString("EXC_CannotOperateWith"), new String[] {object.toString()}); // NOI18N
+//            throw new IllegalArgumentException(message);
+//        }
+//        int ii = ((Number)object).intValue ();
+
+//cannot use previous code because of MSSQL ODBC problems - see DriverSpecification.getRow() for more info
+        Integer type;       
+        try {
+            type = new Integer(object.toString());
+        } catch (NumberFormatException exc) {
             String message = MessageFormat.format(bundle.getString("EXC_CannotOperateWith"), new String[] {object.toString()}); // NOI18N
-            throw new IllegalArgumentException(message);
+            throw new IllegalArgumentException(message);        
         }
         
-        int ii = ((Number)object).intValue ();
+        int ii = type.intValue();
+//end of MSSQL hack
+        
         int i, k = constants.length;
         
         for (i = 0; i < k; i++)
