@@ -98,21 +98,26 @@ public class Plain extends NbTopManager implements Runnable {
     protected void setStatusTextImpl(String text) {
         System.out.println(text);
     }
+    
+    /** Create the module system. Subclasses may override. */
+    protected ModuleSystem createModuleSystem() throws IOException {
+        String userDir = System.getProperty("modules.dir"); // NOI18N
+        FileSystem fs = getRepository().getDefaultFileSystem();
+        return new ModuleSystem(fs, userDir == null ? null : new File(userDir), null);
+    }
   
     /** Initializaton of modules if user directory provided.
      */
     public void run() {
-        String userDir = System.getProperty("modules.dir"); // NOI18N
-        FileSystem fs = getRepository().getDefaultFileSystem();
         try {
-            moduleSystem = new ModuleSystem(fs, userDir == null ? null : new File(userDir), null);
+            moduleSystem = createModuleSystem();
         } catch (IOException ioe) {
             notifyException(ioe);
             return;
         }
         fireSystemClassLoaderChange();
         moduleSystem.loadBootModules();
-        if (! fs.isReadOnly()) {
+        if (!getRepository().getDefaultFileSystem().isReadOnly()) {
             moduleSystem.readList();
             moduleSystem.scanForNewAndRestore();
             LoaderPoolNode.installationFinished();
