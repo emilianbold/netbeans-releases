@@ -29,6 +29,7 @@ import org.openide.util.actions.SystemAction;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
+import org.openide.util.RequestProcessor;
 
 /**
  * A node for an admin instance that is also a target server.
@@ -85,6 +86,13 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
                     Node newOriginal = ((InstanceTargetXNode) getNode()).getDelegateTargetNode();
                     if (newOriginal != null && newOriginal != Node.EMPTY)
                         this.changeOriginal(newOriginal);
+                    else {
+                        RequestProcessor.getDefault().post(new Runnable() {
+                            public void run() {
+                                instance.isRunning();
+                            }
+                        });
+                    }
                 }
             } else {
                 this.setKeys(java.util.Collections.EMPTY_SET);
