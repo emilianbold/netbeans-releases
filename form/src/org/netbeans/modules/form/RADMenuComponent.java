@@ -98,6 +98,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     for (int i = 0; i < initComponents.length; i++) {
       subComponents.add (initComponents[i]);
       ((RADMenuItemComponent)initComponents[i]).initParent (this);
+      addVisualMenu (initComponents[i]);
     }
   }
 
@@ -282,6 +283,8 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
 
 /*
  * Log
+ *  4    Gandalf   1.3         7/14/99  Ian Formanek    Fixed problem with 
+ *       appearance of loaded menus
  *  3    Gandalf   1.2         7/9/99   Ian Formanek    Menu editor improvements
  *  2    Gandalf   1.1         7/5/99   Ian Formanek    improved
  *  1    Gandalf   1.0         7/3/99   Ian Formanek    
