@@ -25,6 +25,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
@@ -37,6 +38,8 @@ import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 /**
+ * Reads/writes project.xml.
+ *
  * @author  Jesse Glick, David Konecny, Pavel Buzek
  */
 public class FreeformProjectGenerator {
@@ -54,9 +57,11 @@ public class FreeformProjectGenerator {
     /** Prefix used in paths to refer to project location. */
     public static final String PROJECT_LOCATION_PREFIX = "${" + PROP_PROJECT_LOCATION + "}/"; // NOI18N
 
-    /** Keep root elements in this order. */
+    /** Keep root elements in the order specified by project's XML schema. */
     private static final String[] rootElementsOrder = new String[]{"name", "properties", "folders", "ide-actions", "export", "view", "subprojects"}; // NOI18N
     private static final String[] viewElementsOrder = new String[]{"items", "context-menu"}; // NOI18N
+    
+    // this order is not required by schema, but follow it to minimize randomness a bit
     private static final String[] folderElementsOrder = new String[]{"source-folder", "build-folder"}; // NOI18N
     private static final String[] viewItemElementsOrder = new String[]{"source-folder", "source-file"}; // NOI18N
     private static final String[] contextMenuElementsOrder = new String[]{"ide-action", "separator", "action"}; // NOI18N
@@ -139,6 +144,7 @@ public class FreeformProjectGenerator {
             tm.name = actionEl.getAttribute("name"); // NOI18N
             List/*<Element>*/ subElems = Util.findSubElements(actionEl);
             List/*<String>*/ targetNames = new ArrayList(subElems.size());
+            EditableProperties props = new EditableProperties(false);
             Iterator it2 = subElems.iterator();
             while (it2.hasNext()) {
                 Element subEl = (Element)it2.next();
@@ -181,11 +187,24 @@ public class FreeformProjectGenerator {
                     }
                     tm.context = ctx;
                 }
+                if (subEl.getLocalName().equals("property")) { // NOI18N
+                    readProperty(subEl, props);
+                    continue;
+                }
             }
             tm.targets = targetNames;
+            if (props.keySet().size() > 0) {
+                tm.properties = props;
+            }
             list.add(tm);
         }
         return list;
+    }
+    
+    private static void readProperty(Element propertyElement, EditableProperties props) {
+        String key = propertyElement.getAttribute("name"); // NOI18N
+        String value = Util.findText(propertyElement);
+        props.setProperty(key, value);
     }
 
     /**
@@ -235,7 +254,7 @@ public class FreeformProjectGenerator {
             action.setAttribute("name", tm.name);
             if (tm.script != null) {
                 Element script = doc.createElementNS(FreeformProjectType.NS_GENERAL, "script"); //NOI18N
-                script.appendChild(doc.createTextNode(tm.script)); // NOI18N
+                script.appendChild(doc.createTextNode(tm.script));
                 action.appendChild(script);
             }
             if (tm.targets != null) {
@@ -243,9 +262,12 @@ public class FreeformProjectGenerator {
                 while (it2.hasNext()) {
                     String targetName = (String)it2.next();
                     Element target = doc.createElementNS(FreeformProjectType.NS_GENERAL, "target"); //NOI18N
-                    target.appendChild(doc.createTextNode(targetName)); // NOI18N
+                    target.appendChild(doc.createTextNode(targetName));
                     action.appendChild(target);
                 }
+            }
+            if (tm.properties != null) {
+                writeProperties(tm.properties, doc, action);
             }
             if (tm.context != null) {
                 Element context = doc.createElementNS(FreeformProjectType.NS_GENERAL, "context"); //NOI18N
@@ -284,9 +306,23 @@ public class FreeformProjectGenerator {
         helper.putPrimaryConfigurationData(data, true);
     }
     
+    private static void writeProperties(EditableProperties props, Document doc, Element element) {
+        Iterator it2 = props.keySet().iterator();
+        while (it2.hasNext()) {
+            String key = (String)it2.next();
+            String value = props.getProperty(key);
+            Element property = doc.createElementNS(FreeformProjectType.NS_GENERAL, "property"); //NOI18N
+            property.setAttribute("name", key); // NOI18N
+            property.appendChild(doc.createTextNode(value));
+            element.appendChild(property);
+        }
+    }
+    
     /**
      * Update context menu actions. Project is left modified and 
-     * you must save it explicitely.
+     * you must save it explicitely. This method stores all IDE actions
+     * before the custom actions what means that user's customization by hand
+     * (e.g. order of items) is lost.
      * @param helper AntProjectHelper instance
      * @param mappings list of <TargetMapping> instances for which the context
      *     menu actions will be created
@@ -349,6 +385,7 @@ public class FreeformProjectGenerator {
             CustomTarget ct = new CustomTarget();
             List/*<Element>*/ subElems = Util.findSubElements(actionEl);
             List/*<String>*/ targetNames = new ArrayList(subElems.size());
+            EditableProperties props = new EditableProperties(false);
             Iterator it2 = subElems.iterator();
             while (it2.hasNext()) {
                 Element subEl = (Element)it2.next();
@@ -364,8 +401,15 @@ public class FreeformProjectGenerator {
                     ct.label = Util.findText(subEl);
                     continue;
                 }
+                if (subEl.getLocalName().equals("property")) { // NOI18N
+                    readProperty(subEl, props);
+                    continue;
+                }
             }
             ct.targets = targetNames;
+            if (props.keySet().size() > 0) {
+                ct.properties = props;
+            }
             list.add(ct);
         }
         return list;
@@ -373,7 +417,9 @@ public class FreeformProjectGenerator {
     
     /**
      * Update custom context menu actions of the project. Project is left modified and 
-     * you must save it explicitely.
+     * you must save it explicitely. This method stores all custom actions 
+     * after the IDE actions what means that user's customization by hand 
+     * (e.g. order of items) is lost.
      * @param helper AntProjectHelper instance
      * @param list of <CustomTarget> instances to store
      */
@@ -420,6 +466,9 @@ public class FreeformProjectGenerator {
                     action.appendChild(target);
                 }
             }
+            if (ct.properties != null) {
+                writeProperties(ct.properties, doc, action);
+            }
             appendChildElement(contextMenuEl, action, contextMenuElementsOrder);
         }
         helper.putPrimaryConfigurationData(data, true);
@@ -433,6 +482,7 @@ public class FreeformProjectGenerator {
         public List/*<String>*/ targets;
         public String label;
         public String script;
+        public EditableProperties properties;
     }
     
     /**
@@ -443,8 +493,8 @@ public class FreeformProjectGenerator {
         public String script;
         public List/*<String>*/ targets;
         public String name;
+        public EditableProperties properties;
         public Context context; // may be null
-        // XXX need to store properties too! as a map
         
         public static final class Context {
             public String property;

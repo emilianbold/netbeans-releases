@@ -38,6 +38,7 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -314,6 +315,9 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         tm.targets.add("target-1");
         tm.targets.add("target-2");
         tm.targets.add("target-3");
+        tm.properties = new EditableProperties(false);
+        tm.properties.setProperty("k1", "v1");
+        tm.properties.setProperty("k2", "v2");
         FreeformProjectGenerator.TargetMapping.Context ctx = new FreeformProjectGenerator.TargetMapping.Context();
         ctx.folder = "someFolder1";
         ctx.format = "relative-path";
@@ -328,6 +332,9 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         tm.targets.add("second-target-1");
         tm.targets.add("second-target-2");
         tm.targets.add("second-target-3");
+        tm.properties = new EditableProperties(false);
+        tm.properties.setProperty("second-k1", "second-v1");
+        tm.properties.setProperty("second-k2", "second-v2");
         ctx = new FreeformProjectGenerator.TargetMapping.Context();
         ctx.folder = "second-someFolder1";
         ctx.format = "java-name";
@@ -349,11 +356,15 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         Element el2 = (Element)subElements.get(0);
         assertElement(el2, "action", null, "name", "first-targetName");
         List l1 = Util.findSubElements(el2);
-        assertEquals(5, l1.size());
+        assertEquals(7, l1.size());
         assertElementArray(l1, 
-            new String[]{"script", "target", "target", "target", "context"}, 
-            new String[]{"antScript", "target-1", "target-2", "target-3", null});
+            new String[]{"script", "target", "target", "target", "property", "property", "context"}, 
+            new String[]{"antScript", "target-1", "target-2", "target-3", "v1", "v2", null});
         el2 = (Element)l1.get(4);
+        assertElement(el2, "property", "v1", "name", "k1");
+        el2 = (Element)l1.get(5);
+        assertElement(el2, "property", "v2", "name", "k2");
+        el2 = (Element)l1.get(6);
         List l2 = Util.findSubElements(el2);
         assertEquals(5, l2.size());
         assertElementArray(l2, 
@@ -364,11 +375,15 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         el2 = (Element)subElements.get(1);
         assertElement(el2, "action", null, "name", "second-targetName");
         l1 = Util.findSubElements(el2);
-        assertEquals(5, l1.size());
+        assertEquals(7, l1.size());
         assertElementArray(l1, 
-            new String[]{"script", "target", "target", "target", "context"},
-            new String[]{"second-antScript", "second-target-1", "second-target-2", "second-target-3", null});
+            new String[]{"script", "target", "target", "target", "property", "property", "context"},
+            new String[]{"second-antScript", "second-target-1", "second-target-2", "second-target-3", "second-v1", "second-v2", null});
         el2 = (Element)l1.get(4);
+        assertElement(el2, "property", "second-v1", "name", "second-k1");
+        el2 = (Element)l1.get(5);
+        assertElement(el2, "property", "second-v2", "name", "second-k2");
+        el2 = (Element)l1.get(6);
         l2 = Util.findSubElements(el2);
         assertEquals(4, l2.size());
         assertElementArray(l2, 
@@ -391,6 +406,9 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         tm.targets.add("target-1");
         tm.targets.add("target-2");
         mappings.add(tm);
+        tm.properties = new EditableProperties(false);
+        tm.properties.setProperty("key1", "value1");
+        tm.properties.setProperty("key2", "value2");
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
 //        ProjectManager.getDefault().saveAllProjects();
         el = helper.getPrimaryConfigurationData(true);
@@ -402,10 +420,14 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         el2 = (Element)subElements.get(0);
         assertElement(el2, "action", null, "name", "foo");
         l1 = Util.findSubElements(el2);
-        assertEquals(3, l1.size());
+        assertEquals(5, l1.size());
         assertElementArray(l1, 
-            new String[]{"script", "target", "target"}, 
-            new String[]{"antScript", "target-1", "target-2"});
+            new String[]{"script", "target", "target", "property", "property"}, 
+            new String[]{"antScript", "target-1", "target-2", "value1", "value2"});
+        el2 = (Element)l1.get(3);
+        assertElement(el2, "property", "value1", "name", "key1");
+        el2 = (Element)l1.get(4);
+        assertElement(el2, "property", "value2", "name", "key2");
         mappings = new ArrayList();
         tm = new FreeformProjectGenerator.TargetMapping();
         tm.name = "foo";
@@ -413,6 +435,9 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         tm.targets = new ArrayList();
         tm.targets.add("target-1");
         tm.targets.add("target-B");
+        tm.properties = new EditableProperties(false);
+        tm.properties.setProperty("key-1", "value-1");
+        tm.properties.setProperty("key-2", "value-2");
         mappings.add(tm);
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
 //        ProjectManager.getDefault().saveAllProjects();
@@ -425,10 +450,14 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         el2 = (Element)subElements.get(0);
         assertElement(el2, "action", null, "name", "foo");
         l1 = Util.findSubElements(el2);
-        assertEquals(3, l1.size());
+        assertEquals(5, l1.size());
         assertElementArray(l1, 
-            new String[]{"script", "target", "target"}, 
-            new String[]{"diff-script", "target-1", "target-B"});
+            new String[]{"script", "target", "target", "property", "property"}, 
+            new String[]{"diff-script", "target-1", "target-B", "value-1", "value-2"});
+        el2 = (Element)l1.get(3);
+        assertElement(el2, "property", "value-1", "name", "key-1");
+        el2 = (Element)l1.get(4);
+        assertElement(el2, "property", "value-2", "name", "key-2");
         // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
         validate(p);
@@ -513,6 +542,9 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         ct.targets = new ArrayList();
         ct.targets.add("customTarget1");
         ct.targets.add("customTarget2");
+        ct.properties = new EditableProperties(false);
+        ct.properties.setProperty("k1", "v1");
+        ct.properties.setProperty("k2", "v2");
         customActions.add(ct);
         ct = new FreeformProjectGenerator.CustomTarget();
         ct.label = "customAction2";
@@ -520,6 +552,9 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         ct.targets = new ArrayList();
         ct.targets.add("second-customTarget1");
         ct.targets.add("second-customTarget2");
+        ct.properties = new EditableProperties(false);
+        ct.properties.setProperty("kk1", "vv1");
+        ct.properties.setProperty("kk2", "vv2");
         customActions.add(ct);
         FreeformProjectGenerator.putCustomContextMenuActions(helper, customActions);
         // test getter and setter here:
@@ -539,17 +574,25 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         // compare first custom action
         Element el2 = (Element)subElements.get(0);
         List l1 = Util.findSubElements(el2);
-        assertEquals(4, l1.size());
+        assertEquals(6, l1.size());
         assertElementArray(l1, 
-            new String[]{"script", "label", "target", "target"}, 
-            new String[]{"customScript1", "customAction1", "customTarget1", "customTarget2"});
+            new String[]{"script", "label", "target", "target", "property", "property"}, 
+            new String[]{"customScript1", "customAction1", "customTarget1", "customTarget2", "v1", "v2"});
+        el2 = (Element)l1.get(4);
+        assertElement(el2, "property", "v1", "name", "k1");
+        el2 = (Element)l1.get(5);
+        assertElement(el2, "property", "v2", "name", "k2");
         // compare second custom action
         el2 = (Element)subElements.get(1);
         l1 = Util.findSubElements(el2);
-        assertEquals(4, l1.size());
+        assertEquals(6, l1.size());
         assertElementArray(l1, 
-            new String[]{"script", "label", "target", "target"}, 
-            new String[]{"customScript2", "customAction2", "second-customTarget1", "second-customTarget2"});
+            new String[]{"script", "label", "target", "target", "property", "property"}, 
+            new String[]{"customScript2", "customAction2", "second-customTarget1", "second-customTarget2", "vv1", "vv2"});
+        el2 = (Element)l1.get(4);
+        assertElement(el2, "property", "vv1", "name", "kk1");
+        el2 = (Element)l1.get(5);
+        assertElement(el2, "property", "vv2", "name", "kk2");
         // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
         validate(p);
