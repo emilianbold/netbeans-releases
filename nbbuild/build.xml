@@ -120,7 +120,9 @@ If you do not plan to use them and wish to avoid accepting their licenses,
 try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../ant/external" target="unscramble"/>
     <ant dir="../httpserver/external" target="unscramble"/>
+    <ant dir="../j2eeserver/external" target="unscramble"/>
     <ant dir="../java/external" target="unscramble"/>
+    <ant dir="../junit/external" target="unscramble"/>
     <ant dir="../libs/external" target="unscramble"/>
     <ant dir="../tomcatint/external" target="unscramble"/>
     <ant dir="../web/external" target="unscramble"/>
