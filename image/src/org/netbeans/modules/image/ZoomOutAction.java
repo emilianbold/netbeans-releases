@@ -15,8 +15,6 @@
 package org.netbeans.modules.image;
 
 
-import java.lang.String;
-
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.windows.TopComponent;
@@ -57,4 +55,8 @@ public class ZoomOutAction extends CallableSystemAction {
         return true;
     }
     
+    /** Gets icon resource. Overrides superclass method. */
+    protected String iconResource() {
+        return "/org/netbeans/modules/image/zoomOut.gif"; // NOI18N
+    }
 }
