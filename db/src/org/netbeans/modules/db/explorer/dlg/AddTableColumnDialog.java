@@ -400,7 +400,7 @@ public class AddTableColumnDialog {
 
             checkcheckbox.setSelected(false);
             checkcheckbox.setSelected(false);
-            nullcheckbox.setSelected(false);
+            nullcheckbox.setSelected(true);
             uniquecheckbox.setSelected(false);
             pkcheckbox.setEnabled(!isPK);
             idxcombo.setEnabled(idxcombo.getItemCount()>0);
@@ -460,7 +460,7 @@ public class AddTableColumnDialog {
                                       } else if (citem.isUnique()) {
                                           col = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createUniqueColumn(colname);
                                       } else col = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createColumn(colname);
-                                      if (citem.isIndexed()) use_idx = true;
+                                      if (citem.isIndexed()&&!citem.isUnique()&&!citem.isPrimaryKey()) use_idx = true;
                                       col.setColumnType(Specification.getType(citem.getType().getType()));
                                       col.setColumnSize(citem.getSize());
                                       col.setDecimalSize(citem.getScale());
