@@ -45,7 +45,7 @@ import org.netbeans.core.NbMainExplorer;
 import org.netbeans.core.NbPlaces;
 import org.openide.windows.Mode;
 import org.openide.ErrorManager;
-import org.openide.util.RequestProcessor;
+import org.openide.awt.StatusDisplayer;
 
 /** Action that opens explorer view which displays global
 * options of the IDE.
@@ -57,16 +57,10 @@ public class OptionsAction extends CallableSystemAction {
     private static final String HELP_ID = "org.netbeans.core.actions.OptionsAction"; // NOI18N 
 
     public void performAction () {
-        org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-            NbBundle.getBundle(OptionsAction.class).getString("MSG_Preparing_options"));
         final OptionsPanel singleton = OptionsPanel.singleton();
-        // Have been in EQ, now do this asynch since it is slow:
-        RequestProcessor.getDefault().post(new Runnable() {
+        singleton.prepareNodes();
+        EventQueue.invokeLater(new Runnable() {
             public void run() {
-                singleton.prepareNodes();
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        // Back to EQ for the display.
                 
         // dock Options into its mode if needed
         final Workspace w = WindowManager.getDefault().getCurrentWorkspace();
@@ -94,11 +88,8 @@ public class OptionsAction extends CallableSystemAction {
                 optionPanel.open();
                 optionPanel.requestFocus();
                 optionPanel.requestDefaultFocus();
-                
-                org.openide.awt.StatusDisplayer.getDefault ().setStatusText (""); // NOI18N
             }
-        }); // end SU.iL
-        }}); // end RP.d.p
+        }); // EQ.iL
     }
     
     protected boolean asynchronous() {
@@ -168,7 +159,7 @@ public class OptionsAction extends CallableSystemAction {
         }
 
         /** Accessor to the singleton instance */
-        private static synchronized OptionsPanel singleton () {
+        static OptionsPanel singleton () {
             if (singleton == null) {
                 singleton = new OptionsPanel();
             }
@@ -277,22 +268,35 @@ public class OptionsAction extends CallableSystemAction {
             return result;
         }
         
-        public synchronized void prepareNodes () {
+        /**
+         * Begins expanding nodes. Does not finish synch, but has posted
+         * all events to EQ that it needs before finishing.
+         */
+        public void prepareNodes() {
+            /*
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OptionsAction.class, "MSG_Preparing_options"));
+             */
+            
             if (toExpand != null) {
                 return;
             }
+            ArrayList arr = new ArrayList (101);
+            toExpand = arr;
             
             Node root = getExplorerManager ().getRootContext ();
+            expandNodes(root, 3, arr);
             
-            ArrayList arr = new ArrayList (101);
-            
-            expandNodes (root, 3, arr);
-            
-            toExpand = arr;
+            /*
+            invokeLaterLowPriority(new Runnable() {
+                public void run() {
+                    StatusDisplayer.getDefault().setStatusText(""); // NOI18N
+                }
+            });
+             */
         }
             
         
-        protected synchronized void componentShowing () {
+        protected void componentShowing () {
             super.componentShowing ();
             
             if (expanded) {
@@ -300,8 +304,10 @@ public class OptionsAction extends CallableSystemAction {
             }
             
             // bugfix #19939, get selected node for set back after expanding view
-            Node[] selectedNodes = getExplorerManager ().getSelectedNodes ();
-            prepareNodes ();
+            final Node[] selectedNodes = getExplorerManager ().getSelectedNodes ();
+            prepareNodes();
+            invokeLaterLowPriority(new Runnable() {
+                public void run() {
             
             TTW ttw = (TTW)view;
             ttw.expandTheseNodes (toExpand, getExplorerManager ().getRootContext ());
@@ -314,6 +320,8 @@ public class OptionsAction extends CallableSystemAction {
             }
             
             expanded = true;
+                }
+            }); // EQ.iL
         }
         
 
@@ -343,7 +351,8 @@ public class OptionsAction extends CallableSystemAction {
 
         /** Expands the node in explorer.
          */
-        private static void expandNodes (Node n, int depth, Collection list) {
+        private static void expandNodes (Node n, final int depth, final Collection list) {
+            assert EventQueue.isDispatchThread();
             if (depth == 0) {
                 return;
             }
@@ -376,7 +385,12 @@ public class OptionsAction extends CallableSystemAction {
          
             Node[] arr = n.getChildren().getNodes(true);
             for (int i = 0; i < arr.length; i++) {
-                expandNodes (arr[i], depth - 1, list);
+                final Node p = arr[i];
+                invokeLaterLowPriority(new Runnable() {
+                    public void run() {
+                        expandNodes(p, depth - 1, list);
+                    }
+                });
             }
         }
         
@@ -559,4 +573,22 @@ public class OptionsAction extends CallableSystemAction {
         }
         
     } // end of inner class OptionsPanel
+    
+    /**
+     * Similar to {@link EventQueue#invokeLater} but posts the event at the same
+     * priority as paint requests, to avoid bad visual artifacts.
+     * XXX later Mutex.EVENT etc. should do this automatically, in which case replace...
+     */
+    private static void invokeLaterLowPriority(Runnable r) {
+        Toolkit t = Toolkit.getDefaultToolkit();
+        EventQueue q = t.getSystemEventQueue();
+        q.postEvent(new PaintPriorityEvent(t, r));
+    }
+    
+    static final class PaintPriorityEvent extends InvocationEvent {
+        public PaintPriorityEvent(Toolkit t, Runnable runnable) {
+            super(t, PaintEvent.PAINT, runnable, null, false);
+        }
+    }
+    
 }

@@ -47,7 +47,6 @@ import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Children.SortedArray;
 import org.openide.options.*;
 import org.openide.util.HttpServer;
 import org.openide.util.Lookup;
@@ -55,6 +54,7 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.web.monitor.server.Constants;
 import org.netbeans.modules.web.monitor.data.*;
+import org.openide.util.Mutex;
 
 public class Controller  {
 
@@ -702,7 +702,7 @@ public class Controller  {
 	    return;
 	}
 
-	Node[] newNodes = new Node[nodes.length];
+	final Node[] newNodes = new Node[nodes.length];
 	TransactionNode mvNode; 
 	String id;
 	 
@@ -749,8 +749,12 @@ public class Controller  {
 	    }
 	    
 	}
-	if(!error) currTrans.remove(nodes);
-	savedTrans.add(newNodes);
+	if(!error) clearChildren(currTrans);
+        Mutex.EVENT.writeAccess(new Runnable() {
+            public void run() {
+                savedTrans.add(newNodes);
+            }
+        });
     }
   
     /**
@@ -781,8 +785,8 @@ public class Controller  {
 	} 
     }
 
-    private void delete(TransactionNode node, 
-			Children.SortedArray transactions, 
+    private void delete(final TransactionNode node,
+			final Children.SortedArray transactions, 
 			Hashtable beans,
 			boolean current) { 
 
@@ -797,9 +801,13 @@ public class Controller  {
 	    lock = fold.lock();
 	    if(debug) log("Deleting: " + fold.getName()); //NOI18N 
 	    fold.delete(lock); 
-	    // We only do this if we could delete the file. 
-	    Node[] nodes = { node };
-	    transactions.remove(nodes);
+	    // We only do this if we could delete the file.
+            Mutex.EVENT.writeAccess(new Runnable() {
+                public void run() {
+                    Node[] nodes = { node };
+                    transactions.remove(nodes);
+                }
+            });
 	    beans.remove(node.getID());
 	}
 	catch(FileAlreadyLockedException ex) {
@@ -814,6 +822,16 @@ public class Controller  {
 	    if(lock != null) lock.releaseLock();
 	}
     }
+    
+    private void clearChildren(final Children ch) {
+        // XXX This is a good example of how *not* to use Nodes.
+        // Should have some sort of coherent model that the children listen to instead...
+        Mutex.EVENT.writeAccess(new Runnable() {
+            public void run() {
+                ch.remove(ch.getNodes());
+            }
+        });
+    }
 
     void deleteDirectory(String dir) {
 
@@ -827,13 +845,13 @@ public class Controller  {
 	FileObject directory = null;
 	if(dir.equals(saveDirStr)) {
 	    directory = saveDir;
-	    savedTrans.remove(savedTrans.getNodes());
+            clearChildren(savedTrans);
 	    saveBeans.clear();
 	}
 	
 	else {   
 	    directory = currDir;
-	    currTrans.remove(currTrans.getNodes());
+            clearChildren(currTrans);
 	    currBeans.clear();
 	}
 	
@@ -862,8 +880,8 @@ public class Controller  {
     void deleteTransactions() {
 	deleteDirectory(Constants.Files.save);
 	deleteDirectory(Constants.Files.current);
-	savedTrans.remove(savedTrans.getNodes());
-	currTrans.remove(currTrans.getNodes());
+        clearChildren(savedTrans);
+        clearChildren(currTrans);
     }
 
 
@@ -881,12 +899,11 @@ public class Controller  {
 	Enumeration e = null;
 	Vector nodes = new Vector(); 
 	int numtns = 0;
-	TransactionNode[] tns = null;
 	FileObject fo = null;
 	String id = null;
 	MonitorData md = null;
 	
-	currTrans.remove(currTrans.getNodes());
+	clearChildren(currTrans);
 	if(debug) log("getTransactions removed old nodes"); //NOI18N 
 
 	e = currDir.getData(false);
@@ -903,13 +920,17 @@ public class Controller  {
 	}
 	    
 	numtns = nodes.size();
- 	tns = new TransactionNode[numtns]; 
+ 	final TransactionNode[] tns = new TransactionNode[numtns]; 
 	for(int i=0;i<numtns;++i) 
 	    tns[i] = (TransactionNode)nodes.elementAt(i);
-	currTrans.add(tns);
+        Mutex.EVENT.writeAccess(new Runnable() {
+            public void run() {
+                currTrans.add(tns);
+            }
+        });
 
 
-	savedTrans.remove(savedTrans.getNodes());
+	clearChildren(savedTrans);
 	nodes = new Vector();
 	e = saveDir.getData(false);
 	while(e.hasMoreElements()) {
@@ -924,14 +945,18 @@ public class Controller  {
 	}
 	 
 	numtns = nodes.size();
-	tns = new TransactionNode[numtns]; 
+	final TransactionNode[] tns2 = new TransactionNode[numtns]; 
 	for(int i=0;i<numtns;++i) {
 	    tns[i] = (TransactionNode)nodes.elementAt(i);
 	    if(debug) 
 		log("Adding saved node" + tns[i].toString()); //NOI18N 
 		    
 	}
-	savedTrans.add(tns);
+        Mutex.EVENT.writeAccess(new Runnable() {
+            public void run() {
+                savedTrans.add(tns2);
+            }
+        });
     }
 	    
     private TransactionNode createTransactionNode(MonitorData md, boolean current) {

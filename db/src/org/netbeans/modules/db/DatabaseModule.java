@@ -93,18 +93,17 @@ public class DatabaseModule extends ModuleInstall {
     
     public void close () {
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("UI/Runtime"); //NOI18N
-        DataFolder df;
+        final DataFolder df;
         try {
             df = (DataFolder) DataObject.find(fo);
         } catch (DataObjectNotFoundException exc) {
             return;
         }
-        final Node environment = df.getNodeDelegate();
-        
         // closing all open connection
         Children.MUTEX.writeAccess (new Runnable () {
             public void run () {
                 try {
+                    Node environment = df.getNodeDelegate();
                     Node[] n = environment.getChildren().findChild("Databases").getChildren().getNodes(); //NOI18N
                     ConnectionNodeInfo cni;
                     for (int i = 0; i < n.length; i++) {

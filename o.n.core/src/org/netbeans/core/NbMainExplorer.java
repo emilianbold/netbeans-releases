@@ -13,9 +13,6 @@
 
 package org.netbeans.core;
 
-import org.openide.util.WeakListeners;
-import org.openide.util.WeakListeners;
-import org.openide.util.WeakListeners;
 import java.awt.*;
 import java.beans.*;
 import java.io.ObjectInput;
@@ -40,7 +37,7 @@ import org.openide.nodes.NodeListener;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Workspace;
 import org.openide.windows.Mode;
@@ -82,7 +79,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         // listening on changes of roots
         rootsListener = new RootsListener();
         NbPlaces p = NbPlaces.getDefault();
-        p.addChangeListener(org.openide.util.WeakListeners.change (rootsListener, p));
+        p.addChangeListener(WeakListeners.change (rootsListener, p));
 
         refreshRoots();
     }
@@ -437,7 +434,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
             setConfirmDelete(ideSettings.getConfirmDelete ());
             
             // attach listener to the changes of IDE settings
-            weakIdeL = org.openide.util.WeakListeners.propertyChange(rcListener(), ideSettings);
+            weakIdeL = WeakListeners.propertyChange(rcListener(), ideSettings);
             
             // enhancement 9940, add MiniStatusBarListener a status bar's state
             ideSettings.addPropertyChangeListener (new MiniStatusBarStateListener ());
@@ -644,7 +641,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
             updateTitle();
 
             if (weakRcL == null) {
-                weakRcL = org.openide.util.WeakListeners.propertyChange(rcListener(), rc);
+                weakRcL = WeakListeners.propertyChange(rcListener(), rc);
             }
             else {
                 rc.removePropertyChangeListener(weakRcL);
@@ -831,8 +828,8 @@ public final class NbMainExplorer extends CloneableTopComponent {
         implements OperationListener {
         static final long serialVersionUID =4233454980309064344L;
 
-        /** previous task */
-        private RequestProcessor.Task previousTask;
+        /** data object which should be selected in EQ; synch array when accessing */
+        private static final DataObject[] needToSelect = new DataObject[1];
 
         private static RepositoryTab DEFAULT;
         
@@ -841,7 +838,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         public RepositoryTab () {
             DataLoaderPool pool = (DataLoaderPool)Lookup.getDefault ().lookup (DataLoaderPool.class);
             pool.addOperationListener (
-                (OperationListener)org.openide.util.WeakListeners.create (OperationListener.class, this, pool)
+                (OperationListener)WeakListeners.create (OperationListener.class, this, pool)
             );
         }
         
@@ -918,7 +915,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
             postTask (ev.getObject ());
         }
 
-        private void postTask (final DataObject obj) {
+        private void postTask(DataObject obj) {
             try {
                 // bugfix #32180, don't select node on hidden filesystem
                 if (obj.getPrimaryFile ().getFileSystem ().isHidden ()) {
@@ -931,21 +928,21 @@ public final class NbMainExplorer extends CloneableTopComponent {
                 return ;
             }
             
-            RequestProcessor.Task t = previousTask;
-            if (t != null) {
-                t.cancel ();
+            synchronized (needToSelect) {
+                needToSelect[0] = obj;
             }
-
-            previousTask = RequestProcessor.postRequest (new Runnable () {
-                public void run () {
-                    previousTask = null;
-                    if (! obj.isValid()) {
-                        // #14179: could have been invalidated while we were in req. proc.
-                        return;
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    DataObject d;
+                    synchronized (needToSelect) {
+                        d = needToSelect[0];
+                        needToSelect[0] = null;
                     }
-                    doSelectNode (obj);
+                    if (d != null && /* #14179 */d.isValid()) {
+                        doSelectNode(d);
+                    }
                 }
-            }, 100);
+            });
         }
         
         /** Setups the environment to select the right node.

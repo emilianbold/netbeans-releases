@@ -108,7 +108,11 @@ public class DatabaseNodeChildren extends Children.Array {
                 }
 
                 setCh(children);
-                propertySupport.firePropertyChange("finished", null, null); //NOI18N
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        propertySupport.firePropertyChange("finished", null, null); //NOI18N
+                    }
+                });
             }
         }, 0);
 
