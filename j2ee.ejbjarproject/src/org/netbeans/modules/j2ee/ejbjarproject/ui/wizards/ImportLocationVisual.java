@@ -528,8 +528,9 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
             String configFilesFolder = "";
             String librariesFolder = "";
             String projectName = "";
+            String projectLocation = "";
             if (fo != null && isSuitableProjectRoot(fo)) {
-                projectLocationTextField.setText (moduleFolder);
+                projectLocation = FileUtil.toFile(fo.getParent()).getAbsolutePath();
                 createdFolderTextField.setText (moduleFolder);
                 configFilesFolder = FileUtil.toFile(guessConfigFilesPath(fo)).getAbsolutePath();
                 FileObject libFolderFO = guessLibrariesFolder(fo);
@@ -538,6 +539,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
                 }
                 projectName = fo.getName();
             }
+            projectLocationTextField.setText(projectLocation);
             jTextFieldConfigFiles.setText(configFilesFolder);
             jTextFieldLibraries.setText(librariesFolder);
             projectNameTextField.setText(projectName);
