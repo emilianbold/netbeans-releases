@@ -13,8 +13,6 @@
 
 package org.apache.tools.ant.module.wizards.shortcut;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -35,8 +33,6 @@ import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-// XXX should use InstantiatingIterator; currently throws NPE if you Finish from e.g. Menu panel
-
 /**
  * The shortcut wizard itself.
  * @author Jesse Glick
@@ -50,22 +46,16 @@ public final class ShortcutWizard extends WizardDescriptor {
      */
     public static void show(AntProjectCookie project, Element target) {
         final ShortcutWizard wiz = new ShortcutWizard(project, target, new ShortcutIterator());
-        final PropertyChangeListener[] listener = new PropertyChangeListener[1];
-        listener[0] = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent ev) {
-                if (PROP_VALUE.equals(ev.getPropertyName()) &&
-                        FINISH_OPTION.equals(wiz.getValue())) {
-                    wiz.removePropertyChangeListener(listener[0]);
-                    try {
-                        wiz.finish();
-                    } catch (IOException ioe) {
-                        AntModule.err.notify(ioe);
-                    }
-                }
-            }
-        };
-        wiz.addPropertyChangeListener(listener[0]);
         DialogDisplayer.getDefault().createDialog(wiz).setVisible(true);
+        // #44351: have to wait for dialog to be closed.
+        // Does *not* work to use a PropertyChangeListener on PROP_VALUE.
+        if (wiz.getValue().equals(WizardDescriptor.FINISH_OPTION)) {
+            try {
+                wiz.finish();
+            } catch (IOException ioe) {
+                AntModule.err.notify(ioe);
+            }
+        }
     }
     
     // Attributes stored on the template wizard:
