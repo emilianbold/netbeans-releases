@@ -25,8 +25,8 @@ import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
 /** WebServicesSupport should be used to manipulate a projects representation
  *  of a web service implementation.
  * <p>
- * A client may obtain a WebServicesSupport instance using 
- * <code>WebServicesSupport.getWebServicesSupport(fileObject)</code> static 
+ * A client may obtain a WebServicesSupport instance using
+ * <code>WebServicesSupport.getWebServicesSupport(fileObject)</code> static
  * method, for any FileObject in the project directory structure.
  *
  * @author Peter Williams
@@ -35,14 +35,14 @@ public final class WebServicesSupport {
     
     private WebServicesSupportImpl impl;
     private static final Lookup.Result implementations =
-        Lookup.getDefault().lookup(new Lookup.Template(WebServicesSupportProvider.class));
+    Lookup.getDefault().lookup(new Lookup.Template(WebServicesSupportProvider.class));
     
     static  {
         WebServicesSupportAccessor.DEFAULT = new WebServicesSupportAccessor() {
             public WebServicesSupport createWebServicesSupport(WebServicesSupportImpl spiWebServicesSupport) {
                 return new WebServicesSupport(spiWebServicesSupport);
             }
-
+            
             public WebServicesSupportImpl getWebServicesSupportImpl(WebServicesSupport wss) {
                 return wss == null ? null : wss.impl;
             }
@@ -51,77 +51,70 @@ public final class WebServicesSupport {
     
     private WebServicesSupport(WebServicesSupportImpl impl) {
         if (impl == null)
-            throw new IllegalArgumentException ();
+            throw new IllegalArgumentException();
         this.impl = impl;
     }
     
     /** Find the WebServicesSupport for given file or null if the file does not belong
      * to any module support web services.
      */
-    public static WebServicesSupport getWebServicesSupport (FileObject f) {
+    public static WebServicesSupport getWebServicesSupport(FileObject f) {
         if (f == null) {
             throw new NullPointerException("Passed null to WebServicesSupport.getWebServicesSupport(FileObject)"); // NOI18N
         }
         Iterator it = implementations.allInstances().iterator();
         while (it.hasNext()) {
             WebServicesSupportProvider impl = (WebServicesSupportProvider)it.next();
-            WebServicesSupport wss = impl.findWebServicesSupport (f);
+            WebServicesSupport wss = impl.findWebServicesSupport(f);
             if (wss != null) {
                 return wss;
             }
         }
         return null;
     }
-
-	// Delegated methods from WebServicesSupportImpl
-	
-	public void addServiceImpl(String serviceName, String serviceEndpointInterface, String serviceEndpoint, FileObject configFile) {
-		impl.addServiceImpl(serviceName, serviceEndpointInterface, serviceEndpoint, configFile);
-	}
-	
-	public FileObject getDD() {
-		return impl.getDD();
-	}
-
-    public FileObject getWsDDFolder()
-	{
-	    return impl.getWsDDFolder();
-	}
-
-    public String getArchiveDDFolderName()
-	{
-		return impl.getArchiveDDFolderName();
-	}
-  
-    public String getImplementationBean(String linkName)
-	{
-		return impl.getImplementationBean(linkName);
-	}
-
-    public void removeServiceEntry(String serviceName, String linkName)
-	{
-		impl.removeServiceEntry(serviceName, linkName);
+    
+    // Delegated methods from WebServicesSupportImpl
+    
+    public void addServiceImpl(String serviceName, String serviceEndpointInterface, String serviceEndpoint, FileObject configFile) {
+        impl.addServiceImpl(serviceName, serviceEndpointInterface, serviceEndpoint, configFile);
     }
     
-    public AntProjectHelper getAntProjectHelper()
-	{
-		return impl.getAntProjectHelper();
-	}
-
-    public String  generateImplementationBean(String name, FileObject pkg, Project project) throws java.io.IOException
-	{
-		return impl.generateImplementationBean(name, pkg, project);
+    public FileObject getWebservicesDD() {
+        return impl.getWebservicesDD();
     }
-
-    public void addServiceImplLinkEntry(ServiceImplBean serviceImplBean, String wsName)
-	{
-		impl.addServiceImplLinkEntry(serviceImplBean, wsName);
-	}
-	
-
+    
+    public FileObject getWsDDFolder() {
+        return impl.getWsDDFolder();
+    }
+    
+    public String getArchiveDDFolderName() {
+        return impl.getArchiveDDFolderName();
+    }
+    
+    public String getImplementationBean(String linkName) {
+        return impl.getImplementationBean(linkName);
+    }
+    
+    public void removeServiceEntry(String serviceName, String linkName) {
+        impl.removeServiceEntry(serviceName, linkName);
+    }
+    
+    public AntProjectHelper getAntProjectHelper() {
+        return impl.getAntProjectHelper();
+    }
+    
+    public String  generateImplementationBean(String name, FileObject pkg, Project project) throws java.io.IOException {
+        return impl.generateImplementationBean(name, pkg, project);
+    }
+    
+    public void addServiceImplLinkEntry(ServiceImplBean serviceImplBean, String wsName) {
+        impl.addServiceImplLinkEntry(serviceImplBean, wsName);
+    }
+    
+    
 /* !! What to put here?
  *
-	public boolean equals (Object obj) {
+        public boolean equals (Object obj) {
         if (!WebModule.class.isAssignableFrom(obj.getClass()))
             return false;
         WebModule wm = (WebModule) obj;
@@ -129,7 +122,7 @@ public final class WebServicesSupport {
             && getJ2eePlatformVersion().equals (wm.getJ2eePlatformVersion())
             && getContextPath().equals(wm.getContextPath());
     }
-    
+ 
     public int hashCode () {
         return getDocumentBase ().getPath ().length () + getContextPath ().length ();
     }

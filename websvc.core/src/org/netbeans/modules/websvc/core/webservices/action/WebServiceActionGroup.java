@@ -80,7 +80,7 @@ public class WebServiceActionGroup extends NodeAction implements Presenter.Popup
 			WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(dobj.getPrimaryFile());
             if(wsSupport != null)
 			{
-				return (wsSupport.getDD() != null);
+				return (wsSupport.getWebservicesDD() != null);
 			}
         }
         return false;

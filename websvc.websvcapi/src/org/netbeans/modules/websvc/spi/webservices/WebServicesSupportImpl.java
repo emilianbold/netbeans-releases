@@ -32,7 +32,7 @@ public interface WebServicesSupportImpl {
     /**
      * Get the FileObject of the webservices.xml file.
      */
-    public FileObject getDD();
+    public FileObject getWebservicesDD();
 
     /**
      *  Returns the directory that contains webservices.xml in the project

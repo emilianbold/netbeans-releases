@@ -88,6 +88,7 @@ final class EjbJarProject implements Project, AntProjectListener {
     private final Lookup lookup;
     private final EjbJarProvider ejbModule;
     private WebServicesSupport apiWebServicesSupport;
+    private EjbJarWebServicesSupport ejbJarWebServicesSupport;
     //private WebServicesClientSupport apiWebServicesClientSupport;
     
     EjbJarProject(final AntProjectHelper helper) throws IOException {
@@ -97,7 +98,8 @@ final class EjbJarProject implements Project, AntProjectListener {
         refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator ());
         genFilesHelper = new GeneratedFilesHelper(helper);
         ejbModule = new EjbJarProvider(this, helper);
-        apiWebServicesSupport = WebServicesSupportFactory.createWebServicesSupport (ejbModule);
+        ejbJarWebServicesSupport = new EjbJarWebServicesSupport(this, helper); 
+        apiWebServicesSupport = WebServicesSupportFactory.createWebServicesSupport (ejbJarWebServicesSupport);
 	//  apiWebServicesClientSupport = WebServicesSupportFactory.createWebServicesClientSupport (ejbModule);
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
