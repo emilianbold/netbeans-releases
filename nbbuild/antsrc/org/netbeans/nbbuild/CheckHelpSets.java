@@ -95,9 +95,9 @@ public class CheckHelpSets extends Task {
         HelpSet.parse(hsfile.toURL(), null, new VerifyHSFactory());
         log("Checking links from help map and between HTML files...");
         Enumeration e = map.getAllIDs();
-        Set okurls = new HashSet(1000); // Set<URL>
-        Set badurls = new HashSet(1000); // Set<URL>
-        Set cleanurls = new HashSet(1000); // Set<URL>
+        Set okurls = new HashSet(1000); // Set<String>
+        Set badurls = new HashSet(1000); // Set<String>
+        Set cleanurls = new HashSet(1000); // Set<String>
         while (e.hasMoreElements()) {
             javax.help.Map.ID id = (javax.help.Map.ID)e.nextElement();
             URL u = map.getURLFromID(id);

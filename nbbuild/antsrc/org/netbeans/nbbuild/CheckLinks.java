@@ -73,11 +73,15 @@ public class CheckLinks extends MatchingTask {
         log (message);
         String[] files = scanner.getIncludedFiles ();
         // Set of known-good URLs (including all anchored variants etc.).
-        Set okurls = new HashSet (1000); // Set<URL>
+        // We avoid using actual URL objects because URL.hashCode can call InetAddress
+        // methods which can hang (until a timeout) on machines with improperly
+        // configured networks. Anyway we want to compare literal URLs, not normalized
+        // hostnames.
+        Set okurls = new HashSet (1000); // Set<String>
         // Set of known-bad URLs.
-        Set badurls = new HashSet (100); // Set<URL>
+        Set badurls = new HashSet (100); // Set<String>
         // Set of parsed base HTML URLs known to have had their contents checked.
-        Set cleanurls = new HashSet(100); // Set<URL>
+        Set cleanurls = new HashSet(100); // Set<String>
         for (int i = 0; i < files.length; i++) {
             File file = new File (basedir, files[i]);
             URL fileurl;
@@ -111,7 +115,7 @@ public class CheckLinks extends MatchingTask {
     // 2 - recurse
     public static void scan(Task task, String referrer, URL u, Set okurls, Set badurls, Set cleanurls, boolean checkexternal, int recurse, List mappers) throws IOException {
         //task.log("scan: u=" + u + " referrer=" + referrer + " okurls=" + okurls + " badurls=" + badurls + " cleanurls=" + cleanurls + " recurse=" + recurse, Project.MSG_DEBUG);
-        if (okurls.contains(u) && recurse == 0) {
+        if (okurls.contains(u.toExternalForm()) && recurse == 0) {
             // Yes it is OK.
             return;
         }
@@ -123,15 +127,15 @@ public class CheckLinks extends MatchingTask {
         URL base = new URL(b);
         String frag = u.getRef();
         //task.log("scan: base=" + base + " frag=" + frag, Project.MSG_DEBUG);
-        if (badurls.contains(u) || badurls.contains(base)) {
+        if (badurls.contains(u.toExternalForm()) || badurls.contains(base.toExternalForm())) {
             task.log(normalize(referrer, mappers) + ": broken link (already reported): " + u, Project.MSG_WARN);
             return;
         }
         if (! checkexternal && ! "file".equals(u.getProtocol())) {
             task.log("Skipping external link: " + base, Project.MSG_VERBOSE);
-            cleanurls.add(base);
-            okurls.add(base);
-            okurls.add(u);
+            cleanurls.add(base.toExternalForm());
+            okurls.add(base.toExternalForm());
+            okurls.add(u.toExternalForm());
             return;
         }
         task.log("Checking " + u + " (recursion level " + recurse + ")", Project.MSG_VERBOSE);
@@ -144,13 +148,13 @@ public class CheckLinks extends MatchingTask {
             rd = conn.getInputStream ();
         } catch (IOException ioe) {
             task.log(normalize(referrer, mappers) + ": broken link: " + base, Project.MSG_WARN);
-            badurls.add(base);
-            badurls.add(u);
+            badurls.add(base.toExternalForm());
+            badurls.add(u.toExternalForm());
             return;
         }
-        okurls.add(base);
-        Set others = null; // Set<URL>
-        if (recurse > 0 && cleanurls.add(base)) {
+        okurls.add(base.toExternalForm());
+        Set others = null; // Set<String>
+        if (recurse > 0 && cleanurls.add(base.toExternalForm())) {
             others = new HashSet(100);
         }
         try {
@@ -172,7 +176,7 @@ public class CheckLinks extends MatchingTask {
                         // We have an anchor, therefore refs to it are valid.
                         String name = unescape(hrefOrAnchor.getParen(4));
                         if (names.add(name)) {
-                            okurls.add(new URL(base, "#" + name));
+                            okurls.add(new URL(base, "#" + name).toExternalForm());
                         } else if (recurse == 1) {
                             task.log(normalize(referrer, mappers) + ": duplicate anchor name: " + name, Project.MSG_WARN);
                         }
@@ -184,7 +188,7 @@ public class CheckLinks extends MatchingTask {
                             if (!otherbase.startsWith("mailto:")) {
                                 URL o = new URL(base, (otheranchor == null) ? otherbase : otherbase + otheranchor);
                                 //task.log("href: " + o);
-                                others.add(o);
+                                others.add(o.toExternalForm());
                             }
                         } // else we are only checking that this one has right anchors
                     }
@@ -195,14 +199,14 @@ public class CheckLinks extends MatchingTask {
         } finally {
             rd.close();
         }
-        if (! okurls.contains(u)) {
+        if (! okurls.contains(u.toExternalForm())) {
             task.log(normalize(referrer, mappers) + ": broken link: " + u, Project.MSG_WARN);
         }
         if (others != null) {
             Iterator it = others.iterator();
             while (it.hasNext()) {
-                URL other = (URL)it.next();
-                scan(task, u.getPath(), other, okurls, badurls, cleanurls, checkexternal, recurse == 1 ? 0 : 2, mappers);
+                String other = (String)it.next();
+                scan(task, u.getPath(), new URL(other), okurls, badurls, cleanurls, checkexternal, recurse == 1 ? 0 : 2, mappers);
             }
         }
     }
