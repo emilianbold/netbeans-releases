@@ -3,5 +3,6 @@ OpenIDE-Module: org.netbeans.modules.j2ee.ejbjarproject
 OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module-Layer: org/netbeans/modules/j2ee/ejbjarproject/ui/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/ejbjarproject/Bundle.properties
-
+X-Comment: The j2ee/earproject depends on the EjbJarProjectGenerator.createProject method. If you add a dependency or change the interface increment the impl version number.
+OpenIDE-Module-Implementation-Version: 1.1.1
 
