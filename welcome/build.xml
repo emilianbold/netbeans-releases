@@ -25,7 +25,6 @@ Microsystems, Inc. All Rights Reserved.
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
       <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
       <pathelement location="${utilities.dir}/${nb.modules.dir}/org-netbeans-modules-utilities.jar"/> <!-- XXX: depends on OpenFile -->
-      <pathelement location="${autoupdate.dir}/${nb.modules.dir}/autoupdate.jar"/>
       <pathelement location="${core/javahelp.dir}/$[nb.modules/autoload.dir}/javahelp-api.jar"/>
     </path>
   </target>
