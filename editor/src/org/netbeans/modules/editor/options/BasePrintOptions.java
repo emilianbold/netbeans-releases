@@ -24,6 +24,7 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.editor.EditorModule;
 
 import org.openide.text.PrintSettings;
+import org.openide.util.HelpCtx;
 //import org.openide.util.HelpCtx;
 
 /**
@@ -39,7 +40,7 @@ public class BasePrintOptions extends OptionSupport {
 
     public static final String PRINT_COLORING_MAP_PROP = "printColoringMap"; // NOI18N
 
-    // private static final String HELP_ID = "editing.printing"; // !!! NOI18N
+    private static final String HELP_ID = "editing.fontsandcolors"; // !!! NOI18N
     
     static final String[] BASE_PROP_NAMES = {
         PRINT_COLORING_MAP_PROP,
@@ -77,11 +78,9 @@ public class BasePrintOptions extends OptionSupport {
         ContextOptionsListener.processExistingAndListen(ps);
     }    
 
-    /* #54893
     public HelpCtx getHelpCtx () {
         return new HelpCtx (HELP_ID);
     }
-     */
 
     /** Get the name of the <code>Settings.Initializer</code> related
      * to these options.
