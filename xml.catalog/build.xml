@@ -38,6 +38,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="init">
         <tstamp/>
+	<property name="release" value="dev"/>
         <property name="buildnumber" value="${DSTAMP}${TSTAMP}"/>
         <echo message="buildnumber = ${buildnumber}"/>
     </target>
@@ -104,11 +105,11 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="nbm" depends="netbeans">
         <delete dir="Info"/>
-        <makenbm file="../xml-catalog.nbm"
+        <makenbm file="../xml-catalog-${release}.nbm"
                  topdir="."
                  module="netbeans/modules/xml-catalog.jar"
                  homepage="${homepage.base}/catalog/"
-                 distribution="${dist.base}/xml-catalog.nbm">
+                 distribution="${dist.base}/xml-catalog-${release}.nbm">
             <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>

@@ -39,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="init">
         <tstamp/>
+	<property name="release" value="dev"/>
         <property name="buildnumber" value="${DSTAMP}${TSTAMP}"/>
         <echo message="buildnumber = ${buildnumber}"/>
     </target>
@@ -109,11 +110,11 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="nbm" depends="netbeans">
         <delete dir="Info"/>
-        <makenbm file="../xml-text-edit.nbm"
+        <makenbm file="../xml-text-edit-${release}.nbm"
                  topdir="."
                  module="netbeans/modules/xml-text-edit.jar"
                  homepage="${homepage.base}/text-edit/"
-                 distribution="${dist.base}/xml-text-edit.nbm">
+                 distribution="${dist.base}/xml-text-edit-${release}.nbm">
             <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>

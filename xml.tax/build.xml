@@ -37,6 +37,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="init">
         <tstamp/>
+	<property name="release" value="dev"/>
         <property name="buildnumber" value="${DSTAMP}${TSTAMP}"/>
         <echo message="buildnumber = ${buildnumber}"/>
     </target>
@@ -99,11 +100,11 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="nbm" depends="netbeans">
         <delete dir="Info"/>
-        <makenbm file="../xml-tax.nbm"
+        <makenbm file="../xml-tax-${release}.nbm"
                  topdir="."
                  module="netbeans/modules/autoload/xml-tax.jar"
                  homepage="${homepage.base}/tax/"
-                 distribution="${dist.base}/xml-tax.nbm">
+                 distribution="${dist.base}/xml-tax-${release}.nbm">
             <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>

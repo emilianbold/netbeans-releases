@@ -40,6 +40,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="init">
         <tstamp/>
+        <property name="release" value="dev"/>
         <property name="buildnumber" value="${DSTAMP}${TSTAMP}"/>
         <echo message="buildnumber = ${buildnumber}"/>
     </target>
@@ -113,11 +114,11 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="nbm" depends="netbeans">
         <delete dir="Info"/>
-        <makenbm file="../xml-core.nbm"
+        <makenbm file="../xml-core-${release}.nbm"
                  topdir="."
                  module="netbeans/modules/xml-core.jar"
                  homepage="${homepage.base}/core/"
-                 distribution="${dist.base}/xml-core.nbm">
+                 distribution="${dist.base}/xml-core-${release}.nbm">
             <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
