@@ -573,6 +573,33 @@ public class PackageViewTest extends NbTestCase {
             if (dobj != null)
                 dobj.delete ();
         }
+        
+        //One more case (Issue #48246), Copy default pkg test
+        FileObject defPkgFileRoot1 = createFile(root1, null, "TestDP1");
+        nodes = rn1.getChildren().getNodes(true);
+        FileObject defPkgFileRoot2 = createFile(root2, null, "TestDP2");
+        
+        Node defPkgNode = null;
+        for (int i=0; i< nodes.length; i++) {
+            if (nodes[i].getDisplayName().equals (defaultPackageName)) {
+                defPkgNode = nodes[i];
+                break;
+            }
+        }
+        assertNotNull("Default package exists",defPkgNode);
+        t = defPkgNode.clipboardCopy();
+        pts = rn2.getPasteTypes(t);
+        assertEquals ("Multiple packages into different source root",1,pts.length);
+        pts[0].paste();
+        assertNodes (rn2.getChildren(), new String[] {defaultPackageName});
+        defPkgFileRoot1.delete();
+        resultNodes = rn2.getChildren().getNodes(true)[0].getChildren().getNodes(true);
+        for (int i=0; i< resultNodes.length; i++) {
+            DataObject dobj = (DataObject) resultNodes[i].getCookie(DataObject.class);
+            if (dobj != null) {
+                dobj.delete();
+            }
+        }
     }
     
         
@@ -656,7 +683,9 @@ public class PackageViewTest extends NbTestCase {
         try {
             PrintWriter out = new PrintWriter (new OutputStreamWriter (fo.getOutputStream(lock)));            
             try {
-                out.println ("package "+pkg+";");
+                if (pkg != null) {
+                    out.println ("package "+pkg+";");
+                }
                 out.println("public class "+name+" {");            
                 out.println("}");
             } finally {

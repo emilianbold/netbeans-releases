@@ -840,16 +840,18 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
 
         public Transferable paste() throws IOException {
             for (int ni=0; ni< nodes.length; ni++) {
-                String pkgName = nodes[ni].computePackageName(false);
-                StringTokenizer tk = new StringTokenizer(pkgName,".");  //NOI18N
                 FileObject fo = srcRoot;
-                while (tk.hasMoreTokens()) {
-                    String name = tk.nextToken();
-                    FileObject tmp = fo.getFileObject(name,null);
-                    if (tmp == null) {
-                        tmp = fo.createFolder(name);
+                if (!nodes[ni].isDefaultPackage) {
+                    String pkgName = nodes[ni].computePackageName(false);
+                    StringTokenizer tk = new StringTokenizer(pkgName,".");  //NOI18N
+                    while (tk.hasMoreTokens()) {
+                        String name = tk.nextToken();
+                        FileObject tmp = fo.getFileObject(name,null);
+                        if (tmp == null) {
+                            tmp = fo.createFolder(name);
+                        }
+                        fo = tmp;
                     }
-                    fo = tmp;
                 }
                 DataFolder dest = DataFolder.findFolder(fo);
                 DataObject[] children = nodes[ni].dataFolder.getChildren();
