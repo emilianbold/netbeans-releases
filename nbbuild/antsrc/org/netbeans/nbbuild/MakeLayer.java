@@ -83,8 +83,8 @@ public class MakeLayer extends MatchingTask {
             for (int i=0; i <files.length; i++) {
                 File aFileName = new File(topdir, files[i]);
                 try {
-                    layerFile.write("<file name=\""+aFileName.getName()+"\"\n");
-                    layerFile.write("  url=\""+aFileName.getAbsolutePath().substring(topdir.getAbsolutePath().length()+1)+"\"/>\n");
+                    layerFile.write(("<file name=\""+aFileName.getName()+"\"\n").replace('\\','/'));
+                    layerFile.write(("  url=\""+aFileName.getAbsolutePath().substring(topdir.getAbsolutePath().length()+1)+"\"/>\n").replace('\\','/'));
                 }
                 catch(IOException ex) {
                     throw new BuildException(ex.fillInStackTrace(),location);
@@ -100,3 +100,6 @@ public class MakeLayer extends MatchingTask {
         }
     }
 }
+
+
+
