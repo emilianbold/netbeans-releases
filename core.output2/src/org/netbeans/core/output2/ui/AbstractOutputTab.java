@@ -230,5 +230,10 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
     }
 
     public abstract void hasSelectionChanged(boolean val);
+    
+    void notifyInputFocusGained(){
+        getOutputPane().lockScroll();
+        getOutputPane().ensureCaretPosition();
+    }
 
 }
