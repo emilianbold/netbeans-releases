@@ -391,7 +391,6 @@
 <mapID target="debug.view.customize" url="debug/environment/customize_views.html" />
 
 <mapID target="debug.sessions.jump" url="debug/sessions/sessions.html" />
-<mapID target="debug.running.debugger" url="debug/sessions/start_first.html" />
 <mapID target="debug.attach" url="debug/sessions/attach.html" />
 <mapID target="debug.sessions.finishsession" url="debug/sessions/finishsession.html" />
 <mapID target="debug.sessions.64bit" url="debug/sessions/64bit_jvm_debug.html" />
@@ -457,7 +456,6 @@
 <mapID target="javadoc.jump" url="javadoc/javadoc_jump.html" />
 <mapID target="javadoc.search" url="javadoc/search.html" />
 <mapID target="javadoc.source_editor" url="javadoc/show_in_editor.html" />
-<mapID target="javadoc.addcomment" url="javadoc/addcomment.html" />
 <mapID target="javadoc.accuracy" url="javadoc/accuracy.html" />
 <mapID target="javadoc.generate" url="javadoc/generate.html" />
 <mapID target="javadoc.search.path" url="javadoc/search_path.html" />

@@ -232,7 +232,6 @@
   <tocitem text="Current Context in the Debugger" target="debug.current-context"></tocitem>
   </tocitem>
   <tocitem text="Starting a Debugging Session" target="debug.sessions.jump">
-    <tocitem text="Running a Program in the Debugger" target="debug.running.debugger" />
     <tocitem text="Attaching to a Java VM" target="debug.attach" />
     <tocitem text="Debugging on a 64-Bit Java VM" target="debug.sessions.64bit" />
       </tocitem>
@@ -399,14 +398,13 @@
 <tocitem text="Working With Javadoc Documentation" target="javadoc.jump">
    <tocitem text="The Javadoc Environment" target="javadoc.windows.all"/>
    <tocitem text="Showing Javadoc Documentation" target="javadoc.source_editor"/>
-   <tocitem text="Adding a Javadoc Comment" target="javadoc.addcomment"/>
    <tocitem text="Searching Through Javadoc Documentation" target="javadoc.search"/>
    <tocitem text="Generating Javadoc Documentation" target="javadoc.generate"/>
-   <tocitem text="Correcting a Javadoc Comment" target="javadoc.accuracy"/>
-   <tocitem text="Mounting a Javadoc Filesystem" target="javadoc.search.path"/>
-   <tocitem text="Configuring a Javadoc Filesystem" target="javadoc.filesystem.configure"/>
-   <tocitem text="Removing a Javadoc Filesystem" target="javadoc.filesystem.unmount"/>
-
+   <tocitem text="Checking Code for Javadoc Comments" target="javadoc.accuracy"/>
+   <tocitem text="Mounting a Javadoc Filesystem" target="javadoc.search.path">
+      <tocitem text="Configuring a Javadoc Filesystem" target="javadoc.filesystem.configure"/>
+      <tocitem text="Removing a Javadoc Filesystem" target="javadoc.filesystem.unmount"/>
+    </tocitem>
     <tocitem text="Setting Javadoc Options" target="javadoc.settings.jump">
       <tocitem text="Turning Off Exact Case Matching" target="javadoc.case.sensitive"/>
       <tocitem text="Specifying an Output Directory for Javadoc Files" target="javadoc.output"/>
