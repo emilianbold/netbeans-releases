@@ -546,7 +546,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 					} else action = SystemAction.get(Class.forName(actcn));
 					
 				} catch (Exception e) {
-					System.out.println("unable to create action \""+e_action.get(NAME)+"\", "+e.getMessage());
+					System.out.println("unable to create action \""+e_action.get(NAME)+"\", "+e);
 				}
 			}
 			

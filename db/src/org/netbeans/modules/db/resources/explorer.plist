@@ -73,7 +73,7 @@
 		name = Drivers;
 		class = com.netbeans.enterprise.modules.db.explorer.nodes.DriverListNode;
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.DriverListNodeInfo;
-		iconbase = "/com/netbeans/ide/resources/defaultFolder";
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/folderDrivers";
 		children = ();
 		properties = ();
 		options = {};
@@ -371,7 +371,7 @@
 		displayname = "{name}";
 		class = com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.TableListNodeInfo;
-		iconbase = "/com/netbeans/ide/resources/defaultFolder";
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/folder";
 		children = ();
 		properties = ();
 		options = {};	
@@ -943,7 +943,7 @@
 		name = "Exported keys";
 		class = com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.RefTableListNodeInfo;
-		iconbase = "/com/netbeans/ide/resources/defaultFolder";
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/folder";
 		children = ();
 		properties = ();
 		options = {};	
@@ -954,7 +954,7 @@
 		name = "Indexes";
 		class = com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.IndexListNodeInfo;
-		iconbase = "/com/netbeans/ide/resources/defaultFolder";
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/folder";
 		children = ();
 		properties = ();
 		options = {
@@ -1195,7 +1195,7 @@
 		displayname = "{name}";
 		class = com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ViewListNodeInfo;
-		iconbase = "/com/netbeans/ide/resources/defaultFolder";
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/folder";
 		children = ();
 		properties = ();
 		options = {
@@ -1366,7 +1366,7 @@
 		displayname = "{name}";
 		class = com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ProcedureListNodeInfo;
-		iconbase = "/com/netbeans/ide/resources/defaultFolder";
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/folder";
 		children = ();
 		properties = ();
 		options = {
