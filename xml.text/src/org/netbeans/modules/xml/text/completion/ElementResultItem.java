@@ -30,7 +30,9 @@ class ElementResultItem extends XMLResultItem {
     // does it represent start element name?
     // then there is more possibilities how to complete it
     private final boolean startElement;
-    
+
+    private final boolean empty;
+
     /**
      * Create a start element result item.
      */
@@ -38,6 +40,7 @@ class ElementResultItem extends XMLResultItem {
         super(res.getNodeName());
         foreground = Color.blue;
         startElement = true;
+        empty = res.isEmptyElement();
     }
 
     /**
@@ -47,6 +50,7 @@ class ElementResultItem extends XMLResultItem {
         super(name);
         foreground = Color.blue;
         startElement = false;
+        empty = false;
     }
     
     /**
@@ -57,7 +61,11 @@ class ElementResultItem extends XMLResultItem {
         boolean shift = (modifiers & java.awt.event.InputEvent.SHIFT_MASK) != 0;
         
         if (shift && startElement) {
-            return displayText + "></" + displayText + '>';
+            if (empty) {
+                return displayText + "/>";
+            } else {
+                return displayText + "></" + displayText + '>';
+            }
         } else if (startElement) {
             return displayText;
         } else {
@@ -79,8 +87,12 @@ class ElementResultItem extends XMLResultItem {
         if (shift && startElement) {
             Caret caret = c.getCaret();  // it is at the end of replacement            
             int dot = caret.getDot();
-            int rlen = replacementText.length();            
-            caret.setDot((dot  - rlen) + replacementText.indexOf('<'));
+            int rlen = replacementText.length();
+            if (empty) {
+                caret.setDot((dot  - rlen) + replacementText.indexOf('/'));
+            } else {
+                caret.setDot((dot  - rlen) + replacementText.indexOf('<'));
+            }
         }
         
         return false;

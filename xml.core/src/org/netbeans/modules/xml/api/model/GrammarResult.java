@@ -25,6 +25,8 @@ import javax.swing.Icon;
  * <p>
  * It can have children representing mandatory content.
  * However it is up to client if it uses the mandatory content.
+ * <p>
+ * As in whole package provide only readonly DOM level 1 implementation. 
  *
  * @author  Petr Kuzel
  * @deprecated Experimental SPI
@@ -55,4 +57,12 @@ public interface GrammarResult extends Node {
      * @return an icon - a visual hint or <code>null</code>
      */
     Icon getIcon(int kind);
+
+    /**
+     * For elements provide hint whether element has empty content model.
+     * @return true element has empty content model (no childs) and can
+     * be completed in empty element form i.e. <code>&lt;ement/></code>.
+     * @since 6th Aug 2004
+     */
+    boolean isEmptyElement();
 }

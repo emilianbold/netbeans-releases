@@ -104,7 +104,7 @@ public class DTDParser {
     private class Handler extends DefaultHandler implements DeclHandler {
 
         private Map attrs, elements, models, enums, attrDefaults;
-        private Set notations, entities, anys;
+        private Set notations, entities, anys, emptyElements;
         private DTDGrammar dtd;
         
         Handler() {
@@ -116,7 +116,8 @@ public class DTDParser {
             anys = new HashSet();
             enums = new HashMap();
             attrDefaults = new HashMap();
-            dtd = new DTDGrammar(elements, models, attrs, attrDefaults, enums, entities, notations);
+            emptyElements = new HashSet();
+            dtd = new DTDGrammar(elements, models, attrs, attrDefaults, enums, entities, notations, emptyElements);
         }
 
         /**
@@ -142,7 +143,8 @@ public class DTDParser {
                 return;
             } else if ("EMPTY".equals(model)) {
                 elements.put(name, Collections.EMPTY_SET);
-                return;                
+                emptyElements.add(name);
+                return;
             } else if ("(#PCDATA)".equals(model)) {
                 elements.put(name, Collections.EMPTY_SET);
                 return;

@@ -46,9 +46,12 @@ public class DTDGrammar implements GrammarQuery {
     private Map defaultAttributeValues;
     
     private Set entities, notations;
-    
+
+    /** Set&lt;elementName:String> holding all emenets with <code>EMPTY</code> content model.*/
+    private Set emptyElements;
+
     /** Creates new DTDGrammar */
-    DTDGrammar(Map elementDecls, Map contentModels, Map attrDecls, Map attrDefs, Map enums, Set entities, Set notations) {
+    DTDGrammar(Map elementDecls, Map contentModels, Map attrDecls, Map attrDefs, Map enums, Set entities, Set notations, Set emptyElements) {
         this.elementDecls = elementDecls;
         this.attrDecls = attrDecls;
         this.entities = entities;
@@ -56,6 +59,7 @@ public class DTDGrammar implements GrammarQuery {
         this.attrEnumerations = enums;
         this.contentModels = contentModels;
         this.defaultAttributeValues = attrDefs;
+        this.emptyElements = emptyElements;
     }
 
     /**
@@ -189,7 +193,8 @@ public class DTDGrammar implements GrammarQuery {
         while ( it.hasNext()) {
             String next = (String) it.next();
             if (next.startsWith(prefix)) {
-                list.add(new MyElement(next));
+                boolean empty = emptyElements.contains(next);
+                list.add(new MyElement(next, empty));
             }
         }
         
@@ -395,7 +400,10 @@ public class DTDGrammar implements GrammarQuery {
         public String getDisplayName() {
             return getNodeName() + " disp";
         }
-        
+
+        public boolean isEmptyElement() {
+            return false;
+        }
     }
     
     private static class MyEntityReference extends AbstractResultNode implements EntityReference {
@@ -420,9 +428,12 @@ public class DTDGrammar implements GrammarQuery {
     private static class MyElement extends AbstractResultNode implements Element {
         
         private String name;
-        
-        MyElement(String name) {
+
+        private boolean empty;
+
+        MyElement(String name, boolean empty) {
             this.name = name;
+            this.empty = empty;
         }
         
         public short getNodeType() {
@@ -436,7 +447,10 @@ public class DTDGrammar implements GrammarQuery {
         public String getTagName() {
             return name;
         }
-        
+
+        public boolean isEmptyElement() {
+            return empty;
+        }
     }
 
     private static class MyAttr extends AbstractResultNode implements Attr {

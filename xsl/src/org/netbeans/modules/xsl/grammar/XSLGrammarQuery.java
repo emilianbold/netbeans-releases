@@ -846,7 +846,8 @@ public final class XSLGrammarQuery implements GrammarQuery{
                 if (next != resultElements) {
                     String nextText = namespacePrefix + (String)next;
                     if (nextText.startsWith(startWith)) {
-                        enumX.put(new MyElement(nextText));
+                        // TODO pass true for empty elements
+                        enumX.put(new MyElement(nextText, false));
                     }
                 }
             }
@@ -1028,6 +1029,10 @@ public final class XSLGrammarQuery implements GrammarQuery{
             return getNodeName();
         }
 
+        public boolean isEmptyElement() {
+            return false;
+        }
+
     }
 
     private static class MyEntityReference extends AbstractResultNode implements EntityReference {
@@ -1051,9 +1056,11 @@ public final class XSLGrammarQuery implements GrammarQuery{
     private static class MyElement extends AbstractResultNode implements Element {
 
         private String name;
+        private boolean empty;
 
-        MyElement(String name) {
+        MyElement(String name, boolean empty) {
             this.name = name;
+            this.empty = empty;
         }
 
         public short getNodeType() {
@@ -1066,6 +1073,10 @@ public final class XSLGrammarQuery implements GrammarQuery{
 
         public String getTagName() {
             return name;
+        }
+
+        public boolean isEmptyElement() {
+            return empty;
         }
 
     }

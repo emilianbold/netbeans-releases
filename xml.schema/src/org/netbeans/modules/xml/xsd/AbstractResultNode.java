@@ -44,6 +44,11 @@ abstract class AbstractResultNode extends AbstractNode implements GrammarResult 
         return getNodeName();
     }
 
+    /** Default implementation returns false. */
+    public boolean isEmptyElement() {
+        return false;
+    }
+
     /**
      * @output name that is presented to user
      */
