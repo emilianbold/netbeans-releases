@@ -43,7 +43,7 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
             PropertyDescriptor[] desc = new PropertyDescriptor[] {
                        new PropertyDescriptor (IDESettings.PROP_SHOW_TIPS_ON_STARTUP, IDESettings.class,
-                                               "getShowTipsOnStartup", "setShowTipsOnStartup"), // NOI18N
+                                                "getShowTipsOnStartup", "setShowTipsOnStartup"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_LAST_TIP, IDESettings.class,
                                                "getLastTip", "setLastTip"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_CONFIRM_DELETE, IDESettings.class,
@@ -74,7 +74,8 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
             desc[0].setDisplayName (Main.getString ("PROP_SHOW_TIPS_ON_STARTUP"));
             desc[0].setShortDescription (Main.getString ("HINT_SHOW_TIPS_ON_STARTUP"));
-
+            desc[0].setHidden (true);
+            
             desc[1].setHidden (true);
 
             desc[2].setDisplayName (Main.getString ("PROP_CONFIRM_DELETE"));
