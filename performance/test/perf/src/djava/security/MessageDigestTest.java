@@ -35,7 +35,7 @@ public class MessageDigestTest extends Benchmark {
     }
     
     public MessageDigestTest(String name) {
-        super(name, new Integer[] {new Integer(100), new Integer(1000)});
+        super(name, new Integer[] {new Integer(100), new Integer(1000), new Integer(10000)});
     }
     
     private byte[] buf;
@@ -49,7 +49,7 @@ public class MessageDigestTest extends Benchmark {
         dig = MessageDigest.getInstance("SHA-1");
     }
     
-    public void testMD5() throws Exception {
+    public void testSHA1() throws Exception {
         int count = getIterationCount();
         for (int i = 0; i < count; i++) {
             dig.reset();
