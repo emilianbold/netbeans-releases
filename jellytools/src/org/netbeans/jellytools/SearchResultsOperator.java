@@ -127,7 +127,7 @@ public class SearchResultsOperator extends NbFrameOperator {
             _btClose = 
                 new JButtonOperator(this, 
                                     Bundle.
-                                    getString("org.netbeans.modules.search.Bundle",
+                                    getStringTrimmed("org.netbeans.modules.search.Bundle",
                                               "TEXT_BUTTON_CANCEL"));
         }
         return _btClose;
