@@ -21,6 +21,8 @@ import java.io.*;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Vector;
+import java.util.Set;
+import java.util.Iterator;
 import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -532,10 +534,34 @@ public class NonGui extends NbTopManager implements Runnable {
                 throw ise;
             }
     	    StartLog.logProgress ("ModuleSystem created"); // NOI18N
-
             fireSystemClassLoaderChange();
-            moduleSystem.loadBootModules();
+
+            int bootModules = 0;
+            int knownModules = 0;
+            int scannedModules = 0;
+            try
+            {
+                ClassLoader loader = ModuleSystem.class.getClassLoader();
+                Enumeration e = loader.getResources("META-INF/MANIFEST.MF"); // NOI18N
+                while (e.hasMoreElements())
+                {
+                    e.nextElement();
+                    bootModules++;
+                }
+            }
+            catch (IOException ex)
+            {
+                getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+//            System.out.println("Boot Modules: " + bootModules);
+
             moduleSystem.readList();
+            knownModules = moduleSystem.getKnownModules().size();
+//            System.out.println("Known Modules: " + knownModules);
+            scannedModules = moduleSystem.getScannedModules().size();
+//            System.out.println("Scanned Modules: " + scannedModules);
+            Main.setSplashMaxSteps(bootModules + knownModules + knownModules + knownModules + scannedModules + 80);
+            moduleSystem.loadBootModules();
             moduleSystem.scanForNewAndRestore();
     	    StartLog.logEnd ("Modules initialization"); // NOI18N
         }
@@ -544,6 +570,7 @@ public class NonGui extends NbTopManager implements Runnable {
         // autoload directories
         org.openide.util.Task automount = AutomountSupport.initialize ();
         StartLog.logProgress ("Automounter fired"); // NOI18N
+        Main.incrementSplashProgressBar();
         
         // -----------------------------------------------------------------------------------------------------
         // 10. Initialization of project (because it can change loader pool and it influences main window menu)
@@ -553,18 +580,22 @@ public class NonGui extends NbTopManager implements Runnable {
             getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
         }
         StartLog.logProgress ("Project opened"); // NOI18N
+        Main.incrementSplashProgressBar(10);
 
         // load neccessary SystemOptions because of ExecuteAction setup
         SharedClassObject.findObject (ExecutionSettings.class, true);
         StartLog.logProgress ("ExecutionSettings loaded"); // NOI18N
+        Main.incrementSplashProgressBar(10);
 
         LoaderPoolNode.installationFinished ();
         StartLog.logProgress ("LoaderPool notified"); // NOI18N
+        Main.incrementSplashProgressBar(10);
 
         // -----------------------------------------------------------------------------------------------------
         // 15. Install new modules
         moduleSystem.installNew();
         StartLog.logProgress ("New modules installed"); // NOI18N
+        Main.incrementSplashProgressBar(10);
 
         //-------------------------------------------------------------------------------------------------------
         // setup wizard
@@ -584,9 +615,11 @@ public class NonGui extends NbTopManager implements Runnable {
         }
         StartLog.logProgress ("SetupWizard done"); // NOI18N
         */
+        Main.incrementSplashProgressBar(10);
         // wait until mounting really occurs
         automount.waitFinished ();
         StartLog.logProgress ("Automounter done"); // NOI18N
+        Main.incrementSplashProgressBar(10);
 
         //---------------------------------------------------------------------------------------------------------
         // initialize main window AFTER the setup wizard is finished
@@ -594,6 +627,7 @@ public class NonGui extends NbTopManager implements Runnable {
         initializeMainWindow ();
         StartLog.logProgress ("Main window initialized"); // NOI18N
         StartLog.logEnd ("TopManager initialization (org.netbeans.core.NonGui.run())"); //NOI18N
+        Main.incrementSplashProgressBar();
 
         // -----------------------------------------------------------------------------------------------------
         // 8. Advance Policy
@@ -627,11 +661,13 @@ public class NonGui extends NbTopManager implements Runnable {
         // install java.net.Authenticator
         java.net.Authenticator.setDefault (new NbAuthenticator ());
         StartLog.logProgress ("Security managers installed"); // NOI18N
+        Main.incrementSplashProgressBar();
 
         // run classes int Startup folder
         
         startFolder (getDefault ().getPlaces ().folders ().startup ());
         StartLog.logProgress ("StartFolder content started"); // NOI18N
+        Main.incrementSplashProgressBar();
     }
 
 
@@ -704,4 +740,5 @@ public class NonGui extends NbTopManager implements Runnable {
     protected Splash.SplashOutput getSplash() {
         return null;
     }
+    
 }
