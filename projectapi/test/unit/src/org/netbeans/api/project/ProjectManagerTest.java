@@ -26,6 +26,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
+// To debug tests add to nbproject/private/private.properties:
+// test-unit-sys-prop.org.netbeans.api.project.ProjectManager.LOG_WARN=true
+
 /* XXX tests needed:
  * - testModifiedProjectsNotGCd
  * ensure that modified projects cannot be collected
