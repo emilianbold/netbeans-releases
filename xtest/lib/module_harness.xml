@@ -78,7 +78,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <nbpath xtesthome="${xtest.home}"/>
 
-	<!-- XML, XSLT reporters -->
+	<!-- publishing tasks -->
         <nbtaskdef classpath="${xtest.home}/lib/xtest.jar">
             <taskdef name="testruninfo" classname="org.netbeans.xtest.pe.TestRunInfoTask"/>
             <taskdef name="testbaginfo" classname="org.netbeans.xtest.pe.TestBagInfoTask"/>
@@ -86,9 +86,17 @@ Microsystems, Inc. All Rights Reserved.
             <taskdef name="transformXML" classname="org.netbeans.xtest.pe.TransformXMLTask"/>
             <taskdef name="printSummary" classname="org.netbeans.xtest.pe.PrintSummary"/>
             <taskdef name="getResultsDirs" classname="org.netbeans.xtest.pe.GetResultsDirsTask"/>
+        </nbtaskdef>
+        
+        <!-- plugin and user tasks -->
+        <nbtaskdef classpath="${xtest.home}/lib/xtest.jar">
             <taskdef name="pluginsInit" classname="org.netbeans.xtest.plugin.PluginsInitTask"/>
             <taskdef name="pluginExecute" classname="org.netbeans.xtest.plugin.PluginExecuteTask"/>
+            <!-- user tasks -->
+            <taskdef name="compileTests" classname="org.netbeans.xtest.usertasks.CompileTestsTask"/>
+            <taskdef name="executeTests" classname="org.netbeans.xtest.usertasks.ExecuteTestsTask"/>
         </nbtaskdef>
+
 
         <!-- Executors/Compilers-->
          <nbtaskdef classpath="${junit.path};${xtest.path}">
