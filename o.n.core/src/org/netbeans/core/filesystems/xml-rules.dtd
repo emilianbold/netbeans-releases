@@ -1,0 +1,87 @@
+<?xml encoding="UTF-8" ?>
+
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!---
+  MIME component checking XML resource header allowing to test matching
+  XML constructs: PI, DOCTYPE and root element (start tag).
+  <p>
+  <tt>PUBLIC "-//NetBeans//DTD MIME Resolver XML Rules 1.0//EN"</tt>
+  </p>
+  It should work well for:
+  <ul>
+  <li>Well-formed document type detection</li>
+  <p>Using: PIs, root element name and root element attributes.</p>
+  <li>DTD Constrained document detection</li>
+  <p>Using: PIs and DOCTYPE public IDs.</p>
+  <li>NS Constarined documents</li>
+  <p>Using: PIs and root element namespaces.</p>
+  </ul>
+-->
+<!ELEMENT xml-rule (pi*, doctype?, element?)>
+
+<!---
+  PI can be tested on target and pseudo attributes.
+  <p>
+  It should be used for in-band tagging that is specified by some
+  accepted spec. For NetBeans specifics tagging of third party standards is 
+  recommended off-band tagging such as FileObject attributes.
+  </p>
+-->
+<!ELEMENT pi (attr*) >
+<!ATTLIST pi target CDATA #REQUIRED>
+
+<!---
+  Match one of DOCTYPE's public ID.
+  Use <tt>public-id</tt> subelements mutually exclusive with the attribute.
+-->
+<!ELEMENT doctype (public-id*) >
+<!ATTLIST doctype public-id CDATA #IMPLIED>
+
+<!---
+  Public ID is checked for full match.
+-->
+<!ELEMENT public-id EMPTY>
+<!ATTLIST public-id id CDATA #REQUIRED>
+
+<!--
+  This temlate match element name. Namespace <tt>ns</tt> attribute
+  or elements presence combines with <tt>name</tt> containing local element name 
+  otherwise <tt>name</tt> contains full element name (QName). One of namespaces
+  must match.
+-->
+<!ELEMENT element (ns*, attr*)>
+<!ATTLIST element ns CDATA #IMPLIED>
+<!ATTLIST element name CDATA #IMPLIED>
+
+<!---
+  Test namespace character by character.
+-->
+<!ELEMENT ns EMPTY>
+<!ATTLIST ns ns CDATA #REQUIRED>
+
+
+<!---
+  Element attribute template or PI pseudo attribute template.
+  <p>
+  <tt>name</tt> attribute contains full element name (QName) until
+  reserved attribute <tt>ns</tt> for namespace URI is used then
+  <tt>name</tt> attribute contains just local element name. 
+  </p>
+  If specified <tt>text</tt> then attribute normalized text must
+  equal to its actual value.
+-->
+<!ELEMENT attr EMPTY>
+<!ATTLIST attr name CDATA #REQUIRED>
+<!ATTLIST attr text CDATA #IMPLIED>

@@ -490,8 +490,6 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Hidden">
       <attr name="hidden" boolvalue="true" />
 
-
-
         <!-- in memory EntityCalalog intance (it serves for deprecated method implementations) -->
         <file name="org-openide-loaders-XMLDataObject-compat.instance" >
             <attr name="instanceClass" stringvalue="org.openide.xml.EntityCatalog" />
@@ -503,9 +501,9 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="instanceClass" stringvalue="org.netbeans.core.modules.TestModuleDeployer"/>
             <attr name="instanceCreate" methodvalue="org.netbeans.core.modules.ModuleSystem.getTestModuleDeployer"/>
         </file>
-
+        
     </folder>
-
+        
     <!-- Container for help sets. -->
     <folder name="JavaHelp">
         <attr name="hidden" boolvalue="true" />
@@ -597,4 +595,28 @@ Microsystems, Inc. All Rights Reserved.
 
   &dtds;
 
+  <folder name="xml">
+  
+    <folder name="entities">
+        <folder name="NetBeans">
+            <file name="DTD_MIME_Resolver_1_0" url="nbresboot:/org/netbeans/core/filesystems/resolver.dtd"/>
+            <file name="DTD_MIME_Resolver_XML_Rules_1_0" url="nbresboot:/org/netbeans/core/filesystems/xml-rules.dtd"/>
+        </folder>
+    </folder>
+    
+    <folder name="lookups">
+        <folder name="NetBeans">
+        
+            <!-- Environment.Provider for declarative MIME resolver XML documents. -->
+            
+            <file name="DTD_MIME_Resolver_1_0.instance">
+                <attr name="instanceClass" stringvalue="org.openide.loaders.Environment$Provider"/>
+                <attr name="instanceCreate" newvalue="org.netbeans.core.filesystems.MIMEResolverImpl"/>
+            </file>            
+            
+        </folder>
+    </folder>
+    
+  </folder> <!-- name="xml" -->
+  
 </filesystem>
