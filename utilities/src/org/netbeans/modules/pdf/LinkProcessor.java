@@ -187,6 +187,11 @@ public class LinkProcessor implements InstanceCookie, XMLDataObject.Processor, A
         File homeDir = new File(dir);
         
         File[] kids = homeDir.listFiles();
+
+        // Fix #15535.
+        if(kids == null) {
+            return;
+        }
         
         for (int i = 0; i < kids.length; i++) {
             String name = kids[i].getName ();
