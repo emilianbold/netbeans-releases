@@ -70,6 +70,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                 "getRegisteredEditors", "setRegisteredEditors"),
         new PropertyDescriptor (FormLoaderSettings.PROP_OUTPUT_LEVEL, FormLoaderSettings.class,
                                 "getOutputLevel", "setOutputLevel"),
+        new PropertyDescriptor (FormLoaderSettings.PROP_NULL_LAYOUT, FormLoaderSettings.class,
+                                "isNullLayout", "setNullLayout"),
       };
 
       desc[0].setDisplayName (formBundle.getString ("PROP_INDENT_AWT_HIERARCHY"));
@@ -118,6 +120,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
       desc[16].setDisplayName (formBundle.getString ("PROP_OUTPUT_LEVEL"));
       desc[16].setShortDescription (formBundle.getString ("HINT_OUTPUT_LEVEL"));
       desc[16].setPropertyEditorClass (FormLoaderSettingsBeanInfo.OutputLevelEditor.class);
+      desc[17].setDisplayName (formBundle.getString ("PROP_NULL_LAYOUT"));
+      desc[17].setShortDescription (formBundle.getString ("HINT_NULL_LAYOUT"));
 
 
     } catch (IntrospectionException ex) {
@@ -233,6 +237,8 @@ static final long serialVersionUID =7628317154007139777L;
 
 /*
  * Log
+ *  15   Gandalf   1.14        9/12/99  Ian Formanek    Fixed bug 3530 - We do 
+ *       not support having a null layout.
  *  14   Gandalf   1.13        8/10/99  Ian Formanek    Generated Serial Version
  *       UID
  *  13   Gandalf   1.12        8/1/99   Ian Formanek    Fixed last change

@@ -67,6 +67,9 @@ public class FormLoaderSettings extends SystemOption {
   /** outputLevel property name */
   public static final String PROP_OUTPUT_LEVEL = "outputLevel";
 
+  /** Property name of the nullLayout property */
+  public static final String PROP_NULL_LAYOUT = "nullLayout";
+
   /** Minimum output detail level */
   public static final int OUTPUT_MINIMUM = 0;
   /** Normal output detail level */
@@ -134,6 +137,7 @@ public class FormLoaderSettings extends SystemOption {
 
   private static int outputLevel = OUTPUT_NORMAL;
 
+  private static boolean nullLayout = false;
 
   private static int emptyFormType = 0;
 
@@ -416,6 +420,24 @@ public class FormLoaderSettings extends SystemOption {
     firePropertyChange (PROP_OUTPUT_LEVEL, new Integer (oldValue), new Integer (outputLevel));
   }
 
+  /** Getter for nullLayout property.
+  * @return True, if null layout should be generated, false if com.netbeans.developer.awt.AbsoluteLayout should be used
+  */
+  public boolean isNullLayout() {
+    return nullLayout;
+  }
+
+  /** Setter for nullLayout property.
+  * @param value True, if null layout should be generated, false if com.netbeans.developer.awt.AbsoluteLayout should be used
+  */
+  public void setNullLayout(boolean value) {
+    if (nullLayout == value) return;
+    boolean oldValue = nullLayout;
+    nullLayout = value;
+    // fire the PropertyChange
+    firePropertyChange (PROP_NULL_LAYOUT, new Boolean (oldValue), new Boolean (nullLayout));
+  }
+
   /** This method must be overriden. It returns display name of this options.
   */
   public String displayName () {
@@ -430,6 +452,8 @@ public class FormLoaderSettings extends SystemOption {
 
 /*
  * Log
+ *  15   Gandalf   1.14        9/12/99  Ian Formanek    Fixed bug 3530 - We do 
+ *       not support having a null layout.
  *  14   Gandalf   1.13        8/1/99   Ian Formanek    Output Details property 
  *       added
  *  13   Gandalf   1.12        7/13/99  Petr Hamernik   ConstrainedModifiers 
