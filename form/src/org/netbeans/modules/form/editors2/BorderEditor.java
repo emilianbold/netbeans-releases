@@ -135,8 +135,9 @@ public final class BorderEditor extends PropertyEditorSupport {
     Node root;
 
     BorderPanel() {
-      root = new AbstractNode(Children.LEAF);
-//      root.add(noBorder = new NoBorderNode(root));
+      root = new AbstractNode (new Children.Array ());
+      noBorder = new NoBorderNode();
+      root.getChildren ().add (new Node[] { noBorder });
 
       PropertyChangeListener pListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
@@ -144,17 +145,18 @@ public final class BorderEditor extends PropertyEditorSupport {
         }
       };
       
-/*      Node[] categories = PaletteContext.getPaletteContext().getPaletteCategories();
-      for (int i = 0; i < categories.length; i++) {
-        Node[] paletteNodes = ((PaletteCategory) categories[i]).getPaletteNodes ();
-        for (int j = 0; j < paletteNodes.length; j++) {
-          if ((paletteNodes[j] instanceof PaletteNode) && ((PaletteNode)paletteNodes[j]).isBorder()) {
-            BorderListNode listNode = new BorderListNode((PaletteNode) paletteNodes[j], root);
+      PaletteItem[] items = ComponentPalette.getDefault().getAllItems ();
+      for (int i = 0; i < items.length; i++) {
+        if (items[i].isBorder()) {
+          try {
+            BorderListNode listNode = new BorderListNode(items[i]);
             listNode.addPropertyChangeListener(pListener);
-            root.add(listNode);
+            root.getChildren ().add(new Node[] { listNode });
+          } catch (IllegalAccessException e) { // ignore => not added to list
+          } catch (InstantiationException e) { // ignore => not added to list
           }
         }
-      } */
+      } 
       
       getExplorerManager ().setRootContext(root);
       getExplorerManager ().addPropertyChangeListener(this);
@@ -186,24 +188,19 @@ public final class BorderEditor extends PropertyEditorSupport {
     }
 
     void setValue(Border border) {
-/*      if (border == null) {
+      if (border == null) {
         try {
           getExplorerManager ().setSelectedNodes(new Node[] { noBorder });
-        }
-        catch (PropertyVetoException e) {
+        } catch (PropertyVetoException e) {
         }
       }
       else if (border instanceof DesignBorder) {
         BorderInfo info = ((DesignBorder)border).getInfo();
         if (unknownBorder != null) {
-          try {
-            unknownBorder.remove();
-            unknownBorder = null;
-          }
-          catch (NodeAccessException e) {
-          }
+          root.getChildren ().remove (new Node[] { unknownBorder });
+          unknownBorder = null;
         }
-        Node[] nodes = root.getSubNodes();
+        Node[] nodes = root.getChildren().getNodes ();
         for (int i = 0; i < nodes.length; i++) {
           if (nodes[i] instanceof BorderListNode) {
             BorderInfo nodeBorderInfo = ((BorderListNode)nodes[i]).getDesignBorder().getInfo();
@@ -211,32 +208,30 @@ public final class BorderEditor extends PropertyEditorSupport {
               ((BorderListNode)nodes[i]).setDesignBorder((DesignBorder)border);
               try {
                 getExplorerManager ().setSelectedNodes(new Node[] { nodes[i] });
-              }
-              catch (PropertyVetoException e) {
+              } catch (PropertyVetoException e) {
               }
               return;
             }
           }
-        }
-      }
+        } 
+      } 
       else {
         if (unknownBorder != null) {
           unknownBorder.setBorder(border);
         }
         else {
-          unknownBorder = new UnknownBorderNode(root, border);
-          root.add(unknownBorder);
+          unknownBorder = new UnknownBorderNode(border);
+          root.getChildren ().add(new Node[] { unknownBorder });
           try {
             getExplorerManager ().setSelectedNodes(new Node[] { unknownBorder });
-          }
-          catch (PropertyVetoException e) {
+          } catch (PropertyVetoException e) {
           }
         }
-      } */
+      }
     }
 
     void updateBorder(Node node) {
-/*      if (node instanceof NoBorderNode) {
+      if (node instanceof NoBorderNode) {
         BorderEditor.this.current = null;
       }
       else if (node instanceof UnknownBorderNode) {
@@ -245,25 +240,24 @@ public final class BorderEditor extends PropertyEditorSupport {
       else {
         BorderEditor.this.current = ((BorderListNode) node).getDesignBorder();
       }
-      BorderEditor.this.firePropertyChange(); */
+      BorderEditor.this.firePropertyChange();
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
-/*      if (ExplorerManager.PROP_SELECTEDNODES.equals(evt.getPropertyName())) {
+      if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
         Node[] nodes = (Node[]) evt.getNewValue();
         switch (nodes.length) {
           case 0:
             try {
               getExplorerManager ().setSelectedNodes(new Node[] { noBorder });
-            }
-            catch (PropertyVetoException e) {
+            } catch (PropertyVetoException e) {
             }
             break;
           case 1:
             updateBorder(nodes[0]);
             break;
         }
-      } */
+      } 
     }
 
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
@@ -280,28 +274,53 @@ public final class BorderEditor extends PropertyEditorSupport {
     }
   }
   
-/*  static final class BorderListNode extends FilterNode implements PropertyChangeListener {
-    private PaletteItem palNode;
+  static final class BorderListNode extends AbstractNode implements PropertyChangeListener {
+    private PaletteItem paletteItem;
     private DesignBorder designBorder;
 
-    BorderListNode(PaletteItem ref, Node parent) {
-      super(ref, parent);
-      palNode = ref;
-      designBorder = ref.getDesignBorder();
+    BorderListNode(PaletteItem paletteItem) throws IllegalAccessException, InstantiationException {
+      super(Children.LEAF);
+      this.paletteItem = paletteItem;
+      designBorder = paletteItem.createBorder ();
+      System.out.println("BorderEditor.java:288: "+designBorder);
+      setName (designBorder.getInfo ().getDisplayName ());
     }
 
-    public Node.PropertySet[] getPropertySet() {
-      final Node.Property[] props = designBorder.getInfo().getProperties();
+    /** Find an icon for this node (in the closed state).
+    * @param type constant from {@link java.beans.BeanInfo}
+    * @return icon to use to represent the node
+    */
+    public Image getIcon (int type) {
+      return designBorder.getInfo ().getIcon (type);
+    }
+
+    /** Find an icon for this node (in the open state).
+    * This icon is used when the node may have children and is expanded.
+    *
+    * @param type constant from {@link java.beans.BeanInfo}
+    * @return icon to use to represent the node when open
+    */
+    public Image getOpenedIcon (int type) {
+      return getIcon (type);
+    }
+
+    /** Creates property set for this node */
+    protected Sheet createSheet () {
+      System.out.println("BorderEditor.java:311");
+      Node.Property[] props = designBorder.getInfo().getProperties();
+      Sheet.Set propsSet = Sheet.createPropertiesSet ();
+      propsSet.put(props);
+      Sheet sheet = new Sheet ();
+      sheet.put (propsSet);
+      System.out.println("Properties: "+props.length);
+      
       for (int i = 0; i < props.length; i++) {
         if (props[i] instanceof BorderInfoSupport.BorderProp) {
           ((BorderInfoSupport.BorderProp)props[i]).setPropertyChangeListener(this);
         }
       }
-      return new PropertySet[] { new PropertySetSupport(props) };
-    }
 
-    public javax.swing.JPopupMenu getContextMenu() {
-      return new javax.swing.JPopupMenu();
+      return sheet;
     }
 
     public DesignBorder getDesignBorder() {
@@ -316,7 +335,7 @@ public final class BorderEditor extends PropertyEditorSupport {
       designBorder = new DesignBorder(designBorder.getInfo());
       firePropertyChange("", null, null);
     }
-  } */
+  } 
 
   static final class NoBorderNode extends AbstractNode {
     /** generated Serialized Version UID */
@@ -359,6 +378,7 @@ public final class BorderEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  3    Gandalf   1.2         5/30/99  Ian Formanek    Finalized
  *  2    Gandalf   1.1         5/24/99  Ian Formanek    
  *  1    Gandalf   1.0         5/14/99  Ian Formanek    
  * $
