@@ -144,6 +144,8 @@ public class CommandBuffer
 
 /*
 * <<Log>>
+*  6    Gandalf   1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
+*       Microsystems Copyright in File Comment
 *  5    Gandalf   1.4         9/15/99  Slavek Psenicka 
 *  4    Gandalf   1.3         9/10/99  Slavek Psenicka 
 *  3    Gandalf   1.2         6/8/99   Ian Formanek    ---- Package Change To 

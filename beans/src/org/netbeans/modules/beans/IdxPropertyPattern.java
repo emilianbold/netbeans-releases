@@ -676,6 +676,8 @@ public class IdxPropertyPattern extends PropertyPattern {
 
 /* 
  * Log
+ *  8    Gandalf   1.7         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  7    Gandalf   1.6         9/13/99  Petr Hrebejk    Creating multiple 
  *       Properties/EventSet with the same name vorbiden. Forms made i18n
  *  6    Gandalf   1.5         7/29/99  Petr Hrebejk    Fix - change 

@@ -361,3 +361,19 @@ public class EventSetPatternPanel extends javax.swing.JPanel
   } 
 
 }
+
+/*
+ * Log
+ *  6    Gandalf   1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  5    Gandalf   1.4         9/13/99  Petr Hrebejk    Creating multiple 
+ *       Properties/EventSet with the same name vorbiden. Forms made i18n
+ *  4    Gandalf   1.3         8/17/99  Petr Hrebejk    Combo box with well 
+ *       known Listener interfaces
+ *  3    Gandalf   1.2         8/9/99   Ian Formanek    Generated Serial Version
+ *       UID
+ *  2    Gandalf   1.1         7/21/99  Petr Hrebejk    Bug fixes interface 
+ *       bodies, is for boolean etc
+ *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
+ * $
+ */

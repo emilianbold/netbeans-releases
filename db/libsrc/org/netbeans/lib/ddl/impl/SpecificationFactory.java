@@ -256,6 +256,8 @@ public class SpecificationFactory implements DatabaseSpecificationFactory {
 
 /*
 * <<Log>>
+*  9    Gandalf   1.8         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
+*       Microsystems Copyright in File Comment
 *  8    Gandalf   1.7         9/13/99  Slavek Psenicka 
 *  7    Gandalf   1.6         9/10/99  Slavek Psenicka 
 *  6    Gandalf   1.5         6/15/99  Slavek Psenicka adding support for live 

@@ -371,6 +371,8 @@ public class  PatternGroupNode extends AbstractNode {
 
 /* 
  * Log
+ *  8    Gandalf   1.7         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  7    Gandalf   1.6         9/15/99  Petr Hrebejk    Duplicity recognization 
  *       by EventSets made better
  *  6    Gandalf   1.5         9/13/99  Petr Hrebejk    Creating multiple 

@@ -44,3 +44,12 @@ interface IconBases {
     "/com/netbeans/developer/modules/beans/resources/eventSetUnicast";
   
   }
+/*
+ * Log
+ *  3    Gandalf   1.2         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  2    Gandalf   1.1         7/26/99  Petr Hrebejk    Better implementation of
+ *       patterns resolving
+ *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
+ * $
+ */

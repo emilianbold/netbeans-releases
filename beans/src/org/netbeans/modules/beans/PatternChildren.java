@@ -214,6 +214,8 @@ public class PatternChildren extends ClassChildren {
 
 /* 
  * Log
+ *  10   Gandalf   1.9         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         7/28/99  Petr Hrebejk    Property Mode change fix
  *  8    Gandalf   1.7         7/26/99  Petr Hrebejk    Better implementation of
  *       patterns resolving

@@ -198,6 +198,8 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
 
 /*
 * Log
+*  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
+*       Microsystems Copyright in File Comment
 *  4    Gandalf   1.3         7/26/99  Petr Hrebejk    Better implementation of 
 *       patterns resolving
 *  3    Gandalf   1.2         7/8/99   Jesse Glick     Context help.

@@ -337,3 +337,21 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
    
   }
 }
+
+/*
+ * Log
+ *  8    Gandalf   1.7         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  7    Gandalf   1.6         9/24/99  Petr Hrebejk    Rename of properties 
+ *       from popupmenu fixed
+ *  6    Gandalf   1.5         9/13/99  Petr Hrebejk    Creating multiple 
+ *       Properties/EventSet with the same name vorbiden. Forms made i18n
+ *  5    Gandalf   1.4         7/28/99  Petr Hrebejk    Property Mode change fix
+ *  4    Gandalf   1.3         7/26/99  Petr Hrebejk    Better implementation of
+ *       patterns resolving
+ *  3    Gandalf   1.2         7/21/99  Petr Hrebejk    Bug fixes interface 
+ *       bodies, is for boolean etc
+ *  2    Gandalf   1.1         7/8/99   Jesse Glick     Context help.
+ *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
+ * $
+ */

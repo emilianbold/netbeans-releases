@@ -55,6 +55,8 @@ static final long serialVersionUID =-223515979547554815L;
 
 /*
 * <<Log>>
+*  3    Gandalf   1.2         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
+*       Microsystems Copyright in File Comment
 *  2    Gandalf   1.1         8/17/99  Ian Formanek    Generated serial version 
 *       UID
 *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 

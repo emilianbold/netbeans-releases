@@ -112,6 +112,8 @@ public abstract class  Pattern extends Object {
 
 /* 
  * Log
+ *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  4    Gandalf   1.3         9/13/99  Petr Hrebejk    Creating multiple 
  *       Properties/EventSet with the same name vorbiden. Forms made i18n
  *  3    Gandalf   1.2         7/26/99  Petr Hrebejk    Better implementation of

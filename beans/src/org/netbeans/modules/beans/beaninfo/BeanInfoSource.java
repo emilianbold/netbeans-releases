@@ -259,3 +259,14 @@ public class BeanInfoSource extends Object {
   */
 
 }
+
+/*
+ * Log
+ *  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  3    Gandalf   1.2         7/28/99  Petr Hrebejk    Property Mode change fix
+ *  2    Gandalf   1.1         7/26/99  Petr Hrebejk    BeanInfo fix & Code 
+ *       generation fix
+ *  1    Gandalf   1.0         7/26/99  Petr Hrebejk    
+ * $
+ */

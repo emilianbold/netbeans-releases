@@ -536,6 +536,8 @@ public final class ColorEditor implements PropertyEditor {
 
 /*
  * Log
+ *  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  3    Gandalf   1.2         7/8/99   Jesse Glick     Context help.
  *  2    Gandalf   1.1         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----

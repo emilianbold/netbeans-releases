@@ -550,6 +550,8 @@ public class EventSetPattern extends Pattern {
 
 /* 
  * Log
+ *  11   Gandalf   1.10        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  10   Gandalf   1.9         9/13/99  Petr Hrebejk    Creating multiple 
  *       Properties/EventSet with the same name vorbiden. Forms made i18n
  *  9    Gandalf   1.8         8/17/99  Petr Hrebejk    Combo box with well 

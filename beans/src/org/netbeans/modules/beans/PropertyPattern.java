@@ -718,6 +718,8 @@ public class PropertyPattern extends Pattern {
 
 /* 
  * Log
+ *  9    Gandalf   1.8         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  8    Gandalf   1.7         10/10/99 Petr Hamernik   console debug messages 
  *       removed.
  *  7    Gandalf   1.6         9/13/99  Petr Hrebejk    Creating multiple 

@@ -546,6 +546,8 @@ public class PatternAnalyser extends Object implements Node.Cookie {
 
 /* 
  * Log
+ *  8    Gandalf   1.7         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  7    Gandalf   1.6         8/2/99   Petr Hrebejk    EventSetNode chilfren & 
  *       EventSets types with src. code fixed
  *  6    Gandalf   1.5         7/29/99  Petr Hrebejk    Fix - change 

@@ -323,6 +323,8 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
 
 /*
 * Log
+*  6    Gandalf   1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
+*       Microsystems Copyright in File Comment
 *  5    Gandalf   1.4         9/24/99  Petr Hrebejk    Rename of properties from
 *       popupmenu fixed
 *  4    Gandalf   1.3         7/28/99  Petr Hrebejk    Property Mode change fix

@@ -506,6 +506,8 @@ public class Specification implements DatabaseSpecification {
 
 /*
 * <<Log>>
+*  10   Gandalf   1.9         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
+*       Microsystems Copyright in File Comment
 *  9    Gandalf   1.8         10/12/99 Radko Najman    debug messages removed
 *  8    Gandalf   1.7         9/27/99  Slavek Psenicka setMetaDataAdaptorClassName
 *        changed

@@ -84,6 +84,8 @@ public interface DatabaseSpecification {
 
 /*
 * <<Log>>
+*  3    Gandalf   1.2         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
+*       Microsystems Copyright in File Comment
 *  2    Gandalf   1.1         9/13/99  Slavek Psenicka 
 *  1    Gandalf   1.0         9/10/99  Slavek Psenicka 
 * $

@@ -628,6 +628,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
 }
 /* 
  * Log
+ *  9    Gandalf   1.8         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  8    Gandalf   1.7         10/11/99 Petr Hrebejk    JDK 
  *       IndexedPropertyDescriptor bug fix
  *  7    Gandalf   1.6         8/18/99  Petr Hrebejk    BeanInfo analyse moved 

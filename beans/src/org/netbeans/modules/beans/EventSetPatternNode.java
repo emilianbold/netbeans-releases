@@ -273,6 +273,8 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
 
 /*
 * Log
+*  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
+*       Microsystems Copyright in File Comment
 *  4    Gandalf   1.3         8/2/99   Petr Hrebejk    EventSetNode chilfren & 
 *       EventSets types with src. code fixed
 *  3    Gandalf   1.2         7/26/99  Petr Hrebejk    Better implementation of 

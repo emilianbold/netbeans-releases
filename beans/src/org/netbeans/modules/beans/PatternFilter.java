@@ -40,3 +40,12 @@ public class PatternFilter extends ClassElementFilter {
 
 }
 
+
+/*
+ * Log
+ *  3    Gandalf   1.2         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  2    Gandalf   1.1         7/1/99   Jan Jancura     Object Browser support
+ *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
+ * $
+ */

@@ -3931,3 +3931,15 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 
 
 
+
+/*
+ * <<Log>>
+ *  6    Gandalf   1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  5    Gandalf   1.4         9/30/99  Slavek Psenicka 
+ *  4    Gandalf   1.3         9/29/99  Slavek Psenicka 
+ *  3    Gandalf   1.2         9/15/99  Slavek Psenicka 
+ *  2    Gandalf   1.1         9/13/99  Slavek Psenicka 
+ *  1    Gandalf   1.0         9/10/99  Slavek Psenicka 
+ * $
+ */

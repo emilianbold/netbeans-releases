@@ -28,3 +28,11 @@ public interface DatabaseMetaDataAdaptor extends DatabaseMetaData
 	public void setConnection(Connection conn) throws SQLException;
 }
 
+
+/*
+ * <<Log>>
+ *  2    Gandalf   1.1         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  1    Gandalf   1.0         9/10/99  Slavek Psenicka 
+ * $
+ */

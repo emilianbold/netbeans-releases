@@ -105,6 +105,8 @@ public class IconEditor extends Object {
 
 /*
 * Log
+*  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
+*       Microsystems Copyright in File Comment
 *  3    Gandalf   1.2         8/17/99  Ian Formanek    Fixed bug 3431 - Forms 
 *       which contain icons referring to non-existing images on Class-path fail 
 *       to load.

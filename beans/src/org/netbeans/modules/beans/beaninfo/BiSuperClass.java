@@ -92,6 +92,8 @@ class BiSuperClass extends Object {
 
 /* 
  * Log
+ *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  4    Gandalf   1.3         7/29/99  Petr Hrebejk    Patterns in BeanInfo 
  *       show correctly only public fields and methods
  *  3    Gandalf   1.2         7/28/99  Petr Hrebejk    Property Mode change fix

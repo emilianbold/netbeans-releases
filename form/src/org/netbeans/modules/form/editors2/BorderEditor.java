@@ -427,6 +427,8 @@ public final class BorderEditor extends PropertyEditorSupport { // implements or
 
 /*
  * Log
+ *  10   Gandalf   1.9         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         8/13/99  Jaroslav Tulach ExplorerManager change
  *  8    Gandalf   1.7         8/9/99   Ian Formanek    Generated Serial Version
  *       UID

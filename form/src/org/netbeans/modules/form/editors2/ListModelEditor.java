@@ -35,6 +35,8 @@ public class ListModelEditor extends Object {
 
 /*
  * Log
+ *  2    Gandalf   1.1         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  1    Gandalf   1.0         4/12/99  Ian Formanek    
  * $
  */
