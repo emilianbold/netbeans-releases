@@ -7,13 +7,12 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.welcome;
 
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.*;
 import org.openide.windows.*;
@@ -26,7 +25,7 @@ import javax.accessibility.*;
 import org.openide.ErrorManager;
 
 /**
- *
+ * The welcome screen.
  * @author  Richard Gregor
  */
 class WelcomeComponent extends TopComponent{
@@ -52,7 +51,6 @@ class WelcomeComponent extends TopComponent{
      */    
     
     private void doInitialize() {
-        setCloseOperation(TopComponent.CLOSE_EACH);
         initAccessibility();
         
         try{
