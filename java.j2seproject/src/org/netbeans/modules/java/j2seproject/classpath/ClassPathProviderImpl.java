@@ -16,32 +16,43 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
+import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
  * Defines the various class paths for a J2SE project.
  */
-public final class ClassPathProviderImpl implements ClassPathProvider {
+public final class ClassPathProviderImpl implements ClassPathProvider, AntProjectListener {
     
     private final AntProjectHelper helper;
     private final Reference[] cache = new SoftReference[7];
-    
+
+    private final Map dirCache = new HashMap ();
+
     public ClassPathProviderImpl(AntProjectHelper helper) {
         this.helper = helper;
+        this.helper.addAntProjectListener (this);
     }
-    
-    private FileObject getDir(String propname) {
-        String prop = helper.evaluate(propname);
-        if (prop != null) {
-            return helper.resolveFileObject(prop);
-        } else {
-            return null;
+
+    private synchronized FileObject getDir(String propname) {
+        FileObject fo = (FileObject) this.dirCache.get (propname);
+        if (fo == null ||  !fo.isValid()) {
+            String prop = helper.evaluate(propname);
+            if (prop != null) {
+                fo = helper.resolveFileObject(prop);
+                this.dirCache.put (propname, fo);
+            }
         }
+        return fo;
     }
     
     private FileObject getPrimarySrcDir() {
@@ -208,6 +219,14 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         assert false;
         return null;
     }
-    
+
+
+    public void configurationXmlChanged(AntProjectEvent ev) {
+    }
+
+    public synchronized void propertiesChanged(AntProjectEvent ev) {
+        this.dirCache.clear();
+    }
+
 }
 
