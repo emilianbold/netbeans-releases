@@ -27,7 +27,7 @@
    <mapID target="org.netbeans.modules.testtools.wizards.TestSuiteTargetPanel" url="testtools_wizards.html#SuiteTarg" />
    <mapID target="org.netbeans.modules.testtools.wizards.TestTypeSettingsPanel" url="testtools_wizards.html#TypeSet" />
 
-   <mapID target="org.netbeans.modules.testtools.generator.NodeEditorPanel" url="testtools_generator.html" />
+   <mapID target="org.netbeans.modules.testtools.generator.NodeEditorPanel" url="testtools_generator.html#editor" />
    <mapID target="org.netbeans.modules.testtools.generator.NodeGeneratorPanel" url="testtools_generator.html" />
 
    <mapID target="org.netbeans.modules.testtools.generator.JellyComponentGeneratorProvider" url="testtools_intro.html" />
