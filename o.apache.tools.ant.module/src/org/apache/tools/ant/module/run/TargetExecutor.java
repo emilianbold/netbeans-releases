@@ -100,6 +100,12 @@ public class TargetExecutor implements Runnable {
         } else {
             name = NbBundle.getMessage (TargetExecutor.class, "TITLE_output_notarget", projectName, fileName);
         }
+        // remove & if available.
+        StringTokenizer st = new StringTokenizer (name, "&"); // NOI18N
+        StringBuffer sb = new StringBuffer (st.nextToken());
+        while (st.hasMoreTokens ()) sb.append (st.nextToken ());
+        name = sb.toString ();
+
         final ExecutorTask task;
         synchronized (this) {
             // Note that this redirects stdout/stderr from
