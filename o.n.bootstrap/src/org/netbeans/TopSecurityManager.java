@@ -185,9 +185,13 @@ public class TopSecurityManager extends SecurityManager {
                         c != System.class &&
                         c != Boolean.class) {
                     String n = c.getName();
-                    synchronized (warnedClassesNDE) {
+                    synchronized (warnedClassesNH) {
                         if (warnedClassesNH.add(n)) {
-                            System.err.println("Warning: use of system property netbeans.home in " + n + " has been obsoleted in favor of InstalledFileLocator"); // NOI18N
+                            if (
+                                !n.equals ("org.netbeans.core.LookupCache") // NOI18N
+                            ) {
+                                System.err.println("Warning: use of system property netbeans.home in " + n + " has been obsoleted in favor of InstalledFileLocator"); // NOI18N
+                            }
                         }
                     }
                     break;
