@@ -8,78 +8,29 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="QA performance tests" basedir="." default="all">
 
-    <!-- Root folders -->
-    <property name="nball.dir" location="../../../nb_all"/>
-    <property name="nbextra.dir" location="../../../nbextra"/>
-    <property name="nbextra.qa.performance.dist.dir" location="${nbextra.dir}/qa/performance/dist"/>
-    
-    <property file="project.properties"/>
+    <!-- Imports defaults for Performance testing. -->
+    <import file="build-performance-tests.xml"/>
 
-    <!-- path reference used in both compiler and executor -->
-    <path id="jemmy.and.jelly.path">
-        <pathelement location="${nball.dir}/jemmy/builds/jemmy.jar"/>
-        <pathelement location="${nball.dir}/jellytools/builds/jelly2-nb.jar"/>
-    </path>
-
-    <!-- path reference used in tests -->
-    <path id="guitracker.path">
-        <pathelement location="${nball.dir}/performance/guitracker/dist/guitracker.jar"/>
-    </path>
-    
-    <!-- Replace original netbeans.conf with released netbeans.conf -->
-    <target name="copy_released_ide_cfg_file">
-        <move file="${netbeans.dest.dir}/etc/netbeans.conf" tofile="${netbeans.dest.dir}/etc/netbeans.conf.original" />
-        <copy file="netbeans.conf" tofile="${netbeans.dest.dir}/etc/netbeans.conf" />
-    </target>
-
-    <!-- Replace released netbeans.conf with original netbeans.conf -->
-    <target name="copy_original_ide_cfg_file">
-        <move file="${netbeans.dest.dir}/etc/netbeans.conf.original" tofile="${netbeans.dest.dir}/etc/netbeans.conf" />
-    </target>
-
-    <!-- Copy and unzip project JEdit from close source path, will be used for Performance tests -->
-    <target name="copy_unzip_jedit_project">
-        <unzip src="${jedit.location}" dest="${xtest.tmpdir}/"/>
-    </target>
-    
-    <!-- Copy and unzip project PerformanceTestFolderData from close source path, will be used for Performance tests -->
-    <target name="copy_unzip_test_folder_project">
-        <unzip src="${nbextra.dir}/qa/projectized/PerformanceTestFoldersData.zip" dest="${xtest.tmpdir}/"/>
-    </target>
-    
-    <!-- Imports default qa-functional-compiler and runidetest executor.
-        jemmy and jellytools jars are on classpath for both. -->
-    <import file="${nball.dir}/nbbuild/templates/xtest-qa-functional.xml"/>
-    <property file="${nball.dir}/nbbuild/directories.properties"/>
-    
     <!-- compilation classpath -->
     <path id="compiletest.classpath">        
-        <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
         <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-        <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-        <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
-            
+        
         <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
+        <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor.jar"/>
         <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
         <pathelement location="${editor/plain.dir}/${nb.modules.dir}/org-netbeans-modules-editor-plain.jar"/>
+        
         <pathelement location="${web/jspsyntax.dir}/${nb.modules.dir}/org-netbeans-modules-web-core-syntax.jar"/>
+        
         <pathelement location="${xml/text-edit.dir}/${nb.modules.dir}/xml-text-edit.jar"/>
-            
-        <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor.jar"/>
         
         <pathelement location="${java.dir}/${nb.modules.dir}/org-netbeans-modules-java.jar"/>
-            
-        <pathelement location="${vcsgeneric.dir}/${nb.modules.dir}/vcsgen.jar"/>
-        <pathelement location="${vcscore.dir}/${nb.modules.dir}/org-netbeans-modules-vcscore.jar"/>
-        
-        <pathelement location="${projects/projectui.dir}/${nb.modules.dir}/org-netbeans-modules-projectui.jar"/>
-        <pathelement location="${projects/projectapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectapi.jar"/>
     </path>
 
                 
@@ -99,10 +50,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
     <!-- Overrides default qa-functional-compiler because we need something 
          more on classpath -->
-    <target name="qa-functional-compiler">
-        <!-- build guitracker library first -->
-        <ant dir="../guitracker" antfile="../guitracker/build-for-tests.xml" target="jar"/>
-
+    <target name="qa-functional-compiler" depends="compile_guitracker">
         <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
             <classpath>
                 <path refid="compiletest.classpath"/>
@@ -123,18 +71,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="runidesetup" depends="copy_unzip_jedit_project,copy_unzip_test_folder_project">
         <antcall target="copy_released_ide_cfg_file"/>
 
-<!--        <copy todir="${xtest.sketchpad}/webdir">
-          <fileset dir="qa-functional/data/webdir"/>
-        </copy>
-        <mkdir dir="${xtest.sketchpad}/webdir/WEB-INF/lib"/>
-
-        <copy todir="${xtest.sketchpad}/vcsdir">
-          <fileset dir="qa-functional/data/vcsdir" defaultexcludes="no"/>
-          <fileset dir="qa-functional/src" defaultexcludes="no">
-                <include name="gui/data/*"/>
-           </fileset>
-        </copy>
--->
         <executeTests pluginName="ide">
             <classpath refid="jemmy.and.jelly.path"/>
             
@@ -224,5 +160,5 @@ Microsystems, Inc. All Rights Reserved.
         
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
-        
+
 </project>

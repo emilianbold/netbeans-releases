@@ -8,45 +8,25 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="Measure startup time and memory usage" basedir="." default="all">
 
-    <!-- Root folders -->
-    <property name="nball.dir" location="../../../nb_all"/>
-    <property name="nbextra.dir" location="../../../nbextra"/>
-    <property name="nbextra.qa.performance.dist.dir" location="${nbextra.dir}/qa/performance/dist"/>
-    <property name="guitracker.dist.jar" location="${nball.dir}/performance/guitracker/dist/guitracker.jar"/>
     
-    <!-- Imports default set boot classpath for appropriate JDK used for testing,
-        unzip projects for testing. -->
-    <import file="${nbextra.qa.performance.dist.dir}/build-performance-tests.xml"/>
+    <!-- Imports defaults for Performance testing. -->
+    <import file="build-performance-tests.xml"/>
 
-    <import file="../../nbbuild/default.xml"/>
+<!--    <import file="../../nbbuild/default.xml"/>
     <property file="../../nbbuild/directories.properties"/>
+-->
 
-    <!-- path reference used in both compiler and executor -->
-    <path id="jemmy.and.jelly.path">
-        <pathelement location="${nball.dir}/jemmy/builds/jemmy.jar"/>
-        <pathelement location="${nball.dir}/jellytools/builds/jelly2-nb.jar"/>
-    </path>
-    
-    <!-- path reference used in both compiler and executor -->
-    <path id="guitracker.path">
-        <pathelement location="${nball.dir}/performance/guitracker/dist/guitracker.jar"/>
-    </path>
-    
-        
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->
     
-    <target name="unit-compiler">
-        <!-- build guitracker library first -->
-        <ant dir="../guitracker" antfile="../guitracker/build-for-tests.xml" target="jar"/>
-        
+    <target name="unit-compiler" depends="compile_guitracker">
         <buildTests srcDir="unit/src" compileexcludes="**/data/**">
             <classpath refid="jemmy.and.jelly.path"/>
         </buildTests>
@@ -122,17 +102,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Utils     -->
     <!-- ========= -->
     
-    <!-- Replace original netbeans.conf with released netbeans.conf -->
-    <target name="copy_released_ide_cfg_file">
-        <move file="${netbeans.dest.dir}/etc/netbeans.conf" tofile="${netbeans.dest.dir}/etc/netbeans.conf.original" />
-        <copy file="netbeans.conf" tofile="${netbeans.dest.dir}/etc/netbeans.conf" />
-    </target>
-
-    <!-- Replace released netbeans.conf with original netbeans.conf -->
-    <target name="copy_original_ide_cfg_file">
-        <move file="${netbeans.dest.dir}/etc/netbeans.conf.original" tofile="${netbeans.dest.dir}/etc/netbeans.conf" />
-    </target>
-
     <!-- Prepare PS utils to be available from IDE during test -->    
     <target name="prepare_measure_memory">
         <copy file="${nbextra.qa.performance.dist.dir}/pslist.exe" tofile="${xtest.tmpdir}/pslist.exe" />
