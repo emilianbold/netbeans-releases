@@ -22,7 +22,7 @@ import javax.swing.event.ChangeListener;
 
 import com.netbeans.ide.loaders.DataLoader;
 import com.netbeans.ide.loaders.DataLoaderPool;
-import com.netbeans.ide.modules.Section;
+import com.netbeans.ide.modules.ManifestSection;
 import com.netbeans.ide.TopManager;
 import com.netbeans.ide.actions.*;
 import com.netbeans.ide.nodes.*;
@@ -152,7 +152,7 @@ public final class LoaderPoolNode extends AbstractNode {
   * @param s adds loader section
   * @exception IllegalArgumentException if the loader is already there
   */
-  public static synchronized void add (Section.LoaderSection s) throws InstantiationException {
+  public static synchronized void add (ManifestSection.LoaderSection s) throws InstantiationException {
     if (sections == null) {
       add (s.getLoader (), s.getInstallBefore (), s.getInstallAfter ());
     } else {
@@ -277,7 +277,7 @@ public final class LoaderPoolNode extends AbstractNode {
   /** Method for initialization of loaders. Initializes the loaders by the
   * ones provided in the sections and reflects their mutual dependences.
   *
-  * @param sections collection of Section.LoaderSection objects
+  * @param sections collection of ManifestSection.LoaderSection objects
   * @return list of loaders
   */
   private static List initialize (Collection sections) {
@@ -286,7 +286,7 @@ public final class LoaderPoolNode extends AbstractNode {
 
     Iterator it = sections.iterator ();
     while (it.hasNext ()) {
-      Section.LoaderSection s = (Section.LoaderSection)it.next ();
+      ManifestSection.LoaderSection s = (ManifestSection.LoaderSection)it.next ();
 
       DataLoader l;
       try {
@@ -569,6 +569,8 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  15   Gandalf   1.14        4/7/99   Ian Formanek    Rename 
+*       Section->ManifestSection
 *  14   Gandalf   1.13        3/30/99  Jaroslav Tulach Form loader before Java 
 *       loaderem.
 *  13   Gandalf   1.12        3/26/99  Ian Formanek    Fixed use of obsoleted 
