@@ -30,11 +30,9 @@ public class ProductInformationPanel extends JPanel {
     private static final Color COLOR = Color.black;
 
     private static Dialog dialog;
-    private static ResourceBundle bundle;
 
     public ProductInformationPanel() {
         dialog = null;
-        bundle = null;
         initComponents();
         updateLabelFont(productInformationLabel, Font.BOLD, FONT_SIZE_PLUS, COLOR);
         updateLabelFont(productVersionLabel, Font.BOLD, COLOR);
@@ -103,7 +101,7 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(ideImageLabel, gridBagConstraints1);
         
-        productInformationLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_ProductInformation"));
+        productInformationLabel.setText(getProductInformationTitle());
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
         gridBagConstraints1.gridy = 0;
@@ -347,13 +345,6 @@ public class ProductInformationPanel extends JPanel {
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 
-    private String getBundleString (String key) {
-        if(bundle == null) {
-            bundle = NbBundle.getBundle("org/netbeans/core/ui/Bundle");
-        }
-        return bundle.getString(key);
-    }
-
     private void updateLabelFont (JLabel label, Color color) {
         updateLabelFont(label, 0, 0f, color);
     }
@@ -382,6 +373,13 @@ public class ProductInformationPanel extends JPanel {
                 "gif", // NOI18N
                 Locale.getDefault(),
                 ProductInformationPanel.class.getClassLoader())));
+    }
+
+    private String getProductInformationTitle () {
+        return NbBundle.getBundle("org.netbeans.core.ui.Bundle",
+                                   Locale.getDefault(),
+                                   ProductInformationPanel.class.getClassLoader()
+                ).getString("LBL_ProductInformation");
     }
 
     private String getProductVersionValue () {
