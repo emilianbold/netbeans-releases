@@ -486,9 +486,6 @@ public class JavaCodeGenerator extends CodeGenerator {
   
   private synchronized void generatePropertySetter (RADComponent comp, RADComponent.RADProperty prop, Writer initCodeWriter) throws IOException {
     PropertyDescriptor desc = prop.getPropertyDescriptor ();
-/*    if (prop instanceof RADComponent.RADPropertyImpl) {
-      ((RADComponent.RADPropertyImpl)prop).ps.println (">>> generatePropertySetter: " +((RADComponent.RADPropertyImpl)prop).count+", : "+ prop + ", : "+prop.getCurrentEditor ()+", thread: "+Thread.currentThread ().getName ());
-    } */
     Method writeMethod = desc.getWriteMethod ();
     PropertyEditor ed = null;
     try {
@@ -501,12 +498,7 @@ public class JavaCodeGenerator extends CodeGenerator {
       if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
       return; // cannot generate code for this property without the property editor
     }
-//    System.out.println ("*&*&*&*& Generate setter: "+prop+", : "+ed);
-//    if (prop instanceof RADComponent.RADPropertyImpl) {
-//    System.out.println ("Cha cha...");
-//      ((RADComponent.RADPropertyImpl)prop).ps.println (">>> generatePropertySetter: ED: " +ed);
-//      ((RADComponent.RADPropertyImpl)prop).ps.flush ();
-//    } else { System.out.println ("Property not Impl: "+prop); }
+
     Object value = null;
     try {
       value = prop.getValue ();
@@ -548,6 +540,13 @@ public class JavaCodeGenerator extends CodeGenerator {
       javaInitializationString = "null";
     }
 
+    String preCode = prop.getPreCode ();
+    String postCode = prop.getPostCode ();
+
+    if (preCode != null) {
+      initCodeWriter.write (preCode);
+      if (!preCode.endsWith ("\n")) initCodeWriter.write ("\n");
+    }
     // if the setter throws checked exceptions, we must generate try/catch block around it.
     Class[] exceptions = writeMethod.getExceptionTypes ();
     if (exceptions.length > 0) {
@@ -581,6 +580,11 @@ public class JavaCodeGenerator extends CodeGenerator {
       if (j == exceptions.length - 1) {
         initCodeWriter.write ("}\n");
       }
+    }
+
+    if (postCode != null) {
+      initCodeWriter.write (postCode);
+      if (!postCode.endsWith ("\n")) initCodeWriter.write ("\n");
     }
   }
           
@@ -1218,6 +1222,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  47   Gandalf   1.46        9/10/99  Ian Formanek    Added pre/postcode 
+ *       generation
  *  46   Gandalf   1.45        9/6/99   Ian Formanek    Correctly works with 
  *       separators - fixes bug 3703 - When a new separator is created usng New 
  *       > Separator in a menu, an exception is thrown.
