@@ -14,7 +14,6 @@
 package org.netbeans.modules.java.freeform.ui;
 
 import java.awt.Component;
-import java.awt.FontMetrics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -39,8 +38,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -61,10 +58,11 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Wizard panel which lets user select source and test package roots and source level.
+ * Also shows some other info.
  * @author  David Konecny
  */
-public class SourceFoldersPanel extends javax.swing.JPanel implements org.openide.util.HelpCtx.Provider, ListSelectionListener {
+public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, ListSelectionListener {
     
     private SourcesModel sourceFoldersModel;
     private SourcesModel testFoldersModel;
@@ -635,7 +633,7 @@ nextRoot:   for (int i=0; i<files.length; i++) {
                     sf.location = location;
                     sf.type = ProjectModel.TYPE_JAVA;
                     sf.style = JavaProjectNature.STYLE_PACKAGES;
-                    sf.label = getDefaultLabel(sf.location);
+                    sf.label = getDefaultLabel(sf.location, isTests);
                     model.addSourceFolder(sf, isTests);
                 }
             }
@@ -679,7 +677,13 @@ nextRoot:   for (int i=0; i<files.length; i++) {
         DialogDisplayer.getDefault().notify(dd);
     }
     
-    private String getDefaultLabel(String location) {
+    static String getDefaultLabel(String location, boolean isTests) {
+        if (location.equals(".") || ProjectConstants.PROJECT_LOCATION_PREFIX.equals(location + "/")) { // NOI18N
+            // #54428 - src dir *is* project dir, so use a more reasonable name.
+            return isTests ?
+                NbBundle.getMessage(SourceFoldersPanel.class, "LBL_default_test_packages") :
+                NbBundle.getMessage(SourceFoldersPanel.class, "LBL_default_source_packages");
+        }
         // #47386 - remove "${project.dir}/" from label
         String relloc = location;
         if (relloc.startsWith(ProjectConstants.PROJECT_LOCATION_PREFIX)) {
@@ -888,7 +892,7 @@ nextRoot:   for (int i=0; i<files.length; i++) {
             JavaProjectGenerator.SourceFolder sf = getItem(rowIndex, tests);
             sf.label = (String)val;
             if (sf.label.length() == 0) {
-                sf.label = getDefaultLabel(sf.location);
+                sf.label = getDefaultLabel(sf.location, tests);
             }
         }
         
