@@ -55,7 +55,7 @@ public class CLIOptions2 extends CLIHandler implements Runnable {
         java.awt.Frame f = org.openide.windows.WindowManager.getDefault ().getMainWindow ();
 
         // makes sure the frame is visible
-        f.show ();
+        f.setVisible(true);
         // uniconifies the frame if it is inconified
         if ((f.getExtendedState () & java.awt.Frame.ICONIFIED) != 0) {
             f.setExtendedState (~java.awt.Frame.ICONIFIED & f.getExtendedState ());
