@@ -16,8 +16,9 @@ Microsystems, Inc. All Rights Reserved.
     <target name="unscramble">
         <taskdef name="unscramble" classname="org.netbeans.nbbuild.Unscramble" classpath="${extnl}/scrambler.jar"/>
         <unscramble logfile="${extnl}/unscrambling.log">
-            <!-- LFI #105463: -->
+            <!-- LFI #2044: -->
             <binary clear="ant-1.4.1.jar" scrambled="ant-1.4.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
+            <!-- LFI #1318: -->
             <binary clear="junit-3.8.1.jar" scrambled="junit-3.8.1.jar.scrambled" license="ibm-public-license.txt"/>
         </unscramble>
     </target>
