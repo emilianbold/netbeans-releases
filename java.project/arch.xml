@@ -1,10 +1,22 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?><!-- -*- sgml-indent-step: 1 -*- -->
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
   <!ENTITY api-questions SYSTEM "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
 ]>
 
 <api-answers
-  question-version="1.23"
+  question-version="1.24"
   module="java/project"
   author="jglick@netbeans.org"
 >
@@ -32,6 +44,13 @@
    The Java Project API is actually entirely SPI and supplies useful
    implementations of Java-related functionality specific to the project system.
   </api>
+  <api group="java" name="ProjectClassPathExtender" type="export" category="friend">
+   <p>
+    Implemented by <code>java/j2seproject</code> and asked for by
+    <code>form</code>. Permits the Form Editor to add JavaBeans archives to the
+    classpath of a J2SE project automatically.
+   </p>
+  </api>
  </answer>
 
 
@@ -50,7 +69,8 @@
 -->
  <answer id="arch-quality">
   <p>
-   Ought to be covered by unit tests.
+   Non-GUI portions (including node-based UI) ought to be covered by unit tests.
+   GUI portions may be covered by IDE-wide functional tests.
   </p>
  </answer>
 
@@ -69,7 +89,7 @@
 -->
  <answer id="arch-time">
   <p>
-   Partially complete. Java-oriented template wizard support is outstanding.
+   Essentially complete.
   </p>
  </answer>
 
@@ -207,10 +227,100 @@
         </question>
 -->
  <answer id="dep-nb">
-  <p>
-   Filesystems, Nodes, Datasystems (for template wizard API only), Project API,
-   Java Support APIs, JUnit API.
-  </p>
+  <ol>
+   <li>
+    <api group="java" name="Filesystems" type="import" category="official">
+     <p>
+      Various purposes.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="Nodes" type="import" category="official">
+     <p>
+      Used for package view and perhaps for templates UI.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="Datasystems" type="import" category="official">
+     <p>
+      Miscellaneous internal purposes.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="Wizards" type="import" category="official">
+     <p>
+      Implementation of Java-specific template wizards.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="ProjectAPI" type="import" category="devel">
+     <p>
+      Various purposes.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="JavaSupportAPIs" type="import" category="official">
+     <p>
+      Delegation of Java-specific queries.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="AntModuleAPI" type="import" category="devel">
+     <p>
+      <code>AntLogger</code> implementation to hyperlink stack traces.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="JavaPlatformAPI" type="import" category="devel">
+     <p>
+      Broken references correction GUI.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="ProjectLibrariesAPI" type="import" category="devel">
+     <p>
+      Broken references correction GUI.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="SearchAPI" type="import" category="devel">
+     <p>
+      Special searching semantics in the package view.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="ProjectUIAPI" type="import" category="devel">
+     <p>
+      Various purposes; at least, template GUI.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="GeneralQueriesAPI" type="import" category="devel">
+     <p>
+      API used for various purposes.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="layer" name="JavaModuleTemplates" type="import" category="friend">
+     <p>
+      Temporary home to add project-specific wizard iterators to Java language
+      templates. Planned to be done differently in the future.
+     </p>
+    </api>
+   </li>
+  </ol>
  </answer>
 
 
@@ -265,9 +375,20 @@
         </question>
 -->
  <answer id="deploy-dependencies">
-  <!-- XXX details -->
   <p>
-   Regular module dependency.
+   For normal usage:
+  </p>
+  <pre>
+   OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java.project/0 &gt; @SPECIFICATION-VERSION@
+  </pre>
+  <p>
+   For access to <code>ProjectClassPathExtender</code>:
+  </p>
+  <pre>
+   OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java.project/0 = ${java.project.impl.version}
+  </pre>
+  <p>
+   with the property taken from <code>java/project/spec-ver.properties</code>.
   </p>
  </answer>
 
@@ -331,7 +452,8 @@
 -->
  <answer id="deploy-packages">
   <p>
-   Only API and SPI packages are exported.
+   Only API and SPI packages are exported as public.
+   <code>ProjectClassPathExtender</code> requires an implementation dependency.
   </p>
  </answer>
 
@@ -495,7 +617,9 @@
 -->
  <answer id="exec-reflection">
   <p>
-   No.
+   Adjusts the context actions for Java source files, since the Java module does
+   not depend on project-specific APIs and there is no declarative registration
+   for <code>DataNode</code> context menus.
   </p>
  </answer>
 
@@ -542,7 +666,8 @@
 -->
  <answer id="format-clipboard">
   <p>
-   None.
+   None. Behavior of package view with respect to the clipboard has not been
+   fully specified.
   </p>
  </answer>
 
@@ -612,7 +737,8 @@
 -->
  <answer id="lookup-register">
   <p>
-   Delegating query implementations are registered to global lookup.
+   Delegating query implementations are registered to global lookup. The
+   <code>AntLogger</code> used for stack trace hyperlinking is registered.
   </p>
  </answer>
 
@@ -656,7 +782,7 @@
 -->
  <answer id="perf-huge_dialogs">
   <p>
-   No.
+   No, only template wizard panels.
   </p>
  </answer>
 
@@ -684,7 +810,7 @@
 -->
  <answer id="perf-mem">
   <p>
-   Should be minimal.
+   Should not be large. Not measured in case of package view.
   </p>
  </answer>
 
@@ -722,7 +848,7 @@
 -->
  <answer id="perf-progress">
   <p>
-   The package view currently finds subpackages synchronously but this will
+   The package view currently finds subpackages synchronously but this could
    probably be rewritten to run asynchronously.
   </p>
  </answer>
@@ -774,7 +900,7 @@
 -->
  <answer id="perf-startup">
   <p>
-   No.
+   Replaces actions for Java source file context menus.
   </p>
  </answer>
 
@@ -809,7 +935,7 @@
 -->
  <answer id="resources-file">
   <p>
-   No.
+   In a few places as circumstances require.
   </p>
  </answer>
 
@@ -832,7 +958,7 @@
 -->
  <answer id="resources-layer">
   <p>
-   No.
+   Registers iterators for Java templates.
   </p>
  </answer>
 
@@ -853,7 +979,7 @@
 -->
  <answer id="resources-mask">
   <p>
-   No.
+   Registers iterators for Java templates.
   </p>
  </answer>
 
@@ -876,5 +1002,40 @@
    No.
   </p>
  </answer>
+
+
+<!--
+        <question id="security-grant" when="final">
+            Does your code grant additional rights to some other code?
+            <hint>Avoid using a class loader that adds extra
+            permissions to loaded code unless really necessary.
+            Also note that your API implementation
+            can also expose unneeded permissions to enemy code by
+            calling AccessController.doPrivileged().</hint>
+        </question>
+-->
+ <answer id="security-grant">
+  <p>
+   No.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="security-policy" when="final">
+            Does your functionality require modifications to the standard policy file?
+            <hint>Your code might pass control to third-party code not
+            coming from trusted domains. This could be code downloaded over the
+            network or code coming from libraries that are not bundled
+            with NetBeans. Which permissions need to be granted to which domains?</hint>
+        </question>
+-->
+ <answer id="security-policy">
+  <p>
+   No.
+  </p>
+ </answer>
+
 
 </api-answers>
