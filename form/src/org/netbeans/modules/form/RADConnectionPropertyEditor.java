@@ -278,12 +278,23 @@ public class RADConnectionPropertyEditor
         }
 
         String getName() {
+            if (needsInit)
+                initialize();
+
             switch (type) {
-                case TYPE_PROPERTY: return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_PROPERTY_CONN"), new Object[] { radComponent.getName(), propertyName });
-                case TYPE_METHOD: return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_METHOD_CONN"), new Object[] { radComponent.getName(), methodName });
-                case TYPE_VALUE: return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_VALUE_CONN"), new Object[] { value });
-                case TYPE_CODE: return FormEditor.getFormBundle().getString("CTL_CODE_CONN");
-                case TYPE_BEAN: return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_BEAN_CONN"), new Object[] { radComponent.getName() });
+                case TYPE_PROPERTY:
+                    return radComponent == null ? null :
+                           MessageFormat.format(FormEditor.getFormBundle().getString("FMT_PROPERTY_CONN"), new Object[] { radComponent.getName(), propertyName });
+                case TYPE_METHOD: 
+                    return radComponent == null ? null :
+                           MessageFormat.format(FormEditor.getFormBundle().getString("FMT_METHOD_CONN"), new Object[] { radComponent.getName(), methodName });
+                case TYPE_VALUE:
+                    return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_VALUE_CONN"), new Object[] { value });
+                case TYPE_CODE:
+                    return FormEditor.getFormBundle().getString("CTL_CODE_CONN");
+                case TYPE_BEAN:
+                     return radComponent == null ? null :
+                            MessageFormat.format(FormEditor.getFormBundle().getString("FMT_BEAN_CONN"), new Object[] { radComponent.getName() });
             }
             throw new IllegalStateException();
         }
