@@ -182,6 +182,14 @@ implements ItemListener, Runnable {
     tabs.removeChangeListener (managersListener);
   }
   
+  /** Also requests focus for current tab */
+  public void requestFocus () {
+    super.requestFocus();
+    if (currentRoot != null) {
+      ((ExplorerPanel)rootsToPanels.get(currentRoot)).requestFocus();
+    }
+  }
+  
   /** Updates roots, selected panel, nodes, etc.
   */
   public void run () {
@@ -585,13 +593,21 @@ implements ItemListener, Runnable {
   */
   public static final class ExplorerTab extends ExplorerPanel {
     static final long serialVersionUID =-8202452314155464024L;
+    /** composited view */
+    private BeanTreeView view;
     
     public ExplorerTab (ExplorerManager m) {
       super (m);
       
-      BeanTreeView treeView = new BeanTreeView ();
+      view = new BeanTreeView ();
       setLayout (new BorderLayout ());
-      add (treeView);
+      add (view);
+    }
+
+    /** Request focus also for asociated view */
+    public void requestFocus () {
+      super.requestFocus();
+      view.requestFocus();
     }
   }
   
@@ -694,6 +710,8 @@ implements ItemListener, Runnable {
 
 /*
 * Log
+*  39   Gandalf   1.38        10/7/99  David Simonek   request focus related 
+*       bugs repaired
 *  38   Gandalf   1.37        9/22/99  Jaroslav Tulach Solving class cast 
 *       exception.  
 *  37   Gandalf   1.36        9/20/99  Jaroslav Tulach #1603
