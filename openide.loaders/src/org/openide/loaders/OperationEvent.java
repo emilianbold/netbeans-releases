@@ -29,12 +29,12 @@ public class OperationEvent extends EventObject {
 
     /** data object */
     private DataObject obj;
-
+    private static final DataLoaderPool pl = (DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class);
     /*
     */
     static final long serialVersionUID =-3884037468317843808L;
     OperationEvent(DataObject obj) {
-        super ((DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class));
+        super (pl);
         this.obj = obj;
     }
 

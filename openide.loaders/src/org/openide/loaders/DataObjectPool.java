@@ -40,6 +40,8 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     private static final ThreadLocal FIND = new ThreadLocal ();
     /** validator */
     private static final Validator VALIDATOR = new Validator ();
+
+    private static final List TOKEN = Collections.unmodifiableList(new ArrayList());
     
     /** hashtable that maps FileObject to DataObjectPool.Item */
     private HashMap map = new HashMap (512);
@@ -48,8 +50,8 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     private WeakSet knownFileSystems = new WeakSet();
     
     /** error manager to log what is happening here */
-    private final ErrorManager err = ErrorManager.getDefault().getInstance("org.openide.loaders.DataObject.find"); // NOI18N
-    private final boolean errLog = err.isLoggable(err.INFORMATIONAL);
+    private static final ErrorManager err = ErrorManager.getDefault().getInstance("org.openide.loaders.DataObject.find"); // NOI18N
+    private static final boolean errLog = err.isLoggable(err.INFORMATIONAL);
     
     /** the pool for all objects. Use getPOOL method instead of direct referencing
      * this field.
@@ -82,7 +84,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
      */
     private static Collection enterAllowContructor () {
         Collection prev = (Collection)FIND.get ();
-        FIND.set (new ArrayList ());
+        FIND.set (TOKEN);
         return prev;
     }
     
@@ -92,8 +94,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     private static void exitAllowConstructor (Collection previous) {
         List l = (List)FIND.get ();
         FIND.set (previous);
-        
-        getPOOL ().notifyCreationAll(l);
+        if (l != TOKEN) getPOOL ().notifyCreationAll(l);
     }
     
     /** Calls into one loader. Setups security condition to allow DataObject ocnstructor
@@ -390,6 +391,8 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     public void notifyCreation (DataObject obj) {
         notifyCreation (obj.item);
     }
+
+    private static final DataLoaderPool lp = (DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class);
     
     /** Notifies the creation of an item*/
     private void notifyCreation (Item item) {
@@ -418,8 +421,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
         
         DataObject obj = item.getDataObjectOrNull ();
         if (obj != null) {
-            DataLoaderPool pool = (DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class);
-            pool.fireOperationEvent (
+            lp.fireOperationEvent (
                 new OperationEvent (obj), OperationEvent.CREATE
             );
         }
@@ -480,6 +482,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     private void notifyAdd (Item item) {
         toNotify.add (item);
         List l = (List)FIND.get ();
+        if (l == TOKEN) FIND.set (l = new ArrayList());
         l.add (item);
     }
 
