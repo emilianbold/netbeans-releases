@@ -68,11 +68,11 @@ import org.openide.windows.TopComponent;
 public class TopComponentOperator extends JComponentOperator {
     
     static {
-        // Checks if you run on correct jemmy version. Writes message to jemmy log if not.
-        JellyVersion.checkJemmyVersion();
         // register NbInternalFrameDriver
         DriverManager.setWindowDriver(new NbInternalFrameDriver());
         DriverManager.setFrameDriver(new NbInternalFrameDriver());
+        // Checks if you run on correct jemmy version. Writes message to jemmy log if not.
+        JellyVersion.checkJemmyVersion();
         // need to set timeout for the case it was not set previously
         JemmyProperties.getCurrentTimeouts().initDefault("EventDispatcher.RobotAutoDelay", 0);
         DriverManager.setDriver(DriverManager.MOUSE_DRIVER_ID, 
