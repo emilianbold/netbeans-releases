@@ -528,7 +528,6 @@ is divided into following sections:
             </bootclasspath>
             </xsl:if>
         </nbjpdaconnect>
-        <nbbrowse url="${{client.url}}"/>
     </target>
 
     <target name="pre-debug-fix">
