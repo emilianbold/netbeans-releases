@@ -643,7 +643,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 } else {
                     // if there is some server instance of the type which was used
                     // previously do not ask and use it
-                    String serverType = getProperty(AntProjectHelper.PRIVATE_PROPERTIES_PATH, EjbJarProjectProperties.J2EE_SERVER_TYPE);
+                    String serverType = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.J2EE_SERVER_TYPE);
                     if (serverType != null) {
                         String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
                         if (servInstIDs.length > 0) {
