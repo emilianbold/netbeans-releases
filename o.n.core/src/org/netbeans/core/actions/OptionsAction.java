@@ -252,7 +252,7 @@ public class OptionsAction extends CallableSystemAction {
                             // set preferred colunm sizes
                             setTableColumnPreferredWidth (0, 20);
                             for (int i = 1; i < set.length; i++)
-                                setTableColumnPreferredWidth (i, 50);
+                                setTableColumnPreferredWidth (i, 60);
                         }
                     });
 
