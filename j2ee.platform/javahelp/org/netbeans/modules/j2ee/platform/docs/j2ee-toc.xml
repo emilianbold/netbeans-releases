@@ -70,7 +70,7 @@
           <tocitem text="About Creating and Editing JSP and HTML Files" target="about_jsp_edit" />
           <tocitem text="About JavaServer Pages Technology" target="about_jsp_technology" />
 	  <tocitem text="About JSP Syntax" target="about_jsp_syntax" />
-          <tocitem text="About JSP Encoding" target="jsp_encoding" />
+          <tocitem text="About JSP Character Encoding" target="jsp_encoding" />
 	  <tocitem text="Creating a JSP File" target="jsp_create" />
 	  <tocitem text="Creating an HTML File" target="html_create" />
 	  <tocitem text="Editing a JSP or HTML File" target="jsp_edit" />
