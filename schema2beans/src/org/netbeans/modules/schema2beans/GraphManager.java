@@ -580,59 +580,57 @@ public class GraphManager extends Object {
      *	Return the bean holding the property 'name' as a BaseBean object
      */
     public BaseBean getPropertyParent(String name) {
-	if (!name.startsWith("/"))	// NOI18N
-	    throw new IllegalArgumentException(Common.getMessage(
-		"NameShouldStartWithSlash_msg", name));
+        if (!name.startsWith("/"))	// NOI18N
+            throw new IllegalArgumentException(Common.getMessage(
+                                                                 "NameShouldStartWithSlash_msg", name));
 	
-	int		i1, i2, i;
-	String		beanName, indexName;
-	BaseBean	curBean = null;
+        int		i1, i2, i;
+        String		beanName, indexName;
+        BaseBean	curBean = null;
 	
-	i1 = 0;
+        i1 = 0;
 	
-	do {
-	    i1 = name.indexOf('/', i1);
-	    if (i1 != -1) {
-		i1++;
-		i2 = name.indexOf('/', i1);
-		if (i2 == -1) {
-		    if (curBean == null)
-			curBean = this.root;
-		    //	We reached the property, return the bean found
-		    break;
-		}
+        do {
+            i1 = name.indexOf('/', i1);
+            if (i1 != -1) {
+                i1++;
+                i2 = name.indexOf('/', i1);
+                if (i2 == -1) {
+                    if (curBean == null)
+                        curBean = this.root;
+                    //	We reached the property, return the bean found
+                    break;
+                }
 		
-		beanName = name.substring(i1, i2);
-		i = beanName.indexOf('.');
+                beanName = name.substring(i1, i2);
+                i = beanName.indexOf('.');
 		
-		if (i != -1) {
-		    indexName = beanName.substring(i+1);
-		    beanName = beanName.substring(0, i);
+                if (i != -1) {
+                    indexName = beanName.substring(i+1);
+                    beanName = beanName.substring(0, i);
 		    
-		    if (indexName.indexOf('i') != -1)
-			throw new IllegalStateException(
-			Common.getMessage(
-			    "CantFindBeanBecausePartOfNameRemoved_msg",
-			    beanName, name));
-		}
-		else
-		    indexName = "0";	// NOI18N
+                    if (indexName.indexOf('i') != -1)
+                        throw new IllegalStateException(
+                                                        Common.getMessage(
+                                                                          "CantFindBeanBecausePartOfNameRemoved_msg",
+                                                                          beanName, name));
+                } else
+                    indexName = "0";	// NOI18N
 		
-		if (curBean == null)
-		    curBean = this.root;
-		else
-		    curBean = curBean.propertyById(beanName,
-						   Integer.parseInt(indexName, 
-								    16));
+                if (curBean == null)
+                    curBean = this.root;
+                else
+                    curBean = curBean.propertyById(beanName,
+                                                   Integer.parseInt(indexName, 
+                                                                    16));
 		
-		if (curBean == null)
-		    throw new IllegalStateException(Common.getMessage(
-			"CantFindBeanMayHaveBeenRemoved_msg", beanName,  name));
-
-	    }
-	} while (i1 != -1);
+                if (curBean == null)
+                    throw new IllegalStateException(Common.getMessage(
+                                                                      "CantFindBeanMayHaveBeenRemoved_msg", beanName,  name));
+            }
+        } while (i1 != -1);
 	
-	return curBean;
+        return curBean;
     }
     
     

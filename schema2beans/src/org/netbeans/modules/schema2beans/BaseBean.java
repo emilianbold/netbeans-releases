@@ -315,8 +315,8 @@ public abstract class BaseBean implements Cloneable {
     /**
      *	Returns the list of properties of this bean as an array.
      */
-    Iterator beanPropsIterator() {
-	return this.propByName.values().iterator();
+    protected Iterator beanPropsIterator() {
+        return propByName.values().iterator();
     }
     
     /**
@@ -536,7 +536,7 @@ public abstract class BaseBean implements Cloneable {
      */
     public Iterator listChoiceProperties() {
 	IterateChoiceProperties it = new IterateChoiceProperties();
-	Iterator i = this.beanPropsIterator();
+	Iterator i = beanPropsIterator();
 	while (i.hasNext())
 	    it.add((BeanProp)i.next());
 	return it;
@@ -1132,7 +1132,7 @@ public abstract class BaseBean implements Cloneable {
      *	DOMBinding syncNodes() methods).
      */
     void syncNodes(BeanProp.Action a) {
-	Iterator i = this.propByName.values().iterator();
+	Iterator i = beanPropsIterator();
 	
 	while (i.hasNext()) {
 	    BeanProp prop = (BeanProp)i.next();
@@ -1145,12 +1145,12 @@ public abstract class BaseBean implements Cloneable {
      *	Build the current path up to the root node. See the BeanProp object
      *	for more details.
      */
-    void buildPathName(StringBuffer str) {
-	if (this.binding != null) {
-	    BeanProp p = this.binding.getBeanProp(this);
-	    if (p != null)
-		p.buildPathName(this.binding, str);
-	}
+    protected void buildPathName(StringBuffer str) {
+        if (this.binding != null) {
+            BeanProp p = this.binding.getBeanProp(this);
+            if (p != null)
+                p.buildPathName(this.binding, str);
+        }
     }
     
     /**
@@ -1228,7 +1228,7 @@ public abstract class BaseBean implements Cloneable {
 	    }
 	}
 
-	Iterator it = this.propByName.values().iterator();
+	Iterator it = beanPropsIterator();
 	
 	//  Parse our attributes and copy them
 	while (it.hasNext()) {
@@ -1478,7 +1478,7 @@ public abstract class BaseBean implements Cloneable {
 	//
 	if (this.getClass().isInstance(bean)) {
 	    //	We got the same as ourself in another graph
-	    Iterator it = this.propByName.values().iterator();
+	    Iterator it = beanPropsIterator();
 	    
 	    //
 	    //	Parse our attributes
@@ -1800,7 +1800,7 @@ public abstract class BaseBean implements Cloneable {
         // all other things are stored in hash tables too.
         //
         if (binding != null && bean.binding != null && graphManager != null) {
-            Document doc1 = graphManager.getXmlDocument();
+            Document doc1 = graphManager().getXmlDocument();
             Node startingNode1 = binding.getNode();
             Node startingNode2 = bean.binding.getNode();
             //System.out.println("Hit startingNode1="+startingNode1);
@@ -2034,18 +2034,18 @@ public abstract class BaseBean implements Cloneable {
      *	associated to the DOMBinding object (see the BeanProp and DOMBinding
      *	classes)
      */
-    BaseBean propertyById(String name, int id) {
-	BeanProp bp = this.beanProp(name);
+    protected BaseBean propertyById(String name, int id) {
+        BeanProp bp = this.beanProp(name);
 	
-	if (Common.isBean(bp.type)) {
-	    if (Common.isArray(bp.type))
-		return (BaseBean)bp.getValueById(id);
-	    else
-		return (BaseBean)bp.getValue(0);
-	}
-	else
-	    throw new IllegalStateException(Common.
-		getMessage("PropertyIsNotABean_msg", name));
+        if (Common.isBean(bp.type)) {
+            if (Common.isArray(bp.type))
+                return (BaseBean)bp.getValueById(id);
+            else
+                return (BaseBean)bp.getValue(0);
+        }
+        else
+            throw new IllegalStateException(Common.
+                                            getMessage("PropertyIsNotABean_msg", name));
     }
     
     /**
@@ -2414,5 +2414,13 @@ public abstract class BaseBean implements Cloneable {
                 beans.add(nextBean);
             }
         }
+    }
+
+    public String nameSelf() {
+        return beanProp().getBeanName();
+    }
+
+    public String nameChild(Object childObj, boolean returnSchemaName) {
+        return null;
     }
 }

@@ -472,6 +472,19 @@ public class Common {
         }
     }
 
+    static public String instanceToCommonString(int instance) {
+        switch (instance) {
+	    case Common.TYPE_0_1:
+            return "TYPE_0_1";
+	    case Common.TYPE_0_N:
+            return "TYPE_0_N";
+	    case Common.TYPE_1_N:
+            return "TYPE_1_N";
+	    default:
+            return "TYPE_1";
+        }
+    }
+
     /**
      * Return the widest instance set.  Widest as in has the most elements.
      * For instance, TYPE_0_N is widder than TYPE_1.

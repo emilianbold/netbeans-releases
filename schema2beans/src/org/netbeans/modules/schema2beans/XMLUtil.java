@@ -56,6 +56,43 @@ public class XMLUtil {
             out.append(msg);
     }
 
+	/**
+	 * Takes some text to be printed into an XML stream and escapes any
+	 * characters that might make it invalid XML (like '<').
+	 */
+	public static void writeXML(java.io.Writer out, String msg) throws java.io.IOException {
+		writeXML(out, msg, true);
+	}
+
+	public static void writeXML(java.io.Writer out, String msg, boolean attribute) throws java.io.IOException {
+		if (msg == null)
+			return;
+		int msgLength = msg.length();
+		for (int i = 0; i < msgLength; ++i) {
+			char c = msg.charAt(i);
+			writeXML(out, c, attribute);
+		}
+	}
+
+	public static void writeXML(java.io.Writer out, char msg, boolean attribute) throws java.io.IOException {
+		if (msg == '&')
+			out.write("&amp;");
+		else if (msg == '<')
+			out.write("&lt;");
+		else if (msg == '>')
+			out.write("&gt;");
+		else if (attribute && msg == '"')
+			out.write("&quot;");
+		else if (attribute && msg == '\'')
+			out.write("&apos;");
+		else if (attribute && msg == '\n')
+			out.write("&#xA;");
+		else if (attribute && msg == '\t')
+			out.write("&#x9;");
+		else
+			out.write(msg);
+	}
+
     public static boolean shouldEscape(char c) {
         if (c == '&')
             return true;

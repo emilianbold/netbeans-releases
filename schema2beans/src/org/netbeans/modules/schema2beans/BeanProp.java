@@ -51,25 +51,25 @@ public class BeanProp implements BaseProperty {
     //	for these 3 properties, and each BeanProp reference this GroupProp.
     //
     class GroupProp {
-	ArrayList group;
+        ArrayList group;
 	
-	public GroupProp(BeanProp prop) {
-	    this.group = new ArrayList();
-	    this.add(prop);
-	}
+        public GroupProp(BeanProp prop) {
+            this.group = new ArrayList();
+            this.add(prop);
+        }
 	
-	void add(BeanProp prop) {
-	    this.group.add(prop);
-	}
+        void add(BeanProp prop) {
+            this.group.add(prop);
+        }
 	
-	BeanProp[] list() {
-	    int size = this.group.size();
-	    BeanProp[] ret = new BeanProp[size];
-	    for (int i=0; i<size; i++) {
-		ret[i] = (BeanProp)this.group.get(i);
-	    }
-	    return ret;
-	}
+        BeanProp[] list() {
+            int size = this.group.size();
+            BeanProp[] ret = new BeanProp[size];
+            for (int i=0; i<size; i++) {
+                ret[i] = (BeanProp)this.group.get(i);
+            }
+            return ret;
+        }
     }
     
     //
@@ -77,29 +77,29 @@ public class BeanProp implements BaseProperty {
     //	syncNodes() call.
     //
     class Action {
-	static final int 				ADD	= 1;
-	static final int 				REMOVE	= 2;
+        static final int 				ADD	= 1;
+        static final int 				REMOVE	= 2;
 	
-	int 							action;
-	java.beans.PropertyChangeEvent 	event;
+        int 							action;
+        java.beans.PropertyChangeEvent 	event;
 	
 	
-	public Action(int action) {
-	    this.action = action;
-	    this.event = null;
-	}
+        public Action(int action) {
+            this.action = action;
+            this.event = null;
+        }
 	
-	public Action(int action, java.beans.PropertyChangeEvent event) {
-	    this(action);
-	    this.event = event;
-	}
+        public Action(int action, java.beans.PropertyChangeEvent event) {
+            this(action);
+            this.event = event;
+        }
 	
-	public String toString() {
-	    if (this.action == ADD)
-		return "add";	// NOI18N
-	    else
-		return "remove";// NOI18N
-	}
+        public String toString() {
+            if (this.action == ADD)
+                return "add";	// NOI18N
+            else
+                return "remove";// NOI18N
+        }
     }
     
     //
@@ -116,81 +116,81 @@ public class BeanProp implements BaseProperty {
      *	only when all the changes are performed.
      */
     class EventMgr {
-	class Evt {
-	    PropertyChangeEvent event;
-	    boolean				propagate;
+        class Evt {
+            PropertyChangeEvent event;
+            boolean				propagate;
 	    
-	    public Evt(PropertyChangeEvent evt, boolean p) {
-		this.event = evt;
-		this.propagate = p;
-	    }
-	}
+            public Evt(PropertyChangeEvent evt, boolean p) {
+                this.event = evt;
+                this.propagate = p;
+            }
+        }
 	
-	private int			delayed;
-	private BeanProp 	bp;
-	ArrayList 			events;
+        private int			delayed;
+        private BeanProp 	bp;
+        ArrayList 			events;
 	
-	public EventMgr(BeanProp bp) {
-	    this.bp = bp;
-	    this.delayed = 0;
-	    this.events = new ArrayList();
-	}
+        public EventMgr(BeanProp bp) {
+            this.bp = bp;
+            this.delayed = 0;
+            this.events = new ArrayList();
+        }
 	
-	boolean isDelayed() {
-	    return (this.delayed > 0);
-	}
+        boolean isDelayed() {
+            return (this.delayed > 0);
+        }
 	
-	void delay() {
-	    if (useEvents())
-		this.delayed++;
-	}
+        void delay() {
+            if (useEvents())
+                this.delayed++;
+        }
 	
-	void addEvent(PropertyChangeEvent e, boolean propagate) {
-	    if (useEvents()) {
-		if (this.isDelayed()) {
-		    this.events.add(new Evt(e, propagate));
-		} else {
-		    this.bp.notifyInternal(e, propagate);
-		}
-	    }
-	}
+        void addEvent(PropertyChangeEvent e, boolean propagate) {
+            if (useEvents()) {
+                if (this.isDelayed()) {
+                    this.events.add(new Evt(e, propagate));
+                } else {
+                    this.bp.notifyInternal(e, propagate);
+                }
+            }
+        }
 	
-	void fireEvents() {
-	    if (useEvents()) {
-		if (this.delayed == 0)
-		    return;
+        void fireEvents() {
+            if (useEvents()) {
+                if (this.delayed == 0)
+                    return;
 		
-		this.delayed--;
+                this.delayed--;
 		
-		if (this.delayed == 0) {
-		    int size = this.events.size();
-		    if (size > 0) {
-			for (int i=0; i<size; i++) {
-			    Evt e = (Evt)this.events.get(i);
-			    this.bp.notifyInternal(e.event, e.propagate);
-			}
-			this.events.clear();
-		    }
-		}
-	    }
-	}
+                if (this.delayed == 0) {
+                    int size = this.events.size();
+                    if (size > 0) {
+                        for (int i=0; i<size; i++) {
+                            Evt e = (Evt)this.events.get(i);
+                            this.bp.notifyInternal(e.event, e.propagate);
+                        }
+                        this.events.clear();
+                    }
+                }
+            }
+        }
     }
     
     class InternalEvent {
-	static final int CHANGED = 1;
-	static final int VETOABLE = 2;
+        static final int CHANGED = 1;
+        static final int VETOABLE = 2;
 	
-	int type;
-	Object obj;
+        int type;
+        Object obj;
 	
-	public InternalEvent(int type, Object obj) {
-	    this.type = type;
-	    this.obj = obj;
-	}
+        public InternalEvent(int type, Object obj) {
+            this.type = type;
+            this.obj = obj;
+        }
 	
-	PropertyChangeEvent getPropertyChangeEvent() {
-	    return (PropertyChangeEvent)this.obj;
-	}
+        PropertyChangeEvent getPropertyChangeEvent() {
+            return (PropertyChangeEvent)this.obj;
+        }
     }
     
     //
@@ -213,9 +213,13 @@ public class BeanProp implements BaseProperty {
     //	The java class that represent this property (for example, the schema2beans 
     //	generated class)
     public Class	propClass;
+
+    protected boolean useBindings = true;
     
     //	Array of DOMBinding, might contain only one element if TYPE_1
     ArrayList		bindings;
+
+    protected Object[] values;
     
     ArrayList		knownValues;
     
@@ -278,6 +282,14 @@ public class BeanProp implements BaseProperty {
 		    int type, Class propClass, boolean isRoot) {
 	this(bean, dtdName, beanName, type, propClass);
 	this.isRoot = isRoot;
+    }
+
+    /**
+     * Whether or not to use DOMBindings to store the data.
+     * Call this before any data is set in here.
+     */
+    public void setUseBindings(boolean value) {
+        useBindings = value;
     }
     
     /**
@@ -457,7 +469,16 @@ public class BeanProp implements BaseProperty {
     DOMBinding getBinding(int index) {
 	return (DOMBinding)this.bindings.get(index);
     }
-    
+
+    protected int bindingsSize() {
+        if (useBindings)
+            return bindings.size();
+        else {
+            if (values == null)
+                return 0;
+            return values.length;
+        }
+    }
     
     //////
     //
@@ -467,9 +488,12 @@ public class BeanProp implements BaseProperty {
     public Object getValue(int index) {
 	if (!Common.isArray(this.type)) {
 	    //	Value not set for single type property - return null
-	    if ((index > 0) || (this.bindings.size() == 0))
+	    if ((index > 0) || (this.bindingsSize() == 0))
 		return null;
 	}
+
+    if (!useBindings)
+        return values[index];
 	
 	DOMBinding b = (DOMBinding)this.bindings.get(index);
 
@@ -487,14 +511,19 @@ public class BeanProp implements BaseProperty {
      *	for example, used to build the absolute name of an elt of the graph)
      */
     public Object getValueById(int id) {
-	int size = this.bindings.size();
-	for (int i=0; i<size; i++) {
-	    DOMBinding b = (DOMBinding)this.bindings.get(i);
+        if (!useBindings) {
+            if (id < 0 || id >= values.length)
+                return null;
+            return values[id];
+        }
+        int size = this.bindingsSize();
+        for (int i=0; i<size; i++) {
+            DOMBinding b = (DOMBinding)this.bindings.get(i);
 	    
-	    if (b.id == id)
-		return b.getValue(this);
-	}
-	return null;
+            if (b.id == id)
+                return b.getValue(this);
+        }
+        return null;
     }
     
     /**
@@ -502,12 +531,15 @@ public class BeanProp implements BaseProperty {
      *	the unique DOMBinding id.
      */
     public int indexToId(int index) {
-	if (index>=0 && index<this.bindings.size()) {
-	    DOMBinding b = (DOMBinding)this.bindings.get(index);
-	    if (b != null)
-		return b.id;
-	}
-	return -1;
+        if (!useBindings) {
+            return index;
+        }
+        if (index>=0 && index<this.bindingsSize()) {
+            DOMBinding b = (DOMBinding)this.bindings.get(index);
+            if (b != null)
+                return b.id;
+        }
+        return -1;
     }
     
     /**
@@ -515,14 +547,17 @@ public class BeanProp implements BaseProperty {
      *  This method may return -1 if we cannot figure out the index.
      */
     public int idToIndex(int id) {
-	int size = this.bindings.size();
-	for (int i=0; i<size; i++) {
-	    DOMBinding b = (DOMBinding)this.bindings.get(i);
-	    
-	    if ((b != null) && (b.id == id))
-		return i;
-	}
-	return -1;
+        if (!useBindings) {
+            return id;
+        }
+        int size = this.bindingsSize();
+        for (int i=0; i<size; i++) {
+            DOMBinding b = (DOMBinding)this.bindings.get(i);
+            
+            if ((b != null) && (b.id == id))
+                return i;
+        }
+        return -1;
     }
     
     //
@@ -530,7 +565,11 @@ public class BeanProp implements BaseProperty {
     //	Make room for extra elements at the end of the array.
     //
     private Object[] getObjectArray(int extraElements) {
-	int size = this.bindings.size();
+        if (!useBindings) {
+            return values;
+        }
+
+	int size = this.bindingsSize();
 	Object a = 
 	    Array.newInstance(this.propClass,
 			((size+extraElements>=0)?(size+extraElements):size));
@@ -555,7 +594,7 @@ public class BeanProp implements BaseProperty {
                 System.err.println("elt is null for index " + i);
 
             try {
-                this.getBean().write(System.out);
+                this.getBean().write(System.err);
                 System.err.println(this.getBean().dumpDomNode());
             } catch (java.io.IOException e2) {
             }
@@ -590,12 +629,17 @@ public class BeanProp implements BaseProperty {
 	    //	and the change can happen.
 	}
 	
+    if (!useBindings) {
+        values = value;
+        return;
+    }
+
 	//
 	//	Remove deleted element, add the new ones then sort the new array.
 	//
 	DOMBinding b;
 	int newSize = 0;
-	int size = this.bindings.size();
+	int size = this.bindingsSize();
 	boolean found;
 	boolean	skipNew[] = null;
 	int i, j;
@@ -696,7 +740,7 @@ public class BeanProp implements BaseProperty {
 	for (i=0; i<newSize; i++)
 	    newBindings.add(null);
 	newBindings.ensureCapacity(newSize+1);
-	size = this.bindings.size();
+	size = this.bindingsSize();
 	for (i=0; i<size; i++) {
 	    b = (DOMBinding)this.bindings.get(i);
 	    if (b != null)
@@ -791,7 +835,7 @@ public class BeanProp implements BaseProperty {
 	}
 	
 	
-	int size = this.bindings.size();
+	int size = this.bindingsSize();
 	int index = -1;
 	
 	for (int i=0; (i<size) && (index == -1); i++) {
@@ -821,7 +865,7 @@ public class BeanProp implements BaseProperty {
     }
     
     public void removeValue(int index) {
-	if (index >= this.bindings.size() && 
+	if (index >= this.bindingsSize() && 
 	    Common.isVetoable(this.type) && useVetoEvents()) {
 
 	    DOMBinding b = (DOMBinding)this.bindings.get(index);
@@ -853,7 +897,7 @@ public class BeanProp implements BaseProperty {
 			getMessage("InvalidIndexForTypeProperty_msg"));
 	    }
 	    else {
-		if ((index < 0) || (index >= this.bindings.size()))
+		if ((index < 0) || (index >= this.bindingsSize()))
 		    throw new IndexOutOfBoundsException();
 	    }
 	}
@@ -957,7 +1001,7 @@ public class BeanProp implements BaseProperty {
 	    Object	oldValue = null;
 	    
 	    if (!add) {
-		empty = (this.bindings.size() == 0);
+		empty = (this.bindingsSize() == 0);
 		if (!empty)
 		    b = (DOMBinding)this.bindings.get(index);
 	    }
@@ -974,7 +1018,7 @@ public class BeanProp implements BaseProperty {
 	    }
 	    
 	    if (add)
-		index = this.bindings.size();
+		index = this.bindingsSize();
 	    
 	    if (empty)
 		this.bindings.add(b);
@@ -1041,7 +1085,7 @@ public class BeanProp implements BaseProperty {
     private void removeElement(int index, boolean remove) {
 	DOMBinding b;
 	
-	if (index >= this.bindings.size()) {
+	if (index >= this.bindingsSize()) {
 	    // There is nothing here so do nothing.
 	    return;
 	}
@@ -1239,7 +1283,7 @@ public class BeanProp implements BaseProperty {
 	DOMBinding b = null;
 	
 	//	The attribute value lives in the DOMBinding object
-	if (index != 0 || this.bindings.size() != 0)
+	if (index != 0 || this.bindingsSize() != 0)
 	    b = (DOMBinding)this.bindings.get(index);
 	
 	if (b != null) {
@@ -1260,7 +1304,7 @@ public class BeanProp implements BaseProperty {
 	
 	if (!Common.isArray(this.type)) {
 	    //	Value not set for single type property - return null
-	    if ((index > 0) || (this.bindings.size() == 0))
+	    if ((index > 0) || (this.bindingsSize() == 0))
 		return null;
 	}
 	
@@ -1306,7 +1350,7 @@ public class BeanProp implements BaseProperty {
      *	at the time of their creation - see the setElement() method)
      */
     void syncNodes(Action a) {
-	int 		size = this.bindings.size();
+	int 		size = this.bindingsSize();
 	
 	for (int i=0; i<size; i++) {
 	    DOMBinding b = (DOMBinding)this.bindings.get(i);
@@ -1338,7 +1382,7 @@ public class BeanProp implements BaseProperty {
 	
 	if (Common.isArray(this.type)) {
 	    DOMBinding b = null;
-	    int size = this.bindings.size();
+	    int size = this.bindingsSize();
 	    int index = binding.getLastKnownIndex(this);
 	    
 	    for (int i=0; i<size; i++) {
@@ -1528,7 +1572,7 @@ public class BeanProp implements BaseProperty {
 		case OP_SETTER_ADD:
 		    //	Add the new element at the end of the array
 		    arrValue = this.getObjectArray(1);
-		    arrValue[this.bindings.size()] = value;
+		    arrValue[this.bindingsSize()] = value;
 		    newValue = arrValue;
 		    break;
 		case OP_SETTER_REMOVE:
@@ -1701,7 +1745,7 @@ public class BeanProp implements BaseProperty {
     public DOMBinding registerDomNode(Node node, DOMBinding binding,
 				      BaseBean bean) throws Schema2BeansException {
 	int 		count = 0;
-	int 		size = this.bindings.size();
+	int 		size = this.bindingsSize();
 	
 	//	Check that we don't already know this node
 	for (int i=0; i<size; i++) {
@@ -1784,7 +1828,7 @@ public class BeanProp implements BaseProperty {
     }
     
     public int size() {
-	return this.bindings.size();
+	return this.bindingsSize();
     }
     
     public String getFullName(int index) {
@@ -1800,7 +1844,7 @@ public class BeanProp implements BaseProperty {
 	
 	if (!Common.isArray(this.type)) {
 	    //	Value not set for single type property - return null
-	    if ((index > 0) || (this.bindings.size() == 0))
+	    if ((index > 0) || (this.bindingsSize() == 0))
 		return null;
 	}
 	
