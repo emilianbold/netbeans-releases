@@ -161,6 +161,7 @@ public class TargetExecutor implements Runnable {
         public WrapperExecutorTask (ExecutorTask task) {
             super (new WrapperRunnable (task));
             this.task = task;
+            this.run();
         }
         public void stop () {
             task.stop ();
