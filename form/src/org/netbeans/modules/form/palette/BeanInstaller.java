@@ -42,7 +42,7 @@ public final class BeanInstaller extends Object {
   static final ResourceBundle bundle = NbBundle.getBundle(BeanInstaller.class);
 
   /** Last opened directory */
-  private static String lastDirectory;
+  private static File lastDirectory;
   
   /** Borders used in dialogs */
   static final Border hasFocusBorder;
@@ -66,10 +66,10 @@ public final class BeanInstaller extends Object {
   * install the selected module into the system.
   */
   public static void installBean() {
-    String fileName = selectJarModule();
+    File jarFile = selectJarModule();
 
-    if (fileName != null) {
-      JarFileSystem jar = createJarForName(fileName);
+    if (jarFile != null) {
+      JarFileSystem jar = createJarForFile(jarFile);
       if (jar == null) {
         TopManager.getDefault().notify(new NotifyDescriptor.Message(
           bundle.getString("MSG_ErrorInFile"), NotifyDescriptor.ERROR_MESSAGE)
@@ -176,8 +176,7 @@ public final class BeanInstaller extends Object {
       try {
         category = paletteFolder.createFolder (pal);
       } catch (IOException e) {
-        // [PENDING]
-        e.printStackTrace ();
+        /* ignore */
         return;
       }
     }
@@ -228,7 +227,7 @@ public final class BeanInstaller extends Object {
       }
     }
     catch (java.io.IOException e) {
-      e.printStackTrace();
+      /* ignore */
     }
     finally {
       if (lock != null) {
@@ -261,51 +260,55 @@ public final class BeanInstaller extends Object {
     }
   }
 
-  /** This method open java.awt.FileDialog and selects
+  /** This method open FileChooser and selects
   * the jar file with the module.
   *
   * @return filename or null if operation was cancelled.
   */
-  private static String selectJarModule() {
-    FileDialog openDlg = new FileDialog(TopManager.getDefault().getWindowManager().getMainWindow(),
-                                        bundle.getString("CTL_SelectJar"),
-                                        FileDialog.LOAD);
+  private static File selectJarModule() {
+    JFileChooser chooser = new JFileChooser();
 
-    openDlg.setFilenameFilter(new FilenameFilter() {
-      public boolean accept(File dir, String name) {
-        return (name.endsWith(JAR_EXT));
+    chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+      public boolean accept(File f) {
+        return (f.isDirectory() || f.getName().endsWith(JAR_EXT));
+      }
+      public String getDescription() {
+        return bundle.getString ("CTL_JarArchivesMask");
       }
     });
 
-    if (lastDirectory != null)
-      openDlg.setDirectory(lastDirectory);
-
-    openDlg.setFile("*"+JAR_EXT);
-    openDlg.setVisible(true);
-
-    String fileName = openDlg.getFile();
-
-    if ((fileName != null) && (fileName.endsWith(JAR_EXT))) {
-      lastDirectory = openDlg.getDirectory();
-      return lastDirectory + fileName;
+    if (lastDirectory != null) {
+      chooser.setCurrentDirectory(lastDirectory);
     }
-    else
-      return null;
+
+    chooser.setDialogTitle(bundle.getString("CTL_SelectJar"));
+    if (chooser.showDialog(TopManager.getDefault ().getWindowManager ().getMainWindow (),
+                           bundle.getString("CTL_Select_Approve_Button"))
+        == JFileChooser.APPROVE_OPTION) 
+    {
+      File f = chooser.getSelectedFile();
+      lastDirectory = chooser.getCurrentDirectory();
+      if ((f != null) && (f.isFile()) && f.getName ().endsWith(JAR_EXT)) {
+        return f;
+      }
+    }
+    return null;
   }
 
   /**
   * @return jar FS for the given name or null if some problems occured
   */
-  private static JarFileSystem createJarForName(String name) {
+  private static JarFileSystem createJarForFile(File jarFile) {
     try {
       JarFileSystem jar = new JarFileSystem();
-      jar.setJarFile(new File(name));
+      jar.setJarFile(jarFile);
       return jar;
     }
     catch (PropertyVetoException e) {
       return null;
     }
     catch (IOException e) {
+      /* ignore */
       return null;
     }
   }
@@ -322,13 +325,13 @@ public final class BeanInstaller extends Object {
     try {
       globalFolder = new File(globalFolder.getCanonicalPath());
     }
-    catch (IOException e) { }
+    catch (IOException e) { /* ignore */ }
 
     File localFolder = new File(System.getProperty("netbeans.user") + File.separator + "beans");
     try {
       localFolder = new File(localFolder.getCanonicalPath());
     }
-    catch (IOException e) { }
+    catch (IOException e) { /* ignore */ }
     
     autoLoadFolder(globalFolder);
     if (!globalFolder.equals(localFolder))
@@ -357,8 +360,9 @@ public final class BeanInstaller extends Object {
     try {
       details.load(fis = new FileInputStream(base + "beans.properties"));
     } catch (IOException e) {
+      // ignore in this case
     } finally {
-      if (fis != null) try { fis.close (); } catch (IOException e) { };
+      if (fis != null) try { fis.close (); } catch (IOException e) { /* ignore */ };
     }
 
     FileInputStream fis2 = null;
@@ -366,8 +370,9 @@ public final class BeanInstaller extends Object {
     try {
       alreadyInstalled.load(fis2 = new FileInputStream(base + "installed.properties"));
     } catch (IOException e) {
+      /* ignore */
     } finally {
-      if (fis2 != null) try { fis2.close (); } catch (IOException e) { };
+      if (fis2 != null) try { fis2.close (); } catch (IOException e) { /* ignore */ };
     }
 
     String[] categories = ComponentPalette.getDefault ().getPaletteCategories();
@@ -375,7 +380,7 @@ public final class BeanInstaller extends Object {
       if (list[i].endsWith(JAR_EXT) && (alreadyInstalled.get(list[i]) == null)) {
         String withoutExt = list[i].substring(0, list[i].length() - JAR_EXT.length());
         String categoryName = details.getProperty(withoutExt, withoutExt);
-        if (autoLoadJar(base + list[i], categoryName, details.getProperty(withoutExt + ".beans"))) {
+        if (autoLoadJar(new File (base + list[i]), categoryName, details.getProperty(withoutExt + ".beans"))) {
           alreadyInstalled.put(list[i], "true");
         }
       }
@@ -386,20 +391,20 @@ public final class BeanInstaller extends Object {
       fos = new FileOutputStream(base + "installed.properties");
       alreadyInstalled.store(fos, "Installed Archives");
     } catch (IOException e) {
+      // ignore 
     } finally {
-      if (fos != null) try { fos.close (); } catch (IOException e) { };
+      if (fos != null) try { fos.close (); } catch (IOException e) { /* ignore */ };
     }
 
   }
 
   /** Loaded beans from the jar.
-  * @param name - name of the jar File
-  * @param palette - category where to place the beans
-  * @param selection - the selection of beans which should be installed.
-  *       May be null - then all beans are loaded.
+  * @param jarFile the jar File
+  * @param palette category where to place the beans
+  * @param selection the selection of beans which should be installed. If null, all beans are loaded.
   */
-  private static boolean autoLoadJar(String name, String paletteCategory, String selection) {
-    JarFileSystem jar = createJarForName(name);
+  private static boolean autoLoadJar(File jarFile, String paletteCategory, String selection) {
+    JarFileSystem jar = createJarForFile(jarFile);
     if (jar == null) {
       TopManager.getDefault().notify(
         new NotifyDescriptor.Message(bundle.getString("MSG_ErrorInFile"),
@@ -578,6 +583,10 @@ public final class BeanInstaller extends Object {
 
 /*
  * Log
+ *  10   Gandalf   1.9         6/22/99  Ian Formanek    Fixed bug 2004 - The 
+ *       dialog for selecting JavaBean isn't dialog commonly used in IDE but 
+ *       classical MS Windows filedialog. Also after installing bean IDE must be
+ *       restarted. 
  *  9    Gandalf   1.8         6/10/99  Ian Formanek    loadedBeans -> 
  *       properties rather than FormSettings
  *  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 
