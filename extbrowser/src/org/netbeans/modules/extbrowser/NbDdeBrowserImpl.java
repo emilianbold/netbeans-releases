@@ -30,6 +30,12 @@ import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
+import org.openide.filesystems.FileUtil;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+
 /**
  * Class that uses DDE to communicate with web browser through DDE.
  * Currently three browsers are supported:
@@ -239,6 +245,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
 
         public void dispatchURL (DisplayTask task) {
             try {
+                
                 URL url = task.url;
                 if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
                     ExtWebBrowser.getEM().log("URLDispatcher.url: " + url);          // NOI18N
@@ -249,7 +256,14 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                     url = URLUtil.createExternalURL(url, task.browser.realDDEServer().equals(ExtWebBrowser.MOZILLA));   // XXX support Netscape too?
                 }
                 
+                String urlStr = url.toString();
+                
                 boolean triedStart = false;
+                int MAX_URL_LENGTH = 399;
+                
+                if ((urlStr != null) && (urlStr.length() > MAX_URL_LENGTH)) {
+                     urlStr = getFileUrl(urlStr);
+                }
 
                 if (!win9xHack(task.browser.realDDEServer())) {
                     StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage (NbDdeBrowserImpl.class, "MSG_activatingBrowser"));
@@ -274,7 +288,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 }
 
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_openingURLInBrowser"));
-                String args1 = "\""+url.toString()+"\",,-1,0x1,,,";  // NOI18N
+                String args1 = "\""+urlStr+"\",,-1,0x1,,,";  // NOI18N
 
                 try {
                     task.browser.reqDdeMessage(task.browser.realDDEServer(),WWW_OPEN_URL,args1,task.browser.getOpenUrlTimeout());
@@ -315,7 +329,60 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                     }
                 });
             }
-        }            
+        }
+        
+        
+        /** 
+         *
+         */
+        private String getFileUrl(String url) {
+            if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
+                ExtWebBrowser.getEM().log("Gonna get redirect file for long url: " + url);
+            }
+            String newurl = null;
+            FileWriter fw = null;
+            File f = null;
+            
+            int retries = 10;
+            
+            while ((f == null) && (retries > 0)) {
+                retries--;
+                try {
+                    f = File.createTempFile("extbrowser", ".html");             // NOI18N
+                    if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
+                        ExtWebBrowser.getEM().log("file: " + f);                // NOI18N
+                    }
+                    if (f != null) { 
+                        fw = new FileWriter(f);
+                        if (f.canWrite()) {
+                            String s1 = org.openide.util.NbBundle.getMessage(NbDdeBrowserImpl.class, "TXT_RedirectURL1");   //NOI18N
+                            String s2 = org.openide.util.NbBundle.getMessage(NbDdeBrowserImpl.class, "TXT_RedirectURL2");   //NOI18N
+                            String s = s1.concat(url).concat(s2);
+                            fw.write(s);
+                            fw.flush();
+                        }
+                        newurl = "file:/" + f.getAbsolutePath();                // NOI18N
+                    }
+                } catch (IOException ioe) {
+                     ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ioe.toString());
+                } finally {
+                    if (fw != null) {
+                        try {
+                            fw.close();
+                        } catch (IOException ioe) {
+                            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ioe.toString());
+                        }
+                    }
+                }                
+            }
+            if (newurl != null) { 
+                if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
+                    ExtWebBrowser.getEM().log("New URL: " + newurl);                // NOI18N
+                }
+                return newurl;
+            }
+            return url;
+        }
         
         /**
          * Checks for IExplorer & Win9x combination.
