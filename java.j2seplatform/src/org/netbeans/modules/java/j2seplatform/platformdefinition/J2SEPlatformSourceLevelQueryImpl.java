@@ -31,7 +31,7 @@ public class J2SEPlatformSourceLevelQueryImpl implements SourceLevelQueryImpleme
         } catch (Exception e) {}
         JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms ();
         for (int i=0; i< platforms.length; i++) {
-            if (platforms[i].getSourceFolders().contains(javaFile)) {
+            if (J2SEPlatformImpl.PLATFORM_J2SE.equalsIgnoreCase(platforms[i].getSpecification().getName()) && platforms[i].getSourceFolders().contains(javaFile)) {   //NOI18N
                 return platforms[i].getSpecification().getVersion().toString();
             }
         }        
