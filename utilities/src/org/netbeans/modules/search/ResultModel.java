@@ -103,9 +103,37 @@ public class ResultModel implements TaskListener {
         root = new ResultRootNode();
     }
 
-    /** Clean the allocated resources. */
+    /**
+     * Clean the allocated resources. Do not rely on GC there as we are often referenced from
+     * various objects (some VisualizerNode realy loves us). So keep leak as small as possible.
+     * */
     public void close() {
+        if (searchTask != null) {
+            searchTask.removeTaskListener(this);
+            searchTask = null;
+        }
+
+        if (searchTypeList != null){
+            Iterator it = searchTypeList.iterator();
+            while (it.hasNext()) {
+                SearchType criterion = (SearchType) it.next();
+                criterion.clone();  // XXX HACK FullTextType for reason
+            }
+            searchTypeList.clear();
+            searchTypeList = null;
+            // GC should eliminate FullTextType details map
+            // It does not so we work it around with above cloning thick (that exploits implementation error)
+        }
+
+        // kill expensive children structure, again GC should kick it out but it does not
         root.clear();
+
+        // eliminate search group content
+        // no other way then leaving it on GC, it should work because
+        // search group is always recreated by a it's factory and
+        // nobody keeps reference to it. 7th May 2004
+
+        searchGroup = null;
     }
     
     /** Accept nodes. Some nodes were found by engine. */
@@ -213,6 +241,7 @@ public class ResultModel implements TaskListener {
      * interface. */
     public void taskFinished(Task task) {
         done = true;
+        task.removeTaskListener(this);
         root.setDisplayName(getRootDisplayName());
         fireChange();
         
@@ -222,6 +251,9 @@ public class ResultModel implements TaskListener {
     /** Registers listening on search group to reflect dynamically changes
      * made on search/found objects to reflect result of the original search. */
     private void registerListening() {
+
+        // XXX this listening should be done at root directly
+
         searchGroup.addPropertyChangeListener(WeakListener.propertyChange(propListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if(SearchGroup.PROP_RESULT.equals(evt.getPropertyName())) {
@@ -313,14 +345,19 @@ public class ResultModel implements TaskListener {
             setDisplayName(NbBundle.getBundle(ResultModel.class).getString("TEXT_SEARCHING___"));
         }
 
-        /** Cleanup. */ 
+        /**
+         * Clear children in fast batch manner, does not touch model.
+         * Model should be cleaned by client. This approach eliminates costly
+         * event driven cleanup.
+         */
         public void clear() {
             ResultRootChildren children = (ResultRootChildren)getChildren();
-            Node nodes[] = children.getNodes();
-            for (int i=0; i<nodes.length; i++)
-                if (nodes[i] instanceof FoundNode)
-                    ((FoundNode)nodes[i]).removeFromSearch();
-            children.remove (nodes);
+            Enumeration en = children.nodes();
+            while (en.hasMoreElements()) {
+                FoundNode node = (FoundNode) en.nextElement();
+                node.originalDataObject.removePropertyChangeListener(node);
+            }
+            children.dispose();
         }
 
         /** Adds founds objects to root node. */
@@ -351,7 +388,7 @@ public class ResultModel implements TaskListener {
 
         /** Gets number of found nodes. */
         public int getNumberOfFoundNodes() {
-            return getChildren().getNodes().length;
+            return getChildren().getNodesCount();
         }
         
         
@@ -441,6 +478,14 @@ public class ResultModel implements TaskListener {
         protected void removeNotify() {
             active = false;
             setKeys(Collections.EMPTY_SET);
+        }
+
+        /** Explicit garbage collect request. */
+        void dispose() {
+            synchronized(keys) {
+                keys = Collections.EMPTY_SET;
+            }
+            removeNotify();
         }
 
         /** Creates nodes. */
@@ -648,16 +693,15 @@ public class ResultModel implements TaskListener {
             return (SystemAction[])originalActions.toArray(new SystemAction[originalActions.size()]);
         }
 
-        /** Removes node from serach result window. <em>Note</em>: it doesn't delete the original. */
+        /** Action performer. Removes node from search result window (and model). <em>Note</em>: it doesn't delete the original. */
         public void removeFromSearch() { 
             if(originalDataObject != null)
                 originalDataObject.removePropertyChangeListener(this);
 
             ResultModel.this.root.removeFoundObject(foundObject);
-            
         }
 
-        /** Destroys node. Overrides superclass method. */
+        /** Destroys node and it's file. Overrides superclass method. */
         public void destroy() throws IOException {
             super.destroy();
 
@@ -668,7 +712,8 @@ public class ResultModel implements TaskListener {
         }
 
 
-        /** Implements <code>PropertyChangeListener</code>. */
+
+        /** Implements <code>PropertyChangeListener</code> litening or originalDataObject. */
         public void propertyChange(PropertyChangeEvent evt) {
             if(DataObject.PROP_VALID.equals(evt.getPropertyName())) {
                 // data object might be deleted

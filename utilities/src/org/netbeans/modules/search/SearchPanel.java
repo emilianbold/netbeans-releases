@@ -285,6 +285,13 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
 
     /** Closes dialog. */
     private void doClose(int returnStatus) {
+
+        Iterator it = orderedSearchTypePanels.iterator();
+        while (it.hasNext()) {
+            SearchTypePanel panel = (SearchTypePanel) it.next();
+            panel.removePropertyChangeListener(this);
+        }
+
         this.returnStatus = returnStatus;
 
         dialog.setVisible(false);

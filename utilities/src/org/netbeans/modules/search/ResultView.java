@@ -290,7 +290,7 @@ final class ResultView extends TopComponent
     /** Overriden to explicitely set persistence type of ResultView
      * to PERSISTENCE_NEVER */
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
+        return TopComponent.PERSISTENCE_ALWAYS;  // XXX protimluv
     }
 
     /** Replaces this in object stream. */
@@ -387,7 +387,13 @@ final class ResultView extends TopComponent
     protected void componentClosed() {
         stopSearching();
         if (resultModel != null) {
-            resultModel.removeChangeListener(ResultView.this);
+            resultModel.removeChangeListener(this);
+            resultModel.close();
+            resultModel = null;
+
+            Node empty = Node.EMPTY;
+            explorerManager.setRootContext(empty);
+            selectAndActivateNode(empty);
         }
     }
             
