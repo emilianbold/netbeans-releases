@@ -26,6 +26,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -130,7 +131,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
 //			String mes = MessageFormat.format (
 //				NbBundle.getMessage (WebServiceClientWizardIterator.class, "ERR_WebServiceClientSupportNotFound"),
 //				new Object [] {"Servlet Listener"}); //NOI18N
-            String mes = "No web service client support found in selected project";
+            String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_NoWebServiceClientSupport"); // NOI18N
             NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
             return result;
@@ -148,7 +149,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
             File normalizedWsdlFilePath = FileUtil.normalizeFile(new File(wsdlFilePath));
             sourceWsdlFile = FileUtil.toFileObject(normalizedWsdlFilePath);
             if(sourceWsdlFile == null) {
-                String mes = "Cannot get FileObject for wsdl file: '" + normalizedWsdlFilePath + "'";
+                String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_WsdlFileNotFound", normalizedWsdlFilePath); // NOI18N
                 NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
                 return result;
@@ -160,7 +161,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
                 try {
                     wsdlFile.createNewFile();
                 } catch(IOException ex) {
-                    String mes = "Unable to create temporary WSDL file '" + wsdlFile.getPath() + "' for client";
+                    String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_UnableToCreateTempFile", wsdlFile.getPath()); // NOI18N
                     NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notify(desc);
                     return result;
@@ -182,7 +183,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
                     wsdlLock.releaseLock();
                 }
             } else {
-                String mes = "Unable to create temporary WSDL file '" + wsdlFile.getPath() + "' for client";
+                String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_UnableToCreateTempFile", wsdlFile.getPath()); // NOI18N
                 NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
                 return result;
@@ -199,11 +200,11 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
                 sourceWsdlFile.delete();
                 sourceWsdlFile = null;
             } catch(FileAlreadyLockedException ex) {
-                String mes = "Temporary WSDL file " + sourceWsdlFile.getNameExt() + " is locked and cannot be deleted.";
+                String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_TempFileLocked", sourceWsdlFile.getNameExt()); // NOI18N
                 NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
             } catch(IOException ex) {
-                String mes = "Temporary WSDL file " + sourceWsdlFile.getNameExt() + " cannot be deleted.  " + ex.getMessage();
+                String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_TempFileNotDeleted", sourceWsdlFile.getNameExt()); // NOI18N
                 NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
             }
@@ -213,7 +214,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
     }
 
     public String name() {
-        return "Web Service Client";
+        return NbBundle.getMessage(WebServiceClientWizardIterator.class, "LBL_WebServiceClient"); // NOI18N
     }
 
     public WizardDescriptor.Panel current() {
