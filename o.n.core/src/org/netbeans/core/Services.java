@@ -57,6 +57,8 @@ public final class Services extends ServiceType.Registry implements LookupListen
     }
     
     private Services() {
+        name2Service = new HashMap();
+        fillMap(name2Service);
     }
     
     private static void fillMap(Map map) {
@@ -117,9 +119,10 @@ public final class Services extends ServiceType.Registry implements LookupListen
      * @param ev event describing the change
      */
     public void resultChanged(LookupEvent ev) {
-        Map lookupMap = new HashMap();
-        fillMap(lookupMap);
-        name2Service = lookupMap;
+        synchronized (name2Service) {
+            name2Service.clear();
+            fillMap(name2Service);
+        }
     }
     
     /** Getter for list of all services types.
