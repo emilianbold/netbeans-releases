@@ -13,22 +13,16 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
-import java.awt.event.ActionEvent;
-import java.util.Vector;
 import javax.swing.Action;
 
-import org.netbeans.api.debugger.jpda.Field;
-import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.api.debugger.LookupProvider;
-import org.netbeans.api.debugger.Session;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
-import org.netbeans.modules.debugger.jpda.ui.Context;
 import org.netbeans.modules.debugger.jpda.ui.EngineContext;
 
 
@@ -56,7 +50,7 @@ Models.ActionPerformer {
                     this,
                     isSourceAvailable ((Variable) node)
                 ),
-                Models.createAction ("Create Fixed Watch", node, this, false),
+//                Models.createAction ("Create Fixed Watch", node, this, true),
                 Models.createAction ("Properties", node, this, false),
             };
         throw new UnknownTypeException (node);
@@ -96,7 +90,7 @@ Models.ActionPerformer {
         } else
         if ("Properties".equals (action)) {
         }
-    }    
+    }
 
     private boolean isSourceAvailable (Variable v) {
         EngineContext ectx = (EngineContext) lookupProvider.lookupFirst 

@@ -13,21 +13,12 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
-import java.util.Vector;
-
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.LookupProvider;
-import org.netbeans.api.debugger.jpda.Field;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
-import org.netbeans.api.debugger.jpda.LocalVariable;
-import org.netbeans.api.debugger.jpda.ObjectVariable;
-import org.netbeans.api.debugger.jpda.Super;
-import org.netbeans.api.debugger.jpda.This;
-import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.netbeans.modules.debugger.jpda.ui.FixedWatch;
 
 
 /**
@@ -37,11 +28,10 @@ public class WatchesNodeModel extends VariablesNodeModel {
 
     public static final String WATCH =
         "org/netbeans/modules/debugger/resources/watchesView/Watch";
+    public static final String FIXED_WATCH =
+        "org/netbeans/modules/debugger/resources/watchesView/FixedWatch";
 
-    private Vector listeners = new Vector ();
 
-    
-    
     public WatchesNodeModel (LookupProvider lookupProvider) {
         super (lookupProvider);
     }
@@ -51,6 +41,8 @@ public class WatchesNodeModel extends VariablesNodeModel {
             return "Name";
         if (o instanceof JPDAWatch)
             return ((JPDAWatch) o).getExpression ();
+        if (o instanceof FixedWatch)
+            return ((FixedWatch) o).getName();
         return super.getDisplayName (o);
     }
     
@@ -69,6 +61,10 @@ public class WatchesNodeModel extends VariablesNodeModel {
                 return w.getExpression () + " = (" + w.getType () + ") " + 
                     w.getToStringValue ();
         }
+        if (o instanceof FixedWatch) {
+            FixedWatch fw = (FixedWatch) o;
+            return fw.getName() + " = (" + fw.getType() + ") " + fw.getValue();
+        }
         return super.getShortDescription (o);
     }
     
@@ -77,6 +73,8 @@ public class WatchesNodeModel extends VariablesNodeModel {
             return WATCH;
         if (o instanceof JPDAWatch)
             return WATCH;
+        if (o instanceof FixedWatch)
+            return FIXED_WATCH;
         return super.getIconBase (o);
     }
 
