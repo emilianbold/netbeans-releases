@@ -16,6 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <folder name="Templates">
  
+    <attr name="API_Support/Ant" boolvalue="true"/>
     <folder name="Ant">
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
       <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntDescription.html"/>

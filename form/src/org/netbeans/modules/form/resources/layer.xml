@@ -477,6 +477,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Templates">
+        <attr name="Classes/GUIForms" boolvalue="true"/>
         <folder name="GUIForms">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/SwingForms.html"/>
@@ -632,8 +633,15 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
 
-        </folder>
+            <attr name="JApplet.java/JDialog.java" boolvalue="true" />
+            <attr name="JDialog.java/JFrame.java" boolvalue="true" />
+            <attr name="JFrame.java/JInternalFrame.java" boolvalue="true" />
+            <attr name="JInternalFrame.java/JPanel.java" boolvalue="true" />
+            <attr name="JPanel.java/BeanForm.java" boolvalue="true" />
+            <attr name="BeanForm.java/AWTForms" boolvalue="true" />
+            <attr name="AWTForms/Dialogs" boolvalue="true" />
 
+        </folder>
     </folder>
 
     <folder name="Shortcuts">

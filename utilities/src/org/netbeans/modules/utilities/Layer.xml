@@ -29,6 +29,7 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/org-netbeans-modules-autoupdate-UpdateAction.instance" boolvalue="true" />
     </folder>
     <folder name="Templates">
+        <attr name="JSP_Servlet/Other" boolvalue="true"/>
         <folder name="Other">
             <file name="bookmark.url">
                 <![CDATA[http://www.netbeans.org/]]>

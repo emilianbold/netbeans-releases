@@ -16,6 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
 
   <folder name="Templates">
+    <attr name="Ant/Beans" boolvalue="true"/>
     <folder name="Beans">
       <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/beans/resources/Beans.html" />
 

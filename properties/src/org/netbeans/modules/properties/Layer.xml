@@ -16,6 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
 
     <folder name="Templates">
+        <attr name="JSP_Servlet/Other" boolvalue="true"/>
         <folder name="Other">
             <file name="properties.properties">
                 <![CDATA[# Sample ResourceBundle properties file
