@@ -291,6 +291,22 @@ Microsystems, Inc. All Rights Reserved.
             </p>
         </description>
     </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>"String EditorContext.getClassName (url, lineNumber)" method has been added.</summary>
+        <date day="8" month="10" year="2004"/>
+        <author login="jjancura"/>
+        <compatibility>
+            <p>
+                Incompatile change.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                This method is needed to correctly implement line breakpoint in secondary classes.
+            </p>
+        </description>
+    </change>
 
 </changes>
 
