@@ -133,6 +133,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     public void run() {
         enqueued = false;
         getVerticalScrollBar().setValue(getVerticalScrollBar().getModel().getMaximum());
+        getHorizontalScrollBar().setValue(getHorizontalScrollBar().getModel().getMinimum());
     }
 
     public int getSelectionStart() {
