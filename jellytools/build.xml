@@ -27,6 +27,7 @@ Microsystems, Inc. All Rights Reserved.
         <include name="${nb.modules.dir}/org-netbeans-modules-jellytools.jar"/>
         <include name="${nb.docs.dir}/jelly2-nb-javadoc.zip"/>
         <include name="${nb.modules.dir}/ext/jelly2-nb.jar"/>
+        <include name="${nb.sources.dir}/jelly2-nb-src.zip"/>
       </patternset>
       <path id="jellytools.classpath">
         <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
@@ -157,7 +158,7 @@ Microsystems, Inc. All Rights Reserved.
     </genlist>
   </target>
 
-  <target name="release" depends="jars,javadoc">
+  <target name="release" depends="jars,javadoc,zipsrc">
     <property file="src/org/netbeans/jellytools/version_info"/>
     <filter token="MODULE_VERSION_SUBST" value="${Jellytools-MajorVersion}.${Jellytools-MinorVersion}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
@@ -171,6 +172,7 @@ Microsystems, Inc. All Rights Reserved.
     </jar>
     <copy file="jelly2-nb.jar" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/jelly2-nb.jar" filtering="off"/>
     <copy file="javadoc/jelly2-nb-javadoc.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/jelly2-nb-javadoc.zip" filtering="off"/>
+    <copy file="jelly2-nb-src.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.sources.dir}/jelly2-nb-src.zip" filtering="off"/>
   </target>
 
   <target name="nbm" depends="netbeans">
