@@ -41,6 +41,7 @@ public class GraphManager extends Object {
     NodeFactory	factory = null;
     HashMap 	bindingsMap  = new HashMap();
     BaseBean	root;
+    private boolean writeCData = false;
     
     //	When set to null (default), use XMLDocument instead
     private Factory		docFactory;
@@ -93,7 +94,11 @@ public class GraphManager extends Object {
      *  Set an external writer to use instead of the default one
      */
     public void setWriter(GraphManager.Writer writer) {
-	this.docWriter = writer;
+        this.docWriter = writer;
+    }
+
+    public void setWriteCData(boolean value) {
+        writeCData = value;
     }
     
     public static Node createRootElementNode(String name) throws Schema2BeansRuntimeException {
@@ -327,7 +332,7 @@ public class GraphManager extends Object {
             }
             out.write(">");
         } else if (node instanceof Text) {
-            XMLUtil.printXML(out, node.getNodeValue(), false);
+            printXML(out, node.getNodeValue(), false);
         } else if (node instanceof Document) {
             needsReturnBetweenChildren = true;
         } else if (node instanceof DocumentType) {
@@ -454,6 +459,18 @@ public class GraphManager extends Object {
         }
     }
 
+    protected void printXML(java.io.Writer out, String msg, boolean attribute) throws java.io.IOException {
+        if (writeCData && msg.indexOf("]]>") < 0) {
+            boolean shouldEscape = XMLUtil.shouldEscape(msg);
+            if (shouldEscape)
+                out.write("<![CDATA[");
+            out.write(msg);
+            if (shouldEscape)
+                out.write("]]>");
+        } else
+            XMLUtil.printXML(out, msg, attribute);
+    }
+    
     /**
      * Take the current DOM tree and readjust whitespace so that it
      * looks pretty.

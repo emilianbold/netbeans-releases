@@ -55,6 +55,28 @@ public class XMLUtil {
             out.append(msg);
     }
 
+    public static boolean shouldEscape(char c) {
+        if (c == '&')
+            return true;
+        else if (c == '<')
+            return true;
+        else if (c == '>')
+            return true;
+        return false;
+    }
+
+    public static boolean shouldEscape(String s) {
+        if (s == null)
+            return false;
+        int msgLength = s.length();
+        for (int i = 0; i < msgLength; ++i) {
+            char c = s.charAt(i);
+            if (shouldEscape(c))
+                return true;
+        }
+        return false;
+    }
+
     /**
      * Takes some text to be printed into an XML stream and escapes any
      * characters that might make it invalid XML (like '<').
