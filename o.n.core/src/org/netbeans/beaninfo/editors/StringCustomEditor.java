@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -62,28 +62,39 @@ public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCu
         }
         //original constructor code
         textArea.setEditable(editable);
+        
+        int from = 0;
+        int to = 0;
+        int ctn = 1;
+        while ((to = s.indexOf ("\n", from)) > 0) {
+            ctn ++;
+            from = to + 1;
+        }
+
         textArea.setText (s);
-        if (textArea instanceof JTextArea && s.length() < 1024) {
+        if (textArea instanceof JTextArea && s.length () < 1024) {
             ((JTextArea) textArea).setWrapStyleWord( true );
             ((JTextArea)textArea).setLineWrap( true );
             setPreferredSize (new java.awt.Dimension(500, 300));
-            if ( !editable ) {
-                // hack to fix #9219
-                //TODO Fix this to use UIManager values, this is silly
-                JTextField hack = new JTextField();
-                hack.setEditable( false );
-                textArea.setBackground( hack.getBackground() );
-                textArea.setForeground( hack.getForeground() );
-            }
         } else {
             textArea.setMinimumSize (new java.awt.Dimension (100, 20));
             if (textArea instanceof JTextArea) {
                 //Some gargantuan string value - do something that will
                 //show it.  Line wrap is off, otherwise it will spend 
                 //minutes trying to calculate preferred size, etc.
-                textArea.setPreferredSize (new java.awt.Dimension (s.length() * 12, 60));
+                setPreferredSize (new java.awt.Dimension(500, 300));
             }
         }
+        
+        if ( !editable ) {
+            // hack to fix #9219
+            //TODO Fix this to use UIManager values, this is silly
+            JTextField hack = new JTextField();
+            hack.setEditable( false );
+            textArea.setBackground( hack.getBackground() );
+            textArea.setForeground( hack.getForeground() );
+        }
+        
         setBorder (BorderFactory.createEmptyBorder(12,12,0,11));
         
         textArea.getAccessibleContext().setAccessibleName(NbBundle.getBundle(StringCustomEditor.class).getString("ACS_TextArea")); //NOI18N
@@ -99,10 +110,10 @@ public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCu
         
         //IZ 44152, Debugger can produce 512K+ length strings, avoid excessive
         //iterations (which textArea.getPreferredSize() will definitely do)
-        if (s.length() < 1024) {
+        if (s.length () < 1024) {
             prefHeight = textArea.getPreferredSize().height + 8;
         } else {
-            prefHeight = 400;
+            prefHeight = ctn * 8;
         }
         
         if (instructions != null) {
