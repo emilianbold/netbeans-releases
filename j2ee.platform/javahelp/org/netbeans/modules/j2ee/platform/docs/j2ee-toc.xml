@@ -31,7 +31,7 @@
             <tocitem text="Editing an Enterprise Application's Deployment Descriptor" target="ent_app_configure" />
         </tocitem>
         <tocitem text="Building and Running Enterprise Applications" >
-            <tocitem text="Building an Enterprise Application" target="tbd" />
+            <tocitem text="Building an Enterprise Application" target="ent_app_build" />
             <tocitem text="Validating an Enterprise Application" target="tbd" />
             <tocitem text="Setting the Target Server for an Enterprise Application" target="tbd" />
             <tocitem text="Deploying an Enterprise Application" target="tbd" />
