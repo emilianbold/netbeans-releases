@@ -1298,7 +1298,7 @@
 		properties = (
 			{
 				code = name;
-				writable = YES;
+				writable = NO;
 			},
 			{
 				code = catalog;
@@ -1322,7 +1322,7 @@
 				code = remarks;
 				name = "Remarks";
 				class = java.lang.String;
-				writable = YES;
+				writable = NO;
 			}
 		);
 	};
@@ -1386,7 +1386,7 @@
 		properties = (
 			{
 				code = name;
-				writable = YES;
+				writable = NO;
 			},
 			{
 				code = type;
@@ -1398,25 +1398,25 @@
 				code = isnullable;
 				name = "Null";
 				class = java.lang.Boolean;
-				writable = YES;
+				writable = NO;
 			},
 			{
 				code = datatype;
 				name = "Datatype";
 				class = java.lang.Integer;
-				writable = YES;
+				writable = NO;
 			},
 			{
 				code = coldef;
 				name = "Default";
 				class = java.lang.String;
-				writable = YES;
+				writable = NO;
 			},
 			{
 				code = columnsize;
 				name = "ColumnSize";
 				class = java.lang.Integer;
-				writable = YES;
+				writable = NO;
 			},
 			{
 				code = decdigits;
@@ -1434,7 +1434,7 @@
 				code = remarks;
 				name = "Remarks";
 				class = java.lang.String;
-				writable = YES;
+				writable = NO;
 			}
 		);
 	};
@@ -1544,7 +1544,7 @@
 				code = remarks;
 				name = "Remarks";
 				class = java.lang.String;
-				writable = YES;
+				writable = NO;
 			},
 			{
 				code = idxname;
@@ -1662,7 +1662,7 @@
 				code = remarks;
 				name = "Remarks";
 				class = java.lang.String;
-				writable = YES;
+				writable = NO;
 			}
 		);
 	};
@@ -2018,7 +2018,7 @@
 		properties = (
 			{
 				code = name;
-				writable = YES;
+				writable = NO;
 			},
 			{
 				code = pcatalog;
@@ -2156,13 +2156,13 @@
 		properties = (
 			{
 				code = name;
-				writable = YES;
+				writable = NO;
 			},
 			{
 				code = remarks;
 				name = "Remarks";
 				class = java.lang.String;
-				writable = YES;
+				writable = NO;
 			}
 		);
 	};
