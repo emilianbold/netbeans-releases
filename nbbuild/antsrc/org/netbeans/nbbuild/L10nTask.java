@@ -559,7 +559,10 @@ public class L10nTask extends MatchingTask {
 	}
 
 	public Hashtable getGeneratedFiles(File topDir, String mod) {
-		// if (DEBUG) System.out.println("\t\tIN  getGeneratedFiles(File "+ topDir+" MOD "+mod+")");
+		// NOTE: This method will return 'null' 100% of the time if there 
+		// are no l10n.list.generated files.
+		// At this writing, this functionality is not used.
+		// EG 1/03
 
 		Hashtable h=new Hashtable();
 		// Read generated File
@@ -591,7 +594,9 @@ public class L10nTask extends MatchingTask {
 
             } //while
 		} catch(java.io.FileNotFoundException e) {
-			System.out.println("Warning: Generated File: "+generatedFile+" in "+topDir+"/"+mod+" not found.  Adding all files to changed list.");
+			// Warning: Generated File: "+generatedFile+" in "+
+			// topDir+"/"+mod+" not found.  
+			// Adding all files to changed list."
 			return(null);
 		} catch(java.io.IOException e) {
 			System.out.println("IOException "+ e);
