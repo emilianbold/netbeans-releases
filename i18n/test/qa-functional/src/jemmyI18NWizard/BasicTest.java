@@ -21,9 +21,11 @@ import org.netbeans.test.oo.gui.jelly.JellyProperties;
 import org.netbeans.test.oo.gui.jam.JamUtilities;
 
 import jemmyI18NWizard.wizardSupport.*;
+import org.netbeans.jemmy.operators.JListOperator;
 
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.test.oo.gui.jam.Jemmy;
 
 
 /**
@@ -46,7 +48,7 @@ public class BasicTest extends NbTestCase {
     
     public void setUp() {
         // redirect error and trace messages from Jemmy
-        JellyProperties.setJemmyOutput(new PrintWriter(getLog(), true), new PrintWriter(getLog(), true));
+        //JellyProperties.setJemmyOutput(new PrintWriter(getLog(), true), new PrintWriter(getLog(), true));
         JellyProperties.setDefaults();
     }
     
@@ -80,7 +82,10 @@ public class BasicTest extends NbTestCase {
             JamUtilities.waitEventQueueEmpty(500);
             assertEquals("Source file SimpleMainClass.java not present in list", page0.getItemCount(), 1);
             page0.selectItem(0);
-            String selected = page0.getSelectedItem();
+            //String selected = page0.getSelectedItem();
+            // use jelly2 here because jelly1 is not reliable
+            String selected = new JListOperator(Jemmy.getOp(page0), 1).getSelectedValue().toString();
+            assertNotNull("getSelectedValue() returned null.", selected);
             assertTrue("Source file SimpleMainClass.java not selected", selected.endsWith("SimpleMainClass.java]"));
             
             log("###### Clicking 'Next >' button.");
