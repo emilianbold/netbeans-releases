@@ -248,8 +248,7 @@ public final class DomSupport implements DomProvider, Runnable, PropertyChangeLi
     
     public void propertyChange(PropertyChangeEvent ev) {
         String p = ev.getPropertyName();
-        if (EditorCookie.Observable.PROP_DOCUMENT.equals(p) ||
-                EditorCookie.Observable.PROP_MODIFIED.equals(p)) {
+        if (EditorCookie.Observable.PROP_DOCUMENT.equals(p)) {
             System.err.println("Editor state changed");
             invalidate();
         }

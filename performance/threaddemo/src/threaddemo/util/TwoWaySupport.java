@@ -19,7 +19,9 @@ import java.util.*;
 import org.openide.ErrorManager;
 import org.openide.util.Mutex;
 
-// XXX create a specialized subclass with underlying model an EditorCookie.Observable + Document
+// XXX possibly need some method which is like getStaleValueNonBlocking but which
+// throws InvocationTargetException, to permit views to display an error marker
+// on stale data
 
 /**
  * Support for bidirectional construction of a derived model from an underlying model.
@@ -248,6 +250,9 @@ public abstract class TwoWaySupport {
      * 
      * <p>This method is called with a read lock held on the mutex.
      *
+     * <p>After this method is called, the first argument is discarded by this support,
+     * so a subclass may implement it by mutating the first argument and returning it.
+     *
      * @param underlyingDelta1 the older delta
      * @param underlyingDelta2 the newer delta
      * @return a delta representing those two changes applied in sequence
@@ -315,6 +320,9 @@ public abstract class TwoWaySupport {
                     return o;
                 }
             } else if (problem != null) {
+                // XXX consider using a subclass of ITE that implements fillInStackTrace
+                // to do nothing - to make it more efficient to call this method checking
+                // for a bad value
                 throw new InvocationTargetException(problem);
             }
             // Else we need to block for a value.
@@ -485,9 +493,11 @@ public abstract class TwoWaySupport {
      * Initiate creation of the derived model from the underlying model.
      * This is a no-op unless that process has not yet been started or if the
      * value of the derived model is already fresh and needs no rederivation.
-     * <p>This method does not require the mutex nor does it block.
+     * <p>This method does not require the mutex nor does it block, except
+     * insofar as {@link #initiating} might.
      */
     public final void initiate() {
+        boolean isInitiating = false;
         synchronized (LOCK) {
             assert stateConsistent();
             if (!active && !fresh) {
@@ -496,9 +506,25 @@ public abstract class TwoWaySupport {
                 tasks.put(this, t);
                 active = true;
                 startDerivationThread();
+                isInitiating = true;
                 LOCK.notifyAll();
             }
         }
+        if (isInitiating) {
+            initiating();
+        }
+    }
+    
+    /**
+     * Called during {@link #initiate}.
+     * The default implementation does nothing. Subclasses may choose to initiate
+     * a request for some information from the underlying model, if it is not
+     * immediately accessible.
+     * <p>This method is not called with any lock, so if a read mutex is desired,
+     * it must be requested explicitly.
+     */
+    protected void initiating() {
+        // do nothing
     }
     
     /**
@@ -575,6 +601,7 @@ public abstract class TwoWaySupport {
      * If false (the default), such attempts will throw {@link ClobberException}.
      * If true, they will be permitted, though a clobber event will be notified
      * rather than a recreate event.
+     * <p>A subclass must always return the same value from this method.
      * @return true to permit clobbering, false to forbid it
      */
     protected boolean permitsClobbering() {
