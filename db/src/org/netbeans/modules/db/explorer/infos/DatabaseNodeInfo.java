@@ -7,34 +7,38 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.db.explorer.infos;
 
-import java.beans.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.ref.WeakReference;
 import java.io.InputStream;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
 import java.text.MessageFormat;
 import java.util.*;
 
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.adaptors.*;
-import org.netbeans.lib.ddl.impl.*;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
+
+import org.netbeans.lib.ddl.DatabaseSpecification;
+import org.netbeans.lib.ddl.DatabaseSpecificationFactory;
+import org.netbeans.lib.ddl.DBConnection;
+import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.lib.ddl.util.PListReader;
 import org.netbeans.modules.db.DatabaseException;
-import org.netbeans.modules.db.explorer.*;
-import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DatabaseDriver;
+import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
+import org.netbeans.modules.db.explorer.DatabaseOption;
 import org.netbeans.modules.db.explorer.actions.DatabaseAction;
-import org.openide.*;
-import org.openide.nodes.Node;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+import org.netbeans.modules.db.explorer.nodes.RootNode;
 
 public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     public static final String SPECIFICATION_FACTORY = "specfactory"; //NOI18N
@@ -321,8 +325,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     {
     }
 
-    public void refreshChildren() throws DatabaseException
-    {
+    public void refreshChildren() throws DatabaseException {
         // create list (infos)
         Vector charr = new Vector();
         put(DatabaseNodeInfo.CHILDREN, charr);
@@ -330,22 +333,22 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         
         // create sub-tree (by infos)
         try {
-
             Node[] subTreeNodes = new Node[charr.size()];
 
             // current sub-tree
-            DatabaseNodeChildren children = (DatabaseNodeChildren)getNode().getChildren();
+            DatabaseNodeChildren children = (DatabaseNodeChildren) getNode().getChildren();
 
             // remove current sub-tree
             children.remove(children.getNodes());
 
             // build refreshed sub-tree
-            for(int i=0; i<charr.size(); i++)
-                subTreeNodes[i] = children.createNode((DatabaseNodeInfo)charr.elementAt(i));
-
+            for(int i = 0; i < charr.size(); i++)
+                subTreeNodes[i] = children.createNode((DatabaseNodeInfo) charr.elementAt(i));
+            
             // add built sub-tree
             children.add(subTreeNodes);
-
+        } catch (ClassCastException ex) {
+            //PENDING
         } catch (Exception ex) {
             org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         }
