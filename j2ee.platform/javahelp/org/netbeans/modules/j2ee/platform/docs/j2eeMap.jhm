@@ -84,6 +84,8 @@
 	<mapID target="about_web_service_message" url="web/webservice/about_jwsd_message.html" />
 	<mapID target="about_wsdl" url="web/webservice/about_wsdl.html" />
 	<mapID target="about_wscompile" url="web/webservice/about_wscompile.html" />
+	<mapID target="select_wscompile_ws" url="web/webservice/select_wscompile_ws.html" />
+        <mapID target="select_wscompile_wsc" url="web/webservice/select_wscompile_wsc.html" />
 	<mapID target="ws_process" url="web/webservice/ws_process.html" />
 	<mapID target="create_ws" url="web/webservice/create_ws.html" />
 	<mapID target="create_ws_project" url="web/webservice/create_ws_project.html" />
@@ -99,7 +101,6 @@
 	<mapID target="expose_ws" url="web/webservice/expose_ws.html" />
 	<mapID target="create_wsc" url="web/webserviceclient/create_wsc.html" />
 	<mapID target="call_ws_operation" url="web/webserviceclient/call_ws_operation.html" />
-	<mapID target="build_wsc" url="web/webserviceclient/build_wsc.html" />
 
 <!-- Standard Web Project Properties dialog box-->
 <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerGeneral" url="web/overvw/WebCustomizerGeneral.html" />
