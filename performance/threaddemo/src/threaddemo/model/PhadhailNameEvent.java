@@ -41,4 +41,8 @@ public final class PhadhailNameEvent extends PhadhailEvent {
         return newName;
     }
     
+    public String toString() {
+        return "PhadhailNameEvent[" + getPhadhail() + ":" + oldName + " -> " + newName + "]";
+    }
+    
 }

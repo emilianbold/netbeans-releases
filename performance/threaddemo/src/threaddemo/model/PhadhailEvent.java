@@ -35,4 +35,8 @@ public class PhadhailEvent extends EventObject {
         return (Phadhail)getSource();
     }
     
+    public String toString() {
+        return "PhadhailEvent[" + getPhadhail() + "]";
+    }
+    
 }
