@@ -31,7 +31,12 @@ import org.netbeans.modules.java.platform.JavaPlatformProvider;
  * @author Radko Najman, Svata Dedic, Tomas Zezula
  */
 public final class JavaPlatformManager {
-    
+
+    /**
+     * Property name of the installedPlatforms property
+     */
+    public static final String PROP_INSTALLED_PLATFORMS="installedPlatforms";   //NOI18N
+
     private static JavaPlatformManager instance = null;
 
     private Lookup.Result/*<JavaPlatformProvider>*/ providers;
@@ -39,6 +44,7 @@ public final class JavaPlatformManager {
     private boolean providersValid = false;
     private PropertyChangeListener pListener;
     private Collection/*<JavaPlatform>*/ cachedPlatforms;
+    private HashSet/*<PropertyChangeListener>*/ listeners;
 
     /** Creates a new instance of JavaPlatformManager */
     public JavaPlatformManager() {
@@ -114,6 +120,44 @@ public final class JavaPlatformManager {
         return (JavaPlatform[]) result.toArray(new JavaPlatform[result.size()]);
     }
 
+    /**
+     * Adds PropertyChangeListener to the JavaPlatformManager, the listener is notified
+     * when the platform is added,removed or modified.
+     * @param l the listener, can not be null
+     */
+    public synchronized void addPropertyChangeListener (PropertyChangeListener l) {
+        assert l != null : "Listener can not be null";  //NOI18N
+        if (this.listeners == null) {
+            this.listeners = new HashSet ();
+        }
+        this.listeners.add (l);
+    }
+
+    /**
+     * Removes PropertyChangeListener to the JavaPlatformManager.
+     * @param l the listener, can not be null
+     */
+    public synchronized void removePropertyChangeListener (PropertyChangeListener l) {
+        assert l != null : "Listener can not be null";  //NOI18N
+        if (this.listeners == null) {
+            return;
+        }
+        this.listeners.remove (l);
+    }
+
+    private void firePropertyChange (String property) {
+        Iterator it;
+        synchronized (this) {
+            if (this.listeners == null) {
+                return;
+            }
+            it = ((Set)this.listeners.clone()).iterator();
+        }
+        PropertyChangeEvent event = new PropertyChangeEvent (this, property, null, null);
+        while (it.hasNext()) {
+            ((PropertyChangeListener)it.next()).propertyChange (event);
+        }
+    }
 
     private static boolean compatible (Specification platformSpec, Specification query) {
         String name = query.getName();
@@ -163,6 +207,7 @@ public final class JavaPlatformManager {
                 this.providers.addLookupListener (new LookupListener () {
                     public void resultChanged(LookupEvent ev) {
                         resetCache (true);
+                        JavaPlatformManager.this.firePropertyChange(PROP_INSTALLED_PLATFORMS);
                     }
                 });
             }
@@ -170,6 +215,7 @@ public final class JavaPlatformManager {
                 this.pListener = new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
                         JavaPlatformManager.this.resetCache (false);
+                        JavaPlatformManager.this.firePropertyChange(PROP_INSTALLED_PLATFORMS);
                     }
                 };
             }
