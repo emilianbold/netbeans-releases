@@ -71,16 +71,18 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
         return null;
     }
     
-    public boolean useDirectoryPath() {
-        return false;
-    }
-    
     public FileObject getMetaInf () {
         return getFileObject (EjbJarProjectProperties.META_INF);
     }
     
-    public FileObject getModuleFolder() {
-        return getMetaInf();
+    public FileObject findDeploymentConfigurationFile(String name) {
+        return getMetaInf().getFileObject(name);
+    }
+    
+    public File getDeploymentConfigurationFile(String name) {
+        FileObject moduleFolder = getMetaInf();
+        File configFolder = FileUtil.toFile(moduleFolder);
+        return new File(configFolder, name);
     }
     
     public ClassPathProvider getClassPathProvider () {
