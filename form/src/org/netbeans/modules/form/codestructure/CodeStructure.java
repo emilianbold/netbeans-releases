@@ -489,6 +489,11 @@ public class CodeStructure {
             return;
 
         var.removeCodeExpression(expression);
+
+        if (var.expressionsMap.isEmpty() 
+                && (var.getType() & CodeVariable.EXPLICIT_RELEASE) == 0)
+            // release unused variable
+            namesToVariables.remove(var.getName());
     }
 
     /** Returns variable of given name. */
@@ -516,7 +521,7 @@ public class CodeStructure {
     // ---------
 
     /** WARNING: This method will be removed in full two-way editing
-     *           implementation! */
+     *           implementation. DO NOT USE! */
     public static void setGlobalDefaultVariableType(int type) {
         if (type < 0) {
             globalDefaultVariableType = CodeVariable.FIELD
@@ -532,7 +537,7 @@ public class CodeStructure {
     }
 
     /** WARNING: This method will be removed in full two-way editing
-     *           implementation! */
+     *           implementation. DO NOT USE! */
     public void setDefaultVariableType(int type) {
         if (type < 0) {
             defaultVariableType = -1; // global default will be used
