@@ -47,20 +47,6 @@ public class SuperVariable extends AbstractVariable implements Super {
     
     // Super impl ..............................................................
     
-    public Field[] getFields (int from, int to) {
-        if (classType == null)
-            this.initFields();
-        return getFields(from, to);
-    }
-    
-    protected void initFields() {
-        super.initFields(classType);
-    }
-    
-    public int getFieldsCount () {
-        return fields.length;
-    }
-    
     public Super getSuper () {
         if (getInnerValue () == null) 
             return null;

@@ -55,7 +55,11 @@ public class JPDAThreadImpl implements JPDAThread {
      * @return name of thread.
      */
     public String getName () {
-        return threadReference.name ();
+        try {
+            return threadReference.name ();
+        } catch (VMDisconnectedException ex) {
+            return "";
+        }
     }
     
     /**
@@ -68,6 +72,8 @@ public class JPDAThreadImpl implements JPDAThread {
             ThreadGroupReference tgr = threadReference.threadGroup ();
             if (tgr == null) return null;
             return (JPDAThreadGroup) ttm.translate (tgr);
+        } catch (VMDisconnectedException ex) {
+            return null;
         } catch (UnknownTypeException e) {
             e.printStackTrace ();
             return null;

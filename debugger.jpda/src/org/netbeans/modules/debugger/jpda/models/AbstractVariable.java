@@ -36,17 +36,15 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
  */
 public class AbstractVariable implements ObjectVariable {
 
-    private Value value;
-    //private Type type;
+    private Value           value;
     private LocalsTreeModel model;
-    private String id;
-    private String genericType;
-    
-    
-    Field[] fields;
-    Field[] staticFields;
-    Field[] inheritedFields;
+    private String          id;
+    private String          genericType;
+    private Field[]         fields;
+    private Field[]         staticFields;
+    private Field[]         inheritedFields;
 
+    
     AbstractVariable (
         LocalsTreeModel model,
         Value value,
@@ -71,80 +69,10 @@ public class AbstractVariable implements ObjectVariable {
         }
         this.id = id;
         if (this.id == null)
-            this.id = Integer.toString(super.hashCode());
+            this.id = Integer.toString (super.hashCode());
     }
 
-    private static String getTypeDescription(PushbackReader signature) throws IOException {
-        int c = signature.read();
-        switch (c) {
-        case 'Z':
-            return "boolean";
-        case 'B':
-            return "byte";
-        case 'C':
-            return "char";
-        case 'S':
-            return "short";
-        case 'I':
-            return "int";
-        case 'J':
-            return "long";
-        case 'F':
-            return "float";
-        case 'D':
-            return "double";
-        case '[':
-        {
-            int arrayCount = 1;
-            for (; ;arrayCount++) {
-                if ((c = signature.read()) != '[') {
-                    signature.unread(c);
-                    break;
-                }
-            }
-            return getTypeDescription(signature) + " " + brackets(arrayCount);
-        }
-        case 'L':
-        {
-            StringBuffer typeName = new StringBuffer(50);
-            for (;;) {
-                c = signature.read();
-                if (c == ';') {
-                    int idx = typeName.lastIndexOf("/");
-                    return idx == -1 ? typeName.toString() : typeName.substring(idx + 1);
-                }
-                else if (c == '<') {
-                    int idx = typeName.lastIndexOf("/");
-                    if (idx != -1) typeName.delete(0, idx + 1);
-                    typeName.append("<");
-                    for (;;) {
-                        String td = getTypeDescription(signature);
-                        typeName.append(td);
-                        c = signature.read();
-                        if (c == '>') break;
-                        signature.unread(c);
-                        typeName.append(',');
-                    }
-                    signature.read();   // should be a semicolon
-                    typeName.append(">");
-                    return typeName.toString();
-                }
-                typeName.append((char)c);
-            }
-        }
-        }
-        throw new IOException();
-    }
-
-    private static String brackets(int arrayCount) {
-        StringBuffer sb = new StringBuffer(arrayCount * 2);
-        do {
-            sb.append("[]");
-        } while (--arrayCount > 0);
-        return sb.toString();
-    }
-
-
+    
     // public interface ........................................................
     
     /**
@@ -190,21 +118,20 @@ public class AbstractVariable implements ObjectVariable {
         throw new InternalError ();
     }
 
-//    //TODO : move to ObjectVariable
     /**
     * Returns string representation of type of this variable.
     *
     * @return string representation of type of this variable.
     */
     public int getFieldsCount () {
+        if (fields == null) initFields ();
         Value v = getInnerValue ();
         if (v == null) return 0;
         if (v instanceof ArrayReference)
             return ((ArrayReference) v).length ();
-        return ((ReferenceType) v.type()).fields ().size ();
+        return fields.length;
     }
 
-//    //TODO : move to ObjectVariable
     /**
      * Returns field defined in this object.
      *
@@ -223,8 +150,52 @@ public class AbstractVariable implements ObjectVariable {
             getID()
         );
     }
+    
+    /**
+     * Returns all fields declared in this type. Or max 50 fields 
+     * of an array.
+     */
+    public Field[] getFields (int from, int to) {
+        //either the fields are cached or we have to init them
+        if (fields == null) initFields ();
+        if (to != 0) {
+            Field[] fv = new Field [to - from];
+            System.arraycopy (fields, from, fv, 0, to - from);
+            return fv;
+        }
+        return fields;
+    }
+        
+    /**
+     * Return all static fields.
+     *
+     * @return all static fields
+     */
+    public Field[] getAllStaticFields (int from, int to) {
+        if (fields == null) initFields ();
+        if (to != 0) {
+            FieldVariable[] fv = new FieldVariable [to - from];
+            System.arraycopy (staticFields, from, fv, 0, to - from);
+            return fv;
+        }
+        return staticFields;
+    }
 
-//    //TODO : move to ObjectVariable
+    /**
+     * Return all inherited fields.
+     * 
+     * @return all inherited fields
+     */
+    public Field[] getInheritedFields (int from, int to) {
+        if (fields == null) initFields ();
+        if (to != 0) {
+            FieldVariable[] fv = new FieldVariable [to - from];
+            System.arraycopy (inheritedFields, from, fv, 0, to - from);
+            return fv;
+        }
+        return inheritedFields;
+    }
+
     public Super getSuper () {
         if (getInnerValue () == null) 
             return null;
@@ -242,7 +213,6 @@ public class AbstractVariable implements ObjectVariable {
                 );
     }
     
-//    //TODO : move to ObjectVariable
     /**
      * Calls {@link java.lang.Object#toString} in debugged JVM and returns
      * its value.
@@ -263,7 +233,6 @@ public class AbstractVariable implements ObjectVariable {
         )).value ();
     }
     
-//    //TODO : move to ObjectVariable
     /**
      * Calls given method in debugged JVM on this instance and returns
      * its value.
@@ -320,6 +289,15 @@ public class AbstractVariable implements ObjectVariable {
         if (getInnerValue () == null) return "";
         return this.getInnerValue().type().name ();
     }
+    
+    public boolean equals (Object o) {
+        return  (o instanceof AbstractVariable) &&
+                (id.equals (((AbstractVariable) o).id));
+    }
+    
+    public int hashCode () {
+        return id.hashCode ();
+    }
 
     
     // other methods............................................................
@@ -340,44 +318,101 @@ public class AbstractVariable implements ObjectVariable {
         return id;
     }
     
-    public boolean equals (Object o) {
-        return  (o instanceof AbstractVariable) &&
-                (id.equals (((AbstractVariable) o).id));
-    }
-    
-    public int hashCode () {
-        return id.hashCode ();
-    }
-
-    
-    
-//--- refactored from LocalsTreeModel
-    
-    /**
-     * Returns all fields declared in this type. Or max 50 fields 
-     * of an array.
-     */
-    public Field[] getFields (int from, int to) {
-            //either the fields are cached or we have to init them
-            if (this.fields == null)
-                this.initFields(this.getInnerValue().type());
-            
-            
-            //TODO : this was here for arrays - but didn't work 
-//            int s = Math.min (50, ar.length ());
-//            if (to == 0) 
-//                l = ar.getValues (0, s);
-//            else
-//                l = ar.getValues (from, to - from); // length!!!
-
-            
-            if (to != 0) {
-                Field[] fv = new Field[to - from];
-                System.arraycopy(this.fields, from, fv, 0, to - from);
-                return fv;
+    private static String getTypeDescription (PushbackReader signature) 
+    throws IOException {
+        int c = signature.read();
+        switch (c) {
+        case 'Z':
+            return "boolean";
+        case 'B':
+            return "byte";
+        case 'C':
+            return "char";
+        case 'S':
+            return "short";
+        case 'I':
+            return "int";
+        case 'J':
+            return "long";
+        case 'F':
+            return "float";
+        case 'D':
+            return "double";
+        case '[':
+        {
+            int arrayCount = 1;
+            for (; ;arrayCount++) {
+                if ((c = signature.read()) != '[') {
+                    signature.unread(c);
+                    break;
+                }
             }
-            return this.fields;
+            return getTypeDescription(signature) + " " + brackets(arrayCount);
         }
+        case 'L':
+        {
+            StringBuffer typeName = new StringBuffer(50);
+            for (;;) {
+                c = signature.read();
+                if (c == ';') {
+                    int idx = typeName.lastIndexOf("/");
+                    return idx == -1 ? 
+                        typeName.toString() : typeName.substring(idx + 1);
+                }
+                else if (c == '<') {
+                    int idx = typeName.lastIndexOf("/");
+                    if (idx != -1) typeName.delete(0, idx + 1);
+                    typeName.append("<");
+                    for (;;) {
+                        String td = getTypeDescription(signature);
+                        typeName.append(td);
+                        c = signature.read();
+                        if (c == '>') break;
+                        signature.unread(c);
+                        typeName.append(',');
+                    }
+                    signature.read();   // should be a semicolon
+                    typeName.append(">");
+                    return typeName.toString();
+                }
+                typeName.append((char)c);
+            }
+        }
+        }
+        throw new IOException();
+    }
+
+    private static String brackets (int arrayCount) {
+        StringBuffer sb = new StringBuffer (arrayCount * 2);
+        do {
+            sb.append ("[]");
+        } while (--arrayCount > 0);
+        return sb.toString ();
+    }
+
+    private void initFields () {
+        Type type = getInnerValue ().type ();
+        if ( !(getInnerValue() instanceof ObjectReference) || 
+             !(type instanceof ReferenceType)
+        ) {
+            this.fields = new Field [0];
+            this.staticFields = new Field [0];
+            this.inheritedFields = new Field [0];
+        }
+        else {
+            ObjectReference or = (ObjectReference) this.getInnerValue();
+            ReferenceType rt = (ReferenceType) type;
+            if (or instanceof ArrayReference) {
+                this.initFieldsOfArray (
+                    (ArrayReference) or, 
+                    ((ArrayType) rt).componentTypeName (),
+                    this.getID ());
+            }
+            else {
+                this.initFieldsOfClass(or, rt, this.getID ());
+            }
+        }
+    }
 
     private void initFieldsOfArray (
             ArrayReference ar, 
@@ -432,27 +467,6 @@ public class AbstractVariable implements ObjectVariable {
         this.inheritedFields = (Field[]) allInheretedFields.toArray(new Field[allInheretedFields.size()]);
         this.staticFields = (Field[]) staticFields.toArray(new Field[staticFields.size()]);
     }
-
-    protected void initFields(Type type) {
-        if (!(this.getInnerValue() instanceof ObjectReference) || !(type instanceof ReferenceType)) {
-            this.fields = new Field [0];
-            this.staticFields = new Field [0];
-            this.inheritedFields = new Field [0];
-        }
-        else {
-            ObjectReference or = (ObjectReference) this.getInnerValue();
-            ReferenceType rt = (ReferenceType) type;
-            if (or instanceof ArrayReference) {
-                this.initFieldsOfArray (
-                    (ArrayReference) or, 
-                    ((ArrayType) rt).componentTypeName (),
-                    this.getID ());
-            }
-            else {
-                this.initFieldsOfClass(or, rt, this.getID ());
-            }
-        }
-    }
     
     FieldVariable getField (
             com.sun.jdi.Field f, 
@@ -471,40 +485,5 @@ public class AbstractVariable implements ObjectVariable {
                 );
             return new FieldVariable (this.getModel(), v, f, parentID, or);
         }
-        
-    /**
-     * Return all static fields.
-     *
-     * @return all static fields
-     */
-    public Field[] getAllStaticFields(int from, int to) {
-        if (this.staticFields == null)
-            this.initFields(this.getInnerValue().type());
-        if (to != 0) {
-            FieldVariable[] fv = new FieldVariable[to - from];
-            System.arraycopy(this.staticFields, from, fv, 0, to - from);
-            return fv;
-        }
-        return this.staticFields;
-    }
-
-    /**
-     * Return all inherited fields.
-     * 
-     * @return all inherited fields
-     */
-    public Field[] getInheritedFields (int from, int to) {
-        if (this.inheritedFields == null)
-            this.initFields(this.getInnerValue().type());
-        if (to != 0) {
-            FieldVariable[] fv = new FieldVariable[to - from];
-            System.arraycopy(this.inheritedFields, from, fv, 0, to - from);
-            return fv;
-        }
-        return this.inheritedFields;
-    }
-    
-    
-    
 }
 

@@ -74,22 +74,18 @@ public class LocalsTreeModel implements TreeModel {
                 Object[] os = getLocalVariables (from, to);
                 return os;
             } else
-//            if (o instanceof SuperVariable) {
-//                SuperVariable mv = (SuperVariable) o;
-//                return getSuperFields (mv, true, from, to);
-//            } else
             if (o instanceof AbstractVariable) { // ThisVariable & FieldVariable
-                AbstractVariable mv = (AbstractVariable) o;
-                Object[] avs = mv.getFields (from, to);
-//                if (mv.getInnerValue () instanceof ArrayReference) {
-//                    ArrayReference ar = (ArrayReference) mv.getInnerValue ();
-//                    if (ar.length () > 50) {
-//                        Object[] a2 = new Object [avs.length + 1];
-//                        System.arraycopy (avs, 0, a2, 0, avs.length);
-//                        a2 [avs.length] = "More";
-//                        avs = a2;
-//                    }
-//                }
+                AbstractVariable abstractVariable = (AbstractVariable) o;
+                Object[] avs = abstractVariable.getFields (from, to);
+                if ( (abstractVariable.getInnerValue () instanceof 
+                        ArrayReference) &&
+                     (avs.length >= 51)
+                ) {
+                    Object[] avs2 = new Object [to - from];
+                    System.arraycopy (avs, 0, avs2, 0, to - from);
+                    avs2 [50] = "More";
+                    avs = avs2;
+                }
                 return avs;
             } else
             throw new UnknownTypeException (o);
@@ -127,8 +123,6 @@ public class LocalsTreeModel implements TreeModel {
                     }
                     if (sf.thisObject () != null) i++;
                     return i;
-//                } catch (AbsentInformationException ex) {
-//                    throw new NoInformationException ("compiled without -g");
                 } catch (NativeMethodException ex) {
                     throw new NoInformationException ("native method");
                 } catch (InvalidStackFrameException ex) {
@@ -137,19 +131,13 @@ public class LocalsTreeModel implements TreeModel {
                 }
                 return 0;
             } else
-//            if (node instanceof SuperVariable) {
-//                SuperVariable mv = (SuperVariable) node;
-//                return getSuperFields (mv, true, 0, 0).length;
-//            } else
             if (node instanceof AbstractVariable) { // ThisVariable & FieldVariable
-                AbstractVariable mv = (AbstractVariable) node;
-//                int i = 0;
-//                if (mv.getInnerValue () instanceof ArrayReference) {
-//                    ArrayReference ar = (ArrayReference) mv.getInnerValue ();
-//                    if (ar.length () > 50) 
-//                        i++;
-//                }
-                return mv.getFields (0, 0).length;
+                AbstractVariable abstractVariable = (AbstractVariable) node;
+                if (abstractVariable.getInnerValue () instanceof 
+                    ArrayReference
+                ) 
+                    return Math.min (abstractVariable.getFieldsCount (), 51);
+                return abstractVariable.getFieldsCount ();
             } else
             throw new UnknownTypeException (node);
         } catch (VMDisconnectedException ex) {
