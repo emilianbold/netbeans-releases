@@ -225,6 +225,10 @@ workspaceswitcher
     <echo message="Building module j2eeserver..."/>
     <ant dir="../j2eeserver" target="netbeans"/>
   </target>
+  <target name="all-junit" depends="all-openide">
+    <echo message="Building module junit..."/>
+    <ant dir="../junit" target="netbeans"/>
+  </target>
   <target name="all-jarpackager" depends="all-openide">
     <echo message="Building module jarpackager..."/>
     <ant dir="../jarpackager" target="netbeans"/>
