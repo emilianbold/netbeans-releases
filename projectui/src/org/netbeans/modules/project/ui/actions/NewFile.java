@@ -246,7 +246,16 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         
         ActionListener menuListener = new PopupMenuListener();
         
-        boolean canWrite = preselectedFolder( getLookup() ).getPrimaryFile().canWrite();
+        DataFolder preselectedFolder = preselectedFolder( getLookup() );
+        
+        boolean canWrite;
+        if ( preselectedFolder == null ) {
+            canWrite = false;
+        }
+        else { 
+            FileObject pf = preselectedFolder.getPrimaryFile();
+            canWrite = pf != null && pf.canWrite();
+        }
         
         DataObject templates[] = NoProjectNew.getTemplates();
         for( int i = 0; i < templates.length; i++ ) {
