@@ -46,10 +46,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
     private static final String NAME_INDEX_PROPERTY     = "indexProperty";
     private static final String NAME_NON_INDEX_PROPERTY = "nonIndexProperty";
     
-    private static final String sampleDir = System.getProperty("netbeans.user")+File.separator+"sampledir";
-    
-    private static boolean mount   = true;
-    private static boolean unmount = false;
+    private static final String sampleDir = Utilities.findFileSystem("src").getDisplayName();
     
     /** Need to be defined because of JUnit */
     public ChangingOfBeanPropertyProperties(String name) {
@@ -77,7 +74,6 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
     /** setUp method  */
     public void setUp() {
         System.out.println("########  "+getName()+"  #######");
-        Utilities.mountSampledir();
         if (!getName().equals("testChangeSourceCode") && !getName().equals("testDeleteAnyPropertiesAndEvents")) {
             
             FileObject testFile = Repository.getDefault().findResource("gui/data/" + NAME_TEST_FILE + ".java");

@@ -22,6 +22,7 @@ package gui;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.util.Enumeration;
 import javax.swing.text.StyledDocument;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.junit.AssertionFailedErrorException;
@@ -111,5 +112,17 @@ public class Utilities {
         }
         return result;
     }
+
+    public static FileSystem findFileSystem(String pattern){
+        Enumeration fs = Repository.getDefault().getFileSystems();
+        FileSystem result;
+        while ( fs.hasMoreElements()) {
+            if ((result = (FileSystem) fs.nextElement()).getDisplayName().indexOf(pattern)>0) {
+                return result;
+            }
+        }
+        return null;
+    }
+    
     
 }

@@ -35,10 +35,7 @@ public class BeansTemplates extends JellyTestCase {
     private static final String NAME_CUSTOMIZER         = "MyCustomizer";
     private static final String NAME_PROPERTY_EDITOR    = "MyPropertyEditor";
     
-    
-    
-    private boolean mountedSampleDir = false;
-    private String  sampleDir = System.getProperty("netbeans.user")+File.separator+"sampledir";
+    private static final String sampleDir = Utilities.findFileSystem("src").getDisplayName();
     
     /** Need to be defined because of JUnit */
     public BeansTemplates(String name) {
@@ -65,7 +62,6 @@ public class BeansTemplates extends JellyTestCase {
     
     public void setUp() {
         System.out.println("########  "+getName()+"  #######");
-        mountedSampleDir = Utilities.mountSampledir();
     }
     
     public void tearDown() {

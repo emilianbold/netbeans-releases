@@ -35,11 +35,7 @@ public class NewMulticastEventSource extends JellyTestCase {
     
     private static final String NAME_TEST_FILE          = "TestFile";
             
-    private static final String sampleDir = System.getProperty("netbeans.user")+File.separator+"sampledir";
-
-    
-    private static boolean mount   = true;
-    private static boolean unmount = false;
+    private static final String sampleDir = Utilities.findFileSystem("src").getDisplayName();
     
         
     /** Need to be defined because of JUnit */
@@ -68,7 +64,6 @@ public class NewMulticastEventSource extends JellyTestCase {
     /** setUp method  */
     public void setUp() {
         System.out.println("########  "+getName()+"  #######");
-        Utilities.mountSampledir();
         
         FileObject testFile = Repository.getDefault().findResource("gui/data/" + NAME_TEST_FILE + ".java");
         FileObject destination = Repository.getDefault().findFileSystem(sampleDir.replace('\\', '/')).getRoot();

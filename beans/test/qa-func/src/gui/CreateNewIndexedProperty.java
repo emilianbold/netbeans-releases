@@ -43,10 +43,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
     private static final String NAME_WRONG = "123";
     private static final String TYPE_WRONG = "+++";
 
-    private static final String sampleDir = System.getProperty("netbeans.user")+File.separator+"sampledir";
-    
-    private boolean mount   = true;
-    
+    private static final String sampleDir = Utilities.findFileSystem("src").getDisplayName();
     
     /** Need to be defined because of JUnit */
     public CreateNewIndexedProperty(String name) {
@@ -82,7 +79,6 @@ public class CreateNewIndexedProperty extends JellyTestCase {
     public void setUp() {
         // redirect jemmy trace and error output to a log
         System.out.println("########  "+getName()+"  #######");
-        Utilities.mountSampledir();
 
         OptionsOperator optionsOperator = OptionsOperator.invoke();
         optionsOperator.selectOption(Bundle.getString("org.netbeans.core.Bundle", "UI/Services/Editing")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Menu"));
