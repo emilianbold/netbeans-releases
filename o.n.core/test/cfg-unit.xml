@@ -50,18 +50,16 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="code" name="testbag_3" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
+                <include name="org/netbeans/core/*Test.class"/>
+                <exclude name="org/netbeans/core/BundleKeysTest.class"/> <!-- see JellyTools_compatibility -->
                 <include name="org/netbeans/core/modules/*Test.class"/>
                 <include name="org/netbeans/core/modules/*Test?.class"/>
-                <include name="org/netbeans/core/NbPlacesTest.class"/>
                 <include name="org/netbeans/core/projects/SystemFileSystemTest.class"/>
                 <include name="org/netbeans/core/projects/cache/*Test.class"/>
-                <include name="org/netbeans/core/PlainTest.class"/>
-                <include name="org/netbeans/core/AutomountSupportTest.class"/>
                 <include name="org/netbeans/core/lookup/*Test.class"/>
                 <include name="org/netbeans/core/lookup/*Test?.class"/>
                 <exclude name="org/netbeans/core/lookup/InstanceDataObjectModuleTest4.class"/>
                 <include name="org/netbeans/PatchByteCodeTest.class"/>
-                <include name="org/netbeans/core/NbErrorManagerTest.class"/>
             </patternset>
         </testset>
     </testbag>

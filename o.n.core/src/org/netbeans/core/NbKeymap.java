@@ -117,7 +117,6 @@ public final class NbKeymap extends Observable implements Keymap {
         Map localActions = actions = new HashMap ();
 
         synchronized (this) {
-            Set entries = bindings.entrySet();
             for (Iterator it = bindings.entrySet().iterator(); it.hasNext(); ) {
                 Map.Entry curEntry = (Map.Entry)it.next();
                 Action curAction = (Action) curEntry.getValue();
@@ -152,24 +151,28 @@ public final class NbKeymap extends Observable implements Keymap {
     }
     
     public void addActionForKeyStroke(KeyStroke key, Action a) {
+        // Update reverse binding for old action too (#30455):
+        Action old;
         synchronized (this) {
-            bindings.put(key, a);
+            old = (Action)bindings.put(key, a);
             actions = null;
         }
         
         updateActionAccelerator(a);
+        updateActionAccelerator(old);
         setChanged();
         notifyObservers();
     }
 
-    void addActionForKeyStrokeMap(HashMap map) {
+    void addActionForKeyStrokeMap(Map map) {
         Set actionsSet = new HashSet();
         synchronized (this) {
             for (Iterator it = map.keySet ().iterator (); it.hasNext (); ) {
                 Object key = it.next ();
                 Object value = map.get(key);
-                bindings.put(key, value);
+                // Add both old and new action:
                 actionsSet.add(value);
+                actionsSet.add(bindings.put(key, value));
             }
             actions = null;
         }
