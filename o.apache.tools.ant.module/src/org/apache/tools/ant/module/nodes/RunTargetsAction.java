@@ -7,7 +7,7 @@
  *
  * The Original Code is the Ant module
  * The Initial Developer of the Original Code is Jayme C. Edwards.
- * Portions created by Jayme C. Edwards are Copyright (c) 2000.
+ * Portions created by Jayme C. Edwards are Copyright (c) 2001.
  * All Rights Reserved.
  *
  * Contributor(s): Jesse Glick.
@@ -26,7 +26,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import org.openide.awt.Actions;
-import org.openide.awt.JInlineMenu;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -91,8 +90,6 @@ public class RunTargetsAction extends CookieAction implements Presenter.Popup {
         private List targets = null; // List<String>
         private AntProjectCookie project = null;
 
-        //private Set listeners = new HashSet (); // Set<ChangeListener>
-        
         private final NodeAction action;
         
         ActSubMenuModel (NodeAction action) {
@@ -189,21 +186,10 @@ public class RunTargetsAction extends CookieAction implements Presenter.Popup {
         }
 
         public synchronized void addChangeListener (ChangeListener l) {
-            //listeners.add (l);
         }
 
         public synchronized void removeChangeListener (ChangeListener l) {
-            //listeners.remove (l);
         }
-
-        /** You may use this is you have attached other listeners to things that will affect displayNames, for example. * /
-        private synchronized void fireStateChanged () {
-            if (listeners.size () == 0) return;
-            ChangeEvent ev = new ChangeEvent (this);
-            Iterator it = listeners.iterator ();
-            while (it.hasNext ())
-                ((ChangeListener) it.next ()).stateChanged (ev);
-        }*/
 
     }
 
