@@ -76,7 +76,7 @@ public class EditQueryStringAction extends CookieAction {
         }
         for (int i = 0; i < activatedNodes.length; i++){
             DataObject dObj = (DataObject)(activatedNodes[i]).getCookie(DataObject.class);
-            QueryStringCookie qsc = (QueryStringCookie)activatedNodes[0].getCookie(QueryStringCookie.class);
+            QueryStringCookie qsc = (QueryStringCookie)activatedNodes[i].getCookie(QueryStringCookie.class);
 
             if (qsc == null || dObj == null)
                 return false;
