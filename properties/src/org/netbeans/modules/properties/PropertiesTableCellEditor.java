@@ -49,7 +49,9 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
       }
       
       public void setValue(Object x) {
-        super.setValue(x);
+        // PENDING - due to a compiler error explicitly do "super" code instead of calling super
+        this.value = x;
+        //super.setValue(x);
         PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)x;
         
         // set values as they deserve
