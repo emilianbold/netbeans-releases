@@ -18,12 +18,16 @@ import org.openide.execution.ExecInfo;
 import org.openide.debugger.DebuggerType;
 import org.openide.debugger.DebuggerException;
 import org.openide.util.HelpCtx;
+import org.openide.loaders.DataObject;
+import org.openide.text.Line;
+
+import org.netbeans.modules.debugger.AbstractDebuggerType;
 
 
 /**
 * Default debugger type for Import debugger.
 */
-public class ImportDebuggerType extends DebuggerType {
+public class ImportDebuggerType extends AbstractDebuggerType {
 
     static final long serialVersionUID = 5234304898551299437L;
 
@@ -48,4 +52,31 @@ public class ImportDebuggerType extends DebuggerType {
         );
         return;
     }
+    
+    /**
+     * Should return <code>true</code> if this DebuggerType supports debugging
+     * of given {@link org.openide.loaders.DataObject}.
+     *
+     * @param obj DataObject to test
+     * @return <code>true</code> if this DebuggerType supports debugging
+     * of given {@link org.openide.loaders.DataObject}
+     */
+    public boolean supportsDebuggingOf (DataObject obj) {
+        return obj.getPrimaryFile ().getMIMEType ().equals ("text/x-java");
+    }
+    
+    /**
+     * Starts debugging for a dataobject. Debugging should stop on given line.
+     * This method is called from RunToCursorAction.
+     *
+     * @param obj object to run
+     * @param stopOnLine should the debugging stop on given line or go to
+     * first breakpoint (if stopOnLine == <code>null</code>)
+     * @exception DebuggerException if debugger is not installed or cannot
+     * be started
+     */
+    public void startDebugger (DataObject obj, Line stopOnline) throws DebuggerException {
+        startDebugger (obj, false);
+    }
+    
 }

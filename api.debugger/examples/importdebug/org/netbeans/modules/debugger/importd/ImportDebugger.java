@@ -142,7 +142,7 @@ public class ImportDebugger extends DebuggerSupport {
     * Go.
     */
     synchronized public void go () throws DebuggerException {
-        setLastAction (ACTION_GO);
+        setLastAction (ACTION_CONTINUE);
         setState (DEBUGGER_RUNNING);
         
         Line l = null;
@@ -296,5 +296,33 @@ public class ImportDebugger extends DebuggerSupport {
         int len = NbDocument.findLineOffset (doc, l.getLineNumber () + 1) - 
             off - 1;
         return doc.getText (off, len);
+    }
+
+
+    
+    /**
+     * Jumps to the next call site (towards the top of the call-stack).
+     */
+    public void goToCalledMethod () {
+    }
+    
+    /**
+     * Jumps to the previous call site (towards the bottom of the call-stack).
+     */
+    public void goToCallingMethod () {
+    }
+
+    /**
+     * Jumps to a given line.
+     *
+     * @param l a line jump to
+     */
+    public void runToCursor (Line l) {
+    }
+
+    /**
+     * Pauses debugging.
+     */
+    public void pause () {
     }
 }
