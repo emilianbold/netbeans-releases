@@ -138,6 +138,7 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller {
         jLabel1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("ACSD_L_Exception_Breakpoint_filter_hint"));
 
         jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("MN_L_Exception_Breakpoint_Package_Name").charAt(0));
+        jLabel2.setLabelFor(tfPackageName);
         jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("L_Exception_Breakpoint_Package_Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
