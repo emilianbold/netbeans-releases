@@ -72,7 +72,7 @@ Microsystems, Inc. All Rights Reserved.
         <nbpath nbhome="${netbeans.home}" xthome="${xtest.home}" xtexhome="${xtest.home}"/>
 
 	<!-- XML, XSLT reporters -->
-        <nbtaskdef classpath="${junit.path};${xtest.path};${xalan.path}">
+        <nbtaskdef classpath="${xtest.path};${xalan.path}">
             <!--
             <taskdef name="xalan" classname="org.netbeans.xtest.XalanLauncher"/>
             <taskdef name="nbjr" classname="org.netbeans.xtest.junit.XMLResultAggregator"/>
