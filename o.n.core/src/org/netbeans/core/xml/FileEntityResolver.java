@@ -18,6 +18,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import java.io.IOException;
 
+import org.w3c.dom.DocumentType;
+
 import org.openide.TopManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
@@ -82,9 +84,10 @@ public class FileEntityResolver extends EntityCatalog implements Environment.Pro
         if (obj instanceof XMLDataObject) {
             XMLDataObject xml = (XMLDataObject)obj;
             
-            String id;
+            String id = null;
             try {
-                id = xml.getDocument ().getDoctype ().getPublicId ();
+                DocumentType domDTD = xml.getDocument ().getDoctype ();
+                if (domDTD != null) id = domDTD.getPublicId ();
             } catch (IOException ex) {
                 TopManager.getDefault ().getErrorManager().notify (ex);
                 return null;
@@ -105,6 +108,7 @@ public class FileEntityResolver extends EntityCatalog implements Environment.Pro
             int len = sb.length ();
             // at least for now
             sb.append (".instance"); // NOI18N 
+            
             FileObject fo = Repository.getDefault ().getDefaultFileSystem ().findResource (sb.toString ());
             if (fo == null) {
                 // try to find a file with xml extension
@@ -149,7 +153,7 @@ public class FileEntityResolver extends EntityCatalog implements Environment.Pro
      */
     private static java.lang.reflect.Method method;
     private static Lookup createInfoLookup (XMLDataObject obj, XMLDataObject.Info info) {
-        // well, it is a hack, but just for default compatibility
+        // well, it is a wormhole, but just for default compatibility
         if (method == null) {
             try {
                 method = XMLDataObject.class.getDeclaredMethod ("createInfoLookup", new Class[] { // NOI18N
@@ -191,7 +195,7 @@ public class FileEntityResolver extends EntityCatalog implements Environment.Pro
             switch (state) {
             case 0:
                 // initial state 
-                if (ch == '+' || ch == '-') {
+                if (ch == '+' || ch == '-' || ch == 'I' || ch == 'S' || ch == 'O') {
                     // do not write that char
                     continue;
                 }
