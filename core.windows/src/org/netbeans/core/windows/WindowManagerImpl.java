@@ -656,6 +656,10 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         
         return null;
     }
+    
+    public void setProjectName(String projectName) {
+        central.setProjectName(projectName);
+    }
 
     
     /** Helper method to retrieve the display name of TopComponent. */

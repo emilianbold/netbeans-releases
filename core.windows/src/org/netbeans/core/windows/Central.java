@@ -360,6 +360,15 @@ final class Central implements ControllerHandler {
         }
     }
     
+    // XXX
+    public void setProjectName(String projectName) {
+        model.setProjectName(projectName);
+        
+        if(isVisible()) {
+            viewRequestor.scheduleRequest(new ViewRequest(null, View.CHANGE_PROJECT_NAME, null, projectName));
+        }
+    }
+    
     ////////////////////////////
     // Mode specific >>
     private void closeMode(ModeImpl mode) {

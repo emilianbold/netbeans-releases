@@ -59,5 +59,8 @@ interface WindowSystemAccessor {
     public ModeStructureAccessor getModeStructureAccessor();
     
     public ModeAccessor findModeAccessor(String modeName);
+    
+    // XXX
+    public String getProjectName();
 }
 

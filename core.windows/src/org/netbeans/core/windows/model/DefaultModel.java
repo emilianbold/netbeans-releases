@@ -81,6 +81,9 @@ final class DefaultModel implements Model {
     /** Set of TopComponentGroup's. */
     private final Set topComponentGroups = new HashSet(5);
     
+    // XXX
+    private String projectName;
+    
     // Locks.
     /** Lock for visible property. */
     private final Object LOCK_VISIBLE = new Object();
@@ -108,6 +111,8 @@ final class DefaultModel implements Model {
     private final Object LOCK_MODES = new Object();
     /** Lock for topComponentGroups property. */
     private final Object LOCK_TOPCOMPONENT_GROUPS = new Object();
+    
+    private final Object LOCK_PROJECT_NAME = new Object();
 
     
     public DefaultModel() {
@@ -282,6 +287,13 @@ final class DefaultModel implements Model {
             topComponentGroups.remove(tcGroup);
         }
     }
+    
+    // XXX
+    public void setProjectName(String projectName) {
+        synchronized(LOCK_PROJECT_NAME) {
+            this.projectName = projectName;
+        }
+    }
     /////////////////////////////////////
     // Mutator methods <<
     /////////////////////////////////////
@@ -401,6 +413,13 @@ final class DefaultModel implements Model {
     public String getToolbarConfigName() {
         synchronized(LOCK_TOOLBAR_CONFIG) {
             return this.toolbarConfigName;
+        }
+    }
+    
+    // XXX
+    public String getProjectName() {
+        synchronized(LOCK_PROJECT_NAME) {
+            return this.projectName;
         }
     }
     /////////////////////////////////////
@@ -941,6 +960,7 @@ final class DefaultModel implements Model {
         wsms.setMainWindowFrameStateJoined(getMainWindowFrameStateJoined());
         wsms.setMainWindowFrameStateSeparated(getMainWindowFrameStateSeparated());
         wsms.setToolbarConfigurationName(getToolbarConfigName());
+        wsms.setProjectName(getProjectName());
         return wsms;
     }
 

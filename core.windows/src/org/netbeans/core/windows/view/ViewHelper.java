@@ -73,6 +73,7 @@ final class ViewHelper {
         wsa.setMainWindowFrameStateJoined(wss.getMainWindowFrameStateJoined());
         wsa.setMainWindowFrameStateSeparated(wss.getMainWindowFrameStateSeparated());
         wsa.setToolbarConfigurationName(wss.getToolbarConfigurationName());
+        wsa.setProjectName(wss.getProjectName());
         return wsa;
     }
     

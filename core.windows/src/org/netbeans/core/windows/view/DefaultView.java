@@ -317,6 +317,10 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 debugLog("UI update"); // NOI18N
 
                 hierarchy.updateUI();
+            } else if(changeType == CHANGE_PROJECT_NAME) {
+                debugLog("Update project name"); // NOI18N
+                
+                hierarchy.setProjectName(wsa.getProjectName());
             }
         }
         
@@ -388,7 +392,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         hierarchy.updateFrameStates();
         
         hierarchy.activateMode(wsa.getActiveModeAccessor());
-        hierarchy.getMainWindow().updateTitle(); // PENDING
+        hierarchy.setProjectName(wsa.getProjectName());
         
         // XXX PENDING
         if(wsa.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {

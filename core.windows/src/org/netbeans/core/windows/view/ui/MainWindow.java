@@ -64,6 +64,7 @@ public final class MainWindow extends JFrame {
     
     /** Flag indicating main window is initialized. */ 
     private boolean inited;
+    
 
     /** Constructs main window. */
     public MainWindow() {
@@ -251,19 +252,22 @@ public final class MainWindow extends JFrame {
         return bounds;
     }
 
-    private String getMainTitle() {
-        String buildNumber = System.getProperty ("netbeans.buildnumber"); // NOI18N
-        return NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title", buildNumber);
+    public void setProjectName(String projectName) {
+        updateTitle(projectName);
     }
     
     /** Updates the MainWindow's title */
-    public void updateTitle() {
-        setTitle(getMainTitle());
+    private void updateTitle(String projectName) {
+        String buildNumber = System.getProperty("netbeans.buildnumber"); // NOI18N
+        String subTitle;
+        if(projectName == null) {
+            subTitle = NbBundle.getMessage(MainWindow.class, "CTL_NoProject");
+        } else {
+            subTitle = projectName;
+        }
+        
+        setTitle(NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title", buildNumber, subTitle));
     }
-    
-//    public void updateTitle(String subTitle) {
-//        setTitle(getMainTitle() + " - " + subTitle); // NOI18N
-//    } // PENDING
 
 }
 

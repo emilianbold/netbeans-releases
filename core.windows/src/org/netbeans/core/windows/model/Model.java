@@ -86,6 +86,8 @@ public interface Model {
     public void addTopComponentGroup(TopComponentGroupImpl tcGroup);
     /** Removes top component group. */
     public void removeTopComponentGroup(TopComponentGroupImpl tcGroup);
+    // XXX 
+    public void setProjectName(String projectName);
     // Mutators (global level) <<
     /////////////////////////////
 

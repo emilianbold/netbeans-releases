@@ -284,7 +284,6 @@ final class ViewHierarchy {
     public void activateMode(ModeAccessor activeModeAccessor) {
         ModeView activeModeView = getModeViewForAccessor(activeModeAccessor);
         activateModeView(activeModeView);
-        updateMainWindowTitle();
     }
 
     private void activateModeView(ModeView modeView) {
@@ -506,16 +505,8 @@ final class ViewHierarchy {
         // validation (one in MainWindow - needs to be provided here) and this as second one.
     }
     
-    private void updateMainWindowTitle() {
-//        if(activeModeView != null) {
-//            TopComponent active = activeModeView.getSelectedTopComponent();
-//            if(active != null) {
-//                mainWindow.updateTitle(active.getName());
-//                return;
-//            }
-//        }
-//        
-//        mainWindow.updateTitle(); // PENDING
+    public void setProjectName(String projectName) {
+        mainWindow.setProjectName(projectName);
     }
 
     // PENDING Revise, updating desktop and editor area, bounds... separate this method.

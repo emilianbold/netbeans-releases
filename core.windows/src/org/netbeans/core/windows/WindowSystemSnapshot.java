@@ -38,6 +38,7 @@ public class WindowSystemSnapshot {
     private ModeStructureSnapshot.ModeSnapshot activeMode;
     private ModeStructureSnapshot.ModeSnapshot maximizedMode;
     private ModeStructureSnapshot modeStructureSnapshot;
+    private String projectName;
     
     public WindowSystemSnapshot() {
     }
@@ -135,6 +136,15 @@ public class WindowSystemSnapshot {
     
     public ModeStructureSnapshot getModeStructureSnapshot() {
         return modeStructureSnapshot;
+    }
+    
+    // XXX
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+    
+    public String getProjectName() {
+        return projectName;
     }
     
     public ModeStructureSnapshot.ModeSnapshot findModeSnapshot(ModeImpl mode) {

@@ -69,7 +69,8 @@ public interface View {
     public int CHANGE_DND_PERFORMED                    = 46;
     
     // Others
-    public int CHANGE_UI_UPDATE = 51;
+    public int CHANGE_UI_UPDATE    = 51;
+    public int CHANGE_PROJECT_NAME = 52;
     
     /** Provides GUI changes to manifest model changes to user. */
     public void changeGUI(ViewEvent[] viewEvents, WindowSystemSnapshot snapshot);

@@ -122,7 +122,8 @@ class ViewRequestor {
             || type == View.CHANGE_TOPCOMPONENT_TOOLTIP_CHANGED
             || type == View.CHANGE_TOPCOMPONENT_ACTIVATED
             || type == View.CHANGE_DND_PERFORMED
-            || type == View.CHANGE_UI_UPDATE;
+            || type == View.CHANGE_UI_UPDATE
+            || type == View.CHANGE_PROJECT_NAME;
             
         synchronized(requests) {
             Object oldValue = null;
@@ -258,6 +259,7 @@ class ViewRequestor {
         snapshot.setMaximizedModeSnapshot(currentSnapshot.getMaximizedModeSnapshot());
         snapshot.setModeStructureSnapshot(currentSnapshot.getModeStructureSnapshot());
         snapshot.setToolbarConfigurationName(currentSnapshot.getToolbarConfigurationName());
+        snapshot.setProjectName(currentSnapshot.getProjectName());
 
         Debug.log(ViewRequestor.class,
             "Updating winsys snapshot took=" // NOI18N

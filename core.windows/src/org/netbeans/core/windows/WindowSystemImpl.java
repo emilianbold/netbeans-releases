@@ -77,7 +77,7 @@ public class WindowSystemImpl implements NbTopManager.WindowSystem {
     
     public void setProjectName(String projectName) {
         WindowManagerImpl.assertEventDispatchThread();
-        // MainWindow.updateTitle(projectName);
+        WindowManagerImpl.getInstance().setProjectName(projectName);
     }
     // Projects<<
     
