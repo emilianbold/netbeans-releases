@@ -321,6 +321,13 @@
 <mapID target="debug.window.classes" url="debug/environment/classes_view.html" />
 <mapID target="debug.window.watches" url="debug/environment/watches_view.html" />
 <mapID target="debug.window.variables" url="debug/environment/variables_view.html" />
+<mapID target="debug.window.brkpt_line" url="debug/environment/brkpt_line.html" />
+<mapID target="debug.window.brkpt_method" url="debug/environment/brkpt_method.html" />
+<mapID target="debug.window.brkpt_exception" url="debug/environment/brkpt_exception.html" />
+<mapID target="debug.window.brkpt_class" url="debug/environment/brkpt_class.html" />
+<mapID target="debug.window.brkpt_thread" url="debug/environment/brkpt_thread.html" />
+<mapID target="debug.window.brkpt_variable" url="debug/environment/brkpt_variable.html" />
+
 <mapID target="debug.options" url="debug/environment/options.html" />
 <mapID target="debug.toolbar" url="debug/environment/toolbar.html" />
 <mapID target="debug.attachvm.window" url="debug/environment/attachvm_window.html" />
@@ -422,6 +429,7 @@
 <mapID target="vcs.cygwin" url="vcs-nb/vcs_cygwin.html" />
 <mapID target="vcs.globalsettings" url="vcs-nb/vcs_globalsettings.html" />
 <mapID target="vcs.refresh" url="vcs-nb/vcs_refresh.html" />
+<mapID target="vcs.mountpoint" url="vcs-nb/vcs_mountpoint.html" />
 <mapID target="vcs.groups" url="vcs-nb/vcsgroups/vcs_groups.html" />
 <mapID target="vcs.groupsadd" url="vcs-nb/vcsgroups/vcs_groupsadd.html" />
 <mapID target="vcs.groupsaddfile" url="vcs-nb/vcsgroups/vcs_groupsaddfile.html" />
@@ -434,7 +442,6 @@
 <mapID target="vcs.cvs-intro" url="vcs-nb/cvs-nb/cvs_intro.html" />
 <mapID target="cvs.create-fs" url="vcs-nb/cvs-nb/cvs_create-fs.html" />
 <mapID target="cvs.calling" url="vcs-nb/cvs-nb/cvs_calling.html" />
-<mapID target="cvs.mountpoint" url="vcs-nb/cvs-nb/cvs_mountpoint.html" />
 <mapID target="cvs.filesystemproperties" url="vcs-nb/cvs-nb/cvs_fsproperties.html" />
 <mapID target="cvs.settings" url="vcs-nb/cvs-nb/cvs_settings.html" />
 <mapID target="cvs.customizer" url="vcs-nb/cvs-nb/cvs_customizer.html" />
@@ -500,7 +507,7 @@
 <mapID target="propfiles.editlocale" url="propfiles/editinglocale.html" />
 
 <mapID target="internation.internation" url="internationalize/international.html" />
-<mapID target="internation.autoinsert" url="internationalize/addparams.html" />
+<mapID target="internation.autoinsert" url="internationalize/autoinsert.html" />
 <mapID target="internation.maninsert" url="internationalize/manualinsert.html" />
 <mapID target="internation.formed" url="internationalize/formedstrings.html" />
 <mapID target="internation.addparams" url="internationalize/addparams.html" />
@@ -522,6 +529,7 @@
 <mapID target="ant.project" url="ant/exec-proj.html" />
 <mapID target="ant.target" url="ant/exec-targ.html" />
 <mapID target="ant.editing" url="ant/editing.html" />
+<mapID target="ant.props" url="ant/ant-props.html" />
 <mapID target="ant.advance" url="ant/adv-comp-exec.html" />
 <mapID target="ant.compiling" url="ant/compiling.html" />
 <mapID target="ant.compwith" url="ant/compwith.html" />
@@ -531,6 +539,8 @@
 <mapID target="ant.sampleclasscode" url="ant/exp-classpath.html" />
 
 <mapID target="configure" url="configure/configure.html" />
+<mapID target="configure.options" url="configure/configure_options.html" />
+<mapID target="configure.startup-switches" url="configure/configure_startup-switches.html" />
 <mapID target="configure.setup" url="configure/setup.html" />
 <mapID target="configure.menu" url="configure/menu.html" />
 <mapID target="configure.menucommands" url="configure/menu_commands.html" />
@@ -560,6 +570,8 @@
 <!--CSH-->
 
 <mapID target="org.netbeans.modules.i18n.I18nOptions" url="internationalize/custominter.html" />
+<mapID target="ant.wizard.shortcut" url="ant/exec-targ.html" />
+<mapID target="ant.wizard.properties" url="ant/ant-props.html" />
 
 <mapID target="org.netbeans.core.services.CompilerTypes" url="compile/options_jump.html" />
 <mapID target="org.netbeans.core.services.ExecutorTypes" url="run/executor_options.html" />
@@ -684,6 +696,7 @@
    <mapID target="org.netbeans.core.actions.SaveSettingsAction" url="project/project_save-options.html" />
    <mapID target="org.netbeans.core.actions.SettingsAction" url="project/project_settings.html" />
 
+   <mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.BeanEditor" url="pending.html" />
    <mapID target="org.netbeans.modules.editor.options.ColoringArrayEditor$FakeNode" url="pending.html" />
    <mapID target="org.netbeans.modules.editor.options.ColoringArrayEditorPanel" url="pending.html" />
@@ -963,8 +976,11 @@
 
    <mapID target="org.netbeans.modules.jarpackager.options.JarPackagerOption" url="jarpackager/jarpackager_options.html" />
    <mapID target="org.netbeans.modules.jarpackager.JarExecutor" url="run/external.html" />
+
+   <mapID target="org.netbeans.modules.vcscore.settings.GeneralVcsSettingsNode" url="vcs-nb/vcs_globalsettings.html" />
+   <mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupSettings" url="vcs-nb/vcsgroups/vcs_groupsproperties.html" />
    <mapID target="org.netbeans.modules.vcscore.search.VcsSearchType" url="objects/search/search_status.html" />
-   <mapID target="org.netbeans.modules.cvsclient.JavaCvsSettings" url="vcs-nb/cvs-nb/cvs_settings.html" />
+   <mapID target="org.netbeans.modules.cvsclient.JavaCvsSettings" url="vcs-nb/vcs_globalsettings.html" />
    <mapID target="VCS_VariableEditor" url="vcs-nb/vcsgeneric/vcsgeneric_variables.html" />
    <mapID target="VCS_CommandEditor" url="vcs-nb/vcsgeneric/vcsgeneric_command-props.html" />
    <mapID target="org.netbeans.modules.vcs.advanced.VcsCustomizer" url="vcs-nb/vcsgeneric/vcsgeneric_customizer.html" />

@@ -311,6 +311,7 @@
     <tocitem text="Default Debugger (JPDA)" target="debug.debugger.default"/>
     <tocitem text="Applet Debugger" target="debug.debugger.applet"/>
     <tocitem text="JDK 1.1 Debugger" target="debug.debugger.jdk"/>
+    <tocitem text="Setting Debugger Options for the Environment" target="debug.options"></tocitem>
     <tocitem text="Specifying the Default Debugger" target="debug.debugger.project_default"/>
     <tocitem text="Defining a New Debugger Type" target="debug.service.new"/>
     <tocitem text="Setting a Debugger Type in a Template" target="debug.debugger.template" />
@@ -373,7 +374,7 @@
     <tocitem text="Setting Synchronization Mode in a Template" target="java.sync.template" />
   </tocitem>
   <tocitem text="Overriding Methods" target="java.override" />
-  <tocitem text="Specifying Java Settings for a Project" target="java.java_sources" />
+  <tocitem text="Configuring Java Settings" target="java.java_sources" />
 </tocitem>
 
 
@@ -403,15 +404,14 @@
 <tocitem text="Using Version Control in the IDE" target="vcs.overview">
   <tocitem text="Working With CVS" target="vcs.cvs-intro">
     <tocitem text="Mounting a CVS Filesystem" target="cvs.create-fs" />
-    <tocitem text="CVS Mount Wizard" target="cvs.wizard" />
+    <tocitem text="New CVS Wizard" target="cvs.wizard" />
     <tocitem text="Calling CVS Commands" target="cvs.calling" />
     <tocitem text="Saving CVS Command Options" target="cvs.commandopts-save" />
     <tocitem text="CVS Commands" target="cvs.commands" />
     <tocitem text="Merging File Revisions" target="cvs.merge" />
-    <tocitem text="Setting a Relative Mount Point for a CVS Fileystem" target="cvs.mountpoint" />
     <tocitem text="Setting Up a Local CVS Repository" target="cvs.local" />
     <tocitem text="Reconfiguring a CVS Filesystem" target="cvs.settings" />
-    <tocitem text="CVS Filesystem Properties" target="cvs.filesystemproperties" />
+    <tocitem text="Built-in Client Filesystem Properties" target="cvs.filesystemproperties" />
     <tocitem text="Managing Connections to Remote Repositories" target="cvs.password" />
   </tocitem>
   <tocitem text="Working With Generic VCS Support" target="vcs.vcsgeneric">
@@ -419,12 +419,12 @@
     <tocitem text="Mounting a CVS Directory With Generic VCS Support" target="vcsgeneric.custom-cvs" />
     <tocitem text="Mounting a PVCS Directory" target="vcsgeneric.custom-pvcs" />
     <tocitem text="Mounting a Visual Source Safe Directory" target="vcsgeneric.custom-vss" />
-    <tocitem text="Generic VCS Wizard" target="vcsgeneric.wizard" />
+    <tocitem text="New Generic VCS Wizard" target="vcsgeneric.wizard" />
     <tocitem text="Creating a Custom VCS Profile" target="vcsgeneric.newprofile" />
     <tocitem text="Calling Version Control Commands" target="vcsgeneric.calling" />
     <tocitem text="Setting Advanced Options for VCS Commands" target="vcsgeneric.command-opts" />
     <tocitem text="Modifying VCS Command Parameters and Variables" target="vcsgeneric.modifying" />
-    <tocitem text="Adding a Command to a VCS Profile" target="vcsgeneric.add-command" />
+    <tocitem text="Adding and Editing VCS Commands" target="vcsgeneric.add-command" />
     <tocitem text="VCS Command Properties" target="vcsgeneric.command-props" />
     <tocitem text="Writing a Refresh Command for Your VCS" target="vcsgeneric.list" />
     <tocitem text="Variables in VCS Commands" target="vcsgeneric.variables" />
@@ -438,13 +438,14 @@
     <tocitem text="Using VCS Groups" target="vcs.groups" >
     <tocitem text="Adding and Deleting VCS Groups" target="vcs.groupsadd" />
     <tocitem text="Adding Files to VCS Groups" target="vcs.groupsaddfile" />
-    <tocitem text="Moving and Removing Files from VCS Groups" target="vcs.groupsmovefile" />
+    <tocitem text="Moving and Removing Files From VCS Groups" target="vcs.groupsmovefile" />
     <tocitem text="Calling VCS Commands on VCS Groups" target="vcs.groupscommands" />
-    <tocitem text="Preparing VCS Groups for Check In to the Repository" target="vcs.groupsverify" />
+    <tocitem text="Preparing VCS Groups for Check-In to the Repository" target="vcs.groupsverify" />
     <tocitem text="Resolving Problems With Grouped Files" target="vcs.groupsresolve" />
     <tocitem text="Setting VCS Group Properties" target="vcs.groupsproperties" />
   </tocitem>
   <tocitem text="VCS Support on Windows 95/98/ME" target="vcs.cygwin" />
+  <tocitem text="Setting a Relative Mount Point" target="vcs.mountpoint" />
   <tocitem text="The Versioning Explorer" target="vcs.revexplorer" />
   <tocitem text="Using the Versioning Toolbar" target="vcs.toolbar" />
   <tocitem text="Comparing File Revisions Visually" target="vcs.diffs" />
@@ -467,6 +468,7 @@
   <tocitem text="Creating and Running an Ant Project" target="ant.project" />
   <tocitem text="Executing a Target" target="ant.target" />
   <tocitem text="Editing Ant Scripts" target="ant.editing" />
+  <tocitem text="Setting Properties in Ant Scripts" target="ant.props" />
   <tocitem text="Advanced Compilation and Execution Support" target="ant.advance">
     <tocitem text="Compiling Ant Scripts" target="ant.compiling" />
     <tocitem text="Compiling Files With Ant" target="ant.compwith" />
@@ -549,6 +551,7 @@
 
 
 <tocitem text="Configuring the Environment" target="configure">
+    <tocitem text="Options Window" target="configure.options" />
   <tocitem text="Managing Modules" target="modules.manage">
     <tocitem text="Creating an IDE Module" target="ide.newmodule" />
     <tocitem text="Enabling or Disabling a Module" target="configure.module" />
@@ -594,6 +597,8 @@
     <tocitem text="Menu Shortcuts" target="shortcuts.menus" />
     <tocitem text="Editor Shortcuts" target="shortcuts.editor" />
   </tocitem>
+    <tocitem text="IDE Startup Parameters" target="configure.startup-switches" />
+
 </tocitem>
 
 <tocitem text="Accessibility" target="accessibility.home">
