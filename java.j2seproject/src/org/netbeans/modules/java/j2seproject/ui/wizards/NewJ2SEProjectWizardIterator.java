@@ -76,18 +76,9 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
     }
 
     private WizardDescriptor.Panel[] createPanels () {
-        WizardDescriptor.Panel[] result = null;
-        if (this.type == TYPE_EXT) {
-            result =  new WizardDescriptor.Panel[] {
-                new PanelSourceFolders.Panel ()
-            };
-        }
-        else {
-            result = new WizardDescriptor.Panel[] {
+        return new WizardDescriptor.Panel[] {
                 new PanelConfigureProject( this.type )
             };
-        }
-        return result;
     }
     
     private String[] createSteps() {
@@ -105,10 +96,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
         String mainClass = (String)wiz.getProperty("mainClass");        //NOI18N
         if (this.type == TYPE_EXT) {
             File sourceFolder = (File)wiz.getProperty("sourceRoot");        //NOI18N
-            File testFolder = (File)wiz.getProperty("testRoot");            //NOI18N
-            if (testFolder != null && !testFolder.exists()) {
-                testFolder.mkdirs();
-            }
+            File testFolder = (File)wiz.getProperty("testRoot");            //NOI18N            
             J2SEProjectGenerator.createProject(dirF, codename, displayName, sourceFolder, testFolder );
         }
         else {

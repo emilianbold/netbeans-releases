@@ -220,7 +220,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
         add(jLabel1, gridBagConstraints);
@@ -231,7 +231,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
         add(jLabel2, gridBagConstraints);
@@ -241,7 +241,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         categoriesPanel.setBorder(new javax.swing.border.EtchedBorder());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 6);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 6);
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.weighty = 0.7;
         add(categoriesPanel, gridBagConstraints);
@@ -254,7 +254,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 12);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 0);
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.weighty = 0.7;
         add(projectsPanel, gridBagConstraints);
@@ -265,7 +265,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel3, gridBagConstraints);
 
@@ -280,7 +280,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.3;
         add(jScrollPane1, gridBagConstraints);

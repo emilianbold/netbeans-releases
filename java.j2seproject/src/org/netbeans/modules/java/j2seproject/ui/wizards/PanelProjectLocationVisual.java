@@ -29,7 +29,7 @@ import org.openide.util.NbBundle;
  * @author  Petr Hrebejk
  */
 
-public class PanelProjectLocationVisual extends javax.swing.JPanel implements DocumentListener {
+public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
     
     public static final String PROP_PROJECT_NAME = "projectName";      //NOI18N
     

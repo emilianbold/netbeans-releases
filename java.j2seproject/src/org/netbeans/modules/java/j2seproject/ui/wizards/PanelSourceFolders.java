@@ -14,33 +14,26 @@
 package org.netbeans.modules.java.j2seproject.ui.wizards;
 
 import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-
-import javax.swing.event.ChangeListener;
+import javax.swing.JFileChooser;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.ChangeEvent;
-import javax.swing.*;
-import java.awt.*;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.text.MessageFormat;
 
 /**
  *
  * @author  tom
  */
-public class PanelSourceFolders extends javax.swing.JPanel {
+public class PanelSourceFolders extends SettingsPanel {
 
-    private PanelSourceFolders.Panel firer;
+    private PanelConfigureProject firer;
     private WizardDescriptor wizardDescriptor;
 
     /** Creates new form PanelSourceFolders */
-    public PanelSourceFolders (PanelSourceFolders.Panel panel) {
+    public PanelSourceFolders (PanelConfigureProject panel) {
         this.firer = panel;
         initComponents();
         DocumentListener pl = new DocumentListener () {
@@ -75,7 +68,6 @@ public class PanelSourceFolders extends javax.swing.JPanel {
         };
         this.projectName.getDocument().addDocumentListener (pl);        
         this.projectLocation.getDocument().addDocumentListener(pl);
-        this.setName (NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaExtSourcesNameLoc"));
     }
 
     private void calculateProjectFolder () {
@@ -85,11 +77,11 @@ public class PanelSourceFolders extends javax.swing.JPanel {
     }
 
     private void dataChanged () {
-        this.firer.fireChange();
+        this.firer.fireChangeEvent();
     }
 
 
-    private void readSettings (WizardDescriptor settings) {
+    void read (WizardDescriptor settings) {
         this.wizardDescriptor = settings;
         String path = null;
         File srcRoot = (File) settings.getProperty ("sourceRoot");      //NOI18N
@@ -130,7 +122,7 @@ public class PanelSourceFolders extends javax.swing.JPanel {
         this.projectLocation.setText (projectLocation.getAbsolutePath());
     }
 
-    private void storeSettings (WizardDescriptor settings) {
+    void store (WizardDescriptor settings) {
         File srcRoot = null;
         File testRoot = null;
         String srcPath = this.sources.getText();
@@ -154,7 +146,7 @@ public class PanelSourceFolders extends javax.swing.JPanel {
         }
     }
     
-    private boolean valid () {
+    boolean valid (WizardDescriptor settings) {
         if ( projectName.getText().length() == 0 ) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectName"));
             return false; // Display name not specified
@@ -169,22 +161,12 @@ public class PanelSourceFolders extends javax.swing.JPanel {
         }                        
         String fileName = sources.getText();
         if (fileName.length()==0) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalSources"));
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", "");  //NOI18N
             return false;
         }
         File f = new File (fileName);        
         if (!f.isDirectory() || !f.canRead()) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalSources"));
-            return false;
-        }
-        fileName = tests.getText();
-        if (fileName.length()==0) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalTests"));
-            return false;
-        }
-        f = new File (fileName);
-        if (!f.isDirectory() || !f.canRead()) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalTests"));
             return false;
         }
         wizardDescriptor.putProperty( "WizardPanel_errorMessage", "");  //NOI18N
@@ -222,16 +204,16 @@ public class PanelSourceFolders extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
         add(jLabel3, gridBagConstraints);
 
         jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("CTL_SourceRootMnemonic").charAt(0));
         jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("CTL_SourceRoot"));
         jLabel1.setLabelFor(sources);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 6);
         add(jLabel1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -250,16 +232,16 @@ public class PanelSourceFolders extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(6, 3, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 3, 6, 12);
         add(jButton1, gridBagConstraints);
 
         jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("CTL_TestRootMnemonic").charAt(0));
         jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("CTL_TestRoot"));
         jLabel2.setLabelFor(tests);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 6);
         add(jLabel2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -278,39 +260,39 @@ public class PanelSourceFolders extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(6, 3, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 3, 6, 12);
         add(jButton2, gridBagConstraints);
 
         jLabel4.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_ProjectNameAndLocationLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 12);
         add(jLabel4, gridBagConstraints);
 
         jLabel5.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_ProjectName_LabelMnemonic").charAt(0));
         jLabel5.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_ProjectName_Label"));
         jLabel5.setLabelFor(projectName);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 6);
         add(jLabel5, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 12);
         add(projectName, gridBagConstraints);
 
         jLabel6.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_ProjectLocation_LabelMnemonic").charAt(0));
         jLabel6.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_ProjectLocation_Label"));
         jLabel6.setLabelFor(projectLocation);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 6);
         add(jLabel6, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -328,24 +310,24 @@ public class PanelSourceFolders extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 12);
         add(jButton3, gridBagConstraints);
 
         jLabel7.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_CreatedProjectFolder_LablelMnemonic").charAt(0));
         jLabel7.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_CreatedProjectFolder_Lablel"));
         jLabel7.setLabelFor(projectFolder);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 6);
         add(jLabel7, gridBagConstraints);
 
         projectFolder.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 12);
         add(projectFolder, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
@@ -440,65 +422,5 @@ public class PanelSourceFolders extends javax.swing.JPanel {
     private javax.swing.JTextField tests;
     // End of variables declaration//GEN-END:variables
 
-
-    static class Panel implements WizardDescriptor.Panel {
-
-        private PanelSourceFolders panel;
-        private ArrayList listeners;
-        private WizardDescriptor settings;
-
-        public synchronized Component getComponent() {
-            if (panel == null) {
-                this.panel = new PanelSourceFolders (this);
-            }
-            return panel;
-        }
-
-        public HelpCtx getHelp() {
-            return HelpCtx.DEFAULT_HELP;
-        }
-
-        public void readSettings(Object settings) {
-            this.settings = (WizardDescriptor) settings;
-            ((PanelSourceFolders)getComponent()).readSettings (this.settings);
-        }
-
-        public void storeSettings(Object settings) {
-            ((PanelSourceFolders)getComponent()).storeSettings (this.settings);
-        }
-
-        public boolean isValid() {
-            return ((PanelSourceFolders)getComponent()).valid ();
-        }
-
-        public synchronized void addChangeListener(ChangeListener l) {
-            if (this.listeners == null) {
-                this.listeners = new ArrayList ();
-            }
-            this.listeners.add (l);
-        }
-
-        public void removeChangeListener(ChangeListener l) {
-            if (this.listeners == null) {
-                return;
-            }
-            this.listeners.remove(l);
-        }
-
-        private void fireChange () {
-            Iterator it = null;
-            synchronized(this) {
-                if (this.listeners == null) {
-                    return;
-                }
-                it = ((ArrayList)this.listeners.clone()).iterator();
-            }
-            ChangeEvent event = new ChangeEvent (this);
-            while (it.hasNext()) {
-                ((ChangeListener)it.next()).stateChanged(event);
-
-            }
-        }
-    }
 
 }

@@ -37,7 +37,7 @@ public class PanelConfigureProjectVisual extends JPanel {
     
     private boolean noDir = true;
     
-    private PanelProjectLocationVisual projectLocationPanel;
+    private SettingsPanel projectLocationPanel;
     private PanelOptionsVisual optionsPanel;
     
     /** Creates new form PanelInitProject */
@@ -45,24 +45,30 @@ public class PanelConfigureProjectVisual extends JPanel {
         this.panel = panel;
         initComponents();
                 
-        projectLocationPanel = new PanelProjectLocationVisual( panel );
-        locationContainer.add( projectLocationPanel, java.awt.BorderLayout.CENTER );               
-        optionsPanel = new PanelOptionsVisual( panel, type );
-        projectLocationPanel.addPropertyChangeListener(optionsPanel);
-        optionsContainer.add( optionsPanel, java.awt.BorderLayout.CENTER );
-        
+
         if (type == NewJ2SEProjectWizardIterator.TYPE_APP) {
+            projectLocationPanel = new PanelProjectLocationVisual( panel );
             setName(NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaAppNameAndLoc"));
             jSeparator1.setVisible(true);
         }                       
-        else {
+        else if (type == NewJ2SEProjectWizardIterator.TYPE_LIB) {
+            projectLocationPanel = new PanelProjectLocationVisual( panel );
             jSeparator1.setVisible (false);
             setName(NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaLibNameAndLoc"));            
         }
+        else {
+            projectLocationPanel = new PanelSourceFolders ( panel );
+            jSeparator1.setVisible(true);
+            this.setName (NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaExtSourcesNameLoc"));
+        }
+        locationContainer.add( projectLocationPanel, java.awt.BorderLayout.CENTER );
+        optionsPanel = new PanelOptionsVisual( panel, type );
+        projectLocationPanel.addPropertyChangeListener(optionsPanel);
+        optionsContainer.add( optionsPanel, java.awt.BorderLayout.CENTER );
     }
     
     boolean valid( WizardDescriptor wizardDescriptor ) {        
-        return projectLocationPanel.valid( wizardDescriptor ) && optionsPanel.valid();
+        return projectLocationPanel.valid( wizardDescriptor ) && optionsPanel.valid(wizardDescriptor);
     }
     
     void read (WizardDescriptor d) {

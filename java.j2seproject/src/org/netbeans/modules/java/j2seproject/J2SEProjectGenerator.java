@@ -32,6 +32,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -78,10 +79,19 @@ public class J2SEProjectGenerator {
                 EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 String srcReference = refHelper.createForeignFileReference(sourceFolder, JavaProjectConstants.SOURCES_TYPE_JAVA);
                 props.put("src.dir",srcReference);          //NOI18N
-                if (testFolder !=null) {                    
-                    String testReference = refHelper.createForeignFileReference(testFolder, JavaProjectConstants.SOURCES_TYPE_JAVA);
-                    props.put("test.src.dir",testReference);    //NOI18N
+                String testLoc;
+                if (testFolder == null) {
+                    testLoc = NbBundle.getMessage (J2SEProjectGenerator.class,"TXT_DefaultTestFolderName");
+                    File f = new File (dir,testLoc);    //NOI18N
+                    f.mkdirs();
                 }
+                else {
+                    if (!testFolder.exists()) {
+                        testFolder.mkdirs();
+                    }
+                    testLoc = refHelper.createForeignFileReference(testFolder, JavaProjectConstants.SOURCES_TYPE_JAVA);
+                }                
+                props.put("test.src.dir",testLoc);    //NOI18N
                 h.putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                 ProjectManager.getDefault().saveProject (p);
                 return null;

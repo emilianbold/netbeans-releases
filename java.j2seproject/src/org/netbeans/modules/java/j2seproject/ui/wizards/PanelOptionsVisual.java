@@ -1,8 +1,16 @@
 /*
- * PanelOptionsVisual.java
+ *                 Sun Public License Notice
  *
- * Created on March 9, 2004, 3:39 PM
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
+
 
 package org.netbeans.modules.java.j2seproject.ui.wizards;
 
@@ -20,7 +28,7 @@ import org.openide.util.NbBundle;
  *
  * @author  phrebejk
  */
-public class PanelOptionsVisual extends javax.swing.JPanel implements ActionListener, PropertyChangeListener {
+public class PanelOptionsVisual extends SettingsPanel implements ActionListener, PropertyChangeListener {
     
     private static boolean lastMainClassCheck = true; // XXX Store somewhere
     
@@ -41,6 +49,11 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements ActionList
                 createMainCheckBox.addActionListener( this );
                 createMainCheckBox.setSelected( lastMainClassCheck );
                 mainClassTextField.setEnabled( lastMainClassCheck );
+                break;
+            case NewJ2SEProjectWizardIterator.TYPE_EXT:
+                setAsMainCheckBox.setVisible( true );
+                createMainCheckBox.setVisible( false );
+                mainClassTextField.setVisible( false );
                 break;
         }
 
@@ -73,26 +86,26 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements ActionList
         setAsMainCheckBox = new javax.swing.JCheckBox();
         createMainCheckBox = new javax.swing.JCheckBox();
         mainClassTextField = new javax.swing.JTextField();
+        jPanel1 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        setAsMainCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_SetAsMain_CheckBoxMnemonic").charAt(0));
-        setAsMainCheckBox.setSelected(true);
         setAsMainCheckBox.setText("Set as Main Project");
+        setAsMainCheckBox.setSelected(true);
+        setAsMainCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_SetAsMain_CheckBoxMnemonic").charAt(0));
         setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(setAsMainCheckBox, gridBagConstraints);
 
-        createMainCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_CreateMainClass_CheckBoxMnemonic").charAt(0));
-        createMainCheckBox.setSelected(true);
         createMainCheckBox.setText("Create Main Class:");
+        createMainCheckBox.setSelected(true);
+        createMainCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_CreateMainClass_CheckBoxMnemonic").charAt(0));
         createMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
@@ -101,7 +114,6 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements ActionList
         mainClassTextField.setText("com.myapp.Main");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -109,9 +121,18 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements ActionList
         gridBagConstraints.weighty = 1.0;
         add(mainClassTextField, gridBagConstraints);
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(jPanel1, gridBagConstraints);
+
     }//GEN-END:initComponents
     
-    boolean valid() {
+    boolean valid(WizardDescriptor settings) {
         return true;
     }
     
@@ -126,6 +147,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements ActionList
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox createMainCheckBox;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField mainClassTextField;
     private javax.swing.JCheckBox setAsMainCheckBox;
     // End of variables declaration//GEN-END:variables
