@@ -90,7 +90,7 @@ public class AntLoggerTest extends NbTestCase {
     }
     
     public void testLocationOfImportedTargetsWithLineNumbers() throws Exception {
-        System.err.println("NOTE: testLocationOfImportedTargetsWithLineNumbers will fail unless you use Ant 1.7.0+!");
+        System.err.println("NOTE: testLocationOfImportedTargetsWithLineNumbers will fail unless you use Ant 1.6.3+!");
         LOGGER.interestedInSessionFlag = true;
         LOGGER.interestedInAllScriptsFlag = true;
         LOGGER.interestingTargets = AntLogger.ALL_TARGETS;

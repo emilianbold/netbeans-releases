@@ -93,7 +93,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     
     /**
      * Map from master build scripts to maps from imported target names to imported locations.
-     * Hack for lack of Target.getLocation() in Ant 1.6.
+     * Hack for lack of Target.getLocation() in Ant 1.6.2 and earlier.
      * Unused if targetGetLocation is not null.
      */
     private final Map/*<String,Map<String,String>>*/ knownImportedTargets = new HashMap();
@@ -428,7 +428,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     
     /**
      * Pattern matching an Ant message logged when it is parsing a build script.
-     * Hack for lack of Target.getLocation() in Ant 1.6.
+     * Hack for lack of Target.getLocation() in Ant 1.6.2 and earlier.
      * Captured groups:
      * <ol>
      * <li>absolute path of build script
@@ -439,7 +439,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     
     /**
      * Pattern matching an Ant message logged when it is importing a build script.
-     * Hack for lack of Target.getLocation() in Ant 1.6.
+     * Hack for lack of Target.getLocation() in Ant 1.6.2 and earlier.
      * Captured groups:
      * <ol>
      * <li>absolute path of build script which is doing the importing
@@ -450,7 +450,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     
     /**
      * Pattern matching an Ant message logged when it has encountered a target in some build script.
-     * Hack for lack of Target.getLocation() in Ant 1.6.
+     * Hack for lack of Target.getLocation() in Ant 1.6.2 and earlier.
      * Captured groups:
      * <ol>
      * <li>target name
@@ -622,7 +622,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     }
     
     // Accessors for stuff which is specific to particular versions of Ant.
-    private static final Method targetGetLocation; // 1.7+
+    private static final Method targetGetLocation; // 1.6.2+
     private static final Method locationGetFileName; // 1.6+
     private static final Method locationGetLineNumber; // 1.6+
     private static final Method runtimeConfigurableGetAttributeMap; // 1.6+
@@ -632,6 +632,10 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         Method _targetGetLocation = null;
         try {
             _targetGetLocation = Target.class.getMethod("getLocation", null); // NOI18N
+            if (AntBridge.getInterface().getAntVersion().indexOf("1.6.2") != -1) { // NOI18N
+                // Unfortunately in 1.6.2 the method exists but it doesn't work (Ant #28599):
+                _targetGetLocation = null;
+            }
         } catch (NoSuchMethodException e) {
             // OK
         } catch (Exception e) {
@@ -697,7 +701,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
                 ERR.notify(EM_LEVEL, e);
             }
         }
-        // For Ant 1.6, hope we got the right info from the hacks above.
+        // For Ant 1.6.2 and earlier, hope we got the right info from the hacks above.
         if (LOGGABLE) {
             ERR.log(EM_LEVEL, "knownImportedTargets: " + knownImportedTargets);
         }

@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
-                <!-- Will not pass until Ant 1.7 is bundled: -->
+                <!-- Will not pass until Ant 1.6.3 or 1.7 is bundled (Ant #28599): -->
                 <exclude name="**/AntLoggerTest.class/testLocationOfImportedTargetsWithLineNumbers"/>
             </patternset>
         </testset>
@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
-                <!-- Will not pass until Ant 1.7 is bundled: -->
+                <!-- See above: -->
                 <exclude name="**/AntLoggerTest.class/testLocationOfImportedTargetsWithLineNumbers"/>
             </patternset>
         </testset>

@@ -29,6 +29,8 @@ Microsystems, Inc. All Rights Reserved.
             <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
             <include name="ant/nblib/bridge.jar"/>
             <include name="ant/lib/**"/>
+            <include name="ant/bin/**"/>
+            <include name="ant/etc/**"/>
         </patternset>
     </target>
 
@@ -56,6 +58,11 @@ Microsystems, Inc. All Rights Reserved.
         <copy todir="${netbeans.dest.dir}/${cluster.dir}/ant/lib">
             <fileset dir="external/lib"/>
         </copy>
+        <unzip dest="${netbeans.dest.dir}/${cluster.dir}/ant">
+            <fileset dir="external">
+                <include name="ant-misc-*.zip"/>
+            </fileset>
+        </unzip>
     </target>
 
     <target name="netbeans-extra" depends="jar-bridge,release"/>
@@ -80,6 +87,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- For use when making new releases: -->
     <target name="release-helper" depends="clean" description="Help do some things useful when bundling a new Ant release.">
+        <ant dir="external" target="clean"/>
         <condition property="all.defined">
             <and>
             <isset property="release.version"/>
@@ -148,13 +156,18 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="ant*.jar"/>
             </fileset>
         </zip>
+        <property name="ant-misc.zip" location="external/ant-misc-${release.version}.zip.master"/>
+        <echo>5.  Creating ${ant-misc.zip}...</echo>
+        <zip zipfile="${ant-misc.zip}" compress="true">
+            <fileset dir="${release.path}">
+                <include name="bin/"/>
+                <include name="etc/"/>
+            </fileset>
+        </zip>
         <echo>Now some (currently) manual steps for you:
 6.  Ensure these files in ${here} match the actual contents of ${online.manual}:
     - docs/javahelp/org/apache/tools/ant/module/docs/TOC.toc
     - docs/javahelp/org/apache/tools/ant/module/docs/Map.jhm
-    and run
-    ant -f ${here}/docs/build.xml check-javahelp
-    (after step 7 so external/build.xml is updated...)
 7.  Mention that the Ant version is ${release.version} in these files in ${here}:
     - docs/javahelp/org/apache/tools/ant/module/docs/HelpSet.hs
     - docs/javahelp/org/apache/tools/ant/module/docs/TOC.toc
@@ -162,11 +175,13 @@ Microsystems, Inc. All Rights Reserved.
     - ../usersguide/javahelp/org/netbeans/modules/usersguide/ant/*.html
     - external/build.xml
     - external/.cvsignore
-    - ant/docs/build.xml
     and cvs rm -f the old .scrambled files and ant scramble to make new ones and cvs add -kb them
-    also in docs/release/system/ParserDB
+8.  Run: ant -f ${here}/docs/build.xml check-javahelp
 9.  Increase spec versions in manifest.mf and docs/manifest.mf.
-10. Test everything.
+10. Test everything, including at least:
+    ant -f ${here}/build.xml clean netbeans
+    ant -f ${here}/test/build.xml cleanresults runtests
+    ant -f ${here}/../java/project/test/build.xml cleanresults runtests
 11. Submit a patch for cvs://cvs.apache.org/ant/xdocs/external.xml
     mentioning that the bundled version in NB is now ${release.version}.
 

@@ -12,107 +12,38 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="ant/docs" default="netbeans" basedir=".">
-  <import file="../../nbbuild/default.xml"/> 
 
-  <target name="init" depends="default.init">
-    <ant dir="../external" target="unscramble"/>
-    <patternset id="ant/docs.files">
-      <include name="${nb.modules.dir}/ant-docs.jar"/>
-      <include name="${nb.modules/docs.dir}/ant-manual.zip"/>
-    </patternset>
+    <import file="../../nbbuild/templates/projectized.xml"/>
 
-    <path id="cp">
-    </path>
-  </target>
-
-    <target name="compile" depends="init"/>
-
-    <target name="jars" depends="compile">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
-        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ant-docs.jar"
-                manifest="manifest-subst.mf"
-                basedir="src"
-                excludesfile="../../nbbuild/standard-jar-excludes.txt"
-                compress="false">
-        </jar>
-    </target>
-
-    <target name="javahelp" depends="init">
-        <mkdir dir="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
-        <unzip src="../external/ant-docs-1.6.1.zip" dest="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
-        <mkdir dir="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch"/>
-        <jhindexer basedir="javahelp/org/apache/tools/ant/module/docs"
-                   db="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch">
-            <classpath>
-                <fileset dir="../../nbbuild/external">
-                    <include name="jhall*.jar"/>
-                </fileset>
-            </classpath>
-            <include name="**/*.html"/>
-            <exclude name="JavaHelpSearch/"/>
-            <exclude name="credits.html"/>
-            <exclude name="ant-docs/LICENSE"/>
-        </jhindexer>
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}/ant-manual.zip"
-             compress="true">
-            <fileset dir="javahelp" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
-        </jar>
-    </target>
-  
-    <target name="check-javahelp" depends="javahelp" description="Validate helpset for various errors.">
-        <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets">
-            <classpath>
-                <pathelement location="../../nbbuild/nbantext.jar"/>
-                <fileset dir="../../nbbuild/external">
-                    <include name="jhall*.jar"/>
-                </fileset>
-            </classpath>
-        </taskdef>
-        <checkhelpsets>
-            <fileset dir="javahelp">
-                <include name="org/apache/tools/ant/module/docs/HelpSet.hs"/>
+    <target name="javahelp" depends="init" if="has.javahelp">
+        <ant dir="../external" target="unscramble"/>
+        <mkdir dir="${build.javahelp.dir}/${javahelp.base}/ant-docs"/>
+        <unzip dest="${build.javahelp.dir}/${javahelp.base}/ant-docs">
+            <fileset dir="../external">
+                <include name="ant-docs-*.zip"/>
             </fileset>
-        </checkhelpsets>
+        </unzip>
+        <antcall target="projectized.javahelp"/>
     </target>
 
-    <target name="netbeans" depends="jars,javahelp" description="Build module.">
-      <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/ant-docs.jar">
-        <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-          <patternset refID="ant/docs.files"/>
-        </fileset>
-      </genlist>
-    </target>
-
-    <target name="nbm" depends="netbeans" description="Build module NBM file.">
-        <makenbm file="ant-docs.nbm"
+    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
+        <mkdir dir="build"/>
+        <makenbm file="build/${nbm}"
                  productdir="${netbeans.dest.dir}/${cluster.dir}"
-                 module="${nb.modules.dir}/ant-docs.jar"
-                 homepage="http://ant.netbeans.org/"
-                 needsrestart="false"
-                 distribution="http://${dist.base}/ant-docs.nbm">
+                 module="${module.jar}"
+                 homepage="http://${nbm.domain}.${homepage.base}/"
+                 distribution="http://${dist.base}/${nbm}"
+                 needsrestart="${nbm.needs.restart}"
+                 releasedate="${nbm.release.date}"
+		 moduleauthor="${nbm.module.author}">
             <license name="ant-docs-license.txt">
                 <text>For the Ant documentation module itself:</text>
                 <file location="${license.file}"/>
                 <text>For the Ant manual:</text>
-                <file location="../../nbbuild/external/apache-license-2.0.txt"/>
+                <file location="${nb_all}/nbbuild/external/apache-license-2.0.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
-    </target>
-
-    <target name="clean" description="Clean out build products." depends="init">
-        <delete>
-            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-                <patternset refID="ant/docs.files"/>
-            </fileset>
-        </delete>
-        <delete file="manifest-subst.mf"/>
-        <delete file="ant-docs.nbm"/>
-        <delete dir="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch"/>
-        <delete dir="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
     </target>
 
 </project>
