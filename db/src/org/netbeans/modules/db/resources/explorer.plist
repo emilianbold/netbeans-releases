@@ -190,9 +190,14 @@
 				prefix = "jdbc:mysql://<HOST>:<PORT>/<DB>";
 			},
 			{
-				name = "Oracle";
+				name = "Oracle OCI 8i";
 				driver = "oracle.jdbc.driver.OracleDriver";
 				prefix = "jdbc:oracle:oci8:@<SID>";
+			},
+			{
+				name = "Oracle OCI 9i";
+				driver = "oracle.jdbc.driver.OracleDriver";
+				prefix = "jdbc:oracle:oci:@<SID>";
 			},
 			{
 				name = "PostgreSQL (v6.5 and earlier)";
