@@ -55,13 +55,9 @@
 # use a different X display if set to "yes" -
 # often helpful, esp. for GUI tests which pop up a lot of windows
 #
-# nestdisplay=yes
-# use Xnest rather than X (if spawndisplay is turned on)
-# may work better for some X servers; e.g. with my XFree86 4.2.0,
-# the best is Xnest + JDK 1.4.0 (JDK 1.4.2 crashes the server sometimes)
-#
-# nbclasspath=
-# NB bundles all its own libs, so normally this can be left blank.
+# spawndisplaytype=vnc
+# may be "X", "Xnest", or "vnc"; default "X"
+# vnc seems stablest; sometimes other servers have bugs
 #
 # mozbrowser=mozilla
 # display test results automatically in Netscape or Mozilla
@@ -123,9 +119,9 @@ then
     spawndisplay=no
 fi
 
-if [ -z "$nestdisplay" ]
+if [ -z "$spawndisplaytype" ]
 then
-    nestdisplay=no
+    spawndisplaytype=X
 fi
 
 if [ -z "$testedmodule" ]
@@ -140,7 +136,7 @@ fi
 
 export JAVA_HOME=$nbjdk
 export PATH=$nbjdk/bin:$PATH
-export CLASSPATH=$nbclasspath
+export CLASSPATH=
 
 if [ -n "$unscramble" ]
 then
@@ -154,28 +150,41 @@ then
     display=:69
     xauthority=/tmp/.Xauthority-$display
     export XAUTHORITY=$xauthority
-    if [ $nestdisplay = yes ]
+    if [ $spawndisplaytype = Xnest ]
     then
         Xnest -kb -name 'NetBeans test display' $display &
         xpid=$!
-    else
+    elif [ $spawndisplaytype = X ]
+    then
         X $display &
         xpid=$!
+    elif [ $spawndisplaytype = vnc ]
+    then
+        Xvnc -localhost -desktop 'NetBeans test display' $display &
+        xpid=$!
+    else
+        echo "strange \$spawndisplaytype: $spawndisplaytype" >&2
+        exit 2
     fi
     xauth generate $display .
     export DISPLAY=$display
-    sleep 5 # give X time to start
+    sleep 4 # give X time to start
     twmrc=/tmp/.twmrc-$display
     echo 'RandomPlacement' > $twmrc
     twm -f $twmrc &
     twmpid=$!
     trap "rm $xauthority; kill $xpid; rm $twmrc; kill $twmpid" EXIT
     sleep 2 # give WM time to work
-    if [ $nestdisplay = yes ]
+    if [ $spawndisplaytype = Xnest ]
     then
         message='Testing X server...minimize this nested display window if you want.'
-    else
+    elif [ $spawndisplaytype = X ]
+    then
         message='Testing X server...use Ctrl-Alt-F7/8 to toggle screens.'
+    else
+        message="Close/minimize this window if you want. [vncviewer $display]"
+        vncviewer -display $origdisplay $display &
+        vncviewerpid=$!
     fi
     xmessage -timeout 3 "$message"
     status=$?
