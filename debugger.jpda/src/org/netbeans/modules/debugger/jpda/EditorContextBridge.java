@@ -17,10 +17,11 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import org.netbeans.api.debugger.DebuggerManager;
 
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.viewmodel.NoInformationException;
 
@@ -108,8 +109,6 @@ public class EditorContextBridge {
 
     /**
      * Removes given annotation.
-     *
-     * @return true if annotation has been successfully removed
      */
     public static void removeAnnotation (
         Object annotation
@@ -211,6 +210,21 @@ public class EditorContextBridge {
     }
     
     /**
+     * Returns class name for given url and line number or null.
+     *
+     * @param url a url
+     * @param lineNumber a line number
+     *
+     * @return class name for given url and line number or null
+     */
+    public static String getClassName (
+        String url, 
+        int lineNumber
+    ) {
+        return getContext ().getClassName (url, lineNumber);
+    }
+    
+    /**
      * Returns list of imports for given source url.
      *
      * @param url the url of source file
@@ -270,28 +284,29 @@ public class EditorContextBridge {
 
     public static String getDefaultType () {
         String id = getSelectedIdentifier ();
-        if (id == null) return CLASS;
-        if (id.length () > 0) {
-            if (id.equals (getCurrentMethodName ()))
-                return METHOD;
-            String s = getCurrentClassName ();
+        if (id != null) {
+            if (id.equals(getCurrentMethodName())) return METHOD;
+            String s = getCurrentClassName();
             int i = s.lastIndexOf ('.');
             if (i >= 0)
                 s = s.substring (i + 1);
             if (id.equals (s))
                 return CLASS;
             return FIELD;
-        } 
-        String s = getCurrentFieldName ();
-        if (s.length () > 0)
-            return FIELD;
-        s = getCurrentMethodName ();
-        if (s.length () < 1) {
-            s = getCurrentClassName ();
-            if (s.length () > 0)
-                return CLASS;
+        } else {
+            String s = getCurrentFieldName ();
+            if (s != null && s.length () > 0)
+                return FIELD;
+            s = getCurrentMethodName();
+            if (s != null && s.length () > 0)
+                return METHOD;
+            if (s != null && s.length () < 1) {
+                s = getCurrentClassName ();
+                if (s.length () > 0)
+                    return CLASS;
+            }
         }
-        return LINE;
+        return CLASS;
     }
 
     public static Object annotate (
@@ -315,6 +330,17 @@ public class EditorContextBridge {
             annotationType,
             null
         );
+    }
+
+    public static String getRelativePath (
+        JPDAThread thread,
+        String stratumn
+    ) {
+        try {
+            return convertSlash (thread.getSourcePath (stratumn));
+        } catch (NoInformationException e) {
+            return getRelativePath (thread.getClassName ());
+        }
     }
 
     public static String getRelativePath (
@@ -456,6 +482,15 @@ public class EditorContextBridge {
             int ln = cp1.getFieldLineNumber (url, className, fieldName);
             if (ln != -1) return ln;
             return cp2.getFieldLineNumber (url, className, fieldName);
+        }
+    
+        public String getClassName (
+            String url, 
+            int lineNumber
+        ) {
+            String className = cp1.getClassName (url, lineNumber);
+            if (className != null) return className;
+            return cp2.getClassName (url, lineNumber);
         }
     
         public String[] getImports (String url) {

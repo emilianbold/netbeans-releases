@@ -17,8 +17,8 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import org.netbeans.api.debugger.DebuggerManager;
 
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDAThread;
@@ -210,6 +210,21 @@ public class EditorContextBridge {
     }
     
     /**
+     * Returns class name for given url and line number or null.
+     *
+     * @param url a url
+     * @param lineNumber a line number
+     *
+     * @return class name for given url and line number or null
+     */
+    public static String getClassName (
+        String url, 
+        int lineNumber
+    ) {
+        return getContext ().getClassName (url, lineNumber);
+    }
+    
+    /**
      * Returns list of imports for given source url.
      *
      * @param url the url of source file
@@ -253,17 +268,17 @@ public class EditorContextBridge {
         }
     }
 
-    public static boolean showSource (LineBreakpoint b) {
+    public static boolean showSource (LineBreakpoint b, Object timeStamp) {
         if (b.getLineNumber () < 1)
             return EditorContextBridge.showSource (
                 b.getURL (),
                 1,
-                null
+                timeStamp
             );
         return EditorContextBridge.showSource (
             b.getURL (),
             b.getLineNumber (),
-            null
+            timeStamp
         );
     }
 
@@ -329,13 +344,13 @@ public class EditorContextBridge {
     }
 
     public static String getRelativePath (
-        CallStackFrame frame,
+        CallStackFrame csf,
         String stratumn
     ) {
         try {
-            return convertSlash (frame.getSourcePath (stratumn));
+            return convertSlash (csf.getSourcePath (stratumn));
         } catch (NoInformationException e) {
-            return getRelativePath (frame.getClassName ());
+            return getRelativePath (csf.getClassName ());
         }
     }
 
@@ -380,7 +395,7 @@ public class EditorContextBridge {
 
         public String getCurrentClassName () {
             String s = cp1.getCurrentClassName ();
-            if ( (s == null) || (s.trim ().length () < 1))
+            if (s.trim ().length () < 1)
                 return cp2.getCurrentClassName ();
             return s;
         }
@@ -467,6 +482,15 @@ public class EditorContextBridge {
             int ln = cp1.getFieldLineNumber (url, className, fieldName);
             if (ln != -1) return ln;
             return cp2.getFieldLineNumber (url, className, fieldName);
+        }
+    
+        public String getClassName (
+            String url, 
+            int lineNumber
+        ) {
+            String className = cp1.getClassName (url, lineNumber);
+            if (className != null) return className;
+            return cp2.getClassName (url, lineNumber);
         }
     
         public String[] getImports (String url) {

@@ -31,6 +31,7 @@ import java.util.List;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
@@ -49,18 +50,18 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
 
     
     private LineBreakpoint      breakpoint;
-    private SourcePath          engineContext;
+    private SourcePath          sourcePath;
     private int                 lineNumber;
     
     
     public LineBreakpointImpl (
         LineBreakpoint breakpoint, 
         JPDADebuggerImpl debugger,
-        SourcePath engineContext
+        SourcePath sourcePath
     ) {
         super (breakpoint, debugger);
         this.breakpoint = breakpoint;
-        this.engineContext = engineContext;
+        this.sourcePath = sourcePath;
         lineNumber = breakpoint.getLineNumber ();
         set ();
     }
@@ -73,9 +74,9 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     }
     
     protected void setRequests () {
-        String className = engineContext.getRelativePath (
+        String className = EditorContextBridge.getClassName (
             breakpoint.getURL (),
-            '.', false
+            lineNumber
         );
         if (className == null) {
             //HACK: for JSPs.
@@ -90,6 +91,16 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             );
             checkLoadedClasses (className, true);
         } else {
+            
+            //HACK
+            // annonymous innerclasses are generated to outerclass
+            // class.inner.annonym -> class$1
+            // thats why we should not add class filter for class.inner,
+            // but for class!
+            int i = className.indexOf ('$');
+            if (i > 0) 
+                className = className.substring (0, i);
+            
             setClassRequests (
                 new String[] {
                     className,

@@ -186,6 +186,6 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
     }
     
     private static void goToSource (LineBreakpoint b) {
-        EditorContextBridge.showSource (b);
+        EditorContextBridge.showSource (b, null);
     }
 }

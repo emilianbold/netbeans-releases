@@ -176,6 +176,19 @@ public abstract class EditorContext {
     );
     
     /**
+     * Returns class name for given url and line number or null.
+     *
+     * @param url a url
+     * @param lineNumber a line number
+     *
+     * @return class name for given url and line number or null
+     */
+    public abstract String getClassName (
+        String url, 
+        int lineNumber
+    );
+    
+    /**
      * Returns list of imports for given source url.
      *
      * @param url the url of source file
