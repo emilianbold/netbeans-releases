@@ -120,7 +120,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Run test -->
     <!-- ======== -->
     
-    <target name="config" depends="init">
+    <target name="config" depends="init, cleanworkdir">
         <!-- This task reads config file cfg-${xtest.testtype}.xml and selects all -->
         <!-- testbags, which conforms to ${xtest.attribs} - is subset or equals -->
         <test-configurator testtype="${xtest.testtype}" 
@@ -469,16 +469,18 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <!-- Removes results from previous test execution of given testtype  -->
-    <!-- xtest.testtype is defined either by default or by test executor -->
-    <target name="cleanresults"
-            description="Deletes results from previous executed testtype.">
+    <!-- xtest.testtype is defined either by default or by test executor -->    
+    <target name="cleanworkdir" description="Deletes working directory">
         <delete dir="${xtest.workdir}"/>
     </target>
     
-    <target name="realclean"
-            description="Deletes classes, ${xtest.file.location}/${xtest.file.name} and *all* results.">
-        <delete dir="${xtest.workdir}"/>
+    <target name="cleanresults" description="Deletes results" depends="cleanworkdir">
         <delete dir="${xtest.results}"/>
+    </target>
+    
+    <target name="realclean"
+            description="Deletes classes, ${xtest.file.location}/${xtest.file.name} and *all* results."
+            depends="cleantests,cleanresults">
     </target>
     
 </project>
