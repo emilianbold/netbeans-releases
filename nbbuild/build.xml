@@ -904,7 +904,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../innertesters" target="netbeans"/>
   </target>
-  <target name="all-j2eeserver" depends="init,all-j2eeserver/j2eeapis">
+  <target name="all-j2eeserver" depends="init,all-j2eeserver/j2eeapis,all-libs/j2eeeditor">
     <echo message="Building module j2eeserver..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -1961,9 +1961,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../libs/j2eeeditor" target="netbeans"/>
   </target>
 
-  <target name="all-libs" depends="all-libs/xerces, all-libs/j2eeeditor"/>
-
-
   <!-- XML modules -->
   <target name="all-xml/api" depends="init">
       <echo message="Building module xml/api..."/>
@@ -2399,7 +2396,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
 
 
-  <target name="all-db/model" depends="init , all-db, build-schema2beans/anttask">
+  <target name="all-db/model" depends="init">
     <echo message="Building module all-db/model.."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -2495,7 +2492,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
 
 
-  <target name="all-j2ee/ejbjarproject" depends="init, all-j2ee/ejbapi, all-websvc/websvcapi">
+  <target name="all-j2ee/ejbjarproject" depends="init, all-j2ee/ejbapi, all-websvc/websvcapi, all-db/model">
     <echo message="Building module j2ee/ejbjarproject.."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -2525,7 +2522,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../j2ee/genericserver" target="netbeans"/>
   </target>
 
-  <target name="all-j2ee/sunappsrv8" depends="init">
+  <target name="all-j2ee/sunappsrv8" depends="init, all-db/model">
     <echo message="Building module j2ee/sunappsrv8.."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
