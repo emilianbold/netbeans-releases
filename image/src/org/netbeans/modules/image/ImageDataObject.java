@@ -16,6 +16,7 @@ package org.netbeans.modules.image;
 
 
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
@@ -40,7 +41,7 @@ import org.openide.util.NbBundle;
 
 /** 
  * Object that represents one file containing an image.
- * @author Petr Hamernik, Jaroslav Tulach, Ian Formanek
+ * @author Petr Hamernik, Jaroslav Tulach, Ian Formanek, Michael Wever
  */
 public class ImageDataObject extends MultiDataObject implements CookieSet.Factory {
     
@@ -104,10 +105,9 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
         }
     }
 
-    /** Get image data for the image.
-     * @return the image data
-     */
-    public byte[] getImageData() {
+    /** Gets image data for the image object.
+     * @return the image data */
+    private byte[] getImageData() {
         try {
             FileObject fo = getPrimaryFile();
             byte[] imageData = new byte[(int)fo.getSize()];
@@ -118,6 +118,17 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
         } catch(IOException ioe) {
             return new byte[0];
         }
+    }
+
+    // Michael Wever 26/09/2001
+    /** Gets image for the image data 
+     * @return the image */
+    public Image getImage() {
+        // [PENDING] When support for jdk1.3 is dropped 
+        // the following code can be changed to
+        // return javax.image.ImageIO.read(getPrimaryFile().getIputStream());
+        ImageIcon imageIcon = new ImageIcon(getImageData());
+        return imageIcon.getImage();
     }
 
 

@@ -23,7 +23,7 @@ import javax.swing.ImageIcon;
 /** 
  * ImageIcon with serialization.
  *
- * @author Petr Hamernik
+ * @author Petr Hamernik, Michael Wever
  */
 class NBImageIcon extends ImageIcon implements Serializable {
     
@@ -39,7 +39,7 @@ class NBImageIcon extends ImageIcon implements Serializable {
      */
     public NBImageIcon(ImageDataObject obj) {
         //super(obj.getImageURL()); // PENDING for the time URL is incorrectly cached (in Toolkit)
-        super(obj.getImageData());
+        super(obj.getImage());  //mw
         this.obj = obj;
     }
     
