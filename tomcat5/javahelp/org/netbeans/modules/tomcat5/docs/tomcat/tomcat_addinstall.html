@@ -56,7 +56,9 @@
     the Shared Installation checkbox. In the Base Directory text box, type 
     or browse to the base directory. Typically, a base directory is placed under 
     a user's directory. If you associate a base directory with the server, the 
-    base directory must have the following subdirectories. In addition, the <tt>conf</tt> 
+    base directory must have the following subdirectories. If the base directory is
+    empty, the IDE creates the subdirectories by copying them from Tomcat's
+    home directory. In addition, the <tt>conf</tt> 
     directory must have a <tt>server.xml</tt> file.</li>
   <ul>
     <li><b><tt>conf.</tt></b> Directory for server configuration files</li>
@@ -65,13 +67,13 @@
     <li><b><tt>work.</tt></b> Temporary working directory for web applications</li>
   </ul>
   <li>Type a user name and password. The user must be a Tomcat user who has a 
-    manager role.</li>
+   <a href="../tomcat/tomcat_edit_tomcatuser.html">manager role</a>.</li>
   <li>(Optional) If you are using the server for production purposes only, you 
     may want to clear the Enable HTTP Monitor checkbox to reduce its impact on 
     the server's performance. The HTTP Monitor is useful for debugging web applications. 
     You can also enable and disable the monitor from the server's property sheet.</li>
   <li>Click OK. The IDE displays the server's port number in the server node's 
-    text. If another server instance is using this port, you must change one of 
+    tooltip. If another server instance is using this port, you must change one of 
     the servers' port numbers. To change a port number, right-click the server's 
     node, choose Start/Stop Server from the contextual menu, and stop the server. 
     Next, right-click the server node and choose Properties from the contextual 

@@ -25,8 +25,8 @@ Therefore, web servers are shipped with the requirement that anyone
 who attempts to use them must authenticate themselves, using a username and password 
 with the appropriate role associated with them.</p> 
 
-<p>For example, the IDE uses the Tomcat Manager to deploy applications.
-   To authenticate yourself when you deploy your web application, 
+<p>For example, the IDE uses the Tomcat Manager to run web applications.
+   To authenticate yourself when you run your web application, 
    JSP file, or servlet, you need a username
    and password for a user with the "manager" role. 
    This username and password are defined in the
@@ -37,8 +37,9 @@ with the appropriate role associated with them.</p>
       <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
       <td>
 	 You can only use the usernames and passwords that are defined in  
-	 the IDE's user directory's <tt>tomcat-users.xml</tt> file, 
-	 and not those that are in the IDE's installation directory.
+	 the IDE user directory's <tt>tomcat-users.xml</tt> file, 
+	 and not those that are in the IDE installation directory's
+	 <tt>tomcat-users.xml</tt> file.
       </td>
    </tr>
 </table>
@@ -47,29 +48,39 @@ with the appropriate role associated with them.</p>
    called ide for use with the bundled Tomcat Server. This user
    is assigned the "manager" role and
    is created in your user directory's <tt>tomcat-users.xml</tt> file.</p>
-   <p><b>To get the password for the ide username from your user directory:</b></p>
+   <p><b>To set the username and password for the Tomcat Manager:</b></p>
 <ol>
-  <li>Right-click
+  <li>In your system, go to Tomcat's base directory and then to its 
+  <tt>\conf</tt> subfolder.
+<table cellpadding="3" cellspacing="0" border="0">
+  <tr valign="top">
+      <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
+      <td>
+   If you don't know where Tomcat's base directory is,
+   right-click
    the Tomcat Server instance node in the Runtime window and select Properties.
    In the Properties
    dialog box, the Base Directory property points to the
-   base directory.</li>
-  <li>Make a note of the path to Tomcat's base directory.</li>
-  <li>In your system, go to Tomcat's base directory and then to its 
-  <tt>\conf</tt> subfolder.</li>
+   base directory.
+      </td>
+   </tr>
+</table></li>
   <li>Open the <tt>tomcat-users.xml</tt> file and make a note of the password
   that is defined for the ide username.</li>
+  <li>Right-click
+   the Tomcat Server instance node in the Runtime window and select Properties.
+   In the Properties
+   dialog box, type the username and password.</li>
 </ol>
 <table cellpadding="3" cellspacing="0" border="0">
   <tr valign="top">
       <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
       <td>
-	 The username and password are not saved when you enter them
-	 in this dialog box. The username and password are only saved if
-	 you define them in the Tomcat Server's Properties dialog box. 
-	 To open the Properties dialog box, right-click the Tomcat Server's 
-	 instance node in the Runtime window and choose
-	 Properties.
+	      If the username and password have not been specified, a dialog
+	      box appears when you run a web application, JSP file, or servlet.
+	 If you specify the username and password in this dialog box,
+	 they are not saved. The username and password are only saved if
+	 you define them in the Tomcat Server instance's Properties dialog box. 
       </td>
    </tr>
 </table>
