@@ -42,8 +42,9 @@ public class SAXGeneratorJTest extends JXTest {
     /** Performs 'XSL Transformation...' action and checks output. */
     public void test() throws Exception {
         // clear output and display Transformation Dialog
-        DataObject dao = TestUtil.THIS.findData("sax/BooksSAXBindings.xml");
-        if (dao != null) dao.delete();
+        deleteData("sax/BooksSAXBindings.xml");
+        deleteData("sax/BHImpl.java");
+        
         
         // perform SAX Wizard Action
         SAXDocumentHandlerWizardAction  saxAction = new SAXDocumentHandlerWizardAction();
@@ -179,6 +180,13 @@ public class SAXGeneratorJTest extends JXTest {
     }
     
     // LIB ////////////////////////////////////////////////////////////////////
+    
+    private void deleteData(String path) {
+        try {
+        DataObject dao = TestUtil.THIS.findData(path);
+        if (dao != null) dao.delete();
+        } catch (Exception ex) {}
+    }
     
     /**  @author David Kaspar */
     public String dumpFile(DataObject dao) {
