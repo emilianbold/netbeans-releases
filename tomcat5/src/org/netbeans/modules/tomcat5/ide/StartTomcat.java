@@ -253,11 +253,18 @@ public final class StartTomcat extends StartServer implements ProgressObject
                 File baseDir2 = ifl.locate (base, null, false);
                 if (baseDir2 == null) {
                     baseDir = createBaseDir (baseDir, homeDir);
-                }
-                else {
+                } else {
                     baseDir = baseDir2;
                 }
+            } else {
+                if ((baseDir != null)) {
+                    if ((!baseDir.exists()) || 
+                        (baseDir.isDirectory() && baseDir.listFiles().length <= 0)) {
+                            baseDir = tm.createBaseDir(baseDir, homeDir);
+                    }
+                }
             }
+            
             // XXX check for null's
 
             // install the monitor
