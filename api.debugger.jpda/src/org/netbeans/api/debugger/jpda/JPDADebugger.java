@@ -297,6 +297,23 @@ public abstract class JPDADebugger {
     public abstract void waitRunning () throws DebuggerStartException;
 
     /**
+     * Returns <code>true</code> if this debugger supports fix & continue 
+     * (HotSwap).
+     *
+     * @return <code>true</code> if this debugger supports fix & continue
+     */
+    public abstract boolean canFixClasses ();
+    
+
+    /**
+     * Implements fix & continue (HotSwap). Map should contain class names
+     * as a keys, and byte[] arrays as a values.
+     *
+     * @param map a map from class names to be fixed to byte[] 
+     */
+    public abstract void fixClasses (Map classes);
+
+    /**
      * Helper method that fires JPDABreakpointEvent on JPDABreakpoints.
      *
      * @param breakpoint a breakpoint to be changed

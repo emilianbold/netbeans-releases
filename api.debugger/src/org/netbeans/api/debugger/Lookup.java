@@ -22,9 +22,13 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -33,8 +37,17 @@ import java.util.List;
  */
 abstract class Lookup {
     
-    abstract List lookup (String folder, Class service);
-    abstract Object lookupFirst (String folder, Class service);
+    abstract List lookup (String folder, Class service, Set hidden);
+    abstract Set getHiddenItems (String folder, Class service);
+    Object lookupFirst (String folder, Class service) {
+        List l = lookup (folder, service);
+        if (l.isEmpty ()) return null;
+        return l.get (0);
+    }
+    List lookup (String folder, Class service) {
+        return lookup (folder, service, Collections.EMPTY_SET);
+    }
+    
     
     private static boolean verbose = 
         System.getProperty ("netbeans.debugger.registration") != null;
@@ -47,13 +60,13 @@ abstract class Lookup {
             this.services = services;
         }
         
-        List lookup (String folder, Class service) {
-//            if (verbose)
-//                System.out.println("\nR lookup instance " + service);
+        List lookup (String folder, Class service, Set hidden) {
             ArrayList l = new ArrayList ();
             int i, k = services.length;
             for (i = 0; i < k; i++)
                 if (service.isAssignableFrom (services [i].getClass ())) {
+                    if (hidden.contains (services [i].getClass ().getName ()))
+                        continue;
                     l.add (services [i]);
                     if (verbose)
                         System.out.println("\nR  instance " + services [i] + 
@@ -62,18 +75,8 @@ abstract class Lookup {
             return l;
         }
         
-        Object lookupFirst (String folder, Class service) {
-//            if (verbose)
-//                System.out.println("\nR lookup instance " + service);
-            int i, k = services.length;
-            for (i = 0; i < k; i++)
-                if (service.isAssignableFrom (services [i].getClass ())) {
-                    if (verbose)
-                        System.out.println("\nR  instance " + services [i] + 
-                            " found");
-                    return services [i];
-                }
-            return null;
+        Set getHiddenItems (String folder, Class service) {
+            return Collections.EMPTY_SET;
         }
     }
     
@@ -86,17 +89,22 @@ abstract class Lookup {
             this.l2 = l2;
         }
         
-        List lookup (String folder, Class service) {
+        List lookup (String folder, Class service, Set hidden) {
             ArrayList l = new ArrayList ();
-            l.addAll (l1.lookup (folder, service));
-            l.addAll (l2.lookup (folder, service));
+            l.addAll (l1.lookup (folder, service, hidden));
+            l.addAll (l2.lookup (folder, service, hidden));
             return l;
         }
         
-        Object lookupFirst (String folder, Class service) {
-            Object o = l1.lookupFirst (folder, service);
-            if (o != null) return o;
-            return l2.lookupFirst (folder, service);
+        Set getHiddenItems (String folder, Class service) {
+            Set s = new HashSet ();
+            Iterator i = l1.getHiddenItems (folder, service).iterator ();
+            while (i.hasNext ())
+                s.add (i.next ());
+            i = l2.getHiddenItems (folder, service).iterator ();
+            while (i.hasNext ())
+                s.add (i.next ());
+            return s;
         }
     }
     
@@ -113,27 +121,21 @@ abstract class Lookup {
             this.rootFolder = rootFolder;
         }
         
-        List lookup (String folder, Class service) {
-            String name = service.getName ();
-            String resourceName = "META-INF/debugger/" +
-                ((rootFolder == null) ? "" : rootFolder + "/") + 
-                ((folder == null) ? "" : folder + "/") + 
-                name;
-            if (!registrationCache.containsKey (resourceName))
-                registrationCache.put (resourceName, loadMetaInf (resourceName));
-            List l = (List) registrationCache.get (resourceName);
+        List lookup (String folder, Class service, Set hidden) {
+            List l = list (folder, service);
+            
+            Set s = new HashSet (l);
             
             ArrayList ll = new ArrayList ();
             int i, k = l.size ();
             for (i = 0; i < k; i++) {
                 String className = (String) l.get (i);
+                if (s.contains (className + "-hidden")) continue;
                 Object instance = null;
                 instance = instanceCache.get (className);
-//                if (instance != null)
-//                    instance = ((WeakReference) instance).get ();
                 if (instance == null) {
                     instance = createInstance (className);
-                    instanceCache.put (className, instance);//new WeakReference (instance));
+                    instanceCache.put (className, instance);
                 }
                 if (instance != null)
                     ll.add (instance);
@@ -141,12 +143,27 @@ abstract class Lookup {
             return ll;
         }
         
-        Object lookupFirst (String folder, Class service) {
-            List l = lookup (folder, service);
-            if (l.size () < 1) return null;
-            return l.get (0);
-        }
+        Set getHiddenItems (String folder, Class service) {
+            Iterator i = list (folder, service).iterator ();
+            Set h = new HashSet ();
+            while (i.hasNext ()) {
+                String s = (String) i.next ();
+                if (!s.endsWith ("-hidden")) continue;
+                h.add (s.substring (0, s.length () - 7));
+            }
+            return h;
+        }        
         
+        private List list (String folder, Class service) {
+            String name = service.getName ();
+            String resourceName = "META-INF/debugger/" +
+                ((rootFolder == null) ? "" : rootFolder + "/") + 
+                ((folder == null) ? "" : folder + "/") + 
+                name;
+            if (!registrationCache.containsKey (resourceName))
+                registrationCache.put (resourceName, loadMetaInf (resourceName));
+            return (List) registrationCache.get (resourceName);
+        }
     
         /**
          * Loads instances of given class from META-INF/debugger from given
@@ -162,9 +179,7 @@ abstract class Lookup {
                 Enumeration e = cl.getResources (resourceName);
                 while (e.hasMoreElements ()) {
                     URL url = (URL) e.nextElement();
-                    //S ystem.out.println("  url: " + url);
                     InputStream is = url.openStream ();
-                    //S ystem.out.println("  is: " + is);
                     if (is == null) continue;
                     BufferedReader br = new BufferedReader (
                         new InputStreamReader (is)
@@ -172,6 +187,7 @@ abstract class Lookup {
                     String s = br.readLine ().trim ();
                     while (s != null) {
                         if (s.startsWith ("#")) continue;
+                        if (s.length () == 0) continue;
                         if (verbose)
                             v += "\nR  service " + s + " found";
 

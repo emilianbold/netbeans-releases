@@ -48,15 +48,6 @@ public class CallStackFrameImpl implements CallStackFrame {
         this.ctm = ctm;
         this.id = id;
     }
-    
-    private int indexOf(List frames, StackFrame frame) {
-        int n = frames.size();
-        Location loc = frame.location();
-        for (int i = 0; i < n; i++) {
-            if (loc.equals(((StackFrame)frames.get(i)).location())) return i;
-        }
-        return -1;
-    }
 
     // public interface ........................................................
         
@@ -70,7 +61,6 @@ public class CallStackFrameImpl implements CallStackFrame {
             return getStackFrame().location ().lineNumber (struts);
         } catch (Exception ex) {
             // this stack frame is not available or information in it is not available
-//            ex.printStackTrace ();
         }
         return 0;
     }
@@ -85,7 +75,6 @@ public class CallStackFrameImpl implements CallStackFrame {
             return getStackFrame().location ().method ().name ();
         } catch (Exception ex) {
             // this stack frame is not available or information in it is not available
-//            ex.printStackTrace ();
         }
         return "";
     }
@@ -100,7 +89,6 @@ public class CallStackFrameImpl implements CallStackFrame {
             return getStackFrame().location ().declaringType ().name ();
         } catch (Exception ex) {
             // this stack frame is not available or information in it is not available
-//            ex.printStackTrace ();
         }
         return "";
     }
@@ -147,7 +135,6 @@ public class CallStackFrameImpl implements CallStackFrame {
             throw new NoInformationException (ex.getMessage ());
         } catch (Exception ex) {
             // this stack frame is not available or information in it is not available
-//            ex.printStackTrace ();
         }
         return "";
     }
@@ -164,15 +151,15 @@ public class CallStackFrameImpl implements CallStackFrame {
             throw new NoInformationException (ex.getMessage ());
         } catch (Exception ex) {
         // this stack frame is not available or information in it is not available
-//            ex.printStackTrace ();
         }
         return "";
     }
     
-    public void makeCurrent () {
-        ctm.getDebugger ().setCurrentCallStackFrame (this);
-    }
-    
+    /**
+     * Returns local variables.
+     *
+     * @return local variables
+     */
     public org.netbeans.api.debugger.jpda.LocalVariable[] getLocalVariables () 
     throws NoInformationException {
         LocalsTreeModel ltm = ctm.getLocalsTreeModel ();
@@ -183,12 +170,52 @@ public class CallStackFrameImpl implements CallStackFrame {
         return var;
     }
     
+    /**
+     * Returns object reference this frame is associated with or null (
+     * frame is in static method).
+     *
+     * @return object reference this frame is associated with or null
+     */
     public This getThisVariable () {
         ObjectReference thisR = getStackFrame().thisObject ();
         if (thisR == null) return null;
         LocalsTreeModel ltm = ctm.getLocalsTreeModel ();
         return ltm.getThis (thisR, "");
     }
+    
+    /**
+     * Sets this frame current.
+     *
+     * @see JPDADebugger#getCurrentCallStackFrame
+     */
+    public void makeCurrent () {
+        ctm.getDebugger ().setCurrentCallStackFrame (this);
+    }
+    
+    /**
+     * Returns <code>true</code> if this frame is obsoleted.
+     *
+     * @return <code>true</code> if this frame is obsoleted
+     */
+    public boolean isObsolete () {
+        return getStackFrame ().location ().method ().isObsolete ();
+    }
+    
+    /**
+     * Pop stack frames. All frames up to and including the frame 
+     * are popped off the stack. The frame previous to the parameter 
+     * frame will become the current frame.
+     */
+    public void popFrame () {
+        try {
+            thread.popFrames (getStackFrame ());
+        } catch (IncompatibleThreadStateException ex) {
+            ex.printStackTrace ();
+        }
+    }
+
+    
+    // other methods............................................................
 
     public StackFrame getStackFrame() {
         try {
@@ -197,8 +224,15 @@ public class CallStackFrameImpl implements CallStackFrame {
             return null;
         }
     }
-
-    // other methods............................................................
+    
+    private int indexOf (List frames, StackFrame frame) {
+        int n = frames.size();
+        Location loc = frame.location();
+        for (int i = 0; i < n; i++) {
+            if (loc.equals(((StackFrame)frames.get(i)).location())) return i;
+        }
+        return -1;
+    }
 
     public boolean equals (Object o) {
         return  (o instanceof CallStackFrameImpl) &&

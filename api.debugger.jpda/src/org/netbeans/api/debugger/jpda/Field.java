@@ -46,6 +46,13 @@ public interface Field extends Variable {
     public abstract String getDeclaredType ();
 
     /**
+     * Returns <code>true</code> for static fields.
+     *
+     * @return <code>true</code> for static fields
+     */
+    public abstract boolean isStatic ();
+
+    /**
      * Sets value of this field represented as text.
      *
      * @return sets value of this field represented as text

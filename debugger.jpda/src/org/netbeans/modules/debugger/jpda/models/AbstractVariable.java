@@ -135,6 +135,24 @@ public class AbstractVariable implements Variable {
         System.arraycopy (vs, 0, fs, 0, vs.length);
         return fs;
     }
+
+    /**
+     * Return all static fields.
+     *
+     * @return all static fields
+     */
+    public Field[] getAllStaticFields (int from, int to) {
+        return getModel ().getAllStaticFields (this);
+    }
+
+    /**
+     * Return all inherited fields.
+     *
+     * @return all inherited fields
+     */
+    public Field[] getInheritedFields (int from, int to) {
+        return getModel ().getInheritedFields (this);
+    }
     
     public Super getSuper () {
         if (getInnerValue () == null) return null;

@@ -75,6 +75,15 @@ org.netbeans.api.debugger.jpda.Field {
         return field.typeName ();
     }
 
+    /**
+     * Returns <code>true</code> for static fields.
+     *
+     * @return <code>true</code> for static fields
+     */
+    public boolean isStatic () {
+        return field.isStatic ();
+    }
+
     
     // other methods ...........................................................
 

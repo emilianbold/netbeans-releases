@@ -112,8 +112,12 @@ public class VariablesNodeModel implements NodeModel {
     public String getIconBase (Object o) throws UnknownTypeException {
         if (o instanceof String)
             return FIELD;
-        if (o instanceof Field)
-            return FIELD;
+        if (o instanceof Field) {
+            if (((Field) o).isStatic ())
+                return STATIC_FIELD;
+            else
+                return FIELD;
+        }
         if (o instanceof LocalVariable)
             return LOCAL;
         if (o instanceof Super)

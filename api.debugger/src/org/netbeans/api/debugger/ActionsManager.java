@@ -247,8 +247,8 @@ public final class ActionsManager {
                 ((ActionsManagerListener) l1.elementAt (i)).actionPerformed 
                     (action, succeed);
         }
-        if ((action == DebuggerManager.ACTION_KILL) && succeed)
-            destroyDebuggerEngineListeners ();
+//        if ((action == DebuggerManager.ACTION_KILL) && succeed)
+//            destroyDebuggerEngineListeners ();
         return succeed;
     }
 

@@ -71,7 +71,7 @@ public interface ObjectVariable extends Variable {
     public abstract Field getField (String name);
 
     /**
-     * Returns fields defined in this object.
+     * Returns non static fields defined in this object.
      *
      * @param from a index of first field to be returned
      * @param to a index of last field to be returned
@@ -79,6 +79,20 @@ public interface ObjectVariable extends Variable {
      * @return fields defined in this object
      */
     public abstract Field[] getFields (int from, int to);
+
+    /**
+     * Return all static fields.
+     *
+     * @return all static fields
+     */
+    public abstract Field[] getAllStaticFields (int from, int to);
+
+    /**
+     * Return all inherited fields.
+     *
+     * @return all inherited fields
+     */
+    public abstract Field[] getInheritedFields (int from, int to);
     
     /**
      * Returns representation of super class of this object.

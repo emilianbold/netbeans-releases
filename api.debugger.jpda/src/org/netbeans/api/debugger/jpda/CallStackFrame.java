@@ -103,5 +103,19 @@ public interface CallStackFrame {
      * @see JPDADebugger#getCurrentCallStackFrame
      */
     public abstract void makeCurrent ();
+    
+    /**
+     * Returns <code>true</code> if this frame is obsoleted.
+     *
+     * @return <code>true</code> if this frame is obsoleted
+     */
+    public abstract boolean isObsolete ();
+    
+    /**
+     * Pop stack frames. All frames up to and including the frame 
+     * are popped off the stack. The frame previous to the parameter 
+     * frame will become the current frame.
+     */
+    public abstract void popFrame ();
 }
  

@@ -111,6 +111,9 @@ public final class DebuggerManager {
     /** Action constant for Step Over Action. */
     public static final Object              ACTION_STEP_OVER = "stepOver";
     
+    /** Action constant for breakpoint hit action. */
+    public static final Object              ACTION_RUN_INTO_METHOD = "runIntoMethod";
+    
     /** Action constant for Step Into Action. */
     public static final Object              ACTION_STEP_INTO = "stepInto";
     

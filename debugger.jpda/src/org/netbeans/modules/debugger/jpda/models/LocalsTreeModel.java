@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 import java.util.WeakHashMap;
 
@@ -212,13 +213,13 @@ public class LocalsTreeModel implements TreeModel {
         ArrayList ch = new ArrayList ();
         ClassType superRt = null;
         String className = rt.name ();
-        if ( includeSuper &&
-             (rt instanceof ClassType)
-        ) {
-            superRt = ((ClassType) rt).superclass ();
-            if (superRt != null)
-                ch.add (getSuper (superRt, or, parentID));
-        }
+//        if ( includeSuper &&
+//             (rt instanceof ClassType)
+//        ) {
+//            superRt = ((ClassType) rt).superclass ();
+//            if (superRt != null)
+//                ch.add (getSuper (superRt, or, parentID));
+//        }
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
             Field f = (Field) l.get (i);
@@ -227,6 +228,48 @@ public class LocalsTreeModel implements TreeModel {
             ch.add (getField (f, or, parentID, className));
         }
         return (AbstractVariable[]) ch.toArray (new AbstractVariable [ch.size ()]);
+    }
+    
+    FieldVariable[] getAllStaticFields (
+        AbstractVariable av
+    ) {
+        Value v = av.getInnerValue ();
+        if ( (v == null) || !(v instanceof ObjectReference)) return new FieldVariable [0];
+        ObjectReference or = (ObjectReference) v;
+        ReferenceType rt = or.referenceType ();
+        List l = rt.allFields ();
+        ArrayList ch = new ArrayList ();
+        String className = rt.name ();
+        int i, k = l.size ();
+        for (i = 0; i < k; i++) {
+            Field f = (Field) l.get (i);
+            if (f.isStatic ())
+                ch.add (getField (f, or, av.getID (), className));
+        }
+        return (FieldVariable[]) ch.toArray (new FieldVariable [ch.size ()]);
+    }
+    
+    FieldVariable[] getInheritedFields (
+        AbstractVariable av
+    ) {
+        Value v = av.getInnerValue ();
+        if ( (v == null) || !(v instanceof ObjectReference)) return new FieldVariable [0];
+        ObjectReference or = (ObjectReference) v;
+        ReferenceType rt = or.referenceType ();
+        List l = rt.allFields ();
+        Set s = new HashSet (rt.fields ());
+        ArrayList ch = new ArrayList ();
+        String className = rt.name ();
+        int i, k = l.size ();
+        for (i = 0; i < k; i++) {
+            Field f = (Field) l.get (i);
+            if (f.isStatic ())
+                continue;
+            if (s.contains (f))
+                continue;
+            ch.add (getField (f, or, av.getID (), className));
+        }
+        return (FieldVariable[]) ch.toArray (new FieldVariable [ch.size ()]);
     }
     
     AbstractVariable[] getFieldsOfArray (

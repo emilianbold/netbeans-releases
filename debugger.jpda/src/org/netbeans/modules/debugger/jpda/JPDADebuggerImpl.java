@@ -24,6 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -57,6 +59,7 @@ import org.netbeans.modules.debugger.jpda.expr.ParseException;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingDebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
+import org.netbeans.spi.debugger.jpda.EngineContextProvider;
 
 import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -114,6 +117,19 @@ public class JPDADebuggerImpl extends JPDADebugger {
     // JPDADebugger methods ....................................................
 
     /**
+     * Returns current state of JPDA debugger.
+     *
+     * @return current state of JPDA debugger
+     * @see #STATE_STARTING
+     * @see #STATE_RUNNING
+     * @see #STATE_STOPPED
+     * @see #STATE_DISCONNECTED
+     */
+    public int getState () {
+        return state;
+    }
+
+    /**
      * Gets value of suspend property.
      *
      * @return value of suspend property
@@ -132,19 +148,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
         int old = suspend;
         suspend = s;
         firePropertyChange (PROP_SUSPEND, new Integer (old), new Integer (s));
-    }
-
-    /**
-     * Returns current state of JPDA debugger.
-     *
-     * @return current state of JPDA debugger
-     * @see #STATE_STARTING
-     * @see #STATE_RUNNING
-     * @see #STATE_STOPPED
-     * @see #STATE_DISCONNECTED
-     */
-    public int getState () {
-        return state;
     }
 
     /**
@@ -210,6 +213,58 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     /**
+     * Returns <code>true</code> if this debugger supports fix & continue 
+     * (HotSwap).
+     *
+     * @return <code>true</code> if this debugger supports fix & continue
+     */
+    public boolean canFixClasses () {
+        return getVirtualMachine ().canRedefineClasses ();
+    }
+
+    /**
+     * Implements fix & continue (HotSwap). Map should contain class names
+     * as a keys, and byte[] arrays as a values.
+     *
+     * @param map a map from class names to be fixed to byte[] 
+     */
+    public void fixClasses (Map classes) {
+        synchronized (LOCK2) {
+            EngineContextProvider ec = (EngineContextProvider) lookupProvider.
+                lookupFirst (EngineContextProvider.class);
+            Map map = new HashMap ();
+            Iterator i = classes.keySet ().iterator ();
+            while (i.hasNext ()) {
+                String className = (String) i.next ();
+                List classRefs = getVirtualMachine ().classesByName (className);
+                int j, jj = classRefs.size ();
+                for (j = 0; j < jj; j++)
+                    map.put (
+                        (ReferenceType) classRefs.get (j), 
+                        classes.get (className)
+                    );
+            }
+            getVirtualMachine ().redefineClasses (map);
+
+            // pop obsoleted frames
+            JPDAThread t = getCurrentThread ();
+            CallStackFrame frame = getCurrentCallStackFrame ();
+            if (t.getStackDepth () < 2) return;
+            try {
+                if (!frame.equals (t.getCallStack () [0])) return;
+            } catch (NoInformationException ex) {
+                return;
+            }
+            if (!frame.isObsolete ()) return;
+            frame.popFrame ();
+            setState (STATE_RUNNING);
+            updateCurrentCallStackFrame (t);
+            setState (STATE_STOPPED);
+        }
+
+    }
+
+    /**
      * Helper method that fires JPDABreakpointEvent on JPDABreakpoints.
      *
      * @param breakpoint a breakpoint to be changed
@@ -220,6 +275,42 @@ public class JPDADebuggerImpl extends JPDADebugger {
         JPDABreakpointEvent event
     ) {
         super.fireBreakpointEvent (breakpoint, event);
+    }
+
+    /**
+    * Adds property change listener.
+    *
+    * @param l new listener.
+    */
+    public void addPropertyChangeListener (PropertyChangeListener l) {
+        pcs.addPropertyChangeListener (l);
+    }
+
+    /**
+    * Removes property change listener.
+    *
+    * @param l removed listener.
+    */
+    public void removePropertyChangeListener (PropertyChangeListener l) {
+        pcs.removePropertyChangeListener (l);
+    }
+
+    /**
+    * Adds property change listener.
+    *
+    * @param l new listener.
+    */
+    public void addPropertyChangeListener (String propertyName, PropertyChangeListener l) {
+        pcs.addPropertyChangeListener (propertyName, l);
+    }
+
+    /**
+    * Removes property change listener.
+    *
+    * @param l removed listener.
+    */
+    public void removePropertyChangeListener (String propertyName, PropertyChangeListener l) {
+        pcs.removePropertyChangeListener (propertyName, l);
     }
 
     
@@ -236,15 +327,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
         updateCurrentCallStackFrame (thread);
         if (thread == currentThread) return;
         Object oldT = currentThread;
-        CallStackFrame oldCSF = currentCallStackFrame;
         currentThread = (JPDAThreadImpl) thread;
-
         pcs.firePropertyChange (PROP_CURRENT_THREAD, oldT, currentThread);
-        pcs.firePropertyChange (
-            PROP_CURRENT_CALL_STACK_FRAME,
-            oldCSF,
-            currentCallStackFrame
-        );
     }
 
     public void setCurrentCallStackFrame (CallStackFrame callStackFrame) {
@@ -344,17 +428,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     /**
-     * Change statefrom stopped or starting to running.
-     */
-//    public void setRunning () {
-//        if (getState () == STATE_RUNNING) {
-//            System.err.println("already resumed!!");
-//            Thread.dumpStack();
-//        }
-//        setState (STATE_RUNNING);
-//    }
-
-    /**
     * Performs stop action.
     */
     public void setStoppedState (ThreadReference thread) {
@@ -442,23 +515,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
-    public void fireBadConditionalBreakpoint (final Breakpoint b) {
-//        System.err.println (
-//            NbBundle.getMessage (
-//                JPDADebuggerImpl.class,
-//                "CTL_Incorrect_condition"
-//            ) +
-//            ": " + // NOI18N
-//            NbBundle.getMessage (
-//                JPDADebuggerImpl.class,
-//                "CTL_breakpoint_at"
-//            ) + // NOI18N
-//            " " +
-//            b + "."
-//            //IOManager.DEBUGGER_OUT
-//        );
-    }
-
     public Value invokeMethod (
         ObjectReference reference,
         Method method,
@@ -478,61 +534,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
         } catch (InvocationTargetException e) {
             throw new InvalidExpressionException(e.getMessage());
         }
-    }
-
-/*
-    public Value invokeMethod (
-        ObjectReference reference,
-        Method method,
-        Value[] arguments
-    ) throws InvalidExpressionException {
-        synchronized (LOCK) {
-            if (currentThread == null)
-                throw new InvalidExpressionException ("No current context");
-            return Evaluator.invokeMethod (
-                reference,
-                method,
-                getEvaluationThread (),
-                Arrays.asList (arguments)
-            );
-        }
-    }
-*/
-
-    /**
-    * Adds property change listener.
-    *
-    * @param l new listener.
-    */
-    public void addPropertyChangeListener (PropertyChangeListener l) {
-        pcs.addPropertyChangeListener (l);
-    }
-
-    /**
-    * Removes property change listener.
-    *
-    * @param l removed listener.
-    */
-    public void removePropertyChangeListener (PropertyChangeListener l) {
-        pcs.removePropertyChangeListener (l);
-    }
-
-    /**
-    * Adds property change listener.
-    *
-    * @param l new listener.
-    */
-    public void addPropertyChangeListener (String propertyName, PropertyChangeListener l) {
-        pcs.addPropertyChangeListener (propertyName, l);
-    }
-
-    /**
-    * Removes property change listener.
-    *
-    * @param l removed listener.
-    */
-    public void removePropertyChangeListener (String propertyName, PropertyChangeListener l) {
-        pcs.removePropertyChangeListener (propertyName, l);
     }
 
     /**

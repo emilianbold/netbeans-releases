@@ -14,17 +14,28 @@
 package org.netbeans.modules.debugger.jpda.ant;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.util.FileUtils;
+
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+
 
 /**
  * Ant task to reload classes in VM for running debugging session. 
@@ -33,67 +44,81 @@ import org.openide.filesystems.FileUtil;
  */
 public class JPDAReload extends Task {
 
-    private List filesets = new ArrayList();
+    private List filesets = new ArrayList ();
  
     /**
      * FileSet with .class files to reload. The base dir of the fileset is expected
      * to be classpath root for these classes.
      */
-    public void addFileset(FileSet fileset) {
-        filesets.add(fileset);
+    public void addFileset (FileSet fileset) {
+        filesets.add (fileset);
     }
     
-/*
     public void execute() throws BuildException {
         if (filesets.size() == 0) {
-            throw new BuildException("A nested fileset with class to refresh in VM must be specified.");
+            throw new BuildException ("A nested fileset with class to refresh in VM must be specified.");
         }
         
         // check debugger state
-        AbstractDebugger ad = Register.getCurrentDebugger();
-        if (ad == null) {
-            throw new BuildException("No debugging sessions was found.");
+        DebuggerEngine debuggerEngine = DebuggerManager.getDebuggerManager ().
+            getCurrentEngine ();
+        if (debuggerEngine == null) {
+            throw new BuildException ("No debugging sessions was found.");
         }
-        if (!ad.getDebuggerState().isFixEnabled()) {
+        JPDADebugger debugger = (JPDADebugger) debuggerEngine.lookupFirst (JPDADebugger.class);
+        if (debugger == null) {
+            throw new BuildException("Current debugger is not JPDA one.");
+        }
+        if (!debugger.canFixClasses ()) {
             throw new BuildException("The debugger does not support Fix action.");
         }
-        if (ad.getState() == AbstractDebugger.DEBUGGER_NOT_RUNNING) {
-            throw new BuildException("The debugger is not running");
+        if (debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {
+            throw new BuildException ("The debugger is not running");
         }
         
-        log("Classes to be reload:", Project.MSG_VERBOSE);
+        System.out.println ("Classes to be reloaded:");
         
-        FileUtils fu = FileUtils.newFileUtils();
+        FileUtils fileUtils = FileUtils.newFileUtils ();
+        Map map = new HashMap ();
         
-        List classNames = new ArrayList();
-        List files = new ArrayList();
-        Iterator it = filesets.iterator();
-        while (it.hasNext()) {
-            FileSet fs = (FileSet)it.next();
-            DirectoryScanner ds = fs.getDirectoryScanner(getProject());
-            String fileNames[] = ds.getIncludedFiles();
-            File baseDir = fs.getDir(getProject());
-            for (int i=0; i<fileNames.length; i++) {
-                File f = fu.resolveFile(baseDir, fileNames[i]);
+        Iterator it = filesets.iterator ();
+        while (it.hasNext ()) {
+            FileSet fs = (FileSet) it.next ();
+            DirectoryScanner ds = fs.getDirectoryScanner (getProject ());
+            String fileNames[] = ds.getIncludedFiles ();
+            File baseDir = fs.getDir (getProject ());
+            int i, k = fileNames.length;
+            for (i = 0; i < k; i++) {
+                File f = fileUtils.resolveFile (baseDir, fileNames [i]);
                 if (f != null) {
-                    FileObject fos[] = FileUtil.fromFile(f);
+                    FileObject fos[] = FileUtil.fromFile (f);
                     if (fos.length > 0) {
-                        files.add(fos[0]);
-                        // remove ".class" from and use dots for for separator
-                        classNames.add(fileNames[0].substring(0, fileNames[0].length()-6).replace(File.separatorChar,'.'));
-                        log(" "+f, Project.MSG_VERBOSE);
+                        try {
+                            InputStream is = fos [0].getInputStream ();
+                            long fileSize = fos [0].getSize ();
+                            byte[] bytecode = new byte [(int) fileSize];
+                            is.read (bytecode);
+                            // remove ".class" from and use dots for for separator
+                            String className = fileNames [i].substring (
+                                    0, 
+                                    fileNames [i].length () - 6
+                                ).replace (File.separatorChar, '.');
+                            map.put (
+                                className, 
+                                bytecode
+                            );
+                            System.out.println (" " + className);
+                        } catch (IOException ex) {
+                            ex.printStackTrace ();
+                        }
                     }
                 }
             }
         }
-        if (files.size() == 0) {
-            log(" No class to reload", Project.MSG_VERBOSE);
+        if (map.size () == 0) {
+            System.out.println (" No class to reload");
             return;
         }
-        
-        assert ad instanceof JPDADebugger;
-        ((JPDADebugger)ad).reloadBytecode(files, classNames);
+        debugger.fixClasses (map);
     }
-*/
-
 }

@@ -106,18 +106,18 @@ public class BreakpointsNodeModel implements NodeModel {
                 return new MessageFormat (
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,
-                        "CTL_Method_Breakpoint"
+                        "CTL_All_Methods_Breakpoint"
                     )).format (new Object[] {
-                        getShort (b.getClassName ()),
-                        b.getMethodName ()
+                        getShort (b.getClassName ())
                     });
             else
                 return new MessageFormat (
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,
-                        "CTL_All_Methods_Breakpoint"
+                        "CTL_Method_Breakpoint"
                     )).format (new Object[] {
-                        getShort (b.getClassName ())
+                        getShort (b.getClassName ()),
+                        b.getMethodName ()
                     });
         } else
         if (o instanceof ClassLoadUnloadBreakpoint) {

@@ -1,1 +1,2 @@
-org.netbeans.modules.debugger.jpda.ui.RunToCursorAction
+org.netbeans.modules.debugger.jpda.ui.actions.RunToCursorActionProvider
+org.netbeans.modules.debugger.jpda.ui.actions.RunIntoMethodActionProvider

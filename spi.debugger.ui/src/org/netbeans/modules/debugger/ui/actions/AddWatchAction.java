@@ -78,8 +78,8 @@ public class AddWatchAction extends CallableSystemAction {
     public void performAction () {
         ResourceBundle bundle = NbBundle.getBundle (AddWatchAction.class);
 
-        WatchPanel wp = new WatchPanel(watchHistory);
-        JComponent panel = wp.getPanel();
+        WatchPanel wp = new WatchPanel (watchHistory);
+        JComponent panel = wp.getPanel ();
 
         org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor (
             panel, 
@@ -87,14 +87,14 @@ public class AddWatchAction extends CallableSystemAction {
         );
         dd.setHelpCtx (new HelpCtx ("debug.add.watch"));
         Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
-        dialog.setVisible(true);
+        dialog.setVisible (true);
         dialog.dispose ();
 
         if (dd.getValue() != org.openide.DialogDescriptor.OK_OPTION) return;
-        String watch = wp.getExpression();
-        if ((watch == null) || (watch.trim ().length () == 0)) {
-            return;
-        }
+        String watch = wp.getExpression ();
+        if ( (watch == null) || 
+             (watch.trim ().length () == 0)
+        )   return;
         
         String s = watch;
         int i = s.indexOf (';');

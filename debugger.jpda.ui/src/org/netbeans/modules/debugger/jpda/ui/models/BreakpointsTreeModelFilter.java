@@ -32,6 +32,8 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  */
 public class BreakpointsTreeModelFilter implements TreeModelFilter {
     
+    private static boolean verbose = 
+        System.getProperty ("netbeans.debugger.show_hidden_breakpoints") != null;
 
     /** 
      * Returns filtered root of hierarchy.
@@ -67,7 +69,8 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
         ArrayList l = new ArrayList ();
         int i, k = ch.length;
         for (i = 0; i < k; i++) {
-            if ( (ch [i] instanceof JPDABreakpoint) &&
+            if ( (!verbose) &&
+                 (ch [i] instanceof JPDABreakpoint) &&
                  ((JPDABreakpoint) ch [i]).isHidden ()
             ) continue;
             l.add (ch [i]);
