@@ -506,8 +506,9 @@ is divided into following sections:
                         <xsl:attribute name="files">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
                      </copyfiles>
                 </xsl:for-each>   
-                <xsl:if test="//ejbjarproject2:included-library">
-                    <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
+                
+                <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
+                    <xsl:if test="//ejbjarproject2:included-library">
                         <attribute>
                             <xsl:attribute name="name">Class-Path</xsl:attribute>
                             <xsl:attribute name="value">
@@ -520,8 +521,9 @@ is divided into following sections:
                                 </xsl:for-each>  
                             </xsl:attribute>
                          </attribute>
-                    </manifest>
-                </xsl:if>
+                     </xsl:if>
+                </manifest>
+                
             </target>
             
             <target name="do-compile">
