@@ -19,12 +19,12 @@
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-The IDE provides an IDE module that handles integration with Tomcat Web Servers.</p>
-<p>A Tomcat Web Server is bundled with the IDE and is pre-configured to work with 
+The IDE provides an IDE module that handles integration with Tomcat Web Servers.
+A Tomcat Web Server is bundled with the IDE and is pre-configured to work with 
 the plugin. The Tomcat Web Server implements the JavaServer Pages 2.0 and Servlet 
   2.4 specifications and includes many features that are useful in the deployment 
   of web applications.</p>
-<p>You can also configure the Tomcat plugin to integrate with other supported 
+<p>You can also configure the Tomcat plugin to register other supported 
   Tomcat Web Servers. See <a href="tomcat_addinstall.html">Registering an External 
   Tomcat Web Server</a>.</p>
   <p>To see the Tomcat Web Servers that the Tomcat Plugin manages, expand Server Registry 
@@ -54,15 +54,7 @@ the plugin. The Tomcat Web Server implements the JavaServer Pages 2.0 and Servle
 </object></p></li></ul>
 
 <h3>The Bundled Tomcat Web Server</h3>
-<p>When you install the IDE, the installation automatically adds the bundled Tomcat Web Server to the IDE's server registry.</p>
-<table cellpadding="3" cellspacing="0" border="0">
-  <tr valign="top"> 
-    <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
-    <td> You can also configure the IDE to deploy web applications to other installations 
-      of Tomcat. See <a href="tomcat_addinstall.html">Registering a Tomcat Web 
-      Server</a> for more information. </td>
-  </tr>
-</table>
+When you install the IDE, the installation automatically registers the bundled Tomcat Web Server with the IDE.
 <p>The configuration files for the bundled Tomcat Web Server are in the Tomcat <i>base</i> 
   directory, located under your IDE user directory. The Tomcat <i>home</i> directory 
   is under the IDE installation directory. Note that this setup differs from a 
@@ -75,7 +67,7 @@ the plugin. The Tomcat Web Server implements the JavaServer Pages 2.0 and Servle
 <table>
   <tr> 
     <td valign="top"><img src="../images/warn.gif" width="16" height="16"></td>
-    <td valign=top align=left> <p>Developers using a common IDE installation need 
+    <td valign=top align=left>Developers using a common IDE installation need 
         to exercise caution when adding shared libraries to the home directory. 
         Libraries stored in the home directory are shared by all web applications that 
         are deployed on the server, so the potential for version conflicts exists.</p></td>
@@ -99,8 +91,8 @@ the plugin. The Tomcat Web Server implements the JavaServer Pages 2.0 and Servle
     <td width="23"></td>
 
 <td><a href="tomcat_top_node.html">Viewing the Tomcat Web Server in the IDE</a><br>
-<a href="tomcat_internal_props.html">Customizing a Tomcat Web Server</a><br>
-<a href="tomcat_edit_config.html">Reconfiguring a Tomcat Web Server</a><br>
+<a href="tomcat_internal_props.html">Customizing the Tomcat Web Server</a><br>
+<a href="tomcat_edit_config.html">Customizing the Tomcat Configuration File</a><br>
       <a href="tomcat_addinstall.html">Registering an External Tomcat Web Server</a><br>
     </tr>
 
