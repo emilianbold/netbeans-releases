@@ -41,6 +41,7 @@ import org.netbeans.modules.xsl.cookies.ValidateXSLSupport;
  * XSL owner.
  *
  * @author Libor Kramolis
+ * @author asgeir@dimonsoftware.com
  */
 public final class XSLDataObject extends MultiDataObject implements XMLDataObjectLook {
     /** Serial Version UID */
