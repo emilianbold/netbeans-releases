@@ -148,8 +148,13 @@ Microsystems, Inc. All Rights Reserved.
         <file name="S-ESCAPE.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
 	</file>
-        <file name="C-BACK_QUOTE.shadow">
+        <file name="C-TAB.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-RecentViewListAction.instance"/>
+        </file>
+        <!-- #41477: For KDE on unixes, C-TAB is occupied by OS, so we also register C-BAKC_QUOTE as recent view list action shortcut.
+                     For other OS's, C-TAB is the only default !-->
+        <file name="C-BACK_QUOTE.shadow">
+            <attr name="originalFile" methodvalue="org.netbeans.core.windows.actions.RecentViewListAction.getStringRep4Unixes"/>
         </file>
         <file name="C-0.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>

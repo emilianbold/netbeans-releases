@@ -18,6 +18,7 @@ import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ui.RecentViewListDlg;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -36,7 +37,7 @@ import java.util.Iterator;
  *
  * @author  Marek Slama
  */
-public class RecentViewListAction extends AbstractAction
+public final class RecentViewListAction extends AbstractAction
 implements PropertyChangeListener {
     
     /** Creates a new instance of RecentViewListAction */
@@ -103,6 +104,19 @@ implements PropertyChangeListener {
         if(TopComponent.Registry.PROP_OPENED.equals(evt.getPropertyName())) {
             updateEnabled();
         }
+    }
+
+    /** Only here for fix #41477:, called from layer.xml:
+     * For KDE on unixes, Ctrl+TAB is occupied by OS,
+     * so we also register Ctrl+BACk_QUOTE as recent view list action shortcut.
+     * For other OS's, Ctrl+TAB is the only default, because we create link
+     * not pointing to anything by returning null
+     */
+    public static String getStringRep4Unixes() {
+        if (Utilities.isUnix()) {
+            return "Actions/Window/org-netbeans-core-windows-actions-RecentViewListAction.instance"; //NOI18N
+        }
+        return null;
     }
     
     private void updateEnabled() {

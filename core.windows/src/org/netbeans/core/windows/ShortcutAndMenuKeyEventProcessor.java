@@ -13,6 +13,8 @@
 
 package org.netbeans.core.windows;
 
+import java.util.Collections;
+import org.netbeans.core.windows.view.ui.RecentViewListDlg;
 import org.openide.actions.ActionManager;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -115,7 +117,6 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
     public boolean dispatchKeyEvent(KeyEvent ev) {
         // XXX(-ttran) Sun JDK 1.4 on Linux: pressing Alt key produces
         // KeyEvent.VK_ALT, but Alt+<key> produces Meta+<key>
-        
         if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
             int mods = ev.getModifiers();
             if (mods == InputEvent.META_MASK) {
@@ -165,9 +166,24 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
                 ) {
                 return processShortcut(ev);
             }
+
+            // Only here for fix #41477:
+            // To be able to catch and dispatch Ctrl+TAB and Ctrl+Shift+Tab
+            // in our own way, it's needed to do as soon as here, because
+            // otherwise Swing will use these keys as focus traversals, which 
+            // means that TopComponent which contains focusCycleRoot inside itself
+            // will grab these shortcuts, which is not desirable 
+            boolean isCtrlTab = ev.getKeyCode() == KeyEvent.VK_TAB &&
+                                ev.getModifiers() == InputEvent.CTRL_MASK;
+            boolean isCtrlShiftTab = ev.getKeyCode() == KeyEvent.VK_TAB &&
+                ev.getModifiers() == (InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK);
+            if ((isCtrlTab || isCtrlShiftTab) && !RecentViewListDlg.isShown()) {
+                return processShortcut(ev);
+            }
+        
             return false;
         }
-        
+
         if (!wasPopupDisplayed
             && lastSampled == true
             && ev.getID() == KeyEvent.KEY_TYPED
