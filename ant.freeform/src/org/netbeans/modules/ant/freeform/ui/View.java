@@ -44,6 +44,9 @@ import org.w3c.dom.Element;
  */
 public final class View implements LogicalViewProvider {
     
+    private static final String STYLE_TREE = "tree"; // NOI18N
+    private static final String STYLE_PACKAGES = "packages"; // NOI18N
+    
     private final FreeformProject project;
     
     public View(FreeformProject project) {
@@ -113,11 +116,11 @@ public final class View implements LogicalViewProvider {
                     return null;
                 }
                 String style = itemEl.getAttribute("style"); // NOI18N
-                if (style.equals("tree")) { // NOI18N
+                if (style.equals(STYLE_TREE)) {
                     // XXX filter by VisibilityQuery
                     return new Node[] {new ViewItemNode(fileDO.getNodeDelegate(), location, label)};
                 } else {
-                    assert style.equals("packages") : style;
+                    assert style.equals(STYLE_PACKAGES) : style;
                     return new Node[] {PackageView.createPackageView(GenericSources.group(p, file, location, label, null, null))};
                 }
             } else {
