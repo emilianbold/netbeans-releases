@@ -616,6 +616,10 @@ final class Central implements ControllerHandler {
     public List getModeClosedTopComponentsIDs(ModeImpl mode) {
         return model.getModeClosedTopComponentsIDs(mode);
     }
+    // XXX
+    public List getModeTopComponentsIDs(ModeImpl mode) {
+        return model.getModeTopComponentsIDs(mode);
+    }
     
     /** Helper validation. */
     private boolean removeTopComponentFromOtherModes(ModeImpl mode, TopComponent tc) {

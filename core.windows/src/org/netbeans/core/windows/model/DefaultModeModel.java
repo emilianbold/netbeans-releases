@@ -260,6 +260,12 @@ final class DefaultModeModel implements ModeModel {
             return topComponentSubModel.getClosedTopComponentsIDs();
         }
     }
+    
+    public List getTopComponentsIDs() {
+        synchronized(LOCK_TOPCOMPONENTS) {
+            return topComponentSubModel.getTopComponentsIDs();
+        }
+    }
     /////////////////////////////////////
     // Accessor methods <<
     /////////////////////////////////////

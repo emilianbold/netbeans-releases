@@ -265,6 +265,10 @@ public final class ModeImpl implements Mode {
     public List getClosedTopComponentsIDs() {
         return getCentral().getModeClosedTopComponentsIDs(this);
     }
+    // XXX
+    public List getTopComponentsIDs() {
+        return getCentral().getModeTopComponentsIDs(this);
+    }
     
     /** Sets and updates the state of associated frame, if frame exists.
      * Otherwise remembers state for futher use

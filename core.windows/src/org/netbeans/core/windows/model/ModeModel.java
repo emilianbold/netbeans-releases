@@ -87,7 +87,7 @@ interface ModeModel {
     // XXX
     public List getOpenedTopComponentsIDs();
     public List getClosedTopComponentsIDs();
-    
+    public List getTopComponentsIDs();    
     
 }
 

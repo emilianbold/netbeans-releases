@@ -15,17 +15,10 @@
 package org.netbeans.core.windows.model;
 
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 
 import org.openide.windows.TopComponent;
@@ -40,16 +33,12 @@ import org.openide.windows.TopComponent;
  * @author  Peter Zavadsky
  */
 final class TopComponentSubModel {
-    
-    // XXX PENDING This strange structure (List + WeakHashMap) is here due to 'ugly"
-    // spec (undocummented probably) comming from old wisys, that if component is closed
-    // and released all its client references it will be garbeged!! Thus the cloesed ones
-    // could be kept only via weak references.
+
+    /** List of oopened TopComponents. */
     private final List openedTopComponents = new ArrayList(10);
-    /** Maps TopComponent ID to index. */
-    private final Map tcID2index = new HashMap(10);
-    
-    /** Selected TopComponent ID. Has to be present between openedTopComponenets. */
+    /** List of all TopComponent IDs (both opened and closed). */
+    private final List tcIDs = new ArrayList(10);
+    /** Selected TopComponent ID. Has to be present in openedTopComponenets. */
     private String selectedTopComponentID;
 
     
@@ -60,20 +49,20 @@ final class TopComponentSubModel {
     public List getTopComponents() {
         List l = new ArrayList(openedTopComponents);
         
-        Set ids = tcID2index.keySet();
-        Set s = new HashSet(ids.size());
+        List ids = new ArrayList(tcIDs);
+        List ll = new ArrayList(ids.size());
         for(Iterator it = ids.iterator(); it.hasNext(); ) {
             String tcID = (String)it.next();
             TopComponent tc = getTopComponent(tcID);
             if(tc != null) {
-                s.add(tc);
+                ll.add(tc);
             } else {
                 // XXX TopComponent was garbaged, remove its ID.
                 it.remove();
             }
         }
-        s.removeAll(openedTopComponents);
-        l.addAll(s);
+        ll.removeAll(openedTopComponents);
+        l.addAll(ll);
         
         return l;
     }
@@ -86,12 +75,13 @@ final class TopComponentSubModel {
         if(openedTopComponents.contains(tc)) {
             return false;
         }
-        
-        Integer index = (Integer)tcID2index.get(getID(tc));
+
+        String tcID = getID(tc);
+        int index = tcIDs.indexOf(tcID);
         
         int position;
-        if(index != null) {
-            position = index.intValue();
+        if(index > -1) {
+            position = index;
             if(position < 0) {
                 position = 0;
             } else if(position > openedTopComponents.size()) {
@@ -102,6 +92,9 @@ final class TopComponentSubModel {
         }
         
         openedTopComponents.add(position, tc);
+        if(!tcIDs.contains(tcID)) {
+            tcIDs.add(tcID);
+        }
         
         if(selectedTopComponentID == null) {
             selectedTopComponentID = getID(tc);
@@ -128,9 +121,16 @@ final class TopComponentSubModel {
             position = openedTopComponents.size();
         }
 
-        tcID2index.remove(getID(tc));
+        String tcID = getID(tc);
+        tcIDs.remove(tcID);
         openedTopComponents.add(position, tc);
-        tcID2index.put(getID(tc), new Integer(position));
+        if(position == 0) {
+            tcIDs.add(0, tcID);
+        } else {
+            TopComponent previous = (TopComponent)openedTopComponents.get(position - 1);
+            int previousIndex = tcIDs.indexOf(getID(previous));
+            tcIDs.add(previousIndex + 1, tcID);
+        }
         
         if(selectedTopComponentID == null) {
             selectedTopComponentID = getID(tc);
@@ -141,15 +141,16 @@ final class TopComponentSubModel {
     
     public boolean addClosedTopComponent(TopComponent tc) {
         int index = openedTopComponents.indexOf(tc);
-        
+
+        String tcID = getID(tc);
         if(index == -1) {
-            if(!tcID2index.containsKey(getID(tc))) {
-                tcID2index.put(getID(tc), null);
+            if(!tcIDs.contains(tcID)) {
+                tcIDs.add(tcID);
             }
         } else {
             openedTopComponents.remove(tc);
-            if(!tcID2index.containsKey(getID(tc))) {
-                tcID2index.put(getID(tc), new Integer(index));
+            if(!tcIDs.contains(tcID)) {
+                tcIDs.add(tcID);
             }
             if(selectedTopComponentID != null && selectedTopComponentID.equals(getID(tc))) {
                 adjustSelectedTopComponent(index);
@@ -160,8 +161,8 @@ final class TopComponentSubModel {
     }
     
     public boolean addUnloadedTopComponent(String tcID) {
-        if(!tcID2index.containsKey(tcID)) {
-            tcID2index.put(tcID, null);
+        if(!tcIDs.contains(tcID)) {
+            tcIDs.add(tcID);
         }
         
         return true;
@@ -169,6 +170,7 @@ final class TopComponentSubModel {
     
     public boolean removeTopComponent(TopComponent tc) {
         boolean res;
+        String tcID = getID(tc);
         if(openedTopComponents.contains(tc)) {
             if(selectedTopComponentID != null && selectedTopComponentID.equals(getID(tc))) {
                 int index = openedTopComponents.indexOf(getTopComponent(selectedTopComponentID));
@@ -177,11 +179,11 @@ final class TopComponentSubModel {
             } else {
                 openedTopComponents.remove(tc);
             }
-            tcID2index.remove(getID(tc));
+            tcIDs.remove(tcID);
             
             res = true;
-        } else if(tcID2index.containsKey(getID(tc))) {
-            tcID2index.remove(getID(tc));
+        } else if(tcIDs.contains(tcID)) {
+            tcIDs.remove(tcID);
             res = true;
         } else {
             res = false;
@@ -191,11 +193,11 @@ final class TopComponentSubModel {
     }
 
     public boolean containsTopComponent(TopComponent tc) {
-        return openedTopComponents.contains(tc) || tcID2index.keySet().contains(getID(tc));
+        return openedTopComponents.contains(tc) || tcIDs.contains(getID(tc));
     }
     
     public boolean isEmpty() {
-        return tcID2index.isEmpty();
+        return tcIDs.isEmpty();
     }
     
     private void adjustSelectedTopComponent(int index) {
@@ -237,14 +239,19 @@ final class TopComponentSubModel {
     
     // XXX
     public List getClosedTopComponentsIDs() {
-        List closedIDs = new ArrayList(tcID2index.keySet());
+        List closedIDs = new ArrayList(tcIDs);
         closedIDs.removeAll(getOpenedTopComponentsIDs());
         return closedIDs;
+    }
+
+    // XXX
+    public List getTopComponentsIDs() {
+        return new ArrayList(tcIDs);
     }
     
     // XXX
     public void removeClosedTopComponentID(String tcID) {
-        tcID2index.remove(tcID);
+        tcIDs.remove(tcID);
     }
     
     public TopComponent getSelectedTopComponent() {

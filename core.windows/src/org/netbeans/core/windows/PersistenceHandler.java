@@ -480,25 +480,23 @@ final class PersistenceHandler implements PersistenceObserver {
         
         // TopComponents:
         List tcRefCfgList = new ArrayList();
-        // Opened TopComponents:
-        for(Iterator it = mode.getOpenedTopComponents().iterator(); it.hasNext(); ) {
-            TopComponent tc = (TopComponent)it.next();
-            if (pm.isTopComponentPersistent(tc)) {
-                String tc_id = wm.findTopComponentID(tc);
-                debugLog("tc=" + tc.getName()); // NOI18N
-                TCRefConfig tcRefCfg = new TCRefConfig();
-                tcRefCfg.tc_id = tc_id;
-                tcRefCfg.opened = true;
-                tcRefCfgList.add(tcRefCfg);
-            }
-        }
-        // Closed TopComponents:
-        for(Iterator it = mode.getClosedTopComponentsIDs().iterator(); it.hasNext(); ) {
+        List openedTcIDs = mode.getOpenedTopComponentsIDs();
+        for(Iterator it = mode.getTopComponentsIDs().iterator(); it.hasNext(); ) {
             String tcID = (String)it.next();
-                TCRefConfig tcRefCfg = new TCRefConfig();
-                tcRefCfg.tc_id = tcID;
-                tcRefCfg.opened = false;
-                tcRefCfgList.add(tcRefCfg);
+            
+            boolean opened = openedTcIDs.contains(tcID);
+            if(opened) {
+                TopComponent tc = wm.findTopComponent(tcID);
+                if(tc == null || !pm.isTopComponentPersistent(tc)) {
+                    continue;
+                }
+            }
+
+            debugLog("tc ID=" + tcID); // NOI18N
+            TCRefConfig tcRefCfg = new TCRefConfig();
+            tcRefCfg.tc_id = tcID;
+            tcRefCfg.opened = opened;
+            tcRefCfgList.add(tcRefCfg);
         }
         
         modeCfg.tcRefConfigs = (TCRefConfig []) tcRefCfgList.toArray(new TCRefConfig[tcRefCfgList.size()]);

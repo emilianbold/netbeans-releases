@@ -670,6 +670,15 @@ final class DefaultModel implements Model {
             return Collections.EMPTY_LIST;
         }
     }
+    
+    public List getModeTopComponentsIDs(ModeImpl mode) {
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            return modeModel.getTopComponentsIDs();
+        } else {
+            return Collections.EMPTY_LIST;
+        }
+    }
     // End of mode specific.
 
     

@@ -193,6 +193,7 @@ public interface Model {
     // XXX
     public List getModeOpenedTopComponentsIDs(ModeImpl mode);
     public List getModeClosedTopComponentsIDs(ModeImpl mode);
+    public List getModeTopComponentsIDs(ModeImpl mode);
     // Accessors (mode level) <<
     ////////////////////////////
     // Mode level <<
