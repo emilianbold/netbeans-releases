@@ -46,6 +46,7 @@ public final class AquaLFCustoms extends LFCustoms {
             "MenuBar.font", controlFont,
             "MenuItem.font", controlFont,
             "CheckBoxMenuItem.font", controlFont,
+            "RadioButtonMenuItem.font", controlFont,
             "PopupMenu.font", controlFont,
             "List.font", controlFont,
             "Label.font", controlFont,
