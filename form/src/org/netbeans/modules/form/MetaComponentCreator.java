@@ -505,6 +505,8 @@ public class MetaComponentCreator {
                 newSubs[i] = newSubComp;
             }
 
+            ((ComponentContainer)newComp).initSubComponents(newSubs);
+
             // 2nd - clone layout support
             if (sourceComp instanceof RADVisualContainer) {
                 RADVisualComponent[] newComps =
@@ -517,8 +519,6 @@ public class MetaComponentCreator {
                 ((RADVisualContainer)newComp).getLayoutSupport()
                     .copyLayoutDelegateFrom(sourceLayout, newComps);
             }
-
-            ((ComponentContainer)newComp).initSubComponents(newSubs);
         }
 
         // 3rd - copy changed properties
