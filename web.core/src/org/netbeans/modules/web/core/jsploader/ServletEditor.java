@@ -36,13 +36,14 @@ import org.openide.cookies.CloseCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.DataNode;
 import org.openide.nodes.Node;
 import org.openide.text.*;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListener;
 import org.openide.util.actions.SystemAction;
 import org.openide.cookies.SourceCookie;
 
@@ -111,11 +112,13 @@ public class ServletEditor extends CloneableEditorSupport
     */
     protected String messageName () {
         DataObject dobj = getServlet();
-        if (dobj != null) {
-            return dobj.getName();
-        }
-        else {
-            return "...";   // NOI18N
+        if (dobj == null) return "...";   // NOI18N
+        if (! dobj.isValid()) return ""; // NOI18N
+
+        if(DataNode.getShowFileExtensions()) {
+            return dobj.getPrimaryFile().getNameExt();
+        } else {
+            return dobj.getPrimaryFile().getName();
         }
     }
     
@@ -127,21 +130,7 @@ public class ServletEditor extends CloneableEditorSupport
         DataObject dobj = getServlet();
         if (dobj != null) {
             // update tooltip
-            FileObject fo = dobj.getPrimaryFile ();
-            try {
-                return NbBundle.getMessage (ServletEditor.class, "LAB_EditorToolTip_Valid", new Object[] {
-                    fo.getPackageName ('.'),
-                    fo.getName (),
-                    fo.getExt (),
-                    fo.getFileSystem ().getDisplayName ()
-                });
-            } catch (FileStateInvalidException fsie) {
-                return NbBundle.getMessage (ServletEditor.class, "LAB_EditorToolTip_Invalid", new Object[] {
-                    fo.getPackageName ('.'),
-                    fo.getName (),
-                    fo.getExt ()
-                });
-            }
+            return FileUtil.getFileDisplayName(dobj.getPrimaryFile());
         }
         else
             return "...";   // NOI18N
@@ -156,8 +145,8 @@ public class ServletEditor extends CloneableEditorSupport
             return "";
 
         return NbBundle.getMessage (ServletEditor.class , "CTL_ObjectOpen", // NOI18N
-            obj.getName(),
-            obj.getPrimaryFile().toString()
+            obj.getPrimaryFile().getNameExt(),
+            FileUtil.getFileDisplayName(obj.getPrimaryFile())
         );
     }
     
@@ -171,8 +160,8 @@ public class ServletEditor extends CloneableEditorSupport
             return "";
 
         return NbBundle.getMessage (ServletEditor.class, "CTL_ObjectOpened", // NOI18N
-            obj.getName (),
-            obj.getPrimaryFile ().toString ()
+            obj.getPrimaryFile().getNameExt(),
+            FileUtil.getFileDisplayName(obj.getPrimaryFile())
         );
     }
 
@@ -427,7 +416,7 @@ public class ServletEditor extends CloneableEditorSupport
         }
         
         private void init() {
-            jspdo.addPropertyChangeListener(WeakListener.propertyChange (this, jspdo));
+            jspdo.addPropertyChangeListener(WeakListeners.propertyChange (this, jspdo));
         }
         
         public JspDataObject getJspDataObject() {
