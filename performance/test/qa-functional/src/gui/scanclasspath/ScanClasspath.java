@@ -77,9 +77,10 @@ public class ScanClasspath extends org.netbeans.performance.test.utilities.Perfo
     public void openJEditProject() {
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/jEdit41");
         
-        //wait until scan finished and at least some timeout, because we find that scandialog is still opened
-        if(ProjectSupport.waitScanFinished()) 
-            waitNoEvent(5000);
+        //wait until scan finished and at least some timeout, because we find  that scandialog is still opened
+//TODO replace by if(ProjectSupport.waitScanFinished()) waitNoEvent(5000); after NB4.1
+        ProjectSupport.waitScanFinished();
+        waitNoEvent(5000);
         
         LoggingScanClasspath.printMeasuredValues(getLog());
         java.util.ArrayList data = LoggingScanClasspath.getData();
