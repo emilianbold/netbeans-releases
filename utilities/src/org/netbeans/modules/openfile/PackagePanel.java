@@ -69,7 +69,7 @@ public class PackagePanel extends javax.swing.JPanel {
         setBorder (new javax.swing.border.EmptyBorder (8, 8, 8, 8));
 
         JTextArea textArea = new JTextArea ();
-        textArea.setBackground (Color.lightGray);
+        textArea.setBackground (new Color(204, 204, 204));
         textArea.setFont (new Font ("SansSerif", Font.PLAIN, 11)); // NOI18N
         textArea.setText (SettingsBeanInfo.getString (pkgLevel == -1 ? "TXT_whereMountNoSuggest" : "TXT_whereMountSuggest", f.getName ()));
         textArea.setEditable (false);
