@@ -740,10 +740,14 @@ implements EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie {
                     updateTitles();
                 }
                 if (Node.PROP_ICON.equals(ev.getPropertyName())) {
-                    DataObject obj = getDataObject();
+                    final DataObject obj = getDataObject();
                     if (obj.isValid()) {
+                        org.openide.util.Mutex.EVENT.writeAccess(new Runnable()  {
+                            public void run() {
                         editor.setIcon(obj.getNodeDelegate().getIcon (
                                 java.beans.BeanInfo.ICON_COLOR_16x16));
+                            }
+                        });
                     }
                 }
             }
