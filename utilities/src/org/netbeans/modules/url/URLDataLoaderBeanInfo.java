@@ -55,19 +55,3 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
     }
 
 }
-
-/*
-* Log
-*  9    Gandalf   1.8         1/16/00  Jesse Glick     
-*  8    Gandalf   1.7         1/12/00  Ian Formanek    NOI18N
-*  7    Gandalf   1.6         1/5/00   Ian Formanek    NOI18N
-*  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
-*       org.openide ----
-*  4    Gandalf   1.3         3/9/99   Ian Formanek    
-*  3    Gandalf   1.2         3/9/99   Ian Formanek    
-*  2    Gandalf   1.1         2/16/99  David Simonek   
-*  1    Gandalf   1.0         1/22/99  Ian Formanek    
-* $
-*/

@@ -73,24 +73,3 @@ public class URLDataLoader extends UniFileLoader {
     }
 
 }
-
-/*
- * Log
- *  11   Gandalf   1.10        1/5/00   Ian Formanek    NOI18N
- *  10   Gandalf   1.9         11/27/99 Patrik Knakal   
- *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  8    Gandalf   1.7         10/1/99  Jaroslav Tulach Loaders extends 
- *       SharedClassObject
- *  7    Gandalf   1.6         8/31/99  Ian Formanek    Correctly provides 
- *       FileSystemAction on its data objects
- *  6    Gandalf   1.5         7/11/99  Ian Formanek    employed EditAction
- *  5    Gandalf   1.4         6/9/99   Ian Formanek    ToolsAction
- *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  3    Gandalf   1.2         3/26/99  Ian Formanek    Fixed use of obsoleted 
- *       NbBundle.getBundle (this)
- *  2    Gandalf   1.1         2/25/99  Ian Formanek    
- *  1    Gandalf   1.0         1/22/99  Ian Formanek    
- * $
- */

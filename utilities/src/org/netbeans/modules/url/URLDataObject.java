@@ -134,6 +134,15 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
         return new URLNode (this);
     }
 
+    protected DataObject handleCreateFromTemplate(DataFolder df,String name)
+                                                throws IOException {
+        DataObject obj = super.handleCreateFromTemplate(df,name);
+        URLNode node = (URLNode)obj.getNodeDelegate();
+        node.defEditAction = true; // after creating from template, default node action will be performed
+                                   // it should be an EditAction, however OpenAction is default in other cases
+        return obj;
+    }
+
     // -----------------------------------------------------------------
     // OpenCookie implementation
 
@@ -246,6 +255,8 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
     */
     public static final class URLNode extends DataNode {
 
+        boolean defEditAction = false;
+        
         /** Default constructor, constructs node */
         public URLNode (final DataObject dataObject) {
             super(dataObject, Children.LEAF);
@@ -257,37 +268,13 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
         * Opens otherwise.
         */
         public SystemAction getDefaultAction () {
+            if (defEditAction) { // EditAction is used only after creation from template
+                defEditAction = false; // and no more...
+                return SystemAction.get(org.openide.actions.EditAction.class);
+            }
+            
             SystemAction result = super.getDefaultAction();
             return result == null ? SystemAction.get(org.openide.actions.OpenAction.class) : result;
         }
     } // end of URLNode inner class
 }
-
-
-/*
- * Log
- *  17   Gandalf   1.16        1/13/00  Ian Formanek    NOI18N #2
- *  16   Gandalf   1.15        1/12/00  Ian Formanek    I18N
- *  15   Gandalf   1.14        1/5/00   Ian Formanek    NOI18N
- *  14   Gandalf   1.13        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  13   Gandalf   1.12        8/9/99   Ian Formanek    Generated Serial Version
- *       UID
- *  12   Gandalf   1.11        7/11/99  Ian Formanek    employed EditAction
- *  11   Gandalf   1.10        6/24/99  Jesse Glick     Gosh-honest HelpID's.
- *  10   Gandalf   1.9         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  9    Gandalf   1.8         6/7/99   Ian Formanek    Fixed bug 1585 - URL 
- *       action "Open in New window" does not work.
- *  8    Gandalf   1.7         5/8/99   Ian Formanek    Fixed displaying icon
- *  7    Gandalf   1.6         4/27/99  Jesse Glick     new HelpCtx () -> 
- *       HelpCtx.DEFAULT_HELP.
- *  6    Gandalf   1.5         4/8/99   Ian Formanek    Removed debug prints
- *  5    Gandalf   1.4         3/26/99  Ian Formanek    Fixed use of obsoleted 
- *       NbBundle.getBundle (this)
- *  4    Gandalf   1.3         3/9/99   Ian Formanek    
- *  3    Gandalf   1.2         3/9/99   Ian Formanek    
- *  2    Gandalf   1.1         2/25/99  Ian Formanek    
- *  1    Gandalf   1.0         1/22/99  Ian Formanek    
- * $
- */
