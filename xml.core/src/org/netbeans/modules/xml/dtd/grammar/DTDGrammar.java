@@ -19,6 +19,7 @@ import javax.swing.Icon;
 import org.w3c.dom.*;
 
 import org.openide.util.enum.*;
+import org.openide.ErrorManager;
 
 import org.netbeans.modules.xml.api.model.*;
 import org.netbeans.modules.xml.spi.dom.*;
@@ -146,8 +147,15 @@ public class DTDGrammar implements GrammarQuery {
             if (el == null) return EmptyEnumeration.EMPTY;;
 
             // lazilly parse content model
-//            Object model = contentModels.get(el.getTagName());
-            Object model = null; //#30095 rollback
+            Object model = null;
+            String prefs = System.getProperty("netbeans.xml.completion", "default"); // NOI18N
+            if ("fast".equals(prefs)) {                                      // NO18N
+                model = null;
+            } else if ("default".equals(prefs) || "accurate".equals(prefs)) { // NO18N
+                model = contentModels.get(el.getTagName());
+            } else {
+                model = null;
+            }
             if (model instanceof String) {
                 model = ContentModel.parseContentModel((String)model);
                 contentModels.put(el.getTagName(), model);
