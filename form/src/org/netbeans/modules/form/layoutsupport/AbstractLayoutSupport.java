@@ -30,8 +30,9 @@ import org.netbeans.modules.form.codestructure.*;
 
 public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
 {
-    private static Image defaultLayoutIcon;
-    private static Image defaultLayoutIcon32;
+    /** The icons for AbstractLayout */
+    private static String iconURL = "/org/netbeans/modules/form/layoutsupport/resources/AbstractLayout.gif"; // NOI18N
+    private static String icon32URL = "/org/netbeans/modules/form/layoutsupport/resources/AbstractLayout32.gif"; // NOI18N
 
     private static ResourceBundle bundle = null;
 
@@ -156,16 +157,9 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
         switch (type) {
             case BeanInfo.ICON_COLOR_16x16:
             case BeanInfo.ICON_MONO_16x16:
-                if (defaultLayoutIcon == null)
-                    defaultLayoutIcon = Utilities.loadImage(
-                        "org/netbeans/modules/form/layoutsupport/resources/AbstractLayout.gif"); // NOI18N
-                return defaultLayoutIcon;
-
+                return Utilities.loadImage(iconURL);
             default:
-                if (defaultLayoutIcon32 == null)
-                    defaultLayoutIcon32 = Utilities.loadImage(
-                        "org/netbeans/modules/form/layoutsupport/resources/AbstractLayout32.gif"); // NOI18N
-                return defaultLayoutIcon32;
+                return Utilities.loadImage(icon32URL);
         }
     }
 

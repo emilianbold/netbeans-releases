@@ -27,7 +27,8 @@ import org.openide.awt.SplittedPanel;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.windows.*;
 import org.openide.util.HelpCtx;
-import org.openide.util.SharedClassObject; 
+import org.openide.util.SharedClassObject;
+import org.openide.util.Utilities;
 
 import org.netbeans.modules.form.actions.*;
 import org.netbeans.modules.form.palette.*;
@@ -68,11 +69,8 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
     private SplittedPanel split;
     private PropertySheetView sheet;
 
-    private static final java.net.URL iconURL = 
-        ComponentInspector.class.getResource("/org/netbeans/modules/form/resources/inspector.gif"); // NOI18N
-
-    /** The Inspector's icon */
-    private final static Image inspectorIcon = Toolkit.getDefaultToolkit().getImage(iconURL);
+    /** The icon for ComponentInspector */
+    private static String iconURL = "/org/netbeans/modules/form/resources/inspector.gif"; // NOI18N
 
     static final long serialVersionUID =4248268998485315927L;
 
@@ -93,7 +91,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
         
         createSplit();
 
-        setIcon(inspectorIcon);
+        setIcon(Utilities.loadImage(iconURL));
         setName(formBundle.getString("CTL_InspectorTitle"));
 
         manager.addPropertyChangeListener(new NodeSelectedListener());

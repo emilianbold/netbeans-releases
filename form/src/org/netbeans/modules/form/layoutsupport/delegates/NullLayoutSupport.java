@@ -30,10 +30,11 @@ import org.netbeans.modules.form.codestructure.*;
 
 public class NullLayoutSupport extends AbsoluteLayoutSupport {
 
-    private static Image layoutIcon;
-    private static Image layoutIcon32;
-
     private static Method setBoundsMethod;
+    
+    /** The icons for NullLayout */
+    private static String iconURL = "/org/netbeans/modules/form/layoutsupport/resources/NullLayout.gif"; // NOI18N
+    private static String icon32URL = "/org/netbeans/modules/form/layoutsupport/resources/NullLayout32.gif"; // NOI18N    
 
     public Class getSupportedClass() {
         return null;
@@ -43,16 +44,9 @@ public class NullLayoutSupport extends AbsoluteLayoutSupport {
         switch (type) {
             case BeanInfo.ICON_COLOR_16x16:
             case BeanInfo.ICON_MONO_16x16:
-                if (layoutIcon == null)
-                    layoutIcon = Utilities.loadImage(
-                        "org/netbeans/modules/form/layoutsupport/resources/NullLayout.gif"); // NOI18N
-                return layoutIcon;
-
+                return Utilities.loadImage(iconURL);
             default:
-                if (layoutIcon32 == null)
-                    layoutIcon32 = Utilities.loadImage(
-                        "org/netbeans/modules/form/layoutsupport/resources/NullLayout32.gif"); // NOI18N
-                return layoutIcon32;
+                return Utilities.loadImage(icon32URL);
         }
     }
 

@@ -78,9 +78,9 @@ public class FormDesigner extends TopComponent
     private RADComponent connectionSource;
     private RADComponent connectionTarget;
     
-    private static final java.net.URL iconURL = 
-        FormDesigner.class.getResource("/org/netbeans/modules/form/resources/formDesigner.gif"); // NOI18N
-    private final static Image designerIcon = Toolkit.getDefaultToolkit().getImage(iconURL);
+    /** The icons for FormDesigner */
+    private static String iconURL = "/org/netbeans/modules/form/resources/formDesigner.gif"; // NOI18N
+    private static String icon32URL = "/org/netbeans/modules/form/resources/formDesigner32.gif"; // NOI18N
     
     /** The FormLoaderSettings instance */
     private static FormLoaderSettings formSettings = FormEditor.getFormSettings();
@@ -266,7 +266,7 @@ public class FormDesigner extends TopComponent
     ////////////////
     
     FormDesigner(FormModel formModel) {
-        setIcon(designerIcon);
+        setIcon(Utilities.loadImage(iconURL));
         
         formModelListener = new FormListener();
         

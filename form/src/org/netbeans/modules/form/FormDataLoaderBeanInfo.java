@@ -18,13 +18,19 @@ import java.beans.*;
 import java.awt.Image;
 
 import org.netbeans.modules.java.JavaDataLoader;
+import org.openide.util.Utilities;
 
 /** Form data loader bean info.
  *
  * @author Ian Formanek
  */
 public class FormDataLoaderBeanInfo extends SimpleBeanInfo {
+    
+    /** The icons for Form */
+    private static String iconURL = "/org/netbeans/modules/form/resources/form.gif"; // NOI18N
+    private static String icon32URL = "/org/netbeans/modules/form/resources/form32.gif"; // NOI18N    
 
+    
     public BeanInfo[] getAdditionalBeanInfo() {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo(JavaDataLoader.class) };
@@ -35,23 +41,16 @@ public class FormDataLoaderBeanInfo extends SimpleBeanInfo {
         }
     }
 
-    /** Icons for url data loader. */
-    private static Image icon;
-    private static Image icon32;
-
+    
     /** @param type Desired type of the icon
      * @return returns the Form loader's icon
      */
     public Image getIcon(final int type) {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
             (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-            if (icon == null)
-                icon = loadImage("/org/netbeans/modules/form/resources/form.gif"); // NOI18N
-            return icon;
+            return Utilities.loadImage(iconURL);
         } else {
-            if (icon32 == null)
-                icon32 = loadImage("/org/netbeans/modules/form/resources/form32.gif"); // NOI18N
-            return icon32;
+            return Utilities.loadImage(icon32URL);
         }
     }
 

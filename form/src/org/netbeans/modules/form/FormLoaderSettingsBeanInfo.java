@@ -24,6 +24,7 @@ import java.util.Iterator;
 
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.Workspace;
 import org.openide.windows.WindowManager;
 
@@ -36,25 +37,18 @@ import org.netbeans.modules.form.palette.*;
  */
 public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
-    /** Icons for url data loader. */
-    private static Image icon;
-    private static Image icon32;
-
-    /** Array of property descriptors. */
-    private static PropertyDescriptor[] desc;
+    /** The icons for Settings */
+    private static String iconURL = "/org/netbeans/modules/form/resources/formSettings.gif"; // NOI18N
+    private static String icon32URL = "/org/netbeans/modules/form/resources/formSettings32.gif"; // NOI18N
 
     /** Descriptor of valid properties
      * @return array of properties
      */
     public PropertyDescriptor[] getPropertyDescriptors() {
-        if (desc != null)
-            return desc;
-        
         try {
             java.util.ResourceBundle formBundle = FormEditor.getFormBundle();
-                
             
-            desc = new PropertyDescriptor[] {
+            PropertyDescriptor[] desc = new PropertyDescriptor[] {
 //                new PropertyDescriptor(FormLoaderSettings.PROP_INDENT_AWT_HIERARCHY, FormLoaderSettings.class,
 //                                       "getIndentAWTHierarchy", "setIndentAWTHierarchy"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_USE_INDENT_ENGINE, FormLoaderSettings.class,
@@ -195,24 +189,20 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             
             desc[19].setHidden(true);
             
+            return desc;
+            
         } catch (IntrospectionException ex) {
             throw new InternalError();
         }
-
-        return desc;
     }
 
     /** Returns the FormLoaderSettings' icon */
     public Image getIcon(int type) {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
             (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-            if (icon == null)
-                icon = loadImage("/org/netbeans/modules/form/resources/formSettings.gif"); // NOI18N
-            return icon;
+            return Utilities.loadImage(iconURL);
         } else {
-            if (icon32 == null)
-                icon32 = loadImage("/org/netbeans/modules/form/resources/formSettings32.gif"); // NOI18N
-            return icon32;
+            return Utilities.loadImage(icon32URL);
         }
     }
 
