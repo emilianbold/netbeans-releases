@@ -131,14 +131,13 @@ public class TemplatesPanel implements WizardDescriptor.Panel, TemplatesPanelGUI
         }
     }
     
-    public org.openide.nodes.Children createCategoriesChildren(org.openide.filesystems.FileObject fo) {
-        assert fo != null && fo.isFolder() : "Root must be a folder";  //NOI18N
-        DataFolder folder = DataFolder.findFolder(fo);
+    public org.openide.nodes.Children createCategoriesChildren (DataFolder folder) {
+        assert folder != null : "Folder cannot be null.";  //NOI18N
         return new CategoriesChildren (folder);
     }
     
-    public org.openide.nodes.Children createTemplatesChildren(org.openide.filesystems.FileObject fo) {
-        return new TemplateChildren (fo);
+    public org.openide.nodes.Children createTemplatesChildren(DataFolder folder) {
+        return new TemplateChildren (folder);
     }
     
     public char getCategoriesMnemonic() {
@@ -178,10 +177,10 @@ public class TemplatesPanel implements WizardDescriptor.Panel, TemplatesPanelGUI
                 DataObject dobj = (DataObject) key;
                 if (dobj instanceof DataFolder) {
                     DataFolder folder = (DataFolder) dobj;
-                    FileObject[] children = folder.getPrimaryFile().getChildren();
+                    DataObject[] children = folder.getChildren ();
                     int type = children.length == 0 ? 0 : 1;   //Empty folder or File folder
                     for (int i=0; i< children.length; i++) {
-                        if (children[i].isFolder()) {
+                        if (children[i].getPrimaryFile ().isFolder ()) {
                             type = 2;   //Folder folder
                             break;
                         }
@@ -204,15 +203,14 @@ public class TemplatesPanel implements WizardDescriptor.Panel, TemplatesPanelGUI
     
     private static class TemplateChildren extends Children.Keys {
         
-        private FileObject root;
+        private DataFolder folder;
                 
-        public TemplateChildren (FileObject folder) {
-            this.root = folder;
-            assert this.root != null : "Root can not be null";  //NOI18N
+        public TemplateChildren (DataFolder folder) {
+            this.folder = folder;
         }
         
         protected void addNotify () {
-            this.setKeys (this.root.getChildren());
+            this.setKeys (this.folder.getChildren ());
         }
         
         protected void removeNotify () {
@@ -232,6 +230,10 @@ public class TemplatesPanel implements WizardDescriptor.Panel, TemplatesPanelGUI
                         ErrorManager.getDefault().notify(e);
                     }
                 }
+            } else if (key instanceof DataObject) {
+                return new Node[] {
+                    new FilterNode (((DataObject)key).getNodeDelegate (), Children.LEAF)
+                };
             }
             return new Node[0];
         }        

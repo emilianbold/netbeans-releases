@@ -320,12 +320,12 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
   
     private final class FileChooserBuilder implements TemplatesPanelGUI.Builder {
         
-        public Children createCategoriesChildren(FileObject fo) {
-            return new TemplateChildren (DataFolder.findFolder(fo));
+        public Children createCategoriesChildren(DataFolder folder) {
+            return new TemplateChildren (folder);
         }
         
-        public Children createTemplatesChildren(FileObject fo) {
-            return new FileChildren (project, DataFolder.findFolder(fo));
+        public Children createTemplatesChildren(DataFolder folder) {
+            return new FileChildren (project, folder);
         }
         
         public void fireChange() {

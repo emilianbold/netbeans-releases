@@ -16,8 +16,10 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="Templates">
         <folder name="Project">
-            <folder name="Desktop">
+            <folder name="Standard">
+                <attr name="emptyJ2SE.xml/j2sefreeform.xml" boolvalue="true"/>
                 <attr name="emptyJ2SElibrary.xml/j2sefreeform.xml" boolvalue="true"/>
+                <attr name="existingJ2SE.xml/j2sefreeform.xml" boolvalue="true"/>
                 <file name="j2sefreeform.xml">
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.ant.freeform.ui.NewJ2SEFreeformProjectWizardIterator"/>

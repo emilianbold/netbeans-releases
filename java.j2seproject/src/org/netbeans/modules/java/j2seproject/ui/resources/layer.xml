@@ -17,14 +17,18 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Templates">
         <folder name="Project">
-            <attr name="Desktop/Import" boolvalue="true"/>
-            <attr name="Desktop/Web" boolvalue="true"/>
-            <attr name="Web/Import" boolvalue="true"/>
+            <attr name="Web/Standard" boolvalue="true"/>
+            <attr name="Web/Mobile" boolvalue="true"/>
+            <attr name="Mobile/Standard" boolvalue="true"/>
 
-            <folder name="Desktop">
+            <folder name="Standard">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/desktop.html"/>
+
                 <attr name="emptyJ2SE.xml/emptyJ2SElibrary.xml" boolvalue="true"/>
+                <attr name="emptyJ2SElibrary.xml/existingJ2SE.xml" boolvalue="true"/>
+                <attr name="emptyJ2SE.xml/existingJ2SE.xml" boolvalue="true"/>
+
                 <!-- Add template for the J2SE project -->
                 <file name="emptyJ2SE.xml">
                     <attr name="template" boolvalue="true"/>
@@ -41,9 +45,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.gif"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/emptyLibrary.html"/>
                 </file>                
-            </folder>
-            
-            <folder name="Import">
+
                 <file name="existingJ2SE.xml">
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.j2seproject.ui.wizards.NewJ2SEProjectWizardIterator.existing"/>

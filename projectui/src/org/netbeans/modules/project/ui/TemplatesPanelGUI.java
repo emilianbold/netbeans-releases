@@ -52,9 +52,9 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     
     public static interface Builder {
         
-        public Children createCategoriesChildren (FileObject fo);
+        public Children createCategoriesChildren (DataFolder folder);
         
-        public Children createTemplatesChildren (FileObject fo);
+        public Children createTemplatesChildren (DataFolder folder);
         
         public String getCategoriesName ();
         
@@ -86,7 +86,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     public void setTemplatesFolder (FileObject folder) {
         DataFolder dobj = DataFolder.findFolder (folder);
         ((ExplorerProviderPanel)this.categoriesPanel).setRootNode(new FilterNode (
-            dobj.getNodeDelegate(), this.firer.createCategoriesChildren(folder)));
+            dobj.getNodeDelegate(), this.firer.createCategoriesChildren(dobj)));
     }
 
 
@@ -94,7 +94,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         if (categoryName != null) {
             ((ExplorerProviderPanel)this.categoriesPanel).setSelectedNode (categoryName);
         } else {
-            // if categoryName is null then select fisrt category leastwise
+            // if categoryName is null then select first category leastwise
             ((CategoriesPanel)this.categoriesPanel).selectFirstCategory ();
         }
     }
@@ -144,11 +144,11 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                 }
                 Node[] selectedNodes = (Node[]) event.getNewValue();
                 if (selectedNodes != null && selectedNodes.length == 1) {
-                    DataObject template = (DataObject) selectedNodes[0].getCookie(DataObject.class);
+                    DataObject template = (DataObject) selectedNodes[0].getCookie(DataFolder.class);
                     if (template != null) {
                         FileObject fo = template.getPrimaryFile();
                         ((ExplorerProviderPanel)this.projectsPanel).setRootNode(
-                            new FilterNode (selectedNodes[0], this.firer.createTemplatesChildren(fo)));
+                            new FilterNode (selectedNodes[0], this.firer.createTemplatesChildren((DataFolder)template)));
                         // after change of root select the first template to make easy move in wizard
                         this.setSelectedTemplateByName (null);
                         URL descURL = getDescription (template);
@@ -438,7 +438,11 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             this.tree.setEditable(false);
         }
         public void selectFirstCategory () {
-            tree.setSelectionRow (0);
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    tree.setSelectionRow (0);
+                }
+            });
         }
     }
 
