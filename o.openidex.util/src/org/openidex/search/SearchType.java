@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package src_modules.org.openidex.search;
+package Development.src_modules.org.openidex.search;
 
 import java.util.Enumeration;
 
@@ -32,8 +32,9 @@ import org.openide.nodes.*;
 *
 * @author  Jaroslav Tulach
 */
-public abstract class SearchType extends org.openide.ServiceType {
+public abstract class SearchType extends org.openide.ServiceType implements Cloneable {
   
+  public static final long serialVersionUID = 1L;
   
   /** Is this object enabled on given set of nodes or not.
   * @param arr array of nodes to use in this kriterium
@@ -54,6 +55,18 @@ public abstract class SearchType extends org.openide.ServiceType {
   * @return the class that must be subclass of Scanner
   */
   public abstract Class getScannerClass ();
+  
+  /** SearchType must be cloneable.
+  *
+  * @return clone
+  */
+  public Object clone() {
+    try {
+      return super.clone();
+    } catch (CloneNotSupportedException ex) {
+      throw new RuntimeException("SearchType must be clonable.");
+    }
+  }
   
   /** Gives short type name.
   * @return String representing name used as tab label or null
@@ -77,6 +90,7 @@ public abstract class SearchType extends org.openide.ServiceType {
 
 /* 
 * Log
+*  2    Gandalf   1.1         12/14/99 Petr Kuzel      Enforcing Cloneable.
 *  1    Gandalf   1.0         12/14/99 Petr Kuzel      
 * $ 
 */ 
