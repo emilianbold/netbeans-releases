@@ -30,22 +30,37 @@ import org.w3c.dom.*;
  */
 public class XMLWriter {
 
+    
+    private PrettyPrinter printer;
+    private String encoding;
+    
+    
     /** Creates new XMLWriter */
-    public XMLWriter() {
-    }
-
-    public void write(Document doc, Writer wri) throws IOException {
-        write(doc, null, wri);
+    public XMLWriter(OutputStream out, String encoding) throws UnsupportedEncodingException {                
+        printer = new PrettyPrinter(new OutputStreamWriter(out,encoding), 3, 80);
+        this.encoding = encoding;
     }
     
-    public void write(Document doc, LinkedList entities, Writer wri) throws IOException {
-        wri.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        
-        if (null != entities && 0 != entities.size())
-            writeEntities(doc.getDocumentElement().getNodeName(), entities, wri);
+    
+    
 
-        writeElement(doc.getDocumentElement(), wri, 0);
-        wri.flush();
+    public void write(Document doc) throws IOException {
+        write(doc, null);
+    }
+    
+    public String getEncoding() {
+        return encoding;
+    }
+    
+    public void write(Document doc, LinkedList entities) throws IOException {
+        printer.print("<?xml version=\"1.0\" encoding=\""+getEncoding()+"\"?>");
+        printer.newLine();
+        
+        if (null != entities && 0 != entities.size()) {
+            writeEntities(doc.getDocumentElement().getNodeName(), entities);
+        }
+
+        writeElement(doc.getDocumentElement());
     }
     
     /**
@@ -82,67 +97,77 @@ public class XMLWriter {
     /**
      *  Writes a DOM element to a stream.
      */
-    private void writeElement(Element element, Writer out, int indent) throws IOException {
-        // Write indent characters
-        writeIndent(out, indent);
-
-        // Write element
-        out.write("<");
-        out.write(element.getTagName());
+    private void writeElement(Element element) throws IOException {        
+        
+        printer.print("<"+element.getTagName());        
+        printer.indentUp();
 
         // Write attributes
         NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             Attr attr = (Attr) attrs.item(i);
-            out.write(" ");
-            out.write(attr.getName());
-            out.write("=\"");
-            out.write(xmlEscape(attr.getValue()));
-            out.write("\"");
+            printer.print(" "+attr.getName()+"=\""+xmlEscape(attr.getValue())+"\"");
         }
-        out.write(">");
+                
+        
+        boolean hasChildren = element.hasChildNodes();
+        if (hasChildren) {
+            printer.print(">");
+            printer.newLine();
+        } else {            
+            printer.indentDown();
+            printer.print("/>");
+            printer.newLine();
+            return;
+        }
 
         // Write child attributes and text
-        boolean hasChildren = false;
         NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node child = children.item(i);
 
             if (child.getNodeType() == Node.ELEMENT_NODE) {
-                if (!hasChildren) {
-                    out.write("\n");
-                    hasChildren = true;
-                }
-                writeElement((Element)child, out, indent + 1);
+                writeElement((Element)child);                
             }
 
             if (child.getNodeType() == Node.TEXT_NODE) {
-                out.write("<![CDATA[");
-                out.write(((Text)child).getData());
-                out.write("]]>");
+                String textNode = child.getNodeValue();
+                if (!justWhiteSpaces(textNode)) {
+                    printer.print(child.getNodeValue());                
+                }
             }
-
+            
+            if (child.getNodeType() == Node.CDATA_SECTION_NODE) {
+                printer.print("<![CDATA[");
+                printer.printUnformatted(child.getNodeValue());
+                printer.printUnformatted("]]>");
+                printer.newLine();
+            }
+            
             if (child.getNodeType() == Node.ENTITY_REFERENCE_NODE) {
-                out.write("&");
-                out.write(child.getNodeName());
-                out.write(";");
+                printer.print("&"+child.getNodeName()+";");
             }
         }
-
-        // If we had child elements, we need to indent before we close
-        // the element, otherwise we're on the same line and don't need
-        // to indent
-        if (hasChildren) {
-            writeIndent(out, indent);
-        }
-
-        // Write element close
-        out.write("</");
-        out.write(element.getTagName());
-        out.write(">\n");
+        
+        // Write element close        
+        printer.indentDown();        
+        printer.print("</"+element.getTagName()+">");
+        printer.newLine();
     }
     
-    private void writeEntities(String name, LinkedList ents, Writer out) throws IOException {
+    // check whether string contains just whitespaces
+    private static boolean justWhiteSpaces(String string) {
+        char[] str = string.toCharArray();
+        for (int i=0; i < str.length; i++) {
+            if (!Character.isWhitespace(str[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    
+    private void writeEntities(String name, LinkedList ents) throws IOException {
 /*
 <!DOCTYPE Company [
   <!ENTITY bas_d SYSTEM "bas\%id%_d.xml">
@@ -152,27 +177,116 @@ public class XMLWriter {
   <!ENTITY dummy SYSTEM "dummy.xml">
 ]>
 */
-        
-        out.write("<!DOCTYPE ");
-        out.write(name);
-        out.write(" [\n");
+        printer.newLine();
+        printer.print("<!DOCTYPE "+name+" [");
+        printer.indentUp();
         Iterator it = ents.iterator();
         while (it.hasNext()) {
             DOMEntityDecl e = (DOMEntityDecl)it.next();
-
-            writeIndent(out, 1);
-            out.write("<!ENTITY ");
-            out.write(e.getName());
-            out.write(" SYSTEM \"");
-            out.write(e.getSystemId());
-            out.write("\">\n");
+            printer.newLine();
+            printer.print("<!ENTITY "+e.getName()+" SYSTEM \""+e.getSystemId()+"\">");
+            printer.newLine();
         }
-        out.write("]>\n");
+        printer.indentDown();
+        printer.newLine();
+        printer.print("]>");
     }
     
-    private void writeIndent(Writer out, int indent) throws IOException {
-        for (int i = 0; i < indent; i++) {
-            out.write("    ");
+    
+    
+    
+    
+    // pretty printer class for formatting xml output with indentation and word wrapping
+    public static class PrettyPrinter {
+        
+        private int maxColumns = 0;
+        private int indentSize = 0;
+        private Writer writer;
+        
+        private int currentColumn = 0;
+        private int currentIndent = 0;
+        private String indentString;
+        
+        PrettyPrinter(Writer writer, int indentSize, int maxColumns) {
+            this.writer = writer;
+            this.indentSize = indentSize;
+            this.maxColumns = maxColumns;
+            indentString = getIndentString(indentSize);
         }
+        
+        public void indentUp() {
+            currentIndent++;
+            
+        }
+        
+        public void indentDown() {
+            if (currentIndent > 0) {
+                currentIndent--;
+            }
+        }
+        
+        public void print(String string) throws IOException {
+            int oldIndex = 0 ;
+            int newIndex = 0;
+            while ((newIndex = string.indexOf('\n',oldIndex)) >= 0) {
+                String subString = string.substring(oldIndex,newIndex);
+                print(subString);
+                newLine();
+                oldIndex = newIndex + 1;
+            }
+            
+            if (oldIndex > 0) {
+                // there is nothing more to be done
+                // the string is already printed
+                return;
+            }
+                        
+            // check whether the string will be over our limit
+            if ((currentColumn + string.length()) >= maxColumns) {
+                newLine();
+            }
+            
+            // indent before printing the string (if at the beiginning of line)
+            if (currentColumn == 0) {                
+                printIndent();
+            }
+            
+            // print out the string
+            writer.write(string);
+            currentColumn += string.length();
+            writer.flush();
+        }
+        
+        public void printUnformatted(String string) throws IOException {
+            writer.write(string);
+            writer.flush();
+        }
+    
+        
+        public void newLine() throws IOException {
+            writer.write('\n');
+            currentColumn = 0;
+            writer.flush();
+        }
+        
+        private void printIndent() throws IOException {
+            for (int i=0; i < currentIndent; i++) {
+                writer.write(indentString);
+                currentColumn += indentSize;
+            }
+        }
+        
+        public void reset() {
+            currentColumn = 0;
+            currentIndent = 0;
+        }
+        
+        private static String getIndentString(int indentSize) {
+            char[] indentChars = new char[indentSize];
+            for (int i=0; i < indentSize; i++) {
+                indentChars[i] = ' ';
+            }
+            return new String(indentChars);
+        }      
     }
 }

@@ -159,6 +159,7 @@ public class NbPath extends Task {
         */
         
         // find xerces.jar
+        /*
         String xerces_jar = getProject().getProperty(XERCES_JAR);
         if (null == xerces_jar) {
             String xerces_jars [] = new String [] { "xerces.jar", "xml-apis.jar" };            
@@ -177,7 +178,9 @@ public class NbPath extends Task {
             if (null == xerces_jar)
                 xerces_jar = "";            
             getProject().setProperty(XERCES_JAR, xerces_jar);
+         
         }
+         */
         
         // prepare junit.path property
         String junit_path = getProject().getProperty(JUNIT_PATH);
@@ -190,13 +193,15 @@ public class NbPath extends Task {
         }
 
         // prepare xerces.path property
-        String xerces_path = getProject().getProperty(XERCES_PATH);
+        /*
+        String xerces_path = getProject().getProperty(XERCES_PATH);        
         if (null == xerces_path) {
             list.setLength(0);
             addPath(list, xerces_jar);
             xerces_path = list.toString();
             getProject().setProperty(XERCES_PATH, xerces_path);
         }
+         */
 
         // prepare xalan.path property
         /*
@@ -374,7 +379,7 @@ public class NbPath extends Task {
     private static String JUNIT_PATH          = "junit.path";
     //private static String XALAN_JAR           = "xalan.jar";
     //private static String XALAN_PATH          = "xalan.path";
-    private static String XERCES_JAR          = "xerces.jar";
-    private static String XERCES_PATH         = "xerces.path";
+    //private static String XERCES_JAR          = "xerces.jar";
+    //private static String XERCES_PATH         = "xerces.path";
     private static String JDK_HOME            = "jdkhome";
 }

@@ -19,11 +19,11 @@
 
 package org.netbeans.xtest.pe.xmlbeans;
 
-import org.apache.xml.serialize.*;
 import org.w3c.dom.*;
 import java.io.*;
 import javax.xml.parsers.*;
 import org.netbeans.xtest.util.XMLFactoryUtil;
+import org.netbeans.xtest.util.XMLWriter;
 import org.xml.sax.SAXException;
 
 import java.util.*;
@@ -657,8 +657,8 @@ public abstract class XMLBean {
          
     // serialize to File
     protected static void serializeToStream(Document doc, OutputStream out) throws IOException {
-        XMLSerializer ser = new XMLSerializer(out, new OutputFormat("xml","UTF-8",true));
-        ser.serialize(doc);
+        XMLWriter xmlWriter = new XMLWriter(out, "UTF-8");
+        xmlWriter.write(doc);
         //out.close();
     }
     

@@ -34,7 +34,6 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.TransformerFactory;
 import org.apache.xalan.processor.TransformerFactoryImpl;
 import org.apache.xalan.transformer.TransformerImpl;
-import org.apache.xerces.jaxp.DocumentBuilderFactoryImpl;
 
 /**
  *
