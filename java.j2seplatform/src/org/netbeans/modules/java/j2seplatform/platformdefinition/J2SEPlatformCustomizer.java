@@ -128,13 +128,17 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             if (type == SOURCES || type == JAVADOC) {                
                 this.addButton = new JButton ();
                 String text;
+                char mne;
                 if (type == SOURCES) {
                     text = NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_Add");
+                    mne = NbBundle.getMessage(J2SEPlatformCustomizer.class, "MNE_Add").charAt(0);
                 }
                 else {
                     text = NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_AddZip");
+                    mne = NbBundle.getMessage(J2SEPlatformCustomizer.class, "MNE_AddZip").charAt(0);
                 }
                 this.addButton.setText(text);
+                this.addButton.setMnemonic(mne);
                 addButton.addActionListener( new ActionListener () {
                     public void actionPerformed(ActionEvent e) {
                         addPathElement ();
@@ -151,6 +155,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 this.add (addButton);
                 if (this.type == JAVADOC) {
                     addURLButton  = new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_AddURL"));
+                    addURLButton.setMnemonic(NbBundle.getMessage(J2SEPlatformCustomizer.class, "MNE_AddURL").charAt(0));
                     addURLButton.addActionListener(new ActionListener () {
                         public void actionPerformed(ActionEvent e) {
                             addURLElement ();
@@ -167,6 +172,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                     this.add (addURLButton);
                 }
                 removeButton = new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_Remove"));
+                removeButton.setMnemonic(NbBundle.getMessage(J2SEPlatformCustomizer.class, "MNE_Remove").charAt(0));
                 removeButton.addActionListener( new ActionListener () {
                     public void actionPerformed(ActionEvent e) {
                         removePathElement ();
@@ -183,6 +189,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 ((GridBagLayout)this.getLayout()).setConstraints(removeButton,c);
                 this.add (removeButton);
                 moveUpButton = new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_Up"));
+                moveUpButton.setMnemonic(NbBundle.getMessage(J2SEPlatformCustomizer.class, "MNE_Up").charAt(0));
                 moveUpButton.addActionListener( new ActionListener () {
                     public void actionPerformed(ActionEvent e) {
                         moveUpPathElement ();
@@ -199,6 +206,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 ((GridBagLayout)this.getLayout()).setConstraints(moveUpButton,c);
                 this.add (moveUpButton);
                 moveDownButton = new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_Down"));
+                moveDownButton.setMnemonic (NbBundle.getMessage(J2SEPlatformCustomizer.class, "MNE_Down").charAt(0));
                 moveDownButton.addActionListener( new ActionListener () {
                     public void actionPerformed(ActionEvent e) {
                         moveDownPathElement ();
