@@ -43,6 +43,10 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
      * InstanceDataNode's help (which is really of no use to the user).
      */
     private static final HelpCtx INSTANCE_DEFAULT_HELP = new HelpCtx("org.openide.loaders.InstanceDataObject"); // NOI18N
+    /** This is quite unsafe, but it's the only way how to test that we got uncustomized
+     * DataFolder's help (which is really of no use to the user).
+     */
+    private static final HelpCtx FOLDER_DEFAULT_HELP = new HelpCtx("org.openide.loaders.DataFolder"); // NOI18N
     private static final String PREFIX_SETTING_CATEGORIES = "UI"; // NOI18N
 
     /** Constructs this node with given node to filter.
@@ -71,7 +75,8 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
         // now try the original DataObject (assume it is a folder-thing)
         HelpCtx ctx = getDataObject().getHelpCtx();
         if (ctx != null &&
-            ctx != HelpCtx.DEFAULT_HELP) {
+            ctx != HelpCtx.DEFAULT_HELP &&
+            !FOLDER_DEFAULT_HELP.equals(ctx)) {
             return ctx;
         }
         // try the parent node:
