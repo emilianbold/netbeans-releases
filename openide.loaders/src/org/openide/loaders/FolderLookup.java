@@ -259,7 +259,7 @@ public class FolderLookup extends FolderInstance {
 
     
     /** <code>ProxyLookup</code> delegate so we can change the lookups on fly. */
-    private static final class ProxyLkp extends ProxyLookup implements Serializable {
+    static final class ProxyLkp extends ProxyLookup implements Serializable {
         
         private static final long serialVersionUID = 1L;
 
@@ -310,15 +310,15 @@ public class FolderLookup extends FolderInstance {
             DataFolder df = (DataFolder)ois.readObject ();
             String root = (String)ois.readObject ();
             
-            df.getChildren(); // #30494
             fl = new FolderLookup (df, root, true);
             fl.lookup = this;
             
             content = (AbstractLookup.Content)ois.readObject ();
             
             setLookups (arr);
-            
+
             readFromStream = true;
+            org.openide.util.RequestProcessor.getDefault ().post (fl, 0, Thread.MIN_PRIORITY);
         }
         
         
@@ -354,6 +354,13 @@ public class FolderLookup extends FolderInstance {
             if (!FolderList.isFolderRecognizerThread ()) {
                 fl.instanceFinished ();
             }
+        }
+        
+        /** Mostly for testing purposes, to allow the tests to wait
+         * for the scan to finished after deserialization.
+         */
+        public void waitFinished () {
+            fl.waitFinished ();
         }
 
     } // End of ProxyLkp class.
