@@ -312,13 +312,13 @@ public class JavadocModule extends ModuleInstall {
         objectOutput.writeInt( ((Integer)(getProperty (PROP_INSTALL_COUNT))).intValue() );
     }
 
-    private static void notify (Exception e) {
-        if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
+    private static void notify (Exception e) {        
+        TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
     }
 
     private static void notify (String s) {
-        TopManager.getDefault ().getErrorManager ().log (ErrorManager.INFORMATIONAL, s);
+        if (Boolean.getBoolean ("netbeans.debug.javadoc")) // NOI18N
+            TopManager.getDefault ().getErrorManager ().log (ErrorManager.INFORMATIONAL, s);
     }
   
     /** Exists only for the sake of its bean info. */
