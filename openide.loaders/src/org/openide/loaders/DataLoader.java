@@ -327,55 +327,50 @@ public abstract class DataLoader extends SharedClassObject {
             version = ((Integer)first).intValue();
             first = oi.readObject ();
         }
-        if (first == null || first instanceof SystemAction[]) {
-            // boston version, do nothing
-            // setActions ((SystemAction[])first);
-        } else {
-            // new version that reads the names of the actions - NB3.1
-            Object[] arr = (Object[])first;
-            boolean isdefault = true;
-            
-            SystemAction[] defactions = getActions ();
+        // new version that reads the names of the actions - NB3.1
+        Object[] arr = (Object[])first;
+        boolean isdefault = true;
 
-            if ( version > 0 || ( version == 0 && arr.length != defactions.length ))
-                isdefault = false;
-            LinkedList ll = new LinkedList ();
-            for (int i = 0; i < arr.length; i++) {
-                if (arr[i] == null) {
-                    ll.add (null);
-                    if ( version == 0 && isdefault && defactions[i] != null)
-                        isdefault = false;
-                    continue;
-                }
-                
-                try {
-                    Class c = Class.forName (
-                        Utilities.translate((String)arr[i]),
-                        false, // why resolve?? --jglick
-                        (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)
-                    );
-                    SystemAction ac = SystemAction.get (c);
-                    
-                    ll.add (ac);
-                    if ( version == 0 && isdefault && !defactions[i].equals(ac))
-                        isdefault = false;
-                } catch (ClassNotFoundException ex) {
-                    ErrorManager.getDefault ().annotate (
-                        ex, org.openide.ErrorManager.INFORMATIONAL, 
-                        null, null, null, null
-                    );
-                    if (main == null) {
-                        main = ex;
-                    } else {
-                        ErrorManager.getDefault ().annotate (main, ex);
-                    }
+        SystemAction[] defactions = getActions ();
+
+        if ( version > 0 || ( version == 0 && arr.length != defactions.length ))
+            isdefault = false;
+        List ll = new ArrayList (arr.length);
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] == null) {
+                ll.add (null);
+                if ( version == 0 && isdefault && defactions[i] != null)
+                    isdefault = false;
+                continue;
+            }
+
+            try {
+                Class c = Class.forName (
+                    Utilities.translate((String)arr[i]),
+                    false, // why resolve?? --jglick
+                    (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)
+                );
+                SystemAction ac = SystemAction.get (c);
+
+                ll.add (ac);
+                if ( version == 0 && isdefault && !defactions[i].equals(ac))
+                    isdefault = false;
+            } catch (ClassNotFoundException ex) {
+                ErrorManager.getDefault ().annotate (
+                    ex, org.openide.ErrorManager.INFORMATIONAL, 
+                    null, null, null, null
+                );
+                if (main == null) {
+                    main = ex;
+                } else {
+                    ErrorManager.getDefault ().annotate (main, ex);
                 }
             }
-            if (main == null && !isdefault) {
-                // Whole action list was successfully read.
-                setActions ((SystemAction[])ll.toArray(new SystemAction[ll.size()]));
-            } // Else do not try to override the default action list if it is incomplete anyway.
         }
+        if (main == null && !isdefault) {
+            // Whole action list was successfully read.
+            setActions ((SystemAction[])ll.toArray(new SystemAction[ll.size()]));
+        } // Else do not try to override the default action list if it is incomplete anyway.
         
         String displayName = oi.readUTF ();
         if ( displayName.equals("") || ( version == 0 && displayName.equals(defaultDisplayName()))) // NOI18N
