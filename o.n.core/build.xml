@@ -67,10 +67,10 @@ Microsystems, Inc. All Rights Reserved.
     <fixcrlf srcdir="netbeans/bin" eol="crlf">
       <include name="**/*.bat"/>
       <include name="**/*.cmd"/>
-      <include name="**/ide.cfg"/>
     </fixcrlf>
     <fixcrlf srcdir="netbeans/bin" eol="lf">
       <include name="**/*.sh"/>
+      <include name="**/ide.cfg"/>
     </fixcrlf>
   </target>
 
