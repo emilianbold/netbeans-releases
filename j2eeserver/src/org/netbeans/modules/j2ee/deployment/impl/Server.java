@@ -242,6 +242,18 @@ public class Server implements Node.Cookie {
         return o;
     }
     
+    /** returns DConfigBeanUIFactory or null it is not provided by the plugin */
+    public DConfigBeanUIFactory getDConfigBeanUIFactory () {
+        DConfigBeanUIFactory o = (DConfigBeanUIFactory) lkp.lookup (DConfigBeanUIFactory.class);
+        return o;
+    }
+    
+    public DConfigBeanProperties getDConfigBeanProperties(DConfigBean bean) {
+        DConfigBeanUIFactory beanUIFactory = getDConfigBeanUIFactory();
+        if (beanUIFactory == null) return null;
+        return beanUIFactory.getUICustomization(bean);
+    }
+    
     public ServerInstance[] getInstances() {
         Collection ret = new ArrayList();
         for (Iterator i=ServerRegistry.getInstance().getInstances().iterator(); i.hasNext();) {
