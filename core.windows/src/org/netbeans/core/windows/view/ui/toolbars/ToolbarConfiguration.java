@@ -25,7 +25,6 @@ import org.openide.awt.ToolbarPool;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.loaders.DataNode;
 import org.openide.loaders.XMLDataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -45,6 +44,7 @@ import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.List;
+import org.netbeans.core.IDESettings;
 
 /** Toolbar configuration.
  * It can load configuration from DOM Document, store configuration int XML file. 
@@ -352,7 +352,20 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     void revalidateWindow () {
         // PENDING
         toolbarPanel().revalidate();
-//        // #15930. Always replane even we are in AWT thread already.
+        IDESettings settings = (IDESettings)IDESettings.findObject(IDESettings.class, true);
+        int uiMode = settings.getUIMode();
+        if (uiMode == 1) { // perform in SDI only
+            java.awt.Window w = SwingUtilities.windowForComponent(toolbarPanel());
+            if (w != null) {
+//                w.validate();
+                int width = toolbarPanel().getRootPane().getSize().width;
+                int height = toolbarPanel().getRootPane().getPreferredSize().height;
+                Insets insets = w.getInsets();
+                w.setSize(new Dimension(width + insets.left + insets.right, height + insets.top + insets.bottom));
+                w.validate();
+            }
+        }
+        // #15930. Always replane even we are in AWT thread already.
 //        SwingUtilities.invokeLater(new Runnable () {
 //            public void run () {
 //                doRevalidateWindow();
@@ -496,6 +509,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         if (toolbarMenu != null) {
             toolbarMenu.removeAll();
             fillToolbarsMenu(toolbarMenu);
+            revalidateWindow();
         }
     }
     
