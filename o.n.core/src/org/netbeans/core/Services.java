@@ -34,13 +34,13 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Lookup.Template;
+import org.openide.util.lookup.ProxyLookup;
 
 import org.netbeans.beaninfo.editors.ExecutorEditor;
 import org.netbeans.beaninfo.editors.CompilerTypeEditor;
 import org.netbeans.beaninfo.editors.DebuggerTypeEditor;
 
 import org.netbeans.core.lookup.InstanceLookup;
-import org.netbeans.core.lookup.ProxyLookup;
 
 /** Works with all service types.
 *
@@ -515,6 +515,9 @@ final class Services extends ServiceType.Registry implements LookupListener {
 
 /*
 * $Log$
+* Revision 1.47  2001/06/01 14:04:45  jtulach
+* Lookup SPI moved to openapi
+*
 * Revision 1.46  2001/05/25 12:33:31  jpokorsky
 * #12233 fixed: Services are added in an unpredictable way
 *

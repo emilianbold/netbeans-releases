@@ -311,7 +311,7 @@ public abstract class NbTopManager extends TopManager {
                 return lookup;
             }
             
-            lookup = new org.netbeans.core.lookup.ProxyLookup (
+            lookup = new org.openide.util.lookup.ProxyLookup (
                 // XXX: pair method with YYY few lines bellow
                 proxiedLookups ()
             );
@@ -325,7 +325,7 @@ public abstract class NbTopManager extends TopManager {
     final synchronized void modulesClassPathInitialized () {
         // replace the lookup by new one
 
-        org.netbeans.core.lookup.ProxyLookup pl = (org.netbeans.core.lookup.ProxyLookup)lookup;
+        org.openide.util.lookup.ProxyLookup pl = (org.openide.util.lookup.ProxyLookup)lookup;
         
         // YYY: pair method with XXX few lines above
         org.openide.util.Lookup[] arr = proxiedLookups ();
@@ -354,13 +354,30 @@ public abstract class NbTopManager extends TopManager {
             return new org.openide.util.Lookup[] {
                 tmLookup,
                 getInstanceLookup (),
-                new org.netbeans.core.lookup.FolderLookup ("Services").getLookup (), // NOI18N
+                getServicesLookup (),
                 Services.getDefault().getLookup()
             };
         } else {
             return new org.openide.util.Lookup[] { tmLookup };
         }
     }   
+    
+    
+    /** Creates the lookup for service directory.
+     */
+    private static Lookup getServicesLookup () {
+        try {
+            DataFolder rootFolder = DataFolder.findFolder (
+                org.openide.TopManager.getDefault ().getRepository ().getDefaultFileSystem ().getRoot ()
+            );
+            DataFolder df = DataFolder.create (rootFolder, "Services"); // NOI18N
+            
+            return new FolderLookup (df, "SL[").getLookup (); // NOI18N
+        } catch (java.io.IOException ex) {
+            ex.printStackTrace();
+            throw new IllegalStateException ("Cannot initialize folder Services"); // NOI18N
+        }
+    }
     
     //
     // Implementation of methods from TopManager

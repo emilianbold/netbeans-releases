@@ -220,6 +220,7 @@ Microsystems, Inc. All Rights Reserved.
              	  <include name="org/openide/util/enum/*"/>
              	  <include name="org/openide/util/datatransfer/*"/>
                   <include name="org/openide/util/actions/*"/>
+                  <include name="org/openide/util/lookup/*"/>
                   
                   <include name="org/openide/awt/JPopupMenu*class" />
                   <include name="org/openide/awt/NbPopupMenuUI*class" />
