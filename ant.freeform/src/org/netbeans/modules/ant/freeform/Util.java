@@ -26,7 +26,7 @@ import org.w3c.dom.Text;
  * XXX copied from ant/project... revisit
  * @author Jesse Glick
  */
-class Util {
+public class Util {
     
     private Util() {}
     

@@ -33,9 +33,7 @@ import org.openide.util.Lookup;
 // XXX testCacheProvider
 // XXX testSubprojectProvider
 // XXX testGlobalPathRegistryUsage
-// XXX testContextActions
 // XXX testLogicalViewItems
-// XXX testLogicalViewActions
 // XXX testAntArtifact
 // XXX testExternalSourceRoots
 
@@ -73,29 +71,6 @@ public class FreeformProjectTest extends TestBase {
         assertEquals("right display name #1", "Main Sources", groups[0].getDisplayName());
         assertEquals("right root folder #2", simple.getProjectDirectory().getFileObject("antsrc"), groups[1].getRootFolder());
         assertEquals("right display name #2", "Ant Task Sources", groups[1].getDisplayName());
-    }
-    
-    public void testBasicActions() throws Exception {
-        ActionProvider ap = (ActionProvider)simple.getLookup().lookup(ActionProvider.class);
-        assertNotNull("have an action provider", ap);
-        List/*<String>*/ actionNames = new ArrayList(Arrays.asList(ap.getSupportedActions()));
-        Collections.sort(actionNames);
-        assertEquals("right action names", Arrays.asList(new String[] {"build", "clean", "javadoc", "rebuild", "run"}), actionNames);
-        assertTrue("clean is enabled", ap.isActionEnabled("clean", Lookup.EMPTY));
-        try {
-            ap.isActionEnabled("frobnitz", Lookup.EMPTY);
-            fail("Should throw IAE for unrecognized commands");
-        } catch (IllegalArgumentException e) {
-            // Good.
-        }
-        try {
-            ap.invokeAction("goetterdaemmerung", Lookup.EMPTY);
-            fail("Should throw IAE for unrecognized commands");
-        } catch (IllegalArgumentException e) {
-            // Good.
-        }
-        // XXX actually test running the action? how to know when it is done though? there is no API for that...
-        // when Ant logger API is available, could provide a null InputOutput impl, and test that the right messages are logged
     }
     
 }

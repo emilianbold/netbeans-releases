@@ -48,7 +48,7 @@ public class FreeformProjectGenerator {
     public static Map/*<String,List>*/ getTargetMappings(AntProjectHelper helper) {
         Map map = new HashMap();
         Element genldata = helper.getPrimaryConfigurationData(true);
-        Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProject.NS); // NOI18N
+        Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
         List/*<Element>*/ actions = Util.findSubElements(actionsEl);
         Iterator it = actions.iterator();
         while (it.hasNext()) {
@@ -72,21 +72,21 @@ public class FreeformProjectGenerator {
     public static void putTargetMappings(AntProjectHelper helper, Map/*<String,List>*/ mappings) {
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
-        Element actionsEl = Util.findElement(data, "ide-actions", FreeformProject.NS); // NOI18N
+        Element actionsEl = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
         if (actionsEl != null) {
             data.removeChild(actionsEl);
         }
         
-        Element actions = doc.createElementNS(FreeformProject.NS, "ide-actions"); // NOI18N
+        Element actions = doc.createElementNS(FreeformProjectType.NS_GENERAL, "ide-actions"); // NOI18N
         Iterator it = mappings.keySet().iterator();
         while (it.hasNext()) {
             String key = (String)it.next();
-            Element action = doc.createElementNS(FreeformProject.NS, "action"); //NOI18N
+            Element action = doc.createElementNS(FreeformProjectType.NS_GENERAL, "action"); //NOI18N
             action.setAttribute("name", key);
             Iterator it2 = ((List)mappings.get(key)).iterator();
             while (it2.hasNext()) {
                 String value = (String)it2.next();
-                Element target = doc.createElementNS(FreeformProject.NS, "target"); //NOI18N
+                Element target = doc.createElementNS(FreeformProjectType.NS_GENERAL, "target"); //NOI18N
                 target.appendChild(doc.createTextNode(value)); // NOI18N
                 action.appendChild(target);
             }
@@ -101,7 +101,7 @@ public class FreeformProjectGenerator {
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         
-        Element nm = doc.createElementNS(FreeformProject.NS, "name"); // NOI18N
+        Element nm = doc.createElementNS(FreeformProjectType.NS_GENERAL, "name"); // NOI18N
         nm.appendChild(doc.createTextNode(name)); // NOI18N
         data.appendChild(nm);
         h.putPrimaryConfigurationData(data, true);
