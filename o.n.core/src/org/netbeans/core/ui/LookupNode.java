@@ -63,13 +63,14 @@ public final class LookupNode extends DataFolder.FolderNode implements NewTempla
     }
 
 
-    /* */
     public SystemAction[] createActions () {
         return new SystemAction[] {
             SystemAction.get(FileSystemAction.class),
             null,
             SystemAction.get(PasteAction.class),
             null,
+            SystemAction.get(MoveUpAction.class),
+            SystemAction.get(MoveDownAction.class),
             SystemAction.get(ReorderAction.class),
             null,
             SystemAction.get(NewAction.class),
@@ -93,11 +94,11 @@ public final class LookupNode extends DataFolder.FolderNode implements NewTempla
     */
     public Node.Cookie getCookie (Class type) {
         // no index for reordering toolbars, just for toolbar items
-        if (Index.class.isAssignableFrom(type)) {
+        if (type.isAssignableFrom(DataFolder.Index.class)) {
             // search for data object
             DataFolder dataObj = (DataFolder)super.getCookie(DataFolder.class);
             if (dataObj != null) {
-                return new Indx(dataObj, (Ch)getChildren());
+                return new DataFolder.Index (dataObj, this);
             }
         }
         return super.getCookie (type);
@@ -182,6 +183,7 @@ public final class LookupNode extends DataFolder.FolderNode implements NewTempla
             
             
             DataObject obj = (DataObject)node.getCookie(DataObject.class);
+            //System.err.println("obj="+obj+" node="+node+" hidden="+(obj==null?null:obj.getPrimaryFile ().getAttribute (EA_HIDDEN)));
             
             if (
                 obj != null && Boolean.TRUE.equals (obj.getPrimaryFile ().getAttribute (EA_HIDDEN))
@@ -198,33 +200,4 @@ public final class LookupNode extends DataFolder.FolderNode implements NewTempla
 
     }
 
-    /** This class serves as index cookie implementation for the
-    * LookupNode object. Allows reordering of Toolbar items.
-    */
-    private static final class Indx extends DataFolder.Index {
-
-        /** The children we are working with */
-        Ch children;
-
-        Indx (final DataFolder df, final Ch children) {
-            super(df);
-            this.children = children;
-        }
-
-        /** Overrides DataFolder.Index.getNodesCount().
-        * Returns count of the nodes from the asociated chidren.
-        */
-        public int getNodesCount () {
-            return children.getNodesCount();
-        }
-
-        /** Overrides DataFolder.Index.getNodes().
-        * Returns array of subnodes from asociated children.
-        * @return array of subnodes
-        */
-        public Node[] getNodes () {
-            return children.getNodes();
-        }
-
-    } // end of LookupIndex
 }
