@@ -49,11 +49,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
 
         final EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) sectionNodeView.getDataObject();
 
-        new ItemEditorHelper(getNameTextField(), new TextItemEditorModel(dataObject) {
-            protected boolean validate(String value) {
-                return value.length() > 0;
-            }
-
+        new ItemEditorHelper(getNameTextField(), new TextItemEditorModel(dataObject, false) {
             protected String getValue() {
                 return messageDriven.getEjbName();
             }
@@ -90,7 +86,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
             durabilityComboBox.setEnabled(false);
             messageSelectorTextField.setEnabled(false);
         } else {
-            new ItemEditorHelper(messageSelectorTextField, new TextItemEditorModel(dataObject) {
+            new ItemEditorHelper(messageSelectorTextField, new TextItemEditorModel(dataObject, true, true) {
 
                 protected String getValue() {
                     return getConfigProperty(PROPERTY_MESSAGE_SELECTOR);

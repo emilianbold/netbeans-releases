@@ -33,7 +33,7 @@ class EjbJarDetailsPanel extends EjbDetailForm {
     private class LargeIconEditorModel extends TextItemEditorModel {
 
         public LargeIconEditorModel(XmlMultiViewDataObject dataObject) {
-            super(dataObject);
+            super(dataObject, true, true);
         }
 
         protected String getValue() {
@@ -48,11 +48,7 @@ class EjbJarDetailsPanel extends EjbDetailForm {
     private class SmallIconEditorModel extends TextItemEditorModel {
 
         public SmallIconEditorModel(XmlMultiViewDataObject dataObject) {
-            super(dataObject);
-        }
-
-        protected boolean validate(String value) {
-            return value.length() > 0;
+            super(dataObject, true, true);
         }
 
         protected String getValue() {
@@ -67,11 +63,7 @@ class EjbJarDetailsPanel extends EjbDetailForm {
     private class DescriptionEditorModel extends TextItemEditorModel {
 
         public DescriptionEditorModel(XmlMultiViewDataObject dataObject) {
-            super(dataObject);
-        }
-
-        protected boolean validate(String value) {
-            return value.length() > 0;
+            super(dataObject, true, true);
         }
 
         protected String getValue() {
@@ -86,16 +78,7 @@ class EjbJarDetailsPanel extends EjbDetailForm {
     private class DisplayNameEditorModel extends TextItemEditorModel {
 
         public DisplayNameEditorModel(XmlMultiViewDataObject dataObject) {
-            super(dataObject);
-        }
-
-        protected boolean validate(String value) {
-            if (value.length() > 0) {
-                return true;
-            } else {
-                reloadEditorText();
-                return false;
-            }
+            super(dataObject, true, true);
         }
 
         protected String getValue() {

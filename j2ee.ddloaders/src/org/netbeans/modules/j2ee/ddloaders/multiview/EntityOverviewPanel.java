@@ -49,11 +49,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
         final JTextField primaryKeyClassTextField = getPrimaryKeyClassTextField();
         final JCheckBox reentrantCheckBox = getReentrantCheckBox();
 
-        new ItemEditorHelper(ejbNameTextField, new TextItemEditorModel(dataObject) {
-            protected boolean validate(String value) {
-                return value.length() > 0;
-            }
-
+        new ItemEditorHelper(ejbNameTextField, new TextItemEditorModel(dataObject, false) {
             protected String getValue() {
                 return entity.getEjbName();
             }
@@ -68,11 +64,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
         boolean isCmp = Entity.PERSISTENCE_TYPE_CONTAINER.equals(persistenceType);
         persistenceTypeTextField.setText(persistenceType + ((isCmp ? " (CMP)" : " (BMP)")));    //NOI18N
 
-        new ItemEditorHelper(abstractSchemaNameTextField, new TextItemEditorModel(dataObject) {
-            protected boolean validate(String value) {
-                return value.length() > 0;
-            }
-
+        new ItemEditorHelper(abstractSchemaNameTextField, new TextItemEditorModel(dataObject, false) {
             protected String getValue() {
                 return entity.getAbstractSchemaName();
             }
@@ -165,11 +157,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
             primaryKeyFieldComboBox.setVisible(false);
             primaryKeyClassTextField.setVisible(true);
 
-            new ItemEditorHelper(primaryKeyClassTextField, new TextItemEditorModel(dataObject) {
-                protected boolean validate(String value) {
-                    return value.length() > 0;
-                }
-
+            new ItemEditorHelper(primaryKeyClassTextField, new TextItemEditorModel(dataObject, false) {
                 protected String getValue() {
                     return entity.getPrimKeyClass();
                 }

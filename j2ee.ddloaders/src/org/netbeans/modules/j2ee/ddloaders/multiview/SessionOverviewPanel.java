@@ -29,11 +29,7 @@ public class SessionOverviewPanel extends SessionOverviewForm {
 
         final EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) sectionNodeView.getDataObject();
 
-        new ItemEditorHelper(getEjbNameTextField(), new TextItemEditorModel(dataObject) {
-            protected boolean validate(String value) {
-                return value.length() > 0;
-            }
-
+        new ItemEditorHelper(getEjbNameTextField(), new TextItemEditorModel(dataObject, false) {
             protected String getValue() {
                 return session.getEjbName();
             }

@@ -265,7 +265,11 @@ public class ItemEditorHelper {
      * Updates editor text by item value from model
      */
     public void reloadEditorText() {
-        editorComponent.setText(model.getItemValue());
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                editorComponent.setText(model.getItemValue());
+            }
+        });
     }
 
     /**

@@ -43,6 +43,9 @@ public abstract class EjbJarMultiviewElement extends ToolBarMultiViewElement {
         if (view == null) {
             view = createView();
         }
+        if(dataObject.isModified()) {
+            ((SectionNodeView) view).dataFileChanged();
+        }
         comp.setContentView(view);
         org.netbeans.modules.xml.multiview.Error error = view.validateView();
         if (error != null) {

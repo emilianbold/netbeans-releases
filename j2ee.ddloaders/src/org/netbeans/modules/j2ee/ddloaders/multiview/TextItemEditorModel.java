@@ -22,15 +22,23 @@ import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 public abstract class TextItemEditorModel extends ItemEditorHelper.ItemEditorModel {
 
     XmlMultiViewDataObject dataObject;
+    private boolean emptyAllowed;
+    private boolean emptyIsNull;
     String origValue;
 
-    protected TextItemEditorModel(XmlMultiViewDataObject dataObject) {
+    protected TextItemEditorModel(XmlMultiViewDataObject dataObject, boolean emptyAllowed) {
+        this(dataObject, emptyAllowed, false);
+
+    }
+    protected TextItemEditorModel(XmlMultiViewDataObject dataObject, boolean emptyAllowed, boolean emptyIsNull) {
         this.dataObject = dataObject;
+        this.emptyAllowed = emptyAllowed;
+        this.emptyIsNull = emptyIsNull;
         origValue = getValue();
     }
 
     protected boolean validate(String value) {
-        return true;
+        return emptyAllowed ? true : value != null && value.length() > 0;
     }
 
     protected abstract void setValue(String value);
@@ -38,9 +46,11 @@ public abstract class TextItemEditorModel extends ItemEditorHelper.ItemEditorMod
     protected abstract String getValue();
 
     public final boolean setItemValue(String value) {
+        if (emptyAllowed && emptyIsNull && value.length() == 0) {
+            value = null;
+        }
         if (validate(value)) {
             setValue(value);
-            origValue = value;
             dataObject.modelUpdatedFromUI();
             return true;
         } else {
@@ -49,16 +59,13 @@ public abstract class TextItemEditorModel extends ItemEditorHelper.ItemEditorMod
     }
 
     public final String getItemValue() {
-        return getValue();
+        String value = getValue();
+        return value == null ? "" : value;
     }
 
     public void documentUpdated() {
-        String value = getEditorText();
-        if (validate(value)) {
-            setValue(value);
-            dataObject.modelUpdatedFromUI();
-        } else {
-            setValue(origValue);
+        if(!setItemValue(getEditorText())) {
+            reloadEditorText();
         }
     }
 }
