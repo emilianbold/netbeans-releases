@@ -288,12 +288,24 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
      * @return localized error message or null if all right
      */    
     final public static String canUseFileName (FileObject targetFolder, String folderName, String newObjectName, String extension) {
+        String newObjectNameToDisplay = newObjectName;
+        if (newObjectName != null) {
+            newObjectName = newObjectName.replace ('.', '/'); // NOI8N
+        }
         if (extension != null && extension.length () > 0) {
             StringBuffer sb = new StringBuffer ();
             sb.append (newObjectName);
             sb.append ('.'); // NOI18N
             sb.append (extension);
             newObjectName = sb.toString ();
+        }
+        
+        if (extension != null && extension.length () > 0) {
+            StringBuffer sb = new StringBuffer ();
+            sb.append (newObjectNameToDisplay);
+            sb.append ('.'); // NOI18N
+            sb.append (extension);
+            newObjectNameToDisplay = sb.toString ();
         }
         
         String relFileName = folderName + "/" + newObjectName; // NOI18N
@@ -310,7 +322,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
         
         
         if (existFileName(targetFolder, relFileName)) {
-            return NbBundle.getMessage (JavaTargetChooserPanel.class, "MSG_file_already_exist", newObjectName); // NOI18N
+            return NbBundle.getMessage (JavaTargetChooserPanel.class, "MSG_file_already_exist", newObjectNameToDisplay); // NOI18N
         }
         
         // all ok
@@ -328,6 +340,4 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
         
         return result;
     }
-    
-    // helper check for windows, its filesystem is case insensitive (workaround the bug #33612)
 }
