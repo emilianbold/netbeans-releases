@@ -56,10 +56,14 @@ public class Populate {
             new Integer(25000),
         };
         Integer def = new Integer(500);
-        final int val = ((Integer)JOptionPane.showInputDialog(null, msg, title,
-                                                        JOptionPane.QUESTION_MESSAGE,
-                                                        null, sizes, def)
-                                                       ).intValue();
+        Integer i = (Integer)JOptionPane.showInputDialog(null, msg, title,
+                                                         JOptionPane.QUESTION_MESSAGE,
+                                                         null, sizes, def);
+        if (i == null) {
+            // Cancelled.
+            return;
+        }
+        final int val = i.intValue();
         final JProgressBar progress = new JProgressBar(0, val);
         final JDialog dialog = new JDialog(app, "Creating test files...", true);
         dialog.getContentPane().setLayout(new FlowLayout());
