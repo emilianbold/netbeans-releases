@@ -77,7 +77,10 @@ public class CheckoutNeeded extends Task {
                 
                 Cvs cvs = (Cvs) this.getProject().createTask( "cvs" ); //NOI18N
                 cvs.setOwningTarget( this.getOwningTarget() );
-                cvs.setCvsRoot( ":pserver:anoncvs@" + repository ); //NOI18N
+                if (repository.indexOf("@") != -1)    //NOI18N
+                    cvs.setCvsRoot( repository );
+                else
+                    cvs.setCvsRoot( ":pserver:anoncvs@" + repository ); //NOI18N
                 
                 File destfile = new File(directory);
                 if (!destfile.exists()) destfile.mkdirs();
