@@ -188,6 +188,8 @@ public class EditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  32   Gandalf   1.31        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  31   Gandalf   1.30        10/10/99 Miloslav Metelka 
  *  30   Gandalf   1.29        10/1/99  Petr Hrebejk    org.openide.modules.ModuleInstall
  *        changed to class + some methods added

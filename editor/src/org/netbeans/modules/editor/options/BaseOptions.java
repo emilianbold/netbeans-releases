@@ -394,6 +394,8 @@ public class BaseOptions extends OptionSupport {
 
 /*
  * Log
+ *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         9/15/99  Miloslav Metelka 
  *  8    Gandalf   1.7         8/27/99  Miloslav Metelka 
  *  7    Gandalf   1.6         8/17/99  Miloslav Metelka 

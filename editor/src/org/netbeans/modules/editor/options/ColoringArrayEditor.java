@@ -180,6 +180,8 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
 
 /*
 * Log
+*  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
+*       Microsystems Copyright in File Comment
 *  7    Gandalf   1.6         8/27/99  Miloslav Metelka 
 *  6    Gandalf   1.5         8/17/99  Miloslav Metelka 
 *  5    Gandalf   1.4         7/30/99  Miloslav Metelka 

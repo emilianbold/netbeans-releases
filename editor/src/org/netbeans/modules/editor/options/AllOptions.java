@@ -57,6 +57,8 @@ public class AllOptions extends ContextSystemOption {
 
 /*
  * Log
+ *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  7    Gandalf   1.6         9/15/99  Miloslav Metelka 
  *  6    Gandalf   1.5         8/27/99  Miloslav Metelka 
  *  5    Gandalf   1.4         8/9/99   Ian Formanek    Generated Serial Version

@@ -82,6 +82,8 @@ NbDocument.Printable, NbDocument.CustomEditor {
 
 /*
  * Log
+ *  11   Gandalf   1.10        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  10   Gandalf   1.9         9/10/99  Miloslav Metelka 
  *  9    Gandalf   1.8         8/27/99  Miloslav Metelka 
  *  8    Gandalf   1.7         7/9/99   Miloslav Metelka 
