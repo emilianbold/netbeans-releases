@@ -179,9 +179,17 @@ class NbIO implements CallbackInputOutput {
         return actions;
     }
 
+    boolean checkReset() {
+        boolean result = wasReset;
+        wasReset = false;
+        return result;
+    }
+    
+    private boolean wasReset = false;
     public void reset() {
         if (Controller.log) Controller.log (this + ": reset");
         closed = null;
+        boolean wasReset = true;
         streamClosedSet = false;
         streamClosed = false;
 

@@ -220,6 +220,7 @@ public class Controller { //XXX public only for debug access to logging code
      */
     private void updateName (OutputWindow win, OutputTab tab) {
         if (nameUpdater == null) {
+            if (log) log ("Update name for " + tab.getIO() + " dispatching a name updater");
             nameUpdater = new CoalescedNameUpdater(win);
             SwingUtilities.invokeLater(nameUpdater);
         }
@@ -254,29 +255,57 @@ public class Controller { //XXX public only for debug access to logging code
         public void add (OutputTab tab) {
             components.add (tab);
         }
+        
+        public void remove(OutputTab tab) {
+            components.remove(tab);
+        }
 
         public void run() {
             for (Iterator i=components.iterator(); i.hasNext();) {
                 OutputTab t = (OutputTab) i.next();
+                NbIO io = t.getIO();
                 if (log) {
-                    log ("Update name for " + t.getIO().getName() + " stream " +
-                        "closed is " + t.getIO().isStreamClosed());
+                    log ("Update name for " + io.getName() + " stream " +
+                        "closed is " + io.isStreamClosed());
                 }
                 if (win.isAncestorOf(t)) {
                     String escaped;
                     try {
-                        escaped = XMLUtil.toAttributeValue(t.getIO().getName());
+                        escaped = XMLUtil.toAttributeValue(io.getName());
                     } catch (CharConversionException e) {
-                        escaped = t.getIO().getName();
+                        escaped = io.getName();
                     }
+                    boolean wasReset = io.checkReset();
+                    boolean useHtml = io.isStreamClosed() && !wasReset;
                     
-                    String name = t.getIO().isStreamClosed() ? escaped + " " :
+                    String name = useHtml ? escaped + " " :
                             "<html><b>" + escaped 
                             + " </b>&nbsp;</html>";  //NOI18N
+                    
+                    if (log) log ("  set name to " + name);
+                    
                     win.setTabTitle (t, name);
                 }
             }
             nameUpdater = null;
+        }
+    }
+    
+    private void forceName(OutputWindow win, OutputTab tab) {
+        if (log) log ("ForceName ensuring non-html tab name");
+        if (nameUpdater != null) {
+            if (log) log ("  an update was queued, aborting it");
+            nameUpdater.remove(tab);
+        }
+        if (win.isAncestorOf(tab)) {
+            String escaped;
+            try {
+                escaped = XMLUtil.toAttributeValue(tab.getIO().getName() + " ");
+            } catch (CharConversionException e) {
+                escaped = tab.getIO().getName() + " ";
+            }
+            if (log) log ("  setting non-html name " + escaped);
+            win.setTabTitle (tab, escaped);
         }
     }
 
@@ -337,8 +366,9 @@ public class Controller { //XXX public only for debug access to logging code
                     NbWriter writer = io.writer();
                     if (writer != null) {
                         try {
-                            if (log) log ("Reseting the writer for Clear");
+                            if (log) log ("Resetting the writer for Clear");
                             writer.reset();
+                            forceName(win, tab);
                         } catch (IOException ioe) {
                             ErrorManager.getDefault().notify(ioe);
                         }
@@ -953,10 +983,10 @@ public class Controller { //XXX public only for debug access to logging code
 
                 if (tab == null) {
                     tab = createOutputTab(win, io, io.isFocusTaken(), value);
-                    if (!win.isOpened()) {
-                        win.open();
-                        win.requestVisible();
-                    }
+                }
+                if (!win.isOpened()) {
+                    win.open();
+                    win.requestVisible();
                 }
                 if (win.getSelectedTab() != tab) {
                     if (tab.getParent() == null) {
@@ -965,6 +995,7 @@ public class Controller { //XXX public only for debug access to logging code
                     }
                     win.setSelectedTab(tab);
                     win.requestVisible();
+                    updateName(win,tab);
                 }
                 break;
             case IOEvent.CMD_SET_TOOLBAR_ACTIONS :
@@ -1023,7 +1054,6 @@ public class Controller { //XXX public only for debug access to logging code
                 if (log) log ("Setting io " + io + " on tab " + tab);
 //                tab.setDocument (new OutputDocument((OutWriter)io.getOut()));
                 tab.setIO(io);
-                
                 win.setSelectedTab(tab);
                 updateName(win, tab);
                 win.requestVisibleForNewTab();

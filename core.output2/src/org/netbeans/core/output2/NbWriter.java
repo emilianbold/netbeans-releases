@@ -42,6 +42,7 @@ class NbWriter extends OutputWriter {
         ((OutWriter) out).println (s, l);
     }
 
+    
     /**
      * Replaces the wrapped OutWriter.
      *
@@ -52,6 +53,10 @@ class NbWriter extends OutputWriter {
             //Someone calling reset multiple times or on initialization
             if (!out().isDisposed()) {
                 if (Controller.log) Controller.log ("Extra call to Reset on " + this + " for " + out);
+                //#49173 - Clear action causes call to reset(); call to start writing
+                //more output is another call to reset(), so it is ignored - so
+                //the tab title is not updated when a new stream is updated.
+                owner.setStreamClosed(false);
                 return;
             }
         }

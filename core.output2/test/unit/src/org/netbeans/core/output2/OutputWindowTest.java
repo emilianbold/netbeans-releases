@@ -105,6 +105,53 @@ public class OutputWindowTest extends TestCase {
         n = win.getTabs().length;
         assertTrue ("After closeInputOutput on second tab, number of tabs should be 1, not " + n, n == 1);
     }
+    
+    public void testTabNamesUpdatedCorrectly() throws Exception {
+        System.out.println ("testTabNamesUpdatedCorrectly");
+        io.select();
+        for (int i=0; i < 100; i++) {
+            io.getOut().println ("Here is some text we can delete");
+        }
+        sleep();
+        sleep();
+        sleep();
+        sleep();
+        io.getOut().flush();
+        
+        assertTrue ("Tab name should be html but is " + win.getDisplayName(), 
+            win.getDisplayName().indexOf("<") >= 0);
+
+        io.getOut().close();
+        sleep();
+        sleep();
+        assertFalse ("Tab name should not be html", win.getDisplayName().indexOf("<") >= 0);
+        
+        final OutputTab tab = (OutputTab) win.getSelectedTab();
+        
+        //Ensure the actions are paying attention
+        SwingUtilities.invokeLater (new Runnable() {
+            public void run() {
+                win.getController().postPopupMenu(win, tab, new Point(0,0), tab);
+                win.getController().clearAction.actionPerformed(new ActionEvent (tab, ActionEvent.ACTION_PERFORMED, "clear"));
+            }
+        });
+        sleep();
+        sleep();
+        assertFalse ("Tab name should not be html", win.getDisplayName().indexOf("<") >= 0);
+        
+        io.getOut().reset();
+        sleep();
+        io.getOut().println("And here is some more text");
+        sleep();
+        
+        assertTrue ("Tab name should be html", win.getDisplayName().indexOf("<") >= 0);
+
+        io.getOut().close();
+        sleep();
+        sleep();
+        assertFalse ("Tab name should not be html", win.getDisplayName().indexOf("<") >= 0);
+        
+    }
 
     public void testAbleToRetrieveSameInputOutputInstance() {
         System.out.println ("testAbleToRetrieveSameInputOutputInstance");
