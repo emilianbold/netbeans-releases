@@ -124,6 +124,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                 if (evt.getSource() instanceof JButton) {
                     JButton button = (JButton)evt.getSource();
                     if (button.isEnabled()){
+                        button.setContentAreaFilled(true);
                         button.setBorderPainted(true);
                     }
                 }
@@ -131,7 +132,9 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
             
             public void mouseExited(MouseEvent evt) {
                 if (evt.getSource() instanceof JButton) {
-                    ((JButton)evt.getSource()).setBorderPainted(false);
+                    JButton button = (JButton)evt.getSource();
+                    button.setContentAreaFilled(false);
+                    button.setBorderPainted(false);
                 }
             }
             
