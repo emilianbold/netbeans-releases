@@ -200,7 +200,8 @@ Microsystems, Inc. All Rights Reserved.
     <deltree dir="netbeans"/>
     <delete file="openide-13javac-workaround.jar"/>
     <deltree dir="OpenAPIs"/>
-    <delete file="OpenAPIs.zip"/>
+    <!-- <delete file="OpenAPIs.zip"/> -->
+    <echo message="Will not remove OpenAPIs.zip, remove it yourself if desired..."/>
     <delete file="OpenAPIs.log"/>
     <deltree dir="examplemodules"/>
     <delete file="api/examples/org/netbeans/examples/modules/minicomposer/templates.jar"/>
