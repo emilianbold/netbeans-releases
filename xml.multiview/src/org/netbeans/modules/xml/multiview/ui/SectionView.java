@@ -49,6 +49,7 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         scrollPanel.setLayout(new java.awt.GridBagLayout());
         scrollPane = new javax.swing.JScrollPane();
         scrollPane.setViewportView(scrollPanel);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(15);
         filler = new JPanel();
         filler.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         add (scrollPane, BorderLayout.CENTER);
