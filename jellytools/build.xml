@@ -24,6 +24,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
         <pathelement location="../core/netbeans/lib/core.jar"/>
         <pathelement location="../core/term/netbeans/modules/autoload/terminalemulator.jar"/>
+        <pathelement location="../core/windows/netbeans/modules/core-windows.jar"/>
         <pathelement location="../jemmy/jemmy.jar"/>
         <pathelement location="../xtest/external/junit-3.7.jar"/>
         <pathelement location="../xtest/nbjunit/netbeans/modules/ext/nbjunit.jar"/>
@@ -46,6 +47,7 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="../openide/loaders" antfile="build.xml" target="jars"/>
         <ant dir="../core" antfile="build.xml" target="jars"/>
         <ant dir="../core/term" antfile="build.xml" target="jars"/>
+        <ant dir="../core/windows" antfile="build.xml" target="jars"/>
         <ant dir="../xtest/nbjunit" target="jar-nbjunit"/>
     </target>
 
