@@ -131,9 +131,9 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
             
             <property name="xtest.ide.reuse.userdir" value="true"/>
-            <property name="xtest.timeout" value="4000000" />
+            <property name="xtest.timeout" value="5000000" />
             
-            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.memory.repeat=20" />
+            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.memory.repeat=15" />
         </executeTests>
         
         <antcall target="copy_original_ide_cfg_file"/>
