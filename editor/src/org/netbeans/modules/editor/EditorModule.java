@@ -28,6 +28,7 @@ import com.netbeans.editor.view.DialogSupport;
 import com.netbeans.editor.ext.ExtSettings;
 import com.netbeans.ide.modules.ModuleInstall;
 import com.netbeans.ide.text.IndentEngine;
+import com.netbeans.ide.TopManager;
 
 /**
 * Module installation class for editor
@@ -38,12 +39,14 @@ public class EditorModule implements ModuleInstall {
 
   private static final String MIME_PLAIN = "text/plain";
   private static final String MIME_JAVA = "text/x-java";
+  private static final String MIME_HTML = "text/html";
   private static final String MIME_IDL = "text/x-idl";
 
   /** Kit replacements that will be installed into JEditorPane */
   KitInfo[] replacements = new KitInfo[] {
     new KitInfo(MIME_PLAIN, "com.netbeans.developer.modules.text.NbEditorPlainKit"),
     new KitInfo(MIME_JAVA, "com.netbeans.developer.modules.text.NbEditorJavaKit"),
+    new KitInfo(MIME_HTML, "com.netbeans.developer.modules.text.NbEditorHTMLKit"),
     new KitInfo(MIME_IDL, "com.netbeans.developer.modules.text.NbEditorIDLKit")
   };
 
@@ -72,9 +75,10 @@ public class EditorModule implements ModuleInstall {
   public void restored () {
 
     // initial initializations
+
     DialogSupport.init();
     DialogSupport.setDialogCreator(new NbDialogCreator());
-    ExtSettings.init();
+    ExtSettings.init("");
 
     // preload some classes for faster editor opening
     BaseKit.getKit(NbEditorJavaKit.class).createDefaultDocument();
@@ -140,6 +144,7 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  14   Gandalf   1.13        6/8/99   Miloslav Metelka 
  *  13   Gandalf   1.12        6/1/99   Miloslav Metelka 
  *  12   Gandalf   1.11        6/1/99   Miloslav Metelka 
  *  11   Gandalf   1.10        5/5/99   Miloslav Metelka 
