@@ -37,6 +37,7 @@ public class UnitTestSuite extends XMLBean {
     public long     xmlat_testsPass;
     public long     xmlat_testsFail;
     public long     xmlat_testsError;
+    public String   xmlat_unexpectedFailure;
     
     // child elements
     public UnitTestCase[] xmlel_UnitTestCase;

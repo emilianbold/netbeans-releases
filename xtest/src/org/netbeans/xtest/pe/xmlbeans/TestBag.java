@@ -44,6 +44,8 @@ public class TestBag extends XMLBean {
     
     public String   xmlat_bagID;
     
+    public String   xmlat_unexpectedFailure;
+    
     // child elements
     public UnitTestSuite[] xmlel_UnitTestSuite;
 }

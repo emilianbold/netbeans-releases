@@ -211,8 +211,15 @@ public class TransformXMLTask extends Task{
             debugInfo("transformUnitSuites(): processing suite: "+suites[i]);
             File inputSuite = new File(suiteInputDir,"TEST-"+suites[i]+".xml");
             File outputSuite = new File(suiteOutputDir,"TEST-"+suites[i]+".html");
-            outputSuite.createNewFile();            
-            transform(inputSuite,outputSuite,transformer);
+            outputSuite.createNewFile();
+            try {
+                transform(inputSuite,outputSuite,transformer);
+            }  catch (TransformerException te) {
+                // we want other suites to be transformed as well in
+                // the case of any problem - so catch the exception
+                // print out some info and get back to work
+                System.out.println("TransformXMLTask:transformUnitSuites: cannot transform this suite:"+inputSuite);
+            }
         }
     }
     
@@ -227,8 +234,15 @@ public class TransformXMLTask extends Task{
        File failuresOutputDir = ResultsUtils.getHTMLResultDir(outputRoot);
        File failuresOutputFile = new File(failuresOutputDir,PEConstants.TESTREPORT_FAILURES_HTML_FILE);       
               
-       Transformer transformer = getTransformer(getXSLFile(TESTREPORT_FAILURES_XSL));      
-       transform(failuresInputFile,failuresOutputFile,transformer);
+       Transformer transformer = getTransformer(getXSLFile(TESTREPORT_FAILURES_XSL));
+       try {
+           transform(failuresInputFile,failuresOutputFile,transformer);
+       }  catch (TransformerException te) {
+           // we want other suites to be transformed as well in
+           // the case of any problem - so catch the exception
+           // print out some info and get back to work
+           System.out.println("TransformXMLTask:transformUnitSuites: cannot transform this suite:"+failuresInputFile);
+       }
     }
     
     // this will create a page full of failures/errors over whole report   
@@ -242,7 +256,14 @@ public class TransformXMLTask extends Task{
        File reportOutputFile = new File(reportOutputDir,PEConstants.TESTREPORT_HTML_FILE);       
               
        Transformer transformer = getTransformer(getXSLFile(TESTREPORT_XSL));      
-       transform(reportInputFile,reportOutputFile,transformer);
+       try {
+           transform(reportInputFile,reportOutputFile,transformer);
+       }  catch (TransformerException te) {
+           // we want other suites to be transformed as well in
+           // the case of any problem - so catch the exception
+           // print out some info and get back to work
+           System.out.println("TransformXMLTask:transformUnitSuites: cannot transform this suite:"+reportInputFile);
+       }       
     }
     
     public void transformTestBag(File inputRoot, File outputRoot) throws TransformerException, IOException {
@@ -255,7 +276,14 @@ public class TransformXMLTask extends Task{
        File testBagOutputFile = new File(testBagOutputDir,PEConstants.TESTBAG_HTML_FILE);       
               
        Transformer transformer = getTransformer(getXSLFile(TESTBAG_XSL));      
-       transform(testBagInputFile,testBagOutputFile,transformer);
+       try {
+           transform(testBagInputFile,testBagOutputFile,transformer);
+       }  catch (TransformerException te) {
+           // we want other suites to be transformed as well in
+           // the case of any problem - so catch the exception
+           // print out some info and get back to work
+           System.out.println("TransformXMLTask:transformUnitSuites: cannot transform this suite:"+testBagInputFile);
+       }       
     }
     
     public void transformSystemInfo(File inputRoot, File outputRoot) throws TransformerException, IOException {
@@ -268,7 +296,14 @@ public class TransformXMLTask extends Task{
        File siOutputFile = new File(siOutputDir,PEConstants.SYSTEMINFO_HTML_FILE);       
               
        Transformer transformer = getTransformer(getXSLFile(SYSTEMINFO_XSL));      
-       transform(siInputFile,siOutputFile,transformer);
+        try {
+           transform(siInputFile,siOutputFile,transformer);
+       }  catch (TransformerException te) {
+           // we want other suites to be transformed as well in
+           // the case of any problem - so catch the exception
+           // print out some info and get back to work
+           System.out.println("TransformXMLTask:transformUnitSuites: cannot transform this suite:"+siInputFile);
+       }        
     }
     
     public void transformFrameSet(File inputRoot, File outputRoot) throws TransformerException, IOException {
@@ -281,7 +316,14 @@ public class TransformXMLTask extends Task{
        File fsOutputFile = new File(fsOutputDir,PEConstants.INDEX_HTML_FILE);       
               
        Transformer transformer = getTransformer(getXSLFile(FRAMESET_XSL));      
-       transform(fsInputFile,fsOutputFile,transformer);
+        try {
+           transform(fsInputFile,fsOutputFile,transformer);
+       }  catch (TransformerException te) {
+           // we want other suites to be transformed as well in
+           // the case of any problem - so catch the exception
+           // print out some info and get back to work
+           System.out.println("TransformXMLTask:transformUnitSuites: cannot transform this suite:"+fsInputFile);
+       }         
     }
     
     public void transformMainNavigator(File inputRoot, File outputRoot) throws TransformerException, IOException {
@@ -294,7 +336,14 @@ public class TransformXMLTask extends Task{
        File mnOutputFile = new File(mnOutputDir,PEConstants.MAIN_NAVIGATOR_HTML_FILE);       
               
        Transformer transformer = getTransformer(getXSLFile(MAIN_NAVIGATOR_XSL));      
-       transform(mnInputFile,mnOutputFile,transformer);
+       try {
+           transform(mnInputFile,mnOutputFile,transformer);
+       }  catch (TransformerException te) {
+           // we want other suites to be transformed as well in
+           // the case of any problem - so catch the exception
+           // print out some info and get back to work
+           System.out.println("TransformXMLTask:transformUnitSuites: cannot transform this suite:"+mnInputFile);
+       }    
     }
 
 }

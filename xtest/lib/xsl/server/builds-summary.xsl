@@ -12,9 +12,15 @@
  Microsystems, Inc. All Rights Reserved.
 
 -->
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="1.0" 
+		xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+		xmlns:xalan="http://xml.apache.org/xalan"
+		exclude-result-prefixes="xalan">
 
 <xsl:key name="platform" match="ManagedReport" use="concat(@osName,@osVersion,@osArch)"/> 
+<xsl:key name="build" match="ManagedReport" use="@build"/>
+<xsl:key name="platformAndBuild" match="ManagedReport" use="concat(@osName,@osVersion,@osArch,@build)"/> 
+<xsl:key name="host" match="ManagedReport" use="@host"/>
 
 <xsl:include href="../library.xsl"/>
 
@@ -32,173 +38,111 @@
 </xsl:template>
 
 <xsl:template name="MakeBuildsSummaryTable">
-	<xsl:variable name="differentHosts" select="//ManagedReport[not(./@host = preceding-sibling::ManagedReport/@host)]"/>
-	<xsl:variable name="differentOSNames" select="//ManagedReport[not(@osName = preceding-sibling::ManagedReport[@osName=string(self::osName)])]"/>
-	<xsl:variable name="differentOSArchs" select="//ManagedReport[not(@osArch = preceding-sibling::ManagedReport/@osArch)]"/>
-	<xsl:variable name="differentOSVersions" select="//ManagedReport[not(@osVersion = preceding-sibling::ManagedReport/@osVersion)]"/>
+		
 	
-	
-	
-	<H2>Results of <xsl:value-of select="//ManagedReport/@testedType"/> tests for <xsl:value-of select="//ManagedReport/@project"/> 
-	
-	tested by <xsl:value-of select="//ManagedReport/@testingGroup"/></H2>	
+	<H2>
+		Results of <xsl:value-of select="//ManagedReport/@testedType"/> tests for <xsl:value-of select="//ManagedReport/@project"/> 	
+		tested by <xsl:value-of select="//ManagedReport/@testingGroup"/>
+	</H2>	
+
 	<BR/>
+	
+	<BLOCKQUOTE>
+		<A HREF="#history">History Matrices</A>
+	</BLOCKQUOTE>
+	
 	<BR/>
 
-	<TABLE width="90%" cellspacing="2" cellpadding="5" border="0" >		
+	<TABLE width="98%" cellspacing="2" cellpadding="5" border="0" >		
 		<TR align="center">
-			<TD bgcolor="#A6CAF0" rowspan="3"><B>Build</B></TD>		
-			<TD bgcolor="#A6CAF0" rowspan="2" colspan="2"><B>Build Totals</B></TD>				
-			<TD colspan="{count($differentHosts) * 3}" bgcolor="#A6CAF0">
-				<B>Tested Platforms (name - version - architecture)</B>
+			<TD bgcolor="#A6CAF0" rowspan="2"><B>Build</B></TD>		
+			<TD bgcolor="#A6CAF0" rowspan="1" colspan="2"><B>Build Totals</B></TD>				
+			<TD colspan="6" bgcolor="#A6CAF0">
+				<B>Tested Platforms</B>
 			</TD>
 		</TR>
-		<TR align="center" valign="top">
-			<xsl:for-each select="//ManagedReport[not(@osName = preceding-sibling::ManagedReport/@osName)]">
-				<xsl:sort select="@osName"/>
-				<xsl:variable name="currentOSName" select="@osName"/>
-				<xsl:for-each select="//ManagedReport[(@osName=$currentOSName) and not(@osVersion = preceding-sibling::ManagedReport[@osName=$currentOSName]/@osVersion)]">
-					<xsl:sort select="@osVersion"/>
-					<xsl:variable name="currentOSVersion" select="@osVersion"/>
-					<xsl:for-each select="//ManagedReport[(@osName=$currentOSName)and(@osVersion=$currentOSVersion) and not(@osArch = preceding-sibling::ManagedReport[(@osName=$currentOSName)and(@osVersion=$currentOSVersion)]/@osArch)]">
-						<xsl:sort select="@osArch"/>			
-						<TD class="pass" colspan="3">
-							<B>
-								<xsl:value-of select="@osName"/>
-								-
-								<xsl:value-of select="@osVersion"/>
-								-
-								<xsl:value-of select="@osArch"/>
-							</B>	
-						</TD>			
-					</xsl:for-each>
-				</xsl:for-each>
-			</xsl:for-each>
-		</TR>
-		<TR align="center" valign="top">
+		
+		<TR align="center">
 			<TD bgcolor="#A6CAF0">
 				<B>Passed</B>
 			</TD>
 			<TD bgcolor="#A6CAF0">
 			 	<B>Total</B>
 			</TD>
-			<xsl:for-each select="//ManagedReport[not(@osName = preceding-sibling::ManagedReport/@osName)]">
-				<xsl:sort select="@osName"/>
-				<xsl:variable name="currentOSName" select="@osName"/>
-				<xsl:for-each select="//ManagedReport[(@osName=$currentOSName) and not(@osVersion = preceding-sibling::ManagedReport[@osName=$currentOSName]/@osVersion)]">
-					<xsl:sort select="@osVersion"/>
-					<xsl:variable name="currentOSVersion" select="@osVersion"/>
-					<xsl:for-each select="//ManagedReport[(@osName=$currentOSName)and(@osVersion=$currentOSVersion) and not(@osArch = preceding-sibling::ManagedReport[(@osName=$currentOSName)and(@osVersion=$currentOSVersion)]/@osArch)]">
-						<xsl:sort select="@osArch"/>			
-						<TD class="pass">
-							<B>Passed</B>	
-						</TD>
-						<TD class="pass">
-							<B>Total</B>	
-						</TD>
-						<TD class="pass">
-							<B>Machines</B>	
-						</TD>
-					</xsl:for-each>
-				</xsl:for-each>
-			</xsl:for-each>
+			<TD bgcolor="#A6CAF0">
+			 	<B>Operating System</B>
+			</TD>
+			<TD bgcolor="#A6CAF0">
+			 	<B>Passed</B>
+			</TD>
+			<TD bgcolor="#A6CAF0">
+			 	<B>Total</B>
+			</TD>
+			<TD bgcolor="#A6CAF0">
+			 	<B>Failed</B>
+			</TD>
+			<TD bgcolor="#A6CAF0">
+			 	<B>Errors</B>
+			</TD>
+			<TD bgcolor="#A6CAF0">
+			 	<B>Testing Host(s)</B>
+			</TD>
 		</TR>
+				
+		<xsl:variable name="uniqueBuildList" select="//ManagedReport[generate-id(.)=generate-id(key('build',./@build)[1])]"/>
 		
-		<xsl:for-each select="//ManagedReport[not(./@build = preceding-sibling::ManagedReport/@build)]">
+		<xsl:for-each select="$uniqueBuildList">
 			<xsl:sort select="@build" order = "descending"/>
 			<xsl:variable name="currentBuild" select="@build"/>
-			<TR align="center" valign="center" class="pass">
-				<TD>
-					<B><xsl:value-of select="@build"/></B>
-				</TD>
-				<xsl:variable name="buildTestsPass" select="sum(//ManagedReport[$currentBuild = @build]/@testsPass)"/>
-				<xsl:variable name="buildTestsTotal" select="sum(//ManagedReport[$currentBuild = @build]/@testsTotal)"/>				
-				<xsl:variable name="buildQuality" select="format-number($buildTestsPass div $buildTestsTotal,'0.00%')"/>
-				<TD>
-					<xsl:value-of select="$buildQuality"/>
-				</TD>
-				<TD>
-					<xsl:value-of select="$buildTestsTotal"/>					
-				</TD>
-			<xsl:for-each select="//ManagedReport[not(@osName = preceding-sibling::ManagedReport/@osName)]">
+			<xsl:variable name="uniquePlatormsInBuild" select="//ManagedReport[generate-id(.)=generate-id(key('platformAndBuild',concat(./@osName,./@osVersion,./@osArch,$currentBuild))[1])]"/>			
+			<xsl:variable name="platformCount" select="count($uniquePlatormsInBuild)"/>
+
+			
+			<xsl:for-each select="$uniquePlatormsInBuild">
 				<xsl:sort select="@osName"/>
-				<xsl:variable name="currentOSName" select="@osName"/>
-				<xsl:for-each select="//ManagedReport[(@osName=$currentOSName) and not(@osVersion = preceding-sibling::ManagedReport[@osName=$currentOSName]/@osVersion)]">
-					<xsl:sort select="@osVersion"/>
-					<xsl:variable name="currentOSVersion" select="@osVersion"/>
-					<xsl:for-each select="//ManagedReport[(@osName=$currentOSName)and(@osVersion=$currentOSVersion) and not(@osArch = preceding-sibling::ManagedReport[(@osName=$currentOSName)and(@osVersion=$currentOSVersion)]/@osArch)]">
-						<xsl:sort select="@osArch"/>
-						<xsl:variable name="currentOSArch" select="@osArch"/>
-										
-								<xsl:variable name="expression" select="//ManagedReport[(@osName=$currentOSName)and(@osVersion=$currentOSVersion)and(@osArch=$currentOSArch)and(@build=$currentBuild)]"/>
-								<xsl:if test="count($expression) &gt; 0">								
-									<xsl:variable name="buildPlatformTestsPass" select="sum($expression/@testsPass)"/>
-									<xsl:variable name="buildPlatformTestsTotal" select="sum($expression/@testsTotal)"/>
-									<xsl:variable name="buildPlatformQuality" select="format-number($buildPlatformTestsPass div $buildPlatformTestsTotal,'0.00%')"/>
-									<TD class="pass" valign="center" align="center">
-										<xsl:value-of select="$buildPlatformQuality"/>
-									</TD>
-									<TD class="pass" valign="center" align="center">
-										<xsl:value-of select="$buildPlatformTestsTotal"/>
-									</TD>
-									<TD class="pass" valign="center" align="center">
-									<xsl:for-each select="$expression">
-										<A HREF="{@webLink}">
-											<xsl:value-of select="@host"/>
-										</A>
-										<xsl:if test="count($expression) &gt; 1">
-											<BR/>
-										</xsl:if>
-									</xsl:for-each>
-									</TD>
-								</xsl:if>
-								<!--
-								<xsl:value-of select="count(//ManagedReport[(@osName=$currentOSName)and(@osVersion=$currentOSVersion)and(@osArch=$currentOSArch)and(@build=$currentBuild)])"/>
-								-->
-								<xsl:if test="count($expression) = 0">
-									<!--
-									<TD colspan="3">
-										-
-									</TD>
-									-->
-									<TD>-</TD>
-									<TD>-</TD>
-									<TD>-</TD>
-								</xsl:if>
-							
-					</xsl:for-each>
-				</xsl:for-each>
-			</xsl:for-each>
-				<!--
-				<xsl:for-each select="$differentHosts">
-					<xsl:sort select="@host"/>			
-					<xsl:variable name="currentHost" select="@host"/>
-					<TD>
-						<xsl:variable name="expression" select="//ManagedReport[(@host=$currentHost)and(@build=$currentBuild)]"/>					
-						<xsl:for-each select="$expression">										
+				<xsl:sort select="@osVersion"/>
+				<xsl:sort select="@osArch"/>
+				<TR align="center">
+					<xsl:if test="position() = 1">
+						<TD bgcolor="#A6CAF0" rowspan="{$platformCount}"><B><xsl:value-of select="@build"/></B></TD>
+						<xsl:variable name="buildPassed" select="sum(key('build',$currentBuild)/@testsPass)"/>
+						<xsl:variable name="buildTotal" select="sum(key('build',$currentBuild)/@testsTotal)"/>						
+						<TD class="pass" rowspan="{$platformCount}"><xsl:value-of select="format-number($buildPassed div $buildTotal,'0.00%')"/></TD>
+						<TD class="pass" rowspan="{$platformCount}"><xsl:value-of select="$buildTotal"/></TD>
+					</xsl:if>
+					<TD class="pass">
+						<xsl:value-of select="@osName"/>-<xsl:value-of select="@osVersion"/>-<xsl:value-of select="@osArch"/>
+					</TD>
+					<xsl:variable name="passed" select="sum(key('platformAndBuild',concat(./@osName,./@osVersion,./@osArch,$currentBuild))/@testsPass)"/>
+					<xsl:variable name="failed" select="sum(key('platformAndBuild',concat(./@osName,./@osVersion,./@osArch,$currentBuild))/@testsFail)"/>
+					<xsl:variable name="errors" select="sum(key('platformAndBuild',concat(./@osName,./@osVersion,./@osArch,$currentBuild))/@testsError)"/>
+					<xsl:variable name="total" select="sum(key('platformAndBuild',concat(./@osName,./@osVersion,./@osArch,$currentBuild))/@testsTotal)"/>
+					<TD class="pass">
+						<xsl:value-of select="format-number($passed div $total,'0.00%')"/>
+					</TD>
+					<TD class="pass">
+						<xsl:value-of select="$total"/>
+					</TD>
+					<TD class="pass">
+						<xsl:value-of select="$failed"/>
+					</TD>
+					<TD class="pass">
+						<xsl:value-of select="$errors"/>
+					</TD>
+					<TD class="pass">
+						<xsl:for-each select="key('platformAndBuild',concat(./@osName,./@osVersion,./@osArch,$currentBuild))">
 							<A HREF="{@webLink}">
-								Q:<xsl:value-of select="format-number(@testsPass div @testsTotal,'0.00%')"/>
-								T:<xsl:value-of select="@testsTotal"/><BR/>	
-								D:<xsl:value-of select="@timeStamp"/>
-								<xsl:if test="@comment">
-									C:<xsl:value-of select="@comment"/>
-								</xsl:if>
+								<xsl:value-of select="@host"/>
 							</A>
-							<xsl:if test="count($expression) &gt; 1">
-								<BR/>
-							</xsl:if>
-						</xsl:for-each>								
-						<xsl:if test="count($expression) = 0">
-							-
-						</xsl:if>
-					</TD>			
-			</xsl:for-each>			
-			-->		
-			</TR>
+							<BR/>
+						</xsl:for-each>
+					</TD>
+				</TR>
+			</xsl:for-each>
+			
 		</xsl:for-each>
 		
 	</TABLE>
-	
 	<!--
 	<P>
 	<H5>Legend:</H5>
@@ -210,10 +154,13 @@
 	<BR/>
 	</P>
 	-->
-	
+	<BR/>
 	<HR width="90%"/>
+	<A name="history">
 	<H5>History Matrices for:</H5>
+	</A>
 	<UL>
+		<xsl:variable name="differentHosts" select="//ManagedReport[generate-id(.)=generate-id(key('host',./@host)[1])]"/>
 		<xsl:for-each select="$differentHosts">
 			<xsl:sort select="@host"/>
 			<LI>				

@@ -44,6 +44,9 @@
     		.pass {
 		    	background:#EEEEE0;
 	    	}
+	    	.header {
+		    	background:#A6CAF0;
+	    	}
 		</STYLE>
 		<HEAD>
 	

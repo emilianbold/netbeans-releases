@@ -31,13 +31,15 @@ import java.io.*;
  */
 public class TestBagInfoTask extends Task{
 
+    public static final String UNKNOWN = "Unknown";
+    
     /** Creates new TestBagInfoTask */
     public TestBagInfoTask() {
-        tb = new TestBag();
-        tb.xmlat_name = "Unknown Name";
-        tb.xmlat_module = "Unknown Module";
-        tb.xmlat_testType = "Unknown TestType";
-        tb.xmlat_executor = "Unknown Executor";    
+       tb = new TestBag();
+       tb.xmlat_name = UNKNOWN;
+       tb.xmlat_module = UNKNOWN;
+       tb.xmlat_testType = UNKNOWN;
+       tb.xmlat_executor = UNKNOWN;
     }
     
     private File outfile;
@@ -67,16 +69,41 @@ public class TestBagInfoTask extends Task{
         tb.xmlat_testAttribs = testAttribs;
     }
 
-    /*
-    public TestBag getTestBag() {
+    public void setUnexpectedFailure(String failure) {
+        tb.xmlat_unexpectedFailure = failure;
     }
-    */
     
     public void execute () throws BuildException {
         log("Generating test bag info xml");
         tb.xmlat_timeStamp = new java.sql.Timestamp(System.currentTimeMillis());
         //System.err.println("TB:"+tb);
-        try {
+        try {            
+            try {
+                TestBag loadedTestBag = ResultsUtils.getTestBag(this.outfile);
+                if (!tb.xmlat_name.equals(UNKNOWN)) {
+                    loadedTestBag.xmlat_name=tb.xmlat_name;
+                }
+                if (!tb.xmlat_module.equals(UNKNOWN)) {
+                    loadedTestBag.xmlat_module=tb.xmlat_module;
+                }
+                if (!tb.xmlat_testType.equals(UNKNOWN)) {
+                    loadedTestBag.xmlat_testType=tb.xmlat_testType;
+                }
+                if (!tb.xmlat_name.equals(UNKNOWN)) {
+                    loadedTestBag.xmlat_name=tb.xmlat_name;
+                }
+                if (tb.xmlat_testAttribs!=null) {
+                     loadedTestBag.xmlat_testAttribs=tb.xmlat_testAttribs;
+                }
+                if (tb.xmlat_unexpectedFailure!=null) {
+                     loadedTestBag.xmlat_unexpectedFailure=tb.xmlat_unexpectedFailure;
+                }                                
+                // ok let's use the loadedTestBag instead
+                tb = loadedTestBag;
+            } catch (Exception e) {
+                // nothing bad has happened - testbag is created for the first time
+                log("creating testbag info for the first time");
+            }
             FileOutputStream outStream = new FileOutputStream(this.outfile);            
             SerializeDOM.serializeToStream(tb.toDocument(),outStream);
             outStream.close();

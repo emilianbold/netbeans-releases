@@ -43,6 +43,13 @@
 <xsl:template match="TestRun">
 	<A NAME="{@runID}"><H2>Test Run</H2></A>
 	<BLOCKQUOTE>
+		<xsl:for-each select="TestBag[@unexpectedFailure]">
+			<LI><B><FONT color="#FF0000">
+				!!! Tests did not finish correctly in module <xsl:value-of select="@module"/>, 
+				 in testbag <A HREF="../{parent::*/@runID}/{@bagID}/htmlresults/testbag.html"><xsl:value-of select="@name"/></A> !!!
+			</FONT></B></LI>
+		</xsl:for-each>
+
 		<xsl:call-template name="Module"/>
 	</BLOCKQUOTE>
 </xsl:template>

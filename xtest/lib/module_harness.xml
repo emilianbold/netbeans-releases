@@ -252,6 +252,11 @@ Microsystems, Inc. All Rights Reserved.
         
         <antcall target="delete-user-jars"/>
         
+        <!-- check whether IDE finished abnormally, in this case
+             add failure information to the testbag -->
+        <available file="${xtest.workdir}/ide.flag" property="testbag.failure"/>
+        <antcall target="testbag-failure"/>
+        
     </target>
     
     <target name="copy-user-jars" depends="init,ide-extra-jars" if="xtest.extra.jars.ide">
@@ -288,6 +293,11 @@ Microsystems, Inc. All Rights Reserved.
         <pathdef useid="test.classpath"/>
     </target>
     
+    <!-- if testbag did not finish correctly, notice this state to the current testbag -->
+    <target name="testbag-failure" if="testbag.failure">
+        <testbaginfo unexpectedFailure="testbag did not finish correctly, some tests did not have to run" outfile="${xtest.workdir}/xmlresults/testbag.xml"/> 
+    </target>
+    
     <!-- ================= -->
     <!-- Main JUnit target -->
     <!-- ================= -->
@@ -315,8 +325,12 @@ Microsystems, Inc. All Rights Reserved.
                                excludes="${tbag.patternset.exclude}"/>
                 </testset>
             </batchtest>
-        </nbjunit>               
+        </nbjunit>
         
+        <!-- check whether JVM finished abnormally, in this case
+            add failure information to the testbag -->
+        <available file="${xtest.workdir}/nbjunit.flag" property="testbag.failure"/>
+        <antcall target="testbag-failure"/>
     </target>
     
     <!-- ======================= -->

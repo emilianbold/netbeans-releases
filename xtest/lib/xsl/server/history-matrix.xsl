@@ -67,8 +67,10 @@
 							<TD class="pass"><B><xsl:value-of select="@class"/>/<xsl:value-of select="@name"/></B></TD>
 							<xsl:for-each select = "HMTestedBuild">				
 								<xsl:choose>
-									<xsl:when test="@result">
-										<TD class="{@result}"><xsl:value-of select="@result"/></TD>
+									<xsl:when test="@result">										
+										<TD class="{@result}">
+											<A HREF="{@path}"><xsl:value-of select="@result"/></A>
+										</TD>
 									</xsl:when>
 									<xsl:otherwise>
 										<TD class="error">N/A</TD>

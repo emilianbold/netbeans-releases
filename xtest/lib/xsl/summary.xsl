@@ -51,6 +51,13 @@
 		<xsl:if test="@config">
 			<LI>Config:<xsl:value-of select="@config"/></LI>
 		</xsl:if>
+		<xsl:for-each select="TestBag[@unexpectedFailure]">
+			<LI><B><FONT color="#FF0000">
+				!!! Tests did not finish correctly in module <xsl:value-of select="@module"/>, 
+				 in testbag <A HREF="../{parent::*/@runID}/{@bagID}/htmlresults/testbag.html"><xsl:value-of select="@name"/></A> !!!
+			</FONT></B></LI>
+		</xsl:for-each>
+
 	</UL>
 	<xsl:call-template name="summary-table">
 			<xsl:with-param name="table-width">95%</xsl:with-param>
