@@ -78,6 +78,12 @@ public final class J2SEAntLogger extends AntLogger {
         return AntLogger.ALL_TASKS;
     }
     
+    public int[] interestedInLogLevels(AntSession session) {
+        return new int[] {
+            AntEvent.LOG_WARN,
+        };
+    }
+    
     public void taskFinished(AntEvent event) {
         if ("javac".equals(event.getTaskName())) { // NOI18N
             Throwable t = event.getException();
@@ -99,12 +105,4 @@ public final class J2SEAntLogger extends AntLogger {
         }
     }
 
-    public boolean interestedInAllScripts(AntSession session) {
-        return true;
-    }
-
-    public int[] interestedInLogLevels(AntSession session) {
-        return new int[]{AntEvent.LOG_WARN};
-    }
-    
 }
