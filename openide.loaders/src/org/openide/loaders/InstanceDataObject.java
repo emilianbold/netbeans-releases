@@ -534,8 +534,10 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
 
     void notifyFileChanged(FileEvent fe) {
         super.notifyFileChanged(fe);
-        if (!Creator.isFiredFromMe(fe)) {
-            getCookiesLookup(true);
+        if (getPrimaryFile().hasExt(XML_EXT)) {
+            if (!Creator.isFiredFromMe(fe)) {
+                getCookiesLookup(true);
+            }
         }
     }
 
