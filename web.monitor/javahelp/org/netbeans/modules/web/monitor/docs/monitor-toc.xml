@@ -2,13 +2,14 @@
 
 <!DOCTYPE toc
 
-  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN"
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
 
-         "http://java.sun.com/products/javahelp/toc_1_0.dtd">
+         "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
-<toc version="1.0">
+<toc version="2.0">
 
 <!-- last updated 11feb02 -->
+<tocitem text="Welcome to the IDE" target="ide.welcome" >
 
 <tocitem text="HTTP Monitor Help" target="ctx_monitorintro"> 
 	<tocitem text="Viewing HTTP Monitor Data Records" target="monitor_view" /> 
@@ -17,5 +18,6 @@
 	<tocitem text="Saving HTTP Monitor Data Records" target="monitor_store" />  
 	<tocitem text="Deleting HTTP Monitor Data Records" target="monitor_delete" />
 	<tocitem text="Deploying the HTTP Monitor for a Web Application" target="monitor_servconfig" />
+</tocitem>
 </tocitem>
 </toc>

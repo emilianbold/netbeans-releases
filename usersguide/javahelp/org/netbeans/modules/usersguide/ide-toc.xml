@@ -5,35 +5,16 @@
 -->
 
 <!DOCTYPE toc
-  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN"
-         "http://java.sun.com/products/javahelp/toc_1_0.dtd">
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
+         "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
-<toc version="1.0">
+<toc version="2.0">
 
-<tocitem text="Core IDE Help" target="ide.welcome" >
-
-<tocitem text="Legal Notices" target="ide.credits" />
-
-<tocitem text="Getting Started" target="gs.ide">
-  <tocitem text="IDE Overview" target="gs.tour" />
-  <tocitem text="Key Concepts" target="gs.key" />
-  <tocitem text="Starting With the Basic IDE Tasks" target="gs.howto" />
-  <tocitem text="Getting Started Tutorial" target="gs.gstutor" >
-    <tocitem text="Creating the ColorSwitch Application" target="gs.csw">
-      <tocitem text="Creating a Container" target="gs.cont" />
-      <tocitem text="Selecting a Layout Manager" target="gs.lyt" />
-      <tocitem text="Adding a Label and Setting Its Properties" target="gs.label" />
-      <tocitem text="Adding a Button" target="gs.button" />
-      <tocitem text="Setting Up the Button to Switch Color" target="gs.setup" />
-      <tocitem text="Adding Event Handler Code" target="gs.evt" />
-      <tocitem text="Compiling and Running Your Program" target="gs.run" />
-      <tocitem text="Stepping Through the Code" target="gs.step" />
-    </tocitem>
-  </tocitem>
-</tocitem>
+<tocitem text="Welcome to the IDE" target="ide.welcome" >
 
 
-<tocitem text="Filesystems and Objects" target="filesystems-objects">
+
+<tocitem text="Filesystems and Objects" target="filesystems-objects" expand="false">
    <tocitem text="Filesystems and Application Development" target="filesystems.classpath">
      <tocitem text="Mounting a Filesystem" target="filesystems.mount" />
      <tocitem text="Changing the Mount Order of Filesystems" target="filesystems.order" />
@@ -46,7 +27,7 @@
      <tocitem text="Specifying Files to Ignore in a Filesystem" target="filesystems.ignore-files" />
      <tocitem text="Comparing Two Files in the IDE" target="filesystems.diff" />
    </tocitem>    
-   <tocitem text="Object Management in the IDE" target="objects">
+   <tocitem text="Object Management in the IDE" target="objects" expand="false">
     <tocitem text="The Explorer" target="explorer" />
     <tocitem text="Node Icons in the Explorer" target="objects.icons" />
     <tocitem text="Creating a New File" target="objects.new" />
@@ -86,7 +67,7 @@
 </tocitem>
 
 
-<tocitem text="Projects in the IDE" target="project">
+<tocitem text="Projects in the IDE" target="project" expand="false">
   <tocitem text="Creating a New Project" target="project.creating" />
   <tocitem text="Importing a Project" target="project.importing"/>
   <tocitem text="Adding an Existing File to a Project" target="project.adding-existing" />
@@ -99,8 +80,8 @@
 </tocitem>
 
 
-<tocitem text="Editing Source Files" target="editing.intro">
-  <tocitem text="Source Editor Window" target="editing.editorwindow"/>
+<tocitem text="Editing Java Source Files" target="editing.intro" expand="false">
+  <tocitem text="Source Editor" target="editing.editorwindow"/>
   <tocitem text="Opening a File in the Source Editor" target="editing.opening"/>
   <tocitem text="Working With Large Files in the Source Editor" target="workspace.clone"/>
   <tocitem text="Creating New Java Code" target="editing.newcode"/>
@@ -154,8 +135,8 @@
 </tocitem>
 
 
-<tocitem text="Compiling and Running Java Programs" target="compile.run.jump">
-  <tocitem text="Compiling Java Programs" target="compile.jump">
+<tocitem text="Compiling and Running Java Programs" target="compile.run.jump" expand="false">
+  <tocitem text="Compiling Java Programs" target="compile.jump" expand="false">
     <tocitem text="Compiling a Java Program" target="compile.program" />
     <tocitem text="Correcting Errors in Source Code" target="compile.error" />
     <tocitem text="Stopping a Compile" target="compile.stop"/>
@@ -182,11 +163,12 @@
     <tocitem text="Setting a Compiler Type in a Template" target="compile.template" />
     <tocitem text="Removing a Compiler Type" target="compile.remove"/>
   </tocitem>
-  <tocitem text="Running Java Programs" target="run.jump">
+  <tocitem text="Running Java Programs" target="run.jump" expand="false">
     <tocitem text="Running a Java Program" target="run.run" />
     <tocitem text="Running a Program in Debug Mode" target="run.debugmode" />
     <tocitem text="Running and Debugging an Applet" target="run.debug.applet" />
     <tocitem text="Specifying the Main Class to Run" target="run.mainclass" />
+    <tocitem text="Running a Class When the IDE Starts" target="run.startup" />
     <tocitem text="Running Java Sources in a Specific Locale" target="run.locale" />
     <tocitem text="Running a Program on a 64-Bit Java Virtual Machine" target="run.64bit.jvm" />
   </tocitem>
@@ -212,7 +194,7 @@
 </tocitem>
         
 
-<tocitem text="Debugging Programs" target="debug.overview">
+<tocitem text="Debugging Java Programs" target="debug.overview" expand="false">
   <tocitem text="The Debug Environment" target="debug.workspace">
     <tocitem text="Debug Toolbar" target="debug.toolbar"></tocitem>
     <tocitem text="Debug Menu" target="debug.menu"></tocitem>
@@ -304,7 +286,7 @@
   </tocitem>
 </tocitem>
 
-<tocitem text="Designing Java GUIs" target="gui.intro">
+<tocitem text="Designing Java GUIs" target="gui.intro" expand="false">
   <tocitem text="Form Editor" target="gui.formeditor" />
   <tocitem text="Form Designer" target="gui.formdesigner" />
   <tocitem text="Component Inspector" target="gui.component-inspector" />
@@ -378,7 +360,7 @@
   <tocitem text="Making a Form Accessible" target="gui.accessibleform" />
 </tocitem>
 
-<tocitem text="Other Java IDE Tools" target="java.intro">
+<tocitem text="Other Java IDE Tools" target="java.intro" expand="false">
   <tocitem text="Working With Beans" target="beans.intro">
     <tocitem text="Creating a Bean" target="beans.creating" />
     <tocitem text="Creating a Bean Property" target="beans.properties" />
@@ -441,7 +423,6 @@
     <tocitem text="Target Java Platform Configuration" target="java.jdks.checklist" />
     <tocitem text="Cross-Compiling Between Java Platforms" target="compile.crosscompile"/>
     <tocitem text="Working With Assertions" target="java.assertions" />
-    <tocitem text="Setting the JDK for an Ant Script" target="ant.target-jdk" />
   </tocitem>
   <tocitem text="Overriding Methods" target="java.override" />
   <tocitem text="Setting Character Encoding for Java Files" target="java.encoding" />
@@ -449,7 +430,7 @@
 </tocitem>
 
 
-<tocitem text="Editing Resource Bundles" target="propfiles.editbundles">
+<tocitem text="Editing Java Resource Bundles" target="propfiles.editbundles" expand="false">
   <tocitem text="Setting Properties Files" target="propfiles.intro">
     <tocitem text="Creating a Properties File" target="propfiles.creating" />
     <tocitem text="Adding a Property" target="propfiles.adding" />
@@ -472,7 +453,7 @@
 </tocitem>
 
 
-<tocitem text="Using Version Control in the IDE" target="vcs.overview">
+<tocitem text="Using Version Control in the IDE" target="vcs.overview" expand="false">
   <tocitem text="CVS Support" target="vcs.cvs-intro">
     <tocitem text="Mounting a CVS Filesystem" target="cvs.create-fs" />
     <tocitem text="New CVS Wizard" target="cvs.wizard" />
@@ -486,20 +467,6 @@
     <tocitem text="Built-in Client Filesystem Properties" target="cvs.filesystemproperties" />
     <tocitem text="Managing Connections to Remote Repositories" target="cvs.password" />
   </tocitem>
-  <tocitem text="CVS Command Arguments" target="cvs_args_intro">
-    <tocitem text="Add Arguments" target="args_add"/>
-    <tocitem text="Annotate Arguments" target="args_annotate"/>
-    <tocitem text="Checkout Arguments" target="args_checkout"/>
-    <tocitem text="Commit Arguments" target="args_commit"/>
-    <tocitem text="Diff Arguments" target="args_diff"/>
-    <tocitem text="Global Arguments" target="args_global"/>
-    <tocitem text="Log Arguments" target="args_log"/>
-    <tocitem text="Remove Arguments" target="args_remove"/>
-    <tocitem text="Status Arguments" target="args_status"/>
-    <tocitem text="Tag Arguments" target="args_tag"/>
-    <tocitem text="Update Arguments" target="args_update"/>
-  </tocitem>
-    
   <tocitem text="Generic VCS Support" target="vcs.vcsgeneric">
     <tocitem text="Mounting a Directory With Generic VCS Support" target="vcsgeneric.mounting" />
     <tocitem text="Mounting a CVS Directory With Generic VCS Support" target="vcsgeneric.custom-cvs" />
@@ -545,7 +512,7 @@
 </tocitem>
 
 
-<tocitem text="Building With Ant" target="ant.building">
+<tocitem text="Building With Ant" target="ant.building" expand="false">
   <tocitem text="Ant Project Files" target="ant.ident" />
   <tocitem text="Creating an Ant Project" target="ant.project" />
   <tocitem text="Editing an Ant Script" target="ant.editing" />
@@ -557,7 +524,6 @@
   <tocitem text="Creating a Shortcut to a Target" target="ant.shortcut" />
   <tocitem text="Compiling Files With Ant" target="ant.compwith" />
   <tocitem text="Compiling Projects With Ant" target="ant.compproject" />
-  <tocitem text="Setting the JDK for an Ant Script" target="ant.target-jdk" />
   <tocitem text="Using Custom Ant Tasks" target="ant.custom-tasks" >
     <tocitem text="Creating a Custom Ant Task" target="ant.createtask" />
     <tocitem text="Ant Classpath and Custom Tasks" target="ant.tasks-classpath" />
@@ -570,7 +536,7 @@
 
 
 
-<tocitem text="Web Server Integration" target="general_about_the_j2eeserver_module_html">
+<tocitem text="Web Server Integration" target="general_about_the_j2eeserver_module_html" expand="false">
   <tocitem text="About the Web Server Integration Module" target="general_about_the_j2eeserver_module_html" />
   <tocitem text="Setting the Default Web Server" target="nodes_web_applications_defsrv_node_html" />
   <tocitem text="Server Registry Node" target="nodes_server_registry_node_html" />
@@ -581,7 +547,7 @@
 
 
 
-<tocitem text="Configuring the Environment" target="configure">
+<tocitem text="Configuring the Environment" target="configure" expand="false">
     <tocitem text="Using the Options Window" target="configure.options" />
   <tocitem text="Managing Modules" target="modules.manage">
     <tocitem text="Updating the IDE" target="ide.autoupdate" />
@@ -642,11 +608,12 @@
 
 </tocitem>
 
-<tocitem text="Accessibility" target="accessibility.home">
+<tocitem text="Accessibility" target="accessibility.home" expand="false">
     <tocitem text="Setting Font and Color for the Help Viewer" target="accessibility.stylesheet"/>
     <tocitem text="Displaying Help in a Web Browser" target="accessibility.alternate.browser" />
 
 </tocitem>
 </tocitem>
+
 </toc>
 
