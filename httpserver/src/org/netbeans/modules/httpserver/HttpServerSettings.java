@@ -70,6 +70,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     public static final String PROP_HOST               = "host"; // NOI18N
     public static final String PROP_REPOSITORY_BASEURL = "repositoryBaseURL"; // NOI18N
     public static final String PROP_CLASSPATH_BASEURL  = "classpathBaseURL"; // NOI18N
+    public static final String PROP_JAVADOC_BASEURL    = "javadocBaseURL"; // NOI18N
     public static final String PROP_RUNNING            = "running"; // NOI18N
     public static final String PROP_GRANTED_ADDRESSES  = "grantedAddresses"; // NOI18N
 
@@ -86,6 +87,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     /** mapping of classpath to URL */
     private static String classpathBaseURL = "/classpath/"; // NOI18N
 
+    private static String javadocBaseURL = "/javadoc/"; // NOI18N
+    
     /** addresses which have been granted access to the web server */
     private static String grantedAddresses = ""; // NOI18N
 
@@ -285,6 +288,43 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
             restartIfNecessary(false);
         }
         firePropertyChange(PROP_CLASSPATH_BASEURL, null, this.classpathBaseURL);
+    }
+
+    /** getter for classpath base */
+    public String getJavadocBaseURL() {
+        return javadocBaseURL;
+    }
+
+    /** setter for classpath base */
+    public void setJavadocBaseURL(String javadocBaseURL) {
+        // canonical form starts and ends with a /
+        String oldURL;
+        String newURL = getCanonicalRelativeURL(javadocBaseURL);
+
+        // check if any change is taking place
+        if (this.javadocBaseURL.equals(newURL))
+            return;
+
+        // implement the change
+        synchronized (HttpServerSettings.OPTIONS) {
+            oldURL = this.javadocBaseURL;
+            this.javadocBaseURL = newURL;
+            restartIfNecessary(false);
+        }
+        firePropertyChange(PROP_JAVADOC_BASEURL, oldURL, this.javadocBaseURL);
+    }
+
+    /** Maps a file object to a URL. Should ensure that the file object is accessible on the given URL. */
+    public URL getJavadocURL(FileObject fo) throws MalformedURLException, UnknownHostException {
+        try {
+            setRunning(true);
+            return new URL("http", getLocalHost(), getPort(), // NOI18N
+                           getJavadocBaseURL() + mangle (fo.getFileSystem ().getDisplayName ()) + "/" + 
+                           fo.getPackageNameExt('/','.')); // NOI18N
+        }
+        catch (org.openide.filesystems.FileStateInvalidException ex) {
+            throw new MalformedURLException ();
+        }
     }
 
     /** Getter for grantedAddresses property */
@@ -521,54 +561,50 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
         return mappedServlets;
     }
 
+    /** Converts string into string that is usable in URL. 
+     *  This mangling changes some characters
+     */
+    static String mangle (String name) {
+        StringBuffer sb = new StringBuffer ();
+        for (int i = 0; i < name.length (); i++) {
+            if (Character.isLetterOrDigit (name.charAt (i)) ||
+                name.charAt (i) == '.') {
+                sb.append (name.charAt (i));
+            }
+            else {
+                String code = Integer.toHexString ((int)name.charAt (i)).toUpperCase ();
+                if (code.length ()<2)
+                    code = (code.length () == 0)? "00": "0"+code;
+                sb.append ("%").
+                append ((code.length () == 2)? code: code.substring (code.length ()-2));
+            }
+        }
+// System.out.println("mangling "+name+" to "+sb.toString ()+".");
+        return sb.toString ();
+    }
+    
+    /** Unconverts string from URL into old string. 
+     *  This mangling decodes '%xy'
+     */
+    static String demangle (String name) {
+        StringBuffer sb = new StringBuffer ();
+        try {
+            for (int i = 0; i < name.length (); i++) {
+                if (name.charAt (i) != '%') {
+                    sb.append (name.charAt (i));
+                }
+                else {
+                    sb.append ((char)Integer.parseInt (name.substring (i+1, i+3), 16));
+                    i += 2;
+                }
+            }
+        }
+        catch (NumberFormatException ex) {
+            ex.printStackTrace ();
+            return "";
+        }
+// System.out.println("demangling "+name+" to "+sb.toString ()+".");
+        return sb.toString ();
+    }
+    
 }
-
-/*
- * Log
- *  31   Jaga      1.29.1.0    3/24/00  Petr Jiricka    Fixing main servlets, 
- *       grant access listeners
- *  30   Gandalf   1.29        1/12/00  Petr Jiricka    i18n
- *  29   Gandalf   1.28        1/11/00  Petr Jiricka    Fixed 5133
- *  28   Gandalf   1.27        1/9/00   Petr Jiricka    Cleanup
- *  27   Gandalf   1.26        1/4/00   Petr Jiricka    Added to project options
- *  26   Gandalf   1.25        1/3/00   Petr Jiricka    Bugfix 5133
- *  25   Gandalf   1.24        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  24   Gandalf   1.23        10/9/99  Petr Jiricka    Fixed serialization of 
- *       running property in the first startup if the server hasn't been 
- *       launched.
- *  23   Gandalf   1.22        10/7/99  Petr Jiricka    Fixed multiple startup 
- *       and shutdown at deserialization in some cases
- *  22   Gandalf   1.21        10/6/99  Petr Jiricka    Changes caused by module
- *       (de)serialization
- *  21   Gandalf   1.20        10/6/99  Petr Jiricka    Fixed bug causing the 
- *       server to start at IDE shutdown (after the first start of the IDE)
- *  20   Gandalf   1.19        9/30/99  Petr Jiricka    Jetty -> JSWDK
- *  19   Gandalf   1.18        9/13/99  Petr Jiricka    Default port moved to 
- *       8082
- *  18   Gandalf   1.17        9/8/99   Petr Jiricka    Fixed 
- *       NullPointerException at startup
- *  17   Gandalf   1.16        8/17/99  Petr Jiricka    Fixed startup of the 
- *       server during the first IDE start
- *  16   Gandalf   1.15        8/9/99   Ian Formanek    Generated Serial Version
- *       UID
- *  15   Gandalf   1.14        8/9/99   Petr Jiricka    Fixed bug with multiple 
- *       restarts of the server on IDE startup
- *  14   Gandalf   1.13        7/3/99   Petr Jiricka    
- *  13   Gandalf   1.12        7/3/99   Petr Jiricka    
- *  12   Gandalf   1.11        6/25/99  Petr Jiricka    Removed debug prints
- *  11   Gandalf   1.10        6/24/99  Petr Jiricka    Implements recent 
- *       changes in org.openide.util.HttpServer - allowAccess(...)
- *  10   Gandalf   1.9         6/23/99  Petr Jiricka    
- *  9    Gandalf   1.8         6/22/99  Petr Jiricka    
- *  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  7    Gandalf   1.6         6/8/99   Petr Jiricka    
- *  6    Gandalf   1.5         5/31/99  Petr Jiricka    
- *  5    Gandalf   1.4         5/28/99  Petr Jiricka    
- *  4    Gandalf   1.3         5/11/99  Petr Jiricka    
- *  3    Gandalf   1.2         5/11/99  Petr Jiricka    
- *  2    Gandalf   1.1         5/10/99  Petr Jiricka    
- *  1    Gandalf   1.0         5/7/99   Petr Jiricka    
- * $
- */
