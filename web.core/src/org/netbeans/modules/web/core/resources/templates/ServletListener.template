@@ -1,0 +1,16 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ */
+ 
+package Templates.JSP_Servlet;
+
+/** 
+ *
+ * @author  __USER__
+ * @version 
+ */
+
+public class ServletListener {
+}

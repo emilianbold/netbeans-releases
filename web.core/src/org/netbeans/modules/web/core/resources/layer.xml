@@ -89,6 +89,13 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/TemplateHelp.html" />
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
       </file>
+      <!-- Servlet Listener --> 
+      <file name="ServletListener.java" url="templates/ServletListener.template">
+          <attr name="template" boolvalue="true"/>
+          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/ServletListener.html"/>
+          <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ListenerIterator"/>
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+      </file>
       <attr name="webapp.warImage/JSP.jsp" boolvalue="true"/>
       <attr name="webappSample.warImage/JSP.jsp" boolvalue="true"/>
       <attr name="JSP.jsp/Servlet.java" boolvalue="true"/>
@@ -111,41 +118,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
             <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createFilterIterator"/>
         </file>        
-      </folder>
-      
-      <!-- Listeners -->
-      <folder name="Listeners">
-        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Listeners.html" />
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-
-        <file name="ContextListener.java" url="templates/ContextListener.template">
-            <attr name="template" boolvalue="true"/>
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/ContextListener.html"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-            <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ListenerIterator"/>          
-        </file> 
-
-        <file name="ContextAttributeListener.java" url="templates/ContextAttributeListener.template">
-            <attr name="template" boolvalue="true"/>
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/ContextAttributeListener.html"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-            <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ListenerIterator"/>            
-        </file>
-
-        <file name="SessionListener.java" url="templates/SessionListener.template">
-            <attr name="template" boolvalue="true"/>
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/SessionListener.html"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-            <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ListenerIterator"/>
-        </file>
-
-        <file name="SessionAttributeListener.java" url="templates/SessionAttributeListener.template">
-            <attr name="template" boolvalue="true"/>
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/SessionAttributeListener.html"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-            <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ListenerIterator"/>
-        </file>
-                        
       </folder>
     </folder>
   </folder>
