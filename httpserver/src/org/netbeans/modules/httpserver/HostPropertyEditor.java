@@ -39,7 +39,10 @@ public class HostPropertyEditor extends PropertyEditorSupport {
     /** @return text for the current value */
     public String getAsText () {
         HttpServerSettings.HostProperty hp = (HttpServerSettings.HostProperty) getValue();
-        String host = hp.getHost ();
+        if (hp == null) {
+            return "";
+        }
+        String host = hp.getHost();
         if (host.equals(HttpServerSettings.LOCALHOST)) {
             return localhost () + hp.getGrantedAddresses ();
         }
