@@ -637,10 +637,11 @@ implements ItemListener, Runnable {
   private final class RootsListener extends Object 
   implements PropertyChangeListener {
     public void propertyChange (PropertyChangeEvent evt) {
-      if ("confirmDelete".equals (evt.getPropertyName ())) {
+      Object source = evt.getSource ();
+      if (source instanceof IDESettings) {
         // possible change in confirm delete settings
         ExplorerActions a = actions;
-        IDESettings ideS = (IDESettings)IDESettings.findObject (IDESettings.class);
+        IDESettings ideS = (IDESettings)source;
 
         if (a != null) {
           a.setConfirmDelete (ideS.getConfirmDelete ());
@@ -653,13 +654,13 @@ implements ItemListener, Runnable {
         return;
       }
 
-      if (evt.getSource () == TopManager.getDefault ()) {
+      if (source == TopManager.getDefault ()) {
         // no notifications from top manager are needed
         // except PROP_PLACES
         return;
       }
       
-      Node n = (Node)evt.getSource ();
+      Node n = (Node)source;
       ExplorerTab tab = getRootPanel (n);
       if (tab == null) {
         return;
@@ -693,6 +694,8 @@ implements ItemListener, Runnable {
 
 /*
 * Log
+*  38   Gandalf   1.37        9/22/99  Jaroslav Tulach Solving class cast 
+*       exception.  
 *  37   Gandalf   1.36        9/20/99  Jaroslav Tulach #1603
 *  36   Gandalf   1.35        9/15/99  David Simonek   cut/copy/delete actions 
 *       bugfix
