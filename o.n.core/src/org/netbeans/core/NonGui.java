@@ -471,18 +471,23 @@ public class NonGui extends NbTopManager implements Runnable {
         try {
             if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
                 System.setProperty("import.canceled", "false"); // NOI18N
+                
+                
                 SwingUtilities.invokeAndWait(new Runnable() {
                     public void run() {
+                        wizardDuringStartup(true);
                         boolean canceled = org.netbeans.core.upgrade.UpgradeWizard.showWizard();
                         System.setProperty("import.canceled", new Boolean(canceled).toString()); // NOI18N
                     }
                 });
-                
                 if (Boolean.getBoolean("import.canceled"))
                     System.exit(0);
             }
         } catch (Exception e) {
             TopManager.getDefault().getErrorManager().notify(e);
+        }
+        finally {
+            wizardDuringStartup(false);
         }
         StartLog.logProgress ("Upgrade wizzard consulted"); // NOI18N
         
@@ -552,12 +557,16 @@ public class NonGui extends NbTopManager implements Runnable {
             if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     public void run() {
+                        wizardDuringStartup(true);
                         org.netbeans.core.ui.SetupWizard.showSetupWizard(false);
                     }
                 });
             }
         } catch (Exception e) {
             TopManager.getDefault().getErrorManager().notify(e);
+        }
+        finally {
+            wizardDuringStartup(false);
         }
         StartLog.logProgress ("SetupWizard done"); // NOI18N
 
@@ -665,6 +674,15 @@ public class NonGui extends NbTopManager implements Runnable {
     /** Get the module subsystem.  */
     public ModuleSystem getModuleSystem() {
         return moduleSystem;
+    }
+
+    /** This is a notification about showing and hiding wizards 
+     * during startup (Import, Setup). It is used in subclass 
+     * for hiding the splash screen when wizard is visible.
+     *
+     * @param visible <CODE>true</CODE> means shown, <CODE>false</CODE> means hidden
+     */
+    protected void wizardDuringStartup(boolean visible) {
     }
     
 }
