@@ -31,7 +31,7 @@ public class TagHandler extends SimpleTagSupport {
             out.print("Hello: ");
 
             JspFragment f=getJspBody();
-            f.invoke(out);
+            if (f != null) f.invoke(out);
 
         } catch (java.io.IOException ex) {
             throw new JspException(ex.getMessage());
