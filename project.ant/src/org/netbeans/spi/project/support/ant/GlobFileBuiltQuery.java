@@ -148,9 +148,11 @@ public final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         StatusImpl status = (r != null) ? (StatusImpl)r.get() : null;
         if (status == null) {
             status = createStatus(file);
-            stati.put(file, new WeakReference(status));
-        } else {
-            stati.put(file, NONE);
+            if (status != null) {
+                stati.put(file, new WeakReference(status));
+            } else {
+                stati.put(file, NONE);
+            }
         }
         return status;
     }
@@ -303,25 +305,21 @@ public final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
             if (source.isModified()) {
                 return false;
             }
-            File target = projectDirF;
             if (lastTargetApproximation != null) {
                 lastTargetApproximation.removeFileChangeListener(weakFileL);
             }
             lastTargetApproximation = projectDir;
             for (int i = 0; i < targetPath.length; i++) {
                 String piece = targetPath[i];
-                target = new File(target, piece);
-                if (!target.exists()) {
+                FileObject lta2 = lastTargetApproximation.getFileObject(piece);
+                if (lta2 == null) {
                     lastTargetApproximation.addFileChangeListener(weakFileL);
                     return false;
                 }
-                FileObject lta2 = lastTargetApproximation.getFileObject(piece);
-                if (lta2 != null) {
-                    lastTargetApproximation = lta2;
-                }
+                lastTargetApproximation = lta2;
             }
             lastTargetApproximation.addFileChangeListener(weakFileL);
-            long targetTime = target.lastModified();
+            long targetTime = lastTargetApproximation.lastModified().getTime();
             long sourceTime = source.getPrimaryFile().lastModified().getTime();
             return targetTime >= sourceTime;
         }
