@@ -104,5 +104,10 @@ public class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
             return;
         }
         ConfigUtils.setBeanPropertyValue(configBean, webContextRootPropName, contextRoot);
+        try {
+            deployment.getStorage ().save ();
+        } catch (java.io.IOException e) {
+            ErrorManager.getDefault ().notify (e);
+        }
     }
 }
