@@ -21,5 +21,13 @@ Microsystems, Inc. All Rights Reserved.
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="qa-functional"/>
     <property name="xtest.attribs" value="validation"/>
+
+    <!-- Run developers' unit tests -->
+    <target name="devu">
+        <antcall target="all">
+            <param name="xtest.testtype" value="unit"/>
+            <param name="xtest.attribs" value="dev"/>
+        </antcall>
+    </target>
     
 </project>

@@ -33,10 +33,10 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="stable" executor="code" name="testbag_1">
+    <testbag testattribs="random" executor="code" name="Randomized Editor Unit Tests">
         <testset dir="unit/src">
             <patternset>
-                <include name="**/**Test.class"/>
+                <include name="org/netbeans/modules/editor/RandomDocumentUnitTestSuite.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -55,10 +55,10 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src"/>
     </testbag>
 
-    <testbag testattribs="dev" executor="code" name="testbag_dev">
+    <testbag testattribs="dev" executor="code" name="Developers' Tests">
         <testset dir="unit/src">
             <patternset>
-                <!-- Add your own code tests -->
+                <include name="org/netbeans/modules/editor/SmartBracketUnitTestSuite.class"/>
             </patternset>
         </testset>
     </testbag>

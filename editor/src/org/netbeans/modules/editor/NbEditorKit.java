@@ -115,7 +115,10 @@ public class NbEditorKit extends ExtKit {
         super();
         // lazy init of MIME options
         EditorModule.init();
-        AllOptionsFolder.getDefault().loadMIMEOption(this.getClass());
+        AllOptionsFolder aof = AllOptionsFolder.getDefault();
+        if (aof != null) {
+            aof.loadMIMEOption(this.getClass());
+        }
     }
 
     public Document createDefaultDocument() {
