@@ -133,6 +133,8 @@ final public class AntTargetExecutor {
          * the standard NetBeans output window will be used.
          * @param outputStream a stream to send output to, or <code>null</code> to reset
          * @see org.apache.tools.ant.module.spi.AntOutputStream
+         * @deprecated Usage of a custom output stream is not recommended, and prevents some
+         *             Ant module features from working correctly.
          */
         public void setLogger(OutputStream outputStream) {
             this.outputStream = outputStream;
