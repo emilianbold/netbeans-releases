@@ -256,7 +256,8 @@ workspaceswitcher
   <!-- should also create empty lib/patches/ dir (but again zip task will ignore it) -->
   <!-- or just make lib/patches/.exists which is otherwise harmless -->
 
-  <target name="virgin" depends="init,build-messaging">
+  <target name="virgin" depends="init,build-messaging"
+          description="Create a virgin build that has never been started.">
     <!-- Automatically include openide and core, these are mandatory -->
     <mkdir dir="virgin"/>
     <nbmerge dest="virgin" topdir=".." modules="openide,openidex,core,${modules}" targetprefix="all-"/>
@@ -264,7 +265,8 @@ workspaceswitcher
     <echo message="Virgin build created; see NetBeans-${buildnumber}-virgin.zip (in nbbuild/)."/>
   </target>
 
-  <target name="firststart" depends="init,build-messaging">
+  <target name="firststart" depends="init,build-messaging"
+          description="Build the IDE and start it, but do not create a build archive.">
     <mkdir dir="firststart"/>
     <nbmerge dest="firststart" topdir=".." modules="openide,openidex,core,${modules}" targetprefix="all-"/>
     <chmod file="firststart/bin/runide.sh" perm="ugo+x"/>
@@ -295,7 +297,8 @@ workspaceswitcher
     <createfile message="NetBeans dev build;Build number: ${buildnumber}" dir="firststart" filename="build_info"/>
   </target>
 
-  <target name="depucelee" depends="firststart">
+  <target name="depucelee" depends="firststart"
+          description="Create a complete build, including first start and final ZIP file.">
     <zip zipfile="NetBeans-${buildnumber}.zip" basedir="firststart"/>
     <echo message="Build created; see NetBeans-${buildnumber}.zip (in nbbuild/)."/>
     <echo message="If you like, you may run the IDE straight from"/>
@@ -309,14 +312,16 @@ workspaceswitcher
   <target name="maybe-firststart" depends="check-for-firststart" unless="have-firststart">
     <ant dir="." target="firststart"/>
   </target>
-  <target name="tryme" depends="maybe-firststart">
+  <target name="tryme" depends="maybe-firststart"
+          description="Try running the IDE interactively (build it first if needed).">
     <exec os="indows" dir="firststart/bin" command="runide.exe ${tryme.args}" failonerror="yes"/>
     <exec os="Linux" dir="firststart/bin" command="sh runide.sh ${tryme.args}" failonerror="yes"/>
     <exec os="SunOS" dir="firststart/bin" command="sh runide.sh ${tryme.args}" failonerror="yes"/>
     <exec os="Solaris" dir="firststart/bin" command="sh runide.sh ${tryme.args}" failonerror="yes"/>
   </target>
 
-  <target name="update-info" depends="init,all-openide,all-core">
+  <target name="update-info" depends="init,all-openide,all-core"
+          description="Build Auto Update NBM files and XML descriptions.">
     <!-- Note: partially sorted in dependency order -->
     <!-- (this could also be done with separate targets). -->
     <echo message="Making NBM for module ant..."/>
@@ -454,7 +459,8 @@ workspaceswitcher
     <echo message="Manually delete unwanted builds as needed."/>
   </target>
 
-  <target name="clean" depends="init,localclean">
+  <target name="clean" depends="init,localclean"
+          description="Clean out all build products.">
     <cleanall topdir=".." modules="openide,openidex,core,${modules}" targetname="clean"/>
   </target>
 
