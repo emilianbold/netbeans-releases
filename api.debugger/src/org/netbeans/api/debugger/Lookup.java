@@ -184,15 +184,13 @@ abstract class Lookup {
                     BufferedReader br = new BufferedReader (
                         new InputStreamReader (is)
                     );
-                    String s = br.readLine ();
-                    while (s != null) {
+                    for (String s = br.readLine(); s != null; s = br.readLine()) {
                         if (s.startsWith ("#")) continue;
                         if (s.length () == 0) continue;
                         if (verbose)
                             v += "\nR  service " + s + " found";
 
                         l.add (s);
-                        s = br.readLine ();
                     }
                 }
                 if (verbose)
