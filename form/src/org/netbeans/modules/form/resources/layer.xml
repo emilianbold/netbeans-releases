@@ -79,7 +79,6 @@ SystemFileSystem
         <folder name="View">
             <attr name="org-netbeans-core-actions-HTMLViewAction.instance/org-netbeans-modules-form-actions-FormEditorAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-form-actions-FormEditorAction.instance" />
-            <attr name="org-netbeans-modules-form-actions-FormEditorAction.instance/org-netbeans-modules-objectbrowser-ShowBrowserAction.instance" boolvalue="true" />
         </folder>
 
         <folder name="Tools">
