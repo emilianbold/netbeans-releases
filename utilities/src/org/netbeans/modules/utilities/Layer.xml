@@ -14,6 +14,27 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
+    <folder name="Welcome">
+        <file name="netbeans-ide-home.url">
+            <![CDATA[http://www.netbeans.org/]]>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
+            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/modules/url/info-netbeans-ide-home.html"/>
+        </file>
+        <attr name="netbeans-ide-home.url/org-openide-actions-NewTemplateAction.instance" boolvalue="true" />
+        <attr name="org-openide-actions-NewTemplateAction.instance/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true" />
+        <file name="org-netbeans-modules-openfile-OpenFileAction.instance">
+            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/modules/openfile/info-OpenFileAction.html" />
+        </file>
+        <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/docs-tutorial-link.url" boolvalue="true" />
+        <file name="docs-tutorial-link.url">
+            <![CDATA[nbresloc:/Tutorial/index.htm]]>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webHelpLink.gif"/>
+            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/modules/url/info-docs-tutorial-link.html"/>
+        </file>
+        <attr name="docs-tutorial-link.url/org-netbeans-modules-autoupdate-UpdateAction.instance" boolvalue="true" />
+    </folder>
     <folder name="Templates">
         <folder name="Other">
             <file name="bookmark.url">
@@ -22,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/url/TemplateHelp.html"/>
             </file>
-            <!-- [PENDING] this does not currently show up until the folder is refreshed: -->
+            <!-- [PENDING] this does not currently show up until the folder is refreshed (is that still true?): -->
             <file name="group.group">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.group.Bundle"/>
                 <attr name="template" boolvalue="true"/>
@@ -32,6 +53,8 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <!-- [PENDING] Eventually it may be a good idea to just kill BookmarksAction and simply place Bookmarks/ -->
     <!-- folder underneath Menu/Help/ and use SFS icons and so on to make it look pretty... -->
+    <!-- (Or make Menu/Help/Bookmarks.shadow a symlink to Bookmarks; this works now.) -->
+    <!-- Easy to do; note URLDataObject presenter currently uses OpenCookie vs. URLNodeCookie, could be changed. -->
     <folder name="Bookmarks">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         <file name="jdc.url">
@@ -102,7 +125,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="netbeans-web-link.url/utilities-sep-2[javax-swing-JSeparator].instance" boolvalue="true"/>
             <file name="utilities-sep-2[javax-swing-JSeparator].instance"/>
             <attr name="utilities-sep-2[javax-swing-JSeparator].instance/submit-feedback-link.url" boolvalue="true"/>
-            <!-- [PENDING] this is none too useful... -->
+            <!-- [PENDING] this is none too useful... (some bug is filed to this effect) -->
             <file name="submit-feedback-link.url">
                 <![CDATA[http://www.netbeans.org/]]>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
@@ -119,8 +142,8 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Toolbars">
         <folder name="System">
+            <attr name="org-netbeans-core-actions-OpenExplorerAction.instance/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-openfile-OpenFileAction.instance"/>
-            <!-- [PENDING] this ordering does not appear to work for some reason: -->
             <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/org-openide-actions-SaveAction.instance" boolvalue="true"/>
         </folder>
     </folder>

@@ -120,29 +120,11 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Welcome">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-        <!-- [PENDING] This ought to be a *.url bookmark added by utilities module. -->
-        <!-- Then we could kill WebLinkAction. :-) -->
-        <!-- For that to work, URLDataObject instance would have to have Presenter.Toolbar, not just .Menu; -->
-        <!-- and org.netbeans.core.ui.WelcomePanel would have to understand Presenter.Toolbar's sanely. -->
-        <!-- Also WelcomePanel needs to look up HTML description using a file attribute for URL so that -->
-        <!-- modules can add their own welcome items easily. -->
-        <file name="org-netbeans-core-actions-WebLinkAction$NetbeansOrgWebLink.instance">
-            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-WebLinkAction-NetbeansOrgWebLink.html" />
-        </file>
-        <attr name="org-netbeans-core-actions-WebLinkAction$NetbeansOrgWebLink.instance/org-openide-actions-NewTemplateAction.instance" boolvalue="true" />
         <file name="org-openide-actions-NewTemplateAction.instance">
             <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-NewTemplateAction.html" />
         </file>
-        <attr name="org-openide-actions-NewTemplateAction.instance/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true" />
-        <file name="org-netbeans-modules-openfile-OpenFileAction.instance">
-            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-OpenFileAction.html" />
-        </file>
-        <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/org-netbeans-core-actions-WebLinkAction$DocsTutorialLink.instance" boolvalue="true" />
-        <file name="org-netbeans-core-actions-WebLinkAction$DocsTutorialLink.instance">
-            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-WebLinkAction-DocsTutorialLink.html" />
-        </file>
-        <attr name="org-netbeans-core-actions-WebLinkAction$DocsTutorialLink.instance/org-netbeans-modules-autoupdate-UpdateAction.instance" boolvalue="true" />
-        <!-- [PENDING] should be from autoupdate module, see above; throws exceptions with autoupdate not installed -->
+        <attr name="org-openide-actions-NewTemplateAction.instance/org-netbeans-modules-autoupdate-UpdateAction.instance" boolvalue="true" />
+        <!-- [PENDING] should be from autoupdate module; throws exceptions with autoupdate not installed -->
         <file name="org-netbeans-modules-autoupdate-UpdateAction.instance">
             <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-UpdateAction.html" />
         </file>
@@ -226,7 +208,6 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="org-netbeans-core-actions-HTMLViewAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
           <file name="Separator2[javax-swing-JSeparator].instance"/>
           <attr name="Separator2[javax-swing-JSeparator].instance/org-openide-actions-WorkspaceSwitchAction.instance" boolvalue="true" />
-          <!-- [PENDING] this action does not appear to display anything...? -->
           <file name="org-openide-actions-WorkspaceSwitchAction.instance"/>
       </folder>
       <attr name="View/Build" boolvalue="true" />
@@ -485,19 +466,13 @@ Microsystems, Inc. All Rights Reserved.
     <file name="C-0[org-openide-actions-OpenLocalExplorerAction].instance" />
     <file name="CS-S[org-openide-actions-SaveProjectAction].instance" />
     <file name="S-F8[org-openide-actions-AddWatchAction].instance" />
-    <!-- [PENDING] well what should it be then? -->
-    <!-- <file name="C-N[org-netbeans-core-ui-NewNewAction].instance" /> -->
+    <file name="C-N[org-openide-actions-NewTemplateAction].instance" />
     <file name="S-F10[org-openide-actions-PopupAction].instance" />
 
 <!-- These should be added by modules!
-    <file name="CS-CANCEL[org-netbeans-modules-debugger-support-actions-ResumeDebuggerAction].instance" />
     <file name="C-9[org-netbeans-modules-objectbrowser-ShowBrowserAction].instance" />
     <file name="CS-N[org-netbeans-modules-projects-NewProjectAction].instance" />
-    <file name="CS-F8[org-netbeans-modules-debugger-support-actions-AddBreakpointAction].instance" />
     <file name="CS-M[org-netbeans-modules-projects-SetMainClassAction].instance" />
-    <file name="C-8[org-netbeans-modules-form-actions-ComponentInspectorAction].instance" />
-    <file name="C-5[org-netbeans-modules-debugger-support-actions-DebuggerViewAction].instance" />
-    <file name="C-CANCEL[org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction].instance" />
     <file name="CS-I[org-netbeans-modules-projects-ImportProjectAction].instance" />
     <file name="C-F1[org-netbeans-modules-javadoc-search-SearchDocAction].instance" />
 -->
