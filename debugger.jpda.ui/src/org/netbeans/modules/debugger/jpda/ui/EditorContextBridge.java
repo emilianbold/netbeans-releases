@@ -109,8 +109,6 @@ public class EditorContextBridge {
 
     /**
      * Removes given annotation.
-     *
-     * @return true if annotation has been successfully removed
      */
     public static void removeAnnotation (
         Object annotation
@@ -271,28 +269,29 @@ public class EditorContextBridge {
 
     public static String getDefaultType () {
         String id = getSelectedIdentifier ();
-        if (id == null) return CLASS;
-        if (id.length () > 0) {
-            if (id.equals (getCurrentMethodName ()))
-                return METHOD;
-            String s = getCurrentClassName ();
+        if (id != null) {
+            if (id.equals(getCurrentMethodName())) return METHOD;
+            String s = getCurrentClassName();
             int i = s.lastIndexOf ('.');
             if (i >= 0)
                 s = s.substring (i + 1);
             if (id.equals (s))
                 return CLASS;
             return FIELD;
-        } 
-        String s = getCurrentFieldName ();
-        if (s.length () > 0)
-            return FIELD;
-        s = getCurrentMethodName ();
-        if (s.length () < 1) {
-            s = getCurrentClassName ();
-            if (s.length () > 0)
-                return CLASS;
+        } else {
+            String s = getCurrentFieldName ();
+            if (s != null && s.length () > 0)
+                return FIELD;
+            s = getCurrentMethodName();
+            if (s != null && s.length () > 0)
+                return METHOD;
+            if (s != null && s.length () < 1) {
+                s = getCurrentClassName ();
+                if (s.length () > 0)
+                    return CLASS;
+            }
         }
-        return LINE;
+        return CLASS;
     }
 
     public static Object annotate (
