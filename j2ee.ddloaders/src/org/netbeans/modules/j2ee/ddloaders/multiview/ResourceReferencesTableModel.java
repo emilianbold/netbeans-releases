@@ -81,13 +81,10 @@ class ResourceReferencesTableModel extends InnerTableModel {
         ResourceRef resourceRef = ejb.newResourceRef();
         ejb.addResourceRef(resourceRef);
         int row = getRowCount() - 1;
-        //fireTableRowsInserted(row, row);
         return row;
     }
 
     public void removeRow(int row) {
-        fireTableStructureChanged(); // cancel editing
         ejb.removeResourceRef(ejb.getResourceRef(row));
-        //fireTableRowsDeleted(row, row);
     }
 }

@@ -15,7 +15,6 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.xml.multiview.ui.DefaultTablePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
-import org.netbeans.modules.xml.multiview.ui.SectionNodePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 import javax.swing.*;
@@ -25,6 +24,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -37,7 +37,6 @@ public class InnerTablePanel extends SectionInnerPanel {
 
     private final TablePanel tablePanel;
     private JTable table;
-    private int rowCount;
 
     protected void setButtonListeners(final InnerTableModel model) {
         final JTable table = getTable();
@@ -45,6 +44,11 @@ public class InnerTablePanel extends SectionInnerPanel {
             public void actionPerformed(ActionEvent e) {
                 stopCellEditing(table);
                 selectCell(model.addRow(), 0);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        Utils.scrollToVisible(tablePanel);
+                    }
+                });
             }
         });
         getEditButton().addActionListener(new ActionListener() {
@@ -54,16 +58,24 @@ public class InnerTablePanel extends SectionInnerPanel {
         });
         getRemoveButton().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                stopCellEditing(table);
                 int row = table.getSelectedRow();
                 final int column = table.getSelectedColumn();
+                final TableCellEditor cellEditor = table.getCellEditor(row, column);
+                if (cellEditor != null) {
+                    cellEditor.cancelCellEditing();
+                }
+                int rowCount = model.getRowCount() - 1;
                 model.removeRow(row);
-                int rowCount = model.getRowCount();
                 if (row >= rowCount) {
                     row = rowCount - 1;
                 }
                 if (row >= 0) {
-                    selectCell(row, column);
+                    final int n = row;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            selectCell(n, column);
+                        }
+                    });
                 }
             }
         });
@@ -117,8 +129,8 @@ public class InnerTablePanel extends SectionInnerPanel {
             }
         });
         table = tablePanel.getTable();
-        table.setPreferredSize(table.getPreferredSize());
-        table.setCellSelectionEnabled(true);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.setRowSelectionAllowed(true);
         InputMap inputMap = table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         inputMap.put(KeyStroke.getKeyStroke("ENTER"), "selectNextColumnCell"); //NOI18N
         inputMap.put(KeyStroke.getKeyStroke("shift ENTER"), "selectPreviousColumnCell");    //NOI18N
@@ -163,42 +175,12 @@ public class InnerTablePanel extends SectionInnerPanel {
         final JTable table = tablePanel.getTable();
         InnerTableModel tableModel = (InnerTableModel) table.getModel();
         TableColumnModel columnModel = table.getColumnModel();
-        int tableWidth = 0;
         for (int i = 0, n = columnModel.getColumnCount(); i < n; i++) {
             int width = tableModel.getDefaultColumnWidth(i);
-            tableWidth += width;
-            columnModel.getColumn(i).setPreferredWidth(width);
+            final TableColumn column = columnModel.getColumn(i);
+            column.setPreferredWidth(width);
+            column.setWidth(width);
         }
-        Dimension size = table.getPreferredSize();
-        size.width = tableWidth;
-        table.setPreferredSize(size);
-    }
-
-    public void adjustHeight() {
-        int n = table.getModel().getRowCount();
-        if (n != rowCount) {
-            rowCount = n;
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    JTable table = getTable();
-                    Dimension size = table.getPreferredSize();
-                    table.setPreferredSize(null);
-                    size.height = table.getPreferredSize().height;
-                    table.setPreferredSize(size);
-                    Container parent = getParent();
-                    if (parent instanceof SectionNodePanel) {
-                        SectionNodePanel sectionNodePanel = ((SectionNodePanel) parent);
-                        if (sectionNodePanel.isActive()) {
-                            Utils.scrollToVisible(sectionNodePanel);
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    public void refreshView() {
-        adjustHeight();
     }
 
     protected void editCell(final int row, final int column) {
@@ -234,6 +216,7 @@ public class InnerTablePanel extends SectionInnerPanel {
     }
 
     public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
+        ((InnerTableModel) getTable().getModel()).tableChanged();
         scheduleRefreshView();
     }
 

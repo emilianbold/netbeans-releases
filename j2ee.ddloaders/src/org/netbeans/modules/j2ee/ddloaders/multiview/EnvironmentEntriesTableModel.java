@@ -13,8 +13,8 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 
 /**
  * @author pfiala
@@ -75,13 +75,10 @@ class EnvironmentEntriesTableModel extends InnerTableModel {
         EnvEntry entry = ejb.newEnvEntry();
         ejb.addEnvEntry(entry);
         int row = getRowCount() - 1;
-        //fireTableRowsInserted(row, row);
         return row;
     }
 
-    public void removeRow(int row) {
-        fireTableStructureChanged(); // cancel editing
+    public void removeRow(final int row) {
         ejb.removeEnvEntry(ejb.getEnvEntry(row));
-        //fireTableRowsDeleted(row, row);
     }
 }

@@ -35,6 +35,7 @@ class EntityNode extends EjbSectionNode {
             addChild(new FinderMethodsNode(sectionNodeView, entityHelper.queries));
             addChild(new SelectMethodsNode(sectionNodeView, entityHelper.queries));
         }
+        addChild(new BeanEnvironmentNode(sectionNodeView, entity));
         addChild(new BeanDetailNode(sectionNodeView, entity));
     }
 

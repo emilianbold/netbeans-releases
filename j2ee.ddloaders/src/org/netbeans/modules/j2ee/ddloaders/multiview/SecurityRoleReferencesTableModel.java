@@ -68,14 +68,10 @@ class SecurityRoleReferencesTableModel extends InnerTableModel {
     public int addRow() {
         SecurityRoleRef securityRoleRef = ejb.newSecurityRoleRef();
         ejb.addSecurityRoleRef(securityRoleRef);
-        int row = getRowCount() - 1;
-        //fireTableRowsInserted(row, row);
-        return row;
+        return getRowCount() - 1;
     }
 
     public void removeRow(int row) {
-        fireTableStructureChanged(); // cancel editing
         ejb.removeSecurityRoleRef(ejb.getSecurityRoleRef(row));
-        //fireTableRowsDeleted(row, row);
     }
 }
