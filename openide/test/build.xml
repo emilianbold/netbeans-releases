@@ -34,6 +34,10 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.attribs" value="stable"/>
     <property name="xtest.executors" value="code,ide"/>
     
+    <property name="xtest.build" location="."/>    
+    <property name="xtest.file.name" value="test.jar"/>
+    <property name="xtest.file.location" value="lib"/>
+    
     <!-- properties just for compiler -->
     <property name="build.compiler.deprecation" value="off"/>
     <!-- should be default ON, because it helps to find problems -->
@@ -45,6 +49,10 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.includes" value=""/>
     <property name="xtest.excludes" value=""/>   
     
+    <target name="init">
+        <taskdef name="nbpath" classname="org.netbeans.xtest.NbPath" classpath="${xtest.home}/lib/xtest.jar"/>
+        <nbpath nbhome="${netbeans.test.home}" xthome="${xtest.home}" xtexhome="${xtest.extra.home}"/>
+    </target>
     
     <!-- ============ -->
     <!-- Main targets -->
@@ -53,20 +61,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="all" depends="runtests"/>
     
     <!-- This target builds tests -->
-    <target name="buildtests" depends="prepare-compile-classpath">
-       <!-- This calls common build process. -->
-       <!-- You can write your own if you need something special -->
-       
-       <!-- This property contains classpath used for compilation -->
-       <!-- WRITE CORRECT VALUE TO THIS PROPERTY -->
-       <property name="compiletest.classpath" refid="compiletest.classpath"/>
-       <ant dir="." antfile="${xtest.general.antfile}"
-             target="buildtests">
-           <!-- This property contains directories which should be compiled -->
-           <!-- WRITE CORRECT VALUE TO THIS PROPERTY -->
-           <property name="compile.srcdir" value="unit/src;regr/src"/>
-       </ant>
-    </target>
+    <target name="buildtests" depends="jars"/>
     
     <!-- This target cleans tests -->
     <target name="cleantests">
@@ -233,6 +228,42 @@ Microsystems, Inc. All Rights Reserved.
             	<include name="ext/*.jar"/>
         	</fileset>
     	</path>
+    </target>
+    
+    <!-- ======== -->
+    <!-- Building -->
+    <!-- ======== -->
+    
+    <target name="compile" depends="init,prepare-compile-classpath" unless="xtest.distexec">
+        <javac srcdir="unit/src" 
+               deprecation="${build.compiler.deprecation}"
+               debug="${build.compiler.debug}">
+            <classpath>
+           	<pathelement path="${junit.path}"/>
+    		<pathelement path="${xerces.path}"/>
+		<path refid="compiletest.classpath"/>
+            </classpath>
+        </javac>
+        <javac srcdir="regr/src" 
+               deprecation="${build.compiler.deprecation}"
+               debug="${build.compiler.debug}">
+            <classpath>
+           	<pathelement path="${junit.path}"/>
+    		<pathelement path="${xerces.path}"/>
+		<path refid="compiletest.classpath"/>
+            </classpath>
+        </javac>
+    </target>
+    
+    <!-- Creates lib/test.jar with all tests for this module,       -->
+    <!-- maybe there should be more includes here, not just classes -->
+    <target name="jars" depends="compile" unless="xtest.distexec">
+        <mkdir dir="${xtest.build}/${xtest.file.location}"/>
+        <jar basedir="." 
+             jarfile="${xtest.build}/${xtest.file.location}/${xtest.file.name}"
+             includesfile="${xtest.home}/standard-test-includes.txt"
+             excludesfile="${xtest.home}/standard-test-excludes.txt">
+        </jar>
     </target>
     
 </project>
