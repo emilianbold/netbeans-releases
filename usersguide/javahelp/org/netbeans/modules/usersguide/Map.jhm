@@ -623,11 +623,9 @@
 <mapID target="ant.version" url="ant/version.html" />
 <mapID target="ant.find" url="ant/comp-project.html#find" />
 
-<mapID target="configure" url="configure/configure.html" />
 <mapID target="configure.options" url="configure/configure_options.html" />
 <mapID target="configure.startup-switches" url="configure/configure_startup-switches.html" />
 <mapID target="configure.setup" url="configure/setup.html" />
-<mapID target="configure.menu" url="configure/menu.html" />
 <mapID target="configure.menucommands" url="configure/menu_commands.html" />
 <mapID target="configure.popup" url="configure/popup.html" />
 <mapID target="configure.menucreate" url="configure/menu_create.html" />
