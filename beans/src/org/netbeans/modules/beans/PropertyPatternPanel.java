@@ -492,26 +492,3 @@ public class PropertyPatternPanel extends javax.swing.JPanel
     }
 
 }
-
-/*
- * Log
- *  11   Gandalf   1.10        1/13/00  Petr Hrebejk    i18n mk3
- *  10   Gandalf   1.9         1/12/00  Petr Hrebejk    i18n  
- *  9    Gandalf   1.8         1/4/00   Petr Hrebejk    Various bugfixes - 5036,
- *       5044, 5045
- *  8    Gandalf   1.7         11/10/99 Petr Hrebejk    Canged to work with 
- *       DialogDescriptor.setClosingOptions()
- *  7    Gandalf   1.6         11/10/99 Petr Hrebejk    Resize behavior in 
- *       property panel fixed
- *  6    Gandalf   1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  5    Gandalf   1.4         9/13/99  Petr Hrebejk    Creating multiple 
- *       Properties/EventSet with the same name vorbiden. Forms made i18n
- *  4    Gandalf   1.3         8/9/99   Ian Formanek    Generated Serial Version
- *       UID
- *  3    Gandalf   1.2         7/21/99  Petr Hrebejk    Bug fixes interface 
- *       bodies, is for boolean etc
- *  2    Gandalf   1.1         7/9/99   Petr Hrebejk    Factory chaining fix
- *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
- * $
- */

@@ -609,15 +609,3 @@ public final class BiNode extends AbstractNode {
         return prop;
     }
 }
-
-
-/*
- * Log
- *  4    Gandalf   1.3         1/12/00  Petr Hrebejk    i18n  
- *  3    Gandalf   1.2         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  2    Gandalf   1.1         8/18/99  Petr Hrebejk    BeanInfo analyse moved 
- *       to separate thread
- *  1    Gandalf   1.0         7/26/99  Petr Hrebejk    
- * $
- */

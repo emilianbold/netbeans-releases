@@ -112,15 +112,3 @@ public class BiPanel extends ExplorerPanel  {
         btv.getAccessibleContext().setAccessibleDescription((NbBundle.getBundle("org.netbeans.modules.beans.beaninfo.Bundle")).getString("ACSD_BeanInfoLeftTreeView"));
     }
 }
-
-/*
- * Log
- *  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  3    Gandalf   1.2         8/18/99  Petr Hrebejk    BeanInfo analyse moved 
- *       to separate thread
- *  2    Gandalf   1.1         8/9/99   Ian Formanek    Generated Serial Version
- *       UID
- *  1    Gandalf   1.0         7/26/99  Petr Hrebejk    
- * $
- */

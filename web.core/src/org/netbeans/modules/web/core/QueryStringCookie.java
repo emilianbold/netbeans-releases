@@ -25,13 +25,3 @@ import org.openide.nodes.Node;
 public interface QueryStringCookie extends Node.Cookie {
 
 }
-
-/*
- * Log
- *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  3    Gandalf   1.2         7/20/99  Petr Jiricka    
- *  2    Gandalf   1.1         7/16/99  Petr Jiricka    
- *  1    Gandalf   1.0         7/3/99   Petr Jiricka    
- * $
- */

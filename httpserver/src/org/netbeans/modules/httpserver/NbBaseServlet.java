@@ -334,18 +334,3 @@ public abstract class NbBaseServlet extends HttpServlet {
     }
 
 }
-
-/*
- * Log
- *  8    Jaga      1.6.1.0     3/24/00  Petr Jiricka    Fixing main servlets, 
- *       grant access listeners
- *  7    Gandalf   1.6         1/13/00  Petr Jiricka    More i18n
- *  6    Gandalf   1.5         1/12/00  Petr Jiricka    i18n
- *  5    Gandalf   1.4         1/3/00   Petr Jiricka    
- *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  3    Gandalf   1.2         10/7/99  Petr Jiricka    Removed debug println
- *  2    Gandalf   1.1         10/4/99  Petr Jiricka    
- *  1    Gandalf   1.0         9/30/99  Petr Jiricka    
- * $
- */

@@ -85,14 +85,3 @@ public class URLEditor extends PropertyEditorSupport implements org.openide.expl
         return el;
     }
 }
-
-/*
- * Log
- *  5    Gandalf   1.4         1/13/00  Petr Jiricka    i18n
- *  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  3    Gandalf   1.2         7/19/99  Ian Formanek    XML Serialization
- *  2    Gandalf   1.1         5/8/99   Ian Formanek    Fixed to compile
- *  1    Gandalf   1.0         5/8/99   Ian Formanek    
- * $
- */

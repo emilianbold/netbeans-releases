@@ -182,18 +182,3 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
 
     }
 }
-
-/*
- * Log
- *  6    Gandalf   1.5         1/13/00  Petr Hrebejk    i18n mk3
- *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  4    Gandalf   1.3         8/18/99  Petr Hrebejk    BeanInfo analyse moved 
- *       to separate thread
- *  3    Gandalf   1.2         8/9/99   Ian Formanek    Generated Serial Version
- *       UID
- *  2    Gandalf   1.1         7/26/99  Petr Hrebejk    BeanInfo fix & Code 
- *       generation fix
- *  1    Gandalf   1.0         7/26/99  Petr Hrebejk    
- * $
- */

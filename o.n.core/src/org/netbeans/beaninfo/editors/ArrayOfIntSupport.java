@@ -204,17 +204,3 @@ abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport implem
 
 
 }
-
-
-/*
- * Log
- *  6    Gandalf   1.5         1/13/00  Petr Jiricka    i18n
- *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  4    Gandalf   1.3         7/19/99  Ian Formanek    XML Serialization
- *  3    Gandalf   1.2         6/8/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  2    Gandalf   1.1         3/4/99   Jan Jancura     bundle moved
- *  1    Gandalf   1.0         1/5/99   Ian Formanek    
- * $
- */

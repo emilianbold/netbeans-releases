@@ -355,24 +355,3 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
     }
 
 }
-
-/*
- * Log
- *  9    Gandalf   1.8         1/12/00  Petr Hrebejk    i18n  
- *  8    Gandalf   1.7         1/4/00   Petr Hrebejk    Various bugfixes - 5036,
- *       5044, 5045
- *  7    Gandalf   1.6         11/10/99 Petr Hrebejk    Canged to work with 
- *       DialogDescriptor.setClosingOptions()
- *  6    Gandalf   1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  5    Gandalf   1.4         9/13/99  Petr Hrebejk    Creating multiple 
- *       Properties/EventSet with the same name vorbiden. Forms made i18n
- *  4    Gandalf   1.3         8/17/99  Petr Hrebejk    Combo box with well 
- *       known Listener interfaces
- *  3    Gandalf   1.2         8/9/99   Ian Formanek    Generated Serial Version
- *       UID
- *  2    Gandalf   1.1         7/21/99  Petr Hrebejk    Bug fixes interface 
- *       bodies, is for boolean etc
- *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
- * $
- */

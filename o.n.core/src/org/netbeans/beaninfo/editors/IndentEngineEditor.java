@@ -38,9 +38,3 @@ public class IndentEngineEditor extends ServiceTypeEditor {
     }
 
 }
-
-
-/*
- * Log
- * $
- */

@@ -25,12 +25,3 @@ public interface Executor {
     */
     public void exec (com.sun.jdi.event.Event event);
 }
-
-/*
- * Log
- *  3    Jaga      1.1.1.0     3/2/00   Jan Jancura     
- *  2    Gandalf   1.1         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  1    Gandalf   1.0         7/13/99  Jan Jancura     
- * $
- */

@@ -45,12 +45,3 @@ public class UniFileLoaderBeanInfo extends SimpleBeanInfo {
     }
 
 }
-
-/*
- * Log
- *  3    Gandalf   1.2         1/13/00  Jaroslav Tulach I18N
- *  2    Gandalf   1.1         11/25/99 Jesse Glick     representationClass 
- *       expert loader property.
- *  1    Gandalf   1.0         11/3/99  Jesse Glick     
- * $
- */

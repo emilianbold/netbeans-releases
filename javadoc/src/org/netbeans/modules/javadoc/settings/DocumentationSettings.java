@@ -296,24 +296,3 @@ public class DocumentationSettings extends SystemOption {
         putProperty( PROP_ASK_AFTER_GEN, new Boolean(ask), true );
     }    
 }
-
-
-/*
- * Log
- *  10   Gandalf   1.9         1/12/00  Petr Hrebejk    i18n
- *  9    Gandalf   1.8         11/27/99 Patrik Knakal   
- *  8    Gandalf   1.7         11/5/99  Jesse Glick     Context help jumbo 
- *       patch.
- *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  6    Gandalf   1.5         8/17/99  Petr Hrebejk    IndexSearch window 
- *       serialization
- *  5    Gandalf   1.4         8/13/99  Petr Hrebejk    Serialization of 
- *       autocomment window added  
- *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  3    Gandalf   1.2         5/17/99  Petr Hrebejk    
- *  2    Gandalf   1.1         5/14/99  Petr Hrebejk    
- *  1    Gandalf   1.0         4/23/99  Petr Hrebejk    
- * $
- */

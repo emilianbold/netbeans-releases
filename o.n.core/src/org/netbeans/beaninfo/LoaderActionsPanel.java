@@ -350,14 +350,3 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
         return label;
     }
 }
-
-/*
- * Log
- *  4    Gandalf   1.3         1/19/00  Jesse Glick     Fixing position of split
- *       pane on 1.2.2. Looks like JSplitPane before 1.3 would not retain a 
- *       divider location if set before adding components.
- *  3    Gandalf   1.2         1/13/00  Jesse Glick     Much nicer-looking.
- *  2    Gandalf   1.1         1/13/00  Jaroslav Tulach I18N
- *  1    Gandalf   1.0         1/13/00  Jesse Glick     
- * $
- */

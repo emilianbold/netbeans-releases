@@ -162,17 +162,3 @@ class NbAuthenticator extends java.net.Authenticator {
         }
     }
 }
-
-/*
- * Log
- *  7    Jaga      1.5.1.0     4/12/00  Ales Novak      small memory leak
- *  6    Gandalf   1.5         1/13/00  Jaroslav Tulach I18N
- *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  4    Gandalf   1.3         8/9/99   Ian Formanek    Generated Serial Version
- *       UID
- *  3    Gandalf   1.2         7/8/99   Jesse Glick     Context help.
- *  2    Gandalf   1.1         6/10/99  Petr Hrebejk    Cancel option added
- *  1    Gandalf   1.0         6/10/99  Petr Hrebejk    
- * $
- */

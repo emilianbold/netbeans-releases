@@ -63,15 +63,3 @@ public class ClassEditor extends java.beans.PropertyEditorSupport {
         }
     }
 }
-
-/*
- * Log
- *  5    Gandalf   1.4         1/13/00  Petr Jiricka    i18n
- *  4    Gandalf   1.3         1/10/00  Jan Jancura     Bug 1592
- *  3    Gandalf   1.2         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  2    Gandalf   1.1         6/22/99  Ian Formanek    Changed loading class 
- *       and throwing exception if it fails
- *  1    Gandalf   1.0         1/5/99   Ian Formanek    
- * $
- */

@@ -45,12 +45,3 @@ public interface PatternProperties {
 
     public static final String PROP_ISUNICAST = "isUnicast"; // NOI18N
 }
-
-/*
- * Log
- *  3    Gandalf   1.2         1/12/00  Petr Hrebejk    i18n  
- *  2    Gandalf   1.1         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
- * $
- */
