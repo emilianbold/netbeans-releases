@@ -213,9 +213,18 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
     
     private void openInAWT(int index) {
         CloneableTopComponent mvtc = openCloneableTopComponent();
-        mvtc.requestActive();
         MultiViewHandler handler = MultiViews.findMultiViewHandler(mvtc);
-        handler.requestActive(handler.getPerspectives()[index<0?xmlMultiViewIndex:index]);
+        handler.requestVisible(handler.getPerspectives()[index<0?xmlMultiViewIndex:index]);
+        mvtc.requestActive();
+    }
+    
+    void goToXmlPerspective() {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                MultiViewHandler handler = MultiViews.findMultiViewHandler(mvtc);
+                handler.requestVisible(handler.getPerspectives()[xmlMultiViewIndex]);
+            }
+        });
     }
     
     /** A description of the binding between the editor support and the object.

@@ -86,6 +86,11 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     protected boolean isModelUpdated() {
         return modelUpdated;
     }
+    /** enables to switch quickly to XML perspective in multi view editor
+     */
+    public void goToXmlView() {
+        getEditorSupport().goToXmlPerspective();
+    }
     
     protected boolean isChangedFromUI() {
         return changedFromUI;
@@ -207,13 +212,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                     org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
                 }
                 finally {
-                    changedFromUI=false;
-                    /*
-                    synchronized (DD2beansDataObject.this) {
-                        numberOfStartedGens--;
-                        if (numberOfStartedGens==0) nodeDirty=false;
-                    } 
-                     */                               
+                    changedFromUI=false;                             
                 }
             }
         });

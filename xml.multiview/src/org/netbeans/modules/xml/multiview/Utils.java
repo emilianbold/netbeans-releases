@@ -158,6 +158,7 @@ public class Utils {
      */
     public static String filterEndLines(String str) {
         char[] text = str.toCharArray();
+        if (text.length==0) return "";
         int pos = 0;
         for (int i = 0; i < text.length; i++) {
             char c = text[i];
@@ -167,7 +168,7 @@ public class Utils {
                 pos++;
             }
         }
-        return new String(text, 0, pos - 1);
+        return new String(text, 0, pos);
     }
 
     /**
