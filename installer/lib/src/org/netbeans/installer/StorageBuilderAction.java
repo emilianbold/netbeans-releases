@@ -71,8 +71,7 @@ public class StorageBuilderAction extends ProductAction {
         }
     }
     
-    private void init (ProductActionSupport support)
-    throws Exception {
+    private void init (ProductActionSupport support) {
 	/*
         ProductService pservice = (ProductService)getService(ProductService.NAME);
         String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
@@ -197,8 +196,29 @@ public class StorageBuilderAction extends ProductAction {
         logEvent(this, Log.DBG,"Running Storage Builder took: (ms) " + (System.currentTimeMillis() - currtime));
     }
     
-    /** Does nothing. */
+    /** Does cleaning. */
     public void uninstall(ProductActionSupport support) {
+        init(support);
+        installMode = UNINSTALL;
+        
+        String fileName;
+        fileName = nbInstallDir + File.separator + StorageBuilderAction.STORAGE_BUILDER_DEST_DIR;
+        logEvent(this, Log.DBG,"Deleting :" + fileName);
+        Util.deleteCompletely(new File(fileName),support);
+        
+        fileName = uninstDir + File.separator + "storagebuilder" + File.separator + "storagebuilder.log";
+        logEvent(this, Log.DBG,"Deleting :" + fileName);
+        Util.deleteCompletely(new File(fileName),support);
+        
+        if (Util.isWindowsOS()) {
+            fileName = uninstDir + File.separator + "storagebuilder" + File.separator + "run-storage-builder-windows.bat";
+            logEvent(this, Log.DBG,"Deleting :" + fileName);
+            Util.deleteCompletely(new File(fileName),support);
+        } else {
+            fileName = uninstDir + File.separator + "storagebuilder" + File.separator + "run-storage-builder-unix.sh";
+            logEvent(this, Log.DBG,"Deleting :" + fileName);
+            Util.deleteCompletely(new File(fileName),support);
+        }
     }
     
     //threads should only run in install mode until ISMP supports them

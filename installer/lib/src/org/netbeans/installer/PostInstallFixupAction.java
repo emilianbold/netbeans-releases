@@ -136,10 +136,6 @@ public class PostInstallFixupAction extends ProductAction {
             deleteFiles(nbInstallDir, new String[] {"etc" + sep + "netbeans.conf"});
             deleteFiles(uninstallDir, new String[] {"install.log"});
             deleteFiles(nbInstallDir, new String[] {"nb4.1" + sep + "config" + sep + "productid" });
-            deleteFiles(uninstallDir, new String[] {"install.properties"});
-            //MDR storage created by Storage Builder
-            Util.deleteCompletely(new File(nbInstallDir + sep + StorageBuilderAction.STORAGE_BUILDER_DEST_DIR),support);
-            Util.deleteCompletely(new File(uninstallDir + sep + "storagebuilder" + sep + "storagebuilder.log"),support);
             
             if (Util.isMacOSX()) {
                 deleteSymbolicLink();
