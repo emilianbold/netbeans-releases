@@ -587,10 +587,18 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             this.run = run;
             // XXX poor UI appearance, could use borders, better layout, ...
             getContentPane().setLayout(new GridLayout(2, 2));
-            getContentPane().add(new JLabel(NbBundle.getMessage(JavaHelp.class, "LBL_parsing_help_sets")));
-            getContentPane().add(new JProgressBar(HelpSetProcessor.parseModel));
-            getContentPane().add(new JLabel(NbBundle.getMessage(JavaHelp.class, "LBL_merging_help_sets")));
-            getContentPane().add(new JProgressBar(mergeModel));
+            //a11y fix for issue 31669, add accessible description, labelfor - TDB
+            JLabel pLabel = new JLabel(NbBundle.getMessage(JavaHelp.class, "LBL_parsing_help_sets"));  //NOI18N
+            JLable mLabel = new JLabel(NbBundle.getMessage(JavaHelp.class, "LBL_merging_help_sets"));  //NOI18N
+            JProgressBar pBar = new JProgressBar (HelpSetProcessor.parseModel);
+            JProgressBar mBar = new JProgressBar(mergeModel);
+            getContentPane().add(pLabel);
+            getContentPane().add(pBar);
+            getContentPane().add(mLabel);
+            getContentPane().add(mBar);
+            pLabel.setLabelFor(pBar);
+            mLabel.setLabelFor(mBar);
+            getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavaHelp.class, "ACSD_Loading_Dialog"));  //NOI18N
             pack();
             Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
             Dimension me = getSize();
