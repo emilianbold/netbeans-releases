@@ -21,8 +21,6 @@ Microsystems, Inc. All Rights Reserved.
     <filter token="SERVLET24_SPEC_VERS_SUBST" value="${web.servletapi24.specification.version}"/>
     <patternset id="web/jspsyntax.files">
       <include name="${nb.modules/autoload.dir}/jsp-syntax.jar"/>
-      <include name="${nb.system.dir}/ParserDB/jsp20.jc?"/>
-      <include name="${nb.system.dir}/ParserDB/servlet24.jc?"/>
     </patternset>
     <path id="cp">
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
@@ -38,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="compile" depends="init">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="true">
       <classpath refID="cp"/>
     </javac>
 
@@ -63,9 +61,9 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="release">
     <!-- parser database -->
-    <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}">
+    <!--<copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}">
       <fileset dir="release/system" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
-    </copy>
+    </copy>-->
     <copy file="../external/syntaxref12.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
   </target>
 
