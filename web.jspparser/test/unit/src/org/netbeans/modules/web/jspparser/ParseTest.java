@@ -73,6 +73,10 @@ public class ParseTest extends NbTestCase {
         jspExamplesAppTest("jspparser-data3/jsp-examples/jsp2/el/functions.jsp");
     }
     
+    public void testAnalysisXMLTextRotate() throws Exception {
+        jspExamplesAppTest("jspparser-data3/jsp-examples/jsp2/jspx/textRotate.jspx");
+    }
+    
     /** Runs the test for a file from the midnight test application (data2.zip).
      *  @param path resource path of the file within the web module, separated by /
      */
