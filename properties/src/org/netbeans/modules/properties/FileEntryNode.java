@@ -11,6 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.properties;
 
 import java.awt.Image;
@@ -26,13 +27,12 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.datatransfer.*;
 import org.openide.actions.InstantiateAction;
 import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.SystemAction;
 import org.openide.nodes.*;
 import org.openide.loaders.*;
+
 
 /** Standard node representing a FileEntry.
 *
@@ -219,20 +219,3 @@ public class FileEntryNode extends AbstractNode {
         }
     }
 }
-
-/*
- * <<Log>>
- *  6    Gandalf   1.5         11/11/99 Jesse Glick     Display miscellany.
- *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  3    Gandalf   1.2         6/8/99   Petr Jiricka    
- *  2    Gandalf   1.1         5/16/99  Petr Jiricka    
- *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
- * $
- * Beta Change History:
- *  0    Tuborg    0.11        --/--/98 Jaroslav Tulach actions are lookuped in the loaders pool
- *  0    Tuborg    0.12        --/--/98 Ales Novak      Serializable
- *  0    Tuborg    0.13        --/--/98 Jaroslav Tulach default action for templates
- */

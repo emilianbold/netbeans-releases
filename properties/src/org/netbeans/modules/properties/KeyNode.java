@@ -11,6 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.properties;
 
 import java.awt.Image;
@@ -28,8 +29,6 @@ import org.openide.cookies.SaveCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.ViewCookie;
 import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.nodes.*;
@@ -280,27 +279,3 @@ public class KeyNode extends AbstractNode {
     }
 
 }
-
-/*
- * <<Log>>
- *  12   Gandalf   1.11        10/25/99 Petr Jiricka    Fixes in a number of 
- *       areas - saving, UI, cookies, ...
- *  11   Gandalf   1.10        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  10   Gandalf   1.9         8/9/99   Petr Jiricka    Removed debug prints
- *  9    Gandalf   1.8         7/16/99  Petr Jiricka    
- *  8    Gandalf   1.7         6/16/99  Petr Jiricka    
- *  7    Gandalf   1.6         6/10/99  Petr Jiricka    
- *  6    Gandalf   1.5         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  5    Gandalf   1.4         6/8/99   Petr Jiricka    
- *  4    Gandalf   1.3         6/6/99   Petr Jiricka    
- *  3    Gandalf   1.2         5/16/99  Petr Jiricka    
- *  2    Gandalf   1.1         5/14/99  Petr Jiricka    
- *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
- * $
- * Beta Change History:
- *  0    Tuborg    0.11        --/--/98 Jaroslav Tulach actions are lookuped in the loaders pool
- *  0    Tuborg    0.12        --/--/98 Ales Novak      Serializable
- *  0    Tuborg    0.13        --/--/98 Jaroslav Tulach default action for templates
- */
