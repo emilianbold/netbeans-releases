@@ -76,7 +76,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- This target runs tests. You should not change this --> 
     <!-- target unless you realy know what you are doing -->
-    <target name="runtests" depends="cleanresults,buildtests">
+    <target name="runtests" depends="buildtests">
         <ant dir="." antfile="${xtest.general.antfile}"
              target="runtests"/>
     </target>
