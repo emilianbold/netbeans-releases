@@ -63,6 +63,9 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
     // the name of a property indentifing cached query
     public static final String DOCUMENT_GRAMMAR_BINDING_PROP = "doc-bind-query";    
     
+    // remember last thread that invoked query method
+    private ThreadLocal thread;
+    
     /** 
      * Perform the query on the given component. The query usually
      * gets the component's document, the caret position and searches back
@@ -80,13 +83,24 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
      */
     public CompletionQuery.Result query(JTextComponent component, int offset, SyntaxSupport support) {        
 
-        // assert precondition
+        // assert precondition, actually serial access required
         
-        if (SwingUtilities.isEventDispatchThread() == false) {
-            throw new IllegalStateException("Called from non-AWT thread: " + Thread.currentThread().getName());  //NOI18N
-        }
+//        synchronized (this) {
+//            if (thread == null) {
+//                thread = new ThreadLocal();
+//                thread.set(thread);
+//            }
+//            if (thread != thread.get()) {
+//                // unfortunatelly RP can probably provide serialization even
+//                // if delegating to multiple threads
+//                // throw new IllegalStateException("Serial access required!");     //NOI18N
+//            }
+//        }
+
+        // perform query
         
         BaseDocument doc = (BaseDocument)component.getDocument();
+        if (doc == null) return null;
         XMLSyntaxSupport sup = (XMLSyntaxSupport)support.get(XMLSyntaxSupport.class);
         if( sup == null ) return null;// No SyntaxSupport for us, no hint for user
         
