@@ -518,6 +518,13 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Templates">
+	<folder name="Privileged">
+            <attr name="Class.shadow/JFrame.shadow" boolvalue="true"/>
+	    <file name="JFrame.shadow">
+                <attr name="originalFile" stringvalue="Templates/GUIForms/JFrame.java"/>
+            </file>
+	</folder>
+
         <attr name="Classes/GUIForms" boolvalue="true"/>
         <folder name="GUIForms">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>

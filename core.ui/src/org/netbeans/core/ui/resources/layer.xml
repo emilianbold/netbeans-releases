@@ -431,6 +431,15 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
 
         </folder>    
+
+        <!-- folder for all privileged templates -->
+        <folder name="Privileged">
+            <!-- a value to signal that this folder should not be visible in the simple new from template wizard -->
+            <attr name="simple" boolvalue="false" />
+	    <file name="Folder.shadow">
+                <attr name="originalFile" stringvalue="Templates/Folder"/>
+            </file>
+	</folder>
         
         <!-- folder for all registered filesystem templates -->
         <folder name="Mount">
