@@ -1,0 +1,19 @@
+/*
+ * TestAction.java
+ *
+ */
+
+package actions;
+
+import org.netbeans.jellytools.actions.*;
+import java.awt.event.KeyEvent;
+
+/** TestAction Class
+ */
+public class TestAction extends ActionNoBlock {
+
+    /** creates new TestAction instance */
+    public TestAction() {
+        super(null, "Tools|JUnit Tests|Create", new Action.Shortcut(KeyEvent.CTRL_MASK|KeyEvent.ALT_MASK, KeyEvent.VK_J));
+    }
+}

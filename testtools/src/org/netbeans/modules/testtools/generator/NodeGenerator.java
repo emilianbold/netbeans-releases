@@ -287,7 +287,7 @@ public class NodeGenerator {
             sb.append(actionsPackage);
             sb.append(";\n\nimport org.netbeans.jellytools.actions.*;\nimport java.awt.event.KeyEvent;\n\n/** "); // NOI18N
             sb.append(name);
-            sb.append(" Class\n * author "); // NOI18N
+            sb.append(" Class\n * @author "); // NOI18N
             sb.append(System.getProperty("user.name")); // NOI18N
             sb.append("\n */\npublic class "); // NOI18N
             sb.append(name);

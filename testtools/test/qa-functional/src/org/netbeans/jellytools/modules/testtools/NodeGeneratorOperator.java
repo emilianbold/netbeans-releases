@@ -19,6 +19,9 @@ package org.netbeans.jellytools.modules.testtools;
  * Created on 8/30/02 3:45 PM
  */
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jemmy.ComponentIsNotVisibleException;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.*;
 
 /** Class implementing all necessary methods for handling "Jelly Node Generator" NbDialog.
@@ -31,12 +34,13 @@ public class NodeGeneratorOperator extends NbDialogOperator {
     /** Creates new NodeGeneratorOperator that can handle it.
      */
     public NodeGeneratorOperator() {
-        super("Jelly Node Generator");
+        super("Jelly Nodes'n'Actions Generator");
     }
 
     private JTreeOperator _treeFilesystems;
     private JLabelOperator _lblSelectFilesystem;
     private JButtonOperator _btStart;
+    private JButtonOperator _btStop;
     private JButtonOperator _btClose;
     private JTextFieldOperator _txtNodesPackage;
     private JTextFieldOperator _txtActionsPackage;
@@ -78,6 +82,16 @@ public class NodeGeneratorOperator extends NbDialogOperator {
             _btStart = new JButtonOperator(this, "Start");
         }
         return _btStart;
+    }
+
+    /** Tries to find "Stop" JButton in this dialog.
+     * @return JButtonOperator
+     */
+    public JButtonOperator btStop() {
+        if (_btStop==null) {
+            _btStop = new JButtonOperator(this, "Stop");
+        }
+        return _btStop;
     }
 
     /** Tries to find "Close" JButton in this dialog.
@@ -158,7 +172,23 @@ public class NodeGeneratorOperator extends NbDialogOperator {
     /** clicks on "Start" JButton
      */
     public void start() {
-        btStart().push();
+        try {
+            btStart().push();
+        } catch (JemmyException e) {
+            if (!(e.getInnerException() instanceof ComponentIsNotVisibleException))
+                throw e;
+        }
+    }
+
+    /** clicks on "Stop" JButton
+     */
+    public void stop() {
+        try {
+            btStop().push();
+        } catch (JemmyException e) {
+            if (!(e.getInnerException() instanceof ComponentIsNotVisibleException))
+                throw e;
+        }
     }
 
     /** clicks on "Close" JButton
@@ -232,12 +262,26 @@ public class NodeGeneratorOperator extends NbDialogOperator {
     // High-level functionality definition part
     //*****************************************
 
+    public void verifyStatus(String status) {
+        long t = getTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout");
+        getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 20000);
+        try {
+            new JLabelOperator(this, status);
+        } finally {
+            getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", t);
+        }
+    }
+
+    public static NodeGeneratorOperator invoke() {
+        new Action("Tools|Jelly Node", null).performMenu();
+        return new NodeGeneratorOperator();
+    }
+    
     /** Performs verification of NodeGeneratorOperator by accessing all its components.
      */
     public void verify() {
         treeFilesystems();
         lblSelectFilesystem();
-        btStart();
         btClose();
         txtNodesPackage();
         txtActionsPackage();

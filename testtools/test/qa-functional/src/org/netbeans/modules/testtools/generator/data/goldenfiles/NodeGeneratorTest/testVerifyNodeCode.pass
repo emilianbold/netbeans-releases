@@ -1,0 +1,115 @@
+package nodes;
+
+/*
+ * TestNode.java
+ *
+ */
+
+import actions.TestAction;
+import org.netbeans.jellytools.actions.*;
+import org.netbeans.jellytools.nodes.Node;
+import javax.swing.tree.TreePath;
+import java.awt.event.KeyEvent;
+import org.netbeans.jemmy.operators.JTreeOperator;
+
+/** TestNode Class
+public class TestNode extends Node {
+    
+    private static final Action searchFilesystemsViewAction = new SearchFilesystemsViewAction();
+    private static final Action mountLocalAction = new MountLocalAction();
+    private static final Action mountArchiveAction = new MountArchiveAction();
+    private static final Action mountVersionControlCVSAction = new ActionNoBlock(null, "Mount|Version Control|CVS");
+    private static final Action mountVersionControlGenericVCSAction = new ActionNoBlock(null, "Mount|Version Control|Generic VCS");
+    private static final Action changeOrderAction = new ChangeOrderAction();
+    private static final Action testAction = new TestAction();
+    private static final Action toolsJUnitTestsRunAction = new ActionNoBlock(null, "Tools|JUnit Tests|Run", new Action.Shortcut(KeyEvent.CTRL_MASK|KeyEvent.ALT_MASK, KeyEvent.VK_L));
+    private static final Action toolsJUnitTestsOpenAction = new ActionNoBlock(null, "Tools|JUnit Tests|Open", new Action.Shortcut(KeyEvent.CTRL_MASK|KeyEvent.ALT_MASK, KeyEvent.VK_K));
+    private static final Action customizeAction = new CustomizeAction();
+
+    /** creates new TestNode
+     * @param tree JTreeOperator of tree
+     * @param treePath String tree path */
+    public TestNode(JTreeOperator tree, String treePath) {
+        super(tree, treePath);
+    }
+
+    /** creates new TestNode
+     * @param tree JTreeOperator of tree
+     * @param treePath TreePath of node */
+    public TestNode(JTreeOperator tree, TreePath treePath) {
+        super(tree, treePath);
+    }
+
+    /** creates new TestNode
+     * @param parent parent Node
+     * @param treePath String tree path from parent Node */
+    public TestNode(Node parent, String treePath) {
+        super(parent, treePath);
+    }
+
+    /** tests popup menu items for presence */
+    public void verifyPopup() {
+        verifyPopup(new Action[]{
+            searchFilesystemsViewAction,
+            mountLocalAction,
+            mountArchiveAction,
+            mountVersionControlCVSAction,
+            mountVersionControlGenericVCSAction,
+            changeOrderAction,
+            testAction,
+            toolsJUnitTestsRunAction,
+            toolsJUnitTestsOpenAction,
+            customizeAction
+        });
+    }
+
+    /** performs SearchFilesystemsViewAction with this node */
+    public void searchFilesystemsView() {
+        searchFilesystemsViewAction.perform(this);
+    }
+
+    /** performs MountLocalAction with this node */
+    public void mountLocal() {
+        mountLocalAction.perform(this);
+    }
+
+    /** performs MountArchiveAction with this node */
+    public void mountArchive() {
+        mountArchiveAction.perform(this);
+    }
+
+    /** performs MountVersionControlCVSAction with this node */
+    public void mountVersionControlCVS() {
+        mountVersionControlCVSAction.perform(this);
+    }
+
+    /** performs MountVersionControlGenericVCSAction with this node */
+    public void mountVersionControlGenericVCS() {
+        mountVersionControlGenericVCSAction.perform(this);
+    }
+
+    /** performs ChangeOrderAction with this node */
+    public void changeOrder() {
+        changeOrderAction.perform(this);
+    }
+
+    /** performs TestAction with this node */
+    public void test() {
+        testAction.perform(this);
+    }
+
+    /** performs ToolsJUnitTestsRunAction with this node */
+    public void toolsJUnitTestsRun() {
+        toolsJUnitTestsRunAction.perform(this);
+    }
+
+    /** performs ToolsJUnitTestsOpenAction with this node */
+    public void toolsJUnitTestsOpen() {
+        toolsJUnitTestsOpenAction.perform(this);
+    }
+
+    /** performs CustomizeAction with this node */
+    public void customize() {
+        customizeAction.perform(this);
+    }
+}

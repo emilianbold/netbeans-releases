@@ -19,6 +19,7 @@ package org.netbeans.jellytools.modules.testtools;
  * Created on 8/30/02 3:46 PM
  */
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.operators.*;
 
 /** Class implementing all necessary methods for handling "Node Editor" NbDialog.
@@ -35,11 +36,8 @@ public class NodeEditorOperator extends NbDialogOperator {
     }
 
     private JSplitPaneOperator _sppJSplitPane;
-    private JTreeOperator _treeTreeOfActionsUnderGeneratedNode;
-    private JToggleButtonOperator _tbUnsorted;
-    private JToggleButtonOperator _tbSortByName;
-    private JToggleButtonOperator _tbSortByType;
-    private JToggleButtonOperator _tbShowEditablePropertiesOnly;
+    private JTreeOperator _treeNodeAndActions;
+    private PropertySheetOperator _propertySheet;
     private JButtonOperator _btCustomizer;
     private JButtonOperator _btHelp;
 
@@ -61,51 +59,21 @@ public class NodeEditorOperator extends NbDialogOperator {
     /** Tries to find null JTree in this dialog.
      * @return JTreeOperator
      */
-    public JTreeOperator treeTreeOfActionsUnderGeneratedNode() {
-        if (_treeTreeOfActionsUnderGeneratedNode==null) {
-            _treeTreeOfActionsUnderGeneratedNode = new JTreeOperator(sppJSplitPane());
+    public JTreeOperator treeNodeAndActions() {
+        if (_treeNodeAndActions==null) {
+            _treeNodeAndActions = new JTreeOperator(sppJSplitPane());
         }
-        return _treeTreeOfActionsUnderGeneratedNode;
+        return _treeNodeAndActions;
     }
 
-    /** Tries to find "" ToolbarToggleButton in this dialog.
+    /** Tries to find PropertySheet in this dialog.
      * @return JToggleButtonOperator
      */
-    public JToggleButtonOperator tbUnsorted() {
-        if (_tbUnsorted==null) {
-            _tbUnsorted = new JToggleButtonOperator(sppJSplitPane(), "");
+    public PropertySheetOperator propertySheet() {
+        if (_propertySheet==null) {
+            _propertySheet = new PropertySheetOperator(sppJSplitPane());
         }
-        return _tbUnsorted;
-    }
-
-    /** Tries to find "" ToolbarToggleButton in this dialog.
-     * @return JToggleButtonOperator
-     */
-    public JToggleButtonOperator tbSortByName() {
-        if (_tbSortByName==null) {
-            _tbSortByName = new JToggleButtonOperator(sppJSplitPane(), "", 1);
-        }
-        return _tbSortByName;
-    }
-
-    /** Tries to find "" ToolbarToggleButton in this dialog.
-     * @return JToggleButtonOperator
-     */
-    public JToggleButtonOperator tbSortByType() {
-        if (_tbSortByType==null) {
-            _tbSortByType = new JToggleButtonOperator(sppJSplitPane(), "", 2);
-        }
-        return _tbSortByType;
-    }
-
-    /** Tries to find "" ToolbarToggleButton in this dialog.
-     * @return JToggleButtonOperator
-     */
-    public JToggleButtonOperator tbShowEditablePropertiesOnly() {
-        if (_tbShowEditablePropertiesOnly==null) {
-            _tbShowEditablePropertiesOnly = new JToggleButtonOperator(sppJSplitPane(), "", 3);
-        }
-        return _tbShowEditablePropertiesOnly;
+        return _propertySheet;
     }
 
     /** Tries to find "" ToolbarButton in this dialog.
@@ -133,42 +101,6 @@ public class NodeEditorOperator extends NbDialogOperator {
     // Low-level functionality definition part
     //****************************************
 
-    /** checks or unchecks given ToolbarToggleButton
-     * @param state boolean requested state
-     */
-    public void checkUnsorted(boolean state) {
-        if (tbUnsorted().isSelected()!=state) {
-            tbUnsorted().push();
-        }
-    }
-
-    /** checks or unchecks given ToolbarToggleButton
-     * @param state boolean requested state
-     */
-    public void checkSortByName(boolean state) {
-        if (tbSortByName().isSelected()!=state) {
-            tbSortByName().push();
-        }
-    }
-
-    /** checks or unchecks given ToolbarToggleButton
-     * @param state boolean requested state
-     */
-    public void checkSortByType(boolean state) {
-        if (tbSortByType().isSelected()!=state) {
-            tbSortByType().push();
-        }
-    }
-
-    /** checks or unchecks given ToolbarToggleButton
-     * @param state boolean requested state
-     */
-    public void checkShowEditablePropertiesOnly(boolean state) {
-        if (tbShowEditablePropertiesOnly().isSelected()!=state) {
-            tbShowEditablePropertiesOnly().push();
-        }
-    }
-
     /** clicks on "" ToolbarButton
      */
     public void customizer() {
@@ -190,11 +122,8 @@ public class NodeEditorOperator extends NbDialogOperator {
      */
     public void verify() {
         sppJSplitPane();
-        treeTreeOfActionsUnderGeneratedNode();
-        tbUnsorted();
-        tbSortByName();
-        tbSortByType();
-        tbShowEditablePropertiesOnly();
+        treeNodeAndActions();
+        propertySheet();
         btCustomizer();
         btHelp();
     }
