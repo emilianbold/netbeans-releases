@@ -337,7 +337,14 @@ final class NbModuleProject implements Project {
     }
     
     public File getModuleJarLocation() {
-        return helper.resolveFile(eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")); // NOI18N
+        //XXX Workaround of core/bootstrap
+        //Why it is not in the nbbuild/templates/modules.xml ???
+        if ("org.netbeans".equals(this.getCodeNameBase())) {    //NOI18N
+            return helper.resolveFile(eval.evaluate("${netbeans.dest.dir}/platform4/${module.jar}"));   //NOI18N
+        }
+        else {
+            return helper.resolveFile(eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")); // NOI18N
+        }
     }
     
     public URL getModuleJavadocDirectoryURL() {
