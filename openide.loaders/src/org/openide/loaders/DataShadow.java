@@ -336,7 +336,9 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
                     } else {
                          String n;
                          if (name == null) {
-                             n = FileUtil.findFreeFileName (trg, obj.getName (), ext);
+                             // #45810 - if obj is disk root then fix the filename
+                             String baseName = obj.getName().replace(':', '_').replace('/', '_'); // NOI18N
+                             n = FileUtil.findFreeFileName (trg, baseName, ext);
                          } else {
                              n = name;
                          }
