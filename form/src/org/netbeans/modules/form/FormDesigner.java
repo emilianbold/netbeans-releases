@@ -16,6 +16,7 @@
 package org.netbeans.modules.form;
 
 import java.awt.*;
+import java.applet.Applet;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
@@ -299,13 +300,11 @@ public class FormDesigner extends TopComponent
 
         if (comp == null) { // visual component doesn't exist yet
             RADVisualContainer parent = metacomp.getParentContainer();
-            if (parent != null
-                && parent.getLayoutSupport()
-                instanceof LayoutSupportArranging) {
-                LayoutSupportArranging lsa =
-                    (LayoutSupportArranging) parent.getLayoutSupport();
-                lsa.selectComponent(metacomp);
-            }
+            LayoutSupport ls;
+            if (parent != null && (ls = parent.getLayoutSupport())
+                                  instanceof LayoutSupportArranging)
+                ((LayoutSupportArranging)ls).selectComponent(metacomp);
+
             return;
         }
 
@@ -452,11 +451,27 @@ public class FormDesigner extends TopComponent
     {
         public void formChanged(FormModelEvent e) {
             repopulateComponentLayer();
-//            revalidate();
-//            repaint();
+        }
+
+        public void componentRemoved(FormModelEvent e) {
+            RADComponent removed = e.getComponent();
+            if (removed instanceof RADVisualContainer) {
+                // test whether topDesignContainer or some of its parents
+                // were not removed
+                RADVisualContainer metacont = topDesignContainer;
+                do {
+                    if (metacont == removed) {
+                        topDesignContainer = (RADVisualContainer)
+                                             formModel.getTopRADComponent();
+                        break;
+                    }
+                    metacont = metacont.getParentContainer();
+                }
+                while (metacont != null);
+            }
         }
     }
-        
+
     ComponentLayer getComponentLayer() {
         return componentLayer;
     }
@@ -494,10 +509,10 @@ public class FormDesigner extends TopComponent
         return topDesignContainer;
     }
 
-    /** Tests whether top designed container is some parent of a component
-     * (whether given component is in the tree under top design container).
+    /** Tests whether top designed container is some parent of given component
+     * (whether the component is in the tree under top designed container).
      */
-    boolean isInDesignedTree(RADVisualComponent metacomp) {
+    public boolean isInDesignedTree(RADVisualComponent metacomp) {
         RADVisualContainer parent = metacomp.getParentContainer();
         while (parent != null) {
             if (parent == topDesignContainer) return true;
@@ -516,7 +531,7 @@ public class FormDesigner extends TopComponent
                 public Object run() throws Exception {
                     Container container = createTopContainer(metacont,
                                                              contClass,
-                                                             false);
+                                                             null);
                     walkVisualComps(container, metacont, null);
                     return container;
                 }
@@ -558,9 +573,11 @@ public class FormDesigner extends TopComponent
                 UIManager.getLookAndFeel().getClass().getName(),
                 new Mutex.ExceptionAction () {
                     public Object run() throws Exception {
-                        Container cont = createTopContainer(topDesignContainer,
-                                                            Window.class,
-                                                            true);
+                        Container cont = createTopContainer(
+                            topDesignContainer,
+                            null,
+                            new Class[] { Window.class, Applet.class, JInternalFrame.class }
+                        );
                         if (!(cont instanceof JComponent))
                             FakePeerSupport.attachFakePeer(cont);
                         componentLayer.add(cont, BorderLayout.CENTER);
@@ -581,20 +598,42 @@ public class FormDesigner extends TopComponent
 
     private static Container createTopContainer(RADVisualContainer metacont,
                                                 Class requiredClass,
-                                                boolean except)
+                                                Class[] forbiddenClasses)
         throws Exception
     {
-        if (except != requiredClass.isAssignableFrom(metacont.getBeanClass()))
-            return (Container) metacont.cloneBeanInstance();
+        Class beanClass = metacont.getBeanClass();
+        boolean beanClassForbidden = false;
 
-        if (except) // don't want requiredClass -> convert to JPanel
-            requiredClass = javax.swing.JPanel.class;
+        if (forbiddenClasses != null) {
+            for (int i=0; i < forbiddenClasses.length; i++) {
+                if (forbiddenClasses[i].isAssignableFrom(beanClass)) {
+                    beanClassForbidden = true;
+                    break;
+                }
+            }
+        }
+
+        if (!beanClassForbidden) {
+            if (requiredClass == null
+                    || requiredClass.isAssignableFrom(beanClass))
+                return (Container) metacont.cloneBeanInstance();
+        }
+        else if (requiredClass == null) // required class not specified
+            requiredClass = JComponent.class.isAssignableFrom(beanClass)
+                            || JApplet.class.isAssignableFrom(beanClass)
+                            || JFrame.class.isAssignableFrom(beanClass)
+                            || JDialog.class.isAssignableFrom(beanClass)
+                            || JWindow.class.isAssignableFrom(beanClass)
+                            || (!Window.class.isAssignableFrom(beanClass)
+                                && !Panel.class.isAssignableFrom(beanClass)) ?
+                JPanel.class : Panel.class;
 
         Container container = (Container)
             CreationFactory.createDefaultInstance(requiredClass);
 
         if (container instanceof RootPaneContainer
-              && !Window.class.isAssignableFrom(metacont.getBeanClass())) {
+                && !Window.class.isAssignableFrom(beanClass)
+                && !Applet.class.isAssignableFrom(beanClass)) {
             Container contentCont = (Container) metacont.cloneBeanInstance();
             ((RootPaneContainer)container).setContentPane(contentCont);
         }

@@ -33,6 +33,10 @@ public class TestAction extends CallableSystemAction {
 
     static final long serialVersionUID =6405790716032972989L;
 
+    public TestAction() {
+        setEnabled(false);
+    }
+
     /** Human presentable name of the action. This should be
      * presented as an item in a menu.
      * @return the name of the action
@@ -74,10 +78,14 @@ public class TestAction extends CallableSystemAction {
         // a JFrame or Frame will be used (depending on form is Swing or AWT)
         Object formInstance = formContainer.getBeanInstance();
         Class frameClass = formInstance instanceof JComponent
-                               || formInstance instanceof JFrame
-                               || formInstance instanceof JDialog
-                               ||  formInstance instanceof JApplet ?
-                           JFrame.class : Frame.class;
+                           || formInstance instanceof JFrame
+                           || formInstance instanceof JDialog
+                           || formInstance instanceof JApplet
+                           || formInstance instanceof JWindow
+                           || (!(formInstance instanceof Window)
+                               && !(formInstance instanceof Panel)) ?
+            JFrame.class : Frame.class;
+
         try {
             // create a copy of form
             Frame frame = (Frame)
