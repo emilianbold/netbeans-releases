@@ -42,6 +42,13 @@ public class CheckLicense extends Task {
     public void addFileSet (FileSet fs) {
         filesets.add (fs);
     }
+    
+    /** Add a file set of CVS-controlled source files to check.
+     * @param fs set of files to check licenses of
+     */
+    public void addCvsFileSet(CvsFileSet fs) {
+        filesets.add(fs);
+    }
 
     /** Set the fragment of license notice which is expected
      * to be found in each source file.
@@ -63,6 +70,7 @@ public class CheckLicense extends Task {
                 log ("Looking for " + fragment + " in " + files.length + " files in " + baseDir.getAbsolutePath ());
                 for (int i = 0; i < files.length; i++) {
                     File f = new File (baseDir, files[i]);
+                    //log("Scanning " + f, Project.MSG_VERBOSE);
                     BufferedReader br = new BufferedReader (new FileReader (f));
                     try {
                         String line;

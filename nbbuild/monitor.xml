@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+Monitors source code for bad constructions and overlooked common problems.
+Author: Jesse Glick
+
+To implement:
+- XML syntax check and validation for files with DTD (RFE in IssueZilla?)
+- //NOI18N check (who knows most about this?)
+- common Czenglish mistakes in bundles (pkeegan would know best)
+- newlines: text files should have proper line endings acc. to platform
+- JavaHelp sanity: targets exist in various modules
+- use of NbBundle.getBundle(getClass()) etc.
+- use of netbeans.debug.exceptions (change to ErrorManager)
+- bundle values beginning or ending with a space
+- readObject etc. methods with incorrect signature (e.g. returning Object)
+- standalone usage checker for library JARs (all classes must resolvable) (or part of openide test suite)
+- nbrescurr: where nbres: suffices
+-->
+
+<project name="Source Monitor" default="all" basedir=".">
+
+  <property name="binroot" location="../../nbextra"/>
+  <property name="mailhost" value="localhost"/>
+  <path id="nbantext">
+    <pathelement location="nbantext.jar"/>
+    <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
+  </path>
+  <target name="init">
+    <ant dir="." target="bootstrap"/>
+    <taskdef name="checklicense" classname="org.netbeans.nbbuild.CheckLicense" classpathref="nbantext"/>
+    <taskdef name="findbad" classname="org.netbeans.nbbuild.FindBadConstructions" classpathref="nbantext"/>
+    <taskdef name="kvetch" classname="org.netbeans.nbbuild.Kvetcher" classpathref="nbantext"/>
+  </target>
+
+  <target name="all" depends="check-licenses,check-dbl-checked-locking,check-bundle-snafus" description="Run all implemented tests."/>
+
+  <target name="kvetch" depends="init" description="Run tests, and send mail to culprits. Under development.">
+    <property name="nb_all" location=".."/>
+    <kvetch mailhost="${mailhost}"
+            target="all"
+            from="jesse.glick@sun.com"
+            subject="Possible problems in sources you own on netbeans.org"
+    >
+      <explanation><![CDATA[This mail is being automatically sent by nbbuild/monitor.xml:kvetch.
+If you receive it, it means that there *may* be something wrong in sources you own.
+Please take a look at the warnings listed here, and correct them if necessary.
+If you think the warnings were printed in error, that is your sources are fine and
+the tool is simply generating unnecessary messages, please reply with details and
+an exception can be made for your code so you do not get further mail about it.
+]]></explanation>
+      <culprit>
+        <to name="jesse.glick@sun.com"/>
+        <regexp pattern="^${nb_all}/((ant|apisupport|core|openide)/(.|\n)+)" group="1"/>
+      </culprit>
+      <!-- XXX add more -->
+    </kvetch>
+  </target>
+
+  <target name="check-licenses" depends="init" description="Check whether Sun Public License is in every source file.">
+    <echo message="Looking for source files, will take a moment..."/>
+    <checklicense fragment="Sun Public License Notice">
+      <!-- This fileset will only check CVS-controlled text files: -->
+      <cvsfileset dir=".." mode="text">
+        <!-- Templates are for users and are not licensed: -->
+        <exclude name="**/templates/"/>
+        <exclude name="**/*.template"/>
+        <exclude name="**/*_"/>
+        <exclude name="**/*_java"/>
+        <exclude name="**/*-"/>
+        <exclude name="apisupport/src/org/netbeans/modules/apisupport/lite/resources/*-Bundle.properties"/>
+        <exclude name="editor/demosrc/properties-addon/org/netbeans/editor/example/res/template.properties"/>
+        <exclude name="**/tojar/"/>
+        <!-- Similar for things copied to distro and minor examples: -->
+        <exclude name="**/release/"/>
+        <exclude name="xtest/examples/"/>
+        <!-- Trivial test data: -->
+        <exclude name="core/test/unit/src/org/netbeans/core/modules/jars/"/>
+        <exclude name="**/test*/**/data/"/>
+        <exclude name="core/test/perf/src/org/netbeans/core/resources/"/>
+        <exclude name="**/*.pass"/>
+        <exclude name="**/*.ref"/>
+        <!-- Generated docs: -->
+        <exclude name="openide/api/doc/org/openide/filesystems/doc-files/resolverDocumentation.html"/>
+        <!-- For help, see below: -->
+        <exclude name="**/javahelp/"/>
+        <exclude name="**/api/doc/"/>
+        <exclude name="**/docs/"/>
+        <!-- Web pages need no notice: -->
+        <exclude name="*/www/"/>
+        <!-- Cannot hold licenses: -->
+        <exclude name="**/*.mf"/>
+        <exclude name="**/*.group"/>
+        <exclude name="**/*.ent"/>
+        <exclude name="**/*.MAKEME"/>
+        <exclude name="core/src/org/netbeans/core/resources/mf-initializer.txt"/>
+        <exclude name="**/*.cfg"/>
+        <!-- Generally no IP: -->
+        <exclude name="**/*.txt"/>
+        <exclude name="**/*.html"/>
+        <exclude name="**/README"/>
+        <exclude name="CVSROOT/"/>
+        <exclude name="nbbuild/tagref"/>
+        <exclude name="jndi/src/org/netbeans/modules/jndi/resources/providers/*.impl"/>
+        <!-- Minor runtime objects which need to be fast to parse: -->
+        <exclude name="**/*.settings"/>
+        <exclude name="**/*.ws*"/>
+        <exclude name="editor/src/org/netbeans/modules/editor/resources/AnnotationTypes/bookmark.xml"/>
+        <!-- Generated by tools: -->
+        <exclude name="**/*.form"/>
+        <exclude name="**/.nbattrs"/>
+        <exclude name="**/*l10n.list*"/>
+        <exclude name="**/sub.locale.xml"/>
+        <!-- From beyond: -->
+        <exclude name="apisupport/src/org/netbeans/modules/apisupport/resources/helpset_1_0.dtd"/>
+        <exclude name="apisupport/src/org/netbeans/modules/apisupport/resources/index_1_0.dtd"/>
+        <exclude name="apisupport/src/org/netbeans/modules/apisupport/resources/map_1_0.dtd"/>
+        <exclude name="apisupport/src/org/netbeans/modules/apisupport/resources/toc_1_0.dtd"/>
+        <exclude name="core/src/org/netbeans/core/resources/helpset_1_0.dtd"/>
+        <exclude name="editor/src/org/netbeans/modules/editor/resources/DTDs/"/>
+        <exclude name="ant/Ant_License"/>
+      </cvsfileset>
+    </checklicense>
+    <echo message="Now looking for copyrighted documentation..."/>
+    <checklicense fragment="Copyright">
+      <cvsfileset dir=".." mode="text">
+        <include name="**/javahelp/"/>
+        <include name="**/api/doc/"/>
+        <!-- Generally no IP: -->
+        <exclude name="**/*.txt"/>
+        <!-- Cannot hold licenses: -->
+        <exclude name="**/package-list"/>
+        <!-- Generated by tools: -->
+        <exclude name="**/*.pgml"/>
+        <exclude name="**/*.argo"/>
+        <exclude name="**/*.xmi"/>
+      </cvsfileset>
+    </checklicense>
+  </target>
+
+  <target name="check-dbl-checked-locking" depends="init" description="Check sources for uses of double-checked locking.">
+    <echo message="Looking for source files, will take a moment..."/>
+    <findbad>
+      <cvsfileset dir="..">
+        <include name="**/*.java"/>
+      </cvsfileset>
+      <construction regexp="\n.*if \((.+)\) \{.*\n.*synchronized \(.+\) \{.*\n.*if \(\1\) \{.*\n" message="Possible double-checked locking (remove outer test)" showmatch="0"/>
+    </findbad>
+  </target>
+
+  <target name="check-bundle-snafus" depends="init" description="Check bundles for undoubled ' in message formats and style errors.">
+    <echo message="Looking for bundles, will take a moment..."/>
+    <findbad>
+      <cvsfileset dir="..">
+        <include name="**/*.properties"/>
+      </cvsfileset>
+      <construction regexp="\{\d+\}.*[^']'([^'{}]|$)|[^']'[^'{}].*\{\d+\}" message="Undoubled ' in message format (double it to escape it)" showmatch="0"/>
+      <!-- [Cc]an't|[Cc]ouldn't|[Dd]on't|[Dd]oesn't|[Dd]idn't|[Ww]on't|[Ss]houldn't|[Hh]asn't|[Hh]aven't|[Oo]ughtn't|[Aa]ren't|[Ii]sn't|[Ww]asn't -->
+      <construction regexp="\b[A-Za-z][a-z]+n't\b" message="Contraction (spell it out)" showmatch="0"/>
+    </findbad>
+  </target>
+
+</project>
