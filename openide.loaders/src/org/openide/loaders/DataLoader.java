@@ -230,7 +230,7 @@ public abstract class DataLoader extends SharedClassObject {
         FileObject fo, RecognizedFiles recognized
     ) throws IOException {
 	try {
-	    return handleFindDataObject( fo, recognized );
+	    return DataObjectPool.handleFindDataObject( this, fo, recognized );
 	} catch (IOException ioe) {
 	    throw ioe;
 	} catch (ThreadDeath td) {

@@ -699,7 +699,7 @@ implements Serializable, DataObject.Container {
                 try {
                     // resolve temporary object for moving into
                     DataLoaderPool$FolderLoader folderLoader = (DataLoaderPool$FolderLoader) getMultiFileLoader ();
-                    newFolder = (DataFolder) folderLoader.createMultiObject (newFile, this);
+                    newFolder = (DataFolder) DataObjectPool.createMultiObject (folderLoader, newFile, this);
                     dispose = false;
                     break;
                 } catch (DataObjectExistsException e) {

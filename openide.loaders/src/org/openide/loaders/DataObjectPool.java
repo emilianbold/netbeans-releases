@@ -32,7 +32,9 @@ import org.openide.util.Lookup;
 * @author Jaroslav Tulach
 */
 final class DataObjectPool extends Object
-implements ChangeListener, RepositoryListener, PropertyChangeListener, Runnable {
+implements ChangeListener, RepositoryListener, PropertyChangeListener {
+    /** set to non null if the constructor is called from somewhere else than DataObject.find */
+    private static final ThreadLocal FIND = new ThreadLocal ();
     /** validator */
     private static final Validator VALIDATOR = new Validator ();
     
@@ -68,6 +70,78 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener, Runnable 
         return POOL;
     }
     
+    /** Calls into one loader. Setups security condition to allow DataObject ocnstructor
+     * to succeed.
+     */
+    public static DataObject handleFindDataObject (DataLoader loader, FileObject fo, DataLoader.RecognizedFiles rec) 
+    throws java.io.IOException {
+        DataObject ret;
+        
+        Object prev = FIND.get ();
+        try {
+            FIND.set (loader);
+            
+            ret = loader.handleFindDataObject (fo, rec);
+        } finally {
+            FIND.set (prev);
+        }
+        
+        // notify it
+        if (ret != null) {
+            DataObjectPool.getPOOL().notifyCreation (ret);
+        }
+        
+        return ret;
+    }
+    
+    /** Calls into one loader. Setups security condition to allow DataObject ocnstructor
+     * to succeed.
+     */
+    public static MultiDataObject createMultiObject (MultiFileLoader loader, FileObject fo) 
+    throws java.io.IOException {
+        MultiDataObject ret;
+        
+        Object prev = FIND.get ();
+        try {
+            FIND.set (loader);
+            
+            ret = loader.createMultiObject (fo);
+        } finally {
+            FIND.set (prev);
+        }
+        
+        // notify it
+        if (ret != null) {
+            DataObjectPool.getPOOL().notifyCreation (ret);
+        }
+        
+        return ret;
+    }
+    
+    /** Calls into FolderLoader. Setups security condition to allow DataObject ocnstructor
+     * to succeed.
+     */
+    public static MultiDataObject createMultiObject (DataLoaderPool$FolderLoader loader, FileObject fo, DataFolder original) 
+    throws java.io.IOException {
+        MultiDataObject ret;
+        
+        Object prev = FIND.get ();
+        try {
+            FIND.set (loader);
+            
+            ret = loader.createMultiObject (fo, original);
+        } finally {
+            FIND.set (prev);
+        }
+        
+        // notify it
+        if (ret != null) {
+            DataObjectPool.getPOOL().notifyCreation (ret);
+        }
+        
+        return ret;
+    }
+    
     /** Collection of all objects that has been created but their
     * creation has not been yet notified to OperationListener.postCreate
     * method.
@@ -96,26 +170,17 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener, Runnable 
      */
     private ThreadLocal last = new ThreadLocal ();
     
-    /** Time when the toNotify set has been modified.
-     */
-    private long toNotifyModified;
     /** A delay to check the notify modified content. It is expected that
      * in 500ms each constructor can finish, so 500ms after the registration
      * of object in a toNotify map, it should be ready and initialized.
      */
-    private static final int SAFE_NOTIFY_DELAY = 500;
+    private static final int SAFE_NOTIFY_DELAY = 0;
     
     private static final Integer ONE = new Integer(1);
-    
-    /** A task to check toNotify content and notify that objects were created.
-     */
-    private RequestProcessor.Task task;
     
     /** Constructor.
      */
     private DataObjectPool () {
-        task = RequestProcessor.createRequest (this);
-        task.setPriority (Thread.MIN_PRIORITY);
     }
 
 
@@ -230,11 +295,6 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener, Runnable 
                 return;
             }
             
-            if (toNotify.isEmpty ()) {
-                // ok, we do not need the task
-                task.cancel ();
-            }
-            
             // if somebody is caught in waitNotified then wake him up
             notifyAll ();
         }
@@ -272,49 +332,11 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener, Runnable 
     }
         
     
-    /** Invoked to periodicaly check whether some data objects are not notified
-     * to be created. In such case it notifies about their creation.
-     */
-    public void run () {
-        Item arr []; 
-
-        synchronized (this) {
-            if (toNotify.isEmpty()) {
-                return;
-            }
-            
-            if (System.currentTimeMillis () < toNotifyModified + SAFE_NOTIFY_DELAY) {
-                task.schedule (SAFE_NOTIFY_DELAY);
-                return;
-            }
-            arr = (Item [])toNotify.toArray (new Item [toNotify.size ()]);
-        }
-
-        // notify each created object
-        for (int i = 0; i < arr.length; i++) {
-            DataObject obj = arr[i].getDataObjectOrNull ();
-            
-            // notifyCreation removes object from toNotify queue,
-            // if object was already invalidated then remove it as well
-            if (obj != null) {
-                notifyCreation (obj);
-            } else {
-                synchronized (this) {
-                    toNotify.remove (arr[i]);
-                }
-            }
-        }
-    }
-
     /** Add to list of created objects.
      */
     private void notifyAdd (Item item) {
-        if (toNotify.isEmpty()) {
-            task.schedule (SAFE_NOTIFY_DELAY);
-        }
         toNotify.add (item);
         last.set (item);
-        toNotifyModified = System.currentTimeMillis ();
     }
 
     
@@ -398,6 +420,8 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener, Runnable 
     * @exception DataObjectExistsException if the file object is already registered
     */
     public Item register (FileObject fo, DataLoader loader) throws DataObjectExistsException {
+        if (FIND.get () == null) throw new IllegalStateException ("DataObject constructor can be called only thru DataObject.find - use that method"); // NOI18N
+        
         // here we're registering a listener on fo's FileSystem so we can deliver
         // fo changes to DO without lots of tiny listeners on folders
         // The new DS bound to a repository can simply place a single listener
@@ -490,9 +514,6 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener, Runnable 
             // (e.g. BB/AAA/A1) is left in the toNotify pool forever. This
             // point is reached; remove it now. -jglick
             if (toNotify.remove(item)) {
-                if (toNotify.isEmpty()) {
-                    task.cancel();
-                }
                 notifyAll();
             }
             return;

@@ -799,14 +799,10 @@ public class MultiDataObject extends DataObject {
         MultiDataObject obj;
 
         if (loader != null) {
-            obj = loader.createMultiObject (fo);
+            obj = DataObjectPool.createMultiObject (loader, fo);
         } else {
             obj = (MultiDataObject)getLoader ().findDataObject (fo, RECOGNIZER);
         }
-
-        // notifies that the object has been created
-        DataObjectPool.getPOOL ().notifyCreation (obj);
-        
         return obj;
     }
 

@@ -357,7 +357,6 @@ implements java.io.Serializable {
         if (pref != null) {
             DataObject obj = pref.findDataObject (fo, r);
             if (obj != null) {
-                DataObjectPool.getPOOL().notifyCreation (obj);
                 // file has been recognized
                 return obj;
             }
@@ -367,13 +366,9 @@ implements java.io.Serializable {
         java.util.Enumeration en = allLoaders ();
         while (en.hasMoreElements ()) {
             DataLoader l = (DataLoader)en.nextElement ();
+    
             DataObject obj = l.findDataObject (fo, r);
             if (obj != null) {
-                // the loader recognized the file
-                
-                // notify it
-                DataObjectPool.getPOOL().notifyCreation (obj);
-                
                 return obj;
             }
         }

@@ -448,6 +448,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
             if (obj != null) {
                 return obj;
             }
+                
             throw new DataObjectNotFoundException (fo);
         } catch (DataObjectExistsException ex) {
             return ex.getDataObject ();
