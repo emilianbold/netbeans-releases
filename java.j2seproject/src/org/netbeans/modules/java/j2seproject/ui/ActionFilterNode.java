@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.ArrayList;
 import javax.swing.Action;
 import org.openide.ErrorManager;
+import org.openide.actions.FindAction;
 import org.openide.loaders.DataObject;
 import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileObject;
@@ -108,13 +109,18 @@ class ActionFilterNode extends FilterNode {
                 }
                 result.add (SystemAction.get(ShowJavadocAction.class));
             }
-            else if (mode == MODE_PACKAGE) {
+            else if (mode == MODE_PACKAGE || mode == MODE_ROOT) {
                 result.add (SystemAction.get(ShowJavadocAction.class));
-            }
-            else if (mode == MODE_ROOT) {
-                result.add (SystemAction.get(ShowJavadocAction.class));
-                result.add (SystemAction.get(RemoveClassPathRootAction.class));
-            }
+                Action[] superActions = super.getActions(false);
+                for (int i=0; i<superActions.length; i++) {
+                    if (superActions[i] instanceof FindAction) {
+                        result.add (superActions[i]);
+                    }
+                }                
+                if (mode == MODE_ROOT) {
+                    result.add (SystemAction.get(RemoveClassPathRootAction.class));
+                }
+            }            
             actionCache = (Action[]) result.toArray(new Action[result.size()]);
         }
         return actionCache;
