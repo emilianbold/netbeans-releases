@@ -35,15 +35,9 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.WebProjectType;
 
-//import org.netbeans.modules.websvc.api.webservices.WebServicesClientSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 
-// WsCompile test bed classes
-//import org.netbeans.api.project.Project;
-//import org.netbeans.api.project.ProjectManager;
-//import org.netbeans.modules.web.project.WebProject;
-//import org.netbeans.modules.web.project.WebProjectWebServicesSupport;
 
 /** Host for WsCompile features editor for editing the features enabled for
  *  running WsCompile on a web service or a web service client.
@@ -61,32 +55,12 @@ public class CustomizerWSClientHost extends javax.swing.JPanel
     private List serviceSettings;
     
     public CustomizerWSClientHost(WebProjectProperties webProperties, List serviceSettings) {
-        System.out.println("WSClientCustomizer: constructor");
+//        System.out.println("WSClientCustomizer: constructor");
         initComponents();
 
         this.webProperties = webProperties;
         this.wsCompileEditor = null;
         this.serviceSettings = serviceSettings;
-        
-// !PW Hack to get the local web service client support
-//        WebProjectWebServicesSupport clientSupport = null;
-//        
-//        try {
-//            FileObject projectFolder = wm.getModuleFolder().getParent();
-//            Project project = ProjectManager.getDefault().findProject(projectFolder);
-//            
-//            if(project instanceof WebProject) {
-//                clientSupport = ((WebProject) project).getWebServicesSupportHack();
-//                serviceSettings = clientSupport.getServiceClients();
-//            } else {
-//                // !PW FIXME this should never happen, and ultimately be removed when the cast above is fixed.
-//                System.out.println("Can't get web based web service client support object in web module?!");
-//                serviceSettings = Collections.EMPTY_LIST;
-//            }
-//        } catch(java.io.IOException ex) {
-//            System.out.println("Can't get find project object?!");
-//            serviceSettings = Collections.EMPTY_LIST;
-//        }
     }
     
     /** This method is called from within the constructor to
@@ -107,7 +81,7 @@ public class CustomizerWSClientHost extends javax.swing.JPanel
     public void addNotify() {
         super.addNotify();
         
-        System.out.println("WSClientCustomizer: addNotify (" + this.getComponentCount() + " subcomponents)");
+//        System.out.println("WSClientCustomizer: addNotify (" + this.getComponentCount() + " subcomponents)");
         JPanel component = wsCompileEditor.getComponent();
 
         removeAll(); // !PW is this necessary?
@@ -119,13 +93,13 @@ public class CustomizerWSClientHost extends javax.swing.JPanel
     public void removeNotify() {
         super.removeNotify();
         
-        System.out.println("WSClientCustomizer: removeNotify");
+//        System.out.println("WSClientCustomizer: removeNotify");
         JPanel component = wsCompileEditor.getComponent();
         component.removePropertyChangeListener(WsCompileEditorSupport.PROP_FEATURES_CHANGED, this);
     }
    
     public void initValues() {
-        System.out.println("WSClientCustomizer: initValues");
+//        System.out.println("WSClientCustomizer: initValues");
         if(wsCompileEditor == null) {
 			WsCompileEditorSupport editorSupport = (WsCompileEditorSupport) Lookup.getDefault().lookup(WsCompileEditorSupport.class);
             wsCompileEditor = editorSupport.getWsCompileSupport();
@@ -135,14 +109,14 @@ public class CustomizerWSClientHost extends javax.swing.JPanel
     }   
     
     public void validatePanel() throws WizardValidationException {
-        System.out.println("WSClientCustomizer: validatePanel ");
+//        System.out.println("WSClientCustomizer: validatePanel ");
         if(wsCompileEditor != null) {
             wsCompileEditor.validatePanel();
         }
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
-        System.out.println("WSClientCustomizer: propertyChange - " + evt.getPropertyName());
+//        System.out.println("WSClientCustomizer: propertyChange - " + evt.getPropertyName());
         
         WsCompileEditorSupport.FeatureDescriptor newFeatureDesc = (WsCompileEditorSupport.FeatureDescriptor) evt.getNewValue();
         String propertyName = "wscompile.client." + newFeatureDesc.getServiceName() + ".features";
