@@ -46,7 +46,6 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${jdkhome}/lib/tools.jar"/>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
         <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-        <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
         <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
         <pathelement location="../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
         <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
