@@ -1,4 +1,3 @@
-
 /*
  *                 Sun Public License Notice
  * 
@@ -8,13 +7,11 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.properties;
-
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -40,7 +37,6 @@ import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
-
 
 /**
  * Item in a set of properties files represented by a single
@@ -231,7 +227,6 @@ public class PropertiesFileEntry extends PresentableFileEntry
         return fo;
     }
 
-    /** Creates from template. Overrides superclass method. */
     public FileObject createFromTemplate (FileObject folder, String name) throws IOException {
         ResourceBundle bundle = NbBundle.getBundle (PropertiesFileEntry.class);
         if (!getFile().getName().startsWith(basicName))
@@ -244,22 +239,13 @@ public class PropertiesFileEntry extends PresentableFileEntry
         if (existing == null) {
             return super.createFromTemplate (folder, nuename);
         } else {
-            Object leaveAloneOpt = bundle.getString ("OPT_leave_alone");
-            Object concatOpt = bundle.getString ("OPT_concatenate");
-            Object overwriteOpt = bundle.getString ("OPT_overwrite");
-            String title = bundle.getString ("LBL_ask_how_to_template");
-            String message = MessageFormat.format (bundle.getString ("MSG_ask_how_to_template"),
-                                                   new Object[] { nuename });
-            NotifyDescriptor desc = new NotifyDescriptor
-                                    (message, title, NotifyDescriptor.DEFAULT_OPTION,
-                                     NotifyDescriptor.QUESTION_MESSAGE,
-                                     new Object[] { concatOpt, leaveAloneOpt, overwriteOpt },
-                                     concatOpt); // [PENDING] default option does not seem to work--so make it 1st
-            Object result = DialogDisplayer.getDefault ().notify (desc);
-            if (leaveAloneOpt.equals (result) ||
-                    NotifyDescriptor.CLOSED_OPTION.equals (result)) {
-                return existing;
-            } else if (concatOpt.equals (result)) {
+            // Append new content. Used to ask you whether the leave the old
+            // file alone, or overwrite it with the new file, or append the new
+            // content; but it can just cause deadlocks (#38599) to try to prompt
+            // the user for anything from inside a Datasystems method, so don't
+            // bother. Appending is the safest option; redundant stuff can always
+            // be cleaned up manually.
+            { // avoiding reindenting code
                 byte[] originalData;
                 byte[] buf = new byte[4096];
                 int count;
@@ -307,16 +293,6 @@ public class PropertiesFileEntry extends PresentableFileEntry
                 // ((PropertiesDataObject) getDataObject ()).getBundleStructure ().
                 //   notifyOneFileChanged (getHandler ());
                 return nue;
-            } else if (overwriteOpt.equals (result)) {
-                FileLock lock = existing.lock ();
-                try {
-                    existing.delete (lock);
-                } finally {
-                    lock.releaseLock ();
-                }
-                return super.createFromTemplate (folder, nuename);
-            } else {
-                throw new IOException ("unrecognized result option: " + result); // NOI18N
             }
         }
     }
