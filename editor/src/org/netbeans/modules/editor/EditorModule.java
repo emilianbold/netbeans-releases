@@ -149,7 +149,7 @@ public class EditorModule extends ModuleInstall {
         } catch (Throwable t) {
             t.printStackTrace();
         }
-
+            
         // Registration of the editor kits to JEditorPane
 //        for (int i = 0; i < replacements.length; i++) {
 //            JEditorPane.registerEditorKitForContentType(

@@ -135,6 +135,13 @@ Microsystems, Inc. All Rights Reserved.
                         <file name="uncomment"/>
                     </folder>
                 </folder>
+                
+                <folder name="HyperlinkProviders">
+                    <file name="JavaHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.java.editor.hyperlink.JavaHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                    </file>
+                </folder>
             </folder>
 
         </folder>
