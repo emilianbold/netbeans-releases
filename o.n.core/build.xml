@@ -26,6 +26,7 @@ Microsystems, Inc. All Rights Reserved.
       <classpath>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <pathelement location="../openide/explorer/netbeans/lib/openide-explorer.jar" /> <!-- XXX 3.6 property sheet settings - see c.PsSettingsImpl -->
         <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/> <!-- XXX remove soon -->
         <pathelement location="netbeans/lib/ext/boot.jar"/>
       </classpath>

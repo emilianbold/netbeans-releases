@@ -37,6 +37,12 @@ Microsystems, Inc. All Rights Reserved.
         your module.
         Singletons can also be easily added using META-INF/services/pgk.Class files.
         -->
+        
+        <file name="org-netbeans-core-PsSettingsImpl.instance">
+              <attr name="instanceOf" stringvalue="org.netbeans.modules.openide.explorer.PsSettings" />
+              <attr name="instanceClass" stringvalue="org.netbeans.core.PsSettingsImpl" />
+              <attr name="instanceCreate" methodvalue="org.netbeans.core.PsSettingsImpl.create" />
+        </file>
     
         <folder name="MIMEResolver">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
