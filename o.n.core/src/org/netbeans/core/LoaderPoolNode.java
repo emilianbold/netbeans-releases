@@ -139,8 +139,16 @@ public final class LoaderPoolNode extends AbstractNode {
     * and replaced with the new one.
     * @param s adds loader section
     */
-    public static synchronized void add (ManifestSection.LoaderSection s) throws Exception {
+    public static void add (ManifestSection.LoaderSection s) throws Exception {
+        // the instantiation of the loader is done outside of synchronized block,
+        // because foreign code is called and can cause deadlocks
         DataLoader l = (DataLoader)s.getInstance ();
+        doAdd (l, s);
+    }
+
+    /** Really adds the loader.
+     */
+    private static synchronized void doAdd (DataLoader l, ManifestSection.LoaderSection s) throws Exception {
         if (err.isLoggable(ErrorManager.UNKNOWN)) {
             List before = s.getInstallBefore() == null ? null : Arrays.asList(s.getInstallBefore());
             List after = s.getInstallAfter() == null ? null : Arrays.asList(s.getInstallAfter());
