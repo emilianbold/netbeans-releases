@@ -149,7 +149,13 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
         if (val != isWrapped() || !(getEditorKit() instanceof OutputEditorKit)) {
             wrapByDefault = val;
             final int pos = textView.getCaret().getDot();
-            setEditorKit (new OutputEditorKit(val, textView));
+            Cursor cursor = textView.getCursor();
+            try {
+                textView.setCursor (Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                setEditorKit (new OutputEditorKit(val, textView));
+            } finally {
+                textView.setCursor (cursor);
+            }
             if (val) {
                 getViewport().addChangeListener(this);
             } else {
