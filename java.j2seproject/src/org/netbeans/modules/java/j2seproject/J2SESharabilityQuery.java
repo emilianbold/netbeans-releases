@@ -90,8 +90,12 @@ public class J2SESharabilityQuery implements SharabilityQueryImplementation, Pro
         String[] srcProps = srcRoots.getRootProperties();
         String[] testProps = testRoots.getRootProperties();
         String[] props = new String [srcProps.length + testProps.length];
-        System.arraycopy(srcProps,0,props,0,srcProps.length);
-        System.arraycopy(testProps,0,props,srcProps.length,testProps.length);
+        for (int i=0; i<srcProps.length; i++) {
+            props[i] = "${"+srcProps[i]+"}";
+        }
+        for (int i=0; i<testProps.length; i++) {
+            props[srcProps.length+i] = "${"+testProps[i]+"}";
+        }
         return helper.createSharabilityQuery(this.evaluator, props,
             new String[] {
                 "${" + J2SEProjectProperties.DIST_DIR + "}", // NOI18N
