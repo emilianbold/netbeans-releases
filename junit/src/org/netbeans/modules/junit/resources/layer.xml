@@ -64,16 +64,7 @@
             <file name="org-netbeans-modules-junit-OpenTestAction.instance" />
             <file name="org-netbeans-modules-junit-RunTestAction.instance" />
         </folder>
-        <folder name="Help">
-            <file name="org-netbeans-modules-junit-mainpage.xml" url="help-main-ref.xml">
-            	<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
-            	<!--
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.docs.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
-                -->                
-            </file>
-        </folder>        
+       
     </folder>
 
     <!-- shortcuts -->
@@ -104,21 +95,7 @@
     	</file>        
     </folder>
 
-    <folder name="Menu">
-        <folder name="Help">
-            <folder name="HelpShortcuts">
-                <attr name="org-netbeans-modules-usersguide-sep.instance/org-netbeans-modules-junit-mainpage.xml" boolvalue="true"/>
-                <file name="org-netbeans-modules-junit-mainpage.xml" url="help-main-ref.xml">                
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/blank.gif"/>
-                </file>
-                
-                <attr name="org-netbeans-modules-junit-mainpage.xml/org-netbeans-modules-usersguide-lower-sep.instance"
-                      boolvalue="true"/>
-            
-            </folder>
-        </folder>
-    </folder>
+
     
     
     
