@@ -236,15 +236,21 @@ public class IndexSearch
 
         searchButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_search_ToolTip" ));    //NOI18N
         byReferenceButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_byReference_ToolTip" ));   //NOI18N
+        byReferenceButton.setMnemonic(ResourceUtils.getBundledString("CTL_SEARCH_byReference_Mnemonic").charAt(0));  // NOI18N
         byTypeButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_byType_ToolTip" ));   //NOI18N
+        byTypeButton.setMnemonic(ResourceUtils.getBundledString("CTL_SEARCH_byType_Mnemonic").charAt(0));  // NOI18N
         byNameButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_byName_ToolTip" ));   //NOI18N
+        byNameButton.setMnemonic(ResourceUtils.getBundledString("CTL_SEARCH_byName_Mnemonic").charAt(0));  // NOI18N
         quickViewButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_quickView_ToolTip" ));   //NOI18N
+        quickViewButton.setMnemonic(ResourceUtils.getBundledString("CTL_SEARCH_quickView_Mnemonic").charAt(0));  // NOI18N
         sourceButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_showSource_ToolTip" ));   //NOI18N
+        sourceButton.setMnemonic(ResourceUtils.getBundledString("CTL_SEARCH_showSource_Mnemonic").charAt(0));  // NOI18N
         searchComboBox.setToolTipText(ResourceUtils.getBundledString( "ACS_SEARCH_SearchComboBoxA11yDesc" ));   //NOI18N
         resultsList.setToolTipText(ResourceUtils.getBundledString( "ACS_SEARCH_ResultsListA11yDesc" ));   //NOI18N
         quickBrowser.setToolTipText(ResourceUtils.getBundledString( "ACS_SEARCH_QuickBrowserA11yDesc" ));   //NOI18N
         
         searchButton.setMnemonic(ResourceUtils.getBundledString("CTL_SEARCH_ButtonFind_Mnemonic").charAt(0));  // NOI18N
+        helpButton.setMnemonic(ResourceUtils.getBundledString("CTL_SEARCH_ButtonHelp_Mnemonic").charAt(0));  // NOI18N
         
         initAccessibility();
     }
