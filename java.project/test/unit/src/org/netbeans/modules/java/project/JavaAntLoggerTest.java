@@ -21,6 +21,7 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -53,6 +54,7 @@ public final class JavaAntLoggerTest extends NbTestCase {
     }
     
     private File simpleAppDir;
+    private Properties props;
     
     protected void setUp() throws Exception {
         super.setUp();
@@ -65,12 +67,18 @@ public final class JavaAntLoggerTest extends NbTestCase {
         nonhyperlinkedErr.clear();
         hyperlinkedOut.clear();
         hyperlinkedErr.clear();
+        String junitJarS = System.getProperty("test.junit.jar");
+        assertNotNull("defined test.junit.jar", junitJarS);
+        File junitJar = new File(junitJarS);
+        assertTrue("file " + junitJar + " exists", junitJar.isFile());
+        props = new Properties();
+        props.setProperty("libs.junit.classpath", junitJar.getAbsolutePath()); // #50261
     }
     
     public void testHyperlinkRun() throws Exception {
         FileObject buildXml = FileUtil.toFileObject(new File(simpleAppDir, "build.xml"));
         assertNotNull("have build.xml as a FileObject", buildXml);
-        ActionUtils.runTarget(buildXml, new String[] {"clean", "run"}, null);
+        ActionUtils.runTarget(buildXml, new String[] {"clean", "run"}, props);
         //System.out.println("nonhyperlinkedOut=" + nonhyperlinkedOut + " nonhyperlinkedErr=" + nonhyperlinkedErr + " hyperlinkedOut=" + hyperlinkedOut + " hyperlinkedErr=" + hyperlinkedErr);
         assertTrue("got a hyperlink for Clazz.run NPE", hyperlinkedErr.contains("\tat simpleapp.Clazz.run(Clazz.java:4)"));
     }
@@ -79,7 +87,7 @@ public final class JavaAntLoggerTest extends NbTestCase {
     public void testHyperlinkTest() throws Exception {
         FileObject buildXml = FileUtil.toFileObject(new File(simpleAppDir, "build.xml"));
         assertNotNull("have build.xml as a FileObject", buildXml);
-        ActionUtils.runTarget(buildXml, new String[] {"clean", "test"}, null);
+        ActionUtils.runTarget(buildXml, new String[] {"clean", "test"}, props);
         //System.out.println("nonhyperlinkedOut=" + nonhyperlinkedOut + " nonhyperlinkedErr=" + nonhyperlinkedErr + " hyperlinkedOut=" + hyperlinkedOut + " hyperlinkedErr=" + hyperlinkedErr);
         assertTrue("got a hyperlink for Clazz.run NPE in " + hyperlinkedErr, hyperlinkedErr.contains("\tat simpleapp.Clazz.run(Clazz.java:4)"));
     }
