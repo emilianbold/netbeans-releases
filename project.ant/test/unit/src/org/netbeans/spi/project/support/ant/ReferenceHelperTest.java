@@ -81,7 +81,7 @@ public class ReferenceHelperTest extends NbTestCase {
     private FileObject sisterprojdir2;
     /**
      * Directory of a noncollocated project (proj3).
-     * Has artifact build.jar=dist/proj3.jar.
+     * Has artifact build.jar=d i s t/p r o j 3.jar.
      */
     private FileObject sepprojdir;
     /** The project manager singleton. */
@@ -147,7 +147,7 @@ public class ReferenceHelperTest extends NbTestCase {
             CollocationQuery.areCollocated(FileUtil.toFile(projdir), FileUtil.toFile(sepprojdir)));
         seph = ProjectGenerator.createProject(sepprojdir, "test", "proj3");
         props = seph.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        props.setProperty("build.jar", "dist/proj3.jar");
+        props.setProperty("build.jar", "d i s t/p r o j 3.jar");
         seph.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
         //l = new AntBasedTestUtil.TestListener();
         
@@ -558,7 +558,7 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("no refs remaining", 0, r.getRawReferences().length);
         
         // test non-collocated foreign project reference
-        FileObject nonCollocatedProjectLib = scratch.getFileObject("separate/proj3").createFolder("dist").createData("proj3.jar");
+        FileObject nonCollocatedProjectLib = scratch.getFileObject("separate/proj3").createFolder("d i s t").createData("p r o j 3.jar");
         f = FileUtil.toFile(nonCollocatedProjectLib);
         art = AntArtifactQuery.findArtifactByID(pm.findProject(sepprojdir), "dojar");
         assertNotNull("have an artifact proj3.dojar", art);
@@ -567,7 +567,7 @@ public class ReferenceHelperTest extends NbTestCase {
         assertNotNull("ref added", r.getRawReference("proj3", "dojar"));
         refval = pev.getProperty("reference.proj3.dojar");
         String val = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty("reference.proj3.dojar");
-        assertEquals("reference was not correctly set", "${project.proj3}/dist/proj3.jar", val);
+        assertEquals("reference was not correctly set", "${project.proj3}/d i s t/p r o j 3.jar", val);
         assertEquals("reference correctly evaluated", f, h.resolveFile(refval));
         val = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty("project.proj3");
         assertEquals("reference correctly evaluated", FileUtil.toFile(sepprojdir).getAbsolutePath(), val);
@@ -581,31 +581,31 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("no refs remaining", 0, r.getRawReferences().length);
 
         // test foreign file reference for collocated jar
-        FileObject collocatedLib = scratch.createFolder("jars").createData("mylib.jar");
+        FileObject collocatedLib = scratch.createFolder("j a r s").createData("m y l i b.jar");
         f = FileUtil.toFile(collocatedLib);
         String ref = r.createForeignFileReference(f, "jar");
         String ref2 = r.createForeignFileReference(f, "jar");
         assertEquals("Duplicate reference created", ref, ref2);
-        assertEquals("Foreign file reference was not correctly created", "${file.reference.mylib.jar}", ref);
+        assertEquals("Foreign file reference was not correctly created", "${file.reference.m_y_l_i_b.jar}", ref);
         refval = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
-        assertEquals("Reference was not correctly evaluated", "../jars/mylib.jar", refval);
+        assertEquals("Reference was not correctly evaluated", "../j a r s/m y l i b.jar", refval);
         assertEquals("Reference was not correctly evaluated", f, h.resolveFile(refval));
-        collocatedLib = scratch.createFolder("jars2").createData("mylib.jar");
+        collocatedLib = scratch.createFolder("jars2").createData("m y l i b.jar");
         f = FileUtil.toFile(collocatedLib);
         ref = r.createForeignFileReference(f, "jar");
         ref2 = r.createForeignFileReference(f, "jar");
         assertEquals("Duplicate reference created", ref, ref2);
-        assertEquals("Foreign file reference was not correctly created", "${file.reference.mylib.jar-1}", ref);
+        assertEquals("Foreign file reference was not correctly created", "${file.reference.m_y_l_i_b.jar-1}", ref);
         refval = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
-        assertEquals("Reference was not correctly evaluated", "../jars2/mylib.jar", refval);
-        collocatedLib = scratch.createFolder("jars3").createData("mylib.jar");
+        assertEquals("Reference was not correctly evaluated", "../jars2/m y l i b.jar", refval);
+        collocatedLib = scratch.createFolder("jars3").createData("m y l i b.jar");
         f = FileUtil.toFile(collocatedLib);
         ref = r.createForeignFileReference(f, "jar");
         ref2 = r.createForeignFileReference(f, "jar");
         assertEquals("Duplicate reference created", ref, ref2);
-        assertEquals("Foreign file reference was not correctly created", "${file.reference.mylib.jar-2}", ref);
+        assertEquals("Foreign file reference was not correctly created", "${file.reference.m_y_l_i_b.jar-2}", ref);
         refval = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
-        assertEquals("Reference was not correctly evaluated", "../jars3/mylib.jar", refval);
+        assertEquals("Reference was not correctly evaluated", "../jars3/m y l i b.jar", refval);
         assertTrue("Reference was not removed", r.removeReference(ref));
         assertFalse("There should not be any reference", r.removeReference(ref));
         refval = pev.evaluate(ref);

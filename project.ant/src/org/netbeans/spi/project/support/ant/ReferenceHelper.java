@@ -233,7 +233,7 @@ public final class ReferenceHelper {
                     refPath = new File(artFile).getAbsolutePath();
                     propertiesFile = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
                 } else {
-                    refPath = "${" + forProjPathProp + "}/" + artFile; // NOI18N
+                    refPath = "${" + forProjPathProp + "}/" + artFile.getPath(); // NOI18N
                     propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
                 }
                 props = h.getProperties(propertiesFile);
@@ -624,9 +624,10 @@ public final class ReferenceHelper {
                         path = file.getAbsolutePath();
                     }
                     EditableProperties props = h.getProperties(propertiesFile);
-                    String prop = findReferenceID(file.getName(), "file.reference.", file.getAbsolutePath());
+                    String fileID = PropertyUtils.getUsablePropertyName(file.getName());
+                    String prop = findReferenceID(fileID, "file.reference.", file.getAbsolutePath());
                     if (prop == null) {
-                        prop = generateUniqueID(file.getName(), "file.reference.", file.getAbsolutePath()); // NOI18N
+                        prop = generateUniqueID(fileID, "file.reference.", file.getAbsolutePath()); // NOI18N
                     }
                     if (!path.equals(props.getProperty("file.reference."+prop))) {
                         props.setProperty("file.reference."+prop, path);

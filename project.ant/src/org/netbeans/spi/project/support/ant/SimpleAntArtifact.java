@@ -54,7 +54,7 @@ final class SimpleAntArtifact extends AntArtifact {
             return URI.create("file:/UNDEFINED"); // NOI18N
         }
         try {
-            return new URI(locationResolved);
+            return new URI(null, null, locationResolved, null);
         } catch (URISyntaxException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             return URI.create("file:/BROKEN"); // NOI18N
