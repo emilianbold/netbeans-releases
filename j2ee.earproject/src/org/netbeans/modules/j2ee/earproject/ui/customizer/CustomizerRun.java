@@ -24,7 +24,7 @@ import org.openide.util.HelpCtx;
 
 import org.netbeans.modules.j2ee.common.ui.customizer.ArchiveCustomizerPanel;
 import org.netbeans.modules.j2ee.common.ui.customizer.VisualPropertySupport;
-import org.netbeans.modules.j2ee.common.ui.customizer.CustomizerGeneral;
+//import org.netbeans.modules.j2ee.common.ui.customizer.CustomizerGeneral;
 
 public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, HelpCtx.Provider {
     
@@ -43,7 +43,7 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
     public CustomizerRun(EarProjectProperties webProperties, ProjectEar wm) {
         this.webProperties = webProperties;
         initComponents();
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ACS_CustomizeRun_A11YDesc")); //NOI18N
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ACS_CustomizeRun_A11YDesc")); //NOI18N
 
         this.wm = wm;        
         vps = new VisualPropertySupport(webProperties);

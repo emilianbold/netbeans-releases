@@ -77,6 +77,8 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import java.util.Arrays;
 
+import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+
 /** Helper class. Defines constants for properties. Knows the proper
  *  place where to store the properties.
  * 
@@ -1191,7 +1193,9 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
                 else if (jm.getModuleType() == J2eeModule.CLIENT) {
                     mod.setJava(path);
                 }
-                dd.addModule(mod);
+                Module prevMod = searchForModule(dd, path);
+                if (null == prevMod)
+                    dd.addModule(mod);
             }
         }
         catch (ClassNotFoundException cnfe) {
@@ -1299,7 +1303,13 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
                 AntArtifact artifacts[] = AntArtifactQuery.findArtifactsByType( 
                     moduleProjects[i], 
                     J2eeProjectConstants.ARTIFACT_TYPE_J2EE_ARCHIVE );
-                artifactList.addAll(Arrays.asList(artifacts));
+                if (null != artifacts)
+                    artifactList.addAll(Arrays.asList(artifacts));
+                artifacts = AntArtifactQuery.findArtifactsByType( 
+                    moduleProjects[i], 
+                    WebProjectConstants.ARTIFACT_TYPE_WAR );
+                if (null != artifacts)
+                    artifactList.addAll(Arrays.asList(artifacts));
             }
             // create the vcpis
             List newVCPIs = new ArrayList();

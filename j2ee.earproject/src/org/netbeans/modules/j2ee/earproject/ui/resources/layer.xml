@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/ear.html"/>
 <!--            <attr name="emptyEjbJar.xml/importEjbJar.xml" boolvalue="true"/>            -->
-                <attr name="emptyEar.xml" boolvalue="true"/>
+                <attr name="emptyEar.xml/completeEar.xml/importBlueprintEar.xml" boolvalue="true"/>
 
                 <!-- Add template for the J2SE project -->
                 <file name="emptyEar.xml">
@@ -34,13 +34,20 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/emptyProject.html"/>
                 </file>
-<!--                <file name="importEjbJar.xml"> -->
-<!--                   <attr name="template" boolvalue="true"/> -->
-<!--                   <attr name="templateWizardIterator" newvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.ImportEjbJarProjectWizardIterator"/> -->
-<!--                   <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.Bundle"/> -->
-<!--                   <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif"/> -->
-<!--                   <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/importProject.html"/> -->
-<!--                </file> -->
+                <file name="completeEar.xml">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.CompleteEarProjectWizardIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/completeProject.html"/>
+                </file>
+                <file name="importBlueprintEar.xml"> -->
+                   <attr name="template" boolvalue="true"/>
+                   <attr name="templateWizardIterator" newvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.ImportBlueprintEarWizardIterator"/> -->
+                   <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.Bundle"/> 
+                   <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif"/>
+                   <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/importProject.html"/> 
+                </file>
             </folder>
         </folder>
     </folder>

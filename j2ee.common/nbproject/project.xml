@@ -77,6 +77,12 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
  -->
                 <dependency>
+                    <code-name-base>org.netbeans.api.web.webmodule</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.schema2beans</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -183,13 +189,15 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <public-packages>
-		<package>org.netbeans.modules.j2ee.common.classpath</package>
+		<package>org.netbeans.modules.j2ee.common</package>
 		<package>org.netbeans.modules.j2ee.common.ui</package>
+                <!--
 		<package>org.netbeans.modules.j2ee.common.ui.resources</package>
 		<package>org.netbeans.modules.j2ee.common.ui.customizer</package>
 		<package>org.netbeans.modules.j2ee.common.ui.wizards</package>
 		<package>org.netbeans.modules.j2ee.common</package>
 		<package>org.netbeans.modules.j2ee.api.common</package>
+            -->
             </public-packages>
             <javadoc/>
         </data>

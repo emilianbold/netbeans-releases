@@ -204,6 +204,26 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>4.20</specification-version>
                     </run-dependency>
                 </dependency>
+               <dependency>
+                    <code-name-base>org.netbeans.modules.websvc.websvcapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.api.ejbmodule</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.web.project</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <public-packages/>
             <javadoc/>

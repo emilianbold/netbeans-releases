@@ -16,6 +16,7 @@ package org.netbeans.modules.j2ee.earproject;
 import java.io.File;
 import java.io.IOException;
 
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -37,6 +38,10 @@ import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectGenerator;
+import org.netbeans.modules.web.project.WebProjectGenerator;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
+
 /**
  * Create a fresh EarProject from scratch.
  * TODO importing an exisitng enterprise application 
@@ -54,6 +59,8 @@ public class EarProjectGenerator {
     
     private static final String META_INF = "META-INF"; //NOI18N
     
+    private static final String SOURCE_ROOT_REF = "${" + EarProjectProperties.SOURCE_ROOT + "}"; //NOI18N
+
     private EarProjectGenerator() {}
 
     /**
@@ -83,8 +90,6 @@ public class EarProjectGenerator {
         //FileObject webInfFO = webFO.createFolder(META_INF); // NOI18N
         // create web.xml
         // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
-        if (J2eeProjectConstants.J2EE_14_LEVEL.equals(j2eeLevel))
-            FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-j2ee-earproject/ear-1.4.xml"), webInfFO, "application"); //NOI18N
 //        else if (J2eeProjectConstants.J2EE_13_LEVEL.equals(j2eeLevel))
 //            FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-j2ee-ejbjarproject/ejb-jar-2.0.xml"), webInfFO, "ejb-jar"); //NOI18N
         
@@ -96,7 +101,19 @@ public class EarProjectGenerator {
         
         Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory ());
         ProjectManager.getDefault().saveProject(p);
-        ((EarProject)p).getAppModule().getConfigSupport ().createInitialConfiguration();
+        
+        // Make this a bit unit test friendlier.
+        // The j2eeserver code is pretty convinced that it is running inside the
+        // IDE at all times. Those assumptions don't hold up in the 
+        FileObject tfo = Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-j2ee-earproject/ear-1.4.xml");
+        if (null != tfo) {
+            if (J2eeProjectConstants.J2EE_14_LEVEL.equals(j2eeLevel)) 
+                FileUtil.copyFile(tfo, webInfFO, "application"); //NOI18N
+        
+            ((EarProject)p).getAppModule().getConfigSupport ().createInitialConfiguration();
+        }
+            
+        
 
         //create default index.jsp
         //createIndexJSP(webFO);
@@ -108,52 +125,123 @@ public class EarProjectGenerator {
         return h;
     }
     
-    public static AntProjectHelper importProject (File dir, String name, FileObject wmFO, FileObject javaRoot, FileObject docBase, FileObject libFolder, String j2eeLevel, String buildfile) throws IOException {
-        dir.mkdirs();
+    public static AntProjectHelper importProject (File pDir, File sDir, String name, String j2eeLevel) throws IOException {
+//        wmFO = dir;
+//        File docRoot = 
+        File top = sDir;
+        File metaInf = new File(top,"src/conf");
+        //dir = new File(dir,"nbimport");
+        pDir.mkdirs();
         // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
-        File rootF = dir;
+        File rootF = pDir;
         while (rootF.getParentFile() != null) {
             rootF = rootF.getParentFile();
         }
         FileObject fo = FileUtil.toFileObject (rootF);
         assert fo != null : "At least disk roots must be mounted! " + rootF;
         fo.getFileSystem().refresh(false);
-        fo = FileUtil.toFileObject (dir);
-        assert fo != null : "No such dir on disk: " + dir;
-        assert fo.isFolder() : "Not really a dir: " + dir;
+        fo = FileUtil.toFileObject (pDir);
+        FileObject docBase = FileUtil.toFileObject (metaInf);
+        FileObject appRootFO = FileUtil.toFileObject (top);
+        assert fo != null : "No such dir on disk: " + pDir;
+        assert fo.isFolder() : "Not really a dir: " + pDir;
         AntProjectHelper h = setupProject (fo, name, j2eeLevel);
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        if (FileUtil.isParentOf (fo, wmFO) || fo.equals (wmFO)) {
-            ep.put (EarProjectProperties.SOURCE_ROOT, "."); //NOI18N
-            ep.setProperty(EarProjectProperties.META_INF, relativePath (fo, docBase)); //NOI18N
-            ep.setProperty(EarProjectProperties.SRC_DIR, relativePath (fo, javaRoot)); //NOI18N
-            if (libFolder != null) {
-                ep.setProperty(EarProjectProperties.LIBRARIES_DIR, relativePath (fo, libFolder)); //NOI18N
-            }
-        } else {
-            File wmRoot = FileUtil.toFile (wmFO);
-            ep.put (EarProjectProperties.SOURCE_ROOT, wmRoot.getAbsolutePath ());
-            String docPath = relativePath (wmFO, docBase);
-            docPath = docPath.length () > 0 ? "${"+EarProjectProperties.SOURCE_ROOT+"}/" + docPath : "${"+EarProjectProperties.SOURCE_ROOT+"}"; //NOI18N
-            ep.setProperty(EarProjectProperties.META_INF, docPath);
-            String javaPath = relativePath (wmFO, javaRoot);
-            javaPath = javaPath.length () > 0 ? "${"+EarProjectProperties.SOURCE_ROOT+"}/" + javaPath : "${"+EarProjectProperties.SOURCE_ROOT+"}"; //NOI18N
-            ep.setProperty(EarProjectProperties.SRC_DIR, javaPath);
-            if (libFolder != null) {
-                String libPath = relativePath (wmFO, libFolder);
-                libPath = libPath.length () > 0 ? "${"+EarProjectProperties.SOURCE_ROOT+"}/" + libPath : "${"+EarProjectProperties.SOURCE_ROOT+"}"; //NOI18N
-                ep.setProperty(EarProjectProperties.LIBRARIES_DIR, libPath);
-            }
-        }
-        if (! GeneratedFilesHelper.BUILD_XML_PATH.equals (buildfile)) {
-            ep.setProperty (EarProjectProperties.BUILD_FILE, buildfile);
-        }
+        ReferenceHelper referenceHelper = new ReferenceHelper(h,
+                h.createAuxiliaryConfiguration(), h.getStandardPropertyEvaluator());
+//        EditableProperties ep = new EditableProperties();
+//        if (FileUtil.isParentOf(fo, wmFO) || fo.equals(wmFO)) {
+//            ep.setProperty(WebProjectProperties.SOURCE_ROOT, "."); //NOI18N
+//        } else {
+            ep.setProperty(EarProjectProperties.SOURCE_ROOT,
+                    referenceHelper.createForeignFileReference(top, null));
+//        }
+        ep.setProperty(EarProjectProperties.META_INF, createFileReference(referenceHelper, fo, appRootFO, docBase));
+//        if (FileUtil.isParentOf (fo, wmFO) || fo.equals (wmFO)) {
+//            ep.put (EarProjectProperties.SOURCE_ROOT, "."); //NOI18N
+//            ep.setProperty(EarProjectProperties.META_INF, relativePath (fo, docBase)); //NOI18N
+            ep.setProperty(EarProjectProperties.SRC_DIR, "${"+EarProjectProperties.SOURCE_ROOT+"}/src"); //NOI18N
+//            if (libFolder != null) {
+  //              ep.setProperty(EarProjectProperties.LIBRARIES_DIR, relativePath (fo, libFolder)); //NOI18N
+    //        }
+      //  } else {
+        //    File wmRoot = FileUtil.toFile (wmFO);
+          //  ep.put (EarProjectProperties.SOURCE_ROOT, wmRoot.getAbsolutePath ());
+            //String docPath = relativePath (wmFO, docBase);
+//            docPath = docPath.length () > 0 ? "${"+EarProjectProperties.SOURCE_ROOT+"}/" + docPath : "${"+EarProjectProperties.SOURCE_ROOT+"}"; //NOI18N
+  //          ep.setProperty(EarProjectProperties.META_INF, docPath);
+    //        String javaPath = relativePath (wmFO, javaRoot);
+      //      javaPath = javaPath.length () > 0 ? "${"+EarProjectProperties.SOURCE_ROOT+"}/" + javaPath : "${"+EarProjectProperties.SOURCE_ROOT+"}"; //NOI18N
+        //    ep.setProperty(EarProjectProperties.SRC_DIR, javaPath);
+          //  if (libFolder != null) {
+            //    String libPath = relativePath (wmFO, libFolder);
+              //  libPath = libPath.length () > 0 ? "${"+EarProjectProperties.SOURCE_ROOT+"}/" + libPath : "${"+EarProjectProperties.SOURCE_ROOT+"}"; //NOI18N
+                //ep.setProperty(EarProjectProperties.LIBRARIES_DIR, libPath);
+            //}
+        //}
+//        if (! GeneratedFilesHelper.BUILD_XML_PATH.equals (buildfile)) {
+//            ep.setProperty (EarProjectProperties.BUILD_FILE, buildfile);
+//        }
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
-        Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory ());
+        FileObject pd = h.getProjectDirectory ();
+        Project p = ProjectManager.getDefault().findProject(pd);
+        
+            AuxiliaryConfiguration aux = h.createAuxiliaryConfiguration();
+            ReferenceHelper refHelper = new ReferenceHelper(h, aux, h.getStandardPropertyEvaluator ());
+            EarProjectProperties epp = new EarProjectProperties((EarProject) p, h, refHelper, new EarProjectType());
+        // detect the j2ee blueprint sub projects....
+        // get the children
+        
+        FileObject[] children = appRootFO.getChildren();
+
+        // for each child
+        // -- if the child is a directory
+                int webSubCount = 0;
+                int ejbSubCount = 0;
+        for (int i = 0; i < children.length; i++) {
+            if (children[i].isFolder()) {
+                FileObject subprojectRoot = children[i];
+                // ---- test to see if it is a web module and trigger import
+                FileObject webDotXml = 
+                    subprojectRoot.getFileObject("web/WEB-INF/web.xml");
+                FileObject javaRoot = 
+                    subprojectRoot.getFileObject("src/java");
+                FileObject ejbJarDotXml =
+                    subprojectRoot.getFileObject("src/conf/ejb-jar.xml");
+                AntProjectHelper subProjHelper = null;
+                File subProjDir = new File(pDir,subprojectRoot.getName());
+                if (null != webDotXml) {
+                    subProjHelper = WebProjectGenerator.importProject(subProjDir,
+                        subprojectRoot.getName(), subprojectRoot, javaRoot, 
+                        subprojectRoot.getFileObject("web"), null, "1.4", "build.xml");
+                }
+
+                // ---- test to see if it is an ejb jar project and trigger the import
+                if (null != ejbJarDotXml) {
+                    subProjHelper = EjbJarProjectGenerator.importProject(subProjDir, 
+                        subprojectRoot.getName(), subprojectRoot, javaRoot, ejbJarDotXml.getParent(), "1.4", "build.xml");
+                }
+                    
+                // XXX ---- test to see if it is an app client and figure out how to import it.
+                
+                if (null != subProjHelper) {
+                    pd = subProjHelper.getProjectDirectory();
+                    Project subp = ProjectManager.getDefault().findProject(pd);
+                    epp.addJ2eeSubprojects(new Project[] { subp });                    
+                }
+                
+            }
+        }
+        
         ProjectManager.getDefault().saveProject(p);
+            ((EarProject)p).getAppModule().getConfigSupport ().createInitialConfiguration();
         
         return h;
+    }
+    
+    private static String generateSubprojName(String base, String type, int count) {
+        return base+type+count;
     }
     
     private static String relativePath (FileObject parent, FileObject child) {
@@ -225,8 +313,19 @@ public class EarProjectGenerator {
         //ep.setProperty(EarProjectProperties.LAUNCH_URL_FULL, "");
         ep.setProperty(EarProjectProperties.DISPLAY_BROWSER, "true");
         Deployment deployment = Deployment.getDefault ();
-        String serverInstanceID = deployment.getDefaultServerInstanceID ();
-        ep.setProperty(EarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID (serverInstanceID));
+        String serverInstanceID = null;
+        try {
+            serverInstanceID = deployment.getDefaultServerInstanceID ();
+            ep.setProperty(EarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID (serverInstanceID));
+            ep.setProperty(EarProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
+        } catch (NullPointerException npe) {
+            // cover for j2ee server.  It seems to be pretty hard-coded for existing
+            // only in a running IDE.
+            if (null != serverInstanceID) {
+                // I did not expect this, though
+                throw npe;
+            }
+        }
         ep.setProperty(EarProjectProperties.JAVAC_SOURCE, "1.4");
         ep.setProperty(EarProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(EarProjectProperties.JAVAC_DEPRECATION, "false");
@@ -262,7 +361,6 @@ public class EarProjectGenerator {
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.setProperty(EarProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
         
         // JSPC classpath
         StringBuffer sb = new StringBuffer();
@@ -299,4 +397,24 @@ public class EarProjectGenerator {
         mt.createFromTemplate(webDf, "index");
     }
 
+    private static String createFileReference(ReferenceHelper refHelper, FileObject projectFO,
+            FileObject sourceprojectFO, FileObject referencedFO) {
+        if (FileUtil.isParentOf(projectFO, referencedFO)) {
+            return relativePath(projectFO, referencedFO);
+        } else if (FileUtil.isParentOf(sourceprojectFO, referencedFO)) {
+            String s = relativePath(sourceprojectFO, referencedFO);
+            return s.length() > 0 ? SOURCE_ROOT_REF + "/" + s : SOURCE_ROOT_REF; //NOI18N
+        } else {
+            return refHelper.createForeignFileReference(FileUtil.toFile(referencedFO), null);
+        }
+    }
+
+//    private static String relativePath (FileObject parent, FileObject child) {
+//        if (child.equals (parent))
+//            return ""; // NOI18N
+//        if (!FileUtil.isParentOf (parent, child))
+//            throw new IllegalArgumentException ("Cannot find relative path, " + parent + " is not parent of " + child);
+//        return child.getPath ().substring (parent.getPath ().length () + 1);
+//    }
+//    
 }
