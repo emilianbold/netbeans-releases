@@ -32,7 +32,7 @@ public class PropertyPicker extends javax.swing.JDialog {
   public static final int OK = 1;
 
   /** Initializes the Form */
-  public PropertyPicker (java.awt.Frame parent, FormManager manager, RADComponent componentToSelect, Class requiredType) {
+  public PropertyPicker (java.awt.Frame parent, FormManager2 manager, RADComponent componentToSelect, Class requiredType) {
     super (parent != null ? parent : TopManager.getDefault ().getWindowManager ().getMainWindow (), true);
 
     this.manager = manager;
@@ -310,7 +310,7 @@ public class PropertyPicker extends javax.swing.JDialog {
 // End of variables declaration//GEN-END:variables
 
 
-  private FormManager manager;
+  private FormManager2 manager;
   private int returnStatus = CANCEL;
 
   private RADComponent[] components;
@@ -323,6 +323,7 @@ public class PropertyPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  3    Gandalf   1.2         5/15/99  Ian Formanek    
  *  2    Gandalf   1.1         5/14/99  Ian Formanek    
  *  1    Gandalf   1.0         5/13/99  Ian Formanek    
  * $

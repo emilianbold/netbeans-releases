@@ -34,7 +34,7 @@ public class MethodPicker extends javax.swing.JDialog {
   public static final int OK = 1;
 
   /** Initializes the Form */
-  public MethodPicker(java.awt.Frame parent, FormManager manager, RADComponent componentToSelect, Class requiredType) {
+  public MethodPicker(java.awt.Frame parent, FormManager2 manager, RADComponent componentToSelect, Class requiredType) {
     super (parent != null ? parent : TopManager.getDefault ().getWindowManager ().getMainWindow (), true);
 
     this.manager = manager;
@@ -333,7 +333,7 @@ public class MethodPicker extends javax.swing.JDialog {
 // End of variables declaration//GEN-END:variables
 
 
-  private FormManager manager;
+  private FormManager2 manager;
   private int returnStatus = CANCEL;
 
   private RADComponent[] components;
@@ -346,6 +346,7 @@ public class MethodPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  2    Gandalf   1.1         5/15/99  Ian Formanek    
  *  1    Gandalf   1.0         5/13/99  Ian Formanek    
  * $
  */

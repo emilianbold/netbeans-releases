@@ -37,7 +37,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
   private RADComponentNode formRootNode;
 
-  private FormManager formManager;
+  private FormManager2 formManager;
   
   /** lock for opening form */
   private static final Object OPEN_FORM_LOCK = new Object ();
@@ -94,8 +94,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     return formRootNode;
   }
   
-  /** @returns the FormManager of this form */
-  FormManager getFormManager () {
+  /** @returns the FormManager2 of this form */
+  FormManager2 getFormManager () {
     return formManager;
   }
   
@@ -160,6 +160,24 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   }
 
 // -----------------------------------------------------------------------------
+// Form Saving
+
+  /** Save the document in this thread and start reparsing it.
+  * @exception IOException on I/O error
+  */
+  public void saveDocument () throws IOException {
+    super.saveDocument ();
+    
+    TuborgPersistenceManager perMan = new TuborgPersistenceManager ();
+    FileObject formFile = formObject.getFormEntry ().getFile ();
+    try {
+      perMan.saveForm (formObject, formManager);
+    } catch (IOException e) {
+      e.printStackTrace ();
+    }
+  }
+
+// -----------------------------------------------------------------------------
 // FormCookie implementation
   
   /** Method from FormCookie */
@@ -187,6 +205,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  14   Gandalf   1.13        5/15/99  Ian Formanek    
  *  13   Gandalf   1.12        5/12/99  Ian Formanek    
  *  12   Gandalf   1.11        5/11/99  Ian Formanek    Build 318 version
  *  11   Gandalf   1.10        5/10/99  Ian Formanek    

@@ -21,7 +21,7 @@ import java.awt.Container;
 /** 
 * Initialization order: <UL>
 * <LI> Constructor: new RADVisualContainer ();
-* <LI> FormManager init: initialize (FormManager)
+* <LI> FormManager2 init: initialize (FormManager2)
 * <LI> Bean init: setComponent (Class)
 * <LI> SubComponents init: initSubComponents (RADComponent[])
 * <LI> DesignLayout init: setDesignLayout (DesignLayout) </UL>
@@ -90,6 +90,12 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
   }
 
   public void initSubComponents (RADComponent[] initComponents) {
+/*    System.out.println("initComponents in: "+getName ());
+    System.out.println("initComponents: "+initComponents);
+    System.out.println("initComponents length: "+initComponents.length);
+    for (int  i = 0; i < initComponents.length; i++) {
+      System.out.println("Component at ["+i+"] = "+initComponents[i].getClass ().getName ()+", :"+initComponents[i]);
+    } */
     subComponents = new RADVisualComponent[initComponents.length];
     System.arraycopy (initComponents, 0, subComponents, 0, initComponents.length);
     for (int i = 0; i < subComponents.length; i++) {
@@ -136,6 +142,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
 /*
  * Log
+ *  10   Gandalf   1.9         5/15/99  Ian Formanek    
  *  9    Gandalf   1.8         5/15/99  Ian Formanek    
  *  8    Gandalf   1.7         5/14/99  Ian Formanek    
  *  7    Gandalf   1.6         5/12/99  Ian Formanek    Removed debug print

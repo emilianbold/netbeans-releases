@@ -29,7 +29,7 @@ import com.netbeans.ide.util.Utilities;
 public class ParametersPicker extends javax.swing.JPanel {
 
   /** Initializes the Form */
-  public ParametersPicker(FormManager manager, RADComponent sourceComponent, Class requiredType) {
+  public ParametersPicker(FormManager2 manager, RADComponent sourceComponent, Class requiredType) {
     initComponents ();
     this.requiredType = requiredType;
     this.manager = manager;
@@ -351,7 +351,7 @@ public class ParametersPicker extends javax.swing.JPanel {
   javax.swing.JTextArea codeArea;
 // End of variables declaration//GEN-END:variables
 
-  private FormManager manager;
+  private FormManager2 manager;
   private RADComponent sourceComponent;
   private Class requiredType;
 
@@ -368,6 +368,7 @@ public class ParametersPicker extends javax.swing.JPanel {
 
 /*
  * Log
+ *  3    Gandalf   1.2         5/15/99  Ian Formanek    
  *  2    Gandalf   1.1         5/15/99  Ian Formanek    
  *  1    Gandalf   1.0         5/13/99  Ian Formanek    
  * $

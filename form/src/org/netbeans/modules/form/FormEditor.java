@@ -29,8 +29,8 @@ import com.netbeans.ide.explorer.*;
 import com.netbeans.ide.explorer.propertysheet.PropertySheetView;
 import com.netbeans.ide.explorer.propertysheet.PropertySheet;
 import com.netbeans.ide.explorer.view.BeanTreeView;
-import com.netbeans.ide.util.NbVersion;
 import com.netbeans.ide.nodes.Node;
+import com.netbeans.developer.util.NbVersion;
 import com.netbeans.developer.modules.loaders.form.actions.*;
 import com.netbeans.developer.modules.loaders.form.FormDataObject;
 import com.netbeans.developer.modules.loaders.form.FormLoaderSettings;
@@ -416,7 +416,7 @@ final public class FormEditor extends Object {
 //    static final long serialVersionUID = 6802346985641760699L;
 
     /** Currently focused form or null if no form is opened/focused */
-    transient private FormManager formManager; 
+    transient private FormManager2 formManager; 
 
     /** The Inspector's icon */
     private final static java.awt.Image inspectorIcon = java.awt.Toolkit.getDefaultToolkit ().getImage (
@@ -452,7 +452,7 @@ final public class FormEditor extends Object {
       setIcon (inspectorIcon);
     }
 
-    public void focusForm (FormManager formManager) {
+    public void focusForm (FormManager2 formManager) {
       System.out.println("Focus Form: "+formManager);
       this.formManager = formManager;
       if (formManager == null) {
@@ -462,11 +462,11 @@ final public class FormEditor extends Object {
       }
     }
 
-    FormManager getFocusedForm () {
+    FormManager2 getFocusedForm () {
       return formManager;
     }
 
-    void setSelectedNodes (Node[] nodes, FormManager manager) throws java.beans.PropertyVetoException {
+    void setSelectedNodes (Node[] nodes, FormManager2 manager) throws java.beans.PropertyVetoException {
       if (manager == formManager) {
         getExplorerManager ().setSelectedNodes (nodes);
       }
@@ -590,6 +590,7 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  11   Gandalf   1.10        5/15/99  Ian Formanek    
  *  10   Gandalf   1.9         5/15/99  Ian Formanek    
  *  9    Gandalf   1.8         5/14/99  Ian Formanek    
  *  8    Gandalf   1.7         5/14/99  Ian Formanek    

@@ -49,7 +49,7 @@ public class JavaCodeGenerator extends CodeGenerator {
   protected static final String SECTION_VARIABLES = "variables";
   protected static final String SECTION_EVENT_PREFIX = "event_";
     
-  private FormManager formManager;
+  private FormManager2 formManager;
 
   private JCGFormListener listener;
 
@@ -80,7 +80,7 @@ public class JavaCodeGenerator extends CodeGenerator {
   public JavaCodeGenerator () {
   }
 
-  public void initialize (FormManager formManager) {
+  public void initialize (FormManager2 formManager) {
     listener = new JCGFormListener ();
     this.formManager = formManager;
     formManager.addFormListener (listener);
@@ -688,6 +688,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  13   Gandalf   1.12        5/15/99  Ian Formanek    
  *  12   Gandalf   1.11        5/15/99  Ian Formanek    
  *  11   Gandalf   1.10        5/14/99  Ian Formanek    
  *  10   Gandalf   1.9         5/14/99  Ian Formanek    

@@ -96,10 +96,14 @@ public class RADVisualComponent extends RADComponent {
   }
   
 
+  HashMap getConstraintsMap () {
+    return constraints;
+  }
 }
 
 /*
  * Log
+ *  8    Gandalf   1.7         5/15/99  Ian Formanek    
  *  7    Gandalf   1.6         5/15/99  Ian Formanek    
  *  6    Gandalf   1.5         5/14/99  Ian Formanek    
  *  5    Gandalf   1.4         5/12/99  Ian Formanek    

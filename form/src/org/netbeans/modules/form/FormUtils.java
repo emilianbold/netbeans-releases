@@ -26,7 +26,6 @@ import com.netbeans.ide.util.io.*;
 //import com.netbeans.developer.modules.loaders.form.layouts.*;
 //import com.netbeans.developer.modules.loaders.form.layouts.support.*;
 import com.netbeans.developer.modules.loaders.form.util.*;
-import com.netbeans.developer.modules.loaders.form.FormBCObjectInputStream;
 
 /** A class that contains utility methods for the formeditor.
 *
@@ -373,7 +372,7 @@ public class FormUtils extends Object {
     oi.readFully (byteArray, 0, size);
 
     ByteArrayInputStream bis = new ByteArrayInputStream (byteArray);
-    ObjectInputStream ois = new FormBCObjectInputStream (bis);
+    ObjectInputStream ois = new ObjectInputStream (bis);
     Object obj = ois.readObject ();
     bis.close ();
 
@@ -384,6 +383,7 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  11   Gandalf   1.10        5/15/99  Ian Formanek    
  *  10   Gandalf   1.9         5/15/99  Ian Formanek    
  *  9    Gandalf   1.8         5/13/99  Ian Formanek    
  *  8    Gandalf   1.7         5/10/99  Ian Formanek    

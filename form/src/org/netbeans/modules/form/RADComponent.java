@@ -63,7 +63,7 @@ public class RADComponent {
   private HashMap nameToProperty;
   private Map defaultPropertyValues;
 
-  private FormManager formManager;
+  private FormManager2 formManager;
   private EventsList eventsList;
 
   // FINALIZE DEBUG METHOD
@@ -82,7 +82,7 @@ public class RADComponent {
     auxValues = new HashMap (10);
   }
 
-  public void initialize (FormManager formManager) {
+  public void initialize (FormManager2 formManager) {
     this.formManager = formManager;
   }
 
@@ -168,7 +168,7 @@ public class RADComponent {
     return auxValues.get (key);
   }
   
-  public FormManager getFormManager () {
+  public FormManager2 getFormManager () {
     return formManager;
   }
   
@@ -653,6 +653,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  12   Gandalf   1.11        5/15/99  Ian Formanek    
  *  11   Gandalf   1.10        5/15/99  Ian Formanek    
  *  10   Gandalf   1.9         5/14/99  Ian Formanek    
  *  9    Gandalf   1.8         5/14/99  Ian Formanek    

@@ -50,21 +50,22 @@ public abstract class PersistenceManager {
 
   /** Called to actually load the form stored in specified formObject.
   * @param formObject the FormDataObject which represents the form files
-  * @return the FormManager representing the loaded form or null if some problem occured
+  * @return the FormManager2 representing the loaded form or null if some problem occured
   * @exception IOException if any problem occured when loading the form
   */
-  public abstract FormManager loadForm (FormDataObject formObject) throws IOException;
+  public abstract FormManager2 loadForm (FormDataObject formObject) throws IOException;
 
-  /** Called to actually save the form represented by specified FormManager into specified formObject.
+  /** Called to actually save the form represented by specified FormManager2 into specified formObject.
   * @param formObject the FormDataObject which represents the form files
-  * @param manager the FormManager representing the form to be saved
+  * @param manager the FormManager2 representing the form to be saved
   * @exception IOException if any problem occured when saving the form
   */
-  public abstract void saveForm (FormDataObject formObject, FormManager manager) throws IOException;
+  public abstract void saveForm (FormDataObject formObject, FormManager2 manager) throws IOException;
 }
 
 /*
  * Log
+ *  3    Gandalf   1.2         5/15/99  Ian Formanek    
  *  2    Gandalf   1.1         5/4/99   Ian Formanek    Package change
  *  1    Gandalf   1.0         4/26/99  Ian Formanek    
  * $
