@@ -32,7 +32,6 @@ import org.netbeans.editor.ext.html.HTMLTokenContext;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.html.editor.folding.HTMLFoldTypes;
 import org.netbeans.modules.web.core.syntax.folding.JspFoldTypes;
 import org.openide.ErrorManager;
 import org.openide.cookies.*;
@@ -366,7 +365,7 @@ public class JSPKit extends NbEditorKit {
             FoldHierarchy hierarchy = FoldHierarchy.get(target);
             // Hierarchy locking done in the utility method
             FoldUtilities.expand(hierarchy, JspFoldTypes.COMMENT);
-            FoldUtilities.expand(hierarchy, HTMLFoldTypes.COMMENT);
+            FoldUtilities.expand(hierarchy, JspFoldTypes.HTML_COMMENT);
             
         }
     }
@@ -382,7 +381,7 @@ public class JSPKit extends NbEditorKit {
             FoldHierarchy hierarchy = FoldHierarchy.get(target);
             // Hierarchy locking done in the utility method
             FoldUtilities.collapse(hierarchy, JspFoldTypes.COMMENT);
-            FoldUtilities.collapse(hierarchy, HTMLFoldTypes.COMMENT);
+            FoldUtilities.collapse(hierarchy, JspFoldTypes.HTML_COMMENT);
         }
     }
     
