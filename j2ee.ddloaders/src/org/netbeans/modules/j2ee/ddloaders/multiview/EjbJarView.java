@@ -17,6 +17,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.nodes.Node;
+import org.openide.nodes.Children;
 
 /**
  * @author pfiala
@@ -52,14 +53,20 @@ class EjbJarView extends SectionNodeView {
         EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
         if (enterpriseBeans != this.enterpriseBeans) {
             SectionNode rootNode = getRootNode();
+            final Children children = rootNode.getChildren();
+            final Node[] nodes = children.getNodes();
+            for (int i = 0; i < nodes.length; i++) {
+                Node node = nodes[i];
+                if (node instanceof EnterpriseBeansNode) {
+                    children.remove(new Node[]{node});
+                }
+            }
             if (enterpriseBeans != null) {
                 enterpriseBeansNode = new EnterpriseBeansNode(this, enterpriseBeans);
                 if (rootNode != null) {
                     rootNode.addChild(enterpriseBeansNode);
                     rootNode.populateBoxPanel();
                 }
-            } else {
-                rootNode.getChildren().remove(new Node[]{enterpriseBeansNode});
             }
             this.enterpriseBeans = enterpriseBeans;
         }
