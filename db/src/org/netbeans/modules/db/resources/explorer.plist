@@ -326,9 +326,13 @@
 				class = com.netbeans.enterprise.modules.db.explorer.actions.DisconnectAction;
 			},
 			delimiter,
+//			{
+//				name = "ViewData";
+//				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
+//			},
 			{
-				name = "ViewData";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
+				name = "ExecuteCommand";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			{
 				name = "TestDriver";
@@ -1227,6 +1231,10 @@
 				name = "ViewData";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
 			},
+			{
+				name = "ExecuteCommand";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+			},
 			delimiter,
 			{
 				name = "Cut";
@@ -1310,6 +1318,10 @@
 			{
 				name = "ViewData";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
+			},
+			{
+				name = "ExecuteCommand";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter,
 			{
@@ -1412,6 +1424,10 @@
 			{
 				name = "ViewData";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
+			},
+			{
+				name = "ExecuteCommand";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter,
 			{
@@ -1527,6 +1543,10 @@
 				name = "ViewData";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
 			},
+			{
+				name = "ExecuteCommand";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+			},
 			delimiter,
 			{
 				name = "Cut";
@@ -1633,6 +1653,10 @@
 			{
 				name = "ViewData";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
+			},
+			{
+				name = "ExecuteCommand";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter,			
 			{
@@ -2001,6 +2025,10 @@
 				name = "ViewData";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
 			},
+			{
+				name = "ExecuteCommand";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+			},
 			delimiter,			
 			{
 				name = "Cut";
@@ -2052,6 +2080,10 @@
 			{
 				name = "ViewData";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
+			},
+			{
+				name = "ExecuteCommand";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter,			
 			{
