@@ -27,6 +27,7 @@ public class Operator {
 
   private boolean           resume = false;
   private boolean           stopRequest = false;
+  private Thread            thread;
   
   /**
   * Creates operator for given event queue.
@@ -36,7 +37,7 @@ public class Operator {
     final Runnable starter,
     final Runnable finalizer
   ) {
-    new Thread (new Runnable () {
+    thread = new Thread (new Runnable () {
       public void run () {
         EventQueue queue = virtualMachine.eventQueue ();
         try {
@@ -66,7 +67,7 @@ public class Operator {
               } else 
                 exec = (Executor) e.request ().getProperty ("executor");
               
-              // printEvent (e, exec);
+              printEvent (e, exec);
 
               // safe invocation of user action
               if (exec != null) 
@@ -86,7 +87,14 @@ public class Operator {
         if (finalizer != null) finalizer.run ();
         //S ystem.out.println ("Operator end"); // NOI18N
       }
-    }, "Debugger operator thread").start (); // NOI18N
+    }, "Debugger operator thread"); // NOI18N
+  }
+
+  /**
+  * Starts checking of JPDA messages.
+  */
+  public void start () {
+    thread.start ();
   }
   
   public void register (EventRequest req, Executor e) {
@@ -150,6 +158,7 @@ public class Operator {
 
 /*
  * Log
+ *  14   Jaga      1.9.3.3     3/22/00  Jan Jancura     
  *  13   Jaga      1.9.3.2     3/6/00   Jan Jancura     Non java languages 
  *       support  + JDK1.2 patches
  *  12   Jaga      1.9.3.1     3/2/00   Jan Jancura     
