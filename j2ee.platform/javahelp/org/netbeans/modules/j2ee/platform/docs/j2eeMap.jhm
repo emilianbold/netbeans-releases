@@ -157,9 +157,9 @@
 
 	<!-- NEW PROJECT WIZARD FOR A FREE-FORM WEB APPLICATION: -->
 	<!-- The Web Sources panel in New Project Wizard for a Free-Form Web Application: -->
-	<mapID target="org.netbeans.modules.web.freeform.ui.WebLocationsPanel" url="web/csh/projwiz_freeform/WebLocationsWizardPanel.html" />
+	<mapID target="org.netbeans.modules.web.freeform.ui.WebLocationsWizardPanel" url="web/csh/projwiz_freeform/WebLocationsWizardPanel.html" />
 	<!-- The Web Sources Classpath panel in New Project Wizard for a Free-Form Web Application: -->
-	<mapID target="org.netbeans.modules.web.freeform.ui.WebClasspathPanel" url="web/csh/projwiz_freeform/WebClasspathWizardPanel.html" />
+	<mapID target="org.netbeans.modules.web.freeform.ui.WebClasspathWizardPanel" url="web/csh/projwiz_freeform/WebClasspathWizardPanel.html" />
 
 	<!-- NEW PROJECT WIZARD FOR A STANDARD WEB APPLICATION:-->
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelConfigureProject" url="web/csh/projwiz_standard/PanelConfigureProject.html" />
