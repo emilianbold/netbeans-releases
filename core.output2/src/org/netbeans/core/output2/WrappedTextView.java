@@ -408,6 +408,9 @@ public class WrappedTextView extends View {
                     for (; currLogicalLine < logicalLines; currLogicalLine++) {
                         int charpos = currLogicalLine * charsPerLine;
                         int lenToDraw = Math.min(charsPerLine, length - charpos);
+                        if (lenToDraw <= 0) {
+                            break;
+                        }
 
                         if (currLogicalLine != logicalLines-1) {
                             drawArrow (g, y, currLogicalLine == logicalLines-2);
@@ -435,7 +438,6 @@ public class WrappedTextView extends View {
                             g.fillRect (margin(), y + fontDescent() - charHeight(), selLen, charHeight());
                             g.setColor (c);
                         }
-
                         g.drawChars(seg.array, charpos, lenToDraw, margin, y);
                         if (g.getColor() == unselectedLinkFg) {
                             g.drawLine (margin(), y+1, g.getFontMetrics().charsWidth(seg.array, charpos, lenToDraw), y+1);
