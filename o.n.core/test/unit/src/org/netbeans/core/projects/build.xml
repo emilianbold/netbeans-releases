@@ -13,54 +13,18 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project name="projects test setup" basedir="." default="build">
 
-    <property name="xtest.source.location" value="src"/>
-
-    <target name="init">
-	<condition property="jarcode.classpath">
-            <equals arg1="${xtest.source.location}" arg2="jar"/>
-        </condition>        
-        <condition property="srccode.classpath">
-            <equals arg1="${xtest.source.location}" arg2="src"/>
-        </condition>        
-        <condition property="idecode.classpath">
-            <equals arg1="${xtest.source.location}" arg2="ide"/>
-        </condition>    
-    </target>
-    
-    <target name="prepare-classpath" 
-            depends="init,jartest-classpath,srctest-classpath,idetest-classpath"/>
-    
-    <target name="jartest-classpath" if="jarcode.classpath">
+    <target name="build" description="Build stuff for projects tests">
 	<path id="openide">
             <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
             <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
         </path>
-    </target>
-        
-    <target name="srctest-classpath" if="srccode.classpath">
-	<path id="openide">
-            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>	    
-        </path>
-    </target>
-    
-    <target name="idetest-classpath" if="idecode.classpath">
-    	<path id="openide">
-	    <pathelement location="${xtest.home}/lib/openide-13javac-workaround.jar"/>
-            <fileset dir="${netbeans.home}/lib">
-	            <include name="openide*.jar"/>
-            </fileset>
-        </path>
-    </target>
-    
-    <target name="build" depends="prepare-classpath" description="Build stuff for projects tests">
         <antcall target="create-jar">
             <param name="name" value="sfs-attr-test"/>
         </antcall>
     </target>
 
     <!-- Create a JAR file under data/; give the name (must have subdir w/ contents and manifest) -->
-    <target name="create-jar" depends="prepare-classpath">
+    <target name="create-jar">
         <property name="sourcedir" location="data/${name}"/>
         <javac destdir="${sourcedir}" srcdir="${sourcedir}">
             <!-- Permit use of Open APIs from module code: -->

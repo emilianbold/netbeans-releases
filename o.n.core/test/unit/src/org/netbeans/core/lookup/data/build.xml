@@ -15,32 +15,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="all" depends="test1,test2,services1,services2,ims"/>
 
-    <property name="xtest.source.location" value="jar"/>
- 
-    <target name="init">
-	<condition property="jarcode.classpath">
-            <or>
-              <equals arg1="${xtest.source.location}" arg2="jar"/>
-              <equals arg1="${xtest.source.location}" arg2="src"/>
-            </or>
-        </condition>        
-        <condition property="idecode.classpath">
-            <equals arg1="${xtest.source.location}" arg2="ide"/>
-        </condition>    
-    </target>
-    
-    <target name="prepare-classpath" 
-            depends="init,jartest-classpath,idetest-classpath"/>
-    
-    <target name="jartest-classpath" if="jarcode.classpath">
-	<property name="ims.classpath" value="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-    </target>
-        
-    <target name="idetest-classpath" if="idecode.classpath">
-	<property name="ims.classpath" value="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-    </target>
-
-
     <target name="test1">
         <javac srcdir="test1-src" destdir="test1-src"/>
         <jar jarfile="test1.jar" manifest="test1.mf" compress="false">
@@ -69,7 +43,8 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
     </target>
 
-    <target name="ims" depends="prepare-classpath">
+    <target name="ims">
+	<property name="ims.classpath" value="${openide.dir}/${nb.lib.dir}/openide.jar"/>
         <javac srcdir="install-manifest-service" destdir="install-manifest-service" classpath="${ims.classpath}"/>
         <jar jarfile="install-manifest-service.jar" manifest="install-manifest-service.mf">
             <fileset dir="install-manifest-service"/>
