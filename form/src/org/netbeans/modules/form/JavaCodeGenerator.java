@@ -11,8 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/* $Id$ */
-
 package org.netbeans.modules.form;
 
 import org.openide.explorer.propertysheet.editors.ModifierEditor;
@@ -489,7 +487,6 @@ class JavaCodeGenerator extends CodeGenerator {
                             if (genSize) {
                                 sizeBuffer.append("pack();\n"); // NOI18N
                                 sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
-                                sizeBuffer.append("java.awt.Dimension dialogSize = getSize();\n"); // NOI18N
                                 sizeBuffer.append("setSize(new java.awt.Dimension("+formSize.width + ", " + formSize.height + "));\n"); // NOI18N
                                 sizeBuffer.append("setLocation((screenSize.width-"+formSize.width+")/2,(screenSize.height-"+formSize.height+")/2);\n"); // NOI18N
                             } else {
