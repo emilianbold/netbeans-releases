@@ -77,7 +77,7 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
     
     // add all inherited bindings
     Class parent = kitClass.getSuperclass();
-    Settings.KitAndValue[] kv = Settings.getValueHierarchy( parent, SettingNames.KEY_BINDING_LIST );
+    Settings.KitAndValue[] kv = Settings.getValueHierarchy( parent, SettingsNames.KEY_BINDING_LIST );
     // go through all levels and add inherited bindings
     for( int i=kv.length - 1; i >= 0; i--)
       addKeyBindingList( treeMap, ((List)kv[i].value).iterator(), true );
@@ -474,6 +474,7 @@ private void actionsListValueChanged (javax.swing.event.ListSelectionEvent evt) 
 
 /*
  * Log
+ *  8    Jaga      1.5.1.1     3/24/00  Miloslav Metelka 
  *  7    Jaga      1.5.1.0     3/20/00  Miloslav Metelka finally branching
  *  6    Gandalf-post-FCS1.5         3/20/00  Miloslav Metelka renaming
  *  5    Gandalf-post-FCS1.4         3/17/00  Petr Nejedly    Rolled back to compile 

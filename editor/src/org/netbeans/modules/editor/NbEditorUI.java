@@ -116,7 +116,16 @@ public class NbEditorUI extends ExtEditorUI {
       this.updatePerformer = updatePerformer;
       this.syncEnabling = syncEnabling;
 
-      NbEditorUI.this.addPropertyChangeListener(this);
+      synchronized (NbEditorUI.this.getComponentLock()) {
+        // if component already installed in EditorUI simulate installation
+        JTextComponent component = getComponent();
+        if (component != null) {
+          propertyChange(new PropertyChangeEvent(NbEditorUI.this,
+              EditorUI.COMPONENT_PROPERTY, null, component));
+        }
+
+        NbEditorUI.this.addPropertyChangeListener(this);
+      }
     }
 
     public synchronized void focusGained(FocusEvent evt) {
@@ -125,6 +134,7 @@ public class NbEditorUI extends ExtEditorUI {
       if (ea != null && sa != null) {
         if (updatePerformer) {
           if (ea.isEnabled() && sa instanceof CallbackSystemAction) {
+            System.out.println("NbEditorUI.java:136 setting performer of sa=" + sa + " to " + this);
             ((CallbackSystemAction)sa).setActionPerformer(this);
           }
         }
@@ -271,6 +281,7 @@ public class NbEditorUI extends ExtEditorUI {
 
 /*
  * Log
+ *  3    Jaga      1.2         3/24/00  Miloslav Metelka 
  *  2    Jaga      1.1         3/21/00  Miloslav Metelka 
  *  1    Jaga      1.0         3/15/00  Miloslav Metelka 
  * $

@@ -24,7 +24,7 @@ import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.explorer.propertysheet.PropertyModel;
 import com.netbeans.editor.Coloring;
 import com.netbeans.editor.Settings;
-import com.netbeans.editor.SettingDefaults;
+import com.netbeans.editor.SettingsDefaults;
 import com.netbeans.developer.editors.FontEditor;
 import com.netbeans.developer.editors.ColorEditor;
 
@@ -60,8 +60,8 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
   /** Creates new form ColoringEditorPanel */
   public ColoringEditorPanel() {
 
-    value = new ColoringBean(SettingDefaults.defaultColoring, "null", // NOI18N
-        SettingDefaults.defaultColoring, true );
+    value = new ColoringBean(SettingsDefaults.defaultColoring, "null", // NOI18N
+        SettingsDefaults.defaultColoring, true );
 
     initComponents ();
     
@@ -398,6 +398,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
 
 /*
  * Log
+ *  20   Jaga      1.12.1.3.1.23/24/00  Miloslav Metelka 
  *  19   Jaga      1.12.1.3.1.13/21/00  Miloslav Metelka 
  *  18   Jaga      1.12.1.3.1.03/15/00  Miloslav Metelka after structural change
  *  17   Gandalf-post-FCS1.12.1.3    3/8/00   Petr Nejedly    fix for 

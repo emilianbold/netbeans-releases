@@ -24,7 +24,7 @@ import com.netbeans.editor.BaseSettingsInitializer;
 import com.netbeans.editor.Settings;
 import com.netbeans.editor.SettingsUtil;
 import com.netbeans.editor.MultiKeyBinding;
-import com.netbeans.editor.ext.ExtSettingNames;
+import com.netbeans.editor.ext.ExtSettingsNames;
 import com.netbeans.editor.ext.ExtSettingsInitializer;
 import com.netbeans.editor.ext.html.HTMLSettingsInitializer;
 import com.netbeans.editor.ext.java.JavaSettingsInitializer;
@@ -73,7 +73,7 @@ public class NbEditorSettingsInitializer implements Settings.Initializer {
         settingsMap = new HashMap();
       }
 
-      settingsMap.put(ExtSettingNames.POPUP_MENU_ACTION_NAME_LIST, 
+      settingsMap.put(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST, 
         new ArrayList(Arrays.asList(
           new String[] {
             SaveAction.class.getName(),
@@ -96,6 +96,7 @@ public class NbEditorSettingsInitializer implements Settings.Initializer {
 
 /*
  * Log
+ *  2    Jaga      1.1         3/24/00  Miloslav Metelka 
  *  1    Jaga      1.0         3/15/00  Miloslav Metelka 
  * $
  */

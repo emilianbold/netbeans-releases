@@ -23,14 +23,14 @@ import java.util.ArrayList;
 import javax.swing.text.JTextComponent;
   
 import com.netbeans.editor.Settings;
-import com.netbeans.editor.SettingNames;
-import com.netbeans.editor.SettingDefaults;
+import com.netbeans.editor.SettingsNames;
+import com.netbeans.editor.SettingsDefaults;
 import com.netbeans.editor.SettingsUtil;
 import com.netbeans.editor.Coloring;
 import com.netbeans.editor.BaseKit;
 import com.netbeans.editor.Syntax;
 import com.netbeans.editor.MultiKeyBinding;
-import com.netbeans.editor.ext.ExtSettingNames;
+import com.netbeans.editor.ext.ExtSettingsNames;
 
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
@@ -128,107 +128,107 @@ public class BaseOptions extends OptionSupport {
   }
   
   public int getTabSize() {
-    return getSettingInteger(SettingNames.TAB_SIZE);
+    return getSettingInteger(SettingsNames.TAB_SIZE);
   }
   public void setTabSize(int tabSize) {
-    setSettingInteger(SettingNames.TAB_SIZE, tabSize);
+    setSettingInteger(SettingsNames.TAB_SIZE, tabSize);
   }
 
   public boolean getExpandTabs() {
-    return getSettingBoolean(SettingNames.EXPAND_TABS);
+    return getSettingBoolean(SettingsNames.EXPAND_TABS);
   }
   public void setExpandTabs(boolean expandTabs) {
-    setSettingBoolean(SettingNames.EXPAND_TABS, expandTabs);
+    setSettingBoolean(SettingsNames.EXPAND_TABS, expandTabs);
   }
   
   public int getSpacesPerTab() {
-    return getSettingInteger(SettingNames.SPACES_PER_TAB);
+    return getSettingInteger(SettingsNames.SPACES_PER_TAB);
   }
   public void setSpacesPerTab(int i){
-    setSettingInteger(SettingNames.SPACES_PER_TAB, i);
+    setSettingInteger(SettingsNames.SPACES_PER_TAB, i);
   }
   
   public Map getAbbrevMap() {
-    return new HashMap( (Map)getSettingValue(SettingNames.ABBREV_MAP) );
+    return new HashMap( (Map)getSettingValue(SettingsNames.ABBREV_MAP) );
   }
 
   public void setAbbrevMap(Map map) {
-    setSettingValue(SettingNames.ABBREV_MAP, map);
+    setSettingValue(SettingsNames.ABBREV_MAP, map);
   }
   
   public String getCaretTypeInsertMode() {
-    return (String) getSettingValue(SettingNames.CARET_TYPE_INSERT_MODE);
+    return (String) getSettingValue(SettingsNames.CARET_TYPE_INSERT_MODE);
   }
   public void setCaretTypeInsertMode(String type) {
-    setSettingValue(SettingNames.CARET_TYPE_INSERT_MODE, type);
+    setSettingValue(SettingsNames.CARET_TYPE_INSERT_MODE, type);
   }
   
   public String getCaretTypeOverwriteMode() {
-    return (String) getSettingValue(SettingNames.CARET_TYPE_OVERWRITE_MODE);
+    return (String) getSettingValue(SettingsNames.CARET_TYPE_OVERWRITE_MODE);
   }
   public void setCaretTypeOverwriteMode(String type) {
-    setSettingValue(SettingNames.CARET_TYPE_OVERWRITE_MODE, type);
+    setSettingValue(SettingsNames.CARET_TYPE_OVERWRITE_MODE, type);
   }
   
   public boolean getCaretItalicInsertMode() {
-    return getSettingBoolean(SettingNames.CARET_ITALIC_INSERT_MODE);
+    return getSettingBoolean(SettingsNames.CARET_ITALIC_INSERT_MODE);
   }
   public void setCaretItalicInsertMode(boolean b) {
-    setSettingBoolean(SettingNames.CARET_ITALIC_INSERT_MODE, b);
+    setSettingBoolean(SettingsNames.CARET_ITALIC_INSERT_MODE, b);
   }
   
   public boolean getCaretItalicOverwriteMode() {
-    return getSettingBoolean(SettingNames.CARET_ITALIC_OVERWRITE_MODE);
+    return getSettingBoolean(SettingsNames.CARET_ITALIC_OVERWRITE_MODE);
   }
   public void setCaretItalicOverwriteMode(boolean b) {
-    setSettingBoolean(SettingNames.CARET_ITALIC_OVERWRITE_MODE, b);
+    setSettingBoolean(SettingsNames.CARET_ITALIC_OVERWRITE_MODE, b);
   }
   
   public Color getCaretColorInsertMode() {
-    return (Color) getSettingValue(SettingNames.CARET_COLOR_INSERT_MODE);
+    return (Color) getSettingValue(SettingsNames.CARET_COLOR_INSERT_MODE);
   }
   public void setCaretColorInsertMode(Color color) {
-     setSettingValue(SettingNames.CARET_COLOR_INSERT_MODE, color);
+     setSettingValue(SettingsNames.CARET_COLOR_INSERT_MODE, color);
   }
   
   public Color getCaretColorOverwriteMode() {
-    return (Color) getSettingValue(SettingNames.CARET_COLOR_OVERWRITE_MODE);
+    return (Color) getSettingValue(SettingsNames.CARET_COLOR_OVERWRITE_MODE);
   }
   public void setCaretColorOverwriteMode(Color color) {
-    setSettingValue(SettingNames.CARET_COLOR_OVERWRITE_MODE, color);
+    setSettingValue(SettingsNames.CARET_COLOR_OVERWRITE_MODE, color);
   }
   
   public int getCaretBlinkRate() {
-    return getSettingInteger(SettingNames.CARET_BLINK_RATE);
+    return getSettingInteger(SettingsNames.CARET_BLINK_RATE);
   }
   public void setCaretBlinkRate(int rate) {
-    setSettingInteger(SettingNames.CARET_BLINK_RATE, rate);
+    setSettingInteger(SettingsNames.CARET_BLINK_RATE, rate);
   }
 
   public boolean getLineNumberVisible() {
-    return getSettingBoolean(SettingNames.LINE_NUMBER_VISIBLE);
+    return getSettingBoolean(SettingsNames.LINE_NUMBER_VISIBLE);
   }
   public void setLineNumberVisible(boolean b) {
-    setSettingBoolean(SettingNames.LINE_NUMBER_VISIBLE, b);
+    setSettingBoolean(SettingsNames.LINE_NUMBER_VISIBLE, b);
   }
   
   public Insets getScrollJumpInsets() {
-    return (Insets)getSettingValue(SettingNames.SCROLL_JUMP_INSETS);
+    return (Insets)getSettingValue(SettingsNames.SCROLL_JUMP_INSETS);
   }
   public void setScrollJumpInsets(Insets i) {
-    setSettingValue(SettingNames.SCROLL_JUMP_INSETS, i);
+    setSettingValue(SettingsNames.SCROLL_JUMP_INSETS, i);
   }
   
   public Insets getScrollFindInsets() {
-    return (Insets)getSettingValue(SettingNames.SCROLL_FIND_INSETS);
+    return (Insets)getSettingValue(SettingsNames.SCROLL_FIND_INSETS);
   }
   public void setScrollFindInsets(Insets i) {
-    setSettingValue(SettingNames.SCROLL_FIND_INSETS, i);
+    setSettingValue(SettingsNames.SCROLL_FIND_INSETS, i);
   }
   
   public List getKeyBindingList() {
     Class kitClass = getKitClass();
-    Settings.KitAndValue[] kav = getSettingValueHierarchy(SettingNames.KEY_BINDING_LIST);
+    Settings.KitAndValue[] kav = getSettingValueHierarchy(SettingsNames.KEY_BINDING_LIST);
     List kbList = null;
     for (int i = 0; i < kav.length; i++) {
       if (kav[i].kitClass == kitClass) {
@@ -258,7 +258,7 @@ public class BaseOptions extends OptionSupport {
     if( list.get( 0 ) instanceof Class || list.get( 0 ) instanceof String ) {
       list.remove( 0 ); //remove kit class name
     }
-    setSettingValue(SettingNames.KEY_BINDING_LIST, list);
+    setSettingValue(SettingsNames.KEY_BINDING_LIST, list);
   }
 
   public Map getColoringMap() {
@@ -275,8 +275,8 @@ public class BaseOptions extends OptionSupport {
   }
   
   public int getFontSize() {
-    Coloring dc = SettingsUtil.getColoring(getKitClass(), SettingNames.DEFAULT_COLORING, false);
-    return (dc != null) ? dc.getFont().getSize() : SettingDefaults.defaultFont.getSize();
+    Coloring dc = SettingsUtil.getColoring(getKitClass(), SettingsNames.DEFAULT_COLORING, false);
+    return (dc != null) ? dc.getFont().getSize() : SettingsDefaults.defaultFont.getSize();
   }
   
   public void setFontSize(final int size) {
@@ -302,140 +302,141 @@ public class BaseOptions extends OptionSupport {
   }
   
   public float getLineHeightCorrection() {
-    return ((Float) getSettingValue(SettingNames.LINE_HEIGHT_CORRECTION)).floatValue();
+    return ((Float) getSettingValue(SettingsNames.LINE_HEIGHT_CORRECTION)).floatValue();
   }
   public void setLineHeightCorrection(float f) {
-    setSettingValue(SettingNames.LINE_HEIGHT_CORRECTION, new Float(f));
+    setSettingValue(SettingsNames.LINE_HEIGHT_CORRECTION, new Float(f));
   }
   
   public Insets getMargin() {
-    return (Insets)getSettingValue(SettingNames.MARGIN);
+    return (Insets)getSettingValue(SettingsNames.MARGIN);
   }
   public void setMargin(Insets i) {
-    setSettingValue(SettingNames.MARGIN, i);
+    setSettingValue(SettingsNames.MARGIN, i);
   }
   
   public Insets getLineNumberMargin() {
-    return (Insets)getSettingValue(SettingNames.LINE_NUMBER_MARGIN);
+    return (Insets)getSettingValue(SettingsNames.LINE_NUMBER_MARGIN);
   }
   public void setLineNumberMargin(Insets i) {
-    setSettingValue(SettingNames.LINE_NUMBER_MARGIN, i);
+    setSettingValue(SettingsNames.LINE_NUMBER_MARGIN, i);
   }
   
   public boolean getStatusBarVisible() {
-    return getSettingBoolean(SettingNames.STATUS_BAR_VISIBLE);
+    return getSettingBoolean(SettingsNames.STATUS_BAR_VISIBLE);
   }
   public void setStatusBarVisible(boolean v) {
-    setSettingBoolean(SettingNames.STATUS_BAR_VISIBLE, v);
+    setSettingBoolean(SettingsNames.STATUS_BAR_VISIBLE, v);
   }
   
   public int getStatusBarCaretDelay() {
-    return getSettingInteger(SettingNames.STATUS_BAR_CARET_DELAY);
+    return getSettingInteger(SettingsNames.STATUS_BAR_CARET_DELAY);
   }
   public void setStatusBarCaretDelay(int delay) {
-    setSettingInteger(SettingNames.STATUS_BAR_CARET_DELAY, delay);
+    setSettingInteger(SettingsNames.STATUS_BAR_CARET_DELAY, delay);
   }
 
   public boolean getFindHighlightSearch() {
-    return getSettingBoolean(SettingNames.FIND_HIGHLIGHT_SEARCH);
+    return getSettingBoolean(SettingsNames.FIND_HIGHLIGHT_SEARCH);
   }
   
   public void setFindHighlightSearch(boolean b) {
-    setSettingBoolean(SettingNames.FIND_HIGHLIGHT_SEARCH, b);
+    setSettingBoolean(SettingsNames.FIND_HIGHLIGHT_SEARCH, b);
   }
   
   public boolean getFindIncSearch() {
-    return getSettingBoolean(SettingNames.FIND_INC_SEARCH);
+    return getSettingBoolean(SettingsNames.FIND_INC_SEARCH);
   }
   
   public void setFindIncSearch(boolean b) {
-    setSettingBoolean(SettingNames.FIND_INC_SEARCH, b);
+    setSettingBoolean(SettingsNames.FIND_INC_SEARCH, b);
   }
   
   public int getFindIncSearchDelay() {
-    return getSettingInteger(SettingNames.FIND_INC_SEARCH_DELAY);
+    return getSettingInteger(SettingsNames.FIND_INC_SEARCH_DELAY);
   }
   
   public void setFindIncSearchDelay(int delay) {
-    setSettingInteger(SettingNames.FIND_INC_SEARCH_DELAY, delay);
+    setSettingInteger(SettingsNames.FIND_INC_SEARCH_DELAY, delay);
   }
 
   public boolean getFindWrapSearch() {
-    return getSettingBoolean(SettingNames.FIND_WRAP_SEARCH);
+    return getSettingBoolean(SettingsNames.FIND_WRAP_SEARCH);
   }
   
   public void setFindWrapSearch(boolean b) {
-    setSettingBoolean(SettingNames.FIND_WRAP_SEARCH, b);
+    setSettingBoolean(SettingsNames.FIND_WRAP_SEARCH, b);
   }
   
   public boolean getFindSmartCase() {
-    return getSettingBoolean(SettingNames.FIND_SMART_CASE);
+    return getSettingBoolean(SettingsNames.FIND_SMART_CASE);
   }
   
   public void setFindSmartCase(boolean b) {
-    setSettingBoolean(SettingNames.FIND_SMART_CASE, b);
+    setSettingBoolean(SettingsNames.FIND_SMART_CASE, b);
   }
 
   public Map getFindHistory() {
-    return new HashMap( (Map)getSettingValue(SettingNames.FIND_HISTORY) );
+    return new HashMap( (Map)getSettingValue(SettingsNames.FIND_HISTORY) );
   }
   
   public void setFindHistory(Map m) {
-    setSettingValue(SettingNames.FIND_HISTORY, m);
+    setSettingValue(SettingsNames.FIND_HISTORY, m);
   }
 
   public int getFindHistorySize() {
-    return getSettingInteger(SettingNames.FIND_HISTORY_SIZE);
+    return getSettingInteger(SettingsNames.FIND_HISTORY_SIZE);
   }
   
   public void setFindHistorySize(int size) {
-    setSettingInteger(SettingNames.FIND_HISTORY_SIZE, size);
+    setSettingInteger(SettingsNames.FIND_HISTORY_SIZE, size);
   }
 
   public Color getTextLimitLineColor() {
-    return (Color)getSettingValue(SettingNames.TEXT_LIMIT_LINE_COLOR);
+    return (Color)getSettingValue(SettingsNames.TEXT_LIMIT_LINE_COLOR);
   }
 
   public void setTextLimitLineColor(Color color) {
-    setSettingValue(SettingNames.TEXT_LIMIT_LINE_COLOR, color);
+    setSettingValue(SettingsNames.TEXT_LIMIT_LINE_COLOR, color);
   }
 
   public int getTextLimitWidth() {
-    return getSettingInteger(SettingNames.TEXT_LIMIT_WIDTH);
+    return getSettingInteger(SettingsNames.TEXT_LIMIT_WIDTH);
   }
 
   public void setTextLimitWidth(int width) {
-    setSettingInteger(SettingNames.TEXT_LIMIT_WIDTH, width);
+    setSettingInteger(SettingsNames.TEXT_LIMIT_WIDTH, width);
   }
 
   public boolean getTextLimitLineVisible() {
-    return getSettingBoolean(SettingNames.TEXT_LIMIT_LINE_VISIBLE);
+    return getSettingBoolean(SettingsNames.TEXT_LIMIT_LINE_VISIBLE);
   }
 
   public void setTextLimitLineVisible(boolean visible) {
-    setSettingBoolean(SettingNames.TEXT_LIMIT_LINE_VISIBLE, visible);
+    setSettingBoolean(SettingsNames.TEXT_LIMIT_LINE_VISIBLE, visible);
   }
 
   public boolean getHighlightMatchingBracket() {
-    return getSettingBoolean(ExtSettingNames.HIGHLIGHT_MATCHING_BRACKET);
+    return getSettingBoolean(ExtSettingsNames.HIGHLIGHT_MATCHING_BRACKET);
   }
 
   public void setHighlightMatchingBracket(boolean highlight) {
-    setSettingBoolean(ExtSettingNames.HIGHLIGHT_MATCHING_BRACKET, highlight);
+    setSettingBoolean(ExtSettingsNames.HIGHLIGHT_MATCHING_BRACKET, highlight);
   }
 
   public boolean getHighlightCaretRow() {
-    return getSettingBoolean(ExtSettingNames.HIGHLIGHT_CARET_ROW);
+    return getSettingBoolean(ExtSettingsNames.HIGHLIGHT_CARET_ROW);
   }
 
   public void setHighlightCaretRow(boolean highlight) {
-    setSettingBoolean(ExtSettingNames.HIGHLIGHT_CARET_ROW, highlight);
+    setSettingBoolean(ExtSettingsNames.HIGHLIGHT_CARET_ROW, highlight);
   }
 
 }
 
 /*
  * Log
+ *  21   Jaga      1.14.1.1.1.33/24/00  Miloslav Metelka 
  *  20   Jaga      1.14.1.1.1.23/21/00  Miloslav Metelka 
  *  19   Jaga      1.14.1.1.1.13/20/00  Miloslav Metelka 
  *  18   Jaga      1.14.1.1.1.03/15/00  Miloslav Metelka Structural change

@@ -26,7 +26,7 @@ import org.openide.explorer.propertysheet.PropertyModel;
 import org.openide.util.HelpCtx;
 
 import com.netbeans.editor.Coloring;
-import com.netbeans.editor.SettingNames;
+import com.netbeans.editor.SettingsNames;
 
 /** 
  * ColoringArrayEditorPanel is custom property editor operating over HashMap 
@@ -69,7 +69,7 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
     typeName = BaseOptions.BASE;
 
     value = new HashMap();
-    names = new String[] { SettingNames.DEFAULT_COLORING };
+    names = new String[] { SettingsNames.DEFAULT_COLORING };
     
     actValueIndex = 0;
     value.put(names[0], new Coloring( Font.decode( null ), Color.red, Color.blue ) );
@@ -135,7 +135,7 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
     while( iter.hasNext() ) {
       String key = (String)iter.next();
       if( key == null ) continue;  // ignore the typeName item
-      names[ (key == SettingNames.DEFAULT_COLORING) ? 0 : (++i) ] = key;
+      names[ (key == SettingsNames.DEFAULT_COLORING) ? 0 : (++i) ] = key;
     }
     
     for( i = 0; i < names.length; i++ ) {

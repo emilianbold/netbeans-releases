@@ -21,6 +21,7 @@ import javax.swing.KeyStroke;
 import javax.swing.text.Document;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.TextAction;
 import com.netbeans.editor.EditorUI;
 import com.netbeans.editor.ext.ExtKit;
 import com.netbeans.editor.ext.FindDialogSupport;
@@ -57,6 +58,17 @@ public abstract class NbEditorKit extends ExtKit {
   protected EditorUI createEditorUI() {
     return new NbEditorUI();
   }
+
+  protected Action[] createActions() {
+    Action[] nbEditorActions = new Action[] {
+      new NbBuildPopupMenuAction(),
+      new NbFindAction(),
+      new NbReplaceAction(),
+      new NbGotoAction(),
+    };
+    return TextAction.augmentList(super.createActions(), nbEditorActions);
+  }
+
 
   protected void addSystemActionMapping(String editorActionName, Class systemActionClass) {
     Action a = getActionByName(editorActionName);
@@ -105,12 +117,13 @@ public abstract class NbEditorKit extends ExtKit {
         }
 
         if (saClass != null && SystemAction.class.isAssignableFrom(saClass)) {
-          if (TopManager.getDefault() != null) { // IDE initialized
+          TopManager tm = TopManager.getDefault();
+          if (tm != null) { // IDE initialized
             SystemAction sa = SystemAction.get(saClass);
             if (sa instanceof Presenter.Popup) {
               item = ((Presenter.Popup)sa).getPopupPresenter();
               if (item != null && !(item instanceof JMenu)) {
-                KeyStroke[] keys = TopManager.getDefault().getGlobalKeymap().getKeyStrokesForAction(sa);
+                KeyStroke[] keys = tm.getGlobalKeymap().getKeyStrokesForAction(sa);
                 if (keys != null && keys.length > 0) {
                   item.setAccelerator(keys[0]);
                 }
@@ -162,6 +175,7 @@ public abstract class NbEditorKit extends ExtKit {
 
 /*
  * Log
+ *  3    Jaga      1.2         3/24/00  Miloslav Metelka 
  *  2    Jaga      1.1         3/21/00  Miloslav Metelka 
  *  1    Jaga      1.0         3/15/00  Miloslav Metelka 
  * $
