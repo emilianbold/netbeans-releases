@@ -14,7 +14,7 @@
 package com.netbeans.developer.impl.actions;
 
 import org.openide.DialogDescriptor;
-import org.openide.TopManage;
+import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.ActionPerformer;
@@ -57,6 +57,7 @@ public class ConfigureShortcutsAction extends CallableSystemAction {
 
 /*
  * Log
+ *  2    Gandalf   1.1         11/30/99 Ian Formanek    
  *  1    Gandalf   1.0         11/30/99 Ian Formanek    
  * $
  */
