@@ -50,10 +50,6 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="${nb_root}/openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-        <fileset dir="${nb_root}/core/external">
-          <include name="xml-apis*.jar"/>
-          <include name="xerces*.jar"/>
-        </fileset>
   </path>
   
   <target name="s2binit">
