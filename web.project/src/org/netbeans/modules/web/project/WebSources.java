@@ -26,12 +26,10 @@ import org.netbeans.modules.web.project.ui.WebCustomizerProvider;
  */
 public class WebSources implements org.netbeans.spi.project.Sources {
    
-    private FileObject projectFolder;
     private AntProjectHelper helper;
     
     /** Creates a new instance of WebSources */
-    public WebSources(FileObject projectFolder, AntProjectHelper helper) {
-        this.projectFolder=projectFolder;
+    public WebSources(AntProjectHelper helper) {
         this.helper=helper;
     }
     
@@ -47,7 +45,8 @@ public class WebSources implements org.netbeans.spi.project.Sources {
             return new SourceGroup[] {new WebSources.WebSourceGroup(fo,fo.getName())};
         }
         else if (Sources.TYPE_GENERIC.equals(str)) {
-            return new SourceGroup[] {new WebSources.WebSourceGroup(projectFolder, projectFolder.getName())};
+            FileObject fo = helper.resolveFileObject(helper.evaluate(WebProjectProperties.SOURCE_ROOT));
+            return new SourceGroup[] {new WebSources.WebSourceGroup(fo, fo.getName())};
         }
         else if (Sources.TYPE_JAVA.equals(str)) {
             FileObject fo = helper.resolveFileObject(helper.evaluate(WebProjectProperties.SRC_DIR));

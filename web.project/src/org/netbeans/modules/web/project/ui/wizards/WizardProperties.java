@@ -18,6 +18,7 @@ public class WizardProperties {
     public static final String PROJECT_DIR = "projdir"; //NOI18N
     public static final String DISPLAY_NAME = "displayName"; //NOI18N
     public static final String CODE_NAME = "codename"; //NOI18N
+    public static final String SOURCE_ROOT = "sourceRoot"; //NOI18N
     
     public static final String SET_AS_MAIN = "setAsMain"; //NOI18N
     public static final String J2EE_LEVEL = "j2eeLevel"; //NOI18N

@@ -88,7 +88,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="compile" depends="init,deps-jar">
         <mkdir dir="${{build.classes.dir}}"/>
         <copy todir="${{build.web.dir}}">
-          <fileset dir="${{web.docbase.dir}}"/>
+          <fileset excludes="WEB-INF/classes/**" dir="${{web.docbase.dir}}"/>
         </copy>
         <xsl:choose>
             <xsl:when test="/p:project/p:configuration/web:data/web:explicit-platform">
@@ -123,16 +123,16 @@ Microsystems, Inc. All Rights Reserved.
         <classpath path="${{jspc.classpath}}"/> 
       </taskdef> 
 
-      <mkdir dir="${{build.generated.dir}}/jsps/src"/>
+      <mkdir dir="${{build.generated.dir}}/src"/>
       <jasper2
              validateXml="false" 
              uriroot="${{basedir}}/${{build.web.dir}}" 
-             outputDir="${{basedir}}/${{build.generated.dir}}/jsps/src" /> 
+             outputDir="${{basedir}}/${{build.generated.dir}}/src" /> 
              
-       <mkdir dir="${{basedir}}/${{build.generated.dir}}/jsps/classes"/>
+       <mkdir dir="${{build.generated.dir}}/classes"/>
         <xsl:choose>
             <xsl:when test="/p:project/p:configuration/web:data/web:explicit-platform">
-                <javac srcdir="${{basedir}}/${{build.generated.dir}}/jsps/src" destdir="${{basedir}}/${{build.generated.dir}}/jsps/classes" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}" source="${{javac.source}}" includeantruntime="false" fork="yes" executable="${{platform.home}}/bin/javac">
+                <javac srcdir="${{build.generated.dir}}/src" destdir="${{build.generated.dir}}/classes" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}" source="${{javac.source}}" includeantruntime="false" fork="yes" executable="${{platform.home}}/bin/javac">
                     <classpath>
                         <path path="${{javac.classpath}}"/>
                         <path path="${{jspc.classpath}}"/>
@@ -140,7 +140,7 @@ Microsystems, Inc. All Rights Reserved.
                 </javac>
             </xsl:when>
             <xsl:otherwise>
-                <javac srcdir="${{basedir}}/${{build.generated.dir}}/jsps/src" destdir="${{basedir}}/${{build.generated.dir}}/jsps/classes" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}" source="${{javac.source}}" includeantruntime="false">
+                <javac srcdir="${{build.generated.dir}}/src" destdir="${{build.generated.dir}}/classes" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}" source="${{javac.source}}" includeantruntime="false">
                     <classpath>
                         <path path="${{javac.classpath}}"/>
                         <path path="${{jspc.classpath}}"/>

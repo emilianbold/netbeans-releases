@@ -24,6 +24,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -32,6 +33,7 @@ import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.web.project.queries.CompiledSourceForBinaryQuery;
 import org.netbeans.modules.web.project.ui.WebCustomizerProvider;
 import org.netbeans.modules.web.project.ui.WebPhysicalViewProvider;
+import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ActionProvider;
@@ -115,7 +117,7 @@ final class WebProject implements Project, AntProjectListener {
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
             fileBuilt,
-            new WebSources(this.getProjectDirectory(),helper)
+            new WebSources(helper)
         });
     }
 
@@ -206,6 +208,13 @@ final class WebProject implements Project, AntProjectListener {
         protected void projectOpened() {
             // Check up on build scripts.
             try {
+                String externalRoot = (String) new WebProjectProperties (WebProject.this, helper, refHelper).get (WebProjectProperties.SOURCE_ROOT);
+                if (externalRoot != null && !(externalRoot.equals ("") || externalRoot.equals (".."))) { //NOI18N
+                    FileObject root [] = FileUtil.fromFile (FileUtil.normalizeFile (new java.io.File (externalRoot)));
+                    if (root != null && root.length == 1) {
+                        FileOwnerQuery.markExternalOwner (root [0], WebProject.this, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                    }
+                }
                 genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                     WebProject.class.getResource("resources/build-impl.xsl"),

@@ -64,6 +64,8 @@ public class WebProjectProperties {
     public static final String J2EE_PLATFORM = "j2ee.platform";
     
     // Properties stored in the PROJECT.PROPERTIES    
+    /** root of external web module sources (full path), ".." if the sources are within project folder */
+    public static final String SOURCE_ROOT = "source.root";
     public static final String DIST_DIR = "dist.dir";
     public static final String DIST_JAR = "dist.jar";
     public static final String JAVAC_CLASSPATH = "javac.classpath";
@@ -121,6 +123,7 @@ public class WebProjectProperties {
         new PropertyDescriptor( J2SE_PROJECT_NAME, null, STRING_PARSER ),
         new PropertyDescriptor( J2EE_PLATFORM, PROJECT, STRING_PARSER ),
                 
+        new PropertyDescriptor( SOURCE_ROOT, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_JAR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVAC_CLASSPATH, PROJECT, PATH_PARSER ),
