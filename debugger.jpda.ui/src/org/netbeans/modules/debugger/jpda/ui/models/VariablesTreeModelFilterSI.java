@@ -33,6 +33,7 @@ import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.debugger.jpda.ui.FixedWatch;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -286,7 +287,7 @@ NodeModel, TableModel, NodeActionsProvider {
         }
 
         String getDisplayName() {
-            return "Static";
+            return NbBundle.getBundle(VariablesTreeModelFilterSI.class).getString("MSG_VariablesFilter_StaticNode");    // NOI18N
         }
 
         String getIconBase() {
@@ -311,7 +312,7 @@ NodeModel, TableModel, NodeActionsProvider {
         }
 
         String getDisplayName() {
-            return "Inherited";
+            return NbBundle.getBundle(VariablesTreeModelFilterSI.class).getString("MSG_VariablesFilter_InheritedNode");    // NOI18N
         }
 
         String getIconBase() {
