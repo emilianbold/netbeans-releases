@@ -14,12 +14,18 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="general" default="forbidden">
 
+    <property name="xtest.ide.winsys" value="mdi"/>
+    <property name="xtest.workdir" location="results"/>
+    
+    <!-- properties just for compiler -->
+    <property name="build.compiler.deprecation" value="off"/>
+    <!-- should be default ON, because it helps to find problems -->
+    <property name="build.compiler.debug" value="on"/>
+    
     <property name="xtest.build" location="."/>    
     <property name="xtest.file.name" value="test.jar"/>
     <property name="xtest.file.location" value="lib"/>
 
-    <property name="xtest.ide.winsys" value="mdi"/>
-    <property name="xtest.results" location="results"/>
 
     <target name="forbidden">
        <fail message="This script is not intended to be directly executed. This in only library."/>
@@ -42,9 +48,10 @@ Microsystems, Inc. All Rights Reserved.
             <taskdef name="pathdef" classname="org.netbeans.xtest.PathDef"/>                        
             <taskdef name="write-property" classname="org.netbeans.xtest.UserPropertyWriter"/>
             <taskdef name="for" classname="org.netbeans.xtest.driver.ForTask"/>
+            <taskdef name="jar-finder" classname="org.netbeans.xtest.JarFinder"/>
         </nbtaskdef>
         
-        <nbpath nbhome="${netbeans.test.home}" xthome="${xtest.home}" xtexhome="${xtest.extra.home}"/>
+        <nbpath nbhome="${netbeans.test.home}" xthome="${xtest.home}" xtexhome="${xtest.home}"/>
 
 	<!-- XML, XSLT reporters -->
         <nbtaskdef classpath="${xtest.path};${xalan.path}">
@@ -59,7 +66,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathdef useid="test.basepath">
             <path>
                 <pathelement path="${junit.path};${xtest.path};${xerces.path}"/>
-                <pathelement location="${xtest.results}/work"/>
+                <pathelement location="${xtest.workdir}/work"/>
             </path>
         </pathdef>
 
@@ -78,13 +85,19 @@ Microsystems, Inc. All Rights Reserved.
         <!-- test executor in folowing way:                                             -->
         <!-- ${xtest.classpath.root}/${xtest.testtype}/${tbag.classpath.work}           -->
         <!-- and then testset specific dir and then returned in property tbag.classpath -->
-        <property name="tbag.classpath.root" location="${xtest.results}"/>
+        <property name="tbag.classpath.root" location="${xtest.workdir}"/>
         <property name="tbag.classpath.work" value="work"/>
     </target>
     
     <target name="prepare-xtest">
         <ant dir="${xtest.home}/lib" antfile="harness.xml" target="buildxtest"/>
     </target>
+    
+    <target name="extra-classpath" if="xtest.extra.jars">
+        <jar-finder dirs="${xtest.extra.jars.path}" files="${xtest.extra.jars}" 
+                   property="test.extra.classpath"/>
+    </target>
+
     
     <!-- ======== -->
     <!-- Run test -->
@@ -99,7 +112,12 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="runtests" depends="config">
-        <echo message="Running tests, test type: ${xtest.testtype}, test attributes: ${xtest.attribs}"/>
+        <echo message="Running ${xtest.module} tests, test type: ${xtest.testtype}, test attributes: ${xtest.attribs}"/>
+
+      	<property file="${xtest.userdata.propertyfile}"/>
+        <property name="test.propertyfile" location="${xtest.workdir}/userdata.properties"/>
+   	<write-property propertyPrefix="xtest.userdata" attribs="${xtest.attribs}" file="${test.propertyfile}"/>
+
         <test-executor paramClasspathProp="tbag.classpath"
                        paramPatternsetInProp="tbag.patternset.include"
                        paramPatternsetExProp="tbag.patternset.exclude"
@@ -109,25 +127,22 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="test">
-        <mkdir dir="${xtest.results}/${tbag.testtype}/work"/>
-        <mkdir dir="${xtest.results}/${tbag.testtype}/formaters/${tbag.formater}/xml"/>
-        <mkdir dir="${xtest.results}/${tbag.testtype}/formaters/${tbag.formater}/html"/>
-        
-        <property name="test.propertyfile" location="${xtest.results}/${tbag.testtype}/work/userdata.properties"/>
-   	<write-property propertyPrefix="xtest.userdata" delimiter="|" file="${test.propertyfile}"/>
-        
+        <mkdir dir="${xtest.workdir}/${tbag.testtype}/work"/>
+        <mkdir dir="${xtest.workdir}/${tbag.testtype}/formaters/${tbag.formater}/xml"/>
+        <mkdir dir="${xtest.workdir}/${tbag.testtype}/formaters/${tbag.formater}/html"/>
+
         <antcall target="prepare-tests"/>
         <antcall target="${xtest.exectype}_test_bootstrap"/>
     </target>
     
     <target name="prepare-tests" depends="test-unjared" unless="unjared">
-        <unjar dest="${xtest.results}/${tbag.testtype}/work" 
+        <unjar dest="${xtest.workdir}/${tbag.testtype}/work" 
                src="${xtest.file.location}/${xtest.file.name}"/>
     </target>
     
     <!-- Just test whether tests are already unzipped -->
     <target name="test-unjared">
-        <available property="unjared" file="${xtest.results}/${tbag.testtype}/work/Meta-inf/Manifest.mf"/>
+        <available property="unjared" file="${xtest.workdir}/${tbag.testtype}/work/Meta-inf/Manifest.mf"/>
     </target>
     
     <!-- ============== -->
@@ -136,10 +151,14 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="code_test_bootstrap" depends="init,code_test_init,junit_test"/>
     
-    <target name="code_test_init">
+    <target name="code_test_init" depends="extra-classpath">
         <property name="junit.fork" value="yes"/>
+        <property name="test.extra.classpath" value=""/>
+        <property name="codetest.classpath" value=""/>
         <pathdef useid="test.classpath">
             <path refid="test.basepath"/>
+            <path path="${tbag.classpath}"/>
+            <path path="${test.extra.classpath}"/>
             <path path="${codetest.classpath}"/>
         </pathdef>
         
@@ -148,16 +167,17 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ============= -->
     <!-- IDE test part -->
     <!-- ============= -->
-    <target name="ide_test_bootstrap" depends="init">
-    
+    <target name="ide_test_bootstrap" depends="init,extra-classpath">
+        <property name="test.extra.classpath" value=""/>
         <pathdef useid="test.classpath">
             <!-- this path is mounted to repo in IDE -->
             <!-- <path refid="test.basepath"/> -->
-            <path path="${idetest.classpath}"/>
+            <path path="${tbag.classpath}"/>
+            <path path="${test.extra.classpath}"/>
         </pathdef>
 
         <!-- there should be some better userdir than this -->
-        <property name="xtest.userdir" location="${xtest.results}/${tbag.testtype}/userdirs/${tbag.name}/userdir"/>
+        <property name="xtest.userdir" location="${xtest.workdir}/${tbag.testtype}/userdirs/${tbag.name}/userdir"/>
         <property name="test.class" value="org.netbeans.xtest.AntRunner"/>
         <property name="test.classpath" refid="test.classpath"/>
         <property name="test.target" value="ide_test_helper"/>
@@ -171,18 +191,16 @@ Microsystems, Inc. All Rights Reserved.
         </property>
         <property name="xtest.ide.commandline.suffix" value=""/>
 
-        <property name="args" value="-jdkhome ${jdkhome} -userdir ${xtest.userdir} -cp:p ${xtest.ide.path} -nosplash -J-Dtest.class=${test.class} -J-Dtest.classpath=${test.classpath} -J-Dtest.basedir=${basedir} -J-Dtest.ant.file=${ant.file} -J-Dtest.target=${test.target} -J-Dxtest.home=${xtest.home} -J-Dxtest.includes=${xtest.includes} -J-Dxtest.excludes=${xtest.excludes} -J-Dtbag.classpath=${tbag.classpath} -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dxtest.distexec=true -J-Dtest.exit=true -J-Dtest.propertyfile=${test.propertyfile} -J-Dxtest.results=${xtest.results} -J-Dtest.output.redirect=true -J-Dnetbeans.full.hack=true -J-Dnetbeans.windows=${xtest.ide.winsys} ${xtest.ide.commandline.suffix}"/>
+        <property name="args" value="-jdkhome ${jdkhome} -userdir ${xtest.userdir} -cp:p ${xtest.ide.path} -nosplash -J-Dtest.class=${test.class} -J-Dtest.classpath=${test.classpath} -J-Dtest.basedir=${basedir} -J-Dtest.ant.file=${ant.file} -J-Dtest.target=${test.target} -J-Dxtest.home=${xtest.home} -J-Dxtest.includes=${xtest.includes} -J-Dxtest.excludes=${xtest.excludes} -J-Dtbag.classpath=${tbag.classpath} -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dxtest.distexec=true -J-Dtest.exit=true -J-Dtest.propertyfile=${test.propertyfile} -J-Dxtest.workdir=${xtest.workdir} -J-Dtest.output.redirect=true -J-Dnetbeans.full.hack=true -J-Dnetbeans.windows=${xtest.ide.winsys} ${xtest.ide.commandline.suffix}"/>
         <echo message="ARGUMENTS = ${args}"/>
 
         <copy file="${xtest.home}/lib/patches/testmain.jar" todir="${netbeans.test.home}/lib/patches"/>
         <copy file="${xtest.home}/lib/xtest.jar" todir="${netbeans.test.home}/lib/ext"/>
-        <copy file="${xtest.extra.home}/lib/xtest-ext.jar" todir="${netbeans.test.home}/lib/ext"/>
-        <copy file="${xtest.extra.home}/lib/junit.jar" todir="${netbeans.test.home}/lib/ext"/>
+        <copy file="${xtest.home}/lib/xtest-ext.jar" todir="${netbeans.test.home}/lib/ext"/>
+        <copy file="${xtest.home}/lib/junit.jar" todir="${netbeans.test.home}/lib/ext"/>
         <copy file="${xtest.home}/lib/junit-ext.jar" todir="${netbeans.test.home}/lib/ext"/>
  
- 	<antcall target="user-jars">
- 	  <param name="xtest.userjars.copy" value="true"/>
- 	</antcall>
+ 	<antcall target="copy-user-jars"/>
 
         <exec dir="${netbeans.test.home}/bin" executable="${netbeans.test.home}/bin/runide.exe" 
               os="Windows 95 Windows 98 Windows NT Windows 2000"
@@ -201,31 +219,33 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="${netbeans.test.home}/lib/ext/junit.jar"/>
         <delete file="${netbeans.test.home}/lib/ext/junit-ext.jar"/>
         
-        <antcall target="user-jars">
- 	  <param name="xtest.userjars.delete" value="true"/>
- 	</antcall>
+        <antcall target="delete-user-jars"/>
         
     </target>
     
-    <target name="user-jars" depends="init" if="xtest.ide.jars.list">
-         <antcall target="check-jars-dir"/>
-         <for list="${xtest.ide.jars.list}" property="xtest.ide.onejar">
+    <target name="copy-user-jars" depends="init,ide-extra-jars" if="xtest.extra.jars.ide">
+         <for list="${ide.extra.classpath}" delimiters=";${path.separator}," property="xtest.ide.onejar">
            <antcall target="copy-jar"/>
+         </for>
+    </target>
+    
+    <target name="copy-jar">
+         <copy file="${xtest.ide.onejar}" todir="${netbeans.test.home}/lib/ext"/>
+    </target>
+    
+    <target name="delete-user-jars" depends="init" if="xtest.extra.jars.ide">
+         <for list="${xtest.extra.jars.ide}" delimiters=";${path.separator}," property="xtest.ide.onejar">
            <antcall target="delete-jar"/>
          </for>
     </target>
     
-    <target name="copy-jar" if="xtest.userjars.copy">
-         <copy file="${xtest.ide.jars.dir}/${xtest.ide.onejar}" todir="${netbeans.test.home}/lib/ext"/>
-    </target>
-    
-    <target name="delete-jar" if="xtest.userjars.delete">
+    <target name="delete-jar">
          <delete file="${netbeans.test.home}/lib/ext/${xtest.ide.onejar}"/>
     </target>
 
-    
-    <target name="check-jars-dir" unless="xtest.ide.jars.dir">
-       <fail message="You have set property xtest.ide.jars.list, but haven't property xtest.ide.jars.dir"/>
+    <target name="ide-extra-jars" if="xtest.extra.jars.ide">
+        <jar-finder dirs="${xtest.extra.jars.path}" files="${xtest.extra.jars.ide}" 
+                   property="ide.extra.classpath"/>
     </target>
 
     <!-- This target is executed from running IDE -->
@@ -242,15 +262,15 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ================= -->
     <target name="junit_test">
         <nbjunit fork="${junit.fork}" printsummary="yes">            
-            <sysproperty key="work.dir" value="${xtest.results}/${tbag.testtype}/work"/>
-            <sysproperty key="xtest.results" value="${xtest.results}/${tbag.testtype}/formaters/${tbag.formater}"/>
-            <sysproperty key="system.dir" value="${xtest.results}/${tbag.testtype}/work"/>
+            <sysproperty key="work.dir" value="${xtest.workdir}/${tbag.testtype}/work"/>
+            <sysproperty key="xtest.workdir" value="${xtest.workdir}/${tbag.testtype}/formaters/${tbag.formater}"/>
+            <sysproperty key="system.dir" value="${xtest.workdir}/${tbag.testtype}/work"/>
             <syspropertyfile file="${test.propertyfile}"/>
             <formatter classname="org.netbeans.xtest.junit.JUnitXMLFormatter" extension=".xml"/>
             
             <classpath refid="test.classpath"/>
             
-            <batchtest todir="${xtest.results}/${tbag.testtype}/formaters/${tbag.formater}/xml">
+            <batchtest todir="${xtest.workdir}/${tbag.testtype}/formaters/${tbag.formater}/xml">
                 <testset path="${tbag.classpath}">
                    <patternset refid="xtest.pattern"/>
                    <patternset includes="${tbag.patternset.include}"
@@ -259,7 +279,7 @@ Microsystems, Inc. All Rights Reserved.
             </batchtest>
         </nbjunit>
         
-        <sysinfo outfile="${xtest.results}/${tbag.testtype}/formaters/${tbag.formater}/xml/sysinfo.xml"/>
+        <sysinfo outfile="${xtest.workdir}/${tbag.testtype}/formaters/${tbag.formater}/xml/sysinfo.xml"/>
         
     </target>
     
@@ -269,17 +289,17 @@ Microsystems, Inc. All Rights Reserved.
     <target name="test_report" depends="init">
     
         <copy file="${ant.file}" tofile="${xtest.home}/xslt/unit/project-file.xml"/>
-        <nbjr todir="${xtest.results}/${tbag.testtype}/formaters/${tbag.formater}/xml" tofile="report.xml">
-            <fileset dir="${xtest.results}/${tbag.testtype}/formaters/${tbag.formater}/xml">
+        <nbjr todir="${xtest.workdir}/${tbag.testtype}/formaters/${tbag.formater}/xml" tofile="report.xml">
+            <fileset dir="${xtest.workdir}/${tbag.testtype}/formaters/${tbag.formater}/xml">
                 <include name="*.xml"/>
                 <exclude name="sysinfo.xml"/>
             </fileset>
             <report format="frames" styledir="${xtest.home}/xslt/unit" 
-                    todir="${xtest.results}/${tbag.testtype}/formaters/${tbag.formater}/html"/>
+                    todir="${xtest.workdir}/${tbag.testtype}/formaters/${tbag.formater}/html"/>
         </nbjr>
         <delete file="${xtest.home}/xslt/unit/project-file.xml"/>
-        <xalan srcfile="${xtest.results}/${tbag.testtype}/formaters/${tbag.formater}/xml/sysinfo.xml" 
-               trgfile="${xtest.results}/${tbag.testtype}/formaters/${tbag.formater}/html/sysinfo.html" 
+        <xalan srcfile="${xtest.workdir}/${tbag.testtype}/formaters/${tbag.formater}/xml/sysinfo.xml" 
+               trgfile="${xtest.workdir}/${tbag.testtype}/formaters/${tbag.formater}/html/sysinfo.html" 
                xslt="${xtest.home}/xslt/unit/sys-info.xsl"/>
         
     </target>
@@ -291,18 +311,21 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Compiles all tests -->
     
     <target name="compiletests" depends="init" unless="xtest.distexec">
-       <for list="${compile.srcdir}" property="compile.srcdir.parsed">
+       <for list="${compile.srcdir}" delimiters=";${path.separator}," property="compile.srcdir.parsed">
          <antcall target="compile-one-dir"/>
        </for>
     </target>
     
-    <target name="compile-one-dir" depends="init">
+    <target name="compile-one-dir" depends="init,extra-classpath">
+        <property name="test.extra.classpath" value=""/>
+        <property name="compiletest.classpath" value=""/>
         <javac srcdir="${compile.srcdir.parsed}" 
                deprecation="${build.compiler.deprecation}"
                debug="${build.compiler.debug}">
             <classpath>
            	<pathelement path="${junit.path}"/>
     		<pathelement path="${xerces.path}"/>
+    		<pathelement path="${test.extra.classpath}"/>
 		<pathelement path="${compiletest.classpath}"/>
             </classpath>
         </javac>
@@ -332,12 +355,12 @@ Microsystems, Inc. All Rights Reserved.
     <!-- xtest.testtype is defined either by default or by test executor -->
     <target name="cleanresults"
             description="Deletes results from previous executed testtype.">
-        <delete dir="${xtest.results}/${xtest.testtype}"/>
+        <delete dir="${xtest.workdir}/${xtest.testtype}"/>
     </target>
     
     <target name="realclean"
             description="Deletes classes, ${xtest.file.location}/${xtest.file.name} and *all* results.">
-        <delete dir="${xtest.results}"/>
+        <delete dir="${xtest.workdir}"/>
     </target>
     
 </project>
