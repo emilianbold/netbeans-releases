@@ -203,6 +203,12 @@ public class MethodPicker extends javax.swing.JDialog {
       propertiesScrollPane = new javax.swing.JScrollPane ();
 
         methodList = new javax.swing.JList ();
+        methodList.addListSelectionListener (new javax.swing.event.ListSelectionListener () {
+            public void valueChanged (javax.swing.event.ListSelectionEvent evt) {
+              methodListValueChanged (evt);
+            }
+          }
+        );
 
       propertiesScrollPane.setViewportView (methodList);
 
@@ -217,6 +223,12 @@ public class MethodPicker extends javax.swing.JDialog {
       jPanel1.add (componentLabel, "West");
 
         componentsCombo = new javax.swing.JComboBox ();
+        componentsCombo.addItemListener (new java.awt.event.ItemListener () {
+            public void itemStateChanged (java.awt.event.ItemEvent evt) {
+              componentsComboItemStateChanged (evt);
+            }
+          }
+        );
 
       jPanel1.add (componentsCombo, "Center");
 
@@ -243,11 +255,23 @@ public class MethodPicker extends javax.swing.JDialog {
 
         okButton = new javax.swing.JButton ();
         okButton.setText ("OK");
+        okButton.addActionListener (new java.awt.event.ActionListener () {
+            public void actionPerformed (java.awt.event.ActionEvent evt) {
+              okButtonActionPerformed (evt);
+            }
+          }
+        );
 
       rightButtonsPanel.add (okButton);
 
         cancelButton = new javax.swing.JButton ();
         cancelButton.setText ("Cancel");
+        cancelButton.addActionListener (new java.awt.event.ActionListener () {
+            public void actionPerformed (java.awt.event.ActionEvent evt) {
+              cancelButtonActionPerformed (evt);
+            }
+          }
+        );
 
       rightButtonsPanel.add (cancelButton);
 
@@ -274,10 +298,10 @@ public class MethodPicker extends javax.swing.JDialog {
     updateMethodList ();
   }//GEN-LAST:event_componentsComboItemStateChanged
 
-  private void previousButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previousButtonActionPerformed
+  private void okButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
     returnStatus = OK;
     setVisible (false);
-  }//GEN-LAST:event_previousButtonActionPerformed
+  }//GEN-LAST:event_okButtonActionPerformed
 
   private void cancelButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
     cancelDialog ();
@@ -322,6 +346,8 @@ public class MethodPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  6    Gandalf   1.5         6/1/99   Ian Formanek    Fixed removed event 
+ *       handlers
  *  5    Gandalf   1.4         5/31/99  Ian Formanek    Updated to X2 form 
  *       format
  *  4    Gandalf   1.3         5/24/99  Ian Formanek    Non-Visual components

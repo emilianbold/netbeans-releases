@@ -189,6 +189,12 @@ public class PropertyPicker extends javax.swing.JDialog {
       propertiesScrollPane = new javax.swing.JScrollPane ();
 
         propertyList = new javax.swing.JList ();
+        propertyList.addListSelectionListener (new javax.swing.event.ListSelectionListener () {
+            public void valueChanged (javax.swing.event.ListSelectionEvent evt) {
+              propertyListValueChanged (evt);
+            }
+          }
+        );
 
       propertiesScrollPane.setViewportView (propertyList);
 
@@ -203,6 +209,12 @@ public class PropertyPicker extends javax.swing.JDialog {
       jPanel1.add (componentLabel, "West");
 
         componentsCombo = new javax.swing.JComboBox ();
+        componentsCombo.addItemListener (new java.awt.event.ItemListener () {
+            public void itemStateChanged (java.awt.event.ItemEvent evt) {
+              componentsComboItemStateChanged (evt);
+            }
+          }
+        );
 
       jPanel1.add (componentsCombo, "Center");
 
@@ -224,11 +236,23 @@ public class PropertyPicker extends javax.swing.JDialog {
 
         okButton = new javax.swing.JButton ();
         okButton.setText ("OK");
+        okButton.addActionListener (new java.awt.event.ActionListener () {
+            public void actionPerformed (java.awt.event.ActionEvent evt) {
+              okButtonActionPerformed (evt);
+            }
+          }
+        );
 
       rightButtonsPanel.add (okButton);
 
         cancelButton = new javax.swing.JButton ();
         cancelButton.setText ("Cancel");
+        cancelButton.addActionListener (new java.awt.event.ActionListener () {
+            public void actionPerformed (java.awt.event.ActionEvent evt) {
+              cancelButtonActionPerformed (evt);
+            }
+          }
+        );
 
       rightButtonsPanel.add (cancelButton);
 
@@ -238,6 +262,7 @@ public class PropertyPicker extends javax.swing.JDialog {
     getContentPane ().add (buttonsPanel, "South");
 
   }//GEN-END:initComponents
+
 
   private void propertyListValueChanged (javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_propertyListValueChanged
     if (propertyList.getSelectedIndex () == -1)
@@ -255,10 +280,10 @@ public class PropertyPicker extends javax.swing.JDialog {
     updatePropertyList ();
   }//GEN-LAST:event_componentsComboItemStateChanged
 
-  private void previousButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previousButtonActionPerformed
+  private void okButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
     returnStatus = OK;
     setVisible (false);
-  }//GEN-LAST:event_previousButtonActionPerformed
+  }//GEN-LAST:event_okButtonActionPerformed
 
   private void cancelButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
     cancelDialog ();
@@ -302,6 +327,8 @@ public class PropertyPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  7    Gandalf   1.6         6/1/99   Ian Formanek    Fixed removed event 
+ *       handlers
  *  6    Gandalf   1.5         5/31/99  Ian Formanek    Updated to X2 form 
  *       format
  *  5    Gandalf   1.4         5/24/99  Ian Formanek    Non-Visual components

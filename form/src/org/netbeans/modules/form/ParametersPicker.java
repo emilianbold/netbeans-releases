@@ -154,6 +154,12 @@ public class ParametersPicker extends javax.swing.JPanel {
     valueButton = new javax.swing.JRadioButton ();
     valueButton.setText ("Value:");
     valueButton.setSelected (true);
+    valueButton.addActionListener (new java.awt.event.ActionListener () {
+        public void actionPerformed (java.awt.event.ActionEvent evt) {
+          typeButtonPressed (evt);
+        }
+      }
+    );
 
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
@@ -161,6 +167,12 @@ public class ParametersPicker extends javax.swing.JPanel {
     add (valueButton, gridBagConstraints1);
 
     valueField = new javax.swing.JTextField ();
+    valueField.addCaretListener (new javax.swing.event.CaretListener () {
+        public void caretUpdate (javax.swing.event.CaretEvent evt) {
+          updateState (evt);
+        }
+      }
+    );
 
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
@@ -171,6 +183,12 @@ public class ParametersPicker extends javax.swing.JPanel {
 
     propertyButton = new javax.swing.JRadioButton ();
     propertyButton.setText ("Property:");
+    propertyButton.addActionListener (new java.awt.event.ActionListener () {
+        public void actionPerformed (java.awt.event.ActionEvent evt) {
+          typeButtonPressed (evt);
+        }
+      }
+    );
 
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
@@ -178,8 +196,8 @@ public class ParametersPicker extends javax.swing.JPanel {
     add (propertyButton, gridBagConstraints1);
 
     propertyLabel = new javax.swing.JLabel ();
-    propertyLabel.setEnabled (false);
     propertyLabel.setText ("<No Property Selected>");
+    propertyLabel.setEnabled (false);
 
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
@@ -189,6 +207,12 @@ public class ParametersPicker extends javax.swing.JPanel {
 
     propertyDetailsButton = new javax.swing.JButton ();
     propertyDetailsButton.setText ("...");
+    propertyDetailsButton.addActionListener (new java.awt.event.ActionListener () {
+        public void actionPerformed (java.awt.event.ActionEvent evt) {
+          propertyDetailsButtonActionPerformed (evt);
+        }
+      }
+    );
 
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
@@ -198,6 +222,12 @@ public class ParametersPicker extends javax.swing.JPanel {
 
     methodButton = new javax.swing.JRadioButton ();
     methodButton.setText ("Method Call:");
+    methodButton.addActionListener (new java.awt.event.ActionListener () {
+        public void actionPerformed (java.awt.event.ActionEvent evt) {
+          typeButtonPressed (evt);
+        }
+      }
+    );
 
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
@@ -205,8 +235,8 @@ public class ParametersPicker extends javax.swing.JPanel {
     add (methodButton, gridBagConstraints1);
 
     methodLabel = new javax.swing.JLabel ();
-    methodLabel.setEnabled (false);
     methodLabel.setText ("<No Method Selected>");
+    methodLabel.setEnabled (false);
 
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
@@ -216,6 +246,12 @@ public class ParametersPicker extends javax.swing.JPanel {
 
     methodDetailsButton = new javax.swing.JButton ();
     methodDetailsButton.setText ("...");
+    methodDetailsButton.addActionListener (new java.awt.event.ActionListener () {
+        public void actionPerformed (java.awt.event.ActionEvent evt) {
+          methodDetailsButtonActionPerformed (evt);
+        }
+      }
+    );
 
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
@@ -225,6 +261,12 @@ public class ParametersPicker extends javax.swing.JPanel {
 
     codeButton = new javax.swing.JRadioButton ();
     codeButton.setText ("User Code:");
+    codeButton.addActionListener (new java.awt.event.ActionListener () {
+        public void actionPerformed (java.awt.event.ActionEvent evt) {
+          typeButtonPressed (evt);
+        }
+      }
+    );
 
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
@@ -235,6 +277,12 @@ public class ParametersPicker extends javax.swing.JPanel {
 
       codeArea = new javax.swing.JTextArea ();
       codeArea.setEnabled (false);
+      codeArea.addCaretListener (new javax.swing.event.CaretListener () {
+          public void caretUpdate (javax.swing.event.CaretEvent evt) {
+            updateState (evt);
+          }
+        }
+      );
 
     codeScrollPane.setViewportView (codeArea);
 
@@ -336,6 +384,8 @@ public class ParametersPicker extends javax.swing.JPanel {
 
 /*
  * Log
+ *  5    Gandalf   1.4         6/1/99   Ian Formanek    Fixed removed event 
+ *       handlers
  *  4    Gandalf   1.3         5/31/99  Ian Formanek    Updated to X2 form 
  *       format
  *  3    Gandalf   1.2         5/15/99  Ian Formanek    
