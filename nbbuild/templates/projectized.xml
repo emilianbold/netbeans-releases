@@ -14,6 +14,8 @@ Microsystems, Inc. All Rights Reserved.
 <project name="projectized" default="init" basedir=".">
 
     <!-- XXX supply descriptions for the appropriate targets -->
+    <!-- XXX prefix internal targets with '-' (and grep all module scripts which override or use these targets and update them to match) -->
+    <!-- XXX should use namespaces for NB in-VM tasks from ant/browsetask and debuggerjpda/ant and apisupport/ant -->
 
     <import file="../default.xml"/>
 
@@ -240,6 +242,18 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="javadoc-nb" depends="init,javadoc" if="netbeans.home">
         <nbbrowse file="javadoc/${javadoc.name}/index.html"/>
+    </target>
+    
+    <target name="arch" depends="init" description="Process an arch.xml, creating it if it does not yet exist.">
+        <fail unless="javadoc.arch">You must define e.g. javadoc.arch=$${basedir}/arch.xml in project.properties</fail>
+        <property name="arch.output.html" location="${java.io.tmpdir}/arch.html"/>
+        <property name="arch.generate" value="true"/>
+        <taskdef name="arch" classname="org.netbeans.nbbuild.Arch" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <arch answers="${javadoc.arch}" output="${arch.output.html}"/>
+    </target>
+    
+    <target name="arch-nb" depends="init,arch" if="netbeans.home" description="Process an arch.xml, creating it if it does not yet exist, and display the result.">
+        <nbbrowse file="${arch.output.html}"/>
     </target>
         
     <target name="test-build" depends="init,test-init,jar">
