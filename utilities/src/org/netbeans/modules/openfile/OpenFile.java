@@ -206,7 +206,20 @@ class OpenFile extends Object {
             try {
                 int pckgPos; // found package position
 
-                rd = new BufferedReader(new InputStreamReader(new SourceInputStream(new FileInputStream(f))));
+                rd = new BufferedReader(new SourceReader(new FileInputStream(f)));
+
+ 		// Check for unicode byte watermarks.
+                rd.mark(2);
+                char[] cbuf = new char[2];
+                rd.read(cbuf, 0, 2);
+                if (cbuf[0] == 255 && cbuf[1] == 254) {
+                    rd.close();
+                    rd = new BufferedReader(new SourceReader(new FileInputStream(f), "Unicode"));
+                }
+                else {
+                    rd.reset();
+                }
+
                 while (!packageKnown) {
                     String line = rd.readLine ();
                     if (line == null) {
@@ -214,7 +227,7 @@ class OpenFile extends Object {
                         break;
                     }
 
-                    t(line); // test what line has SourceInputStream produced
+                    t(line); // test the line SourceReader has produced
 
                     pckgPos = line.indexOf(PACKAGE);
                     if (pckgPos == -1) continue;
@@ -488,10 +501,10 @@ class OpenFile extends Object {
         }
     }
 
-    /** Filtered input stream for Java sources - it simply excludes
+    /** Filtered reader for Java sources - it simply excludes
       * comments and some useless whitespaces from the original stream.
       */
-    public static class SourceInputStream extends FilterInputStream
+    public static class SourceReader extends InputStreamReader
     {
         private int preRead = -1;
         private boolean inString = false;
@@ -500,28 +513,20 @@ class OpenFile extends Object {
         static private final char separators[] = { '.' }; // dot is enough here...
         static private final char whitespaces[] = { ' ', '\t', '\r', '\n' };
         
-        public SourceInputStream(InputStream in) {
+        public SourceReader(InputStream in) {
             super(in);
         }
         
-        public int read() throws IOException {
-            byte[] data = {-1};
-            doRead(data, 0, 1);
-            return data[0];               
-        }
-        
-        public int read(byte[] b) throws IOException {
-            return doRead(b, 0, b.length);
-        }
-        
-        public int read(byte[] b, int off, int len) throws IOException {
-            return doRead(b, off, len);
+        public SourceReader(InputStream in, String encoding)
+        throws UnsupportedEncodingException {
+            super(in, encoding);
         }
 
-        /** Read bytes from the input stream and filter them. */
-        private int doRead(byte[] data, int pos, int len) throws IOException {
-            int numRead = 0,
-                c;
+        /** Reads chars from input reader and filters them. */
+        public int read(char[] data, int pos, int len) throws IOException {
+            int numRead = 0;
+            int c;
+            char[] onechar = new char[1];
             
             while (numRead < len) {
                 if (preRead != -1) {
@@ -529,15 +534,17 @@ class OpenFile extends Object {
                     preRead = -1;
                 }
                 else {
-                    c = in.read();
+                    c = super.read(onechar, 0, 1);
                     if (c == -1) // end of stream reached
                         return numRead > 0 ? numRead : -1;
+                    c = onechar[0];
                 }
                 
                 if (c == '/' && !inString) { // a comment could start here
-                    preRead = in.read();
+                    preRead = super.read(onechar, 0, 1);
+                    if (preRead == 1) preRead = onechar[0];
                     if (preRead != '*' && preRead != '/') { // it's not a comment
-                        data[pos++] = (byte) c;
+                        data[pos++] = (char) c;
                         numRead++;
                         if (preRead == -1) // end of stream reached
                             return numRead;
@@ -548,7 +555,8 @@ class OpenFile extends Object {
                             do {
                                 c = moveToChar('*');
                                 if (c == 0) {
-                                    c = in.read();
+                                    c = super.read(onechar, 0, 1);
+                                    if (c == 1) c = onechar[0];
                                     if (c == '*') preRead = c;
                                 }
                             } while (c != '/' && c != -1);
@@ -565,9 +573,10 @@ class OpenFile extends Object {
                     if (!inString) { // not inside a string " ... "
                         if (isWhitespace(c)) { // reduce some whitespaces
                             while (true) {
-                                preRead = in.read();
+                                preRead = super.read(onechar, 0, 1);
                                 if (preRead == -1) // end of stream reached
                                     return numRead > 0 ? numRead : -1;
+                                preRead = onechar[0];
 
                                 if (isSeparator(preRead)) {
                                     c = preRead;
@@ -599,7 +608,7 @@ class OpenFile extends Object {
                         else backslashLast = (c == '\\');
                     }
 
-                    data[pos++] = (byte) c;
+                    data[pos++] = (char) c;
                     numRead++;
                 }
             }
@@ -608,17 +617,23 @@ class OpenFile extends Object {
         
         private int moveToChar(int c) throws IOException {
             int cc;
+            char[] onechar = new char[1];
+
             if (preRead != -1) {
                 cc = preRead;
                 preRead = -1;
-             }
-             else cc = in.read();
-             
-             while (cc != -1 && cc != c) {
-                 cc = in.read();
-             }
-             
-             return cc == -1 ? -1 : 0;
+            }
+            else {
+                cc = super.read(onechar, 0, 1);
+                if (cc == 1) cc = onechar[0];
+            }
+
+            while (cc != -1 && cc != c) {
+                cc = super.read(onechar, 0, 1);
+                if (cc == 1) cc = onechar[0];
+            }
+
+            return cc == -1 ? -1 : 0;
         }
 
         static private boolean isSeparator(int c) {
