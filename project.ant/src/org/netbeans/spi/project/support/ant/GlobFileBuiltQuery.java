@@ -62,6 +62,7 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
     private final String[] toSuffixes;
     private static final Object NONE = "NONE"; // NOI18N
     private final Map/*<FileObject,Reference<StatusImpl>|NONE>*/ stati = new WeakHashMap();
+    private RequestProcessor.Task refreshTask = null;
     private final FileL fileL;
     private final FileChangeListener weakFileL;
 
@@ -127,34 +128,6 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         return status;
     }
     
-    private void updateAll() {
-        // Need to post a fresh task since otherwise there can be lock
-        // order conflicts with masterfs.
-        // XXX probably better to coalesce refreshes here...
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                synchronized (GlobFileBuiltQuery.this) {
-                    Iterator/*<Reference<StatusImpl>|NONE>*/ it = stati.values().iterator();
-                    while (it.hasNext()) {
-                        Object o = it.next();
-                        if (o == NONE) {
-                            continue;
-                        }
-                        Reference r = (Reference)o;
-                        if (r == null) {
-                            continue;
-                        }
-                        StatusImpl status = (StatusImpl)r.get();
-                        if (status == null) {
-                            continue;
-                        }
-                        status.isBuilt();
-                    }
-                }
-            }
-        });
-    }
-    
     private StatusImpl createStatus(FileObject file) {
         String path = FileUtil.getRelativePath(projectDir, file);
         if (path == null) {
@@ -191,7 +164,18 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         return null;
     }
     
-    private final class FileL implements FileChangeListener {
+    private synchronized void updateAll() {
+        // Need to post a fresh task since otherwise there can be lock
+        // order conflicts with masterfs.
+        // Use just one task, i.e. try to coalesce change events.
+        if (refreshTask == null) {
+            refreshTask = RequestProcessor.getDefault().create(fileL);
+        }
+        // Give it a small timeout to allow a bunch of events to be coalesced.
+        ((RequestProcessor.Task)refreshTask).schedule(100);
+    }
+    
+    private final class FileL implements FileChangeListener, Runnable {
         
         FileL() {}
         
@@ -217,6 +201,27 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         
         public void fileAttributeChanged(FileAttributeEvent fe) {
             // ignore
+        }
+        
+        public void run() {
+            synchronized (GlobFileBuiltQuery.this) {
+                Iterator/*<Reference<StatusImpl>|NONE>*/ it = stati.values().iterator();
+                while (it.hasNext()) {
+                    Object o = it.next();
+                    if (o == NONE) {
+                        continue;
+                    }
+                    Reference r = (Reference)o;
+                    if (r == null) {
+                        continue;
+                    }
+                    StatusImpl status = (StatusImpl)r.get();
+                    if (status == null) {
+                        continue;
+                    }
+                    status.isBuilt();
+                }
+            }
         }
         
     }
