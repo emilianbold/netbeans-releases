@@ -19,6 +19,14 @@ import org.apache.tools.ant.types.*;
 import java.util.StringTokenizer;
 import java.util.Hashtable;
 import java.io.File;
+import java.util.HashSet;
+import java.util.Iterator;
+import org.xml.sax.*;
+import org.w3c.dom.*;
+import javax.xml.parsers.*;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Map;
 
 /**
  * @author  Michal Zlamal
@@ -28,6 +36,8 @@ public class CheckoutNeeded extends Task {
     String repos = null;
     String action = "checkout";             //NOI18N
     boolean quiet = true;
+    
+    private Hashtable repositories = new Hashtable();
 
     /** List of modules to checkout devided by comma (,) */
     public void setModules( String modules ) {
@@ -49,36 +59,9 @@ public class CheckoutNeeded extends Task {
     public void setAction( String action ) {
         this.action = action;
     }
-
-    private class Repository {
-        String directory = null;
-        String root = null;
-    }
     
-    private class Module {
-        String name = null;
-        String branch = null;
-    }
-   
-    public void execute() throws BuildException {
-        if (modules == null) throw new BuildException("You must tell what modules to checkout");            //NOI18N
-        if (repos == null) throw new BuildException("You mast specify repository directories and roots");   //NOI18N
-
-        Hashtable repositories = new Hashtable();
-      
-        StringTokenizer tokenizer = new StringTokenizer( repos, "," );
-        
-        while (tokenizer.hasMoreElements()) {
-            String repo = tokenizer.nextToken();
-            String directory = repo.substring( repo.indexOf('-')+1);
-            repo = repo.substring( 0, repo.indexOf('-') );
-            
-//          System.out.println( "Repository - " + repo + " to dir " + directory);
-            
-            repositories.put( repo, directory );
-        }
-        
-        tokenizer = new StringTokenizer(modules,",");
+    public void checkout(String modules) {
+        StringTokenizer tokenizer = new StringTokenizer(modules,",");
         while (tokenizer.hasMoreElements()) {
             String module = tokenizer.nextToken();          
             String branches = this.getProject().getProperty( module + ".branch" ); //NOI18N
@@ -112,6 +95,134 @@ public class CheckoutNeeded extends Task {
                 log( module + " OK" ); //NOI18N
                 
             }
+        }        
+    }
+
+    public void execute() throws BuildException {
+        if (repos == null) throw new BuildException("You mast specify repository directories and roots");   //NOI18N
+        
+        StringTokenizer tokenizer = new StringTokenizer( repos, "," );
+        
+        while (tokenizer.hasMoreElements()) {
+            String repo = tokenizer.nextToken();
+            String directory = repo.substring( repo.indexOf('-')+1);
+            repo = repo.substring( 0, repo.indexOf('-') );
+//          System.out.println( "Repository - " + repo + " to dir " + directory);
+            repositories.put( repo, directory ); 
+        }
+        
+        if (modules == null) modules = findModules();
+        
+        checkout(modules);
+    }
+    
+    private String findModules() {
+       Hashtable module_branches = new Hashtable();
+        
+       HashSet modules_set = new HashSet();
+       HashSet instances = InstancePropertiesParser.getPostfixes(getProject());
+       Iterator it = instances.iterator();
+       while (it.hasNext()) {
+          String postfix = (String)it.next();   
+          String config = getProject().getProperty(InstancePropertiesParser.CONFIG + postfix);
+          String testroot = getProject().getProperty(InstancePropertiesParser.TEST_ROOT + postfix);
+          String instance = getProject().getProperty(InstancePropertiesParser.INSTANCE + postfix);
+          String cvs_root = getProject().getProperty(InstancePropertiesParser.CVS_ROOT + postfix);
+          String cvs_workdir = getProject().getProperty(InstancePropertiesParser.CVS_WORKDIR + postfix);
+          if (testroot==null) testroot = "";
+          else 
+              if (!testroot.endsWith("/"))
+                  testroot = testroot+"/";
+          if (config == null) throw new BuildException("Property '"+InstancePropertiesParser.CONFIG+postfix+"' is not set.");
+          if (instance == null) throw new BuildException("Property '"+InstancePropertiesParser.INSTANCE+postfix+"' is not set.");
+          if (cvs_root == null) throw new BuildException("Property '"+InstancePropertiesParser.CVS_ROOT+postfix+"' is not set.");
+          if (cvs_workdir == null) throw new BuildException("Property '"+InstancePropertiesParser.CVS_WORKDIR+postfix+"' is not set.");
+          
+          String instance_dir = cvs_workdir + File.separator + instance.replace('/',File.separatorChar);
+          if (getProject().getProperty(instance+".branch") == null) 
+              getProject().setProperty(instance+".branch",cvs_root);
+          checkout(instance);
+          
+          readMasterConfig(modules_set,new File(instance_dir,"master-config.xml"),config,testroot);
+          log("Master config read: "+modules_set);
+          Iterator mod = modules_set.iterator();
+          while (mod.hasNext()) {
+             String module = (String)mod.next();   
+             if (getProject().getProperty(module+"/test.branch") == null) {
+                 String branches = (String)module_branches.get(module);
+                 if (branches == null)
+                     module_branches.put(module,cvs_root);
+                 else 
+                     branches = branches + "," + cvs_root;
+             }
+          }
+       }
+       
+       Iterator mb = module_branches.entrySet().iterator();
+       while (mb.hasNext()) {
+           Map.Entry entry = (Map.Entry)mb.next();
+           String name = (String)entry.getKey()+"/test.branch";
+           getProject().setProperty(name,(String)entry.getValue());
+       }
+          
+       StringBuffer buff = new StringBuffer();
+       Iterator ms = modules_set.iterator();
+       while (ms.hasNext()) {
+            if (buff.length() != 0) buff.append(",");
+            buff.append((String)ms.next());
+            buff.append("/test");
+       }
+       return buff.toString();
+    }
+    
+    private void readMasterConfig(HashSet set, File file, String config, String prefix) {
+        Document doc = null;
+        StringBuffer buff = new StringBuffer();
+        
+        log("Reading config "+config+" from "+file.getAbsolutePath());
+        
+        try {
+            DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            doc = db.parse(file);
+        } catch (SAXException saxe) {
+            throw new BuildException( saxe.getMessage() );
+        } catch (ParserConfigurationException pce) {
+            throw new BuildException( pce.getMessage() );
+        } catch (IOException ioe) {
+            throw new BuildException( ioe.getMessage() );
+        }
+        
+        boolean found = false;
+        NodeList nl = doc.getElementsByTagName( "config" );
+        Node node = null;
+        for (int i = 0; i < nl.getLength(); i++ ) {
+            node = nl.item(i);
+            String c_name = node.getAttributes().getNamedItem( "name" ).getNodeValue();
+            if (c_name.equals(config)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) throw new BuildException("Configuration '"+config+"' was not found in "+file.getAbsolutePath(), location);
+        Node modules_attrib = node.getAttributes().getNamedItem( "modules" );
+        if (modules_attrib != null) {
+            fillHashSet(set,prefix + modules_attrib.getNodeValue());
+        }
+        NodeList nl2 = node.getChildNodes();
+        Node node2 = null;
+        for (int i = 0; i < nl2.getLength(); i++ ) {
+            node2 = nl2.item(i);
+            String module_name = node2.getNodeName();
+            if (module_name.equals("module")) {
+                set.add(prefix + node2.getAttributes().getNamedItem( "name" ).getNodeValue());
+            }
         }
     }
+    
+    private void fillHashSet(HashSet set, String list) {
+       StringTokenizer tokens = new StringTokenizer(list,",");
+       while (tokens.hasMoreTokens()) 
+           set.add(tokens.nextToken());
+    }
+
 }
