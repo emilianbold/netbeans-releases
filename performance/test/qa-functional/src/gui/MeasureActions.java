@@ -91,6 +91,9 @@ public class MeasureActions  {
         suite.addTest(new CreateProject("testCreateJavaLibraryProject", "Create Java Library project"));
         suite.addTest(new CreateProject("testCreateWebApplicationProject", "Create Web Application project"));
 //TODO    suite.addTest(new CreateProject("testCreateJavaProjectWithExistingSources", "Create Java Project with Existing sources"));
+
+        
+        suite.addTest(new RefactorFindUsages("measureTime", "Refactor find usages"));
         
 //TODO    suite.addTest(new OpenProject("testOpenJavaApplicationProject", "Open Java Application project"));
 //TODO    suite.addTest(new OpenProject("testOpenJavaLibraryProject", "Open Java Library project"));
