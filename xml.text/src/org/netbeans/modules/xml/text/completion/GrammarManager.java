@@ -166,13 +166,13 @@ class GrammarManager implements DocumentListener {
         for (int i = 0; i<guarded.length; i+=2) {
             int start = guarded[i].getOffset();
             int end = guarded[i+1].getOffset();
+            if (start < offset && offset < end) {
+                return true;
+            }
             int changeEnd = offset + length;
             if (offset < start && start < changeEnd) {
                 return true;
             }
-            if (offset < end &&  end < changeEnd) {
-                return true;
-            }            
         }
 
         return false;
