@@ -175,7 +175,7 @@ public class PhysicalView {
             this.group = group;
             this.isProjectDir = isProjectDir;
             pi.addPropertyChangeListener(this);
-            // XXX listen to changes in g
+            group.addPropertyChangeListener(this);
         }
 
         // XXX May need to change icons as well
@@ -264,6 +264,17 @@ public class PhysicalView {
                 fireNameChange(null, null);
             } else if (ProjectInformation.PROP_ICON.equals(prop)) {
                 // OK, ignore
+            } else if ( "name".equals(prop) ) { // NOI18N
+                fireNameChange(null, null);
+            } else if ( "displayName".equals(prop) ) { // NOI18N
+                fireDisplayNameChange(null, null);
+            } else if ( "icon".equals(prop) ) { // NOI18N
+                // OK, ignore
+            } else if ( "rootFolder".equals(prop) ) { // NOI18N
+                // XXX Do something to children and lookup 
+                fireNameChange(null, null);
+                fireDisplayNameChange(null, null);
+                fireShortDescriptionChange(null, null);
             } else {
                 assert false : "Attempt to fire an unsupported property change event from " + pi.getClass().getName() + ": " + prop;
             }

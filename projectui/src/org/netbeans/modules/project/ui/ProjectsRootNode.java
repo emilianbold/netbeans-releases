@@ -14,6 +14,13 @@
 package org.netbeans.modules.project.ui;
 
 import java.awt.Image;
+import java.lang.ref.WeakReference;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.WeakHashMap;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Sources;
 import org.openide.nodes.FilterNode;
 
 import java.beans.PropertyChangeEvent;
@@ -168,7 +175,9 @@ public class ProjectsRootNode extends AbstractNode {
     
     // XXX Needs to listen to project rename
     // However project rename is currently disabled so it is not a big deal
-    private static class ProjectChildren extends Children.Keys implements PropertyChangeListener {
+    static class ProjectChildren extends Children.Keys implements ChangeListener, PropertyChangeListener {
+        
+        private java.util.Map sources2projects = new WeakHashMap();
         
         int type;
         
@@ -184,6 +193,11 @@ public class ProjectsRootNode extends AbstractNode {
         }
         
         public void removeNotify() {
+            for( Iterator it = sources2projects.keySet().iterator(); it.hasNext(); ) {
+                Sources sources = (Sources)it.next();
+                sources.removeChangeListener( this );                
+            }
+            sources2projects.clear();
             setKeys( Collections.EMPTY_LIST );
         }
         
@@ -196,10 +210,17 @@ public class ProjectsRootNode extends AbstractNode {
             Node nodes[] = null;
                         
             if ( type == PHYSICAL_VIEW ) {
+                Sources sources = ProjectUtils.getSources( project );
+                sources.removeChangeListener( this );
+                sources.addChangeListener( this );
+                sources2projects.put( sources, new WeakReference( project ) );
                 nodes = PhysicalView.createNodesForProject( project );
             }            
             else if ( lvp == null ) {
                 ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply LogicalViewProvider in it's lookup"); // NOI18N
+                Sources sources = ProjectUtils.getSources( project );
+                sources.removeChangeListener( this );
+                sources.addChangeListener( this );
                 nodes = PhysicalView.createNodesForProject( project );
                 if ( nodes.length > 0 ) {
                     nodes = new Node[] { nodes[0] };
@@ -231,7 +252,7 @@ public class ProjectsRootNode extends AbstractNode {
             return badgedNodes;
         }        
         
-        // PropertyChangeListener impl -------------------------------------------------
+        // PropertyChangeListener impl -----------------------------------------
         
         public void propertyChange( PropertyChangeEvent e ) {
             if ( OpenProjectList.PROPERTY_OPEN_PROJECTS.equals( e.getPropertyName() ) ) {
@@ -239,6 +260,24 @@ public class ProjectsRootNode extends AbstractNode {
             }
         }
         
+        // Change listener impl ------------------------------------------------
+        
+        public void stateChanged( ChangeEvent e ) {
+            
+            WeakReference projectRef = (WeakReference)sources2projects.get( e.getSource() );
+            if ( projectRef == null ) {
+                return;
+            }
+            
+            Project project = (Project)projectRef.get();
+            
+            if ( project == null ) {
+                return;
+            }
+            
+            refreshKey( project );
+        }
+                
         // Own methods ---------------------------------------------------------
         
         public Collection getKeys() {
