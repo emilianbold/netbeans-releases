@@ -31,6 +31,7 @@ import org.openide.cookies.CompilerCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
@@ -72,6 +73,49 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
         getCookieSet().add(PropertiesEditorSupport.class, this);
     }
 
+    
+    /** Copies entry to folder. Overrides superclass method. 
+     * @param folder folder where copy
+     * @param suffix suffix to use
+     * @exception IOException when error happens */
+    public FileObject copy(FileObject folder, String suffix) throws IOException {
+        String pasteSuffix = ((PropertiesDataObject)getDataObject()).getPasteSuffix();
+        
+        if(pasteSuffix == null)
+            return super.copy(folder, suffix);
+        
+        FileObject fileObject = getFile();
+        
+        String basicName = getDataObject().getPrimaryFile().getName();
+        String newName = basicName + pasteSuffix + Util.getLocalePartOfFileName(this);
+        
+        return fileObject.copy(folder, newName, fileObject.getExt());
+    }
+   
+    /** Moves entry to folder. Overrides superclass method. 
+     * @param folder folder where copy
+     * @param suffix suffix to use 
+     * @exception IOException when error happens */
+    public FileObject move(FileObject folder, String suffix) throws IOException {
+        String pasteSuffix = ((PropertiesDataObject)getDataObject()).getPasteSuffix();
+        
+        if(pasteSuffix == null)
+            return super.move(folder, suffix);
+
+        
+        FileObject fileObject = getFile();
+        FileLock lock = takeLock ();
+        
+        try {
+            String basicName = getDataObject().getPrimaryFile().getName();
+            String newName = basicName + pasteSuffix + Util.getLocalePartOfFileName(this);
+            
+            return fileObject.move (lock, folder, newName, fileObject.getExt());
+        } finally {
+            lock.releaseLock ();
+        }
+    }
+    
     /** Implements <code>CookieSet.Factory</code> interface method. */
     public Node.Cookie createCookie(Class clazz) {
         if(clazz.isAssignableFrom(PropertiesEditorSupport.class)) {

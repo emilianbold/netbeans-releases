@@ -44,6 +44,9 @@ import org.openide.util.WeakListener;
  * @author Ian Formanek
  */
 public final class PropertiesDataObject extends MultiDataObject implements CookieSet.Factory {
+
+    /** Generated Serialized Version UID. */
+    static final long serialVersionUID = 4795737295255253334L;
     
     /** MIME type for properties. */
     public static final String MIME_PROPERTIES = "text/x-properties"; // NOI18N
@@ -54,8 +57,9 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
     /** Open support for this data object. Provides editable table view on bundle. */
     private transient PropertiesOpen openSupport;
 
-    /** Generated Serialized Version UID. */
-    static final long serialVersionUID = 4795737295255253334L;
+    // Hack due having lock on secondaries, can't override handleCopy, handleMove at all.
+    /** Suffix used by copying/moving dataObject. */
+    private transient String pasteSuffix;
 
 
     /** Constructor. */
@@ -83,20 +87,76 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
             return null;
     }
     
-    // PENDING very ugly, has to be revised.
-    /** Hack to removeSecondaryEntry(MultiDataObject.Entry) method. */
-    void removeSecondaryEntryHack(MultiDataObject.Entry entry) {
-        super.removeSecondaryEntry(entry);
-    }
+    /** Copies primary and secondary files to new folder.
+     * Overrides superclass method.
+     * @param df the new folder
+     * @return data object for the new primary
+     * @throws IOException if there was a problem copying
+     * @throws UserCancelException if the user cancelled the copy */
+    protected synchronized DataObject handleCopy(DataFolder df) throws IOException {
+        try {
+            pasteSuffix = createPasteSuffix(df);
 
-    /** Deletes all secondary entries and then deletes the primary entry. Overrides superclass method. */
-    protected void handleDelete() throws IOException {
-        Iterator it = secondaryEntries().iterator();
-        while(it.hasNext()) {
-            ((PropertiesFileEntry)it.next()).delete();
+            return super.handleCopy(df);
+        } finally {
+            pasteSuffix = null;
         }
+    }
+    
+    /** Moves primary and secondary files to a new folder.
+     * Overrides superclass method.
+     * @param df the new folder
+     * @return the moved primary file object
+     * @throws IOException if there was a problem moving
+     * @throws UserCancelException if the user cancelled the move */
+    protected FileObject handleMove(DataFolder df) throws IOException {
+        try {
+            pasteSuffix = createPasteSuffix(df);
+        
+            return super.handleMove(df);
+        } finally {
+            pasteSuffix = null;
+        }
+    }
+    
+    /** Gets suffix used by entries by copying/moving. */
+    String getPasteSuffix() {
+        return pasteSuffix;
+    }
+    
+    /** Creates new name for this instance when moving/copying to new folder destination. 
+     * @param folder new folder destination. */
+    private String createPasteSuffix(DataFolder folder) {
+        String basicName = getPrimaryFile().getName();
 
-        getPrimaryEntry().delete();
+        DataObject[] children = folder.getChildren();
+        
+        
+        // Repeat until there is not such file name.
+        for(int i = 0; ; i++) {
+            String newName;
+            
+            if(i == 0)
+                newName = basicName;
+            else
+                newName = basicName + i;
+            
+            boolean exist = false;
+            
+            for(int j = 0; j < children.length; j++) {
+                if(children[j] instanceof PropertiesDataObject && newName.equals(children[j].getName())) {
+                    exist = true;
+                    break;
+                }
+            }
+                
+            if(!exist) {
+                if(i == 0)
+                    return ""; // NOI18N
+                else
+                    return "" + i; // NOI18N
+            }
+        }
     }
 
     /** Returns open support. It's used by all subentries as open support too. */

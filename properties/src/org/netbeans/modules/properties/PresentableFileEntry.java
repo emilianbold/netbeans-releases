@@ -188,7 +188,6 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
     /** Deletes file object and fires property change. */
     public void delete () throws IOException {
         super.delete();
-        ((PropertiesDataObject)getDataObject()).removeSecondaryEntryHack(this);
         
         firePropertyChange(DataObject.PROP_VALID, Boolean.TRUE, Boolean.FALSE);
     }
