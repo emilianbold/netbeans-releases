@@ -28,7 +28,7 @@ import org.netbeans.jellytools.nodes.HTMLNode;
 import org.netbeans.jellytools.actions.ExecuteAction;
 
 import org.netbeans.junit.NbTestSuite;
-
+import org.netbeans.web.test.util.Utils;
 
 
 import org.netbeans.jemmy.Waiter;
@@ -58,6 +58,7 @@ public class ExecuteCLBrowser extends JellyTestCase {
     private static String jspForExecution = null;
     private static String pkg = "execution";
     private static ExplorerOperator explorer = null;
+    private static boolean first = true;
     private static String netscape  = "netscape {URL}";
     private String servletId = "cebde3e2-e8f1-4421-8a1c-df11dcc6e79a";
     private String jspId     = "c78eae2b-39f2-4b41-b2be-032e5373d7f4";
@@ -65,8 +66,8 @@ public class ExecuteCLBrowser extends JellyTestCase {
     private int defaultPort = 1357;
     private int port = 2468;
     private String defaultAnswer = "HTTP/1.0 200 OK\nServer: FFJ Automated Tests SimpleServ\nLast-Modified: Fri, 12 Jul 2002 09:53:56 GMT\nContent-Length: 281\nConnection: close\nContent-Type: text/html\n\n<html>\n<head>\n   <title>Tests passed</title>\n</head>\n<body>\n<center><H1>Request Accepted</H1></center>\n</body>\n</html>";
+    private static int defaultBrowser = -1;
     
-
 
     public ExecuteCLBrowser(java.lang.String testName) {
         super(testName);
@@ -83,6 +84,28 @@ public class ExecuteCLBrowser extends JellyTestCase {
 	htmlForExecution = webModule + iSep + "html" + iSep + "HtmlFileForExecution";
 	jspForExecution = webModule + iSep + "jsp" + iSep + "JSPForExecution";
 	pkg = webModule + iSep + "WEB-INF" + iSep + classes + iSep + pkg;
+	String defBr = System.getProperty("extbrowser.default");
+	if(defBr.equals("ns4"))
+	    defaultBrowser = BrowserUtils.NETSCAPE4;
+	if(defBr.equals("ns6"))
+	    defaultBrowser = BrowserUtils.NETSCAPE6;
+	if(defBr.equals("ns7"))
+	    defaultBrowser = BrowserUtils.NETSCAPE7;
+	if(defBr.equals("ie6"))
+	    defaultBrowser = BrowserUtils.MSIE6;
+
+	String wmc = System.getProperty("extbrowser.mountcount");
+	int count = 0;
+	if(wmc != null) {
+	    count = new Integer(wmc).intValue();
+	}
+	if(first) {
+	    while(count >0) {
+		Utils.handleDialogAfterNewWebModule();
+		count--;
+	    }
+	    first = false;
+	}
 	return new NbTestSuite(ExecuteCLBrowser.class);
     }
     
@@ -104,7 +127,10 @@ public class ExecuteCLBrowser extends JellyTestCase {
 	} catch (Exception e) {
 	    e.printStackTrace();
 	    fail("Looks like browser not started or URL not loaded");
-	} 
+	}
+	if(BrowserUtils.getBrowserVersion(hrw.getUserAgent()) != defaultBrowser) {
+	    fail("Wrong browser used.\n" + hrw.getUserAgent() + " instead of " + BrowserUtils.getBrowserDescription(defaultBrowser));
+	}
     }
     
     public void testExecuteSevlet() {
@@ -169,3 +195,15 @@ public class ExecuteCLBrowser extends JellyTestCase {
     
    
 }
+
+
+
+
+
+
+
+
+
+
+
+

@@ -101,6 +101,9 @@ public class HttpRequestWaitable implements Waitable {
     private void setUserAgent(String agent) {
 	userAgent = agent;
     }
+    public String getUserAgent() {
+	return userAgent;
+    }
     public String getRequestedURL() {
 	return real;
     }

@@ -31,6 +31,17 @@ import java.io.File;
 
 public class BrowserUtils {
     private static String iSep = "|";
+    private String sampleUserAgentNS7="User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.0.2) Gecko/20030208 Netscape/7.02";
+    private String sampleUserAgentNS4="User-Agent: Mozilla/4.78 [en] (X11; U; Linux 2.4.7-10smp i686)";
+    private String sampleUserAgentIE6="User-Agent: Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)";
+
+    public static final int NETSCAPE4 = 0;
+    public static final int NETSCAPE6 = 1;
+    public static final int NETSCAPE7 = 2;
+    public static final int MSIE6     = 3;
+    public static final int UNKNOWN = 32;
+
+
     public BrowserUtils() {
     }
 
@@ -109,6 +120,9 @@ public class BrowserUtils {
 	    return false;
 	}
     }
+
+    
+
 
 
     /**
@@ -243,7 +257,48 @@ public class BrowserUtils {
 	    return false;
 	}
     }
+
+    public static int getBrowserVersion(String userAgent) {
+	if(userAgent.indexOf("MSIE 6")!=-1) {
+	    return MSIE6;
+	}
+	if(userAgent.indexOf("Mozilla/4")!=-1) {
+	    return NETSCAPE4;
+	}
+	if(userAgent.indexOf("Mozilla/5")!=-1) {
+	    if(userAgent.indexOf("Netscape/7")!=-1) {
+		return NETSCAPE7;
+	    }
+	    if(userAgent.indexOf("Netscape/6")!=-1) {
+		return NETSCAPE6;
+	    }
+	}
+	return UNKNOWN;
+    }
+
+
+    public static String getBrowserDescription(int version) {
+	String descr = null; 
+	switch(version) {
+	case NETSCAPE4: 
+	    descr = "Netscape4.x browser";
+	    break;
+	case NETSCAPE6: 
+	    descr = "Netscape6.x browser";
+	    break;
+	case NETSCAPE7:
+	    descr = "Netscape7.x browser";
+	    break;
+	case MSIE6:
+	    descr = "Internet Explorer 6";
+	    break;
+	case UNKNOWN:
+	    descr = "This browser is unknown by BrowserUtils";
+	    break;
+	default:
+	    descr = "Can't understand version " + version;
+	}
+	return descr;
+    }
 }
-
-
 
