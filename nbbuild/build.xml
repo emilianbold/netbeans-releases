@@ -291,6 +291,7 @@ workspaceswitcher
     <delete file="firststart/system/project.basic"/>
     <delete file="firststart/system/project.last"/>
     <delete file="firststart/beans/libs.properties"/>
+    <mkdir dir="firststart/lib/patches"/>
     <createfile message="NetBeans dev build;Build number: ${buildnumber}" dir="firststart" filename="build_info"/>
   </target>
 
