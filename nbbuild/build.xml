@@ -264,7 +264,7 @@ workspaceswitcher
     <echo message="Building module utilities..."/>
     <ant dir="../utilities" target="netbeans"/>
   </target>
-  <target name="all-vcscvs" depends="all-openide,all-openidex,all-editor,all-utilities">
+  <target name="all-vcscvs" depends="all-openide,all-openidex,all-editor,all-utilities,all-vcscore">
     <echo message="Building module vcscvs..."/>
     <ant dir="../vcscvs" target="netbeans"/>
   </target>
