@@ -46,9 +46,9 @@ final class PackageRootNode extends AbstractNode {
     private static Action actions[]; 
 
     private SourceGroup group;
-    
+        
     PackageRootNode( SourceGroup group ) {
-        super( new PackageViewChildren( group.getRootFolder() ), createLookup( group ) );
+        super( new PackageViewChildren( group.getRootFolder() ), createLookup( group ) );                
         this.group = group;
         setName( group.getName() );
         setDisplayName( group.getDisplayName() );
@@ -69,7 +69,6 @@ final class PackageRootNode extends AbstractNode {
             actions = new Action[] {
                 LogicalViews.newFileAction(),
                 null,
-                // org.openide.util.actions.SystemAction.get( org.openide.actions.OpenLocalExplorerAction.class ), // NOT IN SPEC
                 org.openide.util.actions.SystemAction.get( org.openide.actions.FileSystemRefreshAction.class ),
                 org.openide.util.actions.SystemAction.get( org.openide.actions.FindAction.class ),
                 null,
@@ -131,8 +130,9 @@ final class PackageRootNode extends AbstractNode {
         
         return bImage;
     }
-        
+            
     private static Lookup createLookup( SourceGroup group ) {
+        // XXX Remove DataFolder when paste, find and refresh are reimplemented
         FileObject rootFolder = group.getRootFolder();
         DataFolder dataFolder = DataFolder.findFolder( rootFolder );        
         return Lookups.fixed( new Object[]{ dataFolder, new PathFinder( group ) } );
