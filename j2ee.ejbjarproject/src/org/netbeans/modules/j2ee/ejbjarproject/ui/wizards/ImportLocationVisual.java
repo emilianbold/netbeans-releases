@@ -345,7 +345,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         } else {
             chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
         }
-        chooser.setDialogTitle("XXX 111");
+        chooser.setDialogTitle(NbBundle.getMessage(ImportLocationVisual.class, "LBL_SelectNewLocation")); // NOI18N
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File projectDir = FileUtil.normalizeFile(chooser.getSelectedFile());
             projectFolder.setText(projectDir.getAbsolutePath());
@@ -361,12 +361,14 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         } else {
             chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
         }
-        chooser.setDialogTitle("XXX 222");
+        chooser.setDialogTitle(NbBundle.getMessage(ImportLocationVisual.class, "LBL_SelectExistingLocation")); // NOI18N
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File projectLoc = FileUtil.normalizeFile(chooser.getSelectedFile());
             FileObject configFilesPath = guessConfigFilesPath(FileUtil.toFileObject(projectLoc));
-            File ejbJarXml = new File(FileUtil.toFile(configFilesPath).getAbsolutePath(), "ejb-jar.xml");
-            checkEjbJarXmlJ2eeVersion(FileUtil.toFileObject(ejbJarXml));
+            if (configFilesPath != null) {
+                File ejbJarXml = new File(FileUtil.toFile(configFilesPath).getAbsolutePath(), "ejb-jar.xml"); // NOI18N
+                checkEjbJarXmlJ2eeVersion(FileUtil.toFileObject(ejbJarXml));
+            }
             projectLocation.setText(projectLoc.getAbsolutePath());
         }
     }//GEN-LAST:event_browseProjectLocationActionPerformed
@@ -649,6 +651,9 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     
     private File[] guessJavaRootsAsFiles(FileObject dir) {
         FileObject[] rootsFOs = guessJavaRoots(dir);
+        if (rootsFOs == null) {
+            return new File[0];
+        }
         File[] resultArr = new File[rootsFOs.length];
         for (int i = 0; i < resultArr.length; i++) {
             resultArr[i] = FileUtil.toFile(rootsFOs[i]);
@@ -769,43 +774,6 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
                 errorManager.notify(errorManager.annotate(e, message));
             }
         }
-    }
-    
-    private void convertEjbJarXmlToJ2ee14() {
-        File projectLoc = new File(projectLocation.getText().trim());
-        FileObject configFilesPath = guessConfigFilesPath(FileUtil.toFileObject(projectLoc));
-        File ejbJarXml = new File(FileUtil.toFile(configFilesPath).getAbsolutePath(), "ejb-jar.xml"); // NOI18N
-        
-        try {
-            BufferedReader in = new BufferedReader(new FileReader(ejbJarXml));
-            PrintWriter out = new PrintWriter(new FileWriter(ejbJarXml.getAbsolutePath() + ".old"));
-            String spec20 = "<!DOCTYPE ejb-jar PUBLIC \"-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN\" \"http://java.sun.com/dtd/ejb-jar_2_0.dtd\">";
-            String spec21 = "<ejb-jar version=\"2.1\" xmlns=\"http://java.sun.com/xml/ns/j2ee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd\">";
-
-            int i = 0;
-            String line = null;
-            while(true) {
-               line = in.readLine();
-               if (line == null) break;
-               String modified = line.replaceAll(spec20, spec21);
-               System.out.println(modified);
-               i++;
-            }
-            out.close();
-            
-        } catch (Exception e) {
-            final ErrorManager errorManager = ErrorManager.getDefault();
-            String message = NbBundle.getMessage(ImportLocationVisual.class, "MSG_EjbJarXmlCorrupted"); // NOI18N
-            errorManager.notify(errorManager.annotate(e, message));
-        }
-
-//
-//
-            
-    }
-
-    public void onNext() {
-//        convertEjbJarXmlToJ2ee14();
     }
     
 }
