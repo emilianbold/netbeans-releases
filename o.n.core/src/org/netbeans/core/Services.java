@@ -142,7 +142,7 @@ final class Services extends ServiceType.Registry implements LookupListener {
     
     /** Unregisters all instances wich class is same like obj.getClass.
      */
-    public synchronized void unregister (ServiceType obj) {
+    public void unregister (ServiceType obj) {
         tryUnregister(lookup, obj);
         tryUnregister(lookupDefTypes, obj);
     }
@@ -173,11 +173,12 @@ final class Services extends ServiceType.Registry implements LookupListener {
     
     /** Getter for all kinds of services.
     */
-    private static void recomputeKinds () {
+    private void recomputeKinds (Collection services) {
         List newKinds = new LinkedList();
         
         // construct new service types from the registered sections
-        Iterator it = getDefault().getServiceTypes().iterator ();
+//        Iterator it = getDefault().getServiceTypes().iterator ();
+        Iterator it = services.iterator ();
         while (it.hasNext ()) {
             ServiceType st = (ServiceType)it.next ();
             Class type = st.getClass ();
@@ -205,15 +206,18 @@ final class Services extends ServiceType.Registry implements LookupListener {
     }
     
     /** Result containing all current services. */
-    private synchronized Lookup.Result getTypesResult() {
-        if (allTypes == null) {
-            allTypes = Lookup.getDefault().lookup(
-                new Lookup.Template(ServiceType.class)
-            );
-            allTypes.addLookupListener(this);
-            
-            resultChanged(null);
+    private Lookup.Result getTypesResult() {
+        boolean init = false;
+        synchronized (this) {
+            if (allTypes == null) {
+                allTypes = Lookup.getDefault().lookup(
+                    new Lookup.Template(ServiceType.class)
+                );
+                allTypes.addLookupListener(this);
+                init = true;
+            }
         }
+        if (init) resultChanged(null);
         return allTypes;
     }
     
@@ -221,14 +225,15 @@ final class Services extends ServiceType.Registry implements LookupListener {
      * @param ev event describing the change
      */
     public void resultChanged(LookupEvent ev) {
+        Collection services = allTypes.allInstances();
         synchronized (this) {
             // [Pending] just for ServiceNode before rewriting ServiceNode to use lookup
             current.clear();
-            current.addAll(allTypes.allInstances());
+            current.addAll(services);
             // end
             name2Service.clear();
             fillMap(name2Service);
-            recomputeKinds();
+            recomputeKinds(services);
         }
         supp.firePropertyChange (PROP_KINDS, null, null);
         supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
@@ -515,6 +520,9 @@ final class Services extends ServiceType.Registry implements LookupListener {
 
 /*
 * $Log$
+* Revision 1.48  2001/06/20 18:09:07  jpokorsky
+* #13034 fixed: deadlock in Services during second startup
+*
 * Revision 1.47  2001/06/01 14:04:45  jtulach
 * Lookup SPI moved to openapi
 *
