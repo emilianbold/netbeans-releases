@@ -904,23 +904,26 @@ public class WebAppProxy implements WebApp {
     
     public void write(org.openide.filesystems.FileObject fo) throws java.io.IOException {
         if (webApp!=null) {
-            // trying to use OutputProvider for writing changes
-            org.openide.loaders.DataObject dobj = org.openide.loaders.DataObject.find(fo);
-            if (dobj != null && dobj instanceof WebAppProxy.OutputProvider) {
-                ((WebAppProxy.OutputProvider) dobj).write(this);
-            } else {
+            try {
                 org.openide.filesystems.FileLock lock = fo.lock();
                 try {
                     java.io.OutputStream os = fo.getOutputStream(lock);
                     try {
-                        writing = true;
+                        writing=true;
                         write(os);
                     } finally {
                         os.close();
                     }
-                } finally {
+                } 
+                finally {
                     lock.releaseLock();
                 }
+            } catch (org.openide.filesystems.FileAlreadyLockedException ex) {
+                // trying to use OutputProvider for writing changes
+                org.openide.loaders.DataObject dobj = org.openide.loaders.DataObject.find(fo);
+                if (dobj!=null && dobj instanceof WebAppProxy.OutputProvider)
+                    ((WebAppProxy.OutputProvider)dobj).write(this);
+                else throw ex;
             }
         }
     }    
