@@ -93,6 +93,9 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
         org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
         projectTab = new ProjectsTabOperator();
         projectTab.maximize();
+        
+        projectTab.getProjectRootNode("PerformanceTestData").collapse();
+        
         addClassNameToLookFor("explorer.view");
         setPrintClassNames(true);
         turnOff();
@@ -126,8 +129,8 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
             log("========== Original Dir path =" + originalDir.getPath());
             log("========== Copy Delete Dir path =" + copyDeleteDir.getPath());
 
-//            copyFile(new File (foldersDir, "Test.java"),new File (copyDeleteDir, "Test.java"));
-//            waitNoEvent(1000);
+            copyFile(new File (foldersDir, "Test.java"),new File (copyDeleteDir, "Test.java"));
+            waitNoEvent(1000);
             
             ProjectRootNode projectNode = projectTab.getProjectRootNode("PerformanceTestFoldersData");
             
@@ -150,6 +153,7 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
                 copyFile(files[i], copyFile);
             }
             
+            nodeToBeDeleted.performPopupAction("Refresh Folder");
             nodeToBeDeleted.expand();
             
         }catch(Exception exc){
