@@ -1,4 +1,4 @@
-OpenIDE-Module: org.netbeans.modules.form/1
+OpenIDE-Module: org.netbeans.modules.form/2
 OpenIDE-Module-Name: Form Editor
 OpenIDE-Module-Display-Category: Java
 OpenIDE-Module-Specification-Version: 1.7
