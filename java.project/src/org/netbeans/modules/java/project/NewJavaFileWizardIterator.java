@@ -15,7 +15,11 @@ package org.netbeans.modules.java.project;
 
 import java.awt.Component;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -28,7 +32,6 @@ import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.ErrorManager;
-import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -37,7 +40,7 @@ import org.openide.loaders.DataObject;
 /**
  * Wizard to create a new Java file.
  */
-public class NewJavaFileWizardIterator implements InstantiatingIterator {
+public class NewJavaFileWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
     
@@ -61,7 +64,8 @@ public class NewJavaFileWizardIterator implements InstantiatingIterator {
         Project project = Templates.getProject( wizardDescriptor );
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if ( groups == null || groups.length == 0 ) {
+        assert groups != null : "Cannot return null from Sources.getSourceGroups: " + sources;
+        if (groups.length == 0) {
             groups = sources.getSourceGroups( Sources.TYPE_GENERIC ); 
             return new WizardDescriptor.Panel[] {            
                 Templates.createSimpleTargetChooser( project, groups ),
