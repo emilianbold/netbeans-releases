@@ -37,7 +37,7 @@ public class ImageViewer extends CloneableTopComponent {
     add(scroll, "Center");
   }
 
-  public HelpCtx getHelp() {
+  public HelpCtx getHelpCtx () {
     return new HelpCtx(ImageViewer.class);
   }
 
