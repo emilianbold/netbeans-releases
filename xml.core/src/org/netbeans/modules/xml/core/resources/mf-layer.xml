@@ -22,6 +22,11 @@ Microsystems, Inc. All Rights Reserved.
 
 <filesystem>
 
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     - All files in this section are directly mapped to UI (templates, settings,
+     - menus, ...). It often requires "magical" order handling etc.
+     -->
+
     <!-- register templates -->  
     <folder name="Templates">
         <folder name="XML">
@@ -44,28 +49,12 @@ Microsystems, Inc. All Rights Reserved.
 
             &schema-templates;
             
-<!--            <file name="StyleSheet.xsl" url="templates/StyleSheet.xml.template">
-                <attr name="template" boolvalue="true" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/StyleSheet.html" />
-            </file>-->
-
             <file name="xml_entity.ent" url="templates/xml_entity.ent.template">
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/entObject.gif" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xml_entity.html" />
             </file>
-
-            <!-- until we can bundle DTDs
-            <file name="xhtml.xml" url="templates/xhtml.xml.template">
-                <attr name="template" boolvalue="true" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xhtml.html" />
-            </file>
-            -->
 
             <!-- Order by importance from general ones to specialized ones ! -->
             <attr name="XMLWizard.xml/emptyDTD.dtd" boolvalue="true"/>
@@ -78,64 +67,7 @@ Microsystems, Inc. All Rights Reserved.
 
         </folder> <!-- XML -->
     </folder> <!-- Templates -->
-
-    <!-- register services with Lookup -->
-    <folder name="Services">
-
-        <folder name="Hidden">
-            <file name="org.netbeans-modules-xml-core-cookies.xml">
-                <![CDATA[<?xml version="1.0"?>
-<!DOCTYPE cookies PUBLIC "-//NetBeans//DTD apisupport cookie class list 1.0//EN" "http://www.netbeans.org/dtds/apisupport-cookie-class-list-1_0.dtd">
-<cookies>
-    <class name="org.netbeans.modules.xml.core.cookies.CookieManagerCookie" />
-    <class name="org.netbeans.modules.xml.core.cookies.TreeDocumentCookie" />
-    <class name="org.netbeans.modules.xml.core.cookies.TreeEditorCookie" />
-</cookies>
-]]>
-            </file>
-        </folder> <!-- Hidden -->
-
-        <folder name="Looks">
-            <file name="org-netbeans-modules-xml-core-XMLDefaultLook$Basic.xml">
-                <![CDATA[
-                    <!DOCTYPE Look PUBLIC "-//NetBeans IDE//DTD Looks//EN" "http://www.netbeans.org/dtds/Looks-1_0.dtd" >
-                    <Look name="XML Basic">
-                        <Standalone class="org.netbeans.modules.xml.core.XMLDataObject"/>
-<!--                        <Standalone class="org.openide.nodes.Node"/> <!-  Survive proxy look. -->
-                    </Look>
-                ]]>
-            </file>
-        </folder> <!-- Looks -->
-
-        <!-- Settings -->
-        <file name="org-netbeans-modules-xml-core-settings-CoreSettings.settings" url="CoreSettings.xml">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.settings.Bundle"/>
-        </file>
-        
-        <folder name="MIMEResolver">
-            &schema-resolvers;
-        </folder>
-        
-
-        <!-- register helpset -->
-        <folder name="JavaHelp">
-
-            <file name="org-netbeans-modules-xml-core-docs-helpset.xml">
-                <![CDATA[<?xml version="1.0"?>
-<!DOCTYPE helpsetref PUBLIC
-          "-//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN"
-          "http://www.netbeans.org/dtds/helpsetref-1_0.dtd">
-
-<helpsetref url="nbdocs:/org/netbeans/modules/xml/core/docs/xml.hs"/>
-]]></file>
-        </folder> <!-- JavaHelp -->
-
-    </folder> <!-- Services -->          
-    
-    
-<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->    
-    
-    
+               
     <folder name="UI">
         <folder name="Services">
             <folder name="Editing">
@@ -161,23 +93,23 @@ SystemFileSystem
             <!-- HelpShortcuts -->
             <folder name="HelpShortcuts">
 
-                <file name="org-netbeans-modules-xml-core-docs-mainpage.xml">
-                    <![CDATA[<?xml version="1.0"?>
-<!DOCTYPE helpctx PUBLIC
-          "-//NetBeans//DTD Help Context 1.0//EN"
-          "http://www.netbeans.org/dtds/helpcontext-1_0.dtd">
-
-<helpctx id="org.netbeans.modules.xml.core.docs.HOMEID"/>
-]]>
+                <attr name="org-netbeans-modules-usersguide-sep.instance/org-netbeans-modules-xml-core-docs-mainpage.xml" boolvalue="true"/>
+                <file name="org-netbeans-modules-xml-core-docs-mainpage.xml" url="XMLHelpCtx.xml">
                     &localize-it;
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/blank.gif"/>
                 </file>
-
+                <attr name="org-netbeans-modules-xml-core-docs-mainpage.xml/org-netbeans-modules-usersguide-second-sep.instance" boolvalue="true"/>
+                <attr name="org-netbeans-modules-xml-core-docs-mainpage.xml/org-netbeans-modules-usersguide-lower-sep.instance" boolvalue="true"/>
             </folder> <!-- HelpShortcuts -->
         </folder> <!-- Help -->
     </folder> <!-- Menu -->
+    
 
-
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      - Following files represents system registrations (Lookup or some pool).
+      - Content is not presented directly to user.
+      -->    
+    
     <!-- register actions to action pool -->
     <folder name="Actions">
         <folder name="XML">
@@ -188,14 +120,7 @@ SystemFileSystem
         <!-- Help -->
         <folder name="Help">
 
-            <file name="org-netbeans-modules-xml-core-docs-mainpage.xml">
-                <![CDATA[<?xml version="1.0"?>
-<!DOCTYPE helpctx PUBLIC
-          "-//NetBeans//DTD Help Context 1.0//EN"
-          "http://www.netbeans.org/dtds/helpcontext-1_0.dtd">
-
-<helpctx id="org.netbeans.modules.xml.core.docs.HOMEID"/>
-]]>
+            <file name="org-netbeans-modules-xml-core-docs-mainpage.xml" url="XMLHelpCtx.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif"/>
             </file>
@@ -209,5 +134,36 @@ SystemFileSystem
             <file name="org-netbeans-modules-xml-core-error.xml" url="error-annotation.xml"/>
         </folder>
     </folder>
-    
+
+    <!-- register services with Lookup -->
+    <folder name="Services">
+
+        <folder name="Hidden">            
+            <file name="org.netbeans-modules-xml-core-cookies.xml" url="XMLCookies.xml" />
+        </folder>
+
+        <folder name="Looks">
+            <file name="org-netbeans-modules-xml-core-XMLDefaultLook$Basic.xml" url="XMLLooks.xml"/>
+        </folder>
+
+        <!-- Settings -->
+        <file name="org-netbeans-modules-xml-core-settings-CoreSettings.settings" url="CoreSettings.xml">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.settings.Bundle"/>
+        </file>
+        
+        <folder name="MIMEResolver">
+            &schema-resolvers;
+        </folder>
+        
+        <!-- register helpset -->
+        <folder name="JavaHelp">
+            <!-- Merge after Core IDE Help: -->
+            <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-xml-core-docs-helpset.xml" boolvalue="true"/>      
+            <file name="org-netbeans-modules-xml-core-docs-helpset.xml" url="XMLHelpSetRef.xml"/>
+            <!-- Merge before 3rd party help: -->
+            <attr name="org-netbeans-modules-xml-core-docs-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>            
+        </folder>
+
+    </folder> <!-- Services -->          
+        
 </filesystem>
