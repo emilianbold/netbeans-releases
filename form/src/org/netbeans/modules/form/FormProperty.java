@@ -50,10 +50,10 @@ public abstract class FormProperty extends Node.Property {
 
     // --------------------
     // constants
-    public static final String PROP_VALUE = "propertyValue";
-    public static final String CURRENT_EDITOR = "currentEditor";
-    public static final String PROP_PRE_CODE = "preCode";
-    public static final String PROP_POST_CODE = "postCode";
+    public static final String PROP_VALUE = "propertyValue"; // NOI18N
+    public static final String CURRENT_EDITOR = "currentEditor"; // NOI18N
+    public static final String PROP_PRE_CODE = "preCode"; // NOI18N
+    public static final String PROP_POST_CODE = "postCode"; // NOI18N
 
     // Type of the property in relation to target object ("access type").
     // There are three levels of restriction here:
@@ -103,7 +103,7 @@ public abstract class FormProperty extends Node.Property {
                            String name, Class type,
                            String displayName, String shortDescription) {
         super(type);
-        setValue("changeImmediate", Boolean.FALSE);
+        setValue("changeImmediate", Boolean.FALSE); // NOI18N
         setName(name);
         setDisplayName(displayName);
         setShortDescription(shortDescription);
@@ -113,7 +113,7 @@ public abstract class FormProperty extends Node.Property {
 
     protected FormProperty(FormPropertyContext propertyContext, Class type) {
         super(type);
-        setValue("changeImmediate", Boolean.FALSE);
+        setValue("changeImmediate", Boolean.FALSE); // NOI18N
         setPropertyContext(propertyContext);
     }
 
@@ -122,7 +122,7 @@ public abstract class FormProperty extends Node.Property {
     protected FormProperty(String name, Class type,
                            String displayName, String shortDescription) {
         super(type);
-        setValue("changeImmediate", Boolean.FALSE);
+        setValue("changeImmediate", Boolean.FALSE); // NOI18N
         setName(name);
         setDisplayName(displayName);
         setShortDescription(shortDescription);
@@ -135,7 +135,7 @@ public abstract class FormProperty extends Node.Property {
     // is used first time
     protected FormProperty(Class type) {
         super(type);
-        setValue("changeImmediate", Boolean.FALSE);
+        setValue("changeImmediate", Boolean.FALSE); // NOI18N
         this.propertyContext = FormPropertyContext.EmptyImpl.getInstance();
     }
 
@@ -519,7 +519,7 @@ public abstract class FormProperty extends Node.Property {
             return ed.getJavaInitializationString();
         }
         catch (Exception e) {
-//            if (Boolean.getBoolean("netbeans.debug.exceptions"))
+//            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
             e.printStackTrace();
         }
         return null;
