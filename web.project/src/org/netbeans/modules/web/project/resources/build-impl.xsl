@@ -434,15 +434,26 @@ is divided into following sections:
             </target>
             
             <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-services/webproject3:web-service|/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">
-                <target name="wscompile-init">
-                    <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
-                      <classpath path="${{wscompile.classpath}}"/>
-                    </taskdef>
+                <target name="wscompile-init" depends="init">
+                    <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile"
+                        classpath="${{wscompile.classpath}}"/>
+                    <taskdef name="wsclientuptodate" classname="org.netbeans.modules.websvc.core.ant.WsClientUpToDate" 
+                        classpath="${{wsclientuptodate.classpath}}"/>
 
                     <mkdir dir="${{build.web.dir.real}}/WEB-INF/wsdl"/>
                     <mkdir dir="${{web.docbase.dir}}/WEB-INF/wsdl"/>
                     <mkdir dir="${{build.classes.dir.real}}"/>
                     <mkdir dir="${{build.generated.dir}}/wssrc"/>
+                    
+                    <xsl:for-each select="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">
+                        <xsl:variable name="wsclientname">
+                            <xsl:value-of select="webproject3:web-service-client-name"/>
+                        </xsl:variable>
+
+                        <wsclientuptodate property="wscompile.client.{$wsclientname}.notrequired"
+                            sourcewsdl="${{web.docbase.dir}}/WEB-INF/wsdl/{$wsclientname}.wsdl" 
+                            targetdir="${{build.generated.dir}}/wssrc"/>
+                    </xsl:for-each>
                 </target>
             </xsl:if>
 
@@ -508,7 +519,7 @@ is divided into following sections:
                     </xsl:choose>
                 </xsl:variable>
 
-                <target name="{$wsclientname}_client_wscompile" depends="wscompile-init">
+                <target name="{$wsclientname}_client_wscompile" depends="wscompile-init" unless="wscompile.client.{$wsclientname}.notrequired">
                     <property name="config_target" location="${{web.docbase.dir}}/WEB-INF/wsdl"/>
                     <copy file="${{web.docbase.dir}}/WEB-INF/wsdl/{$wsclientname}-config.xml"
                         tofile="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml" filtering="on">
