@@ -36,7 +36,6 @@ TODO:
         <pathelement location="${emma.dir}/emma_ant.jar"/>
     </path>
     
-    <taskdef resource="emma_ant.properties" classpathref="emma.lib"/>
     
     <property name="coverage.dir" location="coverage"/>
     <property name="coverage.filter" location="coverage.filter"/>
@@ -51,7 +50,12 @@ TODO:
     
     <available file="../nbproject/project.properties" property="do.we.need.to.process.properties.file.for.coverage"/>
     
-    <target name="load-coverage-properties" if="available.coverage.properties">
+    <target name="define-emma-tasks" >
+        <ant dir="${emma.dir}" target="emma" />
+        <taskdef resource="emma_ant.properties" classpathref="emma.lib"/>
+    </target>
+    
+    <target name="load-coverage-properties" depends="define-emma-tasks" if="available.coverage.properties">
         <property file="${coverage.properties}"/>
     </target>
     
@@ -134,6 +138,10 @@ TODO:
                 <html outfile="${coverage.dir}/coverage.html"/>
             </report>
         </emma>
+    </target>
+    
+    <target name="show-coverage-results-nb" if="netbeans.home">
+        <nbbrowse file="${coverage.dir}/coverage.html"/>
     </target>
     
     <target name="coverage" depends="emma,emma-init,emma-instrument,emma-instrument-no-filter,coverage-runtests,emma-report"/>
