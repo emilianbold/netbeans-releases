@@ -143,12 +143,16 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
             return false;
         }
 
-        if (projectNameTextField.getText().trim().length() == 0) {
-            setErrorMessage("MSG_ProvideProjectName"); //NOI18N
-            return false; // Display name not specified
+        String projectLocationPath = projectLocationTextField.getText().trim();
+        f = new File(projectLocationPath);
+        String projectName = projectNameTextField.getText().trim();
+        f = new File(f, projectName);
+        f = PanelProjectLocationVisual.getCanonicalFile(f);
+        if(f == null || !projectName.equals(f.getName())) {
+            settings.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportLocationVisual.class, "MSG_ProvideProjectName"));
+            return false; // Invalid project name
         }
 
-        String projectLocationPath = projectLocationTextField.getText().trim();
         if(projectLocationPath.length() == 0) {
             setErrorMessage("MSG_ProvideProjectFolder"); //NOI18N
             return false;
