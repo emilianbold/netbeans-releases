@@ -107,6 +107,7 @@ public class MakeListOfNBM extends Task {
                         byte array[] = new byte[ (int) inFile.length() ];
                         CRC32 crc = new CRC32();
                         inFileStream.read( array );
+			inFileStream.close();
                         crc.update( array );
 
                         version.addFileWithCrc( inFile.getAbsolutePath().substring((ds.getBasedir().getAbsolutePath() + "/netbeans/").length() ), Long.toString( crc.getValue() ) );
