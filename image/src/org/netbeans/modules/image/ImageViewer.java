@@ -46,6 +46,7 @@ import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Mode;
 import org.openide.windows.Workspace;
 import org.openide.util.Utilities;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -92,7 +93,7 @@ public class ImageViewer extends CloneableTopComponent {
      * @param obj the data object holding the image
      */
     public ImageViewer(ImageDataObject obj) {
-        super(obj);
+        super(obj);        
         initialize(obj);
     }
 
@@ -155,7 +156,7 @@ public class ImageViewer extends CloneableTopComponent {
             
         };
 
-        
+        getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACS_ImageViewer"));        
         storedImage.setImageObserver(panel);
         panel.setPreferredSize(new Dimension(storedImage.getIconWidth(), storedImage.getIconHeight() ));
         JScrollPane scroll = new JScrollPane(panel);
@@ -180,10 +181,21 @@ public class ImageViewer extends CloneableTopComponent {
     private JToolBar createToolBar() {
         // Definition of toolbar.
         JToolBar toolBar = new JToolBar();
-        
-        toolBar.add(SystemAction.get(ZoomOutAction.class));
+        JButton inButton;
+        JButton outButton;
+        toolBar.setName(NbBundle.getBundle(ImageViewer.class).getString("ACSN_Toolbar"));
+        toolBar.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACSD_Toolbar"));
+        outButton = new JButton(SystemAction.get(ZoomOutAction.class));
+        outButton.setMnemonic(NbBundle.getBundle(ImageViewer.class).getString("ACS_Out_BTN_Mnem").charAt(0));
+        outButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACSD_Out_BTN"));
+        outButton.setLabel("");
+        toolBar.add(outButton);       
         toolBar.addSeparator(new Dimension(2,2));
-        toolBar.add(SystemAction.get(ZoomInAction.class));
+        inButton = new JButton(SystemAction.get(ZoomInAction.class));
+        inButton.setMnemonic(NbBundle.getBundle(ImageViewer.class).getString("ACS_In_BTN_Mnem").charAt(0));
+        inButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACSD_In_BTN"));
+        inButton.setLabel("");
+        toolBar.add(inButton);
         toolBar.addSeparator(new Dimension(11,2));
         toolBar.add(getZoomButton(1,1));
         toolBar.addSeparator(new Dimension(11,2));
@@ -387,7 +399,7 @@ public class ImageViewer extends CloneableTopComponent {
     private JButton getZoomButton(final int xf, final int yf) {
         // PENDING buttons should have their own icons.
         JButton button = new JButton(""+xf+":"+yf); // NOI18N
-
+        button.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACS_Zoom_BTN"));
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 customZoom(xf, yf);
@@ -401,7 +413,8 @@ public class ImageViewer extends CloneableTopComponent {
     private JButton getGridButton() {
         // PENDING buttons should have their own icons.
         final JButton button = new JButton(" # "); // NOI18N
-
+        button.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACS_Grid_BTN"));
+        button.setMnemonic(NbBundle.getBundle(ImageViewer.class).getString("ACS_Grid_BTN_Mnem").charAt(0));
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 showGrid = !showGrid;

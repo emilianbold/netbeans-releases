@@ -32,7 +32,9 @@ public class CustomZoomPanel extends JPanel {
     /** Creates new form CustomZoomPane */
     public CustomZoomPanel() {
         initComponents();
+        initAccessibility();
     }
+    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -85,6 +87,13 @@ public class CustomZoomPanel extends JPanel {
         add(decreaseText, gridBagConstraints1);
         
     }//GEN-END:initComponents
+    
+    private void initAccessibility(){
+        getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(CustomZoomPanel.class).getString("ACSD_CustomZoomPanel"));
+        enlargeText.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(CustomZoomPanel.class).getString("ACS_EnlargeText"));
+        decreaseText.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(CustomZoomPanel.class).getString("ACS_DecreaseText"));
+        
+    }
     
     public int getEnlargeFactor() {
         return Integer.parseInt(enlargeText.getText());
