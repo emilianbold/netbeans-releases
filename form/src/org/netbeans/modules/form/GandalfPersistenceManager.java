@@ -134,7 +134,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private boolean codeFlow = true; // we can save/load either code flow
                                      // or static code structure
 
-//    private String formInfoName; // name of FormInfo class loaded from the form file
     private String formatVersion; // format version for saving the form file
 
 
@@ -638,11 +637,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
             LayoutSupportManager layoutSupport =
                                    visualContainer.getLayoutSupport();
             boolean layoutInitialized = false;
+            boolean unknownLayout = layoutNode != null && convIndex < 0
+                                    && layoutCodeNode == null;
             Throwable layoutEx = null;
 
-            if (convIndex > -1 || layoutCodeNode != null)
+            
+            if (!unknownLayout)
                 try {
-                    layoutInitialized = layoutSupport.initializeLayoutDelegate(true);
+                    layoutInitialized =
+                        layoutSupport.initializeLayoutDelegate(true);
                 }
                 catch (Exception ex) {
                     layoutEx = ex;
@@ -652,21 +655,37 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 }
 
             if (!layoutInitialized) {
-                // initialization failed or no LayoutSupportDelegate found
-                if (layoutEx != null) {
+                if (layoutEx != null) { // no LayoutSupportDelegate found
+                    org.w3c.dom.Node errNode;
+                    if (layoutNode != null)
+                        errNode = layoutNode;
+                    else if (layoutCodeNode != null)
+                        errNode = layoutCodeNode;
+                    else
+                        errNode = node;
+
                     String msg = createLoadingErrorMessage(
                         FormUtils.getBundleString("MSG_ERR_LayoutInitFailed"), // NOI18N
-                        layoutCodeNode != null ? layoutCodeNode : layoutNode);
+                        errNode);
                     ErrorManager.getDefault().annotate(layoutEx, msg);
                     nonfatalErrors.add(layoutEx);
                 }
-                else {
-                    PersistenceException ex = new PersistenceException(
-                                              "No layout support found"); // NOI18N
+                else { // layout initialization failed
+                    org.w3c.dom.Node errNode;
+                    if (layoutNode != null)
+                        errNode = layoutNode;
+                    else if (layoutCodeNode != null)
+                        errNode = layoutCodeNode;
+                    else
+                        errNode = node;
+
                     String msg = createLoadingErrorMessage(
                         FormUtils.getBundleString(
                             "MSG_ERR_NoLayoutSupportFound"), // NOI18N
-                        layoutCodeNode != null ? layoutCodeNode : layoutNode);
+                        errNode);
+
+                    PersistenceException ex = new PersistenceException(
+                                              "No layout support found"); // NOI18N
                     ErrorManager.getDefault().annotate(
                         ex, ErrorManager.ERROR, null, msg, null, null);
                     nonfatalErrors.add(ex);
@@ -1048,9 +1067,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     getAddWithConstrMethod(),
                     new CodeExpression[] { compExp,
                                            codeStructure.createExpression(
-                                                           String.class,
-                                                           strValue,
-                                                           strValue) });
+                                               Integer.TYPE,
+                                               Integer.valueOf(strValue),
+                                               strValue) });
             }
         }
 
@@ -2796,8 +2815,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
         }
 
-        // 1.a synthetic properties - only for RADVisualFormContainer
-        if (component instanceof RADVisualFormContainer) {
+        // 1. Synthetic properties - only for top frame or dialog (ugly, but
+        // necessary for format compatibility)
+        if (component == formModel.getTopRADComponent()
+            && (java.awt.Window.class.isAssignableFrom(component.getBeanClass())
+                || javax.swing.JInternalFrame.class.isAssignableFrom(
+                                             component.getBeanClass())))
+        {
             buf.append(indent); addElementOpen(buf, XML_SYNTHETIC_PROPERTIES);
             saveSyntheticProperties(component, buf, indent + ONE_INDENT);
             buf.append(indent); addElementClose(buf, XML_SYNTHETIC_PROPERTIES);
@@ -3058,6 +3082,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
         Node.Property[] props = component.getSyntheticProperties();
         for (int i=0; i < props.length; i++) {
             Node.Property prop = props[i];
+
+            if (!prop.canWrite())
+                continue; // don't save read-only properties
 
             Object value = null;
             try {
