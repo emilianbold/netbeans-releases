@@ -33,24 +33,19 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
     public static final String DEFAULT_PLATFORM_ANT_NAME = ".default";           //NOI18N
 
     private ClassPath standardLibs;
-    DataObject  def;
     
-    static JavaPlatform create(FileObject f, String srcFolder, String javadocFolder) {
+    static JavaPlatform create(String srcFolder, String javadocFolder) {
         Map platformProperties = new HashMap ();
         String javaHome = System.getProperty("jdk.home");       //NOI18N
         platformProperties.put (PLAT_PROP_PLATFORM_HOME,javaHome);
         platformProperties.put (PLAT_PROP_PLATFORM_SOURCES, getSources (javaHome, srcFolder));
         platformProperties.put (PLAT_PROP_PLATFORM_JAVADOC,javadocFolder);
-        return new DefaultPlatformImpl(f, platformProperties, new HashMap(System.getProperties()));
+        return new DefaultPlatformImpl(platformProperties, new HashMap(System.getProperties()));
     }
     
-    private DefaultPlatformImpl(FileObject f, Map platformProperties, Map systemProperties) {
+    private DefaultPlatformImpl(Map platformProperties, Map systemProperties) {
         super(NbBundle.getMessage(DefaultPlatformImpl.class,"TXT_DefaultPlatform"),
               DEFAULT_PLATFORM_ANT_NAME, platformProperties, systemProperties);
-        try {
-            def = DataObject.find(f);
-        } catch (IOException ex) {
-        }
     }
 
     public void setAntName(String antName) {

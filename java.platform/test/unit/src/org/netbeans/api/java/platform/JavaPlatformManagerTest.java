@@ -184,7 +184,7 @@ public class JavaPlatformManagerTest extends NbTestCase {
     public static class TestJavaPlatformProvider implements JavaPlatformProvider {
         
         private ArrayList listeners = new ArrayList ();
-        private HashSet platforms = new HashSet ();
+        private List platforms = new ArrayList ();
         
         
         static TestJavaPlatformProvider getDefault () {
@@ -226,6 +226,13 @@ public class JavaPlatformManagerTest extends NbTestCase {
             }
         }
                         
+        public JavaPlatform getDefaultPlatform() {
+            if (platforms.size()>0)
+                return (JavaPlatform) platforms.get(0);
+            else
+                return null;
+        }
+        
     }
     
 }

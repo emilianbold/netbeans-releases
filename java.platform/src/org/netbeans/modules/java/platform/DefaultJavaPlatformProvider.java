@@ -22,6 +22,7 @@ import java.util.*;
 import java.io.IOException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.openide.util.Lookup;
 
 public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileChangeListener {
 
@@ -72,6 +73,11 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
         }
         return (JavaPlatform[])platforms.toArray(new JavaPlatform[platforms.size()]);
     }
+    
+    public JavaPlatform getDefaultPlatform() {
+        return (JavaPlatform)Lookup.getDefault().lookup(JavaPlatform.class);
+    }
+    
 
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
         if (this.listeners == null) {
@@ -122,5 +128,6 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
         while (it.hasNext()) {
             ((PropertyChangeListener)it.next()).propertyChange(event);
         }
-    }
+    }       
+    
 }

@@ -28,6 +28,7 @@ import junit.framework.TestSuite;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
+import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -39,6 +40,8 @@ import org.openide.filesystems.URLMapper;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
+import org.netbeans.core.filesystems.ArchiveURLMapper;
 
 // XXX needs to test listening as well
 
@@ -47,20 +50,21 @@ import org.openide.util.Utilities;
  *
  * @author  David Konecny
  */
-public class JavadocForBinaryQueryPlatformImplTest extends NbTestCase {
+public class JavadocForBinaryQueryPlatformImplTest extends NbTestCase implements Lookup.Provider {
     
     
     public JavadocForBinaryQueryPlatformImplTest(java.lang.String testName) {
         super(testName);
+        TestUtil.setLookup (Lookups.proxy(this));
     }
     
     private FileSystem a, b;
+    private Lookup lookup;
     
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", getWorkDirPath()); 
         super.setUp();
-        clearWorkDir();
-        Lookup.getDefault().lookup(ModuleInfo.class);
+        clearWorkDir();                
         a = mountDiskRoot(getBaseDir());
     }
     
@@ -126,5 +130,16 @@ public class JavadocForBinaryQueryPlatformImplTest extends NbTestCase {
         assertEquals(1, urls.length);
         assertEquals(javadocFile.toURI().toURL(), urls[0]);
     }
+    
+    public synchronized Lookup getLookup() {
+        if (lookup == null) {
+            lookup = Lookups.fixed(new Object[] {
+                new JavaPlatformProviderImpl (),
+                new ArchiveURLMapper(),
+                new JavadocForBinaryQueryPlatformImpl ()
+            });
+        }
+        return lookup;
+    }        
     
 }

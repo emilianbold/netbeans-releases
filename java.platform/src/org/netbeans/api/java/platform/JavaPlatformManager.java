@@ -38,6 +38,7 @@ public final class JavaPlatformManager {
 
     private Lookup.Result providers;
     private Collection lastProviders = Collections.EMPTY_SET;
+    private boolean providersValid = false;
     private PropertyChangeListener pListener;
     private Collection cachedPlatforms;
 
@@ -55,40 +56,30 @@ public final class JavaPlatformManager {
         return instance;
     }
     
+    /**
+     * Returns default platform. The platform the IDE is running on.
+     * @return JavaPlatform or null in the case when the default platform can
+     * not be found (e.g. the J2SEPlatform module is not installed).
+     */
     public JavaPlatform getDefaultPlatform() {
-        return (JavaPlatform)Lookup.getDefault().lookup(JavaPlatform.class);
+        Collection instances = this.getProviders ();
+        for (Iterator it = instances.iterator(); it.hasNext();) {
+            JavaPlatformProvider provider = (JavaPlatformProvider) it.next();
+            JavaPlatform defaultPlatform = provider.getDefaultPlatform ();
+            if (defaultPlatform!=null) {
+                return defaultPlatform;
+            }
+        }
+        return null;
     }
     
     /** Gets an array of JavaPlatfrom objects.
      * @return the array of java platform definitions.
      */
     public synchronized JavaPlatform[] getInstalledPlatforms() {
-        if (cachedPlatforms == null) {
-            if (this.providers == null) {
-                this.providers = Lookup.getDefault().lookup(new Lookup.Template(JavaPlatformProvider.class));
-                this.providers.addLookupListener (new LookupListener () {
-                    public void resultChanged(LookupEvent ev) {
-                        resetCache ();
-                    }
-                });
-            }
-            if (this.pListener == null ) {
-                this.pListener = new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        JavaPlatformManager.this.resetCache();
-                    }
-                };
-            }
-            Collection instances = this.providers.allInstances();
-            Collection toAdd = new HashSet (instances);
-            toAdd.removeAll (this.lastProviders);
-            Collection toRemove = new HashSet (this.lastProviders);
-            toRemove.removeAll (instances);
+        if (cachedPlatforms == null) {            
+            Collection instances = this.getProviders();
             cachedPlatforms = new HashSet ();
-            for (Iterator it = toRemove.iterator(); it.hasNext();) {
-                JavaPlatformProvider provider = (JavaPlatformProvider) it.next ();
-                provider.removePropertyChangeListener (pListener);
-            }
             for (Iterator it = instances.iterator(); it.hasNext(); ) {
                 JavaPlatformProvider provider = (JavaPlatformProvider) it.next ();
                 JavaPlatform[] platforms = provider.getInstalledPlatforms();
@@ -96,11 +87,6 @@ public final class JavaPlatformManager {
                     cachedPlatforms.add (platforms[i]);
                 }
             }
-            for (Iterator it = toAdd.iterator(); it.hasNext();) {
-                JavaPlatformProvider provider = (JavaPlatformProvider) it.next ();
-                provider.addPropertyChangeListener (pListener);
-            }
-            this.lastProviders = instances;
         }
         return (JavaPlatform[]) cachedPlatforms.toArray(new JavaPlatform[cachedPlatforms.size()]);
     }
@@ -133,10 +119,46 @@ public final class JavaPlatformManager {
         return ((name == null || name.equalsIgnoreCase (platformSpec.getName())) &&
             (version == null || version.equals (platformSpec.getVersion())));
     }
+    
+    private synchronized Collection getProviders () {
+        if (!this.providersValid) {            
+            if (this.providers == null) {
+                this.providers = Lookup.getDefault().lookup(new Lookup.Template(JavaPlatformProvider.class));
+                this.providers.addLookupListener (new LookupListener () {
+                    public void resultChanged(LookupEvent ev) {
+                        resetCache (true);
+                    }});
+            }
+            if (this.pListener == null ) {
+                this.pListener = new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        JavaPlatformManager.this.resetCache (false);
+                    }
+                };
+            }
+            Collection instances = this.providers.allInstances();
+            Collection toAdd = new HashSet (instances);
+            toAdd.removeAll (this.lastProviders);
+            Collection toRemove = new HashSet (this.lastProviders);
+            toRemove.removeAll (instances);
+            for (Iterator it = toRemove.iterator(); it.hasNext();) {
+                JavaPlatformProvider provider = (JavaPlatformProvider) it.next ();
+                provider.removePropertyChangeListener (pListener);
+            }
+            for (Iterator it = toAdd.iterator(); it.hasNext();) {
+                JavaPlatformProvider provider = (JavaPlatformProvider) it.next ();
+                provider.addPropertyChangeListener (pListener);
+            }
+            this.lastProviders = instances;                        
+            providersValid = true;
+        }
+        return this.lastProviders;        
+    }
 
 
-    private synchronized void resetCache () {
+    private synchronized void resetCache (boolean resetProviders) {
         JavaPlatformManager.this.cachedPlatforms = null;
+        this.providersValid &= !resetProviders;
     }
 
 }

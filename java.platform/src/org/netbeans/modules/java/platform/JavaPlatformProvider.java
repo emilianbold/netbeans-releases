@@ -21,6 +21,8 @@ public interface JavaPlatformProvider {
     public static final String PROP_INSTALLED_PLATFORMS = "installedPlatforms"; //NOI18N
 
     public JavaPlatform [] getInstalledPlatforms ();
+    
+    public JavaPlatform getDefaultPlatform ();
 
     public void addPropertyChangeListener (PropertyChangeListener listener);
 

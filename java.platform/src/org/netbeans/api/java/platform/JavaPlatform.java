@@ -128,7 +128,7 @@ public abstract class JavaPlatform {
      * @return the default platform.
      */
     public static JavaPlatform getDefault() {
-        return (JavaPlatform)Lookup.getDefault().lookup(JavaPlatform.class);
+        return JavaPlatformManager.getDefault().getDefaultPlatform();
     }
 
 

@@ -27,7 +27,9 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.core.filesystems.ArchiveURLMapper;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.JavaPlatformProviderImpl;
 import org.netbeans.modules.project.libraries.DefaultLibraryImplementation;
 import org.netbeans.modules.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -40,6 +42,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 // XXX needs to test listening as well
 
@@ -48,11 +51,14 @@ import org.openide.util.Utilities;
  *
  * @author  David Konecny
  */
-public class JavadocForBinaryQueryLibraryImplTest extends NbTestCase {
+public class JavadocForBinaryQueryLibraryImplTest extends NbTestCase implements Lookup.Provider {
+    
+    private Lookup lookup;
     
     
     public JavadocForBinaryQueryLibraryImplTest(java.lang.String testName) {
         super(testName);
+        TestUtil.setLookup(Lookups.proxy(this));
     }
     
     private String getBase() throws Exception {
@@ -68,10 +74,7 @@ public class JavadocForBinaryQueryLibraryImplTest extends NbTestCase {
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", getWorkDirPath()); 
         super.setUp();
-        clearWorkDir();
-        TestUtil.setLookup(new Object[] {
-            new LibraryProviderImpl()
-        }, JavadocForBinaryQueryLibraryImpl.class.getClassLoader());
+        clearWorkDir();        
     }
     
     protected void tearDown() throws Exception {
@@ -183,5 +186,19 @@ public class JavadocForBinaryQueryLibraryImplTest extends NbTestCase {
         assertEquals(1, urls.length);
         assertEquals(base+"library3/javadoc3/", urls[0].toExternalForm());
     }
+    
+    public synchronized Lookup getLookup() {
+        if (this.lookup == null) {
+            this.lookup = Lookups.fixed (
+                new Object[] {
+                    new LibraryProviderImpl(),
+                    new JavaPlatformProviderImpl (),
+                    new ArchiveURLMapper (),
+                    new JavadocForBinaryQueryLibraryImpl(),            
+                });
+        }
+        return this.lookup;
+    }    
+    
     
 }

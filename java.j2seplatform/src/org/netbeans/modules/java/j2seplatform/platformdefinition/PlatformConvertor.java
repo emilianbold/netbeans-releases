@@ -119,7 +119,7 @@ implements Environment.Provider, InstanceCookie.Origin, InstanceCookie.Of,
         if (handler.isDefault) {
             String sourceFolder = handler.properties == null ? null : (String) handler.properties.get ("platform.src");
             String javadocFolder = handler.properties == null ? null : (String) handler.properties.get ("platform.javadoc");
-            p = DefaultPlatformImpl.create(holder.getPrimaryFile(),sourceFolder,javadocFolder);
+            p = DefaultPlatformImpl.create(sourceFolder,javadocFolder);
             defaultPlatform = true;
         } else {
             p = new J2SEPlatformImpl(handler.name,handler.properties, handler.sysProperties);
