@@ -191,9 +191,11 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
         this.x = screen.x + ((screen.width / 2) - (popupDim.width / 2));
         this.y = screen.x + ((screen.height / 2) - (popupDim.height / 2));
         // Set initial selection if there are at least two items in table
-        if ((pTable.getRowCount() > 1) && (pTable.getColumnCount() > 0)) {
-            changeTableSelection(1, 0);
-        }
+        int cols = pTable.getColumnCount();
+        int rows = pTable.getRowCount();
+        assert cols > 0 : "There aren't any columns in the KeyboardPopupSwitcher's table";
+        assert rows > 0 : "There aren't any rows in the KeyboardPopupSwitcher's table";
+        changeTableSelection((rows > 1) ? 1 : 0, 0);
     }
     
     private void showPopup() {
