@@ -358,6 +358,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
         stopEditing();
         PropertiesTableModel.StringPair sp =
             (PropertiesTableModel.StringPair)theTable.getModel().getValueAt(rowSelections.getMinSelectionIndex(), 0);
+        if(sp.getValue()==null) return; // dont't remove elemnt with key == null ( only case -> empty file with comment)
         NotifyDescriptor.Confirmation msg = new NotifyDescriptor.Confirmation(
                                                 java.text.MessageFormat.format(
                                                     NbBundle.getBundle(BundleEditPanel.class).getString("MSG_DeleteKeyQuestion"),
