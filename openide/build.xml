@@ -29,6 +29,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <taskdef name="preprocess" classname="org.netbeans.nbbuild.Preprocess" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="postprocess" classname="org.netbeans.nbbuild.Postprocess" classpath="../nbbuild/nbantext.jar"/>
+  <taskdef name="patchsuperclass" classname="org.netbeans.nbbuild.NbPatchSuperClass" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks" classpath="../nbbuild/nbantext.jar:${binroot}/core/release/lib/ext/regexp.jar"/>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
@@ -84,52 +85,52 @@ Microsystems, Inc. All Rights Reserved.
 -->      
     </javac>
   </target>
-    
-  <target name="compile" depends="init-14,13javac-workaround,compile-regular,compile-preprocessed,compile-14"
-          description="Compile all source files but do not package them."/>
   
-  <target name="compile-preprocessed" depends="preprocess" >
-    <javac srcdir="compatkit-work" destdir="compatkit-work" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+  <target name="compile-compat" depends="compile-regular">
+    <javac srcdir="compat/src" destdir="compat/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <bootclasspath>
         <!-- XXX not nice to use undocumented property here: -->
         <pathelement path="${sun.boot.class.path}"/>
         <pathelement location="openide-13javac-workaround.jar"/>
       </bootclasspath>
       <classpath>
-        <pathelement location="src"/>
-        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
+<!--        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>        
         <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
+-->
+        <pathelement location="src" />
       </classpath>
     </javac>
-    <postprocess file="compatkit-work/org/openide/util/actions/SystemAction.class"
-                 old="g3t1c0n" new="getIcon"
-                 min="0" max="1"/>
-    <postprocess file="compatkit-work/org/openide/filesystems/AbstractFileSystem.class"
-                 old="r3fr3shR00t" new="refreshRoot"
-                 min="0" max="1"/>
   </target>
+  
+    
+  <target name="compile" depends="init-14,13javac-workaround,compile-regular,compile-14,patchsuper"
+          description="Compile all source files but do not package them."/>
+  
 
-  <target name="preprocess">
-    <mkdir dir="compatkit-work"/>
-    <preprocess srcdir="src" destdir="compatkit-work">
-      <switch name="compat" on="true"/>
-      <!-- For efficiency and clarity and safety, we explicitly -->
-      <!-- list all files known to need preprocessing. -->
-      <include name="org/openide/loaders/DataLoaderPool.java"/>
-      <include name="org/openide/loaders/MultiDataObject.java"/>
-      <include name="org/openide/nodes/AbstractNode.java"/>
-      <include name="org/openide/compiler/CompilerGroup.java"/>
-      <include name="org/openide/compiler/ExternalCompiler.java"/>
-      <include name="org/openide/util/actions/SystemAction.java"/>
-      <include name="org/openide/filesystems/LocalFileSystem.java"/>
-      <include name="org/openide/filesystems/JarFileSystem.java"/>
-      <include name="org/openide/filesystems/AbstractFileSystem.java"/>
-      <include name="org/openide/filesystems/Repository.java"/>
-      <include name="org/openide/explorer/propertysheet/PropertyDialogManager.java"/>
-      <include name="org/openide/explorer/propertysheet/SetDefaultValueAction.java"/>
-      <include name="org/openide/awt/Toolbar.java"/>
-      <include name="org/openide/explorer/view/BeanTreeView.java"/>
-    </preprocess>
+  <target name="patchsuper" depends="compile-compat" >
+    <ant antfile="../core/build.xml" dir="../core" target="boot" />
+  
+    <patchsuperclass basedir="src" patchlibrary="../core/netbeans/lib/ext/boot.jar" >
+	    <patch class="org/openide/nodes/AbstractNode" super="org/openide/nodes/AbstractNodePatch" /> 
+	    <patch class="org/openide/explorer/view/BeanTreeView" super="org/openide/explorer/view/BeanTreeViewPatch" /> 
+	    <patch class="org/openide/loaders/MultiDataObject" super="org/openide/loaders/MultiDataObjectPatch" /> 
+	    <patch class="org/openide/compiler/ExternalCompiler" super="org/openide/compiler/ExternalCompilerPatch" /> 
+	    <patch class="org/openide/util/actions/SystemAction" super="org/openide/util/actions/SystemActionPatch" /> 
+	    <patch class="org/openide/filesystems/Repository" super="org/openide/filesystems/RepositoryPatch" /> 
+	    <patch class="org/openide/filesystems/AbstractFileSystem" super="org/openide/filesystems/AbstractFileSystemPatch" /> 
+	    <patch class="org/openide/filesystems/LocalFileSystem" super="org/openide/filesystems/LocalJarFSPatch" /> 
+	    <patch class="org/openide/filesystems/JarFileSystem" super="org/openide/filesystems/LocalJarFSPatch" /> 
+            <patch class="org/openide/awt/Toolbar" super="org/openide/awt/ToolbarPatch" />
+            
+            <!-- no super change, just be public -->
+
+	    <patch class="org/openide/explorer/propertysheet/SetDefaultValueAction"  /> 
+	    <patch class="org/openide/loaders/DataLoaderPool$$FolderLoader"  /> 
+	    <patch class="org/openide/loaders/DataLoaderPool$$InstanceLoader"  /> 
+	    <patch class="org/openide/loaders/DataLoaderPool$$DefaultLoader"  /> 
+	    <patch class="org/openide/loaders/DataLoaderPool$$ShadowLoader"  /> 
+
+    </patchsuperclass>
   </target>
 
   <target name="13javac-workaround">
@@ -188,7 +189,7 @@ Microsystems, Inc. All Rights Reserved.
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
   </target>
   
-  <target name="jars" depends="compile,13javac-workaround,vers-prep" description="Create JAR files.">
+  <target name="jars" depends="compile,13javac-workaround,vers-prep,patchsuper" description="Create JAR files.">
     <mkdir dir="netbeans/lib"/>
     <filter token="Class-Path" value="Class-Path"/>
     <filter token="OpenIDE-Module" value="OpenIDE-Module"/>
@@ -218,13 +219,14 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Create binary compatibility kit. NOBODY should compile against it unless they -->
     <!-- are trying to make their code obsolete! -->
-    <mkdir dir="netbeans/lib/patches"/>
+    <mkdir dir="netbeans/lib/ext"/>
     <!-- Use the same manifest to ensure that packages are defined correctly. -->
     <filter token="Class-Path" value="X-Commented-Out-Class-Path"/>
     <filter token="OpenIDE-Module" value="X-Commented-Out-OpenIDE-Module"/>
     <copy file="manifest.mf" tofile="manifest-compat-subst.mf" filtering="on"/>
-    <jar jarfile="netbeans/lib/patches/openide-compat.jar"
-         basedir="compatkit-work"
+    
+    <jar jarfile="netbeans/lib/openide-compat.jar"
+         basedir="compat/src"
          manifest="manifest-compat-subst.mf"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
@@ -301,16 +303,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- It also needs regexp.jar: -->
     <copy file="${binroot}/core/release/lib/ext/regexp.jar" tofile="standalone/regexp.jar"/>
     
-    <!-- openide-compat.jar not really needed for standalone users:
-    <mkdir dir="netbeans/lib/patches"/>
-    <filter token="Class-Path" value="X-Commented-Out-Class-Path"/>
-    <copy file="manifest.mf" tofile="manifest-compat-subst.mf" filtering="on"/>
-    <jar jarfile="netbeans/lib/patches/openide-compat.jar"
-         basedir="compatkit-work"
-         manifest="manifest-compat-subst.mf"
-	 excludesfile="../nbbuild/standard-jar-excludes.txt"
-	 compress="false"/>
-    -->
   </target>
 
   <target name="netbeans" depends="jars" description="Build everything needed for inclusion in the IDE.">
@@ -875,7 +867,6 @@ Set jmf.home to the location of your JMF installation to continue."/>
     <delete file="OpenAPIs.tar.bz2"/>
     <delete file="nb-api-tutorial.zip"/>
     <delete dir="examplemodules"/>
-    <delete dir="compatkit-work"/>
     <delete dir="standalone"/>
     <delete dir="Info"/>
     <delete file="openide.nbm"/>
