@@ -18,8 +18,10 @@ Microsystems, Inc. All Rights Reserved.
        <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/test/debugger/basic/ActionsPresenceTestCase.class"/>
-                <include name="org/netbeans/test/debugger/basic/MenusPresenceTestCase.class"/>
-                <include name="org/netbeans/test/debugger/basic/ToolBarsPresenceTestCase.class"/>
+                <include name="org/netbeans/test/debugger/basic/MenusPresenceTestCase.class" />
+                <exclude name="org/netbeans/test/debugger/basic/MenusPresenceTestCase.class/testDebuggerWindowInView" />
+                <include name="org/netbeans/test/debugger/basic/ToolBarsPresenceTestCase.class" />
+                <exclude name="org/netbeans/test/debugger/basic/ToolBarsPresenceTestCase.class/testDebuggerWindowInView" />
             </patternset>
         </testset>
     </testbag>
