@@ -62,6 +62,7 @@ public class FormDataObject extends JavaDataObject {
 //--------------------------------------------------------------------
 // Constructors
 
+static final long serialVersionUID =-975322003627854168L;
   public FormDataObject (FileObject ffo, FileObject jfo, FormDataLoader loader) throws DataObjectExistsException {
     super(jfo, loader);
     formEntry = (FileEntry)registerEntry (ffo);
@@ -136,6 +137,8 @@ public class FormDataObject extends JavaDataObject {
 
 /*
  * Log
+ *  21   Gandalf   1.20        8/10/99  Ian Formanek    Generated Serial Version
+ *       UID
  *  20   Gandalf   1.19        7/23/99  Ian Formanek    Fixed Bug 2145 - 
  *       Openning form throws exception and form is not opened. Occurs after 
  *       some time  Bug 2673 - NullPointerException : choose from File menu New 

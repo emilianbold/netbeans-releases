@@ -439,6 +439,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   }
   
   static class RADDataFlavor extends DataFlavor {
+static final long serialVersionUID =3851021533468196849L;
     RADDataFlavor (Class representationClass, String name) {
       super (representationClass, name);
     }
@@ -676,6 +677,8 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  34   Gandalf   1.33        8/10/99  Ian Formanek    Generated Serial Version
+ *       UID
  *  33   Gandalf   1.32        8/6/99   Ian Formanek    Pasting InstanceCookie
  *  32   Gandalf   1.31        8/1/99   Ian Formanek    NodeCustomizer and 
  *       FormAwareEditor employed in getCustomizer

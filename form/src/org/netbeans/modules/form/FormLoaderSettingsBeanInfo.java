@@ -150,6 +150,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
   /** Property editor for variables modifiers.
   */
   final public static class FieldModifierPropertyEditor extends org.openide.explorer.propertysheet.editors.ModifierEditor {
+static final long serialVersionUID =7628317154007139777L;
     /** Construct new editor with mask for fields. */
     public FieldModifierPropertyEditor() {
       super(Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE | Modifier.STATIC |
@@ -232,6 +233,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  14   Gandalf   1.13        8/10/99  Ian Formanek    Generated Serial Version
+ *       UID
  *  13   Gandalf   1.12        8/1/99   Ian Formanek    Fixed last change
  *  12   Gandalf   1.11        8/1/99   Ian Formanek    Output Details property 
  *       added

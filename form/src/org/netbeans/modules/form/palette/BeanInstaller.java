@@ -499,6 +499,7 @@ public final class BeanInstaller extends Object {
   static class PaletteSelector extends JPanel {
     private JList list;
 
+static final long serialVersionUID =936459317386043582L;
     /** Creates a new ExceptionBox for given exception descriptor. */
     public PaletteSelector() {
       super(null);
@@ -546,6 +547,7 @@ public final class BeanInstaller extends Object {
   /** dialog which allows to select found beans */
   public static class BeanSelector extends JPanel {
     private JList list;
+static final long serialVersionUID =-6038414545631774041L;
     /** Creates a new ExceptionBox for given exception descriptor. */
     public BeanSelector(LinkedList fileObjects) {
       super(null);
@@ -592,6 +594,7 @@ public final class BeanInstaller extends Object {
   } 
   
   static class FileObjectRenderer extends JLabel implements ListCellRenderer {
+static final long serialVersionUID =832555965217675765L;
     /** Creates a new NetbeansListCellRenderer */
     public FileObjectRenderer() {
       setOpaque(true);
@@ -625,6 +628,8 @@ public final class BeanInstaller extends Object {
 
 /*
  * Log
+ *  15   Gandalf   1.14        8/10/99  Ian Formanek    Generated Serial Version
+ *       UID
  *  14   Gandalf   1.13        8/9/99   Ian Formanek    Fixed bug which cused 
  *       newly installed beans not to be visible in the palette
  *  13   Gandalf   1.12        7/25/99  Ian Formanek    Fixed bug 2582 - Beans 

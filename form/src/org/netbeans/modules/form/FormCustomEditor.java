@@ -41,6 +41,7 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
 // -----------------------------------------------------------------------------
 // Constructor
 
+static final long serialVersionUID =-5566324092702416875L;
   public FormCustomEditor (FormPropertyEditor editor) {
     this.editor = editor;
     setBorder (new EmptyBorder (5, 5, 5, 5));
@@ -162,6 +163,8 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
 
 /*
  * Log
+ *  12   Gandalf   1.11        8/10/99  Ian Formanek    Generated Serial Version
+ *       UID
  *  11   Gandalf   1.10        8/1/99   Ian Formanek    NodePropertyEditor 
  *       employed
  *  10   Gandalf   1.9         8/1/99   Ian Formanek    

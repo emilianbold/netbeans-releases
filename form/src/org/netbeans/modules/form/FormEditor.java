@@ -411,6 +411,7 @@ final public class FormEditor extends Object {
     private final static java.awt.Image inspectorIcon = java.awt.Toolkit.getDefaultToolkit ().getImage (
       ComponentInspector.class.getResource ("/com/netbeans/developer/modules/loaders/form/resources/inspector.gif"));
 
+static final long serialVersionUID =4248268998485315927L;
     ComponentInspector () {
       final ExplorerManager manager = getExplorerManager ();
       emptyInspectorNode = new EmptyInspectorNode ();
@@ -502,6 +503,7 @@ final public class FormEditor extends Object {
   }
 
   final public static class ResolvableHelper implements java.io.Serializable {
+static final long serialVersionUID =7424646018839457544L;
     public Object readResolve() {
       return FormEditor.getComponentInspector ();
     }
@@ -606,6 +608,8 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  31   Gandalf   1.30        8/10/99  Ian Formanek    Generated Serial Version
+ *       UID
  *  30   Gandalf   1.29        8/3/99   Ian Formanek    Default JTable model 
  *       init
  *  29   Gandalf   1.28        8/1/99   Ian Formanek    NodePropertyEditor 

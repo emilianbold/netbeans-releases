@@ -23,6 +23,7 @@ import org.openide.util.actions.CookieAction;
 * @author Ian Formanek
 */
 public class DefaultRADAction extends CookieAction {
+static final long serialVersionUID =-1822120439841761193L;
   /** generated Serialized Version UID */
 //  static final long serialVersionUID = 7755319389083740521L;
 
@@ -82,6 +83,8 @@ public class DefaultRADAction extends CookieAction {
 
 /*
  * Log
+ *  2    Gandalf   1.1         8/10/99  Ian Formanek    Generated Serial Version
+ *       UID
  *  1    Gandalf   1.0         7/16/99  Ian Formanek    
  * $
  */

@@ -39,6 +39,7 @@ public interface FormDesignValue extends java.io.Serializable {
   */
   public static final Object IGNORED_VALUE = new Object ();
 
+static final long serialVersionUID =5993614134339828170L;
   /** Provides a value which should be used during design-time
   * as the real property value on the bean instance.
   * E.g. the ResourceBundle String would provide the real value
@@ -51,6 +52,7 @@ public interface FormDesignValue extends java.io.Serializable {
 
   /** Extended version of FormDesignValue which supports listening on changes of the design value */
   public interface Listener extends FormDesignValue {
+static final long serialVersionUID =7127443991708952900L;
     /** Attaches specified listener to the design value. 
     * The change event is fired whenever the design value (accessible via getDesignValue () method call) changes
     * @param listener the change listener to add
@@ -67,6 +69,8 @@ public interface FormDesignValue extends java.io.Serializable {
 
 /*
  * Log
+ *  5    Gandalf   1.4         8/10/99  Ian Formanek    Generated Serial Version
+ *       UID
  *  4    Gandalf   1.3         7/22/99  Ian Formanek    Added Listener 
  *       innerclass
  *  3    Gandalf   1.2         6/27/99  Ian Formanek    Added constant 
