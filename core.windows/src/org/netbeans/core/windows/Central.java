@@ -824,11 +824,10 @@ final class Central implements ControllerHandler {
                 // Now you can close it.
                 ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(tc);
                 if(mode != null) {
-                    if(mode.getKind() == Constants.MODE_KIND_EDITOR) {
-                        // XXX PENDING May not come here... only views could be in a group.
-//                        model.removeModeTopComponent(mode, tc);
-                    } else {
+                    if(WindowManagerImpl.getInstance().isTopComponentPersistentWhenClosed(tc)) {
                         model.addModeClosedTopComponent(mode, tc);
+                    } else {
+                        model.removeModeTopComponent(mode, tc);
                     }
                     closedTcs.add(tc);
                 }

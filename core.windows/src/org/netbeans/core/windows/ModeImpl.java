@@ -213,10 +213,10 @@ public final class ModeImpl implements Mode {
             return;
         }
         
-        if(getKind() == Constants.MODE_KIND_EDITOR) {
-            removeTopComponent(tc);
-        } else {
+        if(WindowManagerImpl.getInstance().isTopComponentPersistentWhenClosed(tc)) {
             addClosedTopComponent(tc);
+        } else {
+            removeTopComponent(tc);
         }
     }
 

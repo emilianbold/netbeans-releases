@@ -547,7 +547,7 @@ final class PersistenceHandler implements PersistenceObserver {
             }
 
             if(DEBUG) {
-                debugLog("tc ID=" + tcID); // NOI18N
+                debugLog("tc ID=" + tcID + " opened=" + opened); // NOI18N
             }
             TCRefConfig tcRefCfg = new TCRefConfig();
             tcRefCfg.tc_id = tcID;
