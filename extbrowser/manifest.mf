@@ -1,10 +1,9 @@
 OpenIDE-Module: org.netbeans.modules.extbrowser/1
-OpenIDE-Module-Name: External HTML Browser
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/extbrowser/Bundle.properties
 OpenIDE-Module-Display-Category: Web
-OpenIDE-Module-Long-Description: The External Browser module enables the integration of external web browsers with the IDE for viewing JavaDoc documentation and testing applets and web (JSP and servlet) applications. It provides an alternative to using the built-in ICE Browser.
-OpenIDE-Module-Short-Description: Enables integration of external web browsers with the IDE.
 OpenIDE-Module-Layer: org/netbeans/modules/extbrowser/resources/layer.xml
 OpenIDE-Module-Specification-Version: 0.3
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.httpserver/1
 

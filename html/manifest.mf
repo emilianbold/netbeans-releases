@@ -1,10 +1,8 @@
 OpenIDE-Module: org.netbeans.modules.html/1
-OpenIDE-Module-Name: HTML
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/html/Bundle.properties
 OpenIDE-Module-Display-Category: Web
-OpenIDE-Module-Short-Description: Supports creation, editing, and viewing of HTML files.
-OpenIDE-Module-Long-Description: The HTML module supports creation and editing of HTML files and enables you to view them in a web browser.
 OpenIDE-Module-Layer: org/netbeans/modules/html/mf-layer.xml
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.10
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
 OpenIDE-Module-Specification-Version: 1.8
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 
