@@ -51,6 +51,9 @@ public class FormCustomEditor extends JPanel {
     } else {
       tabs = new JTabbedPane ();
       for (int i = 0; i < allEditors.length; i++) {
+        if (allEditors[i] instanceof FormAwareEditor) {
+          ((FormAwareEditor)allEditors[i]).setRADComponent (editor.getRADComponent ());
+        }
         if (allEditors[i].supportsCustomEditor ()) {
           tabs.addTab (Utilities.getShortClassName (allEditors[i].getClass ()), allEditors[i].getCustomEditor ());
         } else {
@@ -66,6 +69,8 @@ public class FormCustomEditor extends JPanel {
 
 /*
  * Log
+ *  4    Gandalf   1.3         6/22/99  Ian Formanek    Fixed working with 
+ *       FormAwareEditors
  *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  2    Gandalf   1.1         5/30/99  Ian Formanek    
