@@ -98,7 +98,7 @@ Microsystems, Inc. All Rights Reserved.
   <!-- QA functional tests for Netbeans -->
   <config name="qa-functional-nb-full">
       <testtype name="qa-functional" attributes="validation,full"
-                modules="ant,clazz,corba,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,openide,properties,qa,vcscore,vcsgeneric"/>
+                modules="ant,clazz,corba,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,junit,openide,properties,qa,vcscore,vcsgeneric"/>
       <testtype name="qa-functional" attributes="validation,full"
                 modules="xml,xml/catalog,xml/core,xml/text-edit,xml/tools,xml/tax/lib,xml/tree-edit"/>
       <module name="beans"  	testtypes="qa-func"        attributes="validation,full"/>
@@ -114,7 +114,7 @@ Microsystems, Inc. All Rights Reserved.
   <!-- QA functional tests for Netbeans on jdk 1.3 -->
   <config name="qa-functional-nb-full-jdk13">
       <testtype name="qa-functional" attributes="validation,full"
-                modules="ant,clazz,corba,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,openide,properties,rmi,vcscore,vcsgeneric"/>
+                modules="ant,clazz,corba,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,junit,openide,properties,rmi,vcscore,vcsgeneric"/>
       <testtype name="qa-functional" attributes="validation,full"
                 modules="xml,xml/catalog,xml/core,xml/text-edit,xml/tools,xml/tax/lib,xml/tree-edit"/>
       <module name="beans"  	testtypes="qa-func"        attributes="validation,full"/>
