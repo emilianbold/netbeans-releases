@@ -1674,7 +1674,7 @@
 
 	fklist = {
 		name = "Foreign keys";
-		class = org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+		class = org.netbeans.modules.db.explorer.nodes.ForeignKeyListNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.ForeignKeyListNodeInfo;
 		iconbase = "org/netbeans/modules/db/resources/folder";
 		children = ();
@@ -1695,7 +1695,7 @@
 
 	ilist = {
 		name = "Indexes";
-		class = org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+		class = org.netbeans.modules.db.explorer.nodes.IndexListNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.IndexListNodeInfo;
 		iconbase = "org/netbeans/modules/db/resources/folder";
 		children = ();
