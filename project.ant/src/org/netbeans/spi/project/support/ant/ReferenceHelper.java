@@ -186,7 +186,7 @@ public final class ReferenceHelper {
                 // Set up the raw reference.
                 File forProjDir = FileUtil.toFile(forProj.getProjectDirectory());
                 assert forProjDir != null : forProj.getProjectDirectory();
-                String projName = ProjectUtils.getInformation(forProj).getName();
+                String projName = PropertyUtils.getUsablePropertyName(ProjectUtils.getInformation(forProj).getName());
                 String forProjName = findReferenceID(projName, "project.", forProjDir.getAbsolutePath());
                 if (forProjName == null) {
                     forProjName = generateUniqueID(projName, "project.", forProjDir.getAbsolutePath());
@@ -674,7 +674,7 @@ public final class ReferenceHelper {
         }
         File projDir = FileUtil.toFile(proj.getProjectDirectory());
         assert projDir != null : proj.getProjectDirectory();
-        return findReferenceID(ProjectUtils.getInformation(proj).getName(), "project.", projDir.getAbsolutePath());
+        return findReferenceID(PropertyUtils.getUsablePropertyName(ProjectUtils.getInformation(proj).getName()), "project.", projDir.getAbsolutePath());
     }
 
     /**
