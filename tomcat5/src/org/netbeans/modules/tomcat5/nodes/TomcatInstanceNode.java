@@ -258,13 +258,12 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     // Create a property sheet:
     protected Sheet createSheet () {
 	Sheet sheet = super.createSheet ();
-        Sheet.Set ssProp = sheet.get (Sheet.PROPERTIES);
-        ssProp.setValue("helpID", "org.netbeans.modules.tomcat5.nodes.TomcatInstanceNode.PropertySheet");// NOI18N
+        Sheet.Set ssProp = sheet.get (Sheet.PROPERTIES);       
         if (ssProp == null) {
 	    ssProp = Sheet.createPropertiesSet ();
             sheet.put (ssProp);
 	}
-                
+        ssProp.setValue("helpID", "org.netbeans.modules.tomcat5.nodes.TomcatInstanceNode.PropertySheet");// NOI18N        
         Node.Property p;
         p = new PropertySupport.ReadWrite (
                    SERVER_PORT,
