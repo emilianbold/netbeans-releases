@@ -98,9 +98,9 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel {
         jLabelRunClasspath = new javax.swing.JLabel();
         jScrollClasspath = new javax.swing.JScrollPane();
         jListClasspath = new javax.swing.JList();
-        jButtonAddJar = new javax.swing.JButton();
-        jButtonAddLibrary = new javax.swing.JButton();
         jButtonAddArtifact = new javax.swing.JButton();
+        jButtonAddLibrary = new javax.swing.JButton();
+        jButtonAddJar = new javax.swing.JButton();
         jButtonEdit = new javax.swing.JButton();
         jButtonRemove = new javax.swing.JButton();
         jButtonMoveUp = new javax.swing.JButton();
@@ -111,36 +111,35 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel {
         setBorder(new javax.swing.border.EtchedBorder());
         jLabelMainClass.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_MainClass_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 5, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 0);
         add(jLabelMainClass, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 5, 0);
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 0);
         add(jTextFieldMainClass, gridBagConstraints);
 
         jButtonMainClass.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_MainClass_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 5, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 6, 12, 12);
         add(jButtonMainClass, gridBagConstraints);
 
         jLabelArgs.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Args_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(jLabelArgs, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 12);
         add(jTextFieldArgs, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
@@ -148,8 +147,8 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel {
         jLabelRunClasspath.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_RunClasspath_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 2, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         jPanel1.add(jLabelRunClasspath, gridBagConstraints);
 
         jScrollClasspath.setViewportView(jListClasspath);
@@ -157,18 +156,17 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 12);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 12);
         jPanel1.add(jScrollClasspath, gridBagConstraints);
 
-        jButtonAddJar.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeCompile_Classpath_AddJar_JButton"));
+        jButtonAddArtifact.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeCompile_Classpath_AddArtifact_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 12);
-        jPanel1.add(jButtonAddJar, gridBagConstraints);
+        jPanel1.add(jButtonAddArtifact, gridBagConstraints);
 
         jButtonAddLibrary.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeCompile_Classpath_AddLibrary_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -177,35 +175,36 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 12);
         jPanel1.add(jButtonAddLibrary, gridBagConstraints);
 
-        jButtonAddArtifact.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeCompile_Classpath_AddArtifact_JButton"));
+        jButtonAddJar.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeCompile_Classpath_AddJar_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 12);
-        jPanel1.add(jButtonAddArtifact, gridBagConstraints);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        jPanel1.add(jButtonAddJar, gridBagConstraints);
 
         jButtonEdit.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeCompile_Classpath_Edit_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 12);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         jPanel1.add(jButtonEdit, gridBagConstraints);
 
         jButtonRemove.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeCompile_Classpath_Remove_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 12);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         jPanel1.add(jButtonRemove, gridBagConstraints);
 
         jButtonMoveUp.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeCompile_Classpath_MoveUp_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 12);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         jPanel1.add(jButtonMoveUp, gridBagConstraints);
 
         jButtonMoveDown.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeCompile_Classpath_MoveDown_JButton"));
@@ -213,11 +212,12 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 12);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         jPanel1.add(jButtonMoveDown, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
