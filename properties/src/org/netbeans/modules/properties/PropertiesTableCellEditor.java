@@ -58,8 +58,8 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
 
             // set values as they deserve
             if (sp != null) {
-                ((JTextField)getEditorComponent()).setText(sp.getValue());
-                commentComponent.setText(sp.getComment());
+                ((JTextField)getEditorComponent()).setText(UtilConvert.unicodesToChars(sp.getValue()));
+                commentComponent.setText(UtilConvert.unicodesToChars(sp.getComment()));
             }
             else {
                 ((JTextField)getEditorComponent()).setText("");
@@ -69,7 +69,7 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
 
         public Object getCellEditorValue() {
             return new PropertiesTableModel.StringPair(commentComponent.getText(),
-                    ((JTextField)getEditorComponent()).getText());
+                    UtilConvert.charsToUnicodes(UtilConvert.escapeJavaSpecialChars(UtilConvert.escapePropertiesSpecialChars(((JTextField)getEditorComponent()).getText())))); // TEMP
         }
 
         public boolean startCellEditing(EventObject anEvent) {
