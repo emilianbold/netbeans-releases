@@ -3,6 +3,7 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xsl/resources/Bundle.prop
 OpenIDE-Module-Layer: org/netbeans/modules/xsl/resources/mf-layer.xml
 OpenIDE-Module-Specification-Version: @XSL_SPEC_VERS_SUBST@
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-Public-Packages: org.netbeans.modules.xsl.api.**
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.19
 OpenIDE-Module-Module-Dependencies: 
  org.netbeans.api.xml/1 > @API_SPEC_VERS_SUBST@,
