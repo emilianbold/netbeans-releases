@@ -15,6 +15,7 @@
 package org.netbeans.modules.properties;
 
 
+import java.awt.Component;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -118,8 +119,8 @@ public class PropertiesDataNode extends DataNode {
                                     try {
                                         if (locale.length() == 0)
                                             throw new IllegalArgumentException(NbBundle.getBundle(PropertiesDataNode.class).getString("MSG_LangExists"));
-                                        if (locale.charAt(0) != PropertiesDataLoader.PRB_SEPARATOR_CHAR)
-                                            locale = "" + PropertiesDataLoader.PRB_SEPARATOR_CHAR + locale; // NOI18N
+                                        
+                                        locale = PropertiesDataLoader.PRB_SEPARATOR_CHAR + locale;
                                         
                                         final String newName = locale;
 
@@ -188,5 +189,18 @@ public class PropertiesDataNode extends DataNode {
                 }
             } // End of annonymous inner class extended from NewType.
         };
+    }
+    
+    /** Indicates whether this node has customizer. Overrides superclass method.
+     * @return true */
+    public boolean hasCustomizer() {
+        return true;
+    }
+    
+    /** Gets node customizer. Overrides superclass method. 
+     * @return <code>BundleNodeCustomizer</code> instance.
+     * @see BundleNodeCustomizer */
+    public Component getCustomizer() {
+        return new BundleNodeCustomizer((PropertiesDataObject)getDataObject());
     }
 }

@@ -89,7 +89,7 @@ public final class Util extends Object {
     *   for example for file <code>Bundle_en_US.properties</code> returns <code>en</code> (if Bundle.properties exists)
     *   @return language for this locale or <code>null</code> if no language is present
     */
-    private static String getLanguage(MultiDataObject.Entry fe) {
+    public static String getLanguage(MultiDataObject.Entry fe) {
         String part = getLocalePartOfFileName(fe);
         return getFirstPart(part);
     }
@@ -98,7 +98,7 @@ public final class Util extends Object {
     *   for example for file <code>Bundle_en_US.properties</code> returns <code>US</code> (if Bundle.properties exists)
     *   @return language for this locale or <code>null</code> if no country is present
     */
-    private static String getCountry(MultiDataObject.Entry fe) {
+    public static String getCountry(MultiDataObject.Entry fe) {
         try {
             String part = getLocalePartOfFileName(fe);
             int start = part.indexOf(PRB_SEPARATOR_CHAR, 1);
@@ -115,7 +115,7 @@ public final class Util extends Object {
     *   for example for file <code>Bundle_en_US_POSIX.properties</code> returns <code>POSIX</code> (if Bundle.properties exists)
     *   @return language for this locale or <code>null</code> if no variant is present
     */
-    private static String getVariant(MultiDataObject.Entry fe) {
+    public static String getVariant(MultiDataObject.Entry fe) {
         try {
             String part = getLocalePartOfFileName(fe);
             int start = part.indexOf(PRB_SEPARATOR_CHAR, 1);

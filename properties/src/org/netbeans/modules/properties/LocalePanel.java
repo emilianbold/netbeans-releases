@@ -23,6 +23,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 import org.openide.util.NbBundle;
@@ -35,10 +36,13 @@ import org.openide.util.NbBundle;
  * @see java.util.Locale
  */
 public class LocalePanel extends JPanel {
-    
+
     /** Variable holding actually chosen <code>Locale</code> object. */
     private Locale locale;
 
+    /** Property name of <code>locale</code> property. */
+    public static final String PROP_CUSTOMIZED_LOCALE = "customized_locale"; // NOI18N
+    
     /** Array representing supported locales by Java platform.
      * You can find them at <a href="http://java.sun.com/j2se/1.3/docs/guide/intl/locale.doc.html">Supported Locales.</a>
      * This should be taken as temporary solution. And revised after announced changes in API dealing with supported
@@ -164,6 +168,10 @@ public class LocalePanel extends JPanel {
         
         initComponents();
         
+        languageCombo.setSelectedItem(locale.getLanguage());
+        countryCombo.setSelectedItem(locale.getCountry());
+        variantCombo.setSelectedItem(locale.getVariant());
+        
         localeText.setText(locale.toString());
     }
 
@@ -201,8 +209,10 @@ public class LocalePanel extends JPanel {
         languageLabel.setText(NbBundle.getBundle(LocalePanel.class).getString("CTL_LanguageCode"));
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 1;
         gridBagConstraints1.gridwidth = 2;
-        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints1.insets = new java.awt.Insets(11, 12, 0, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(languageLabel, gridBagConstraints1);
         
@@ -237,8 +247,10 @@ public class LocalePanel extends JPanel {
         );
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 2;
+        gridBagConstraints1.gridy = 1;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(12, 7, 0, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(11, 7, 0, 11);
         gridBagConstraints1.weightx = 1.0;
         add(languageCombo, gridBagConstraints1);
         
@@ -247,7 +259,7 @@ public class LocalePanel extends JPanel {
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 1;
+        gridBagConstraints1.gridy = 2;
         gridBagConstraints1.gridwidth = 2;
         gridBagConstraints1.insets = new java.awt.Insets(7, 12, 0, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
@@ -285,7 +297,7 @@ public class LocalePanel extends JPanel {
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 1;
+        gridBagConstraints1.gridy = 2;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints1.insets = new java.awt.Insets(7, 7, 0, 11);
         gridBagConstraints1.weightx = 1.0;
@@ -296,7 +308,7 @@ public class LocalePanel extends JPanel {
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 2;
+        gridBagConstraints1.gridy = 3;
         gridBagConstraints1.gridwidth = 2;
         gridBagConstraints1.insets = new java.awt.Insets(7, 12, 0, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
@@ -334,7 +346,7 @@ public class LocalePanel extends JPanel {
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 2;
+        gridBagConstraints1.gridy = 3;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints1.insets = new java.awt.Insets(7, 7, 0, 11);
         gridBagConstraints1.weightx = 1.0;
@@ -345,7 +357,7 @@ public class LocalePanel extends JPanel {
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 3;
+        gridBagConstraints1.gridy = 4;
         gridBagConstraints1.gridwidth = 3;
         gridBagConstraints1.insets = new java.awt.Insets(17, 12, 0, 11);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
@@ -386,10 +398,10 @@ public class LocalePanel extends JPanel {
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 4;
+        gridBagConstraints1.gridy = 5;
         gridBagConstraints1.gridwidth = 3;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.insets = new java.awt.Insets(7, 7, 0, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(7, 7, 11, 11);
         gridBagConstraints1.weightx = 1.0;
         gridBagConstraints1.weighty = 1.0;
         add(jScrollPane1, gridBagConstraints1);
@@ -399,8 +411,8 @@ public class LocalePanel extends JPanel {
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 5;
-        gridBagConstraints1.insets = new java.awt.Insets(17, 12, 11, 0);
+        gridBagConstraints1.gridy = 0;
+        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(localeLabel, gridBagConstraints1);
         
@@ -410,10 +422,10 @@ public class LocalePanel extends JPanel {
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 5;
+        gridBagConstraints1.gridy = 0;
         gridBagConstraints1.gridwidth = 2;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(17, 7, 11, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(12, 7, 0, 11);
         gridBagConstraints1.weightx = 1.0;
         add(localeText, gridBagConstraints1);
         
@@ -441,10 +453,10 @@ public class LocalePanel extends JPanel {
 
     /** Combo box event handler. Helper method. */
     private void comboHandler(ActionEvent evt) {
-        Object item = ((JComboBox)evt.getSource()).getSelectedItem();
+        String str = (String)((JComboBox)evt.getSource()).getSelectedItem();
+
+        Locale oldLocale = locale;
         
-        String str = (String)item;
-            
         Object source = evt.getSource();
         if(source.equals(languageCombo)) {
             // 99% trick to avoid unneccessary reset of the string (kind of event filter) ,
@@ -466,6 +478,8 @@ public class LocalePanel extends JPanel {
         }
 
         localeText.setText(locale.toString());
+
+        firePropertyChange(PROP_CUSTOMIZED_LOCALE, oldLocale, locale);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

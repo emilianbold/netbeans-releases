@@ -15,6 +15,7 @@
 package org.netbeans.modules.properties;
 
 
+import java.awt.Component;
 import java.awt.datatransfer.Transferable;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
@@ -47,6 +48,7 @@ public final class PropertiesLocaleNode extends FileEntryNode {
 
     /** Icon base for the <code>PropertiesDataNode</code> node. */
     private static final String LOCALE_ICON_BASE = "org/netbeans/modules/properties/propertiesLocale"; // NOI18N
+
     
     /** Creates a new PropertiesLocaleNode for the given locale-specific file */
     public PropertiesLocaleNode (PropertiesFileEntry fe) {
@@ -111,14 +113,9 @@ public final class PropertiesLocaleNode extends FileEntryNode {
         
         // new name is same as old one, do nothing
         if (name.equals(super.getName())) return;
-        
-        super.setName (name);
-        setDisplayName (Util.getLocaleLabel(getFileEntry()));
-    }
 
-    /** Clones this node. Overrides superclass method. */
-    public Node cloneNode() {
-        return new PropertiesLocaleNode((PropertiesFileEntry)getFileEntry());
+        super.setName (name);
+        setDisplayName(Util.getLocaleLabel(getFileEntry()));
     }
 
     /** This node can be renamed. Overrides superclass method. */
@@ -207,6 +204,17 @@ public final class PropertiesLocaleNode extends FileEntryNode {
         };
     }
 
+    /** Indicates if this node has a customizer. Overrides superclass method. 
+     * @return true */
+    public boolean hasCustomizer() {
+        return true;
+    }
+    
+    /** Gets node customizer. Overrides superclass method. */
+    public Component getCustomizer() {
+        return new LocaleNodeCustomizer((PropertiesFileEntry)getFileEntry());
+    }
+    
     /** Creates paste types for this node. Overrides superclass method. */
     protected void createPasteTypes(Transferable t, List s) {
         super.createPasteTypes(t, s);
@@ -236,6 +244,7 @@ public final class PropertiesLocaleNode extends FileEntryNode {
         }
     }
 
+    
     /** Paste type for keys. */
     private class KeyPasteType extends PasteType {
         
