@@ -70,6 +70,11 @@ public abstract class J2eeModuleProvider {
      * {@link getServerID} method.
      */
     public static interface ConfigSupport {
+        /**
+         * Create an initial fresh configuration for the current module.  Do nothing if configuration already exists.
+         * @return true if there is no existing configuration, false if there is exsisting configuration.
+         */
+        public boolean createInitialConfiguration();
         public void setWebContextRoot(String contextRoot);
         public String getWebContextRoot();
     }

@@ -91,6 +91,16 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         return null;
     }
     
+    public boolean createInitialConfiguration() {
+        boolean existing = false;
+        File f = getConfigurationFile();
+        if (f.isFile()) {
+            existing = true;
+        }
+        getStorage();
+        return existing;
+    }
+     
     /**
      * Get context root
      * @return string value, null if not set or could not find
