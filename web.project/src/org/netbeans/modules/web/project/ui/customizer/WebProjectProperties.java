@@ -629,8 +629,21 @@ public class WebProjectProperties {
         URL[] rootURLs = new URL[data.size()];
         String []rootLabels = new String[data.size()];
         for (int i=0; i<data.size();i++) {
-            rootURLs[i] = ((File)((Vector)data.elementAt(i)).elementAt(0)).toURI().toURL();
-            rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
+            // AB: hotfix for #54058: ensure that source URLs end with a '/'
+            // waiting for the proper fix in the j2se project (# 54979)
+            File f = ((File)((Vector)data.elementAt(i)).elementAt(0));
+            try {
+                URL url = f.toURI().toURL();
+                if (FileUtil.isArchiveFile(url)) {
+                    url = FileUtil.getArchiveRoot(url);
+                } else if (!f.exists()) {
+                    url = new URL(url.toExternalForm() + "/"); // NOI18N
+                }
+                rootURLs[i] = url;
+                rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
+            } catch (MalformedURLException e) {
+                ErrorManager.getDefault().notify(e);
+            }
         }
         roots.putRoots(rootURLs,rootLabels);
     }
