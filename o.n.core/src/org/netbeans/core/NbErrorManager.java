@@ -235,7 +235,7 @@ final class NbErrorManager extends ErrorManager {
     public Exc (Throwable t, int severity, Annotation[] arr) {
       this.t = t;
       this.severity = severity;
-      this.arr = arr;
+      this.arr = arr == null ? new Annotation[0] : arr;
     }
     
     /** @return message */
@@ -355,6 +355,8 @@ final class NbErrorManager extends ErrorManager {
 
 /* 
 * Log
+*  2    Jaga      1.1         4/5/00   Jaroslav Tulach Works even there is no 
+*       annotation associated with the exception.
 *  1    Jaga      1.0         4/4/00   Jaroslav Tulach 
 * $ 
 */ 
