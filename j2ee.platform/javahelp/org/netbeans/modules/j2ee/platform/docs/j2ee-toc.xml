@@ -194,7 +194,7 @@
             <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
         </tocitem>
         <tocitem text="Creating and Editing Enterprise Beans" >
-            <tocitem text="Creating an EJB Module Project" target="tbd" />
+            <tocitem text="Creating an EJB Module Project" target="create_ejb_project" />
             <tocitem text="Creating an Enterprise Bean" target="create_ejb" />
             <tocitem text="Defining a Business Method" target="define_business_method" />
             <tocitem text="Defining a Finder Method" target="define_finder_method" />

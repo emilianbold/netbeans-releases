@@ -126,12 +126,12 @@
     <mapID target="ent_app_verify" url="enterprise/general/ent_app_verify.html" />
     <mapID target="ent_app_deploy" url="enterprise/general/ent_app_deploy.html" />
 
-    !-- New Project Wizard csh -->
+    <!-- New Enterprise Application Project Wizard csh -->
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIterator" url="enterprise/csh/NewEarProjectWizardIterator.html" />
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.CompleteEarProjectWizardIterator" url="enterprise/csh/CompleteEarProjectWizardIterator.html" />
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.ImportBlueprintEarWizardIterator" url="tbd.html" />
 
-    !-- Project Properties dialog box csh -->
+    <!-- Enterprise Application Project Properties dialog box csh -->
 
     <mapID target="org.netbeans.modules.j2ee.common.ui.customizer.CustomizerGeneral" url="enterprise/csh/CustomizerGeneral.html" />
     <mapID target="org.netbeans.modules.j2ee.common.ui.customizer.CustomizerJarContent" url="enterprise/csh/CustomizerJarContent.html" />
@@ -147,6 +147,7 @@
     <mapID target="about_deployment_descriptors" url="ejb/general/about_deployment_descriptors.html" />
 
     <mapID target="create_ejb" url="ejb/editing/create_ejb.html" />
+    <mapID target="create_ejb_project" url="ejb/editing/create_ejb_project.html" />
     <mapID target="add_ejbql" url="ejb/editing/add_ejbql.html" />
     <mapID target="define_business_method" url="ejb/editing/define_business_method.html" />
     <mapID target="define_cmp_field" url="ejb/editing/define_cmp_field.html" />
@@ -159,6 +160,17 @@
 
     <mapID target="build_ejb" url="ejb/deploy/build_ejb.html" />
     <mapID target="deploy_ejb" url="ejb/deploy/deploy_ejb.html" />
+
+    <!-- EJB Module from Existing Sources Project Wizard dialog box csh -->
+
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.ImportLocation" url="ejb/csh/ejb_with_source_wizard1.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.PanelSourceFolders" url="enterprise/csh/ejb_with_source_wizard2.html" />
+    
+
+    <!-- EJB Module from Existing Sources Project Wizard dialog box csh -->
+
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.PanelConfigureProject" url="ejb/csh/ejb_new_wizard.html" />
+
     <!-- End of EJB help -->
 
 </map>

@@ -17,29 +17,40 @@
 
 <h2>Creating an Enterprise Bean</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<ol>
-  <li>In the Projects window, select any existing EJB module project. </li>
-  <li>Choose File <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;New 
-    (Ctrl-N) from the main window.</li>
-  <li>From the Enterprise category, select one of the following: </li>
-  <ul>
-    <li><a href="../general/about_session_beans.html">Session Bean</a></li>
-    <li><a href="../general/about_msg_driven_beans.html">Message-Driven Bean</a></li>
-    <li><a href="../general/about_entity_beans.html">Entity Beans</a></li>
-  </ul>
-  <li>Follow the instructions in the rest of the wizard.</li>
-</ol>
+<p>You can only create an enterprise bean inside of an EJB module project. You 
+  can create an empty enterprise bean or generate a CMP entity bean from a database 
+  connection or database schema.</p>
 <p>When you create an enterprise bean, the IDE adds a node for the enterprise 
   bean under the project's Enterprise Beans node. This node contains a node for 
   the bean class and nodes for the bean's business methods and CMP fields. The 
   IDE also updates the deployment descriptors for the EJB module and the J2EE 
-  module that contains the EJB module.</p>
+  module that contains the EJB module. </p>
+<p><b>To create a new enterprise bean:</b></p>
+<ol>
+  <li>In the Projects window, select any existing EJB module project. </li>
+  <li>Choose File <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;New 
+    (Ctrl-N) from the main window.</li>
+  <li>From the Enterprise category, select one of the EJB templates.</li>
+  <li>Follow the steps in the rest of the wizard. For more information, see the 
+    following topics:</li>
+  <ul>
+    <li>New Session Bean Wizard</li>
+    <li>New Message-Driven Bean Wizard</li>
+    <li>New Entity Bean Wizard</li>
+    <li>New CMP Entity Bean Wizard</li>
+  </ul>
+</ol>
 <table border="0">
-  <tr><th colspan="2" align="left" ><a name="seealso">See Also</a></th>
-    </tr>
-    
+  <tr>
+    <th colspan="2" align="left" ><a name="seealso">See Also</a></th>
+  </tr>
   <tr valign="top"> 
-    <td width="23px" nowrap>&nbsp;</td><!--
+    <td width="23px">&nbsp;</td>
+    <td><a href="../general/about_session_beans.html">About Session Beans</a><br>
+      <a href="../general/about_msg_driven_beans.html">About Message-Driven Beans</a><br>
+      <a href="../general/about_entity_beans.html">About Entity Beans</a> <br>
+      <a href="create_ejb_project.html">Creating an EJB Module Project</a></td>
+    <!--
       
     <td nowrap><a href="add_ejbql.html">Enterprise JavaBeans Query Language</a><br>
       <a href="">EJBQL Property Editor</a><br>
@@ -47,8 +58,9 @@
       <a href="define_select_method.html">Defining a Select Method</a><br>
       <a href="add_ejbql.html">Creating an Enterprise Bean</a><br>
       <a href="add_ejbql.html">Working With Enterprise Beans</a></td>
-    --></tr>
-  </table>
+    -->
+  </tr>
+</table>
  
 <hr>
 <small> <a href="../../credits.html">Legal Notices</a></small> 
