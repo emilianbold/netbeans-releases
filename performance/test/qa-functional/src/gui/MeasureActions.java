@@ -90,9 +90,9 @@ public class MeasureActions  {
         suite.addTest(new DeleteFolder("testDeleteFolderWith50JavaFiles", "Delete folder with 50 java files"));
         suite.addTest(new DeleteFolder("testDeleteFolderWith100JavaFiles", "Delete folder with 100 java files"));
         
-//TODO    suite.addTest(new CreateProject("testCreateJavaApplicationProject", "Create Java Application project"));
-//TODO    suite.addTest(new CreateProject("testCreateJavaLibraryProject", "Create Java Library project"));
-//TODO    suite.addTest(new CreateProject("testCreateWebApplicationProject", "Create Web Application project"));
+        suite.addTest(new CreateProject("testCreateJavaApplicationProject", "Create Java Application project"));
+        suite.addTest(new CreateProject("testCreateJavaLibraryProject", "Create Java Library project"));
+        suite.addTest(new CreateProject("testCreateWebApplicationProject", "Create Web Application project"));
 //TODO    suite.addTest(new CreateProject("testCreateJavaProjectWithExistingSources", "Create Java Project with Existing sources"));
         
 //TODO    suite.addTest(new OpenProject("testOpenJavaApplicationProject", "Open Java Application project"));
