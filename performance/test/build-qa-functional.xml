@@ -38,6 +38,8 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
         <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
             
+        <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor.jar"/>
+        
         <pathelement location="${java.dir}/${nb.modules.dir}/org-netbeans-modules-java.jar"/>
             
         <pathelement location="${vcsgeneric.dir}/${nb.modules.dir}/vcsgen.jar"/>
