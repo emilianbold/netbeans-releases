@@ -17,12 +17,10 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.UndoRedo;
-import org.openide.loaders.DataObject;
-import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
+
+import java.beans.PropertyVetoException;
 /**
  * XmlMultiviewElement.java
  *
@@ -30,51 +28,47 @@ import org.openide.windows.TopComponent;
  * @author  mkuchtiak
  */
 public class XmlMultiViewElement implements MultiViewElement {
-    
-    //private static final long serialVersionUID = 123456L; 
+
+    //private static final long serialVersionUID = 123456L;
     private TopComponent comp;
     private XmlMultiViewEditorSupport support;
     MultiViewElementCallback observer;
     private UndoRedo undoRedo;
     private javax.swing.JComponent toolbar;
-    
+
     /** Creates a new instance of XmlMultiviewElement */
     public XmlMultiViewElement(TopComponent comp, XmlMultiViewEditorSupport support) {
         this.comp=comp;
         this.support=support;
     }
-    
+
     public CloseOperationState canCloseElement() {
         final XmlMultiViewDataObject dataObject = (XmlMultiViewDataObject) this.support.getDataObject();
         if (dataObject.isModified()) {
-            Object result = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(NbBundle.getMessage(DataObject.class,
-                    "MSG_SaveFile",
-                    new Object[]{dataObject.getPrimaryFile().getNameExt()}),
-                    NotifyDescriptor.OK_CANCEL_OPTION,
-                    NotifyDescriptor.WARNING_MESSAGE));
-            if (result != NotifyDescriptor.OK_OPTION) {
+            try {
+                dataObject.setValid(false);
+            } catch (PropertyVetoException e) {
                 return MultiViewFactory.createUnsafeCloseState("Data object modified", null, null);
             }
-            dataObject.updateDocument();
         }
         return CloseOperationState.STATE_OK;
     }
-    
+
     public void componentActivated() {
     }
-    
+
     public void componentClosed() {
     }
-    
+
     public void componentDeactivated() {
     }
-    
+
     public void componentHidden() {
     }
-    
+
     public void componentOpened() {
     }
-    
+
     public void componentShowing() {
         XmlMultiViewDataObject dObj = (XmlMultiViewDataObject)support.getDataObject();
         System.out.println("xml comp showing "+dObj.changedFromUI);
@@ -82,15 +76,15 @@ public class XmlMultiViewElement implements MultiViewElement {
             dObj.updateDocument();
         }
     }
-    
+
     public javax.swing.Action[] getActions() {
         return comp.getActions();
     }
-    
+
     public org.openide.util.Lookup getLookup() {
         return comp.getLookup();
     }
-    
+
     public javax.swing.JComponent getToolbarRepresentation() {
             if (toolbar == null) {
                 javax.swing.JEditorPane pane = support.getOpenedPanes()[0];
@@ -107,17 +101,17 @@ public class XmlMultiViewElement implements MultiViewElement {
             }
             return toolbar;
     }
-    
+
     public org.openide.awt.UndoRedo getUndoRedo() {
         return undoRedo;
     }
-    
+
     public javax.swing.JComponent getVisualRepresentation() {
         return comp;
     }
-    
+
     public void setMultiViewCallback(MultiViewElementCallback callback) {
         observer=callback;
     }
-    
+
 }
