@@ -1,5 +1,5 @@
 /*
- * ffj.css	02/20/2001
+ * ffj.css	08/10/2001
  *
  * Copyright 2001 Sun Microsystems, Inc. All rights reserved.
  * Use is subject to license terms.
@@ -13,22 +13,23 @@ body  {font-size: small;
 	color: Black;
 	background-color: White}
 
-p {font-size: small;
-     margin-top: 10}
+p  {font-size: small;
+     margin-top: 5;
+     margin-bottom: 5}
 
 h2 { font-size: large;
      font-weight: bold;
-     margin-top: 15;
+     margin-top: 10;
      margin-bottom: 5}
 
 h3 { font-size: medium;
      font-weight: bold;
-     margin-top: 15;
+     margin-top: 10;
      margin-bottom: 5}
 
 h4 { font-size: small;
      font-weight: bold;
-     margin-top: 15;
+     margin-top: 10;
      margin-bottom: 5}
 
 ol {margin-top: 5;
@@ -36,7 +37,7 @@ ol {margin-top: 5;
      margin-left: 16}
 
 li {margin-top: 0;
-	margin-bottom: 5}
+    margin-bottom: 5}
 	
 li p{margin-top: 5;
 	margin-bottom: 0}
