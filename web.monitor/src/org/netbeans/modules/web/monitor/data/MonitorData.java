@@ -443,8 +443,8 @@ public class MonitorData extends BaseBean {
     public void write(Writer writer) throws IOException {
         try {
             this.write(writer, "UTF-8"); // NOI18N
-        } catch (Schema2BeansException e) {
-            throw new Schema2BeansRuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
     
