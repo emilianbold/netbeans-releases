@@ -146,10 +146,9 @@ class FormLAF
     private static void copyMap(Map dest, Map src) {
         // call src.get() on each key to force LazyValues to be init'ed
         // see javax.swing.UIDefaults to see why
-        Iterator iter = src.keySet().iterator();
-        while (iter.hasNext()) {
-            src.get(iter.next());
-        }
+        Object[] keys = src.keySet().toArray();
+        for (int i=0; i < keys.length; i++)
+            src.get(keys[i]);
         
         dest.putAll(src);
     }
