@@ -10,15 +10,18 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.xml.catalog.impl.sun;
 
 import java.beans.*;
+import java.awt.Image;
+
+import org.openide.util.Utilities;
 
 import org.netbeans.modules.xml.catalog.spi.*;
 
 public class CatalogBeanInfo extends SimpleBeanInfo {
 
+    private static final String ICON_DIR_BASE = "org/netbeans/modules/xml/catalog/impl/sun/"; // NOI18N
 
 
     // Bean descriptor //GEN-FIRST:BeanDescriptor
@@ -28,7 +31,7 @@ public class CatalogBeanInfo extends SimpleBeanInfo {
         beanDescriptor.setDisplayName ( Util.THIS.getString("PROP_Catalog") );
         beanDescriptor.setShortDescription ( Util.THIS.getString("PROP_Catalog_desc") );//GEN-HEADEREND:BeanDescriptor
 
-    // Here you can add code for customizing the BeanDescriptor.
+        // Here you can add code for customizing the BeanDescriptor.
 
         return beanDescriptor;         }//GEN-LAST:BeanDescriptor
 
@@ -55,7 +58,7 @@ public class CatalogBeanInfo extends SimpleBeanInfo {
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
-    // Here you can add code for customizing the properties array.
+        // Here you can add code for customizing the properties array.
 
         properties[PROPERTY_shortDescription].setName(CatalogDescriptor.PROP_CATALOG_DESC);
         properties[PROPERTY_displayName].setName(CatalogDescriptor.PROP_CATALOG_NAME);
@@ -70,7 +73,7 @@ public class CatalogBeanInfo extends SimpleBeanInfo {
     private static EventSetDescriptor[] getEdescriptor(){
         EventSetDescriptor[] eventSets = new EventSetDescriptor[0];//GEN-HEADEREND:Events
 
-    // Here you can add code for customizing the event sets array.
+        // Here you can add code for customizing the event sets array.
 
         return eventSets;         }//GEN-LAST:Events
 
@@ -81,28 +84,20 @@ public class CatalogBeanInfo extends SimpleBeanInfo {
     private static MethodDescriptor[] getMdescriptor(){
         MethodDescriptor[] methods = new MethodDescriptor[0];//GEN-HEADEREND:Methods
 
-    // Here you can add code for customizing the methods array.
+        // Here you can add code for customizing the methods array.
     
         return methods;         }//GEN-LAST:Methods
 
-    private static java.awt.Image iconColor16 = null; //GEN-BEGIN:IconsDef
-    private static java.awt.Image iconColor32 = null;
-    private static java.awt.Image iconMono16 = null;
-    private static java.awt.Image iconMono32 = null; //GEN-END:IconsDef
-    private static String iconNameC16 = "/org/netbeans/modules/xml/catalog/impl/sun/sunCatalog.gif";//GEN-BEGIN:Icons
-    private static String iconNameC32 = null;
-    private static String iconNameM16 = null;
-    private static String iconNameM32 = null;//GEN-END:Icons
 
     private static final int defaultPropertyIndex = -1;//GEN-BEGIN:Idx
     private static final int defaultEventIndex = -1;//GEN-END:Idx
 
     
- //GEN-FIRST:Superclass
+    //GEN-FIRST:Superclass
 
     // Here you can add code for customizing the Superclass BeanInfo.
 
- //GEN-LAST:Superclass
+    //GEN-LAST:Superclass
 	
     /**
      * Gets the bean's <code>BeanDescriptor</code>s.
@@ -197,43 +192,14 @@ public class CatalogBeanInfo extends SimpleBeanInfo {
      * @return  An image object representing the requested icon.  May
      *    return null if no suitable icon is available.
      */
-    public java.awt.Image getIcon(int iconKind) {
-        switch ( iconKind ) {
-        case ICON_COLOR_16x16:
-            if ( iconNameC16 == null )
-                return null;
-            else {
-                if( iconColor16 == null )
-                    iconColor16 = loadImage( iconNameC16 );
-                return iconColor16;
-            }
-        case ICON_COLOR_32x32:
-            if ( iconNameC32 == null )
-                return null;
-            else {
-                if( iconColor32 == null )
-                    iconColor32 = loadImage( iconNameC32 );
-                return iconColor32;
-            }
-        case ICON_MONO_16x16:
-            if ( iconNameM16 == null )
-                return null;
-            else {
-                if( iconMono16 == null )
-                    iconMono16 = loadImage( iconNameM16 );
-                return iconMono16;
-            }
-        case ICON_MONO_32x32:
-            if ( iconNameM32 == null )
-                return null;
-            else {
-                if( iconMono32 == null )
-                    iconMono32 = loadImage( iconNameM32 );
-                return iconMono32;
-            }
-	default: return null;
+    public Image getIcon (int type) {
+        if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
+            (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
+
+            return Utilities.loadImage (ICON_DIR_BASE + "sunCatalog.gif"); // NOI18N
+        } else {
+            return null;
         }
     }
 
 }
-

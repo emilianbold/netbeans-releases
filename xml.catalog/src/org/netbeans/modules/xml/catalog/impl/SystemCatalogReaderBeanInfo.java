@@ -10,13 +10,16 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.xml.catalog.impl;
 
 import java.beans.*;
+import java.awt.Image;
+
+import org.openide.util.Utilities;
 
 public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
 
+    private static final String ICON_DIR_BASE = "org/netbeans/modules/xml/catalog/impl/"; // NOI18N
 
     // Bean descriptor //GEN-FIRST:BeanDescriptor
     private static BeanDescriptor beanDescriptor = new BeanDescriptor  ( SystemCatalogReader.class , SystemCatalogCustomizer.class );
@@ -29,9 +32,9 @@ public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
         beanDescriptor.setDisplayName ( Util.THIS.getString("NAME_system_catalog") );
         beanDescriptor.setShortDescription ( Util.THIS.getString("TEXT_system_catalog_desc") );//GEN-HEADEREND:BeanDescriptor
 
-    // Here you can add code for customizing the BeanDescriptor.
+        // Here you can add code for customizing the BeanDescriptor.
 
-}//GEN-LAST:BeanDescriptor
+    }//GEN-LAST:BeanDescriptor
 
 
     // Property identifiers //GEN-FIRST:Properties
@@ -42,11 +45,11 @@ public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
     private static PropertyDescriptor[] getPdescriptor(){
         return properties;
     }
-//GEN-HEADEREND:Properties
+    //GEN-HEADEREND:Properties
 
     // Here you can add code for customizing the properties array.
 
-  //GEN-LAST:Properties
+    //GEN-LAST:Properties
 
     // EventSet identifiers//GEN-FIRST:Events
 
@@ -56,11 +59,11 @@ public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
     private static EventSetDescriptor[] getEdescriptor(){
         return eventSets;
     }
-//GEN-HEADEREND:Events
+    //GEN-HEADEREND:Events
 
     // Here you can add code for customizing the event sets array.
 
-  //GEN-LAST:Events
+    //GEN-LAST:Events
 
     // Method identifiers //GEN-FIRST:Methods
 
@@ -70,30 +73,21 @@ public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
     private static MethodDescriptor[] getMdescriptor(){
         return methods;
     }
-//GEN-HEADEREND:Methods
+    //GEN-HEADEREND:Methods
 
     // Here you can add code for customizing the methods array.
     
-  //GEN-LAST:Methods
-
-    private static java.awt.Image iconColor16 = null; //GEN-BEGIN:IconsDef
-    private static java.awt.Image iconColor32 = null;
-    private static java.awt.Image iconMono16 = null;
-    private static java.awt.Image iconMono32 = null; //GEN-END:IconsDef
-    private static String iconNameC16 = "/org/netbeans/modules/xml/catalog/impl/sysCatalog.gif";//GEN-BEGIN:Icons
-    private static String iconNameC32 = null;
-    private static String iconNameM16 = null;
-    private static String iconNameM32 = null;//GEN-END:Icons
+    //GEN-LAST:Methods
 
     private static final int defaultPropertyIndex = -1;//GEN-BEGIN:Idx
     private static final int defaultEventIndex = -1;//GEN-END:Idx
 
     
- //GEN-FIRST:Superclass
+    //GEN-FIRST:Superclass
 
     // Here you can add code for customizing the Superclass BeanInfo.
 
- //GEN-LAST:Superclass
+    //GEN-LAST:Superclass
 	
     /**
      * Gets the bean's <code>BeanDescriptor</code>s.
@@ -188,43 +182,14 @@ public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
      * @return  An image object representing the requested icon.  May
      *    return null if no suitable icon is available.
      */
-    public java.awt.Image getIcon(int iconKind) {
-        switch ( iconKind ) {
-        case ICON_COLOR_16x16:
-            if ( iconNameC16 == null )
-                return null;
-            else {
-                if( iconColor16 == null )
-                    iconColor16 = loadImage( iconNameC16 );
-                return iconColor16;
-            }
-        case ICON_COLOR_32x32:
-            if ( iconNameC32 == null )
-                return null;
-            else {
-                if( iconColor32 == null )
-                    iconColor32 = loadImage( iconNameC32 );
-                return iconColor32;
-            }
-        case ICON_MONO_16x16:
-            if ( iconNameM16 == null )
-                return null;
-            else {
-                if( iconMono16 == null )
-                    iconMono16 = loadImage( iconNameM16 );
-                return iconMono16;
-            }
-        case ICON_MONO_32x32:
-            if ( iconNameM32 == null )
-                return null;
-            else {
-                if( iconMono32 == null )
-                    iconMono32 = loadImage( iconNameM32 );
-                return iconMono32;
-            }
-	default: return null;
+    public Image getIcon (int type) {
+        if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
+            (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
+
+            return Utilities.loadImage (ICON_DIR_BASE + "sysCatalog.gif"); // NOI18N
+        } else {
+            return null;
         }
     }
 
 }
-

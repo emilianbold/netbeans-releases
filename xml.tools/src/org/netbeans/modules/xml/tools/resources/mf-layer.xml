@@ -133,4 +133,10 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
+    <folder name="Shortcuts">
+        <file name="F6.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.xsl.actions.TransformAction"/>
+	</file>
+    </folder> <!-- Shortcuts -->
+
 </filesystem>

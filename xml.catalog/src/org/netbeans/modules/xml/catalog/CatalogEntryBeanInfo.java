@@ -13,8 +13,13 @@
 package org.netbeans.modules.xml.catalog;
 
 import java.beans.*;
+import java.awt.Image;
+
+import org.openide.util.Utilities;
 
 public class CatalogEntryBeanInfo extends SimpleBeanInfo {
+
+    private static final String ICON_DIR_BASE = "org/netbeans/modules/xml/catalog/resources/"; // NOI18N
 
     private static final String PUBLICID_N = Util.THIS.getString("PROP_public_id");
     private static final String PUBLICID_D = Util.THIS.getString("PROP_public_id_desc");
@@ -63,14 +68,6 @@ public class CatalogEntryBeanInfo extends SimpleBeanInfo {
     
     //GEN-LAST:Methods
 
-    private static java.awt.Image iconColor16 = null; //GEN-BEGIN:IconsDef
-    private static java.awt.Image iconColor32 = null;
-    private static java.awt.Image iconMono16 = null;
-    private static java.awt.Image iconMono32 = null; //GEN-END:IconsDef
-    private static String iconNameC16 = "/org/netbeans/modules/xml/catalog/resources/catalog-entry.gif"; // NOI18N
-    private static String iconNameC32 = null;
-    private static String iconNameM16 = null;
-    private static String iconNameM32 = null;
 
     private static int defaultPropertyIndex = -1;//GEN-BEGIN:Idx
     private static int defaultEventIndex = -1;//GEN-END:Idx
@@ -158,42 +155,14 @@ public class CatalogEntryBeanInfo extends SimpleBeanInfo {
      * @return  An image object representing the requested icon.  May
      *    return null if no suitable icon is available.
      */
-    public java.awt.Image getIcon(int iconKind) {
-        switch ( iconKind ) {
-        case ICON_COLOR_16x16:
-            if ( iconNameC16 == null )
-                return null;
-            else {
-                if( iconColor16 == null )
-                    iconColor16 = loadImage( iconNameC16 );
-                return iconColor16;
-            }
-        case ICON_COLOR_32x32:
-            if ( iconNameC32 == null )
-                return null;
-            else {
-                if( iconColor32 == null )
-                    iconColor32 = loadImage( iconNameC32 );
-                return iconColor32;
-            }
-        case ICON_MONO_16x16:
-            if ( iconNameM16 == null )
-                return null;
-            else {
-                if( iconMono16 == null )
-                    iconMono16 = loadImage( iconNameM16 );
-                return iconMono16;
-            }
-        case ICON_MONO_32x32:
-            if ( iconNameM32 == null )
-                return null;
-            else {
-                if( iconNameM32 == null )
-                    iconMono32 = loadImage( iconNameM32 );
-                return iconMono32;
-            }
+    public Image getIcon (int type) {
+        if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
+            (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
+
+            return Utilities.loadImage (ICON_DIR_BASE + "catalog-entry.gif"); // NOI18N
+        } else {
+            return null;
         }
-        return null;
     }
 
 }
