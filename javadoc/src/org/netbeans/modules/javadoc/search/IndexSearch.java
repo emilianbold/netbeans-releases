@@ -53,8 +53,9 @@ public class IndexSearch extends TopComponent {
   private static final ImageIcon listOnlyIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/list_only.gif"));
   private static final ImageIcon listHtmlIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/list_html.gif"));
 
+  private final static String ICON_RESOURCE = "/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif";
   private final static java.awt.Image windowIcon = java.awt.Toolkit.getDefaultToolkit ().getImage (
-      IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif"));
+      IndexSearch.class.getResource (ICON_RESOURCE));
 
 
   /* Current sort mode */
@@ -139,7 +140,7 @@ public class IndexSearch extends TopComponent {
     splitPanel.add( quickBrowser, org.openide.awt.SplittedPanel.ADD_SECOND );
     
     Workspace workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();  
-    Mode myMode = workspace.createMode("JavaDocSearch", "JavaDoc Index-Search", windowIcon );
+    Mode myMode = workspace.createMode("JavaDocSearch", "JavaDoc Index-Search", IndexSearch.class.getResource (ICON_RESOURCE));
     myMode.setBounds(new Rectangle( 200, 200, 450, 200 ) );
     myMode.dockInto(this);
 
