@@ -202,12 +202,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/debugger/resources/debuggerSettings.gif"/>
             </file>
-
-            <file name="org-netbeans-modules-debugger-support-java-JavaDebuggerSettings.settings" url="JavaDebuggerSettings.settings">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/debugger/resources/debuggerSettings.gif"/>
-            </file>
-
         </folder>
     </folder>
 
