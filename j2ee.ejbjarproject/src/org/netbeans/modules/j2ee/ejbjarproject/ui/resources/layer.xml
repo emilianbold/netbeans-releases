@@ -19,6 +19,10 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="JSP_Servlet/J2EE" boolvalue="true"/>
         <folder name="J2EE">
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.Bundle"/>
+         <attr name="Session/Entity" boolvalue="true"/>
+         <attr name="Entity/RelatedCMP" boolvalue="true"/>
+         <attr name="RelatedCMP/Message" boolvalue="true"/>
+         <attr name="Message/ServiceLocator.java" boolvalue="true"/>
          <file name="Session">
          <attr name="template" boolvalue="true"/>
          <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.session.SessionEJBWizard.create" />
