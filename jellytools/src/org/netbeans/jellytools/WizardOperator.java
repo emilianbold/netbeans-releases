@@ -13,23 +13,29 @@
 package org.netbeans.jellytools;
 
 import java.lang.reflect.Field;
-import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.*;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 
-/**
- * Enable to manipulate NetBeans wizards. You can access list of steps on the
+/** Enable to manipulate NetBeans wizards. You can access list of steps on the
  * left side, all buttons at the bottom (Back, Next, Finish, Cancel, Help).
- * Each step of a particular wizard is represented by an ancestor of 
+ * Each step of a particular wizard is represented by an ancestor of
  * WizardOperator, i.e. all components are described there.
- */
+ * Timeout "WizardOperator.WaitWizardStepTimeout" is defined during waiting for
+ * exact step (methods stepsWaitSelectedIndex(int) and
+ * stepsWaitSelectedValue(String)). */
 public class WizardOperator extends NbDialogOperator {
     
     private JButtonOperator _btNext;
     private JButtonOperator _btBack;
     private JButtonOperator _btFinish;
     private JListOperator _lstSteps;
+
+    private static int WAIT_TIME = 60000;
     
+    static {
+	Timeouts.initDefault("WizardOperator.WaitWizardStepTimeout", WAIT_TIME);
+    }
     
     /** Creates a new instance of WizardOperator.
      * It waits for a dialog with given title.
@@ -114,11 +120,41 @@ public class WizardOperator extends NbDialogOperator {
         return selectedIndex;
     }
     
+    /** Waits for panel with given index.
+     * Timeout is declared as "WizardOperator.WaitWizardStepTimeout".
+     * @param index int index of requested panel */    
+    public void stepsWaitSelectedIndex(final int index) {
+	try {
+	    Waiter waiter = new Waiter(new Waitable() {
+		    public Object actionProduced(Object obj) {
+                        return index==stepsGetSelectedIndex()?new Object():null;
+		    }
+		    public String getDescription() {
+			return("Wait WizardOperator step");
+		    }
+		});
+	    Timeouts times = getTimeouts().cloneThis();
+	    times.setTimeout("Waiter.WaitingTime", times.getTimeout("WizardOperator.WaitWizardStepTimeout"));
+	    waiter.setTimeouts(times);
+	    waiter.setOutput(getOutput());
+	    waiter.waitAction(null);
+	} catch(InterruptedException e) {}
+    }
+    
     /** Returns currently selected step which is bold faced.
      * @return  value of currently selected step without leading number
      */
     public String stepsGetSelectedValue() {
         return lstSteps().getModel().getElementAt(stepsGetSelectedIndex()).toString();
+    }
+    
+    /** Waits for panel with given name.
+     * Timeout is declared as "WizardOperator.WaitWizardStepTimeout".
+     * @param panelName String requested panel name */    
+    public void stepsWaitSelectedValue(String panelName) {
+        int index = lstSteps().findItemIndex(panelName);
+        if (index<0) throw new JemmyException("Panel with name \""+panelName+"\" not found.");
+        stepsWaitSelectedIndex(index);
     }
     
     /** Checks if given panel name is currently selected/shown in wizard. It
