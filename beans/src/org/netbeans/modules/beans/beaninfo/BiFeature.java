@@ -812,7 +812,8 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
         String getCreationString () {
             StringBuffer sb = new StringBuffer( 100 );
             sb.append( "new MethodDescriptor ( " ); // NOI18N
-            sb.append( "Class.forName(\"" + this.element.getDeclaringClass().getName().getFullName() + "\").getMethod(\"" + this.element.getName().getFullName() + "\", "); // NOI18N
+            //sb.append( "Class.forName(\"" + this.element.getDeclaringClass().getName().getFullName() + "\").getMethod(\"" + this.element.getName().getFullName() + "\", "); // NOI18N
+            sb.append( this.element.getDeclaringClass().getName().getFullName() + ".class.getMethod(\"" + this.element.getName().getFullName() + "\", "); // NOI18N
             sb.append( "new Class[] {"); // NOI18N
             
             org.openide.src.MethodParameter[] parameters = this.element.getParameters();
