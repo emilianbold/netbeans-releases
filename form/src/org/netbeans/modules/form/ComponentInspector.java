@@ -72,8 +72,6 @@ public class ComponentInspector extends TopComponent
     /** Currently focused form or null if no form is opened/focused */
     private FormEditorSupport focusedForm;
 
-    private boolean dontSynchronizeSelectedNodes = false;
-
     private EmptyInspectorNode emptyInspectorNode;
 
     /** Default icon base for control panel. */
@@ -192,6 +190,7 @@ public class ComponentInspector extends TopComponent
     }
 
     protected void componentActivated() {
+        setActivatedNodes(getExplorerManager().getSelectedNodes());
         attachActions();
     }
 
@@ -289,16 +288,12 @@ public class ComponentInspector extends TopComponent
             reloadAction.setForm(form);
 
             Node formNode = form.getFormRootNode();
-            // XXX how can it be null?
-            if (formNode == null) {
+            if (formNode == null) { // form not loaded yet, should not happen
                 System.err.println("Warning: FormEditorSupport.getFormRootNode() returns null"); // NOI18N
                 getExplorerManager().setRootContext(emptyInspectorNode);
             }
-            else {
-                dontSynchronizeSelectedNodes = true;
+            else
                 getExplorerManager().setRootContext(formNode);
-                dontSynchronizeSelectedNodes = false;
-            }
         }
 //        setName(INSPECTOR_TITLE);
 
@@ -317,14 +312,13 @@ public class ComponentInspector extends TopComponent
         return focusedForm;
     }
 
+    /** Called to synchronize with FormDesigner. Invokes NodeSelectionListener.
+     */
     void setSelectedNodes(Node[] nodes, FormEditorSupport form)
         throws PropertyVetoException
     {
-        if (form == focusedForm) {
-            dontSynchronizeSelectedNodes = true;
+        if (form == focusedForm)
             getExplorerManager().setSelectedNodes(nodes);
-            dontSynchronizeSelectedNodes = false;
-        }
     }
 
     Node[] getSelectedNodes() {
@@ -478,12 +472,12 @@ public class ComponentInspector extends TopComponent
 
     // listener on nodes selection (ExplorerManager)
     private class NodeSelectionListener implements PropertyChangeListener,
-                                                   ActionListener
+                                                   ActionListener, Runnable
     {
         private javax.swing.Timer timer;
 
         NodeSelectionListener() {
-            timer = new javax.swing.Timer(150, this);
+            timer = new javax.swing.Timer(200, this);
             timer.setCoalesce(true);
             timer.setRepeats(false);
         }
@@ -492,25 +486,14 @@ public class ComponentInspector extends TopComponent
             if (!ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()))
                 return;
 
-            setActivatedNodes(getExplorerManager().getSelectedNodes());
-            timer.start();
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-//            if (actionsAttached)
-                updateActions();
-
-            if (focusedForm == null)
+            FormDesigner designer;
+            if (focusedForm == null
+                    || (designer = focusedForm.getFormDesigner()) == null)
                 return;
-
-            FormDesigner designer = focusedForm.getFormDesigner();
-            if (designer == null)
-                return;
-
-            Node[] selected = getExplorerManager().getSelectedNodes();
 
             if (designer.getDesignerMode() == FormDesigner.MODE_CONNECT) {
-                // handle connection mode
+                // specially handle node selection in connection mode
+                Node[] selected = getExplorerManager().getSelectedNodes();
                 if (selected.length == 0)
                     return;
 
@@ -526,10 +509,11 @@ public class ComponentInspector extends TopComponent
                 if (cookie != null)
                     designer.connectBean(cookie.getRADComponent(), true);
             }
-            else if (!dontSynchronizeSelectedNodes) {
-                // synchronize FormDesigner with ComponentInspector
+            else if (TopComponent.getRegistry().getActivated()
+                     == ComponentInspector.this)
+            {   // the change comes from ComponentInspector => synchronize FormDesigner
                 designer.clearSelectionImpl();
-
+                Node[] selected = getExplorerManager().getSelectedNodes();
                 for (int i=0; i < selected.length; i++) {
                     FormCookie formCookie = (FormCookie)
                         selected[i].getCookie(FormCookie.class);
@@ -540,10 +524,21 @@ public class ComponentInspector extends TopComponent
                                 ((RADComponentNode)node).getRADComponent());
                     }
                 }
-
                 designer.repaintSelection();
             }
 
+            // set active node and update actions with a delay
+            timer.restart();
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            java.awt.EventQueue.invokeLater(this);
+        }
+
+        public void run() {
+            if (TopComponent.getRegistry().getActivated() == ComponentInspector.this)
+                setActivatedNodes(getExplorerManager().getSelectedNodes());
+            updateActions();
             timer.stop();
         }
     }

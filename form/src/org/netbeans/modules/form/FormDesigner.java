@@ -382,7 +382,8 @@ public class FormDesigner extends TopComponent
     }
 
     void repaintSelection() {
-        handleLayer.repaint();
+        Rectangle r = componentLayer.getDesignerOuterBounds();
+        handleLayer.repaint(0, r.x, r.y, r.width, r.height);
     }
 
     /** Finds out what component follows after currently selected component
@@ -484,6 +485,7 @@ public class FormDesigner extends TopComponent
     // ---------
     // visibility update
 
+    // synchronizes ComponentInspector with selection in FormDesigner
     void updateActivatedNodes() {
         ComponentInspector ci = ComponentInspector.getInstance();
         if (ci.getFocusedForm() != formEditorSupport)
@@ -765,8 +767,9 @@ public class FormDesigner extends TopComponent
                         if (formEditorSupport.loadForm()) {
                             setModel(formEditorSupport.getFormModel());
                             initialize();
-                            ComponentInspector.getInstance()
-                                .focusForm(formEditorSupport);
+                            ComponentInspector ci = ComponentInspector.getInstance();
+                            if (ci.getFocusedForm() == null)
+                                ci.focusForm(formEditorSupport);
                         }
                     }
                 });
@@ -774,13 +777,12 @@ public class FormDesigner extends TopComponent
     }
 
     protected void componentActivated() {
-        super.componentActivated();
         if (formModel == null)
             return;
 
         ComponentInspector ci = ComponentInspector.getInstance();
         if (ci.getFocusedForm() != formEditorSupport) {
-            ComponentInspector.getInstance().focusForm(formEditorSupport);
+            ci.focusForm(formEditorSupport);
             if (getDesignerMode() == MODE_CONNECT)
                 clearSelection();
             else
@@ -801,7 +803,6 @@ public class FormDesigner extends TopComponent
 
         ComponentInspector.getInstance().detachActions();
         resetConnection();
-        super.componentDeactivated();
     }
 
     public UndoRedo getUndoRedo() {

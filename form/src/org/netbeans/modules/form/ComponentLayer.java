@@ -69,12 +69,16 @@ class ComponentLayer extends JPanel
         return componentContainer;
     }
 
-    Rectangle getDesignerBounds() {
+    Rectangle getDesignerInnerBounds() {
         Rectangle r = new Rectangle(designerPanel.getDesignerSize());
         Insets i = designerPanel.getInsets();
         r.x = HORIZONTAL_MARGIN + i.left;
         r.y = VERTICAL_MARGIN + i.top;
         return r;
+    }
+
+    Rectangle getDesignerOuterBounds() {
+        return designerPanel.getBounds();
     }
 
     Dimension getDesignerSize() {

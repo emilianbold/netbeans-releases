@@ -412,8 +412,6 @@ class HandleLayer extends JPanel
             else formDesigner.clearSelection();
         }
 
-        repaint();
-
         return hitMetaComp;
     }
 
@@ -481,7 +479,7 @@ class HandleLayer extends JPanel
         try {
             ci.setSelectedNodes(selectedNode, fes);
             formDesigner.clearSelectionImpl();
-            repaint();
+            formDesigner.repaintSelection();
         }
         catch (java.beans.PropertyVetoException ex) {
             ex.printStackTrace();
@@ -1015,8 +1013,8 @@ class HandleLayer extends JPanel
     }
     
     boolean mouseOnVisual(Point p) {
-        Rectangle bounds = formDesigner.getComponentLayer().getDesignerBounds();
-        return bounds.contains(p);
+        Rectangle r = formDesigner.getComponentLayer().getDesignerOuterBounds();
+        return r.contains(p);
     }
 
     // ---------
@@ -1266,15 +1264,16 @@ class HandleLayer extends JPanel
         }
 
         private Dimension computeDesignerSize(Point p) {
-            Rectangle r = formDesigner.getComponentLayer().getDesignerBounds();
-            int w = r.width, h = r.height;
+            Rectangle r =
+                formDesigner.getComponentLayer().getDesignerInnerBounds();
+            int w = r.width;
+            int h = r.height;
 
             if ((resizeType & LayoutSupportManager.RESIZE_DOWN) != 0) {
                 h = p.y - r.y;
                 if (h < 0)
                     h = 0;
             }
-
             if ((resizeType & LayoutSupportManager.RESIZE_RIGHT) != 0) {
                 w = p.x - r.x;
                 if (w < 0)
