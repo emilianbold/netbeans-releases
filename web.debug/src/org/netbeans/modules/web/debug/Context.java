@@ -16,6 +16,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.beans.PropertyChangeListener;
 import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
@@ -305,6 +306,16 @@ public class Context {
         public boolean showSource (String sourceName, int lineNumber) {
             return cp1.showSource (sourceName, lineNumber) |
                    cp2.showSource (sourceName, lineNumber);
+        }
+        
+        public void addPropertyChangeListener (PropertyChangeListener l) {
+            cp1.addPropertyChangeListener (l);
+            cp2.addPropertyChangeListener (l);
+        }
+        
+        public void removePropertyChangeListener (PropertyChangeListener l) {
+            cp1.removePropertyChangeListener (l);
+            cp2.removePropertyChangeListener (l);
         }
     }
     

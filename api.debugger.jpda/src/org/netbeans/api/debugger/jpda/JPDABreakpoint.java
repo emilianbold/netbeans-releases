@@ -33,6 +33,8 @@ public abstract class JPDABreakpoint extends Breakpoint {
     /** Property name constant. */
     public static final String          PROP_SUSPEND = "suspend"; // NOI18N
     /** Property name constant. */
+    public static final String          PROP_HIDDEN = "hidden"; // NOI18N
+    /** Property name constant. */
     public static final String          PROP_PRINT_TEXT = "printText"; // NOI18N
 
     /** Suspend property value constant. */
@@ -49,6 +51,7 @@ public abstract class JPDABreakpoint extends Breakpoint {
     private transient PropertyChangeSupport pcs;
     /** Set of actions. */
     private boolean                     enabled = true;
+    private boolean                     hidden = false;
     private int                         suspend = SUSPEND_ALL;
     private String                      printText = null;
     
@@ -78,6 +81,27 @@ public abstract class JPDABreakpoint extends Breakpoint {
         int old = suspend;
         suspend = s;
         firePropertyChange (PROP_SUSPEND, new Integer (old), new Integer (s));
+    }
+    
+    /**
+     * Gets value of hidden property.
+     *
+     * @return value of hidden property
+     */
+    public boolean isHidden () {
+        return hidden;
+    }
+
+    /**
+     * Sets value of hidden property.
+     *
+     * @param s a new value of hidden property
+     */
+    public void setHidden (boolean h) {
+        if (h == hidden) return;
+        boolean old = hidden;
+        hidden = h;
+        firePropertyChange (PROP_HIDDEN, new Boolean (old), new Boolean (h));
     }
     
     /**
