@@ -55,9 +55,6 @@ public class FormDesigner extends TopComponent
 
     private RADVisualComponent topDesignComponent;
 
-    private JMenuBar formJMenuBar;
-    private MenuBar formMenuBar;
-
     private FormModel formModel;
     private FormModelListener formModelListener;
 
@@ -70,151 +67,25 @@ public class FormDesigner extends TopComponent
                       MenuComponent.class },
         VisualReplicator.ATTACH_FAKE_PEERS | VisualReplicator.DISABLE_FOCUSING);
 
-    private boolean updateTaskPlaced;
-
     private final ArrayList selectedComponents = new ArrayList();
 
     private RADComponent connectionSource;
     private RADComponent connectionTarget;
-    
+
     /** The icons for FormDesigner */
     private static String iconURL = "org/netbeans/modules/form/resources/formDesigner.gif"; // NOI18N
-    
+
     /** The FormLoaderSettings instance */
     private static FormLoaderSettings formSettings = FormEditor.getFormSettings();
 
+    // ----------
+    // constructors and setup
 
     public FormDesigner() {
+        // this constructor is only for deserialization
         this(null);
     }
 
-    public void initialize() {
-        updateWholeDesigner();
-    }
-
-    //////
-    
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("gui.formeditor"); // NOI18N
-    }
-
-    public void writeExternal(ObjectOutput out) throws IOException {
-        if (formEditorSupport == null)
-            return;
-
-        super.writeExternal(out);
-        out.writeObject(formEditorSupport.getFormDataObject());
-    }
-
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        super.readExternal(in);
-        Object o = in.readObject();
-        if (o instanceof FormDataObject) {
-            formEditorSupport = ((FormDataObject)o).getFormEditor();
-            formEditorSupport.setFormDesigner(this);
-            if (!formEditorSupport.isOpened())
-                // invoke loading in AWT event queue, but don't block it
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        if (formEditorSupport.loadForm()) {
-                            setModel(formEditorSupport.getFormModel());
-                            initialize();
-                            ComponentInspector.getInstance()
-                                .focusForm(formEditorSupport);
-                        }
-                    }
-                });
-        }
-    }
-
-    public void open(Workspace workspace) {
-        if (workspace == null)
-            workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
-        
-        if (isOpened(workspace))
-            return;
-        
-        Mode mode = workspace.findMode("Form"); // NOI18N
-        
-        if (mode != null) {
-            mode.dockInto(this);
-        }
-
-        super.open(workspace);
-    }
-
-    protected void componentActivated() {
-        super.componentActivated();
-        if (formModel == null)
-            return;
-
-        ComponentInspector ci = ComponentInspector.getInstance();
-        if (ci.getFocusedForm() != formEditorSupport) {
-            ComponentInspector.getInstance().focusForm(formEditorSupport);
-            if (CPManager.getDefault().getMode() == PaletteAction.MODE_CONNECTION)
-                clearSelection();
-            else
-                updateActivatedNodes();
-        }
-
-        ci.attachActions();
-        if (textEditLayer == null || !textEditLayer.isVisible())
-            handleLayer.requestFocus();
-        else
-            textEditLayer.requestFocus();
-    }
-
-    protected void componentDeactivated() {
-        if (formModel == null)
-            return;
-
-        if (textEditLayer != null && textEditLayer.isVisible())
-            textEditLayer.finishEditing(false);
-
-        ComponentInspector.getInstance().detachActions();
-        resetConnection();
-        super.componentDeactivated();
-    }
-
-    public UndoRedo getUndoRedo() {
-        UndoRedo ur = formModel != null ? formModel.getUndoRedoManager() : null;
-        return ur != null ? ur : super.getUndoRedo();
-    }
-
-    void updateActivatedNodes() {
-        ComponentInspector ci = ComponentInspector.getInstance();
-        if (ci.getFocusedForm() != formEditorSupport)
-            return;
-
-        Node[] selectedNodes = new Node[selectedComponents.size()];
-        Iterator iter = selectedComponents.iterator();
-        int i = 0;
-        while (iter.hasNext()) {
-            RADComponent metacomp = (RADComponent) iter.next();
-            selectedNodes[i++] = metacomp.getNodeReference();
-        }
-        try {
-            ci.setSelectedNodes(selectedNodes, formEditorSupport);
-        }
-        catch (PropertyVetoException ex) {
-            ex.printStackTrace();
-        }
-            
-        setActivatedNodes(selectedNodes);
-    }
-
-    void updateName(String name) {
-        if (topDesignComponent != null
-                && topDesignComponent != formModel.getTopRADComponent())
-            name += " / " + topDesignComponent.getName(); // NOI18N
-        if (formModel.isReadOnly())
-            name += " " + FormEditor.getFormBundle().getString("CTL_FormTitle_RO"); // NOI18N
-        setName(name);
-        setToolTipText(name);
-    }
-    
-    ////////////////
-    
     FormDesigner(FormModel formModel) {
         // instruct winsys to save state of this top component only if opened
         putClientProperty("PersistenceType", "OnlyOpened"); // NOI18N
@@ -237,6 +108,10 @@ public class FormDesigner extends TopComponent
         setModel(formModel);
     }
 
+    public void initialize() {
+        updateWholeDesigner();
+    }
+
     void setModel(FormModel m) {
         if (formModel != null) {
             formModel.removeFormModelListener(formModelListener);
@@ -244,7 +119,7 @@ public class FormDesigner extends TopComponent
         }
 
         formModel = m;
-        
+
         if (formModel != null) {
             formModel.addFormModelListener(formModelListener);
             formEditorSupport = FormEditorSupport.getSupport(formModel);
@@ -264,6 +139,9 @@ public class FormDesigner extends TopComponent
         return formEditorSupport;
     }
 
+    // ------------
+    // designer content
+
     public Object getComponent(RADComponent metacomp) {
         return replicator.getClonedComponent(metacomp);
     }
@@ -271,6 +149,89 @@ public class FormDesigner extends TopComponent
     public RADComponent getMetaComponent(Object comp) {
         return replicator.getMetaComponent(comp);
     }
+
+    ComponentLayer getComponentLayer() {
+        return componentLayer;
+    }
+
+    public RADVisualComponent getTopDesignComponent() {
+        return topDesignComponent;
+    }
+
+    public void setTopDesignComponent(RADVisualComponent component,
+                                      boolean update) {
+        topDesignComponent = component;
+        if (update) {
+            setSelectedComponent(topDesignComponent);
+            updateWholeDesigner();
+        }
+    }
+
+    public void resetTopDesignComponent(boolean update) {
+        if (formModel.getTopRADComponent() instanceof RADVisualComponent)
+            topDesignComponent = (RADVisualComponent)
+                                 formModel.getTopRADComponent();
+        else topDesignComponent = null;
+
+        if (update) {
+            setSelectedComponent(topDesignComponent);
+            updateWholeDesigner();
+        }
+    }
+
+    /** Tests whether top designed container is some parent of given component
+     * (whether the component is in the tree under top designed container).
+     */
+    public boolean isInDesignedTree(RADComponent metacomp) {
+        return topDesignComponent != null
+               && (topDesignComponent == metacomp
+                   || topDesignComponent.isParentComponent(metacomp));
+    }
+
+    void updateWholeDesigner() {
+        if (formModelListener != null)
+            formModelListener.formChanged(null);
+        updateName(formModel.getName());
+    }
+
+    public static Container createFormView(final RADVisualComponent metacomp,
+                                           final Class contClass)
+        throws Exception
+    {
+        return (Container) FormLAF.executeWithLookAndFeel(
+            UIManager.getLookAndFeel().getClass().getName(),
+            new Mutex.ExceptionAction () {
+                public Object run() throws Exception {
+                    VisualReplicator r =
+                        new VisualReplicator(contClass, null, 0);
+                    r.setTopMetaComponent(metacomp);
+                    return r.createClone();
+                }
+            }
+        );
+    }
+
+    // -------
+    // designer size
+
+    Dimension getStoredDesignerSize() {
+        RADComponent metacomp = formModel.getTopRADComponent();
+        if (metacomp == null)
+            return null;
+
+        return (Dimension) metacomp.getAuxValue(PROP_DESIGNER_SIZE);
+    }
+
+    void setStoredDesignerSize(Dimension size) {
+        RADComponent metacomp = formModel.getTopRADComponent();
+        if (metacomp instanceof RADVisualFormContainer)
+            ((RADVisualFormContainer)metacomp).setDesignerSize(size);
+        else if (metacomp != null)
+            metacomp.setAuxValue(PROP_DESIGNER_SIZE, size);
+    }
+
+    // ---------
+    // components selection
 
     java.util.List getSelectedComponents() {
         return selectedComponents;
@@ -366,44 +327,6 @@ public class FormDesigner extends TopComponent
         handleLayer.repaint();
     }
 
-    private void ensureComponentIsShown(RADVisualComponent metacomp) {
-        Component comp = (Component) getComponent(metacomp);
-        RADVisualContainer metacont = metacomp.getParentContainer();
-
-        if (comp == null) { // visual component doesn't exist yet
-            if (metacont != null)
-                metacont.getLayoutSupport().selectComponent(
-                               metacont.getIndexOf(metacomp));
-            return;
-        }
-
-        if (comp.isShowing())
-            return; // component is showing
-        if (!isInDesignedTree(metacomp))
-            return; // component is not in designer
-
-        Component topComp = (Component) getComponent(topDesignComponent);
-        if (topComp == null || !topComp.isShowing())
-            return; // designer is not showing
-
-        RADVisualComponent child = metacomp;
-
-        while (metacont != null) {
-            Container cont = (Container) getComponent(metacont);
-            LayoutSupportManager laysup = metacont.getLayoutSupport();
-            Container contDelegate = metacont.getContainerDelegate(cont);
-
-            laysup.selectComponent(child.getComponentIndex());
-            laysup.arrangeContainer(cont, contDelegate);
-
-            if (metacont == topDesignComponent || cont.isShowing())
-                break;
-
-            child = metacont;
-            metacont = metacont.getParentContainer();
-        }
-    }
-
     /** Finds out what component follows after currently selected component
      * when TAB (forward true) or Shift+TAB (forward false) is pressed. 
      * @returns the next or previous component for selection
@@ -426,7 +349,8 @@ public class FormDesigner extends TopComponent
     /** @returns the next or prevoius component to component comp
      */
     RADVisualComponent getNextVisualComponent(RADVisualComponent comp,
-                                              boolean forward) {
+                                              boolean forward)
+    {
         if (comp == null)
             return topDesignComponent;
         if (getComponent(comp) == null)
@@ -499,84 +423,39 @@ public class FormDesigner extends TopComponent
         }
     }
 
-    Dimension getStoredDesignerSize() {
-        RADComponent metacomp = formModel.getTopRADComponent();
-        if (metacomp == null)
-            return null;
+    // ---------
+    // visibility update
 
-        return (Dimension) metacomp.getAuxValue(PROP_DESIGNER_SIZE);
-    }
+    void updateActivatedNodes() {
+        ComponentInspector ci = ComponentInspector.getInstance();
+        if (ci.getFocusedForm() != formEditorSupport)
+            return;
 
-    void setStoredDesignerSize(Dimension size) {
-        RADComponent metacomp = formModel.getTopRADComponent();
-        if (metacomp instanceof RADVisualFormContainer)
-            ((RADVisualFormContainer)metacomp).setDesignerSize(size);
-        else if (metacomp != null)
-            metacomp.setAuxValue(PROP_DESIGNER_SIZE, size);
-    }
-
-    // ------------------
-    // designer content
-
-    ComponentLayer getComponentLayer() {
-        return componentLayer;
-    }
-    
-    public void setTopDesignComponent(RADVisualComponent component,
-                                      boolean update) {
-        topDesignComponent = component;
-        if (update) {
-            setSelectedComponent(topDesignComponent);
-            updateWholeDesigner();
+        Node[] selectedNodes = new Node[selectedComponents.size()];
+        Iterator iter = selectedComponents.iterator();
+        int i = 0;
+        while (iter.hasNext()) {
+            RADComponent metacomp = (RADComponent) iter.next();
+            selectedNodes[i++] = metacomp.getNodeReference();
         }
-    }
-
-    public RADVisualComponent getTopDesignComponent() {
-        return topDesignComponent;
-    }
-
-    public void resetTopDesignComponent(boolean update) {
-        if (formModel.getTopRADComponent() instanceof RADVisualComponent)
-            topDesignComponent = (RADVisualComponent)
-                                 formModel.getTopRADComponent();
-        else topDesignComponent = null;
-
-        if (update) {
-            setSelectedComponent(topDesignComponent);
-            updateWholeDesigner();
+        try {
+            ci.setSelectedNodes(selectedNodes, formEditorSupport);
         }
+        catch (PropertyVetoException ex) {
+            ex.printStackTrace();
+        }
+            
+        setActivatedNodes(selectedNodes);
     }
 
-    /** Tests whether top designed container is some parent of given component
-     * (whether the component is in the tree under top designed container).
-     */
-    public boolean isInDesignedTree(RADComponent metacomp) {
-        return topDesignComponent != null
-               && (topDesignComponent == metacomp
-                   || topDesignComponent.isParentComponent(metacomp));
-    }
-
-    void updateWholeDesigner() {
-        if (formModelListener != null)
-            formModelListener.formChanged(null);
-        updateName(formModel.getName());
-    }
-
-    public static Container createFormView(final RADVisualComponent metacomp,
-                                           final Class contClass)
-        throws Exception
-    {
-        return (Container) FormLAF.executeWithLookAndFeel(
-            UIManager.getLookAndFeel().getClass().getName(),
-            new Mutex.ExceptionAction () {
-                public Object run() throws Exception {
-                    VisualReplicator r =
-                        new VisualReplicator(contClass, null, 0);
-                    r.setTopMetaComponent(metacomp);
-                    return r.createClone();
-                }
-            }
-        );
+    void updateName(String name) {
+        if (topDesignComponent != null
+                && topDesignComponent != formModel.getTopRADComponent())
+            name += " / " + topDesignComponent.getName(); // NOI18N
+        if (formModel.isReadOnly())
+            name += " " + FormEditor.getFormBundle().getString("CTL_FormTitle_RO"); // NOI18N
+        setName(name);
+        setToolTipText(name);
     }
 
     void updateVisualSettings() {
@@ -585,7 +464,45 @@ public class FormDesigner extends TopComponent
         layeredPane.repaint(); // repaints both HanleLayer and ComponentLayer
     }
 
-    // ------------------
+    private void ensureComponentIsShown(RADVisualComponent metacomp) {
+        Component comp = (Component) getComponent(metacomp);
+        RADVisualContainer metacont = metacomp.getParentContainer();
+
+        if (comp == null) { // visual component doesn't exist yet
+            if (metacont != null)
+                metacont.getLayoutSupport().selectComponent(
+                               metacont.getIndexOf(metacomp));
+            return;
+        }
+
+        if (comp.isShowing())
+            return; // component is showing
+        if (!isInDesignedTree(metacomp))
+            return; // component is not in designer
+
+        Component topComp = (Component) getComponent(topDesignComponent);
+        if (topComp == null || !topComp.isShowing())
+            return; // designer is not showing
+
+        RADVisualComponent child = metacomp;
+
+        while (metacont != null) {
+            Container cont = (Container) getComponent(metacont);
+            LayoutSupportManager laysup = metacont.getLayoutSupport();
+            Container contDelegate = metacont.getContainerDelegate(cont);
+
+            laysup.selectComponent(child.getComponentIndex());
+            laysup.arrangeContainer(cont, contDelegate);
+
+            if (metacont == topDesignComponent || cont.isShowing())
+                break;
+
+            child = metacont;
+            metacont = metacont.getParentContainer();
+        }
+    }
+
+    // --------------
     // bean connection
 
     void connectBean(RADComponent metacomp, boolean showDialog) {
@@ -762,6 +679,95 @@ public class FormDesigner extends TopComponent
             new NotifyDescriptor.Message(
                 FormEditor.getFormBundle().getString("MSG_ComponentNotShown"), // NOI18N
                 NotifyDescriptor.WARNING_MESSAGE));
+    }
+
+    // --------
+    // methods of TopComponent
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("gui.formeditor"); // NOI18N
+    }
+
+    public void writeExternal(ObjectOutput out) throws IOException {
+        if (formEditorSupport == null)
+            return;
+
+        super.writeExternal(out);
+        out.writeObject(formEditorSupport.getFormDataObject());
+    }
+
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        super.readExternal(in);
+        Object o = in.readObject();
+        if (o instanceof FormDataObject) {
+            formEditorSupport = ((FormDataObject)o).getFormEditor();
+            formEditorSupport.setFormDesigner(this);
+            if (!formEditorSupport.isOpened())
+                // invoke loading in AWT event queue, but don't block it
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        if (formEditorSupport.loadForm()) {
+                            setModel(formEditorSupport.getFormModel());
+                            initialize();
+                            ComponentInspector.getInstance()
+                                .focusForm(formEditorSupport);
+                        }
+                    }
+                });
+        }
+    }
+
+    public void open(Workspace workspace) {
+        if (workspace == null)
+            workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
+
+        if (isOpened(workspace))
+            return;
+
+        Mode mode = workspace.findMode("Form"); // NOI18N
+        if (mode != null) {
+            mode.dockInto(this);
+        }
+
+        super.open(workspace);
+    }
+
+    protected void componentActivated() {
+        super.componentActivated();
+        if (formModel == null)
+            return;
+
+        ComponentInspector ci = ComponentInspector.getInstance();
+        if (ci.getFocusedForm() != formEditorSupport) {
+            ComponentInspector.getInstance().focusForm(formEditorSupport);
+            if (CPManager.getDefault().getMode() == PaletteAction.MODE_CONNECTION)
+                clearSelection();
+            else
+                updateActivatedNodes();
+        }
+
+        ci.attachActions();
+        if (textEditLayer == null || !textEditLayer.isVisible())
+            handleLayer.requestFocus();
+        else
+            textEditLayer.requestFocus();
+    }
+
+    protected void componentDeactivated() {
+        if (formModel == null)
+            return;
+
+        if (textEditLayer != null && textEditLayer.isVisible())
+            textEditLayer.finishEditing(false);
+
+        ComponentInspector.getInstance().detachActions();
+        resetConnection();
+        super.componentDeactivated();
+    }
+
+    public UndoRedo getUndoRedo() {
+        UndoRedo ur = formModel != null ? formModel.getUndoRedoManager() : null;
+        return ur != null ? ur : super.getUndoRedo();
     }
 
     // -----------
