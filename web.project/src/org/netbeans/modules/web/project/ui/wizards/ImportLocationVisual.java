@@ -132,23 +132,39 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     }
 
     boolean valid (WizardDescriptor settings) {
+        String sourceLocationPath = moduleLocationTextField.getText().trim();
+        if (sourceLocationPath.length() == 0) {
+            setErrorMessage("MSG_ProvideExistingSourcesLocation"); //NOI18N
+            return false;
+        }
+        File f = new File (sourceLocationPath);
+        if (!f.isDirectory() || !f.canRead()) {
+            setErrorMessage("MSG_IllegalSources"); //NOI18N
+            return false;
+        }
+
         if (projectNameTextField.getText().trim().length() == 0) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(ImportLocationVisual.class, "MSG_ProvideProjectName"));
+            setErrorMessage("MSG_ProvideProjectName"); //NOI18N
             return false; // Display name not specified
         }
 
+        String projectLocationPath = projectLocationTextField.getText().trim();
+        if(projectLocationPath.length() == 0) {
+            setErrorMessage("MSG_ProvideProjectFolder"); //NOI18N
+            return false;
+        }
         File projectLocation;
         if (locationComputed)
             projectLocation = ProjectChooser.getProjectsFolder();
         else
-            projectLocation = new File(projectLocationTextField.getText());
+            projectLocation = new File(projectLocationPath);
         if (projectLocation.exists() && !projectLocation.canWrite()) {
             // Read only project location
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportLocationVisual.class,"MSG_ProjectLocationRO")); //NOI18N
+            setErrorMessage("MSG_ProjectLocationRO"); //NOI18N
             return false;
         }
 
-        File destFolder = new File(projectLocationTextField.getText());
+        File destFolder = new File(projectLocationPath);
         File[] kids = destFolder.listFiles();
         if ( destFolder.exists() && kids != null && kids.length > 0) {
             String file = null;
@@ -180,19 +196,13 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
             }
         }
 
-        String fileName = moduleLocationTextField.getText();
-        if (fileName.length()==0) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", "");  //NOI18N
-            return false;
-        }
-        File f = new File (fileName);
-        if (!f.isDirectory() || !f.canRead()) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(ImportLocationVisual.class,"MSG_IllegalSources"));
-            return false;
-        }
-
-        wizardDescriptor.putProperty( "WizardPanel_errorMessage", "");  //NOI18N
+        setErrorMessage(null);
         return true;
+    }
+
+    private void setErrorMessage(String messageId) {
+        wizardDescriptor.putProperty( "WizardPanel_errorMessage",
+                messageId == null ? null : NbBundle.getMessage(ImportLocationVisual.class, messageId));
     }
 
 
@@ -419,28 +429,31 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     /** Handles changes in the project name and project directory
      */
     private void dataChanged(DocumentEvent e) {
-        if (e.getDocument() == moduleDocument) {
-            String moduleFolder = moduleLocationTextField.getText().trim();
-            FileObject fo;
-            try {
-                fo = FileUtil.toFileObject(new File(moduleFolder));
-            } catch (IllegalArgumentException exc) {
-                return;
-            }
-            
-            if (fo != null && !locationComputed)
-                if (!containsWebInf(fo) && !locationModified)
-                    projectLocationTextField.setText(moduleFolder);
-                else
-                    computeLocation();
-        } else if (e.getDocument() == nameDocument) {
-            if (!contextModified)
-                jTextFieldContextPath.setText("/" + projectNameTextField.getText().replace(' ', '_'));
-            if (locationComputed)
-                computeLocation();
-        }
+        try {
+            if (e.getDocument() == moduleDocument) {
+                String moduleFolder = moduleLocationTextField.getText().trim();
+                FileObject fo;
+                try {
+                    fo = FileUtil.toFileObject(new File(moduleFolder));
+                } catch (IllegalArgumentException exc) {
+                    return;
+                }
 
-        fireChanges();
+                if (fo != null && !locationComputed)
+                    if (!containsWebInf(fo) && !locationModified)
+                        projectLocationTextField.setText(moduleFolder);
+                    else
+                        computeLocation();
+            } else if (e.getDocument() == nameDocument) {
+                if (!contextModified)
+                    jTextFieldContextPath.setText("/" + projectNameTextField.getText().replace(' ', '_'));
+                if (locationComputed)
+                    computeLocation();
+            }
+        } finally {
+            // all changes should be processed to update possible error messages
+            fireChanges();
+        }
     }
     
     private void fireChanges() {
