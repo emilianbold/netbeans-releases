@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -182,7 +182,11 @@ public final class MainWindow extends JFrame {
         if(Constants.SWITCH_STATUSLINE_IN_MENUBAR) {
             JLabel status = new StatusLine();
             JPanel panel = new JPanel(new BorderLayout());
-            panel.add(new JSeparator(JSeparator.VERTICAL), BorderLayout.WEST);
+            JSeparator sep = new JSeparator(JSeparator.VERTICAL);
+            Dimension d = sep.getPreferredSize();
+            d.width += 6; // need a bit more padding...
+            sep.setPreferredSize(d);
+            panel.add(sep, BorderLayout.WEST);
             panel.add(status, BorderLayout.CENTER);
             panel.setName("statusLine"); //NOI18N
             menu.add(panel);
