@@ -65,7 +65,8 @@ public class InstancePropertiesImpl extends InstanceProperties implements Server
     }
     
     public String getProperty(String propname) throws IllegalStateException {
-        return getFO().getAttribute(propname).toString();
+        Object propValue = getFO().getAttribute(propname);
+        return propValue == null ? null : propValue.toString();
     }
 
     public java.util.Enumeration propertyNames() throws IllegalStateException {
