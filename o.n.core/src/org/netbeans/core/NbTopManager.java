@@ -448,7 +448,7 @@ public abstract class NbTopManager /*extends TopManager*/ {
     private static boolean hasModalDialog(Window w) {
         Window[] ws = w.getOwnedWindows();
         for(int i = 0; i < ws.length; i++) {
-            if(ws[i] instanceof Dialog && ((Dialog)ws[i]).isModal()) {
+            if(ws[i] instanceof Dialog && ((Dialog)ws[i]).isModal() && ws[i].isVisible()) {
                 return true;
             } else if(hasModalDialog(ws[i])) {
                 return true;
