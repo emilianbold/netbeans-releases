@@ -66,7 +66,7 @@ Microsystems, Inc. All Rights Reserved.
              topdir="."
 	     module="netbeans/modules/diff.jar"
 	     homepage="http://diff.${homepage.base}/"
-	     distribution="${dist.base}/diff.nbm">
+	     distribution="http://${dist.base}/diff.nbm">
       <license file="${license.file}"/>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
