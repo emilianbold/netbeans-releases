@@ -72,7 +72,7 @@ public final class LoaderPoolNode extends AbstractNode {
   private static Object[] loadersArray;
 
   /** true if changes in loaders should be notified */
-  private static int notifications;
+  private static boolean installationFinished = false;
   
   /** Just workaround, need to pass instance of
   * the LoaderPoolNodeChildren as two params to superclass
@@ -246,27 +246,12 @@ public final class LoaderPoolNode extends AbstractNode {
     update ();
   }
   
-  /** Allows to stop notifications about adding of new loaders.
-  * This is used from auto install of modules to disable notifications till
-  * all modules are installed.
-  */
-  static synchronized void setNotifications (boolean notify) {
-    if (!notify) {
-      notifications = 1;
-    } else {
-      int n = notifications;
-      notifications = 0;
-      if (n > 1) {
-        update ();
-      }
-    }
-  }
-  
   /** Notification to finish installation of nodes during startup.
   * @deprecated no longer does anything, please remove calls to it
   */
-  static synchronized void finishInstallation () {
-    // do nothing
+  static void installationFinished () {
+    installationFinished = true;
+    myChildren.update ();
   }
   
   /** Stores all the objects into stream.
@@ -412,21 +397,9 @@ public final class LoaderPoolNode extends AbstractNode {
     // clear the cache of loaders
     loadersArray = null;
     
-    if (loaderPool != null && notifications == 0) {
-      Thread t = new Thread ("Loader Pool Change Notification") { // NOI18N
-        public void run () {
-          loaderPool.superFireChangeEvent(
-            new ChangeEvent(loaderPool)
-          );
-      
-          myChildren.update ();
-        }
-      };
-      t.setPriority (Thread.MIN_PRIORITY);
-      t.start ();
-    } else {
-      // remember that there should be notifications
-      notifications++;
+    if (loaderPool != null && installationFinished) {
+      loaderPool.superFireChangeEvent();
+      myChildren.update ();
     }
   }
 
@@ -596,8 +569,10 @@ public final class LoaderPoolNode extends AbstractNode {
   * Delegates its work to the outer class LoaderPoolNode.
   */
   public static final class NbLoaderPool extends DataLoaderPool 
-  implements PropertyChangeListener {
+  implements PropertyChangeListener, Runnable {
     private static final long serialVersionUID =-8488524097175567566L;
+
+    private RequestProcessor.Task fireTask = RequestProcessor.createRequest (this);
     
     /** Enumerates all loaders. Loaders are taken from children
     * structure of LoaderPoolNode. */
@@ -619,13 +594,9 @@ public final class LoaderPoolNode extends AbstractNode {
     /** Listener to property changes.
     */
     public void propertyChange (PropertyChangeEvent ev) {
-      Thread t = new Thread ("Data Loader Change Notification " + ev.getSource ()) { // NOI18N
-        public void run () {
-          superFireChangeEvent (new ChangeEvent (this));
-        }
+      if (installationFinished) {
+        superFireChangeEvent ();
       };
-      t.setPriority (Thread.MIN_PRIORITY);
-      t.start ();
     }
     
     /** Fires change event to all listeners
@@ -633,8 +604,13 @@ public final class LoaderPoolNode extends AbstractNode {
     * Accessor for inner classes only.
     * @param che change event
    */
-    void superFireChangeEvent (ChangeEvent che) {
-      super.fireChangeEvent(che);
+    void superFireChangeEvent () {
+      fireTask.schedule (1000);
+    }
+
+    /** Called from the request task */
+    public void run () {
+      super.fireChangeEvent(new ChangeEvent (this));
       //System.out.println ("Loaders Change event fired...."); // NOI18N
     }
     
@@ -713,6 +689,8 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  36   Gandalf   1.35        1/16/00  Jaroslav Tulach TemplatesExplorer 
+*       removed, startup faster
 *  35   Gandalf   1.34        1/13/00  Jesse Glick     System loaders are 
 *       annotated as such.
 *  34   Gandalf   1.33        1/13/00  Jaroslav Tulach I18N
