@@ -436,7 +436,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
             },
             null,
             DialogDescriptor.DEFAULT_ALIGN,
-            null,
+            new HelpCtx(ExitDialog.class.getName () + ".pending"), // NOI18N
             new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
                     if(evt.getSource() == exitOption) {
