@@ -89,10 +89,9 @@ Microsystems, Inc. All Rights Reserved.
     </folder> --><!-- Bookmarks -->
 
     <folder name="Actions">
-<!--not using bookmarks in NB 3.6-->
-    <!--        <folder name="Help">
+        <folder name="Help">
             <file name="org-netbeans-modules-url-BookmarksAction.instance"/>
-        </folder>--> <!-- Help -->
+        </folder> <!-- Help -->
 
         <folder name="System">
             <file name="org-netbeans-modules-url-OpenInNewWindowAction.instance"/>
