@@ -70,26 +70,47 @@ public class CallStackTreeModel implements TreeModel {
      */
     public Object[] getChildren (Object parent, int from, int to) 
     throws NoInformationException, UnknownTypeException {
-        StackFrame[] ch = (StackFrame[]) model.getChildren (parent, from, to);
-        int i, k = ch.length;
-        CallStackFrameImpl[] r = new CallStackFrameImpl [k];
-        for (i = 0; i < k; i++) {
-            String id = "" + ch [i];
-            try {
-                id = ch [i].thread ().name () + ":" + i;
-            } catch (InvalidStackFrameException e) {
-                // sf was obsoleted -> use default id
+        if ( parent.equals (ROOT) ||
+             (parent instanceof ThreadReference) 
+        ) {
+            // 1) get ThreadReference
+            ThreadReference threadRef = null;
+            if (parent.equals (ROOT)) {
+                JPDAThreadImpl ti = (JPDAThreadImpl) debugger.
+                    getCurrentThread ();
+                if (ti != null)
+                    threadRef = ti.getThreadReference ();
+            } else
+                threadRef = (ThreadReference) parent;
+            if (threadRef == null) throw new NoInformationException ("No current thread");
+
+            // 2) get StackFrames
+            StackFrame[] ch = (StackFrame[]) model.getChildren (parent, from, to);
+            
+            // 3) encapsulate them to CallStackFrameImpls
+            int i, k = ch.length;
+            CallStackFrameImpl[] r = new CallStackFrameImpl [k];
+            String threadName = threadRef.name ();
+            for (i = 0; i < k; i++) {
+                String id = "" + ch [i];
+                try {
+                    id = threadName + ":" + i;
+                } catch (InvalidStackFrameException e) {
+                    // sf was obsoleted -> use default id
+                }
+                // StackFrame of the same thread with the same index should 
+                // be "equal"
+                r [i] = new CallStackFrameImpl (
+                    threadRef,
+                    ch [i], 
+                    this, 
+                    id,
+                    i
+                );
             }
-            // StackFrame of the same thread with the same index should 
-            // be "equal"
-            r [i] = new CallStackFrameImpl (
-                ch [i], 
-                this, 
-                id,
-                i
-            );
-        }
-        return r;
+            return r;
+        } else
+        throw new UnknownTypeException (parent);
     }
     
     /**

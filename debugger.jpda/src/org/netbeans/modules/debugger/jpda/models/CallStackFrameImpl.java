@@ -36,12 +36,13 @@ public class CallStackFrameImpl implements CallStackFrame {
     
     
     public CallStackFrameImpl (
+        ThreadReference     thread,
         StackFrame          sf,
         CallStackTreeModel  ctm,
         String              id,
         int                 index
     ) {
-        this.thread = sf.thread ();
+        this.thread = thread;
         this.index = index;
         this.ctm = ctm;
         this.id = id;

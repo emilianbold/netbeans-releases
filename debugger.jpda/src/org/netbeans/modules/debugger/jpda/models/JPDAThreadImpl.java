@@ -88,9 +88,7 @@ public class JPDAThreadImpl implements JPDAThread {
             if (threadReference.frameCount () < 1) return -1;
             return threadReference.frame (0).location ().lineNumber (stratum);
         } catch (InvalidStackFrameException ex) {
-            ex.printStackTrace ();
         } catch (IncompatibleThreadStateException ex) {
-            ex.printStackTrace ();
         } catch (VMDisconnectedException ex) {
         }
         return -1;
@@ -132,9 +130,7 @@ public class JPDAThreadImpl implements JPDAThread {
             if (threadReference.frameCount () < 1) return "";
             return threadReference.frame (0).location ().declaringType ().name ();
         } catch (InvalidStackFrameException ex) {
-            ex.printStackTrace ();
         } catch (IncompatibleThreadStateException ex) {
-            ex.printStackTrace ();
         } catch (VMDisconnectedException ex) {
         }
         return "";
@@ -150,9 +146,7 @@ public class JPDAThreadImpl implements JPDAThread {
             if (threadReference.frameCount () < 1) return "";
             return threadReference.frame (0).location ().method ().name ();
         } catch (InvalidStackFrameException ex) {
-            ex.printStackTrace ();
         } catch (IncompatibleThreadStateException ex) {
-            ex.printStackTrace ();
         } catch (VMDisconnectedException ex) {
         }
         return "";
@@ -168,9 +162,7 @@ public class JPDAThreadImpl implements JPDAThread {
             if (threadReference.frameCount () < 1) return "";
             return threadReference.frame (0).location ().sourceName (stratum);
         } catch (InvalidStackFrameException ex) {
-            ex.printStackTrace ();
         } catch (IncompatibleThreadStateException ex) {
-            ex.printStackTrace ();
         } catch (AbsentInformationException ex) {
             throw new NoInformationException (ex.getMessage ());
         } catch (VMDisconnectedException ex) {
@@ -188,9 +180,7 @@ public class JPDAThreadImpl implements JPDAThread {
             if (threadReference.frameCount () < 1) return "";
             return threadReference.frame (0).location ().sourcePath (stratum);
         } catch (InvalidStackFrameException ex) {
-            ex.printStackTrace ();
         } catch (IncompatibleThreadStateException ex) {
-            ex.printStackTrace ();
         } catch (AbsentInformationException ex) {
             throw new NoInformationException (ex.getMessage ());
         } catch (VMDisconnectedException ex) {
