@@ -348,6 +348,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/Applet.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/applet.gif"/>
+                <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e000178707400104170706c657420446562756767696e6774002e6f72672e6e65746265616e732e6d6f64756c65732e6170706c65742e4170706c657444656275676765725479706578"/>
+                <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e000178707400104170706c657420457865637574696f6e74002a6f72672e6e65746265616e732e6d6f64756c65732e6170706c65742e4170706c65744578656375746f7278"/>
             </file>
             <file name="Applet.form" url="templates/AWTForms/Applet_form">
                 <attr name="template" boolvalue="true" />
@@ -390,6 +392,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/JApplet.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JAppletColor16.gif"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JAppletColor32.gif"/>
+                <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e000178707400104170706c657420446562756767696e6774002e6f72672e6e65746265616e732e6d6f64756c65732e6170706c65742e4170706c657444656275676765725479706578"/>
+                <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e000178707400104170706c657420457865637574696f6e74002a6f72672e6e65746265616e732e6d6f64756c65732e6170706c65742e4170706c65744578656375746f7278"/>
             </file>
             <file name="JApplet.form" url="templates/SwingForms/JApplet_form">
                 <attr name="template" boolvalue="true" />
