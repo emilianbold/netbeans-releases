@@ -24,6 +24,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Mutex;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -61,11 +62,17 @@ public class FreeformEvaluatorTest extends TestBase {
         eval.addPropertyChangeListener(l);
         FileLock lock = buildProperties.lock();
         try {
-            OutputStream os = buildProperties.getOutputStream(lock);
+            final OutputStream os = buildProperties.getOutputStream(lock);
             try {
                 p.store(os);
             } finally {
-                os.close();
+                // close file under ProjectManager.readAccess so that events are fired synchronously
+                ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {
+                    public Object run() throws Exception {
+                        os.close();
+                        return null;
+                    }
+                });
             }
         } finally {
             lock.releaseLock();
@@ -141,11 +148,17 @@ public class FreeformEvaluatorTest extends TestBase {
         locProperties = simple2.getProjectDirectory().getFileObject("loc.properties");
         lock = locProperties.lock();
         try {
-            OutputStream os = locProperties.getOutputStream(lock);
+            final OutputStream os = locProperties.getOutputStream(lock);
             try {
                 p.store(os);
             } finally {
-                os.close();
+                // close file under ProjectManager.readAccess so that events are fired synchronously
+                ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {
+                    public Object run() throws Exception {
+                        os.close();
+                        return null;
+                    }
+                });
             }
         } finally {
             lock.releaseLock();
