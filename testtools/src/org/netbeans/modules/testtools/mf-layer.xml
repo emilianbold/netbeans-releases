@@ -23,15 +23,15 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
 	      <![CDATA[
 		<!DOCTYPE Javadoc PUBLIC "-//NetBeans IDE//DTD JavadocLibrary//EN" "http://www.netbeans.org/dtds/JavadocLibrary-1_0.dtd">
 		<Javadoc>
-		    <Archive name="docs/jemmy-API.zip"/>
+		    <Archive name="docs/jemmy-javadoc.zip"/>
 		</Javadoc>
 	      ]]>
             </file>
-            <file name="org-netbeans-modules-testtools-jelly-javadoc.xml">
+            <file name="org-netbeans-modules-testtools-jelly2-nb-javadoc.xml">
 	      <![CDATA[
 		<!DOCTYPE Javadoc PUBLIC "-//NetBeans IDE//DTD JavadocLibrary//EN" "http://www.netbeans.org/dtds/JavadocLibrary-1_0.dtd">
 		<Javadoc>
-		    <Archive name="docs/jelly-API.zip"/>
+		    <Archive name="docs/jelly2-nb-javadoc.zip"/>
 		</Javadoc>
 	      ]]>
             </file>
@@ -53,11 +53,11 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
 	          </Library>
 	      ]]>
            </file>
-           <file name="org-netbeans-modules-testtools-jelly-library.xml">
+           <file name="org-netbeans-modules-testtools-jelly2-library.xml">
 	      <![CDATA[
 	          <!DOCTYPE Library PUBLIC "-//NetBeans IDE//DTD JavaLibrary//EN" "http://www.netbeans.org/dtds/JavaLibrary-1_0.dtd">
 	          <Library>
-	              <Archive name="lib/ext/jelly-nb.jar"/>
+	              <Archive name="lib/ext/jelly2-nb.jar"/>
 	          </Library>
 	      ]]>
            </file>
@@ -119,13 +119,6 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestSuiteWizardIterator.singleton"/>
         <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/testtools/templates/simpleTest.html"/>
-        <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e00017870740012496e7465726e616c20457865637574696f6e74002c6f72672e6e65746265616e732e6d6f64756c65732e6a6176612e4a6176615468726561644578656375746f7278"/>
-      </file>
-      <file name="jemmyTest.java" url="templates/jemmyTest.java.template">
-        <attr name="template" boolvalue="true"/>
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
-        <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestSuiteWizardIterator.singleton"/>
-        <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/testtools/templates/jemmyTest.html"/>
         <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e00017870740012496e7465726e616c20457865637574696f6e74002c6f72672e6e65746265616e732e6d6f64756c65732e6a6176612e4a6176615468726561644578656375746f7278"/>
       </file>
       <file name="jellyTest.java" url="templates/jellyTest.java.template">

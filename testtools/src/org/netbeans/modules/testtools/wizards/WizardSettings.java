@@ -151,7 +151,7 @@ class WizardSettings extends Object {
         doc.setProperty("jelly.home", "location", typeJellyHome);
         if (typeUseJemmy) {
             doc.setProperty("xtest.extra.jars.path", "value", "${jemmy.home};${jelly.home}");
-            doc.setProperty("xtest.extra.jars.ide", "value", "jemmy.jar;jelly-nb.jar");
+            doc.setProperty("xtest.extra.jars.ide", "value", "jemmy.jar;jelly2-nb.jar");
         } else {
             doc.setProperty("xtest.extra.jars.path", "value", "");
             doc.setProperty("xtest.extra.jars.ide", "value", "");

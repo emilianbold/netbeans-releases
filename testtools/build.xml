@@ -52,6 +52,9 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars" depends="compile">
+    <tstamp>
+        <format property="buildnumber" pattern="yyyyMMddhhmm"/>
+    </tstamp>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <locjar jarfile="netbeans/modules/testtools.jar"
@@ -67,34 +70,25 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
  <target name="prepare-lib" depends="prepare-docs">
-    <ant dir="../jellytools/"/>
-    <mkdir dir="netbeans/lib/ext"/>
-    <copy file="../jellytools/jelly-nb.jar" tofile="netbeans/lib/ext/jelly-nb.jar" filtering="off"/>
-
     <ant dir="../xtest/" target="makedist"/>
     <mkdir dir="netbeans/xtest-distribution"/>
     <unzip src="../xtest/xtest-distribution.zip" dest="netbeans/xtest-distribution" />
 
+    <ant dir="../jellytools/"/>
+    <mkdir dir="netbeans/lib/ext"/>
+    <copy file="../jellytools/jelly2-nb.jar" tofile="netbeans/lib/ext/jelly2-nb.jar" filtering="off"/>
  </target>
 
   <target name="prepare-docs">
-      <mkdir dir="../jemmy/docs"/>
-      <javadoc destdir="../jemmy/docs" packagenames="org.netbeans.jemmy.*" Windowtitle="Jemmy API">
-          <sourcepath>
-              <pathelement location="../jemmy/src"/>
-          </sourcepath>
-      </javadoc>
+      <ant dir="../jemmy/" target="api"/>
       <mkdir dir="netbeans/docs"/>
-      <zip zipfile="netbeans/docs/jemmy-API.zip"
-             basedir="../jemmy/docs"
+      <zip zipfile="netbeans/docs/jemmy-javadoc.zip"
+             basedir="../jemmy/www/javadoc"
              compress="true">
       </zip>
 
     <ant dir="../jellytools/" target="javadoc"/>
-      <zip zipfile="netbeans/docs/jelly-API.zip"
-             basedir="../jellytools/javadoc"
-             compress="true">
-      </zip>
+    <copy file="../jellytools/jelly2-nb-javadoc.zip" tofile="netbeans/docs/jelly2-nb-javadoc.zip" filtering="off"/>
   </target>
 
 
