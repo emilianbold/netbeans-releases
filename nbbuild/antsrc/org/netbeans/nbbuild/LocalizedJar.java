@@ -61,6 +61,7 @@ public class LocalizedJar extends MatchingTask {
     private boolean checkPathLocale = true ;
     private boolean warnMissingDir = false ;
     private boolean warnMissingDirSet = false ;
+    private boolean preserveModuleJar = false;
 
     /** Locale or branding specifier.
      * Represents a complete locale or branding suffix,
@@ -139,6 +140,14 @@ public class LocalizedJar extends MatchingTask {
      */
     public void setCompress (String compress) {
         doCompress = Project.toBoolean (compress);
+    }
+
+    /** Turn on/off preserving original module jars with 'code'
+     *  Set it to 'true' to not allow overwriting of module jars
+     *  with localization/branding stuff
+     */
+    public void setPreserveModuleJar (String pmj) {
+        preserveModuleJar = Project.toBoolean (pmj);
     }
 
     /** A set of files to JAR up.
@@ -284,7 +293,7 @@ public class LocalizedJar extends MatchingTask {
                 Map.Entry entry = (Map.Entry) it.next ();
                 String path = (String) entry.getKey ();
 
-//log( "==> Examining file: " + path) ;
+log( "==> Examining file: " + path, Project.MSG_DEBUG) ;
 
                 File file = (File) entry.getValue ();
                 // First see if it matches a known branding, locale, or pair of one of each.
@@ -312,7 +321,7 @@ public class LocalizedJar extends MatchingTask {
                         break;
                     }
                 }
-                File thisjar; // JAR to send this file to
+                File thisjar = null; // JAR to send this file to
 
 		// Check if this file has a parent directory with the //
 		// same name as one of the locales.		      //
@@ -322,16 +331,20 @@ public class LocalizedJar extends MatchingTask {
 		}
 
 
-/*
-if( thisLocale != null) {
-  log( "    Locale: " + thisLocale) ;
-}
-if( thisBranding != null) {
-  log( "    Branding: " + thisBranding) ;
-}
-if( localeKitFiles.contains( file)) {
-  log( "    Localizable file.") ;
-} */
+                if( thisLocale != null) {
+                    log( "    Locale: " + thisLocale, Project.MSG_DEBUG) ;
+                } else {
+                    log( "    Locale not set", Project.MSG_DEBUG) ;
+                }
+                if( thisBranding != null) {
+                    log( "    Branding: " + thisBranding, Project.MSG_DEBUG) ;
+                } else {
+                    log( "    Branding not set", Project.MSG_DEBUG) ;
+                }
+                if( localeKitFiles.contains( file)) {
+                    log( "    Localizable file.", Project.MSG_DEBUG) ;
+                } 
+
 
                 if (thisLocale != null || thisBranding != null || localeKitFiles.contains (file)) {
                     String name = jarFile.getName ();
@@ -344,21 +357,34 @@ if( localeKitFiles.contains( file)) {
                         name += '_' + thisLocale;
                     }
                     name += ".jar";
-                    thisjar = new File (new File (jarFile.getParentFile (), "locale"), name);
-                    localeMarks.put (thisjar, ((thisLocale != null) ? thisLocale : "-"));
-                    brandingMarks.put (thisjar, ((thisBranding != null) ? thisBranding : "-"));
+                    if ((preserveModuleJar) && (thisBranding == null) && (thisLocale == null)) {
+                        thisjar = null;
+                        log("    Preserving module file (1): " + jarFile.getName(), Project.MSG_DEBUG);
+                    } else {
+                        thisjar = new File (new File (jarFile.getParentFile (), "locale"), name);
+                        localeMarks.put (thisjar, ((thisLocale != null) ? thisLocale : "-"));
+                        brandingMarks.put (thisjar, ((thisBranding != null) ? thisBranding : "-"));
+                    }
                 } else {
-                    thisjar = jarFile;
-                    localeMarks.put (thisjar, null);
-                    brandingMarks.put (thisjar, null);
+ 		    if (preserveModuleJar) {
+                        thisjar = null;
+                        log("    Preserving module file (2): " + jarFile.getName(), Project.MSG_DEBUG);
+                    } else {
+                        thisjar = jarFile;
+                        localeMarks.put (thisjar, null);
+                        brandingMarks.put (thisjar, null);
+                    }
                 }
-                jars.add (thisjar);
-                Map files = (Map) router.get (thisjar);
-                if (files == null) {
-                    files = new TreeMap ();
-                    router.put (thisjar, files);
+                if (thisjar != null) {
+  	            log("    Adding file " + thisjar.getName() + " to 'jars' HashSet", Project.MSG_DEBUG);
+                    jars.add (thisjar);
+                    Map files = (Map) router.get (thisjar);
+                    if (files == null) {
+                        files = new TreeMap ();
+                        router.put (thisjar, files);
+                    }
+                    files.put (path, file);
                 }
-                files.put (path, file);
             }
         }
 
