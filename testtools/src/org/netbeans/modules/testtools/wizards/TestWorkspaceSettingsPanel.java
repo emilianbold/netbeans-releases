@@ -48,7 +48,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
     private static final String netbeansPath="../../../nb_all/nbbuild/netbeans";
     private static final String xtestPath="../../../nb_all/xtest";
     private static final String jemmyPath="../../../nbextra/jemmy";
-    private static final String jellyPath="../../../nbextra/jelly";
+    private static final String jellyPath="../../../nbextra/jellytools";
     private String jemmyHome=jemmyPath;
     private String jellyHome=jellyPath;
     private TemplateWizard wizard;

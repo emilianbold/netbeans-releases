@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
           -->            
          
         <property name="jemmy.home" location="../../../nbextra/jemmy"/>
-        <property name="jelly.home" location="../../../nbextra/jelly"/>
+        <property name="jelly.home" location="../../../nbextra/jellytools"/>
 		 
         <!-- List of directories where jars will be searched. -->
         <property name="xtest.extra.jars.path" value=""/>
