@@ -1,38 +1,16 @@
 /* Some NB-specific formatting stuff. */
 
 .nonnormative {
-  padding-left: 0.2em;
-  border-left: solid;
-  border-right: none;
-  border-top: none;
-  border-bottom: none;
-  border-left-width: thick;
-  border-color: #AAAAFF;
+  background: #E5E5FF;
 }
-
-/*
-XXX nonnormative sections are currently indented a bit because of
-this. The following seems to work in Mozilla but also causes problems
-with some browsers and seems more dangerous:
-
-BODY {
-  margin: 0.9em;
-}
-
-
-.nonnormative {
-  margin: -0.9em;
-  padding-left: 0.3em;
-  border-left: solid;
-  border-right: none;
-  border-top: none;
-  border-bottom: none;
-  border-left-width: 0.6em;
-  border-color: #AAAAFF;
-}
-*/
 
 .footnote {
   font-size: 70%;
   color: grey;
+}
+
+samp {
+  border: dashed;
+  border-color: #DDFFDD;
+  border-width: thin;
 }
