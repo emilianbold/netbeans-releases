@@ -57,9 +57,6 @@ Microsystems, Inc. All Rights Reserved.
                  
         <nbtaskdef classpath="${xtest.home}/lib/xtest.jar">
             <taskdef name="nbpath" classname="org.netbeans.xtest.NbPath"/>
-            <!--
-            <taskdef name="sysinfo" classname="org.netbeans.xtest.SysInfo"/>
-            -->
             <taskdef name="nbpatternset" classname="org.netbeans.xtest.NbPatternset"/>
             <taskdef name="pathdef" classname="org.netbeans.xtest.PathDef"/>                        
             <taskdef name="write-property" classname="org.netbeans.xtest.UserPropertyWriter"/>
@@ -73,14 +70,9 @@ Microsystems, Inc. All Rights Reserved.
 
 	<!-- XML, XSLT reporters -->
         <nbtaskdef classpath="${xtest.path};${xalan.path}">
-            <!--
-            <taskdef name="xalan" classname="org.netbeans.xtest.XalanLauncher"/>
-            <taskdef name="nbjr" classname="org.netbeans.xtest.junit.XMLResultAggregator"/>
-            -->
             <taskdef name="test-configurator" classname="org.netbeans.xtest.MTestConfigurator"/>
             <taskdef name="test-compiler" classname="org.netbeans.xtest.MTestCompiler"/>            
             <taskdef name="test-executor" classname="org.netbeans.xtest.MTestExecutor"/>            
-            <taskdef name="sysinfo" classname="org.netbeans.xtest.pe.SystemInfoTask"/>
             <taskdef name="testruninfo" classname="org.netbeans.xtest.pe.TestRunInfoTask"/>
             <taskdef name="testbaginfo" classname="org.netbeans.xtest.pe.TestBagInfoTask"/>
             <taskdef name="regenerateXML" classname="org.netbeans.xtest.pe.RegenerateXMLTask"/>

@@ -41,10 +41,8 @@ Microsystems, Inc. All Rights Reserved.
         <nbtaskdef classpath="${xtest.home}/lib/xtest.jar;${xtest.home}/lib/xalan.jar;${xtest.home}/lib/xerces.jar;${xtest.home}/lib/xml-apis.jar">
             <taskdef name="master-config" classname="org.netbeans.xtest.NbTestConfig"/>
             <taskdef name="xtest-runner" classname="org.netbeans.xtest.NbExecutor"/>
-            <taskdef name="xreport" classname="org.netbeans.xtest.NbReport"/>
             <taskdef name="get-system-property" classname="org.netbeans.xtest.GetSystemProperty"/>
             <taskdef name="set-system-property" classname="org.netbeans.xtest.SetSystemProperty"/>
-            <taskdef name="xalan" classname="org.netbeans.xtest.XalanLauncher"/>
             <taskdef name="getResultsDirs" classname="org.netbeans.xtest.pe.GetResultsDirsTask"/>
             <taskdef name="testruninfo" classname="org.netbeans.xtest.pe.TestRunInfoTask"/>
             <taskdef name="regenerateXML" classname="org.netbeans.xtest.pe.RegenerateXMLTask"/>
