@@ -19,16 +19,40 @@ Microsystems, Inc. All Rights Reserved.
 
     <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${nb_all}/nbbuild/nbantext.jar"/>
 
-    <target name="init" depends="default.init,basic-init,files-init"/>
+    <target name="init" depends="basic-init,files-init,build-init"/>
 
     <target name="basic-init" depends="default.init">
         <!-- Synch the following property loads with NbModuleProject.makeEvalDefs: -->
         <property file="nbproject/private/private.properties"/>
         <property file="nbproject/project.properties"/>
-        <parseprojectxml project="." modulesxml="${nb_all}/nbbuild/templates/modules.xml" publicpackagesproperty="public.packages" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" codenamebasedashesproperty="code.name.base.dashes" codenamebaseslashesproperty="code.name.base.slashes" moduleclasspathproperty="module.classpath"/>
+        <!-- Do not try to set module.classpath here, in particular: -->
+        <!-- during a clean, the ${foo/bar.dir} properties may not be set. -->
+        <parseprojectxml project="." modulesxml="${nb_all}/nbbuild/templates/modules.xml" codenamebasedashesproperty="code.name.base.dashes" codenamebaseslashesproperty="code.name.base.slashes"/>
         <property name="module.jar.dir" value="${nb.modules.dir}"/>
         <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
         <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>
+        <condition property="has.javahelp">
+            <and>
+                <available file="javahelp"/>
+                <!-- Special hack for core: -->
+                <not><available file="javahelp/manifest.mf"/></not>
+            </and>
+        </condition>
+        <property name="javahelp.jar.dir" value="${nb.modules/docs.dir}"/>
+        <property name="javahelp.jar.basename" value="${code.name.base.dashes}.jar"/>
+        <property name="javahelp.jar" value="${javahelp.jar.dir}/${javahelp.jar.basename}"/>
+    </target>
+
+    <target name="files-init" depends="basic-init">
+        <patternset id="module.files">
+            <include name="${module.jar}"/>
+            <include name="${javahelp.jar}" if="has.javahelp"/>
+            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
+        </patternset>
+    </target>
+
+    <target name="build-init" depends="basic-init">
+        <parseprojectxml project="." modulesxml="${nb_all}/nbbuild/templates/modules.xml" publicpackagesproperty="public.packages" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" moduleclasspathproperty="module.classpath"/>
         <condition property="is.regular">
             <not>
                 <or>
@@ -51,29 +75,11 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement path="${module.classpath}"/>
             <pathelement path="${cp.extra}"/>
         </path>
-        <condition property="has.javahelp">
-            <and>
-                <available file="javahelp"/>
-                <!-- Special hack for core: -->
-                <not><available file="javahelp/manifest.mf"/></not>
-            </and>
-        </condition>
         <property name="build.javahelp.dir" location="build/javahelp"/>
-        <property name="javahelp.jar.dir" value="${nb.modules/docs.dir}"/>
-        <property name="javahelp.jar.basename" value="${code.name.base.dashes}.jar"/>
-        <property name="javahelp.jar" value="${javahelp.jar.dir}/${javahelp.jar.basename}"/>
         <property name="javahelp.base" value="${code.name.base.slashes}/docs"/>
         <property name="javahelp.search" value="JavaHelpSearch"/>
         <property name="javahelp.excludes" value="credits.html"/>
         <!-- XXX maybe have a javahelp.hs property to point to the helpset -->
-    </target>
-
-    <target name="files-init" depends="basic-init">
-        <patternset id="module.files">
-            <include name="${module.jar}"/>
-            <include name="${javahelp.jar}" if="has.javahelp"/>
-            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
-        </patternset>
     </target>
 
     <target name="test-preinit" depends="init"/>
@@ -363,9 +369,7 @@ Microsystems, Inc. All Rights Reserved.
     }
     -->
 
-    <target name="clean" depends="init">
-        <!-- XXX could probably have clean depend on a lesser init target: -->
-        <!-- no need to define classpath, etc. just for this -->
+    <target name="clean" depends="files-init">
         <delete dir="build"/>
         <delete dir="javadoc"/>
         <delete>

@@ -253,12 +253,12 @@ public final class ParseProjectXml extends Task {
     private static final class Dep {
         /** will be e.g. org.netbeans.modules.form or IDE */
         public String codenamebase;
-        public int release = -1;
+        public String release = null;
         public String spec = null;
         // XXX handle impl deps too
         public String toString() {
             StringBuffer b = new StringBuffer(codenamebase);
-            if (release != -1) {
+            if (release != null) {
                 b.append('/');
                 b.append(release);
             }
@@ -302,7 +302,7 @@ public final class ParseProjectXml extends Task {
                     if (t == null) {
                         throw new BuildException("No text in <release-version>", getLocation());
                     }
-                    d.release = Integer.parseInt(t);
+                    d.release = t;
                 }
                 Element sv = XMLUtil.findElement(rd, "specification-version", NBM_NS);
                 if (sv != null) {
@@ -385,9 +385,7 @@ public final class ParseProjectXml extends Task {
             String topdirProp = module.path + ".dir"; // "java/srcmodel.dir"
             String topdirVal = getProject().getProperty(topdirProp);
             if (topdirVal == null) {
-                // Can happen while running clean: the dependent modules might not be here yet.
-                log("Undefined: " + topdirProp, Project.MSG_VERBOSE);
-                return null;
+                throw new BuildException("Undefined: " + topdirProp + " (usually means you are missing a dependency in nbbuild/build.xml#all-*)", getLocation());
             }
             cp.append(topdirVal);
             cp.append('/');
