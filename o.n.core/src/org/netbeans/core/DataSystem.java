@@ -198,7 +198,7 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
   static class DSMap extends Children.Keys implements PropertyChangeListener {
 
     public void propertyChange (PropertyChangeEvent ev) {
-      System.out.println ("Property change");
+      //System.out.println ("Property change");
       if (ev.getPropertyName ().equals ("hidden")) {
         // change in the hidden state of a file system
         getDS ().refresh ();
@@ -253,6 +253,7 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
 
 /*
  * Log
+ *  13   Gandalf   1.12        4/9/99   Ian Formanek    Removed debug printlns
  *  12   Gandalf   1.11        3/26/99  Jaroslav Tulach 
  *  11   Gandalf   1.10        3/26/99  Ian Formanek    Fixed use of obsoleted 
  *       NbBundle.getBundle (this)
