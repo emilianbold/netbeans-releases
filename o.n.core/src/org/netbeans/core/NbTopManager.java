@@ -138,7 +138,7 @@ public abstract class NbTopManager extends TopManager {
         // Set up module-versioning properties, which logger prints.
         Package p = Package.getPackage ("org.openide"); // NOI18N
         
-        putSystemProperty ("org.openide.specification.version", p.getSpecificationVersion (), "3.0"); // NOI18N
+        putSystemProperty ("org.openide.specification.version", p.getSpecificationVersion (), "3.12"); // NOI18N
         putSystemProperty ("org.openide.version", p.getImplementationVersion (), "OwnBuild"); // NOI18N
         putSystemProperty ("org.openide.major.version", p.getSpecificationTitle (), "IDE/1"); // NOI18N
         putSystemProperty ("netbeans.buildnumber", p.getImplementationVersion (), "OwnBuild"); // NOI18N
