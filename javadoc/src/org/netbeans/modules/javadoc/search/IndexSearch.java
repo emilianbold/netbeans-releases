@@ -22,6 +22,7 @@ import javax.swing.SwingUtilities;
 import java.awt.Image;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 import org.openide.awt.HtmlBrowser;
@@ -45,12 +46,17 @@ public class IndexSearch extends TopComponent {
   private String quickFind;
   
   /* Button icons */
-  ImageIcon windowIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif"));
-  ImageIcon refSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/refSort.gif"));
-  ImageIcon typeSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/typeSort.gif"));
-  ImageIcon alphaSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/alphaSort.gif"));
-  ImageIcon listOnlyIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/list_only.gif"));
-  ImageIcon listHtmlIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/list_html.gif"));
+  //private static final ImageIcon windowIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif"));
+  private static final ImageIcon refSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/refSort.gif"));
+  private static final ImageIcon typeSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/typeSort.gif"));
+  private static final ImageIcon alphaSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/alphaSort.gif"));
+  private static final ImageIcon listOnlyIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/list_only.gif"));
+  private static final ImageIcon listHtmlIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/list_html.gif"));
+
+  private final static java.awt.Image windowIcon = java.awt.Toolkit.getDefaultToolkit ().getImage (
+      IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif"));
+
+
   /* Current sort mode */
   private String currentSort = "A";
   
@@ -133,14 +139,14 @@ public class IndexSearch extends TopComponent {
     splitPanel.add( quickBrowser, org.openide.awt.SplittedPanel.ADD_SECOND );
     
     Workspace workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();  
-    Mode myMode = workspace.createMode("JavaDocSearch", "JavaDoc Index-Search", null );
+    Mode myMode = workspace.createMode("JavaDocSearch", "JavaDoc Index-Search", windowIcon );
     myMode.setBounds(new Rectangle( 200, 200, 450, 200 ) );
     myMode.dockInto(this);
 
-    //setName( bundle.getString ("CTL_SEARCH_WindowTitle") );
-   // setBounds( );
-    //setRequestedSize( new Dimension( 450, 200 ) );
-    // Customizing the window
+    setName( bundle.getString ("CTL_SEARCH_WindowTitle") );
+    setIcon( windowIcon );
+    
+
     DefaultListModel listModel = new DefaultListModel(); // PENDING: Change to SortedArrayList
     resultsList.setModel( listModel );
 

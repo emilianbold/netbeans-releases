@@ -43,6 +43,8 @@ class GetJavaWord extends Object {
       EditorCookie ec = (EditorCookie) n[0].getCookie (EditorCookie.class);
       if (ec != null) {
         JEditorPane[] panes = ec.getOpenedPanes ();
+        if ( panes == null )
+          return null;
         if (panes.length > 0) {
           int cursor = panes[0].getCaret ().getDot ();
           String selection = panes[0].getSelectedText ();
@@ -78,6 +80,8 @@ class GetJavaWord extends Object {
 
 /* 
  * Log
+ *  5    Gandalf   1.4         7/26/99  Petr Hrebejk    AutoComment tool 
+ *       implemented
  *  4    Gandalf   1.3         7/12/99  Petr Hrebejk    New window system
  *  3    Gandalf   1.2         6/23/99  Petr Hrebejk    Better way to get 
  *       current editor word
