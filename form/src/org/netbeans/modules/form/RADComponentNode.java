@@ -300,6 +300,14 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     }
     if (!(customizer instanceof java.awt.Component) ||
         !(customizer instanceof java.beans.Customizer)) return null;
+
+    if (customizer instanceof FormAwareEditor) {
+      ((FormAwareEditor)customizer).setRADComponent (component);
+    }
+    if (customizer instanceof org.openide.explorer.propertysheet.editors.NodeCustomizer) {
+      ((org.openide.explorer.propertysheet.editors.NodeCustomizer)customizer).attach (component.getNodeReference ());
+    }
+
     ((java.beans.Customizer)customizer).setObject (component.getBeanInstance ());
     // [PENDING - in X2 there is some strange addPropertyChangeListener code here...]
     return (java.awt.Component)customizer;
@@ -661,6 +669,8 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  32   Gandalf   1.31        8/1/99   Ian Formanek    NodeCustomizer and 
+ *       FormAwareEditor employed in getCustomizer
  *  31   Gandalf   1.30        7/30/99  Ian Formanek    Flavors are public
  *  30   Gandalf   1.29        7/28/99  Ian Formanek    Fixed bug 2890 - Go to 
  *       Source and Go to Form actions are not enabled in a context menu of a 
