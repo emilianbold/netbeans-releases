@@ -289,7 +289,7 @@ public abstract class JPDADebugger {
 
     /**
      * Waits till the Virtual Machine is started and returns 
-     * {@link DebuggerStartException} if any.
+     * {@link DebuggerStartException} if some problem occurres.
      *
      * @throws DebuggerStartException is some problems occurres during debugger 
      *         start

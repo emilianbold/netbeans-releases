@@ -29,80 +29,8 @@ import org.netbeans.spi.debugger.ActionsProviderListener;
 
 
 /** 
- * Debugger Engine represents implementation of one debugger (Java Debugger, 
- * CPP Debugger). It can support debugging of one or more 
- * {@link Session}s, in one or more languages. 
- * It provides root of threads hierarchy (call stacks, locals)
- * and manages debugger actions.
- *
- * <p><br><table border="1" cellpadding="3" cellspacing="0" width="100%">
- * <tbody><tr bgcolor="#ccccff">
- * <td colspan="2"><font size="+2"><b>Description </b></font></td>
- * </tr><tr><td align="left" valign="top" width="1%"><font size="+1">
- * <b>Functionality</b></font></td><td>
- *
- * <b>Support for actions:</b>
- *    DebuggerEngine manages list of actions. 
- *    Debugger action (implemented by 
- *    {@link org.netbeans.spi.debugger.ActionsProvider}) can be registerred to 
- *    DebuggerEngine during a start of debugger. See 
- *    {@link org.netbeans.spi.debugger.ActionsProvider}.
- *    DebuggerEngine can be used to call some debugger action 
- *    ({@link #doAction}), to distinguish availability of action 
- *    ({@link #isEnabled}) and to find last called action 
- *    ({@link #getLastAction}).
- *    Example how to call Kill Action on this engine:
- *    <pre>
- *    engine.doAction (DebuggerEngine.ACTION_KILL);</pre>
- *
- * <br>
- * <b>Support for aditional services:</b>
- *    DebuggerEngine is final class. That is why the standard method how to 
- *    extend its functionality is using lookup methods ({@link #lookup} and 
- *    {@link #lookupFirst}).
- *    There are two ways how to register some service provider for some
- *    type of DebuggerEngine:
- *    <ul>
- *      <li>Register 'live' instance of service provider during creation of 
- *        new instance of DebuggerEngine (see method
- *        {@link org.netbeans.spi.debugger.DebuggerEngineProvider#getServices}).
- *      </li>
- *      <li>Register service provider in Manifest-inf/debugger/{{@link 
- *        #getTypeID}} folder. See Debugger SPI for more information about
- *        registration.</li>
- *    </ul>
- *
- * <br>
- * <b>Support for listening:</b>
- *    DebuggerEngine propagates all changes to two type of listeners - general
- *    {@link java.beans.PropertyChangeListener} and specific
- *    {@link ActionsManagerListener}.
- *
- * <br>
- * </td></tr><tr><td align="left" valign="top" width="1%"><font size="+1">
- * <b>Clinents / Providers</b></font></td><td>
- *
- * This class is final, so it does not have any external provider.
- * Debugger Plug-ins and UI modules are clients of this class.
- *
- * <br>
- * </td></tr><tr><td align="left" valign="top" width="1%"><font size="+1">
- * <b>Lifecycle</b></font></td><td>
- *
- * A new instance(s) of DebuggerEngine class are created in Debugger Core 
- * module only, during the process of starting of debugging (see
- * {@link DebuggerManager#startDebugging}.
- *
- * DebuggerEngine is removed automatically from {@link DebuggerManager} when the 
- * the last action is ({@link #ACTION_KILL}).
- *
- * </td></tr><tr><td align="left" valign="top" width="1%"><font size="+1">
- * <b>Evolution</b></font></td><td>
- *
- * No method should be removed from this class, but some functionality can
- * be added in future.
- *
- * </td></tr></tbody></table>
+ * Manages some set of actions. Loads some set of ActionProviders registerred 
+ * for some context, and allows to call isEnabled and doAction methods on them.
  *
  * @author   Jan Jancura
  */

@@ -42,18 +42,17 @@ import org.netbeans.spi.debugger.ActionsProviderListener;
  * <b>Functionality</b></font></td><td>
  *
  * <b>Support for actions:</b>
- *    DebuggerEngine manages list of actions. 
+ *    DebuggerEngine manages list of actions ({@link #getActionsManager}). 
  *    Debugger action (implemented by 
  *    {@link org.netbeans.spi.debugger.ActionsProvider}) can be registerred to 
  *    DebuggerEngine during a start of debugger. See 
  *    {@link org.netbeans.spi.debugger.ActionsProvider}.
  *    DebuggerEngine can be used to call some debugger action 
- *    ({@link #doAction}), to distinguish availability of action 
- *    ({@link #isEnabled}) and to find last called action 
- *    ({@link #getLastAction}).
+ *    ({@link ActionsManager#doAction}) and to distinguish availability of action 
+ *    ({@link ActionsManager#isEnabled}).
  *    Example how to call Kill Action on this engine:
  *    <pre>
- *    engine.doAction (DebuggerEngine.ACTION_KILL);</pre>
+ *    engine.getActionsManager ().doAction (DebuggerEngine.ACTION_KILL);</pre>
  *
  * <br>
  * <b>Support for aditional services:</b>
