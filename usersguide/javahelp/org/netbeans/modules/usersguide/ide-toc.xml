@@ -384,6 +384,8 @@
       <tocitem text="Connection Pooling from a JSP Page" target="use_dbcp_in_jsp"/>
       <tocitem text="Compiling a JSP File" target="jsp_validate" />
       <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
+      <tocitem text="Passing Parameters to a JSP Page" target="jsp_queryparams"/>
+      <tocitem text="Running a JSP File Using a Tomcat Server" target="run_jsp_use_tomcat" />
   </tocitem> <!-- Working With JSP Pages -->
 
   <tocitem text="Servlets">
@@ -393,6 +395,7 @@
      <tocitem text="Editing a Servlet" target="servlet_edit"/>
      <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
      <tocitem text="Adding a Servlet JAR file to a WAR File" target="webmod_addservlet" />
+     <tocitem text="Running a Servlet Using a Tomcat Server" target="run_servlet_use_tomcat" />
   </tocitem> <!-- Working With Servlets -->
 
   <tocitem text="Filters"> 
@@ -471,9 +474,12 @@
     
     <tocitem text="Deploying Web Applications"> 
 	<tocitem text="About Deploying Web Applications" target="webmod_servconfig" />
+        <tocitem text="Deploying Tasks: Quick Reference" target="deploying_tasks" />
 	<tocitem text="Changing Web Browsers" target="webmod_browser" />
         <tocitem text="Changing Web Servers" target="webmod_server_set" />
-        <tocitem text="Passing Parameters to a JSP Page" target="jsp_queryparams"/>
+	<tocitem text="Passing Parameters to a JSP Page" target="jsp_queryparams"/>
+	<tocitem text="Running a JSP File Using a Tomcat Server" target="run_jsp_use_tomcat" />
+        <tocitem text="Running a Servlet Using a Tomcat Server" target="run_servlet_use_tomcat" />
 	<tocitem text="Deployment Descriptors"> 
 	   <tocitem text="About Deployment Descriptors" target="webmod_editdd" />  
 	   <tocitem text="Editing Deployment Descriptors" target="concepts_deploydes" />  
