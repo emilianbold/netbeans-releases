@@ -175,7 +175,7 @@ public class RegenerateXMLTask extends Task{
                     boolean suitesDiffer = false;
                     for (int i=0;i<suitesInFiles.length;i++) {
                         boolean found = false;
-                        for (int j=0;(j<testBag.xmlel_UnitTestSuite.length)|(found);j++) {
+                        for (int j=0;(j<testBag.xmlel_UnitTestSuite.length)|(!found);j++) {
                             if (testBag.xmlel_UnitTestSuite[j].xmlat_name.equals(suitesInFiles[i])) {
                                 found = true;
                             }
