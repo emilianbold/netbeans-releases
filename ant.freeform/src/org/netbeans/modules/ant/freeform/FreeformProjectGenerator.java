@@ -127,9 +127,10 @@ public class FreeformProjectGenerator {
                     }
                     PropertyEvaluator evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{
                         PropertyUtils.fixedPropertyProvider(properties)});
-                    if (props.getChildNodes().getLength() > 0) {
-                        data.appendChild(props);
-                    }
+                    //#56344:Always write a <properties> element to project.xml of a generated freeform
+//                  if (props.getChildNodes().getLength() > 0) {
+                    data.appendChild(props);
+//                  }
                     h[0].putPrimaryConfigurationData(data, true);
                     putBuildXMLSourceFile(h[0], antPath);
                 }
