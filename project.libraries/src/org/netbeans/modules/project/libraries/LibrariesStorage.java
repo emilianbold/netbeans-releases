@@ -160,7 +160,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
                         PrintWriter out = null;
                         try {
                             lock = fo.lock();
-                            out = new PrintWriter(new OutputStreamWriter(fo.getOutputStream (lock)));							
+                            out = new PrintWriter(new OutputStreamWriter(fo.getOutputStream (lock),"UTF-8"));							
                             out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");      //NOI18N
                             out.println("<!DOCTYPE library PUBLIC \"-//NetBeans//DTD Library Declaration 1.0//EN\" \"http://www.netbeans.org/dtds/library-declaration-1_0.dtd\">"); //NOI18N
                             out.println("<library version=\"1.0\">");       			//NOI18N
