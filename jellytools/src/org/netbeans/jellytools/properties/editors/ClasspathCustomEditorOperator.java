@@ -60,7 +60,7 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
     public JButtonOperator btAddDirectory() {
         if (_btAddDirectory==null) {
             _btAddDirectory = new JButtonOperator(this, Bundle.getString(
-                                            "org.netbeans.beaninfo.editors.Bundle",
+                                            "org.netbeans.core.execution.beaninfo.editors.Bundle",
                                             "CTL_AddDirectory"));
         }
         return _btAddDirectory;
@@ -73,7 +73,7 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
     public JButtonOperator btMoveDown() {
         if (_btMoveDown==null) {
             _btMoveDown = new JButtonOperator(this, Bundle.getString(
-                                            "org.netbeans.beaninfo.editors.Bundle",
+                                            "org.netbeans.core.execution.beaninfo.editors.Bundle",
                                             "CTL_MoveDown"));
         }
         return _btMoveDown;
@@ -97,7 +97,7 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
     public JButtonOperator btAddJARZIP() {
         if (_btAddJARZIP==null) {
             _btAddJARZIP = new JButtonOperator(this, Bundle.getString(
-                                            "org.netbeans.beaninfo.editors.Bundle", 
+                                            "org.netbeans.core.execution.beaninfo.editors.Bundle", 
                                             "CTL_AddJAR"));
         }
         return _btAddJARZIP;
@@ -110,7 +110,7 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
     public JButtonOperator btRemove() {
         if (_btRemove==null) {
             _btRemove = new JButtonOperator(this, Bundle.getString(
-                                            "org.netbeans.beaninfo.editors.Bundle", 
+                                            "org.netbeans.core.execution.beaninfo.editors.Bundle", 
                                             "CTL_Remove"));
         }
         return _btRemove;
@@ -123,7 +123,7 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
     public JButtonOperator btMoveUp() {
         if (_btMoveUp==null) {
             _btMoveUp = new JButtonOperator(this, Bundle.getString(
-                                            "org.netbeans.beaninfo.editors.Bundle", 
+                                            "org.netbeans.core.execution.beaninfo.editors.Bundle", 
                                             "CTL_MoveUp"));
         }
         return _btMoveUp;
@@ -135,7 +135,7 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
     public FileCustomEditorOperator addDirectory() {
         btAddDirectory().pushNoBlock();
         return new FileCustomEditorOperator(Bundle.getString(
-                                            "org.netbeans.beaninfo.editors.Bundle", 
+                                            "org.netbeans.core.execution.beaninfo.editors.Bundle", 
                                             "CTL_FileSystemPanel.Local_Dialog_Title"));
     }
 
@@ -152,7 +152,7 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
     public FileCustomEditorOperator addJARZIP() {
         btAddJARZIP().pushNoBlock();
         return new FileCustomEditorOperator(Bundle.getString(
-                                            "org.netbeans.beaninfo.editors.Bundle", 
+                                            "org.netbeans.core.execution.beaninfo.editors.Bundle", 
                                             "CTL_FileSystemPanel.Jar_Dialog_Title"));
     }
 

@@ -65,7 +65,9 @@ public class ProcessDescriptorCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btSelectProcessExecutable() {
         if (_btSelectProcessExecutable==null) {
-            _btSelectProcessExecutable = new JButtonOperator( this, Bundle.getString("org.netbeans.beaninfo.editors.Bundle", "CTL_NbProcessDescriptorCustomEditor.jButton1.text"), 0 );
+             _btSelectProcessExecutable = new JButtonOperator(this, 
+                        Bundle.getString("org.netbeans.core.execution.beaninfo.editors.Bundle",
+                                         "CTL_NbProcessDescriptorCustomEditor.jButton1.text"));
         }
         return _btSelectProcessExecutable;
     }
