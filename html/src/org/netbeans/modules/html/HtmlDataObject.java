@@ -12,13 +12,9 @@
  */
 
 package org.netbeans.modules.html;
-import java.io.IOException;
 
-import org.openide.actions.OpenAction;
-import org.openide.actions.ViewAction;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.*;
-import org.openide.text.DataEditorSupport;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.util.*;

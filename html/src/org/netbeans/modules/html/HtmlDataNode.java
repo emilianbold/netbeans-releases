@@ -56,8 +56,4 @@ public class HtmlDataNode extends org.openide.loaders.DataNode {
             return SystemAction.get (OpenAction.class);
         }
     }
-    
-    private HtmlDataObject getHtmlDataObject () {
-        return (HtmlDataObject) getDataObject ();
-    }
 }
