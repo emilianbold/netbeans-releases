@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,6 +16,10 @@ package org.netbeans.modules.db.explorer.nodes;
 import org.openide.util.NbBundle;
 
 public class DriverListNode extends DatabaseNode {
+    public DriverListNode() {
+        setDisplayName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NDN_Drivers")); //NOI18N
+    }
+    
     public String getShortDescription() {
         return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_DriverList"); //NOI18N
     }

@@ -7,22 +7,22 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.db.explorer.nodes;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 
-import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.modules.db.explorer.*;
-import org.netbeans.modules.db.explorer.infos.*;
+import org.netbeans.lib.ddl.impl.SpecificationFactory;
+import org.netbeans.modules.db.explorer.DatabaseOption;
 import org.netbeans.modules.db.explorer.PointbasePlus;
-
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
 /** Abstract class that can be used as super class of all data objects that
 * should contain some nodes. It provides methods for adding/removing
@@ -43,6 +43,7 @@ public class RootNode extends DatabaseNode {
     }
 
     public RootNode() {
+        setDisplayName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NDN_Databases")); //NOI18N
         try {
             sfactory = new SpecificationFactory();
             //initialization listener for debug mode
@@ -104,5 +105,4 @@ public class RootNode extends DatabaseNode {
     public String getShortDescription() {
         return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_Root"); //NOI18N
     }
-
 }
