@@ -62,13 +62,13 @@ class ElementResultItem extends XMLResultItem {
         boolean shift = (modifiers & java.awt.event.InputEvent.SHIFT_MASK) != 0;
         
         if (shift) {
-            Caret caret = c.getCaret();  // it is at the end of replacement
+            Caret caret = c.getCaret();  // it is at the end of replacement            
             int dot = caret.getDot();
             int rlen = replacementText.length();            
-            caret.setDot(dot  - (rlen - replacementText.indexOf('>') + 1));
+            caret.setDot((dot  - rlen) + replacementText.indexOf('<'));
         }
         
-        return shift == false;
+        return false;
     }
     
     /**
