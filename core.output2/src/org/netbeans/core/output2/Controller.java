@@ -12,6 +12,8 @@
  */
 package org.netbeans.core.output2;
 
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import org.netbeans.core.output2.ui.AbstractOutputTab;
 import org.openide.ErrorManager;
 import org.openide.actions.CopyAction;
@@ -799,7 +801,28 @@ public class Controller { //XXX public only for debug access to logging code
                 }
             }
         }
+        popup.addPopupMenuListener(new PMListener());
         popup.show(src, p.x, p.y);
+    }
+    
+    /**
+     * #47166 - a disposed tab which has had its popup menu shown remains
+     * referenced through PopupItems->JSeparator->PopupMenu->Invoker->OutputPane->OutputTab
+     */
+    private static class PMListener implements PopupMenuListener {
+        public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+            ((JPopupMenu) e.getSource()).removeAll();
+            ((JPopupMenu) e.getSource()).setInvoker(null);
+        }
+        
+        public void popupMenuCanceled(PopupMenuEvent e) {
+            ((JPopupMenu) e.getSource()).removeAll();
+            ((JPopupMenu) e.getSource()).setInvoker(null);
+        }
+        
+        public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+            //do nothing
+        }
     }
 
     /**
