@@ -27,6 +27,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -181,20 +182,20 @@ public class ImageViewer extends CloneableTopComponent {
     private JToolBar createToolBar() {
         // Definition of toolbar.
         JToolBar toolBar = new JToolBar();
-        JButton inButton;
-        JButton outButton;
-        toolBar.setName(NbBundle.getBundle(ImageViewer.class).getString("ACSN_Toolbar"));
+        toolBar.setName (NbBundle.getBundle(ImageViewer.class).getString("ACSN_Toolbar"));
         toolBar.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACSD_Toolbar"));
-        outButton = new JButton(SystemAction.get(ZoomOutAction.class));
-        outButton.setMnemonic(NbBundle.getBundle(ImageViewer.class).getString("ACS_Out_BTN_Mnem").charAt(0));
-        outButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACSD_Out_BTN"));
-        outButton.setLabel("");
+            JButton outButton = new JButton(SystemAction.get(ZoomOutAction.class));
+            outButton.setToolTipText (NbBundle.getBundle(ImageViewer.class).getString("LBL_ZoomOut"));
+            outButton.setMnemonic(NbBundle.getBundle(ImageViewer.class).getString("ACS_Out_BTN_Mnem").charAt(0));
+            outButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACSD_Out_BTN"));
+            outButton.setLabel("");
         toolBar.add(outButton);       
         toolBar.addSeparator(new Dimension(2,2));
-        inButton = new JButton(SystemAction.get(ZoomInAction.class));
-        inButton.setMnemonic(NbBundle.getBundle(ImageViewer.class).getString("ACS_In_BTN_Mnem").charAt(0));
-        inButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACSD_In_BTN"));
-        inButton.setLabel("");
+            JButton inButton = new JButton(SystemAction.get(ZoomInAction.class));
+            inButton.setToolTipText (NbBundle.getBundle(ImageViewer.class).getString("LBL_ZoomIn"));
+            inButton.setMnemonic(NbBundle.getBundle(ImageViewer.class).getString("ACS_In_BTN_Mnem").charAt(0));
+            inButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACSD_In_BTN"));
+            inButton.setLabel("");
         toolBar.add(inButton);
         toolBar.addSeparator(new Dimension(11,2));
         toolBar.add(getZoomButton(1,1));
@@ -211,7 +212,9 @@ public class ImageViewer extends CloneableTopComponent {
         toolBar.addSeparator(new Dimension(2,2));
         toolBar.add(getZoomButton(7,1));
         toolBar.addSeparator(new Dimension(11,2));
-        toolBar.add(SystemAction.get(CustomZoomAction.class));
+        SystemAction sa = SystemAction.get(CustomZoomAction.class);
+        sa.putValue (Action.SHORT_DESCRIPTION, NbBundle.getBundle(ImageViewer.class).getString("LBL_CustomZoom"));
+        toolBar.add (sa);
         toolBar.addSeparator(new Dimension(11,2));
         toolBar.add(getGridButton());
         
@@ -399,6 +402,10 @@ public class ImageViewer extends CloneableTopComponent {
     private JButton getZoomButton(final int xf, final int yf) {
         // PENDING buttons should have their own icons.
         JButton button = new JButton(""+xf+":"+yf); // NOI18N
+        if (xf < yf)
+            button.setToolTipText (NbBundle.getBundle(ImageViewer.class).getString("LBL_ZoomOut") + " " + xf + " : " + yf);
+        else
+            button.setToolTipText (NbBundle.getBundle(ImageViewer.class).getString("LBL_ZoomIn") + " " + xf + " : " + yf);
         button.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACS_Zoom_BTN"));
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -413,6 +420,7 @@ public class ImageViewer extends CloneableTopComponent {
     private JButton getGridButton() {
         // PENDING buttons should have their own icons.
         final JButton button = new JButton(" # "); // NOI18N
+        button.setToolTipText (NbBundle.getBundle(ImageViewer.class).getString("LBL_ZoomOut"));
         button.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACS_Grid_BTN"));
         button.setMnemonic(NbBundle.getBundle(ImageViewer.class).getString("ACS_Grid_BTN_Mnem").charAt(0));
         button.addActionListener(new ActionListener() {
