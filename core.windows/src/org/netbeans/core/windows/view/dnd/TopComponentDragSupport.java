@@ -450,7 +450,7 @@ implements AWTEventListener, DragSourceListener {
         // Just refresh the weak ref to the context if necessary.
         // The expected code here is done by ragExitHack method called from DropTarget's.
         if(dragContextWRef.get() == null) {
-            dragContextWRef = new WeakReference(evt.getDragSourceContext());
+              dragContextWRef = new WeakReference(evt.getDragSourceContext());
         }
     }
     
@@ -685,7 +685,7 @@ implements AWTEventListener, DragSourceListener {
         if(NAME_CURSOR_COPY.equals(name)
         || NAME_CURSOR_COPY_NO_MOVE.equals(name)) {
             type = CURSOR_COPY_NO;
-        } else if(NAME_CURSOR_MOVE.equals(name)) {
+        } else if(NAME_CURSOR_MOVE.equals(name) || NAME_CURSOR_MOVE_NO.equals(name)) {
             type = CURSOR_MOVE_NO;
         } else {
             return;

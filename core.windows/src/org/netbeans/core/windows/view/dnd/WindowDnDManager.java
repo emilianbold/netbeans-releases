@@ -843,10 +843,10 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                     SwingUtilities.convertPointFromScreen(p, droppable.getDropComponent());
                     if(droppable.canDrop(windowDnDManager.startingTransfer, p)) {
                         topComponentDragSupport.setSuccessCursor();
-                        dragOverDropTarget(location, droppable);
                     } else {
                         topComponentDragSupport.setUnsuccessCursor();
                     }
+                    dragOverDropTarget(location, droppable);
                 }
             } else if(!isInMainWindow(location)
             && windowDnDManager.isInFloatingFrame(location)) {
@@ -1123,8 +1123,10 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             } 
             else if (Constants.BOTTOM.equals(side)) {
                 Dimension dim = original.getDropComponent().getSize();
-                int abs = Math.abs(barLoc.y - dim.height);
-                if (isShowing && abs < Constants.DROP_AREA_SIZE) {
+//                System.out.println("barloc =" + barLoc);
+                if (isShowing && ((barLoc.y < 0 && barLoc.y > - Constants.DROP_AREA_SIZE)
+                                 || barLoc.y > 0 && barLoc.y - dim.height < Constants.DROP_AREA_SIZE)) {
+//                    System.out.println("bottom showing" + location);
 //                } && barLoc.x > 0 && barLoc.x < dim.width) {
                     return true;
                 }
