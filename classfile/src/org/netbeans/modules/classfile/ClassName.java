@@ -21,6 +21,7 @@ package org.netbeans.modules.classfile;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.lang.ref.WeakReference;
 import java.util.Comparator;
 import java.util.WeakHashMap;
 
@@ -85,7 +86,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
 
         ClassName cn;
         synchronized (cache) {
-	    cn = (ClassName)cache.get(classType);
+	    cn = getCacheEntry(classType);
 	    if (cn == null) {
 	        // check for valid class type
 	        int i = classType.indexOf('L');
@@ -93,7 +94,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
 		char lastChar = classType.charAt(classType.length()-1);
 		if (i != -1 && lastChar == ';') {
 		    _type = classType.substring(i+1, classType.length()-1);
-		    cn = (ClassName)cache.get(_type);
+		    cn = getCacheEntry(_type);
 		    if (cn != null)
 		        return cn;
 		} else {
@@ -101,10 +102,15 @@ public final class ClassName implements Comparable, Comparator, Serializable {
 		}
 
 		cn = new ClassName(_type);
-		cache.put(_type, cn);
+		cache.put(_type, new WeakReference(cn));
 	    }
 	}
 	return cn;
+    }
+
+    private static ClassName getCacheEntry(String key) {
+	WeakReference ref = (WeakReference)cache.get(key);
+	return ref != null ? (ClassName)ref.get() : null;
     }
 
     /**
