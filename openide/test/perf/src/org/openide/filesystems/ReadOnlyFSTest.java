@@ -18,8 +18,11 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.netbeans.performance.Benchmark;
+import org.netbeans.performance.MapArgBenchmark;
 import org.openide.filesystems.*;
 
 /**
@@ -27,18 +30,12 @@ import org.openide.filesystems.*;
  * exploit interface of the FileSystem class, note, however, that it uses only operations
  * that do not change state of the FileSystem.
  */
-public abstract class ReadOnlyFSTest extends Benchmark {
+public abstract class ReadOnlyFSTest extends MapArgBenchmark {
     
-    /** Arguments - number of files */
-    private static final Object[] ARGS = new Object[] { 
-        new Object[] { new Integer(10), new Integer(2) },
-        new Object[] { new Integer(10), new Integer(5) }
-    };
+    public static final String FILE_NO_KEY = "FILE_NO";
     
     /** number of files for given run */
     protected int foCount;
-    /** number of attributes (taken into account) for given run */
-    protected int attrsCount;
     /** iterations for given run */
     protected int iterations;
     /** FileObjects for given run */
@@ -51,14 +48,18 @@ public abstract class ReadOnlyFSTest extends Benchmark {
     /** Creates new Tests */
     public ReadOnlyFSTest(String name) {
         super(name);
-        setArgumentArray(ARGS);
+        setArgumentArray(createArguments());
+    }
+    
+    /** Creates new Tests */
+    public ReadOnlyFSTest(String name, Object[] args) {
+        super(name, args);
     }
     
     /** inherited; sets up env */
     protected void setUp() throws Exception {
-        Object[] param = (Object[]) getArgument();
-        foCount = ((Integer) param[0]).intValue();
-        attrsCount = ((Integer) param[1]).intValue();
+        Map param = (Map) getArgument();
+        foCount = ((Integer) param.get(FILE_NO_KEY)).intValue();
         iterations = getIterationCount();
         files = setUpFileObjects(foCount);
         pairs = generateRandomStrings(new String[files.length][2]);
@@ -75,7 +76,21 @@ public abstract class ReadOnlyFSTest extends Benchmark {
     protected void tearDown() throws Exception {
         tearDownFileObjects(files);
     }
-
+    
+    /** Creates arguments for this instance of Benchmark (not for given configuration) */
+    protected Map[] createArguments() {
+        Map[] ret = new Map[1];
+        ret[0] = createDefaultMap();
+        return ret;
+    }
+    
+    /** Creates a Map with default arguments values */
+    protected Map createDefaultMap() {
+        Map map = super.createDefaultMap();
+        map.put(FILE_NO_KEY, new Integer(1000));
+        return map;
+    }    
+    
     //--------------------------------------------------------------------------
     //------------------------- attributes section -----------------------------
     
@@ -83,13 +98,17 @@ public abstract class ReadOnlyFSTest extends Benchmark {
      * parameter). Attributes are acquired sequentially.
      */
     public void testGetAttributesSeq() throws IOException {
-        for (int i = 0; i < files.length; i++) {
-            Enumeration enum = files[i].getAttributes();
-            while (enum.hasMoreElements()) {
-                String attr = (String) enum.nextElement();
-                Object val = files[i].getAttribute(attr);
+        int iterations = this.iterations;
+        
+        for (int it = 0; it < iterations; it++) {
+            for (int i = 0; i < files.length; i++) {
+                Enumeration enum = files[i].getAttributes();
+                while (enum.hasMoreElements()) {
+                    String attr = (String) enum.nextElement();
+                    Object val = files[i].getAttribute(attr);
+                }
             }
-        }        
+        }
     }
      
     /** Gets all attributes for all FileObjects (their no. given by the 
@@ -97,17 +116,22 @@ public abstract class ReadOnlyFSTest extends Benchmark {
      */
     public void testGetAttributesRnd() throws IOException {
         List list = new ArrayList(files.length + 3);
-        for (int i = 0; i < files.length; i++) {
-            list.add(files[i].getAttributes());
-        }
+        int iterations = this.iterations;
         
-        for (int i = 0; i < files.length; i++) {
-            Enumeration enum = (Enumeration) list.get(i);
-            if (enum.hasMoreElements()) {
-                String key = (String) enum.nextElement();
-                files[i].getAttribute(key);
+        for (int it = 0; it < iterations; it++) {
+            list.clear();
+            for (int i = 0; i < files.length; i++) {
+                list.add(files[i].getAttributes());
             }
-        }        
+
+            for (int i = 0; i < files.length; i++) {
+                Enumeration enum = (Enumeration) list.get(i);
+                if (enum.hasMoreElements()) {
+                    String key = (String) enum.nextElement();
+                    files[i].getAttribute(key);
+                }
+            }
+        }
     }
     
     //--------------------------------------------------------------------------

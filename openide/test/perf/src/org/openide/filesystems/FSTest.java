@@ -18,6 +18,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Map;
 
 import org.netbeans.performance.Benchmark;
 import org.openide.filesystems.*;
@@ -29,15 +30,28 @@ import org.openide.filesystems.*;
  */
 public abstract class FSTest extends ReadOnlyFSTest {
     
+    public static final String ATTRIBUTES_NO_KEY = "ATTRIBUTES_NO";
+    
+    /** number of attributes (taken into account) for given run */
+    protected int attrsCount;
+    
     /** Creates new Tests */
     public FSTest(String name) {
         super(name);
     }
     
-        
+    /** Creates new Tests */
+    public FSTest(String name, Object[] args) {
+        super(name, args);
+    }
+    
     /** inherited; sets up env */
     protected void setUp() throws Exception {
         super.setUp();
+        Map param = (Map) getArgument();
+        if (shouldDefAttrNo()) {
+            attrsCount = ((Integer) param.get(ATTRIBUTES_NO_KEY)).intValue();
+        }
         postSetup();
     }
     
@@ -45,26 +59,70 @@ public abstract class FSTest extends ReadOnlyFSTest {
     protected void postSetup() throws Exception {
         // setup some attributes
         if (getName().startsWith("testGetAttributes")) {
-            testSetOneAttributeSeq();
+            testSetOneAttributeSeq(1);
         }
-    }    
+    }
+    
+    /** Creates a Map with default arguments values */
+    protected Map createDefaultMap() {
+        Map map = super.createDefaultMap();
+        if (shouldDefAttrNo()) {
+            map.put(ATTRIBUTES_NO_KEY, new Integer(2));
+        }
+        if (getName().startsWith("testSet")) {
+            narrow(map);
+        }
+        return map;
+    }
+    
+    /** Decides whether attributes number should be defined */
+    private boolean shouldDefAttrNo() {
+        return getName().startsWith("testSetMany");
+    }
+    
+    /** Creates arguments for this instance of Benchmark (not for given configuration) */
+    protected Map[] createArguments() {
+        if (shouldDefAttrNo()) {
+            Map[] ret = new Map[2];
+            ret[0] = createDefaultMap();
+
+            ret[1] = createDefaultMap();
+            ret[1].put(ATTRIBUTES_NO_KEY, new Integer(5));
+            return ret;
+        } else {
+            return super.createArguments();
+        }
+    }
+    
+    /** Sets FILE_NO_KEY to one tenth of its original value */
+    private static final void narrow(Map map) {
+        Integer in = (Integer) map.get(FILE_NO_KEY);
+        int ival = Math.max(in.intValue() / 10, 10); 
+        map.put(FILE_NO_KEY, new Integer(ival));
+    }
     
     //--------------------------------------------------------------------------
     //------------------------- attributes section -----------------------------
     
     /** Sets one random attribute for all FileObjects (their no. given by the
-     * parameter). Attributes are added sequentially.
+     * parameter). Attributes are added sequentially. Only one iteration
      */
-    public void testSetOneAttributeSeq() throws IOException {
+    private void testSetOneAttributeSeq(int xiterations) throws IOException {
         FileObject[] files = this.files;
         String[][] pairs = this.pairs;
-        int iterations = this.iterations;
         
-        for (int it = 0; it < iterations; it++) {
+        for (int it = 0; it < xiterations; it++) {
             for (int i = 0; i < files.length; i++) {
                 files[i].setAttribute(pairs[i][0], pairs[i][1]);
             }
         }
+    }
+    
+    /** Sets one random attribute for all FileObjects (their no. given by the
+     * parameter). Attributes are added sequentially.
+     */
+    public void testSetOneAttributeSeq() throws IOException {
+        testSetOneAttributeSeq(iterations);
     }
     
     /** Sets many random attributes for all FileObjects (their no. given by the 

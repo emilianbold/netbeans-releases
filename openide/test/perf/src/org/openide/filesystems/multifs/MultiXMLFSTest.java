@@ -17,6 +17,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.TreeMap;
+import java.util.Hashtable;
 
 import org.openide.*;
 import org.openide.filesystems.*;
@@ -31,8 +35,8 @@ import org.openide.filesystems.xmlfs.XMLFSTest.ResourceComposer;
  */
 public class MultiXMLFSTest extends FSTest {
     
+    public static final String XMLFS_NO_KEY = "XMLFS_NO";
     private FSWrapper[] wrappers;
-    private static final int MAGIC = 10;
     private static final String RES_EXT = ".instance";
     private MultiFileSystem mfs;
     
@@ -45,11 +49,18 @@ public class MultiXMLFSTest extends FSTest {
         super(name);
     }
 
+    /** Creates new XMLFSGenerator */
+    public MultiXMLFSTest(String name, Object[] args) {
+        super(name, args);
+    }
+    
     /** Set up given number of FileObjects */
     public FileObject[] setUpFileObjects(int foCount) throws Exception {
-        int foChunk = foCount / MAGIC;
-        int delta = foCount - (foCount / MAGIC) * MAGIC;
-        wrappers = new FSWrapper[MAGIC];
+        Map param = (Map) getArgument();
+        int fsCount = ((Integer) param.get(XMLFS_NO_KEY)).intValue();
+        int foChunk = foCount / fsCount;
+        int delta = foCount - (foCount / fsCount) * fsCount;
+        wrappers = new FSWrapper[fsCount];
         int last = wrappers.length;
         int[] bases = new int[last];
         for (int i = 1; i < last; i++) {
@@ -86,6 +97,41 @@ public class MultiXMLFSTest extends FSTest {
         for (int i = 0; i < wrappers.length; i++) {
             delete(wrappers[i].getFile());
         }
+    }
+    
+    /** Creates args for this instance of Benchmark */
+    protected Map[] createArguments() {
+        Map[] map = super.createArguments();
+        Map[] newMap = new Map[map.length * 2];
+        
+        System.arraycopy(map, 0, newMap, 0, map.length);
+        
+        for (int i = map.length; i < newMap.length; i++) {
+            newMap[i] = cloneMap(map[i - map.length]);
+            newMap[i].put(XMLFS_NO_KEY, new Integer(50));
+        }
+        
+        return newMap;
+    }
+    
+    /** Creates a Map with default arguments values */
+    protected Map createDefaultMap() {
+        Map map = super.createDefaultMap();
+        map.put(XMLFS_NO_KEY, new Integer(10));
+        return map;
+    }    
+    
+    /** Clones given Map by casting to a cloneable class - HashMap, Hashtable, or TreeMap */
+    private static final Map cloneMap(Map toClone) {
+        if (toClone instanceof HashMap) {
+            return (Map) ((HashMap) toClone).clone();
+        } else if (toClone instanceof Hashtable) {
+            return (Map) ((Hashtable) toClone).clone();
+        } else if (toClone instanceof TreeMap) {
+            return (Map) ((TreeMap) toClone).clone();
+        }
+        
+        return null;
     }
     
     /** @return this mfs */
