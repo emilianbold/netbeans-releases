@@ -213,13 +213,16 @@ public final class MainWindow extends JFrame {
     
     // package-private because StatusLineElementProviderTest
     static JPanel getStatusLineElements (JPanel panel) {
-        result = Lookup.getDefault ().lookup (new Lookup.Template (StatusLineElementProvider.class));
-        result.addLookupListener (new StatusLineElementsListener (panel));
+        // bugfix #56375, don't duplicate the listeners
+        if (result == null) {            
+            result = Lookup.getDefault ().lookup (new Lookup.Template (StatusLineElementProvider.class));
+            result.addLookupListener (new StatusLineElementsListener (panel));
+        }
         Collection/*<StatusLineElementProvider>*/ c = result.allInstances ();
         if (c == null || c.isEmpty ()) {
             return null;
         }
-        Iterator it = c.iterator ();
+        Iterator/*<StatusLineElementProvider>*/ it = c.iterator ();
         JPanel icons = new JPanel (new FlowLayout ());
         boolean some = false;
         while (it.hasNext ()) {
