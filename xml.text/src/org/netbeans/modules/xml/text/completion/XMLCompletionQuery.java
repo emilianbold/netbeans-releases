@@ -642,7 +642,7 @@ class XMLCompletionQuery implements CompletionQuery {
                 public void insertUpdate(DocumentEvent e) {
                     try {
                         SyntaxElement el = sup.getElementChain(e.getOffset() + 1);  // it returns in or previous so +1
-                        if (el instanceof SyntaxElement.Declaration) {
+                        if (isDoctype(el)) {
                             invalidateGrammar();
                         }
                     } catch (BadLocationException ex) {
@@ -655,7 +655,7 @@ class XMLCompletionQuery implements CompletionQuery {
                         // ignore removal at document end
                         if (e.getOffset() >= e.getDocument().getLength()) return;
                         SyntaxElement el = sup.getElementChain(e.getOffset() + 1);  // it returns in or previous so +1
-                        if (el instanceof SyntaxElement.Declaration) {
+                        if (isDoctype(el)) {
                             invalidateGrammar();
                         }                  
                     } catch (BadLocationException ex) {                        
@@ -666,7 +666,10 @@ class XMLCompletionQuery implements CompletionQuery {
                 public void changedUpdate(DocumentEvent e) {
                     // not interested
                 }
-              
+                
+                private boolean isDoctype(SyntaxElement el) {
+                    return el instanceof SyntaxElement.Declaration;
+                }
             });
         }
 

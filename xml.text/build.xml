@@ -30,6 +30,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="storepass" value="?"/>
     <property name="nbm_alias" value="nb_ide"/>
     <property name="release" value="dev"/>
+    <property name="build.compiler.debug" value="on"/>
 
     <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>

@@ -134,41 +134,22 @@ public abstract class SyntaxElement {
         return false;
     }
     
-    
-    
-    // ~~~~~~~~~~~~~~~~~ Particular syntax elements ~~~~~~~~~~~~~~~~~~~~~
+        
+    // Particular non-DOM syntax elements ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             
 
     /** 
      * doctype and all follow ups 
      */
     public static class Declaration extends SyntaxElement {
-        String publicId, systemId, publicLoc;
         
-        public Declaration( XMLSyntaxSupport support, TokenItem from, int to , String publicId, String publicLoc, String systemId ) {
+        public Declaration( XMLSyntaxSupport support, TokenItem from, int to) {
             super( support, from, to);
-            this.systemId = systemId;
-            this.publicId = publicId;
-            this.publicLoc = publicLoc;
         }
-        
-        public String getSystemId(){
-            return systemId;
-        }
-        
-        public String getPublicId(){
-            return publicId;
-        }
-
-        public String getPublicLocation(){
-            return publicLoc;
-        }
-
+       
         public String toString() {
-            return "Declaration: " + "PUBLIC " + publicId + " SYSTEM " + systemId+ " " + super.toString();
-        }
-        
-        
+            return "Declaration" + super.toString();                            // NOI18N
+        }                
     }
 
 
@@ -176,12 +157,13 @@ public abstract class SyntaxElement {
      * It may stop some DOM traversing.  //!!!
      */
     public static class Error extends SyntaxElement {
+        
         public Error( XMLSyntaxSupport support, TokenItem from, int to ) {
             super( support, from, to );
         }
 
         public String toString() {
-            return "Error" + super.toString();
+            return "Error" + super.toString();                                  // NOI18N
         }        
     }
 

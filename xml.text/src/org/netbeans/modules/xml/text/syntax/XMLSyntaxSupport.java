@@ -96,11 +96,12 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport {
         return item;
     }
     
-    /** Returns SyntaxElement instance for block of tokens, which is either
+    /** 
+     * Returns SyntaxElement instance for block of tokens, which is either
      * surrounding given offset, or is just before the offset.
-     * @param offset offset in document where to search for SyntaxElement
-     * @return SyntaxElement surrounding or laying BEFORE the offset
-     * or <CODE>null</CODE> if there is no element there (start of document)
+     * @param offset Offset in document where to search for SyntaxElement.
+     * @return SyntaxElement Element surrounding or laying BEFORE the offset
+     * or <code>null</code> at document begining.
      */
     public SyntaxElement getElementChain( int offset ) throws BadLocationException {
 
@@ -129,15 +130,22 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport {
             } // else ( for VALUE or TEXT ) fall through
         }
         
-        if( id == XMLDefaultTokenContext.WS || id == XMLDefaultTokenContext.ARGUMENT ||     // these are possible only in Tags
-        id == XMLDefaultTokenContext.OPERATOR || id == XMLDefaultTokenContext.VALUE ) { // so find boundary
-            do {
-                item = item.getPrevious();      // Can't get null here, there IS TAG before WS|ARGUMENT|OPERATOR|VALUE
+        // these are possible only in containers (tags or doctype)
+        if ( id == XMLDefaultTokenContext.WS 
+          || id == XMLDefaultTokenContext.ARGUMENT 
+          || id == XMLDefaultTokenContext.OPERATOR
+          || id == XMLDefaultTokenContext.VALUE)  // or doctype
+        {
+            while (true) {
+                item = item.getPrevious();
                 id = item.getTokenID();
+                if (id == XMLDefaultTokenContext.TAG) break;
+                if (id == XMLDefaultTokenContext.DECLARATION 
+                    && item.getImage().trim().length() > 0) break;
                 if (isInPI(id, false)) break;
-            } while( id != XMLDefaultTokenContext.TAG );
+            };
         }
-        
+                
         if( id == XMLDefaultTokenContext.TEXT ) {
             
             while( id == XMLDefaultTokenContext.TEXT || id == XMLDefaultTokenContext.CHARACTER ) {
@@ -177,10 +185,16 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport {
         }
         
         
-        if( id == XMLDefaultTokenContext.DECLARATION ) {
-            while( id != XMLDefaultTokenContext.DECLARATION || !item.getImage().startsWith( "<!" ) ) { // NOI18N
-                first = item;
+        if ( id == XMLDefaultTokenContext.DECLARATION ) {
+            while(true) { 
+                first = item;                
+                if (id == XMLDefaultTokenContext.DECLARATION 
+                  && item.getImage().startsWith("<!"))                          // NOI18N
+                {
+                      break;
+                }
                 item = item.getPrevious();
+                if (item == null) break;
                 id = item.getTokenID();
             }
             return createElement( first ); 
@@ -204,7 +218,10 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport {
         
     // return if in PI exluding PI_START and including WSes
     private boolean isInPI(TokenID id, boolean includeWS) {
-        return id == XMLDefaultTokenContext.PI_TARGET || id == XMLDefaultTokenContext.PI_CONTENT || id == XMLDefaultTokenContext.PI_END || (includeWS && id == XMLDefaultTokenContext.WS);
+        return id == XMLDefaultTokenContext.PI_TARGET 
+            || id == XMLDefaultTokenContext.PI_CONTENT 
+            || id == XMLDefaultTokenContext.PI_END 
+            || (includeWS && id == XMLDefaultTokenContext.WS);
     }
     
     /** 
@@ -236,37 +253,26 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport {
         
             case XMLDefaultTokenContext.DECLARATION_ID:
                 
-                String decl = item.getImage();
-                String pubId = null, pubLoc = null, sysId = null, token = null;
-
-                StringTokenizer tokenizer = new StringTokenizer(decl, " ");
-
-                while(tokenizer.hasMoreTokens()){
-                    token = tokenizer.nextToken();
-
-                    if(token.equals("PUBLIC")){
-                        pubId = resolveID(tokenizer);
-                        sysId = resolveID(tokenizer);
-                    }else if(token.equals("SYSTEM"))
-                        sysId = resolveID(tokenizer);
-                }
-
-                while( id == XMLDefaultTokenContext.DECLARATION ) {
+                while( id == XMLDefaultTokenContext.DECLARATION 
+                    || id == XMLDefaultTokenContext.VALUE)
+                {
                     lastOffset = getTokenEnd( item );
                     item = item.getNext();
                     if( item == null ) break; //EoD
                     id = item.getTokenID();
                 }
-                return new SyntaxElement.Declaration( this, first, lastOffset, pubId, pubLoc, sysId );
+                return new SyntaxElement.Declaration( this, first, lastOffset);
         
             case XMLDefaultTokenContext.ERROR_ID:
                 
-                return createElement(item);
+                return new SyntaxElement.Error( this, first, lastOffset);
         
             case XMLDefaultTokenContext.TEXT_ID:
             case XMLDefaultTokenContext.CHARACTER_ID:
                 
-                while( id == XMLDefaultTokenContext.TEXT || id == XMLDefaultTokenContext.CHARACTER ) {
+                while( id == XMLDefaultTokenContext.TEXT 
+                    || id == XMLDefaultTokenContext.CHARACTER) 
+                {
                     lastOffset = getTokenEnd( item );
                     item = item.getNext();
                     if( item == null ) break; //EoD
@@ -277,7 +283,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport {
             case XMLDefaultTokenContext.TAG_ID:
                 
                 String text = item.getImage();
-                if ( text.startsWith( "</" ) ) {                 // endtag
+                if ( text.startsWith( "</" ) ) {                 // endtag      // NOI18N
                     String name = text.substring( 2 );
                     item = item.getNext();
                     id = item == null ? null : item.getTokenID();
@@ -302,14 +308,19 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport {
                     item = item.getNext();
                     id = item == null ? null : item.getTokenID();
                     
-                    while( id == XMLDefaultTokenContext.WS ||
-                    id == XMLDefaultTokenContext.ARGUMENT || id == XMLDefaultTokenContext.OPERATOR ||
-                    id == XMLDefaultTokenContext.VALUE || id == XMLDefaultTokenContext.CHARACTER
-                    ) {
-                        if( id == XMLDefaultTokenContext.ARGUMENT ) attrs.add( item.getImage() );  // log all attributes
+                    while( id == XMLDefaultTokenContext.WS
+                        || id == XMLDefaultTokenContext.ARGUMENT
+                        || id == XMLDefaultTokenContext.OPERATOR
+                        || id == XMLDefaultTokenContext.VALUE
+                        || id == XMLDefaultTokenContext.CHARACTER) 
+                    {
+                        if ( id == XMLDefaultTokenContext.ARGUMENT ) {
+                            attrs.add( item.getImage() );  // remember all attributes
+                        }
                         lastOffset = getTokenEnd( item );
                         item = item.getNext();
-                        id = item == null ? null : item.getTokenID();
+                        if (item == null) break;
+                        id = item.getTokenID();
                     }
 
                     // empty or start tag handling
@@ -341,18 +352,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport {
         
         throw new BadLocationException( "Cannot create SyntaxElement at " + item, item.getOffset() );  //NOI18N
     }
-    
-    private String resolveID(StringTokenizer tokenizer){
-        String token = null;
         
-        if(tokenizer.hasMoreTokens()){
-            tokenizer.nextToken("\"");
-            if(tokenizer.hasMoreTokens())
-                token = tokenizer.nextToken("\"");
-        }
-        return "\""+token+"\"";  //NOI18N
-    }
-    
     // ~~~~~~~~~~~~~~~~~ utility methods ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     

@@ -33,14 +33,24 @@ import org.netbeans.editor.TokenID;
 
 public class XMLDefaultSyntax extends Syntax {
     
-    /** Internal state of the lexical analyzer before entering subanalyzer of
-     * character references. It is initially set to INIT, but before first usage,
-     * this will be overwritten with state, which originated transition to
-     * charref subanalyzer.
+    /** 
+     * Internal state of the lexical analyzer before entering subanalyzer of
+     * character references. It is initially set to INIT, but before first 
+     * usage, this will be overwritten with state, which originated
+     * ransition to charref subanalyzer.
      */
     protected int subState = INIT;
     
-    // Internal states
+    /**
+     * Identifies internal DTD layer. Most of functionality is same
+     * as at document layer, however there are minor exceptions.
+     * @see isInternalDTD checks in code
+     */
+    protected boolean subInternalDTD = false;
+    
+    // Internal states I = in state
+    //                 P = expected (char probed but not consumed)
+    //                 A = after (char probed and consumed)
     private static final int ISI_TEXT = 1;    // Plain text between tags
     private static final int ISI_ERROR = 2;   // Syntax error in XML syntax
     private static final int ISA_LT = 3;      // After start of tag delimiter - "<"
@@ -74,7 +84,6 @@ public class XMLDefaultSyntax extends Syntax {
     private static final int ISA_REF_X = 32;    //
     private static final int ISI_REF_HEX = 33;  // hexadecimal reference, in &#xa.. of &#X9..
     
-    private static final int ISI_XML_DECL_CONTENT = 34;
     
     private static final int ISI_PI = 35;  //after <?...
     private static final int ISI_PI_TARGET = 36;  //in <?..|..
@@ -93,6 +102,15 @@ public class XMLDefaultSyntax extends Syntax {
     private static final int ISI_CDATA = 47;
     private static final int ISA_CDATA_BR = 48;
     private static final int ISA_CDATA_BRBR = 49;
+
+    // strings in declaration
+    private static final int ISI_DECL_CHARS = 50;
+    private static final int ISI_DECL_STRING = 51;
+    private static final int ISP_DECL_CHARS = 52;
+    private static final int ISP_DECL_STRING = 53;
+
+    // internal DTD handling
+    private static final int ISA_INIT_BR = 54;
     
     public XMLDefaultSyntax() {
         tokenContextPath = XMLDefaultTokenContext.contextPath;
@@ -110,8 +128,27 @@ public class XMLDefaultSyntax extends Syntax {
                             state = ISA_LT;
                             break;
                         case '&':
-                            state = ISA_REF;
-                            subState = ISI_TEXT;
+                            if (isInternalDTD() == false) {
+                                state = ISA_REF;
+                                subState = ISI_TEXT;                                
+                            } else {
+                                state = ISI_TEXT;
+                            }
+                            break;
+                        case '%':
+                            if (isInternalDTD()) {
+                                state = ISA_REF;
+                                subState = INIT;                                
+                            } else {
+                                state = ISI_TEXT;
+                            }
+                            break;
+                        case ']':
+                            if (isInternalDTD()) {
+                                state = ISA_INIT_BR;                                
+                            } else {
+                                state = ISI_TEXT;
+                            }
                             break;
                         default:
                             state = ISI_TEXT;
@@ -122,9 +159,25 @@ public class XMLDefaultSyntax extends Syntax {
                 case ISI_TEXT:        // DONE
                     switch( actChar ) {
                         case '<':
-                        case '&':
                             state = INIT;
-                            return XMLDefaultTokenContext.TEXT;
+                            return XMLDefaultTokenContext.TEXT;                            
+                        case '&':
+                            if (isInternalDTD() == false) {
+                                state = INIT;
+                                return XMLDefaultTokenContext.TEXT;                                                            
+                            }
+                            break;
+                        case '%':
+                            if (isInternalDTD()) {
+                                state = INIT;
+                                return XMLDefaultTokenContext.TEXT;                                
+                            }
+                            break;
+                        case ']':
+                            if (isInternalDTD()) {
+                                state = ISA_INIT_BR;
+                            }
+                            break;
                     }
                     break;
                     
@@ -133,9 +186,9 @@ public class XMLDefaultSyntax extends Syntax {
                     state = INIT;
                     return XMLDefaultTokenContext.ERROR;
                     
-                case ISA_LT:         // PENDING other transitions - e.g '<?'
+                case ISA_LT:         // DONE
                     
-                    if( UnicodeClasses.isXMLNameStartChar( actChar ) ) {
+                    if( UnicodeClasses.isXMLNameStartChar( actChar ) && isInternalDTD() == false) {
                         state = ISI_TAG;
                         break;
                     }
@@ -509,37 +562,45 @@ public class XMLDefaultSyntax extends Syntax {
                             state = ISI_ERROR;
                             return XMLDefaultTokenContext.BLOCK_COMMENT;
                     }
-                    //break;
                     
-                case ISI_XML_DECL_CONTENT:
-                    switch( actChar ) {
-                        case '"':
-                            //              offset++;
+                case ISP_DECL_STRING:
+                    if (actChar != '"') throw new IllegalStateException("Unexpected " + actChar);
+                    state = ISI_DECL_STRING;
+                    break;
+                    
+                case ISI_DECL_STRING:
+                    if ( actChar == '"') {
                             state = ISI_SGML_DECL;
-                            break;
-                        case '\'':
-                            //              offset++;
-                            state = ISI_SGML_DECL;
-                            break;
-                        default:
                             offset++;
-                            return XMLDefaultTokenContext.DECLARATION;  //??? seems to be redundant
+                            return XMLDefaultTokenContext.VALUE;
+                    }
+                    break;
+
+                case ISP_DECL_CHARS:
+                    if (actChar != '\'') throw new IllegalStateException("Unexpected " + actChar);
+                    state = ISI_DECL_CHARS;
+                    break;
+                    
+                case ISI_DECL_CHARS:
+                    if ( actChar == '\'') {
+                            state = ISI_SGML_DECL;
+                            offset++;
+                            return XMLDefaultTokenContext.VALUE;
                     }
                     break;
                     
                 case ISI_SGML_DECL:
                     switch( actChar ) {
                         case '"':
-                            //offset++;
-                            state = ISI_XML_DECL_CONTENT;
-                            break;
+                            state = ISP_DECL_STRING;
+                            return XMLDefaultTokenContext.DECLARATION;
                         case '\'':
-                            //offset++;
-                            state = ISI_XML_DECL_CONTENT;
-                            break;
+                            state = ISP_DECL_CHARS;
+                            return XMLDefaultTokenContext.DECLARATION;
                         case '[':
                             offset++;
                             state = INIT;
+                            enterInternalDTD();
                             return XMLDefaultTokenContext.DECLARATION;
                         case '>':
                             offset++;
@@ -547,12 +608,23 @@ public class XMLDefaultSyntax extends Syntax {
                             return XMLDefaultTokenContext.DECLARATION;
                     }
                     break;
+
+                case ISA_INIT_BR:
+                    if (actChar == '>') {
+                        offset++;
+                        state = INIT;
+                        leaveInternalDTD();
+                        return XMLDefaultTokenContext.DECLARATION;
+                    } else {
+                        state = INIT;
+                        return XMLDefaultTokenContext.ERROR;
+                    }
                     
                 case ISA_SGML_DECL_DASH:
                     if( actChar == '-' ) {
                         state = ISI_ERROR;
                         break;
-                    } else
+                    } else {
                         if(isWS(actChar)){
                             state = ISI_ERROR;
                             continue;
@@ -560,13 +632,14 @@ public class XMLDefaultSyntax extends Syntax {
                             state = ISI_SGML_DECL;
                             continue;
                         }
+                    }
                     
                 case ISA_REF:
                     if( UnicodeClasses.isXMLNameStartChar( actChar ) ) {
                         state = ISI_REF_NAME;
                         break;
                     }
-                    if( actChar == '#' ) {
+                    if( actChar == '#') {
                         state = ISA_REF_HASH;
                         break;
                     }
@@ -603,10 +676,7 @@ public class XMLDefaultSyntax extends Syntax {
                     return XMLDefaultTokenContext.CHARACTER;
                     
                 case ISA_REF_X:
-                    if( (actChar >= '0' && actChar <= '9') ||
-                    (actChar >= 'a' && actChar <= 'f') ||
-                    (actChar >= 'A' && actChar <= 'F')
-                    ) {
+                    if (isHex(actChar)) {
                         state = ISI_REF_HEX;
                         break;
                     }
@@ -614,17 +684,14 @@ public class XMLDefaultSyntax extends Syntax {
                     return XMLDefaultTokenContext.ERROR;       // error on previous "&#x" sequence
                     
                 case ISI_REF_HEX:
-                    if( (actChar >= '0' && actChar <= '9') ||
-                    (actChar >= 'a' && actChar <= 'f') ||
-                    (actChar >= 'A' && actChar <= 'F')
-                    ) break;
-                    if( actChar == ';' ) offset++;
+                    if (isHex(actChar)) break;
+                    if (actChar == ';' ) offset++;
                     state = subState;
                     return XMLDefaultTokenContext.CHARACTER;
             }
             
             
-            offset = ++offset;
+            offset++;
         } // end of while(offset...)
         
         /** At this stage there's no more text in the scanned buffer.
@@ -675,15 +742,15 @@ public class XMLDefaultSyntax extends Syntax {
                     
                 case ISI_VAL_APOS:
                 case ISI_VAL_QUOT:
+                case ISI_DECL_CHARS:
+                case ISI_DECL_STRING:
                     return XMLDefaultTokenContext.VALUE;
                     
                 case ISI_SGML_DECL:
                 case ISA_SGML_DECL_DASH:
+                case ISP_DECL_STRING:
+                case ISP_DECL_CHARS:
                     return XMLDefaultTokenContext.DECLARATION;
-                    
-                    //                case ISI_SGML_COMMENT:
-                    //                case ISA_SGML_COMMENT_DASH:
-                    //                    return XMLDefaultTokenContext.SGML_COMMENT;
                     
                 case ISI_REF_NAME:
                 case ISI_REF_DEC:
@@ -715,6 +782,9 @@ public class XMLDefaultSyntax extends Syntax {
                 case ISA_CDATA_BR:
                 case ISA_CDATA_BRBR:
                     //!!! we could introduce here CDATA token
+                    return XMLDefaultTokenContext.TEXT;
+
+                case ISA_INIT_BR:
                     return XMLDefaultTokenContext.TEXT;
                     
                 default:
@@ -819,18 +889,22 @@ public class XMLDefaultSyntax extends Syntax {
     public void loadState(StateInfo stateInfo) {
         super.loadState( stateInfo );
         subState = ((XMLStateInfo)stateInfo).getSubState();
+        subInternalDTD = ((XMLStateInfo)stateInfo).isInternalDTD();
     }
     
     /** Store state of this analyzer into given mark state. */
     public void storeState(StateInfo stateInfo) {
         super.storeState( stateInfo );
         ((XMLStateInfo)stateInfo).setSubState( subState );
+        ((XMLStateInfo)stateInfo).setInternalDTD( subInternalDTD );
     }
     
     /** Compare state of this analyzer to given state info */
     public int compareState(StateInfo stateInfo) {
         if( super.compareState( stateInfo ) == DIFFERENT_STATE ) return DIFFERENT_STATE;
-        return ( ((XMLStateInfo)stateInfo).getSubState() == subState) ? EQUAL_STATE : DIFFERENT_STATE;
+        return ( ((XMLStateInfo)stateInfo).getSubState() == subState
+            && ((XMLStateInfo)stateInfo).isInternalDTD() == subInternalDTD) 
+            ? EQUAL_STATE : DIFFERENT_STATE;
     }
     
     /** Create state info appropriate for particular analyzer */
@@ -843,6 +917,14 @@ public class XMLDefaultSyntax extends Syntax {
     private boolean isAZ( char ch ) {
         return( (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') );
     }
+
+    private boolean isHex( char ch) {
+        return (ch >= '0' && ch <= '9') || isAF(ch);
+    }
+
+    private boolean isAF( char ch ) {
+        return( (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') );
+    }
     
     private boolean isName( char ch ) {
         return( (ch >= 'a' && ch <= 'z') ||
@@ -850,6 +932,18 @@ public class XMLDefaultSyntax extends Syntax {
         (ch >= '0' && ch <= '9') ||
         ch == '-' || ch == '_' || ch == '.' || ch == ':' );
         
+    }
+
+    private void enterInternalDTD() {
+        subInternalDTD = true;
+    }
+
+    private void leaveInternalDTD() {
+        subInternalDTD = false;
+    }
+    
+    private boolean isInternalDTD() {
+        return subInternalDTD;
     }
     
     /**
@@ -872,6 +966,7 @@ public class XMLDefaultSyntax extends Syntax {
         
         /** analyzer subState during parsing character references */
         private int subState;
+        private boolean subInternalDTD;
         
         public int getSubState() {
             return subState;
@@ -881,8 +976,18 @@ public class XMLDefaultSyntax extends Syntax {
             this.subState = subState;
         }
         
+        public boolean isInternalDTD() {
+            return subInternalDTD;
+        }
+        
+        public void setInternalDTD(boolean val) {
+            subInternalDTD = val;
+        }
+        
         public String toString(Syntax syntax) {
-            return super.toString(syntax) + ", subState=" + syntax.getStateName(getSubState());  // NOI18N
+            return super.toString(syntax) 
+                + ", subState=" + syntax.getStateName(getSubState())            // NOI18N
+                + ", inDTD=" + subState;                                        // NOI18N
         }
         
     }
