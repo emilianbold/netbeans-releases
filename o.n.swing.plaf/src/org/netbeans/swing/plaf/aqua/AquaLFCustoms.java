@@ -56,6 +56,7 @@ public final class AquaLFCustoms extends LFCustoms {
             }; //NOI18N
         } else {
             result = new Object[] {
+                "controlFont", new GuaranteedValue (new String[] {"Label.font", "Tree.font"}, new FontUIResource("Dialog", Font.PLAIN, 14)).getFont(),
                 "PopupMenuSeparatorUI", "org.netbeans.swing.plaf.aqua.AquaSeparatorUI",
                 "SeparatorUI", "org.netbeans.swing.plaf.aqua.AquaSeparatorUI",
                  SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.AquaSlidingButtonUI",
