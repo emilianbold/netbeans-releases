@@ -121,9 +121,9 @@ public class WebProjectModule extends ModuleInstall {
                             sb.append(InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false));
                             sb.append(":${" + WebProjectProperties.J2EE_PLATFORM_CLASSPATH + "}"); // NOI18N
                             sb.append(":"); // NOI18N
-                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.0.28.jar", null, false));
+                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.5.4.jar", null, false));
                             sb.append(":"); // NOI18N
-                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.0.28.jar", null, false));
+                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.5.4.jar", null, false));
                             sb.append(":"); // NOI18N
                             sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-el.jar", null, false));
                             sb.append(":"); // NOI18N

@@ -13,17 +13,17 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="web_jspparser" default="netbeans" basedir=".">
-
-    <import file="../../nbbuild/templates/projectized.xml"/>
     
+    <import file="../../nbbuild/templates/projectized.xml"/>
+    <property name="tomcat_version" value="5.5.4"/>
     <target name="files-init" depends="basic-init">
         <patternset id="module.files">
             <!--<include name="${nb.modules/autoload.dir}/jsp-parser.jar"/>
             <include name="${nb.modules/autoload.dir}/ext/jsp-parser-ext.jar"/>-->
             <include name="${module.jar}"/>
             <include name="${nb.modules/autoload.dir}/ext/jsp-parser-ext.jar"/>
-            <include name="${nb.modules/autoload.dir}/ext/jasper-compiler-5.0.28.jar"/>
-            <include name="${nb.modules/autoload.dir}/ext/jasper-runtime-5.0.28.jar"/>
+            <include name="${nb.modules/autoload.dir}/ext/jasper-compiler-${tomcat_version}.jar"/>
+            <include name="${nb.modules/autoload.dir}/ext/jasper-runtime-${tomcat_version}.jar"/>
             <include name="${nb.modules/autoload.dir}/ext/commons-el.jar"/>
         </patternset>
     </target>
@@ -32,8 +32,8 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext"/>
         <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext">
           <fileset dir="../external">
-            <include name="jasper-compiler-5.0.28.jar"/>
-            <include name="jasper-runtime-5.0.28.jar"/>
+            <include name="jasper-compiler-${tomcat_version}.jar"/>
+            <include name="jasper-runtime-${tomcat_version}.jar"/>
             <include name="commons-el.jar"/>
           </fileset>
         </copy>

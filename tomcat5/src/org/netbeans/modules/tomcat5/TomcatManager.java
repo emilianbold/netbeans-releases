@@ -1298,9 +1298,9 @@ public class TomcatManager implements DeploymentManager {
                 "conf/server.xml",   // NOI18N
                 "conf/tomcat-users.xml",   // NOI18N
                 "conf/web.xml",   // NOI18N
-                "conf/Catalina/localhost/admin.xml",   // NOI18N
+                //"conf/Catalina/localhost/admin.xml",   // NOI18N For bundled tomcat 5.0.x 
                 "conf/Catalina/localhost/manager.xml",   // NOI18N
-                "conf/Catalina/localhost/balancer.xml"   // NOI18N
+                //"conf/Catalina/localhost/balancer.xml"   // NOI18N For bundled tomcat 5.0.x 
             };
             String [] patternFrom = new String [] { 
                 null, 
@@ -1308,9 +1308,9 @@ public class TomcatManager implements DeploymentManager {
                 "</Host>",   // NOI18N
                 "</tomcat-users>",   // NOI18N
                 null,
-                "docBase=\"../server/webapps/admin\"",
-                "docBase=\"../server/webapps/manager\"",
-                "docBase=\"balancer\""
+                //"docBase=\"../server/webapps/admin\"",    // NOI18N For bundled tomcat 5.0.x 
+                "docBase=\"../server/webapps/manager\"",    // NOI18N
+                //"docBase=\"balancer\""                    // NOI18N For bundled tomcat 5.0.x 
             };
             String passwd = null;
             if (isItBundledTomcat()) {
@@ -1327,9 +1327,9 @@ public class TomcatManager implements DeploymentManager {
                 "</Host>",   // NOI18N
                 passwd != null ? "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager\"/>\n</tomcat-users>" : null,   // NOI18N
                 null, 
-                "docBase=\"${catalina.home}/server/webapps/admin\"",   // NOI18N
-                "docBase=\"${catalina.home}/server/webapps/manager\"",   // NOI18N
-                "docBase=\""+new File (homeDir, "webapps/balancer").getAbsolutePath ()+"\""   // NOI18N
+                //"docBase=\"${catalina.home}/server/webapps/admin\"",   // NOI18N For bundled tomcat 5.0.x
+                "docBase=\"${catalina.home}/server/webapps/manager\"",   // NOI18N 
+                //"docBase=\""+new File (homeDir, "webapps/balancer").getAbsolutePath ()+"\""   // NOI18N For bundled tomcat 5.0.x
             };
             for (int i = 0; i<files.length; i++) {
                 // get folder from, to, name and ext
