@@ -33,4 +33,14 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="LibraryTypeProviders"/>
     </folder>
 
+    <folder name="Menu">
+        <folder name="Tools">
+            <attr name="JavaPlatformsCustomizerAction.instance/LibrariesCustomizerAction.instance" boolvalue="true"/>
+            <attr name="LibrariesCustomizerAction.instance/Separator2.instance" boolvalue="true"/>
+            <file name="LibrariesCustomizerAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.libraries.ui.LibrariesCustomizerAction"/>
+            </file>
+        </folder>
+    </folder>
+
 </filesystem>
