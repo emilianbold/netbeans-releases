@@ -261,12 +261,21 @@ public class FormPropertyEditor implements PropertyEditor,
      */
     public boolean supportsCustomEditor() {
         PropertyEditor[] editors = getAllEditors();
+
+        if (!property.canWrite()) { // read only property
+            for (int i=0; i < editors.length; i++)
+                if (!editors[i].getClass().equals(RADConnectionPropertyEditor.class)
+                        && editors[i].supportsCustomEditor())
+                    return true;
+            return false;
+        }
+
+        // writable property
         if (editors.length > 1)
             return true; // we must  at least allow to choose the editor
         if (editors.length == 1)
-            if (editors[0].getClass().equals(RADConnectionPropertyEditor.class))
-                return property.canWrite(); // no editor for read-only
-            else return editors[0].supportsCustomEditor();
+            return editors[0].supportsCustomEditor();
+
         return false;
     }
 
