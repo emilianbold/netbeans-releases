@@ -2,7 +2,7 @@ OpenIDE-Module: org.netbeans.modules.web.core.syntax/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/core/syntax/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/web/core/syntax/RestoreColoring.class
 OpenIDE-Module-Layer: org/netbeans/modules/web/core/syntax/layer.xml
-OpenIDE-Module-Specification-Version: 1.6
+OpenIDE-Module-Specification-Version: 1.7
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.web.core/1 > 1.1.5, org.netbeans.modules.editor/1 > 1.6, org.netbeans.modules.servletapi23/1
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.web.core/1 > 1.6, org.netbeans.modules.editor/1 > 1.6, org.netbeans.modules.servletapi23/1
