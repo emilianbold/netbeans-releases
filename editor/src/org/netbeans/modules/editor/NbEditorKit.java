@@ -76,7 +76,7 @@ public class NbEditorKit extends ExtKit {
         }
     }
 
-    protected void installSystemActionMappings() {
+    protected void updateActions() {
         addSystemActionMapping(cutAction, org.openide.actions.CutAction.class);
         addSystemActionMapping(copyAction, org.openide.actions.CopyAction.class);
         addSystemActionMapping(pasteAction, org.openide.actions.PasteAction.class);
@@ -85,12 +85,6 @@ public class NbEditorKit extends ExtKit {
         addSystemActionMapping(findAction, org.openide.actions.FindAction.class);
         addSystemActionMapping(replaceAction, org.openide.actions.ReplaceAction.class);
         addSystemActionMapping(gotoAction, org.openide.actions.GotoAction.class);
-    }
-
-    public void install(JEditorPane c) {
-        installSystemActionMappings();
-
-        super.install(c);
     }
 
     public Class getFocusableComponentClass(JTextComponent c) {
