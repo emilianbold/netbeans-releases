@@ -93,6 +93,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="test.unit.src.dir" location="test/unit/src"/>
         <property name="build.test.unit.classes.dir" location="build/test/unit/classes"/>
         <property name="build.test.unit.results.dir" location="build/test/unit/results"/>
+        <property name="test.filter.trace" value="true"/>
         <path id="test.unit.cp">
             <path refid="cp"/>
             <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${module.jar}"/>
@@ -288,7 +289,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="test" depends="init,test-init,test-build">
         <mkdir dir="${build.test.unit.results.dir}"/>
-        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
+        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}">
             <batchtest todir="${build.test.unit.results.dir}">
                 <fileset dir="${test.unit.src.dir}">
                     <!-- XXX could include only out-of-date tests... -->
@@ -307,7 +308,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="test-single" depends="init,test-init,test-build">
         <fail unless="test.includes">Must set test.includes</fail>
         <mkdir dir="${build.test.unit.results.dir}"/>
-        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
+        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}">
             <batchtest todir="${build.test.unit.results.dir}">
                 <fileset dir="${test.unit.src.dir}" includes="${test.includes}"/>
             </batchtest>
@@ -342,6 +343,16 @@ Microsystems, Inc. All Rights Reserved.
             <classpath refid="test.unit.run.cp"/>
         </nbjpdastart>
         <antcall target="do-debug-test-single"/>
+    </target>
+
+    <target name="-pre-debug-fix" depends="init">
+        <fail unless="fix.class">Must set fix.class to e.g. org/netbeans/modules/foo/Bar</fail>
+        <property name="javac.includes" value="${fix.class}.java"/>
+    </target>
+    <target name="debug-fix-nb" if="netbeans.home" depends="init,-pre-debug-fix,compile-single">
+        <nbjpdareload>
+            <fileset includes="${fix.class}*.class" dir="${build.classes.dir}"/>
+        </nbjpdareload>
     </target>
 
     <target name="javahelp" depends="init" if="has.javahelp">
