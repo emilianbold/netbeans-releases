@@ -121,8 +121,9 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         jLabelClasspath.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         jPanel2.add(jLabelClasspath, gridBagConstraints);
 
         jTableClasspath.setModel(new javax.swing.table.DefaultTableModel(

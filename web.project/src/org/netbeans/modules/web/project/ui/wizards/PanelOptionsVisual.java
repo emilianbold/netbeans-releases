@@ -42,7 +42,6 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         j2eeSpecLabel = new javax.swing.JLabel();
         j2eeSpecComboBox = new javax.swing.JComboBox();
         j2eeSpecDescLabel = new javax.swing.JLabel();
-        j2eeSpecDescScrollPane = new javax.swing.JScrollPane();
         j2eeSpecDescTextPane = new javax.swing.JTextPane();
 
         setLayout(new java.awt.GridBagLayout());
@@ -56,6 +55,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        gridBagConstraints.weightx = 1.0;
         add(setAsMainCheckBox, gridBagConstraints);
 
         j2eeSpecLabel.setLabelFor(j2eeSpecComboBox);
@@ -90,9 +90,10 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
         add(j2eeSpecDescLabel, gridBagConstraints);
 
+        j2eeSpecDescTextPane.setBorder(new javax.swing.border.BevelBorder(javax.swing.border.BevelBorder.LOWERED));
         j2eeSpecDescTextPane.setEditable(false);
-        j2eeSpecDescScrollPane.setViewportView(j2eeSpecDescTextPane);
-
+        j2eeSpecDescTextPane.setFocusable(false);
+        j2eeSpecDescTextPane.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -100,9 +101,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(j2eeSpecDescScrollPane, gridBagConstraints);
+        add(j2eeSpecDescTextPane, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -129,7 +129,6 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox j2eeSpecComboBox;
     private javax.swing.JLabel j2eeSpecDescLabel;
-    private javax.swing.JScrollPane j2eeSpecDescScrollPane;
     private javax.swing.JTextPane j2eeSpecDescTextPane;
     private javax.swing.JLabel j2eeSpecLabel;
     private javax.swing.JCheckBox setAsMainCheckBox;

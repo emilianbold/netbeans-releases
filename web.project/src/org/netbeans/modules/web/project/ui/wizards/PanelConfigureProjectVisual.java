@@ -71,12 +71,15 @@ public class PanelConfigureProjectVisual extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
+        setPreferredSize(new java.awt.Dimension(550, 350));
+        setRequestFocusEnabled(false);
         locationContainer.setLayout(new java.awt.BorderLayout());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
         add(locationContainer, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -92,7 +95,6 @@ public class PanelConfigureProjectVisual extends JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(optionsContainer, gridBagConstraints);
 
