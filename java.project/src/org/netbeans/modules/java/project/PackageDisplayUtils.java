@@ -126,13 +126,21 @@ public final class PackageDisplayUtils {
      * Check whether a package is empty (devoid of files except for subpackages).
      */
     public static boolean isEmpty( FileObject fo ) {    
+        return isEmpty (fo, true );
+    }
+
+    /**
+     * Check whether a package is empty (devoid of files except for subpackages).
+     * @param recurse specifies whether to check if subpackages are empty too.
+     */
+    public static boolean isEmpty( FileObject fo, boolean recurse ) {    
         FileObject[] kids = fo.getChildren();
         for( int i = 0; i < kids.length; i++ ) {
             if ( !kids[i].isFolder() && VisibilityQuery.getDefault().isVisible( kids[i] ) ) {
                 return false;
             }  
             else {
-                if (!isEmpty(kids[i])) {
+                if (recurse && !isEmpty(kids[i])) {
                     return false;
                 }
             }

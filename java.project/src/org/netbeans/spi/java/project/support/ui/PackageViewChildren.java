@@ -211,7 +211,9 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         // Special case for default package
         if ( root.equals( parent ) ) {
             PackageNode n = get( parent );
-            if ( n != null && PackageDisplayUtils.isEmpty( root ) ) {
+            // the default package is considered empty if it only contains folders,
+            // regardless of the contents of these folders (empty or not)
+            if ( n != null && PackageDisplayUtils.isEmpty( root, false ) ) {
                 remove( root );
             }
             return;
