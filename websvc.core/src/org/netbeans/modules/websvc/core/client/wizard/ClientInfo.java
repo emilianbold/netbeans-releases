@@ -40,11 +40,17 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 
 import org.netbeans.modules.websvc.api.webservices.WebServicesClientSupport;
+import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.modules.websvc.core.Utilities;
+
 
 /**
  *
@@ -53,10 +59,10 @@ import org.netbeans.modules.websvc.core.Utilities;
 public final class ClientInfo extends JPanel implements WsdlRetriever.MessageReceiver {
 
     private static final String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
-    
+
     private static final int WSDL_FROM_FILE = 1;
     private static final int WSDL_FROM_SERVICE = 2;
-    
+
 	private static final FileFilter WSDL_FILE_FILTER = new WsdlFileFilter();
 	private static String previousDirectory = "";
 
@@ -65,11 +71,11 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
     private boolean settingFields;
     private int wsdlSource;
     private File wsdlTmpFile;
-    
+
     // properties for 'get from server'
     private WsdlRetriever retriever;
     private String downloadMsg;
-    
+
 	public ClientInfo(WebServiceClientWizardDescriptor panel) {
 		descriptorPanel = panel;
 
@@ -300,7 +306,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         // file related fields
         jTxtWsdlFile.setEnabled(fromFile);
         jBtnBrowse.setEnabled(fromFile);
-        
+
         // service related fields
         jTxtWsdlURL.setEnabled(fromService);
         String wsdlUrlText = jTxtWsdlURL.getText().trim();
@@ -309,7 +315,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         jLblLocalFilename.setEnabled(fromService);
         jTxtLocalFilename.setEnabled(fromService);
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup btnGrpWsdlSource;
     private javax.swing.JButton jBtnBrowse;
@@ -380,7 +386,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
                 }
             });
 	}
-    
+
     void store(WizardDescriptor d) {
 //        System.out.println("storing wizard properties");
 
@@ -396,12 +402,12 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         d.putProperty(WizardProperties.WSDL_PACKAGE_NAME, jTxtPackageName.getText().trim());
         d.putProperty(WizardProperties.CLIENT_STUB_TYPE, jCbxClientType.getSelectedItem());
 	}
-    
+
     void read(WizardDescriptor d) {
 //        System.out.println("reading wizard properties");
         try {
             settingFields = true;
-            
+
             Project p = Templates.getProject(d);
 
             jTxtProject.setText(ProjectUtils.getInformation(p).getDisplayName());
@@ -458,7 +464,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
 
 	private JRadioButton getSelectedRadioButton(int selected) {
         JRadioButton result = jRbnServiceURL;
-        
+
         switch(selected) {
         case WSDL_FROM_FILE:
             result = jRbnFilesystem;
@@ -467,21 +473,21 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             result = jRbnServiceURL;
             break;
         }
-        
+
         return result;
     }
 
-    private String getDownloadWsdl() {
-        String result = null;
+    private byte [] getDownloadWsdl() {
+        byte [] result = null;
         if(retriever != null && retriever.getState() == WsdlRetriever.STATUS_COMPLETE) {
             result = retriever.getWsdl();
         }
         return result;
     }
-    
+
     private String getDownloadUrl() {
         String result;
-        
+
         if(retriever != null) {
             // If we've done a download, save the URL that was actually used, not
             // what the user typed in.
@@ -490,12 +496,18 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             // If no download yet, then use what the user has typed.
             result = jTxtWsdlURL.getText().trim();
         }
-        
+
         return result;
     }
 
 	boolean valid(WizardDescriptor wizardDescriptor) {
 		Project p = Templates.getProject(wizardDescriptor);
+
+        // Project must currently have a target server that supports wscompile.
+        if(!isWsCompileSupported(p)) {
+			wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_WsCompileNotSupportedByTargetServer")); // NOI18N
+			return false; // project with web service client support, but no stub types defined.
+        }
 
         // Project selected must support at least one stub type.
         WebServicesClientSupport clientSupport =
@@ -512,18 +524,18 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
                 wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_EnterURL")); // NOI18N
                 return false;
             }
-            
+
             if(retriever == null) {
                 wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_RetrieveWSDL")); // NOI18N
                 return false;
             }
-            
+
             if(retriever.getState() < WsdlRetriever.STATUS_COMPLETE) {
                 wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_DownloadProgress",  // NOI18N
                     ((downloadMsg != null) ? downloadMsg : NbBundle.getMessage(ClientInfo.class, "LBL_Unknown")))); // NOI18N
                 return false;
             }
-            
+
             if(retriever.getState() > WsdlRetriever.STATUS_COMPLETE) {
                 if(downloadMsg != null) {
                     wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_DownloadFailed", downloadMsg)); // NOI18N
@@ -532,10 +544,10 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
                 }
                 return false;
             }
-            
+
             // url is ok, and file is downloaded if we get here.  Now check generated local filename
             // !PW FIXME what do we want to check it for?  Existence in temp directory?
-            
+
             // Now drop down to do package validation.
         } else if(wsdlSource == WSDL_FROM_FILE) {
             String wsdlFilePath = jTxtWsdlFile.getText().trim();
@@ -584,7 +596,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             } catch (FileNotFoundException fne) {
                 wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_WsdlDoesNotExist")); // NOI18N
             }
-            
+
             // !PW FIXME should also detect if WSDL file has previously been added to
             // this project.  Note that not doing so and overwriting the existing entry
             // is the equivalent of doing an update on it.  Nothing bad will happen
@@ -607,29 +619,49 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
 		wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "");
 		return true;
 	}
-    
+
+    private boolean isWsCompileSupported(Project p) {
+        // Determine if wscompile is supported by the current target server of
+        // this project.  Default to true so that the user can still continue, if on
+        // their own, in case we have difficulty getting the correct answer.
+        boolean result = true;
+
+        J2eeModuleProvider provider = (J2eeModuleProvider) p.getLookup().lookup(J2eeModuleProvider.class);
+        if(provider != null) {
+            String serverInstanceID = provider.getServerInstanceID();
+            if(serverInstanceID != null && serverInstanceID.length() > 0) {
+                J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+                if(!j2eePlatform.isToolSupported(WebServicesConstants.WSCOMPILE)) {
+                    result = false;
+                }
+            }
+        }
+
+        return result;
+    }
+
     private void wsdlUrlChanged() {
         // Throw away any existing retriever.  New URL means user has to download it again.
         retriever = null;
-        
+
         // Only enable retrieval button if there is a URL specified.
         String wsdlUrlText = jTxtWsdlURL.getText().trim();
         jBtnGetWsdl.setEnabled(isValidUrl(wsdlUrlText));
-        
+
         updateTexts();
     }
-    
+
     private void updateTexts() {
         if(!settingFields) {
             descriptorPanel.fireChangeEvent(); // Notify that the panel changed
         }
     }
-    
+
     private boolean isValidUrl(String urlText) {
         if(urlText == null || urlText.length() == 0) {
             return false;
         }
-        
+
         // !PW Be very careful adding conditions to this method (such as seeing if
         // conversion of url text to URL would throw a MalformedURLException and
         // reporting it to the user early.)  It is a non-trivial change that would
@@ -637,16 +669,16 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         // as well as the valid() method of this object.  See IZ 52685.
         return true;
     }
-    
+
     public void setWsdlDownloadMessage(String m) {
         downloadMsg = m;
-        
+
         // reenable edit control if state indicates download is completed (or failed).
         if(retriever.getState() >= WsdlRetriever.STATUS_COMPLETE) {
             jTxtWsdlURL.setEditable(true);
             jTxtLocalFilename.setText(retriever.getWsdlFileName());
         }
-        
+
         descriptorPanel.fireChangeEvent();
     }
 

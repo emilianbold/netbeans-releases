@@ -15,7 +15,7 @@ package org.netbeans.modules.websvc.core.client.wizard;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.OutputStream;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.HashSet;
@@ -137,7 +137,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
             return result;
         }
 
-        String sourceWsdlDownload = (String) wiz.getProperty(WizardProperties.WSDL_DOWNLOAD_FILE);
+        byte [] sourceWsdlDownload = (byte []) wiz.getProperty(WizardProperties.WSDL_DOWNLOAD_FILE);
         String wsdlFilePath = (String) wiz.getProperty(WizardProperties.WSDL_FILE_PATH);
         String packageName = (String) wiz.getProperty(WizardProperties.WSDL_PACKAGE_NAME);
         StubDescriptor stubDescriptor = (StubDescriptor) wiz.getProperty(WizardProperties.CLIENT_STUB_TYPE);
@@ -177,11 +177,14 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
                 FileLock wsdlLock = sourceWsdlFile.lock();
 
                 try {
-                    PrintWriter wsdlWriter = new PrintWriter(sourceWsdlFile.getOutputStream(wsdlLock));
+                    OutputStream out = sourceWsdlFile.getOutputStream(wsdlLock);
                     try {
-                        wsdlWriter.write(sourceWsdlDownload);
+                        out.write(sourceWsdlDownload);
+                        out.flush();
                     } finally {
-                        wsdlWriter.close();
+                        if(out != null) {
+                            out.close();
+                        }
                     }
                 } finally {
                     wsdlLock.releaseLock();
