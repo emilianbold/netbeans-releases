@@ -76,8 +76,27 @@ public class ExportHtmlAction extends CookieAction {
                     Boolean.FALSE)).booleanValue());
             p.setSelectionActive ((jtc != null && jtc.getSelectionStart()!=jtc.getSelectionEnd()));
             DialogDescriptor dd = new DialogDescriptor (p, NbBundle.getMessage(ExportHtmlAction.class, "CTL_ExportHtml"));
-            dlg = DialogDisplayer.getDefault().createDialog (dd);
-            dlg.setVisible (true);
+            boolean overwrite = true;
+            dlg = DialogDisplayer.getDefault().createDialog (dd);            
+            do{
+                dlg.setVisible (true);
+                overwrite = true;
+                if ( dd.getValue() == DialogDescriptor.OK_OPTION && new File(p.getFileName()).exists()){
+                    NotifyDescriptor NDConfirm = new NotifyDescriptor.Confirmation(
+                    MessageFormat.format(
+                    NbBundle.getBundle( org.netbeans.modules.editor.ExportHtmlAction.class ).getString("MSG_FileExists"),
+                    new Object[] {p.getFileName()}),
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.WARNING_MESSAGE
+                    );
+
+                    org.openide.DialogDisplayer.getDefault().notify(NDConfirm);
+                    if (NDConfirm.getValue()!=NDConfirm.YES_OPTION){
+                        overwrite = false;
+                    }
+                }
+            }while(!overwrite);
+            
             dlg.dispose();
             dlg = null;
             if (dd.getValue() == DialogDescriptor.OK_OPTION) {
