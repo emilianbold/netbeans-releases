@@ -48,7 +48,7 @@ public class ExLocalFileSystem extends LocalFileSystem {
                 AbstractFileSystem.Change change,
                 AbstractFileSystem.List list                
                 ) {
-            super(info, change, list);
+            super(info, change, list, "attributes.xml"); //NOI18N
         }
         
         
