@@ -19,6 +19,7 @@ import com.netbeans.ide.*;
 import com.netbeans.ide.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
+import com.netbeans.enterprise.modules.db.explorer.dlg.CreateTableDialog;
 
 public class CreateTableAction extends DatabaseAction
 {
@@ -27,7 +28,11 @@ public class CreateTableAction extends DatabaseAction
 		Node node;
 		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
 		else return;
+
 		try {
+			CreateTableDialog dlg = new CreateTableDialog();
+			if (dlg.run()) {
+			}
 		} catch(Exception e) {
 			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to create table "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 		}
