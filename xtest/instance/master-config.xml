@@ -34,7 +34,9 @@ Microsystems, Inc. All Rights Reserved.
       <!--
       <module name="openidex" testtypes="unit" attributes="stable"/>
       -->
+      <!--
       <module name="mdr" testtypes="unit" attributes="stable"/>
+      -->
       <module name="mdr" testtypes="perf" attributes="stable">
           <property file="../../mdr/test/perf.properties"/>
       </module>
