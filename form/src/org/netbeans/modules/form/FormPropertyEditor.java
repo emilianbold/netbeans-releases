@@ -264,7 +264,9 @@ public class FormPropertyEditor implements PropertyEditor,
         if (editors.length > 1)
             return true; // we must  at least allow to choose the editor
         if (editors.length == 1)
-            return editors[0].supportsCustomEditor();
+            if (editors[0].getClass().equals(RADConnectionPropertyEditor.class))
+                return property.canWrite(); // no editor for read-only
+            else return editors[0].supportsCustomEditor();
         return false;
     }
 
