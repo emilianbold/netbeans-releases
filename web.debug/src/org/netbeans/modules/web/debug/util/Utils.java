@@ -301,7 +301,7 @@ public class Utils {
      * @return current editor component instance
      */
     public static EditorCookie getCurrentEditorCookie () {
-        Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
+        Node[] nodes = TopComponent.getRegistry ().getCurrentNodes();
         if ( (nodes == null) ||
              (nodes.length != 1) ) return null;
         Node n = nodes [0];
