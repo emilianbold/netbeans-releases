@@ -1,7 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.classfile/1
-OpenIDE-Module-Name: Classfile Reader
-OpenIDE-Module-Display-Category: Infrastructure
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/classfile/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
