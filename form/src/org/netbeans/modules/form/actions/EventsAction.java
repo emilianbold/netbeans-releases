@@ -125,22 +125,26 @@ public class EventsAction extends CookieAction {
             boolean eventSetHasHandlers = false;
             EventsList.Event[] events = setHandlers[i].getEvents();
             for (int j = 0; j < events.length; j++) {
-              StringBuffer menuText = new StringBuffer(events[j].getName ());
               JMenuItem jmi=null;
               if (events[j].getHandlers ().size () == 0) {
-                jmi = new JMenuItem (menuText.toString ());
+                String menuText = java.text.MessageFormat.format (org.openide.util.NbBundle.getBundle (EventsAction.class).getString ("FMT_CTL_EventNoHandlers"),
+                                                        new Object[] { events[j].getName () });
+                jmi = new JMenuItem (menuText);
               }
               if (events[j].getHandlers ().size () == 1) {
-                menuText.append (" [");
-                menuText.append (((EventsManager.EventHandler) events[j].getHandlers ().get (0)).getName ());
-                menuText.append ("]");
-                jmi = new JMenuItem (menuText.toString ());
+                String menuText = java.text.MessageFormat.format (org.openide.util.NbBundle.getBundle (EventsAction.class).getString ("FMT_CTL_EventOneHandler"),
+                                                        new Object[] { events[j].getName (), ((EventsManager.EventHandler) events[j].getHandlers ().get (0)).getName () });
+                jmi = new JMenuItem (menuText);
               }
               if (events[j].getHandlers ().size () > 1) {
-                jmi = new org.openide.awt.JMenuPlus (menuText.toString ());
+                String menuText = java.text.MessageFormat.format (org.openide.util.NbBundle.getBundle (EventsAction.class).getString ("FMT_CTL_EventMultipleHandlers"),
+                                                        new Object[] { events[j].getName () });
+                jmi = new org.openide.awt.JMenuPlus (menuText);
                 for (java.util.Iterator it = events[j].getHandlers ().iterator(); it.hasNext(); ) {
                   EventsManager.EventHandler handler = (EventsManager.EventHandler) it.next ();
-                  JMenuItem hItem = new JMenuItem (handler.getName ());
+                  String handlerText = java.text.MessageFormat.format (org.openide.util.NbBundle.getBundle (EventsAction.class).getString ("FMT_CTL_HandlerFromMultiple"),
+                                                          new Object[] { handler.getName () });
+                  JMenuItem hItem = new JMenuItem (handlerText);
                   hItem.addActionListener (new ActionListener () {
                       public void actionPerformed (ActionEvent evt) {
                         EventsList.Event event = (EventsList.Event)mapping.get (evt.getSource ());
@@ -199,6 +203,7 @@ public class EventsAction extends CookieAction {
 }
 /*
  * Log
+ *  13   Gandalf   1.12        1/7/00   Ian Formanek    I18N
  *  12   Gandalf   1.11        1/5/00   Ian Formanek    NOI18N
  *  11   Gandalf   1.10        11/25/99 Pavel Buzek     support for multiple 
  *       handlers for one event
