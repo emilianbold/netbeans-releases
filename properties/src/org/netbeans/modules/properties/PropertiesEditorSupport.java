@@ -428,17 +428,39 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
         Enumeration en = allEditors.getComponents ();
         return en.hasMoreElements ();
     }
-   
+
+    /** Class which exist only due comaptibility with version 3.0. */    
+    private static final class Env extends Environment {
+        /** Generated Serialized Version UID. */
+        static final long serialVersionUID = -9218186467757330339L;
+
+        /** Used for deserialization. */
+        private PropertiesFileEntry entry;
+
+        /** */
+        public Env(PropertiesFileEntry entry) {
+            super(entry);
+        }
+
+        /** Adds passing entry field to superclass. */
+        private void readObject(java.io.ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
+                in.defaultReadObject();
+                
+                super.entry = this.entry;
+        }
+    }
+
     
     /** Nested class. Implementation of <code>ClonableEditorSupport.Env</code> interface. */
-    private static final class Environment implements CloneableEditorSupport.Env,
+    private static class Environment implements CloneableEditorSupport.Env,
     PropertyChangeListener, SaveCookie {
         
         /** generated Serialized Version UID */
         static final long serialVersionUID = 354528097109874355L;
             
         /** Entry on which is support build. */
-        private PropertiesFileEntry entry;
+        protected PropertiesFileEntry entry;
             
         /** Lock acquired after the first modification and used in <code>save</code> method. */
         private transient FileLock fileLock;
