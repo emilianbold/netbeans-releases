@@ -159,11 +159,14 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         boolean hasSubfolders = false;
         boolean hasFiles = false;
         for (int i = 0; i < kids.length; i++) {
-            if (kids[i].isFolder() ) {
-                findNonExcludedPackages( kids[i] );
-                hasSubfolders = true;
-            } else {
-                hasFiles = true;
+            if ( VisibilityQuery.getDefault().isVisible( kids[i] ) ) {
+                if (kids[i].isFolder() ) {
+                    findNonExcludedPackages( kids[i] );
+                    hasSubfolders = true;
+                } 
+                else {
+                    hasFiles = true;
+                }
             }
         }
         if (hasFiles || !hasSubfolders) {
@@ -245,7 +248,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
 
     public void fileFolderCreated( FileEvent fe ) {
         FileObject fo = fe.getFile();        
-        if ( FileUtil.isParentOf( root, fo ) ) {
+        if ( FileUtil.isParentOf( root, fo ) && VisibilityQuery.getDefault().isVisible( fo ) ) {
             cleanEmptyKeys( fo );                
             //add( fo );
             findNonExcludedPackages( fo );
@@ -255,7 +258,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     
     public void fileDataCreated( FileEvent fe ) {
         FileObject fo = fe.getFile();
-        if ( FileUtil.isParentOf( root, fo ) ) {
+        if ( FileUtil.isParentOf( root, fo ) && VisibilityQuery.getDefault().isVisible( fo ) ) {
             FileObject parent = fo.getParent();
             PackageNode n = get( parent );
             if ( n == null && !contains( parent ) ) {                
@@ -273,7 +276,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         
         // System.out.println("FILE DELETED " + FileUtil.getRelativePath( root, fo ) );
         
-        if ( FileUtil.isParentOf( root, fo ) ) {
+        if ( FileUtil.isParentOf( root, fo ) && VisibilityQuery.getDefault().isVisible( fo ) ) {
             
             // System.out.println("IS FOLDER? " + fo + " : " + fo.isFolder() );
                                   /* Hack for MasterFS see #42464 */
@@ -284,8 +287,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 FileObject parent = fo.getParent();
                 if ( ( FileUtil.isParentOf( root, parent ) || root.equals( parent ) ) && get( parent ) == null && parent.isValid() ) {
                     // Candidate for adding
-                    FileObject kids[] = parent.getChildren();
-                    if ( kids.length == 0 /* || onlyFolders( kids ) */ ) {
+                    if ( !toBeRemoved( parent ) ) {
                         // System.out.println("ADDING PARENT " + parent );
                         add( parent );
                     }
@@ -299,8 +301,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                     n.updateChildren();
                 }
                 // If the parent folder only contains folders remove it
-                FileObject kids[] = parent.getChildren();
-                if ( kids.length != 0 && onlyFolders( kids ) ) {
+                if ( toBeRemoved( parent ) ) {
                     remove( parent );
                     refreshKeys();
                 }
@@ -312,16 +313,31 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         // }
     }
     
-    private boolean onlyFolders( FileObject[] kids ) {
-        boolean onlyFolders = true;
+    /** Returns true if the folder should be removed from the view
+     * i.e. it has some unignored children and the children are folders only
+     */
+    private boolean toBeRemoved( FileObject folder ) {
+        boolean ignoredOnly = true;
+        boolean foldersOnly = true;
+        FileObject kids[] = folder.getChildren();
         for ( int i = 0; i < kids.length; i++ ) {
-            if ( !kids[i].isFolder() ) {
-                onlyFolders = false;
-                break;
-            }
+            if ( VisibilityQuery.getDefault().isVisible( kids[i] ) ) {
+                ignoredOnly = false;
+                if ( !kids[i].isFolder() ) {
+                    foldersOnly = false;
+                    break;
+                }
+            }                                  
         }
-        return onlyFolders;
+        if ( ignoredOnly ) {
+            return false; // It is either empty or it only contains ignored files
+                          // thus is leaf and it means package
+        }
+        else {
+            return foldersOnly;
+        }
     }
+    
     
     public void fileRenamed( FileRenameEvent fe ) {
         FileObject fo = fe.getFile();        
@@ -614,7 +630,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         private static boolean isEmpty( FileObject fo ) {    
             FileObject[] kids = fo.getChildren();
             for( int i = 0; i < kids.length; i++ ) {
-                if ( !kids[i].isFolder() ) {
+                if ( !kids[i].isFolder() && VisibilityQuery.getDefault().isVisible( kids[i] ) ) {
                     return false;
                 }  
                 else {

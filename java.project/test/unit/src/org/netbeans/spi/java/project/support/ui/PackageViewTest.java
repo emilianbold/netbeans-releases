@@ -13,18 +13,23 @@
 
 package org.netbeans.spi.java.project.support.ui;
 
+
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import javax.swing.Icon;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.lookup.Lookups;
 
 public class PackageViewTest extends NbTestCase {
     
@@ -36,6 +41,11 @@ public class PackageViewTest extends NbTestCase {
         super( name );
     }
     
+    protected void setUp() throws Exception {
+        super.setUp();
+        TestUtil.setLookup( Lookups.fixed( new Object[] { new VQImpl(), PackageViewTest.class.getClassLoader() } ) ); 
+        clearWorkDir();
+    }
     
     public void testFolders() throws Exception {
         
@@ -49,32 +59,54 @@ public class PackageViewTest extends NbTestCase {
         Children ch = PackageView.createPackageView( group ).getChildren();
         
         
+        // Create folder
 	FileUtil.createFolder( root, "src/a/b/c" );
         assertNodes( ch, 
                      new String[] { "a.b.c", },
                      new int[] { 0, } );
         
-                     
-                     
+        // Create ignored folder             
+        FileUtil.createFolder( root, "src/KRTEK.folder" );
+        assertNodes( ch, 
+                     new String[] { "a.b.c", },
+                     new int[] { 0, } );
+        
+
+        // Create some other folder
         FileUtil.createFolder( root, "src/e/f/g" );
         assertNodes( ch, 
                      new String[] { "a.b.c", "e.f.g", },
                      new int[] { 0, 0 } );
         
         
-        // Test package names
-        FileUtil.createData( root, "src/e/f/g/Some.java" );                                     
+        // Add some ignored files/folders             
+        FileUtil.createFolder( root, "src/e/KRTEK" );
+        FileUtil.createFolder( root, "src/e/f/KRTEK.folder" );
+        FileUtil.createData( root, "src/e/f/KRTEK.file" );        
+        FileUtil.createFolder( root, "src/e/f/g/KRTEK.folder" );
+        assertNodes( ch, 
+                     new String[] { "a.b.c", "e.f.g", },
+                     new int[] { 0, 0 } );
+                    
+        // Create file
+        FileUtil.createData( root, "src/e/f/g/Some.java" );
         assertNodes( ch, 
                      new String[] { "a.b.c", "e.f.g", },
                      new int[] { 0, 1 } );
-                     
-        // Add empty package
-        FileUtil.createFolder( root, "src/x/y/z" );             
+
+        // Create ignored file
+        FileUtil.createData( root, "src/e/f/g/KRTEK.file" );
+        assertNodes( ch, 
+                     new String[] { "a.b.c", "e.f.g", },
+                     new int[] { 0, 1 } );
+                                  
+        // Add empty package and ignored package
+        FileUtil.createFolder( root, "src/x/y/z/KRTEK" );        
         assertNodes( ch, 
                      new String[] { "a.b.c", "e.f.g", "x.y.z" },
                      new int[] { 0, 1, 0 } );
                      
-        // Add file to folder
+        // Add file to folder                       
         FileObject x_y_z_some = FileUtil.createData( root, "src/x/y/z/Some.java" );        
         assertNodes( ch, 
                      new String[] { "a.b.c", "e.f.g", "x.y.z" },
@@ -270,8 +302,7 @@ public class PackageViewTest extends NbTestCase {
         assertFileObjects( a, new String[]{ "aa" } );
         
         
-        // Do not delete subfoders
-        System.out.println("DDS");
+        // Do not delete subfoders        
         srcRoot = FileUtil.createFolder( root, "dds" );
         a = FileUtil.createFolder( srcRoot, "a" );        
         FileUtil.createData( srcRoot, "a/some.java" );        
@@ -356,6 +387,7 @@ public class PackageViewTest extends NbTestCase {
     }
     
     public static void assertNodes( Children children, String[] nodeNames, int[] childCount ) {
+    
         Node[] nodes = children.getNodes();
         assertEquals( "Wrong number of nodes.", nodeNames.length, nodes.length );
         
@@ -371,20 +403,26 @@ public class PackageViewTest extends NbTestCase {
                 
                 assertEquals( "Wrong nuber of children. Node: " + nodeNames[i] +".", childCount[i], nodes[i].getChildren().getNodes( true ).length );
                 
+                
                 DataObject.Container cont = (DataObject.Container)nodes[i].getCookie (DataObject.Container.class);
                 if (cont != null) {
                     Node[] arr = nodes[i].getChildren ().getNodes ( true );
                     DataObject[] child = cont.getChildren ();
-                    for (int k = 0; k < arr.length; k++) {
-                        DataObject myObj = (DataObject)arr[k].getCookie (DataObject.class);
+                    for (int k = 0, l = 0; k < arr.length; k++) {
+                        if ( !VisibilityQuery.getDefault().isVisible( child[k].getPrimaryFile() ) ) {
+                            continue;
+                        }
+                        DataObject myObj = (DataObject)arr[l].getCookie (DataObject.class);
                         assertNotNull ("Data object should be found for " + arr[k], myObj);
                         if (child.length <= k) {
                             fail ("But there is no object for node: " + arr[k]);
                         } else {
                             assertEquals ("child objects are the same", child[k], myObj);
                         }
+                        l++;
                     }
                 }
+                
             }
         }
     }
@@ -449,6 +487,20 @@ public class PackageViewTest extends NbTestCase {
         public void addPropertyChangeListener(PropertyChangeListener listener) {}
 
         public void removePropertyChangeListener(PropertyChangeListener listener) {}
+        
+    }
+    
+    private static class VQImpl implements VisibilityQueryImplementation {
+        
+        public static String IGNORED = "KRTEK"; 
+        
+        public boolean isVisible(FileObject file) {
+            return !file.getNameExt().startsWith( IGNORED );
+        }
+
+        public void addChangeListener(ChangeListener l) {}
+
+        public void removeChangeListener(ChangeListener l) {}
         
     }
     
