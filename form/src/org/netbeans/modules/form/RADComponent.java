@@ -290,6 +290,15 @@ public class RADComponent {
         }
         getFormManager().getVariablesPool().createVariable(componentName, beanClass);
 
+        if (oldName != null && getBeanInstance() instanceof javax.swing.JInternalFrame) {
+            String postInit =
+                (String) getAuxValue(JavaCodeGenerator.AUX_CREATE_CODE_POST);
+            String oldStr = oldName + ".setVisible(true);"; // NOI18N
+            String newStr = componentName + ".setVisible(true);"; // NOI18N
+            setAuxValue(JavaCodeGenerator.AUX_CREATE_CODE_POST,
+                        Utilities.replaceString(postInit, oldStr, newStr));;
+         }
+        
         getFormManager().fireComponentChanged(this, PROP_NAME, oldName, componentName);
         if (getNodeReference() != null) {
             getNodeReference().updateName();
