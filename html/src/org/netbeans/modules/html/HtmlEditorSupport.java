@@ -203,8 +203,15 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         }
         
         int charend = txt.indexOf ('"', charset);
-        if (charend == -1) {
+        int charend2 = txt.indexOf ('\'', charset);
+        if (charend == -1 && charend2 == -1) {
             return null;
+        }
+
+        if (charend2 != -1) {
+            if (charend == -1 || charend > charend2) {
+                charend = charend2;
+            }
         }
         
         return txt.substring (charset + "CHARSET=".length (), charend);

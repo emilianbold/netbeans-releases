@@ -79,7 +79,18 @@ public class EncodingTest extends NbTestCase {
     public void testEncodingUTF8 () throws Exception {
         checkEncoding ("UTF-8", "UTF8.html");
     }
+    /** Test load of UTF-8 encoding specified in ' ' instead of " "
+     */
+    public void testEncodingApostrof () throws Exception {
+        checkEncoding ("UTF-8", "apostrof.html");
+    }
     
+    /** Test load of UTF-8 encoding specified in ' ' instead of " "
+     * with a text that is followed with "
+     */
+    public void testEncodingApostrofWithQuote () throws Exception {
+        checkEncoding ("UTF-8", "apostrofwithoutquote.html");
+    }
     
     private void checkEncoding (String enc, String res) throws Exception {    
         InputStream is = getClass ().getResourceAsStream (res);

@@ -222,6 +222,7 @@ Microsystems, Inc. All Rights Reserved.
 	        <pathelement location="../src"/>
 	        <pathelement location="../../openide/netbeans/lib/openide.jar"/>
 	        <pathelement location="../../core/netbeans/lib/core.jar"/>
+	        <pathelement location="../netbeans/modules/html.jar"/>
     	</path>
     </target>
     
