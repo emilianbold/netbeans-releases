@@ -155,24 +155,6 @@ public class DiffComponent extends org.openide.windows.TopComponent {
     }
     
     
-/*    private java.awt.Container getContentPane() {
-        return this;
-        //return getRootPane();
-    }
-  */  
-    private void addWindowListener(java.awt.event.WindowListener listener) {
-        java.awt.Component ancestor = getTopLevelAncestor();
-        if (ancestor instanceof java.awt.Window) {
-            ((java.awt.Window) ancestor).addWindowListener(listener);
-        }
-    }
-    
-    /*
-    void addCloseListener(TopComponentCloseListener listener) {
-        closeListeners.add(listener);
-    }
-     */
-    
     protected Mode getDockingMode(Workspace workspace) {
         Mode mode = workspace.findMode(CloneableEditorSupport.EDITOR_MODE);
         if (mode == null) {

@@ -14,7 +14,6 @@
 package org.netbeans.modules.diff;
 
 import java.awt.Component;
-import java.lang.reflect.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;

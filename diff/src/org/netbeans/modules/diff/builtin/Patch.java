@@ -20,9 +20,8 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.regexp.RE;
-import org.apache.regexp.RESyntaxException;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.netbeans.api.diff.Difference;
 
@@ -589,10 +588,10 @@ public class Patch extends Reader {
     }
     
     private static Difference[] parseNormalDiff(Reader in) throws IOException {
-        RE normRegexp;
+        Pattern normRegexp;
         try {
-            normRegexp = new RE(CmdlineDiffProvider.DIFF_REGEXP);
-        } catch (RESyntaxException rsex) {
+            normRegexp = Pattern.compile(CmdlineDiffProvider.DIFF_REGEXP);
+        } catch (PatternSyntaxException rsex) {
             normRegexp = null;
         }
         StringBuffer firstText = new StringBuffer();
@@ -696,11 +695,11 @@ public class Patch extends Reader {
             PushbackReader patchSource = in;
             char[] buff = new char[DIFFERENCE_DELIMETER.length()];
             int length;
-            RE normRegexp;
+            Pattern normRegexp;
             boolean contextBeginDetected = false;
             try {
-                normRegexp = new RE(CmdlineDiffProvider.DIFF_REGEXP);
-            } catch (RESyntaxException rsex) {
+                normRegexp = Pattern.compile(CmdlineDiffProvider.DIFF_REGEXP);
+            } catch (PatternSyntaxException rsex) {
                 normRegexp = null;
             }
             while ((length = patchSource.read(buff)) > 0) {
@@ -772,7 +771,7 @@ public class Patch extends Reader {
                         }
                     }
                     fileName[0] = name.toString();
-                } else if (normRegexp != null && normRegexp.match(input)) {
+                } else if (normRegexp != null && normRegexp.matcher(input).matches()) {
                     diffType[0] = NORMAL_DIFF;
                     patchSource.unread(buff, 0, length);
                     return true;

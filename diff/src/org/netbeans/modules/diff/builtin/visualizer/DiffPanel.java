@@ -370,13 +370,6 @@ public class DiffPanel extends javax.swing.JPanel {
         }
     }
     
-    private void addWindowListener(java.awt.event.WindowListener listener) {
-        java.awt.Component ancestor = getTopLevelAncestor();
-        if (ancestor instanceof java.awt.Window) {
-            ((java.awt.Window) ancestor).addWindowListener(listener);
-        }
-    }
-
 
     public void open() {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
