@@ -46,21 +46,27 @@ public class PanelConfigureProjectVisual extends JPanel {
         initComponents();
                 
 
-        setName(NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NameAndLoc"));
+        setName(NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NameAndLoc")); // NOI18N
         if (type == NewJ2SEProjectWizardIterator.TYPE_APP) {
             projectLocationPanel = new PanelProjectLocationVisual( panel, type );
-            putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaApp"));
+            putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaApp")); // NOI18N
             jSeparator1.setVisible(true);
+            getAccessibleContext ().setAccessibleName (NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaApp")); // NOI18N
+            getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PanelConfigureProjectVisual.class,"ACSD_NewJavaApp")); // NOI18N
         }                       
         else if (type == NewJ2SEProjectWizardIterator.TYPE_LIB) {
             projectLocationPanel = new PanelProjectLocationVisual( panel, type );
             jSeparator1.setVisible (false);
-            putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaLib"));
+            putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaLib")); // NOI18N
+            getAccessibleContext ().setAccessibleName (NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaLib")); // NOI18N
+            getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PanelConfigureProjectVisual.class,"ACSD_NewJavaLib")); // NOI18N
         }
         else {
             projectLocationPanel = new PanelSourceFolders ( panel );
             jSeparator1.setVisible(true);
-            putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_JavaExtSources"));
+            putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_JavaExtSources")); // NOI18N
+            getAccessibleContext ().setAccessibleName (NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_JavaExtSources")); // NOI18N
+            getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PanelConfigureProjectVisual.class,"ACSD_JavaExtSources")); // NOI18N
         }
         locationContainer.add( projectLocationPanel, java.awt.BorderLayout.CENTER );
         optionsPanel = new PanelOptionsVisual( panel, type );
