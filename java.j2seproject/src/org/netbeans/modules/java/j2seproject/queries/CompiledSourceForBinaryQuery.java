@@ -65,10 +65,10 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             if (outDir != null) {
                 File f = helper.resolveFile (outDir);
                 URL url = f.toURI().toURL();
-                if (!f.exists() && !f.getPath().toLowerCase().endsWith(".jar")) {
+                if (!f.exists() && !f.getPath().toLowerCase().endsWith(".jar")) { // NOI18N
                     // non-existing 
-                    assert !url.toExternalForm().endsWith("/") : f;
-                    url = new URL(url.toExternalForm() + "/");
+                    assert !url.toExternalForm().endsWith("/") : f; // NOI18N
+                    url = new URL(url.toExternalForm() + "/"); // NOI18N
                 }
                 if (url.equals (binaryRoot)) {
                     return true;

@@ -35,11 +35,11 @@ public class UnitTestForSourceQueryImpl implements UnitTestForSourceQueryImpleme
     }
 
     public URL findUnitTest(FileObject source) {
-        return find(source, "src.dir", "test.src.dir");
+        return find(source, "src.dir", "test.src.dir"); // NOI18N
     }
     
     public URL findSource(FileObject unitTest) {
-        return find(unitTest, "test.src.dir", "src.dir");
+        return find(unitTest, "test.src.dir", "src.dir"); // NOI18N
     }
     
     private URL find(FileObject file, String from, String to) {

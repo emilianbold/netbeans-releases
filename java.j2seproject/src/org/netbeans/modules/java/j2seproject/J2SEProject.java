@@ -237,7 +237,7 @@ final class J2SEProject implements Project, AntProjectListener {
             public Object run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
-                NodeList nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                NodeList nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
                 if (nl.getLength() == 1) {
                     nl = nl.item(0).getChildNodes();
                     if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {

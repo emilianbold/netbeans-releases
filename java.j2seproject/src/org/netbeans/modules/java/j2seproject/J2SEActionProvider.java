@@ -310,7 +310,7 @@ class J2SEActionProvider implements ActionProvider {
     private FileObject[] findSources(Lookup context) {
         FileObject srcDir = project.getSourceDirectory();
         if (srcDir != null) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true);
+            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true); // NOI18N
             return files;
         } else {
             return null;
@@ -322,7 +322,7 @@ class J2SEActionProvider implements ActionProvider {
     private FileObject[] findTestSources(Lookup context, boolean checkInSrcDir) {
         FileObject testSrcDir = project.getTestSourceDirectory();
         if (testSrcDir != null) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcDir, ".java", true);
+            FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcDir, ".java", true); // NOI18N
             if (files != null) {
                 return files;
             }
@@ -330,7 +330,7 @@ class J2SEActionProvider implements ActionProvider {
         if (checkInSrcDir && testSrcDir != null) {
             FileObject srcDir = project.getSourceDirectory();
             if (srcDir != null) {
-                FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true);
+                FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true); // NOI18N
                 if (files != null) {
                     FileObject[] files2 = ActionUtils.regexpMapFiles(files, srcDir, SRCDIRJAVA, testSrcDir, SUBST, true);
                     if (files2 != null) {

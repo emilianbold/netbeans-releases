@@ -107,7 +107,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         add(projectLocationTextField, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
-        browseButton.setActionCommand("BROWSE");
+        browseButton.setActionCommand("BROWSE"); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseLocationAction(evt);
@@ -174,7 +174,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     boolean valid( WizardDescriptor wizardDescriptor ) {
         
         if ( projectNameTextField.getText().length() == 0 ) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage",
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
             NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_IllegalProjectName"));
             return false; // Display name not specified
         }
@@ -183,7 +183,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         File[] kids = destFolder.listFiles();
         if ( destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage",
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
             NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_ProjectFolderExists"));
             return false;
         }                
@@ -253,7 +253,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
         chooser.setAcceptAllFileFilterUsed( false );
-        chooser.setName( "Select Project Directory" ); // XXX
+        chooser.setName( "Select Project Directory" ); // XXX // NOI18N
         return chooser;
     }
     

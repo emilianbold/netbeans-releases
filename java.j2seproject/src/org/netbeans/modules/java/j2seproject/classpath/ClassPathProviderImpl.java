@@ -197,7 +197,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             default:
                 throw new AssertionError("weird type " + type); // NOI18N
             }
-            assert root != null : "No root for files of type " + type;
+            assert root != null : "No root for files of type " + type; // NOI18N
             return ClassPathSupport.createClassPath(new FileObject[] {root});
         }
         ClassPath cp = null;

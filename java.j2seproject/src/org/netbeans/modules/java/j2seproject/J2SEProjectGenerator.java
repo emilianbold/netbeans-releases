@@ -136,7 +136,7 @@ public class J2SEProjectGenerator {
         ep.setProperty("javac.target", "${default.javac.target}"); // NOI18N
         ep.setProperty("javac.debug", "true"); // NOI18N
         ep.setProperty("javac.deprecation", "false"); // NOI18N
-        ep.setProperty("javac.test.classpath", new String[] {
+        ep.setProperty("javac.test.classpath", new String[] { // NOI18N
             "${javac.classpath}:", // NOI18N
             "${build.classes.dir}:", // NOI18N
             "${libs.junit.classpath}", // NOI18N
@@ -194,12 +194,12 @@ public class J2SEProjectGenerator {
             rootF = rootF.getParentFile();
         }
         FileObject dirFO = FileUtil.toFileObject(rootF);
-        assert dirFO != null : "At least disk roots must be mounted! " + rootF;
+        assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
         dirFO.getFileSystem().refresh(false);
         dirFO = FileUtil.toFileObject(dir);
-        assert dirFO != null : "No such dir on disk: " + dir;
-        assert dirFO.isFolder() : "Not really a dir: " + dir;
-        assert dirFO.getChildren().length == 0 : "Dir must have been empty: " + dir;
+        assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
+        assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N
+        assert dirFO.getChildren().length == 0 : "Dir must have been empty: " + dir; // NOI18N
         return dirFO;
     }
 
@@ -220,7 +220,7 @@ public class J2SEProjectGenerator {
             return;
         }
         
-        FileObject mainTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Classes/Main.java" );
+        FileObject mainTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Classes/Main.java" ); // NOI18N
 
         if ( mainTemplate == null ) {
             return; // Don't know the template

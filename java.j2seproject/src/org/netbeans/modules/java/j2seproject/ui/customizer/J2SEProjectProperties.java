@@ -59,50 +59,50 @@ import org.w3c.dom.NodeList;
 public class J2SEProjectProperties {
     
     // Special properties of the project
-    public static final String J2SE_PROJECT_NAME = "j2se.project.name";
-    public static final String JAVA_PLATFORM = "platform.active";
+    public static final String J2SE_PROJECT_NAME = "j2se.project.name"; // NOI18N
+    public static final String JAVA_PLATFORM = "platform.active"; // NOI18N
     
     // Properties stored in the PROJECT.PROPERTIES    
-    public static final String DIST_DIR = "dist.dir";
-    public static final String DIST_JAR = "dist.jar";
-    public static final String JAVAC_CLASSPATH = "javac.classpath";
-    public static final String RUN_CLASSPATH = "run.classpath";
-    public static final String DEBUG_CLASSPATH = "debug.classpath";    
-    public static final String JAR_COMPRESS = "jar.compress";
-    public static final String MAIN_CLASS = "main.class";
-    public static final String JAVAC_SOURCE = "javac.source";
-    public static final String JAVAC_TARGET = "javac.target";
-    public static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath";
-    public static final String JAVAC_DEBUG = "javac.debug";
-    public static final String JAVAC_DEPRECATION = "javac.deprecation";
-    public static final String RUN_TEST_CLASSPATH = "run.test.classpath";
-    public static final String SRC_DIR = "src.dir";
-    public static final String TEST_SRC_DIR = "test.src.dir";
-    public static final String BUILD_DIR = "build.dir";
-    public static final String BUILD_CLASSES_DIR = "build.classes.dir";
-    public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir";
-    public static final String BUILD_TEST_RESULTS_DIR = "build.test.results.dir";
-    public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes";
-    public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir";
-    public static final String NO_DEPENDENCIES="no.dependencies";
-    public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath";
+    public static final String DIST_DIR = "dist.dir"; // NOI18N
+    public static final String DIST_JAR = "dist.jar"; // NOI18N
+    public static final String JAVAC_CLASSPATH = "javac.classpath"; // NOI18N
+    public static final String RUN_CLASSPATH = "run.classpath"; // NOI18N
+    public static final String DEBUG_CLASSPATH = "debug.classpath"; // NOI18N
+    public static final String JAR_COMPRESS = "jar.compress"; // NOI18N
+    public static final String MAIN_CLASS = "main.class"; // NOI18N
+    public static final String JAVAC_SOURCE = "javac.source"; // NOI18N
+    public static final String JAVAC_TARGET = "javac.target"; // NOI18N
+    public static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath"; // NOI18N
+    public static final String JAVAC_DEBUG = "javac.debug"; // NOI18N
+    public static final String JAVAC_DEPRECATION = "javac.deprecation"; // NOI18N
+    public static final String RUN_TEST_CLASSPATH = "run.test.classpath"; // NOI18N
+    public static final String SRC_DIR = "src.dir"; // NOI18N
+    public static final String TEST_SRC_DIR = "test.src.dir"; // NOI18N
+    public static final String BUILD_DIR = "build.dir"; // NOI18N
+    public static final String BUILD_CLASSES_DIR = "build.classes.dir"; // NOI18N
+    public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
+    public static final String BUILD_TEST_RESULTS_DIR = "build.test.results.dir"; // NOI18N
+    public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes"; // NOI18N
+    public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir"; // NOI18N
+    public static final String NO_DEPENDENCIES="no.dependencies"; // NOI18N
+    public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath"; // NOI18N
     
     
-    public static final String JAVADOC_PRIVATE="javadoc.private";
-    public static final String JAVADOC_NO_TREE="javadoc.notree";
-    public static final String JAVADOC_USE="javadoc.use";
-    public static final String JAVADOC_NO_NAVBAR="javadoc.nonavbar";
-    public static final String JAVADOC_NO_INDEX="javadoc.noindex";
-    public static final String JAVADOC_SPLIT_INDEX="javadoc.splitindex";
-    public static final String JAVADOC_AUTHOR="javadoc.author";
-    public static final String JAVADOC_VERSION="javadoc.version";
-    public static final String JAVADOC_WINDOW_TITLE="javadoc.windowtitle";
-    public static final String JAVADOC_ENCODING="javadoc.encoding";
+    public static final String JAVADOC_PRIVATE="javadoc.private"; // NOI18N
+    public static final String JAVADOC_NO_TREE="javadoc.notree"; // NOI18N
+    public static final String JAVADOC_USE="javadoc.use"; // NOI18N
+    public static final String JAVADOC_NO_NAVBAR="javadoc.nonavbar"; // NOI18N
+    public static final String JAVADOC_NO_INDEX="javadoc.noindex"; // NOI18N
+    public static final String JAVADOC_SPLIT_INDEX="javadoc.splitindex"; // NOI18N
+    public static final String JAVADOC_AUTHOR="javadoc.author"; // NOI18N
+    public static final String JAVADOC_VERSION="javadoc.version"; // NOI18N
+    public static final String JAVADOC_WINDOW_TITLE="javadoc.windowtitle"; // NOI18N
+    public static final String JAVADOC_ENCODING="javadoc.encoding"; // NOI18N
     
             
     // Properties stored in the PRIVATE.PROPERTIES
-    public static final String APPLICATION_ARGS = "application.args";
-    public static final String JAVADOC_PREVIEW="javadoc.preview";
+    public static final String APPLICATION_ARGS = "application.args"; // NOI18N
+    public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
     
     
     // Shortcuts 
@@ -302,13 +302,13 @@ public class J2SEProjectProperties {
                             // Specialy handled properties
                             if ( J2SE_PROJECT_NAME.equals( pd.name ) ) {
                                 String newName = newValueEncoded;
-                                assert false : "No support yet for changing name of J2SEProject; cf. J2SEProject.setName";
+                                assert false : "No support yet for changing name of J2SEProject; cf. J2SEProject.setName"; // NOI18N
                             }
                             
                         }   
                         if ( JAVA_PLATFORM.equals( pd.name) && newValueEncoded != null ) {
                             defaultPlatform = Boolean.valueOf(pi.getNewValueEncoded().equals(
-                                    JavaPlatformManager.getDefault().getDefaultPlatform().getProperties().get("platform.ant.name")));
+                                    JavaPlatformManager.getDefault().getDefaultPlatform().getProperties().get("platform.ant.name"))); // NOI18N
                              setPlatform(defaultPlatform.booleanValue(), pi.getNewValueEncoded());
                         }
                     }
@@ -344,7 +344,7 @@ public class J2SEProjectProperties {
                                         updateSourceLevel(defaultPlatform.booleanValue(), newValueEncoded, ep);
                                     }
                                     
-                                    if (NO_DEPENDENCIES.equals(pd.name) && newValueEncoded.equals("false")) {
+                                    if (NO_DEPENDENCIES.equals(pd.name) && newValueEncoded.equals("false")) { // NOI18N
                                         ep.remove(pd.name);
                                         continue;
                                     }
@@ -377,7 +377,7 @@ public class J2SEProjectProperties {
             JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
             for( int i = 0; i < platforms.length; i++ ) {
                 Specification spec = platforms[i].getSpecification();
-                if (!("j2se".equalsIgnoreCase(spec.getName()))) {
+                if (!("j2se".equalsIgnoreCase(spec.getName()))) { // NOI18N
                     continue;
                 }
                 if (platform.equals(platforms[i].getProperties().get("platform.ant.name"))) { //NOI18N
@@ -487,8 +487,8 @@ public class J2SEProjectProperties {
                 if (value != null) {
                     ep.setProperty(prop, value);
                     ep.setComment(prop, new String[]{
-                        "# Property "+prop+" is set here just to make sharing of project simpler.", 
-                        "# The library definition has always preference over this property."}, false);
+                        "# Property "+prop+" is set here just to make sharing of project simpler.", // NOI18N
+                        "# The library definition has always preference over this property."}, false); // NOI18N
                     changed = true;
                 }
             }
@@ -623,9 +623,9 @@ public class J2SEProjectProperties {
             if ( raw != null ) {
                String lowecaseRaw = raw.toLowerCase();
                
-               if ( lowecaseRaw.equals( "true") || 
-                    lowecaseRaw.equals( "yes") || 
-                    lowecaseRaw.equals( "enabled") )
+               if ( lowecaseRaw.equals( "true") || // NOI18N
+                    lowecaseRaw.equals( "yes") || // NOI18N
+                    lowecaseRaw.equals( "enabled") ) // NOI18N
                    return Boolean.TRUE;                   
             }
             
@@ -795,7 +795,7 @@ public class J2SEProjectProperties {
         
         public String encode(Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
             JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms ((String)value,
-                    new Specification ("j2se",null));
+                    new Specification ("j2se",null)); // NOI18N
             if (platforms.length == 0) {
                 // platform for this project does not exist. broken reference? its displayname should 
                 // correspond to platform ID. so just return it:

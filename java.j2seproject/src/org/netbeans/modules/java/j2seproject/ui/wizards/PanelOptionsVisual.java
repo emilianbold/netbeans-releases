@@ -135,7 +135,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         createMainCheckBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("ACSN_createMainCheckBox"));
         createMainCheckBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("ACSD_createMainCheckBox"));
 
-        mainClassTextField.setText("com.myapp.Main");
+        mainClassTextField.setText("com.myapp.Main"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -163,7 +163,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     boolean valid(WizardDescriptor settings) {
         if (mainClassTextField.isVisible () && mainClassTextField.isEnabled ()) {
             if (!valid) {
-                settings.putProperty( "WizardPanel_errorMessage",
+                settings.putProperty( "WizardPanel_errorMessage", // NOI18N
                     NbBundle.getMessage(PanelOptionsVisual.class,"ERROR_IllegalMainClassName")); //NOI18N
             }
             return this.valid;

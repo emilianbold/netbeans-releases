@@ -75,9 +75,9 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
             if (outDir != null) {
                 File f = helper.resolveFile (outDir);
                 URL url = f.toURI().toURL();
-                if (!f.exists() && !f.getPath().toLowerCase().endsWith(".jar")) {
-                    assert !url.toExternalForm().endsWith("/") : f;
-                    url = new URL(url.toExternalForm() + "/");
+                if (!f.exists() && !f.getPath().toLowerCase().endsWith(".jar")) { // NOI18N
+                    assert !url.toExternalForm().endsWith("/") : f; // NOI18N
+                    url = new URL(url.toExternalForm() + "/"); // NOI18N
                 }
                 return url.equals(binaryRoot) ||
                         binaryRoot.toExternalForm().startsWith(url.toExternalForm());
