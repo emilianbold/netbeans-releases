@@ -139,6 +139,7 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
         updateKeyBindings();
     }
     
+    
     private static boolean wrapByDefault = Boolean.getBoolean("nb.output.wrap"); //NOI18N
     public void setWrapped (boolean val) {
         if (val != isWrapped() || !(getEditorKit() instanceof OutputEditorKit)) {

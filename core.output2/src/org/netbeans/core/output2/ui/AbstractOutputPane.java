@@ -355,7 +355,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         super.paint(g);
     }
 
-
 //***********************Listener implementations*****************************
 
     public void stateChanged(ChangeEvent e) {
@@ -373,6 +372,11 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         } else {
             if (!locked) {
                 maybeSendCaretEnteredLine();
+            }
+            boolean hasSelection = textView.getSelectionStart() != textView.getSelectionEnd();
+            if (hasSelection != hadSelection) {
+                hadSelection = hasSelection;
+                hasSelectionChanged (hasSelection);
             }
         }
     }

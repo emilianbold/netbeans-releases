@@ -651,9 +651,6 @@ public class Controller { //XXX public only for debug access to logging code
      * @param win The container
      */
     public void notifyActivated(OutputWindow win) {
-        if (win.getSelectedTab() != null) {
-            updateActions (win, (OutputTab) win.getSelectedTab());
-        }
         OutputTab tab = (OutputTab) win.getSelectedTab();
         if (tab != null) {
             updateActions (win, tab);
