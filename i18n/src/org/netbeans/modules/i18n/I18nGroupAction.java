@@ -16,23 +16,21 @@ package org.netbeans.modules.i18n;
 
 
 import java.awt.event.ActionEvent;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
+import javax.swing.JPopupMenu;
 
 import org.netbeans.modules.i18n.wizard.I18nWizardAction;
 import org.netbeans.modules.i18n.wizard.I18nTestWizardAction;
 
-import org.openide.awt.JInlineMenu;
+import org.openide.awt.Actions;
 import org.openide.awt.JMenuPlus;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
-import org.openide.awt.Actions;
+
 
 /**
  * Abstract class for I18n group actions.
@@ -83,10 +81,7 @@ public abstract class I18nGroupAction extends SystemAction {
     
     /** Menu item which will create its items lazilly when the popup will becomming visible.
      * Performance savings.*/
-    private class LazyPopup extends JInlineMenu implements PopupMenuListener {
-
-        /** Sub menu. */
-        private final JMenu menu;
+    private class LazyPopup extends JMenuPlus {
 
         /** Indicates if is part of menu, i.e. if should have icons. */
         private boolean isMenu;
@@ -97,8 +92,8 @@ public abstract class I18nGroupAction extends SystemAction {
 
         /** Constructor. */
         public LazyPopup(boolean isMenu) {
-            this.menu = new JMenuPlus();
-            Actions.setMenuText(this.menu, I18nGroupAction.this.getName(), isMenu);
+            Actions.setMenuText(this, I18nGroupAction.this.getName(), isMenu);
+            
             this.isMenu = isMenu;
             
             if(isMenu) {
@@ -107,44 +102,35 @@ public abstract class I18nGroupAction extends SystemAction {
                 if(icon == null) 
                     icon = new ImageIcon(I18nGroupAction.class.getResource(I18nGroupAction.this.iconResource()));
 
-                menu.setIcon(icon);
+                setIcon(icon);
             }
-            
-            menu.getPopupMenu().addPopupMenuListener(this);
-            setMenuItems(new JMenuItem[] {menu});
         }
-
-
-        /** Dummy implementation of <code>PopupMenuListener</code>. */
-        public void popupMenuCanceled(PopupMenuEvent evt) {}
-
-        /** Dummy implementation of <code>PopupMenuListener</code>. */
-        public void popupMenuWillBecomeInvisible(PopupMenuEvent evt) {}
-
-        /** Implemsnts <code>PopupMenuListener</code> method. */
-        public void popupMenuWillBecomeVisible(PopupMenuEvent evt) {
-            // We are AWT-Event-queue.
+        
+        /** Gets popup menu. Overrides superclass. Adds lazy menu items creation. */
+        public JPopupMenu getPopupMenu() {
             if(!created)
-                createMenuItems(); 
+                createMenuItems();
+            
+            return super.getPopupMenu();
         }
 
         /** Creates items when actually needed. */
         private void createMenuItems() {
             created = true;
-            menu.removeAll();
+            removeAll();
 
             for(int i=0; i<i18nActions.length; i++) {
                 SystemAction action = i18nActions[i];
 
                 if(action == null) {
-                    menu.addSeparator ();
+                    addSeparator();
                 } else if(!isMenu && action instanceof Presenter.Popup) {
-                    menu.add(((Presenter.Popup)action).getPopupPresenter());
+                    add(((Presenter.Popup)action).getPopupPresenter());
                 } else if(isMenu && action instanceof Presenter.Menu) {
-                    menu.add(((Presenter.Menu)action).getMenuPresenter());
+                    add(((Presenter.Menu)action).getMenuPresenter());
                 }
             }
         }
-    } // End of class Popup.
+    } // End of class LazyPopup.
 
 }
