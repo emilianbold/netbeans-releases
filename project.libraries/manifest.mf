@@ -1,9 +1,0 @@
-OpenIDE-Module: org.netbeans.modules.projects.libraries/1
-OpenIDE-Module-Layer: org/netbeans/modules/projects/libraries/resources/mf-layer.xml
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.17
-OpenIDE-Module-Specification-Version: 1.0
-OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/projects/libraries/resources/Bundle.properties
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.filesets/1, org.netbeans.modules.projects.core/1, org.netbeans.modules.projects.ide/1, org.netbeans.api.java/1
-OpenIDE-Module-Public-Packages: org.netbeans.api.projects.libraries.**, org.netbeans.spi.project.libraries.**
-
