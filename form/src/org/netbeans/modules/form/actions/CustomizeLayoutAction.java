@@ -39,7 +39,7 @@ public class CustomizeLayoutAction extends CookieAction {
      * @return list of classes the that the cookie tests
      */
     protected Class[] cookieClasses() {
-        return new Class[] { RADComponentCookie.class, FormLayoutCookie.class };
+        return new Class[] { RADComponentCookie.class };
     }
 
     /** Human presentable name of the action. This should be
@@ -70,16 +70,13 @@ public class CustomizeLayoutAction extends CookieAction {
      * @param activatedNodes gives array of actually activated nodes.
      */
     protected void performAction(Node[] activatedNodes) {
-        FormLayoutCookie layoutCookie =(FormLayoutCookie)activatedNodes[0].getCookie(FormLayoutCookie.class);
-        if (layoutCookie != null) {
-            org.openide.TopManager.getDefault().getNodeOperation().customize(layoutCookie.getLayoutNode());
-        } else {
-            RADComponentCookie nodeCookie =(RADComponentCookie)activatedNodes[0].getCookie(RADComponentCookie.class);
-            if (nodeCookie != null) {
-                if (nodeCookie.getRADComponent() instanceof RADVisualContainer) {
-                    RADVisualContainer container =(RADVisualContainer)nodeCookie.getRADComponent();
-                    org.openide.TopManager.getDefault().getNodeOperation().customize(container.getLayoutNodeReference());
-                }
+        RADComponentCookie radCookie = (RADComponentCookie)
+            activatedNodes[0].getCookie(RADComponentCookie.class);
+        if (radCookie != null) {
+            RADComponent metacomp = radCookie.getRADComponent();
+            if (metacomp instanceof RADVisualContainer) {
+                org.openide.TopManager.getDefault().getNodeOperation().customize(
+                    ((RADVisualContainer)metacomp).getLayoutNodeReference());
             }
         }
     }
@@ -91,16 +88,14 @@ public class CustomizeLayoutAction extends CookieAction {
      */
     protected boolean enable(Node[] activatedNodes) {
         if (super.enable(activatedNodes)) {
-            FormLayoutCookie layoutCookie =(FormLayoutCookie)activatedNodes[0].getCookie(FormLayoutCookie.class);
-            if (layoutCookie != null) {
-                return layoutCookie.getLayoutNode().hasCustomizer();
-            } else {
-                RADComponentCookie nodeCookie =(RADComponentCookie)activatedNodes[0].getCookie(RADComponentCookie.class);
-                if (nodeCookie != null) {
-                    if (nodeCookie.getRADComponent() instanceof RADVisualContainer) {
-                        RADVisualContainer container =(RADVisualContainer)nodeCookie.getRADComponent();
-                        return(container.getLayoutNodeReference() != null) && container.getLayoutNodeReference().hasCustomizer();
-                    }
+            RADComponentCookie radCookie = (RADComponentCookie)
+                activatedNodes[0].getCookie(RADComponentCookie.class);
+            if (radCookie != null) {
+                RADComponent metacomp = radCookie.getRADComponent();
+                if (metacomp instanceof RADVisualContainer) {
+                    Node layoutNode = ((RADVisualContainer)metacomp)
+                                      .getLayoutNodeReference();
+                    return layoutNode != null && layoutNode.hasCustomizer();
                 }
             }
         }

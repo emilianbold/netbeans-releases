@@ -30,8 +30,8 @@ import org.netbeans.modules.form.actions.*;
  * @author Tomas Pavek
  */
 
-public class LayoutNode extends FormNode implements FormLayoutCookie,
-                                                    FormPropertyCookie
+public class LayoutNode extends FormNode
+                        implements RADComponentCookie, FormPropertyCookie
 {
     private LayoutSupportManager layoutSupport;
     
@@ -42,19 +42,15 @@ public class LayoutNode extends FormNode implements FormLayoutCookie,
         cont.setLayoutNodeReference(this);
     }
 
-    // FormLayoutCookie
-    public LayoutNode getLayoutNode() {
-        return this;
+    // RADComponentCookie
+    public RADComponent getRADComponent() {
+        return layoutSupport.getMetaContainer();
     }
 
     // FormPropertyCookie
     public FormProperty getProperty(String name) {
         Node.Property prop = layoutSupport.getLayoutProperty(name);
         return prop instanceof FormProperty ? (FormProperty) prop : null;
-    }
-
-    public RADVisualContainer getMetaContainer() {
-        return layoutSupport.getMetaContainer();
     }
 
     public void fireLayoutPropertiesChange() {

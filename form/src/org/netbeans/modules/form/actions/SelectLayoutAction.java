@@ -91,24 +91,14 @@ public class SelectLayoutAction extends NodeAction
     }
 
     private static RADVisualContainer getContainer(Node node) {
-        RADVisualContainer container = null;
-        FormLayoutCookie layoutCookie =
-            (FormLayoutCookie) node.getCookie(FormLayoutCookie.class);
-
-        if (layoutCookie != null) {
-            container = layoutCookie.getLayoutNode().getMetaContainer();
-//            System.err.println("**** container = " + container); // XXX
+        RADComponentCookie radCookie = (RADComponentCookie)
+            node.getCookie(RADComponentCookie.class);
+        if (radCookie != null) {
+            RADComponent metacomp = radCookie.getRADComponent();
+            if (metacomp instanceof RADVisualContainer)
+                return (RADVisualContainer) metacomp;
         }
-        else {
-            RADComponentCookie nodeCookie =
-                (RADComponentCookie) node.getCookie(RADComponentCookie.class);
-            if (nodeCookie != null) {
-                if (nodeCookie.getRADComponent() instanceof RADVisualContainer) {
-                    container = (RADVisualContainer) nodeCookie.getRADComponent();
-                }
-            }
-        }
-        return container;
+        return null;
     }
     
     /**
