@@ -142,7 +142,12 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Just test whether tests are already unzipped -->
     <target name="test-unjared">
-        <available property="unjared" file="${xtest.workdir}/${tbag.testtype}/work/Meta-inf/Manifest.mf"/>
+        <condition property="unjared">
+          <or>
+             <available file="${xtest.workdir}/${tbag.testtype}/work/Meta-inf/Manifest.mf"/>  
+             <available file="${xtest.workdir}/${tbag.testtype}/work/META-INF/MANIFEST.MF"/>  
+          </or>
+        </condition>
     </target>
     
     <!-- ============== -->
