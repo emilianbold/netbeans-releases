@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,7 +16,6 @@ package org.netbeans.core.projects;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.InstanceCookie;
-import org.openide.nodes.*;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataShadow;
@@ -26,17 +25,19 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-
 import org.netbeans.beaninfo.editors.ListImageEditor;
-
 import java.awt.Image;
 import java.beans.PropertyEditor;
-import java.beans.PropertyChangeEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import javax.swing.Action;
 import org.openide.actions.ToolsAction;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
 import org.openide.util.actions.SystemAction;
 
 /** Filters nodes under the session node (displayed in Options dialog), adds special
@@ -80,15 +81,14 @@ public final class SettingChildren extends FilterNode.Children {
             node.isLeaf() ? node.cloneNode() : new TrivialFilterNode(node);
     }
     
-    private static SystemAction[] removeActions(SystemAction[] allActions, SystemAction[] toDeleteActions) {
-        SystemAction[] retVal = allActions;
-        List actions = java.util.Arrays.asList(allActions);
+    private static Action[] removeActions(Action[] allActions, Action[] toDeleteActions) {
+        Action[] retVal = allActions;
+        List/*<Action>*/ actions = new ArrayList/* to be mutable */(Arrays.asList(allActions));
         for (int i = 0; i < toDeleteActions.length; i++) {
-            SystemAction a = toDeleteActions[i];
-            if(actions.contains(a)) {
-                actions = new ArrayList(actions); // to be mutable
+            Action a = toDeleteActions[i];
+            if (actions.contains(a)) {
                 actions.remove(a);
-                retVal = (SystemAction[])actions.toArray(new SystemAction[0]);
+                retVal = (Action[]) actions.toArray(new Action[0]);
             }                
         }            
         return retVal;
@@ -105,8 +105,8 @@ public final class SettingChildren extends FilterNode.Children {
         public int hashCode() {
             return getOriginal().hashCode();
         }        
-        public SystemAction[] getActions() {            
-            return removeActions(super.getActions(), new SystemAction[] {SystemAction.get(ToolsAction.class)});
+        public Action[] getActions(boolean context) {            
+            return removeActions(super.getActions(context), new Action[] {SystemAction.get(ToolsAction.class)});
         } 
         public String getHtmlDisplayName() {
             return null;
@@ -300,12 +300,8 @@ public final class SettingChildren extends FilterNode.Children {
         }
         // #24766 Exclude Customize Bean action.
         /** Overrides superclass method, excludes the ToolsAction from the node. */
-        public SystemAction[] getActions() {
-            SystemAction[] as = super.getActions();
-            SystemAction[] toDeleteActions = new SystemAction[] {SystemAction.get(ToolsAction.class)};
-
-            as = removeActions(as, toDeleteActions);
-            return as;
+        public Action[] getActions(boolean context) {
+            return removeActions(super.getActions(context), new Action[] {SystemAction.get(ToolsAction.class)});
         }
 
         private static class FSL implements FileStateManager.FileStatusListener {
