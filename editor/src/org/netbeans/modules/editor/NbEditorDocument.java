@@ -28,8 +28,8 @@ import com.netbeans.ide.text.NbDocument;
 public class NbEditorDocument extends GuardedDocument
 implements NbDocument.PositionBiasable, NbDocument.WriteLockable {
 
-  NbEditorDocument(Syntax syntax) {
-    super(syntax);
+  NbEditorDocument(Class kitClass, Syntax syntax) {
+    super(kitClass, syntax);
     addStyleToLayerMapping(NbDocument.BREAKPOINT_STYLE_NAME,
         NbDocument.BREAKPOINT_STYLE_NAME + "Layer:5000");
     addStyleToLayerMapping(NbDocument.ERROR_STYLE_NAME,
@@ -62,6 +62,7 @@ implements NbDocument.PositionBiasable, NbDocument.WriteLockable {
 
 /*
  * Log
+ *  4    Gandalf   1.3         4/22/99  Miloslav Metelka 
  *  3    Gandalf   1.2         4/8/99   Miloslav Metelka 
  *  2    Gandalf   1.1         3/23/99  Miloslav Metelka 
  *  1    Gandalf   1.0         3/18/99  Miloslav Metelka 
