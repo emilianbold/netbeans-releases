@@ -177,11 +177,11 @@ public class Benchmark extends Assert implements Test {
             int iters = 1;
             int maxIters = getMaxIterationCount();
             
-            do {
+            for( ;; ) {
                 realRun = false;
                 for( ;; ) {
                     time = doOneMeasurement( testMethod, iters );
-                    if( time >= 200 ) break;
+                    if( time >= 300 ) break;
                     if( 2*iters > maxIters ) break; // fuse
                     iters *= 2;
                 }
@@ -192,8 +192,10 @@ public class Benchmark extends Assert implements Test {
                 // when running with realRun == true
                 realRun = true;
                 time = doOneMeasurement( testMethod, iters );
-            } while( time < 200 );
-            
+		if( time > 200 ) break;
+		iters *= 2;
+            }
+	                
             // do the real measurement
             realRun = true;
             long min=Long.MAX_VALUE;
