@@ -13,6 +13,7 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <filesystem>
+
     <folder name="Editors">
         <folder name="text">
             <folder name="base">
@@ -24,57 +25,6 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
         </folder>
-        
-        <folder name="AnnotationTypes">
-            <folder name="StatusForAnnotationType">
-                <file name="org-netbeans-modules-java-parser_annotation_err">
-                    <attr name="status" stringvalue="error" />
-                    <attr name="browseable" boolvalue="true" />
-                </file>
-                <file name="org-netbeans-modules-java-parser_annotation_warn">
-                    <attr name="status" stringvalue="warning" />
-                    <attr name="browseable" boolvalue="true" />
-                </file>
-                <file name="CondBreakpoint">
-                    <attr name="status" stringvalue="ok" />
-                    <attr name="color" stringvalue="0xFC9D9F" />
-                </file>
-                <file name="Breakpoint">
-                    <attr name="status" stringvalue="ok" />
-                    <attr name="color" stringvalue="0xFC9D9F" />
-                </file>
-                <file name="CallSite">
-                    <attr name="status" stringvalue="ok" />
-                    <attr name="color" stringvalue="0xE7E1EF" />
-                </file>
-                <file name="CurrentPC">
-                    <attr name="status" stringvalue="ok" />
-                    <attr name="color" stringvalue="0xBDE6AA" />
-                </file>
-                <file name="org-netbeans-modules-lexer-editorbridge-java-error-annotation">
-                    <attr name="status" stringvalue="error" />
-                    <attr name="browseable" boolvalue="true" />
-                </file>
-                <file name="editor-bookmark">
-                    <attr name="status" stringvalue="ok" />
-                    <attr name="color" stringvalue="0x689696" />
-                    <attr name="browseable" boolvalue="true" />
-                </file>
-            </folder>
-        </folder>
-
     </folder>
     
-    <folder name="Actions">
-        <folder name="Edit">
-            <file name="org-netbeans-modules-editor-errorstripe-ScanAnnotationsAction.instance">
-            </file>
-        </folder>
-    </folder>
-
-    <folder name="Shortcuts">
-        <file name="F2.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-editor-errorstripe-ScanAnnotationsAction.instance"/>
-        </file>
-    </folder>
 </filesystem>

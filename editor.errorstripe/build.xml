@@ -14,5 +14,19 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="editor/errorstripe" default="netbeans" basedir=".">
     <import file="../../nbbuild/templates/projectized.xml"/>
+    
+    <target name="jar-with-module-deps" if="module.dependencies">
+        <property file="spec-ver.properties"/>
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
+            <manifest>
+                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
+                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
+                <attribute name="OpenIDE-Module-Module-Dependencies" value="${module.dependencies}"/>
+                <attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}" />
+            </manifest>
+            <fileset dir="${build.classes.dir}"/>
+        </jar>
+    </target>
+
 </project>
 
