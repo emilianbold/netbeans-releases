@@ -153,7 +153,7 @@ public class MultiDataObject extends DataObject {
     /* package-private */ HashMap getSecondary() {
         synchronized (secondaryCreationLock) {
             if (secondary == null) {
-                secondary = new HashMap (11);
+                secondary = new HashMap(4);
             }
             return secondary;
         }
