@@ -12,6 +12,7 @@
  */
 
 package org.netbeans.modules.web.project.ui.wizards;
+
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
@@ -30,12 +31,12 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
     /**
      * Display a warning that the target platform will be downgraded to JDK 1.4
      */
-    public final static String WARN_SET_JDK_14 = "warnSetJdk14";
+    public final static String WARN_SET_JDK_14 = "warnSetJdk14"; // NOI18N
     
     /**
      * Display a warning that the source level will be downgraded to 1.4
      */
-    public final static String WARN_SET_SOURCE_LEVEL_14 = "warnSetSourceLevel14";
+    public final static String WARN_SET_SOURCE_LEVEL_14 = "warnSetSourceLevel14"; // NOI18N
     
     private String warningType;
     private String java14PlatformName;
@@ -92,7 +93,7 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
         SpecificationVersion version = defaultPlatform.getSpecification().getVersion();
         
         // no warning if 1.4 is the default
-        if (new SpecificationVersion("1.4").equals(version))
+        if (new SpecificationVersion("1.4").equals(version)) // NOI18N
             return null;
         
         // now we know the default platform is 1.5 or higher
@@ -107,7 +108,7 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
     }
     
     private static JavaPlatform[] getJava14Platforms() {
-        return JavaPlatformManager.getDefault().getPlatforms(null, new Specification("J2SE", new SpecificationVersion("1.4")));
+        return JavaPlatformManager.getDefault().getPlatforms(null, new Specification("J2SE", new SpecificationVersion("1.4"))); // NOI18N
     }
     
     /** This method is called from within the constructor to
