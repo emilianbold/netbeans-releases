@@ -897,8 +897,9 @@ public class JavaKit extends NbEditorKit {
             } else {
                 try {
                     if (BracketCompletion.isAddRightBrace(doc, dotPos)) {
-                        doc.insertString(dotPos, "}", null); // NOI18N
-                        doc.getFormatter().indentNewLine(doc, dotPos);
+                        int rowEnd = Utilities.getRowLastNonWhite(doc, dotPos) + 1;
+                        doc.insertString(rowEnd, "}", null); // NOI18N
+                        doc.getFormatter().indentNewLine(doc, rowEnd);                        
                         caret.setDot(dotPos);
                         return Boolean.TRUE;
                     }
