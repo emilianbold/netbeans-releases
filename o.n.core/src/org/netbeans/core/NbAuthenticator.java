@@ -34,8 +34,8 @@ class NbAuthenticator extends java.net.Authenticator {
         PasswordPanel passwordPanel = new PasswordPanel();
 
         DialogDescriptor dd = new DialogDescriptor( passwordPanel, host );
-        // #44551: task to remove Help Id in core module
-        //dd.setHelpCtx (new HelpCtx (NbAuthenticator.class.getName () + ".getPasswordAuthentication")); // NOI18N
+        // #48931: set help Id (asked by web team)
+        dd.setHelpCtx (new HelpCtx (NbAuthenticator.class.getName () + ".getPasswordAuthentication")); // NOI18N
         passwordPanel.setPrompt( getRequestingPrompt() );
         java.awt.Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog( dd );
         dialog.show ();
