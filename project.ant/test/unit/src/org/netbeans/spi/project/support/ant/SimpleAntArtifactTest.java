@@ -52,6 +52,7 @@ public class SimpleAntArtifactTest extends NbTestCase {
         sisterh = ProjectGenerator.createProject(sisterprojdir, "test");
         EditableProperties props = sisterh.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         props.setProperty("build.jar", "build/proj2.jar");
+        props.setProperty("build.jar.absolute", getWorkDir().getAbsolutePath()+"/build/proj3.jar");
         sisterh.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
     }
     
@@ -81,6 +82,9 @@ public class SimpleAntArtifactTest extends NbTestCase {
         FileObject scriptfile = FileUtil.createData(sisterprojdir, "build.xml");
         assertEquals("now have a script file", scriptfile, art.getScriptFile());
         assertEquals("correct project", pm.findProject(sisterprojdir), art.getProject());
+        
+        art = sisterh.createSimpleAntArtifact("jar", "build.jar.absolute", sisterh.getStandardPropertyEvaluator(), "dojar", "clean");
+        assertEquals("correct artifact location", (new File(getWorkDir().getAbsolutePath()+"/build/proj3.jar")).toURI(), art.getArtifactLocation());
     }
     
 }

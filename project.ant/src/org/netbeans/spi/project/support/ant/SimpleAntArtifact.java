@@ -53,12 +53,17 @@ final class SimpleAntArtifact extends AntArtifact {
         if (locationResolved == null) {
             return URI.create("file:/UNDEFINED"); // NOI18N
         }
-        try {
-            // XXX does this handle absolute locations correctly? probably not
-            return new URI(null, null, locationResolved, null);
-        } catch (URISyntaxException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            return URI.create("file:/BROKEN"); // NOI18N
+        File locF = new File(locationResolved);
+        if (locF.isAbsolute()) {
+            return locF.toURI();
+        } else {
+            // Project-relative path.
+            try {
+                return new URI(null, null, locationResolved.replace(File.separatorChar, '/'), null);
+            } catch (URISyntaxException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                return URI.create("file:/BROKEN"); // NOI18N
+            }
         }
     }
     
