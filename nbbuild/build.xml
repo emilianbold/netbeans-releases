@@ -1698,7 +1698,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../web/core" target="netbeans"/>
   </target>
-  <target name="all-web/jspparser" depends="init,all-web/servletapi24">
+  <target name="all-web/jspparser" depends="init,all-web/servletapi24,all-libs/commons_logging">
     <echo message="Building module web/jspparser..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
