@@ -98,8 +98,8 @@ public class DiffPresenter extends javax.swing.JPanel {
         visualizerLabel.setText(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "LBL_Visualizer"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 5);
         servicesPanel.add(visualizerLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -129,11 +129,11 @@ public class DiffPresenter extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel servicesPanel;
     private javax.swing.JLabel emptyLabel;
-    private javax.swing.JPanel visualizerPanel;
     private javax.swing.JLabel providerLabel;
+    private javax.swing.JPanel servicesPanel;
     private javax.swing.JLabel visualizerLabel;
+    private javax.swing.JPanel visualizerPanel;
     // End of variables declaration//GEN-END:variables
     
     private void initMyComponents() {
@@ -151,7 +151,6 @@ public class DiffPresenter extends javax.swing.JPanel {
             } catch (java.beans.IntrospectionException intrex) {
                 return ;
             }
-            pd.setDisplayName(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "LBL_ProvidersPropEditorTitle"));
             pd.setPropertyEditorClass (editor.getClass());
             // special attributes to the property editor
             pd.setValue ("superClass", DiffProvider.class);
@@ -167,7 +166,7 @@ public class DiffPresenter extends javax.swing.JPanel {
             panel = new PropertyPanel (model, PropertyPanel.PREF_INPUT_STATE);
 
             gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+            gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 15);
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             //gridBagConstraints.weightx = 1.0;
             gridBagConstraints.gridx = 1;
@@ -182,7 +181,6 @@ public class DiffPresenter extends javax.swing.JPanel {
             } catch (java.beans.IntrospectionException intrex) {
                 return ;
             }
-            pd.setDisplayName(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "LBL_VisualizersPropEditorTitle"));
             pd.setPropertyEditorClass (editor.getClass());
             // special attributes to the property editor
             pd.setValue ("superClass", DiffVisualizer.class);
