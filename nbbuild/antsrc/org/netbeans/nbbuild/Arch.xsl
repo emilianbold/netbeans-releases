@@ -259,21 +259,27 @@ Microsystems, Inc. All Rights Reserved.
                 </td>
             </xsl:if>
             <td> <!-- stability category -->
-                <xsl:choose>
-                    <xsl:when test="$category='official'">Official</xsl:when>
-                    <xsl:when test="$category='stable'">Stable</xsl:when>
-                    <xsl:when test="$category='devel'">Under Development</xsl:when>
-                    <xsl:when test="$category='third'">Third party</xsl:when>
-                    <xsl:when test="$category='standard'">Standard</xsl:when>
-                    <xsl:when test="$category='friend'">Friend private</xsl:when>
-                    <xsl:when test="$category='private'">Private</xsl:when>
-                    <xsl:when test="$category='deprecated'">Deprecated</xsl:when>
-                    <xsl:otherwise>
-                        <xsl:message>
-                            WARNING: <xsl:value-of select="$category"/>
-                        </xsl:message>
-                    </xsl:otherwise>
-                </xsl:choose>
+                <a>
+                    <xsl:attribute name="href">
+                        <xsl:text>http://openide.netbeans.org/tutorial/api-design.html#category-</xsl:text>
+                        <xsl:value-of select="$category" />
+                    </xsl:attribute>
+                    <xsl:choose>
+                        <xsl:when test="$category='official'">Official</xsl:when>
+                        <xsl:when test="$category='stable'">Stable</xsl:when>
+                        <xsl:when test="$category='devel'">Under Development</xsl:when>
+                        <xsl:when test="$category='third'">Third party</xsl:when>
+                        <xsl:when test="$category='standard'">Standard</xsl:when>
+                        <xsl:when test="$category='friend'">Friend</xsl:when>
+                        <xsl:when test="$category='private'">Private</xsl:when>
+                        <xsl:when test="$category='deprecated'">Deprecated</xsl:when>
+                        <xsl:otherwise>
+                            <xsl:message>
+                                WARNING: <xsl:value-of select="$category"/>
+                            </xsl:message>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </a>  
             </td>
             
             <td> <!-- description -->

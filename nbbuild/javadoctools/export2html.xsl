@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <center><h1>NetBeans API List</h1></center>
 
-        This document provides a list of <em>NetBeans APIs</em> with a short description
+         This document provides a list of <em>NetBeans APIs</em> with a short description
         of what they are used for, and a table describing different types of interfaces
         (see <a href="http://openide.netbeans.org/tutorial/api-design.html#api">What is
         an API?</a> to understand why we list DTDs, file formats, etc.) and with
@@ -207,21 +207,27 @@ Microsystems, Inc. All Rights Reserved.
                 </xsl:choose>
             </td> -->
             <td> <!-- stability category -->
-                <xsl:choose>
-                    <xsl:when test="$category='official'">Official</xsl:when>
-                    <xsl:when test="$category='stable'">Stable</xsl:when>
-                    <xsl:when test="$category='devel'">Under Development</xsl:when>
-                    <xsl:when test="$category='third'">Third party</xsl:when>
-                    <xsl:when test="$category='standard'">Standard</xsl:when>
-                    <xsl:when test="$category='friend'">Friend</xsl:when>
-                    <xsl:when test="$category='private'">Private</xsl:when>
-                    <xsl:when test="$category='deprecated'">Deprecated</xsl:when>
-                    <xsl:otherwise>
-                        <xsl:message>
-                            WARNING: <xsl:value-of select="$category"/>
-                        </xsl:message>
-                    </xsl:otherwise>
-                </xsl:choose>
+                <a>
+                    <xsl:attribute name="href">
+                        <xsl:text>http://openide.netbeans.org/tutorial/api-design.html#category-</xsl:text>
+                        <xsl:value-of select="$category" />
+                    </xsl:attribute>
+                    <xsl:choose>
+                        <xsl:when test="$category='official'">Official</xsl:when>
+                        <xsl:when test="$category='stable'">Stable</xsl:when>
+                        <xsl:when test="$category='devel'">Under Development</xsl:when>
+                        <xsl:when test="$category='third'">Third party</xsl:when>
+                        <xsl:when test="$category='standard'">Standard</xsl:when>
+                        <xsl:when test="$category='friend'">Friend</xsl:when>
+                        <xsl:when test="$category='private'">Private</xsl:when>
+                        <xsl:when test="$category='deprecated'">Deprecated</xsl:when>
+                        <xsl:otherwise>
+                            <xsl:message>
+                                WARNING: <xsl:value-of select="$category"/>
+                            </xsl:message>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </a>  
             </td>
 
             <td> <!-- url -->
