@@ -51,7 +51,6 @@ import org.openide.nodes.*;
 import org.openide.util.Utilities;
 
 import org.netbeans.core.actions.*;
-import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.projects.ModuleLayeredFileSystem;
 import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.modules.ModuleSystem;
