@@ -44,13 +44,11 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         } catch (IOException ex) {
             modelUpdated = false;
         }
-        //getCookieSet().add(EditCookie.class, this);
-        //getCookieSet().add(EditorCookie.class, this);
     }
     
     public org.openide.nodes.Node.Cookie createCookie(Class clazz) {
         if(clazz.isAssignableFrom(XmlMultiViewEditorSupport.class))
-            return getEditorSupport();
+            return createEditorSupport();
         else
             return null;
     }
@@ -61,11 +59,15 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     }
     
     /** Gets editor support for this data object. */
-    protected synchronized XmlMultiViewEditorSupport getEditorSupport() {
+    private synchronized XmlMultiViewEditorSupport createEditorSupport() {
         if(editor == null) {
             editor = new XmlMultiViewEditorSupport(this);
         }
         return editor;
+    }
+    
+    XmlMultiViewEditorSupport getEditorSupport() {
+        return (XmlMultiViewEditorSupport)getCookie(XmlMultiViewEditorSupport.class);
     }
     /** Create the data model from file object. Called from constructor.
     * @return true if model was succesfully created, false otherwise

@@ -33,7 +33,7 @@ public abstract class EjbJarMultiviewElement extends ToolBarMultiViewElement {
     EnterpriseBeans enterpriseBeans;
 
     public EjbJarMultiviewElement(EjbJarMultiViewDataObject dataObject) {
-        super();
+        super(dataObject);
         this.dataObject = dataObject;
         comp = new ToolBarDesignEditor();
         setVisualEditor(comp);

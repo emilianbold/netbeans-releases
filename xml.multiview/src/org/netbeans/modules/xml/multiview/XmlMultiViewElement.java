@@ -26,21 +26,26 @@ import org.openide.windows.TopComponent;
  * Created on October 5, 2004, 1:35 PM
  * @author  mkuchtiak
  */
-public class XmlMultiViewElement implements MultiViewElement {
-
-    private TopComponent comp;
-    private XmlMultiViewEditorSupport support;
-    MultiViewElementCallback observer;
-    private UndoRedo undoRedo;
-    private javax.swing.JComponent toolbar;
+public class XmlMultiViewElement implements MultiViewElement, java.io.Serializable {
+    static final long serialVersionUID = -326467724916080580L;
+    
+    private TopComponent xmlTopComp;
+    private XmlMultiViewDataObject dObj;
+    private transient MultiViewElementCallback observer;
+    private transient UndoRedo undoRedo;
+    private transient javax.swing.JComponent toolbar;
     
     /** Creates a new instance of XmlMultiviewElement */
-    public XmlMultiViewElement(TopComponent comp, XmlMultiViewEditorSupport support) {
-        this.comp=comp;
-        this.support=support;
-        undoRedo = support.getUndoRedo0();
+    public XmlMultiViewElement() {
     }
-
+    
+    /** Creates a new instance of XmlMultiviewElement */
+    public XmlMultiViewElement(TopComponent xmlTopComp, XmlMultiViewDataObject dObj) {
+        this();
+        this.dObj=dObj;
+        this.xmlTopComp=xmlTopComp;
+    }
+    
     public CloseOperationState canCloseElement() {
         //if (this.support.getDataObject().isModified()) {
         //    return MultiViewFactory.createUnsafeCloseState("XMLView:Data object modified", null, null);
@@ -50,9 +55,13 @@ public class XmlMultiViewElement implements MultiViewElement {
     }
 
     public void componentActivated() {
+        XmlMultiViewEditorSupport support = dObj.getEditorSupport();
+        if (support!=null) support.addListener();
     }
 
     public void componentClosed() {
+        XmlMultiViewEditorSupport support = dObj.getEditorSupport();
+        if (support!=null) support.removeListener();
     }
 
     public void componentDeactivated() {
@@ -65,12 +74,6 @@ public class XmlMultiViewElement implements MultiViewElement {
     }
 
     public void componentShowing() {
-        /*
-        XmlMultiViewDataObject dObj = (XmlMultiViewDataObject)support.getDataObject();
-        if (dObj.changedFromUI) {
-            dObj.updateDocument();
-        }
-         */
     }
 
     public javax.swing.Action[] getActions() {
@@ -78,11 +81,15 @@ public class XmlMultiViewElement implements MultiViewElement {
     }
 
     public org.openide.util.Lookup getLookup() {
-        return comp.getLookup();
+        if (xmlTopComp!=null) 
+            return xmlTopComp.getLookup();
+        else 
+            return null;
     }
 
     public javax.swing.JComponent getToolbarRepresentation() {
             if (toolbar == null) {
+                XmlMultiViewEditorSupport support = (XmlMultiViewEditorSupport)dObj.getCookie (XmlMultiViewEditorSupport.class);
                 javax.swing.JEditorPane pane = support.getOpenedPanes()[0];
                 if (pane != null) {
                     javax.swing.text.Document doc = pane.getDocument();
@@ -103,11 +110,20 @@ public class XmlMultiViewElement implements MultiViewElement {
     }
 
     public javax.swing.JComponent getVisualRepresentation() {
-        return comp;
+        return xmlTopComp;
     }
 
     public void setMultiViewCallback(MultiViewElementCallback callback) {
         observer=callback;
+        if (dObj!=null) {
+            TopComponent tc = callback.getTopComponent();
+            if (tc.getDisplayName()==null) tc.setDisplayName(dObj.getDisplayName());
+            XmlMultiViewEditorSupport support = dObj.getEditorSupport();
+            if (support!=null) {
+                if (undoRedo==null) undoRedo = support.getUndoRedo0();
+                support.setMVTC(callback.getTopComponent());
+            }
+        }
     }
 
 }

@@ -41,7 +41,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
     private static final int PARSING_DELAY = 2000;
     private static final int PARSING_INIT_DELAY = 100;
     private RequestProcessor.Task parsingDocumentTask;
-    private CloneableTopComponent mvtc;
+    private TopComponent mvtc, xmlTC;
     private int lastOpenView=0;
     
     final SaveCookie saveCookie = new SaveCookie() {
@@ -59,7 +59,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
 
         // Set a MIME type as needed, e.g.:
         setMIMEType ("text/xml");   // NOI18N
-        xmlDocListener = new XmlDocumentListener();
     }
     
     /** Restart the timer which starts source parsing after the specified delay.
@@ -150,7 +149,8 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
     
     protected CloneableTopComponent createCloneableTopComponent() {
         MultiViewDescription[] customDesc = dObj.getMultiViewDesc();
-        MultiViewDescription xmlDesc = new XmlMultiViewEditorSupport.XmlViewDesc (super.createCloneableTopComponent(),this);
+        xmlTC = super.createCloneableTopComponent();
+        MultiViewDescription xmlDesc = new XmlMultiViewEditorSupport.XmlViewDesc (xmlTC, dObj);
         MultiViewDescription[] descs = new MultiViewDescription[customDesc.length+1];
         for (int i=0;i<customDesc.length;i++) descs[i]=customDesc[i];
         descs[customDesc.length]=xmlDesc;
@@ -169,7 +169,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         if (editorMode != null) {
             editorMode.dockInto(mvtc);
         }
-        mvtc.setDisplayName(dObj.getDisplayName());
         mvtc.setIcon(org.openide.util.Utilities.loadImage(dObj.getIconBase()+".gif"));
         this.mvtc=mvtc;
         return mvtc;
@@ -211,7 +210,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
             if (saveOption.equals(ret)) {
                 try {
                     saveDocument ();
-                    getDocument().removeDocumentListener(xmlDocListener);
                 } catch (java.io.IOException e) {
                     org.openide.ErrorManager.getDefault().notify(e);
                     return false;
@@ -219,7 +217,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
             } else if (discardOption.equals(ret)) {
                 try {
                     dObj.reloadModelFromFileObject();
-                    getDocument().removeDocumentListener(xmlDocListener);
                     notifyClosed();
                 } catch (java.io.IOException e) {
                     org.openide.ErrorManager.getDefault().notify(e);
@@ -266,7 +263,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         MultiViewHandler handler = MultiViews.findMultiViewHandler(mvtc);
         handler.requestVisible(handler.getPerspectives()[index<0?xmlMultiViewIndex:index]);
         mvtc.requestActive();
-        getDocument().addDocumentListener(xmlDocListener);
     }
     
     void goToXmlPerspective() {
@@ -320,23 +316,26 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         }
     }
     
-    private class XmlViewDesc implements MultiViewDescription, java.io.Serializable  {
+    private static class XmlViewDesc implements MultiViewDescription, java.io.Serializable  {
         
         private static final long serialVersionUID = 8085725367398466167L;
         TopComponent tc;
-        XmlMultiViewEditorSupport support;
+        XmlMultiViewDataObject dObj;
         
-        XmlViewDesc(TopComponent tc, XmlMultiViewEditorSupport support) {
-            this.tc=tc;
-            this.support=support;
+        XmlViewDesc() {
         }
         
+        XmlViewDesc(TopComponent tc, XmlMultiViewDataObject dObj) {
+            this.tc=tc;
+            this.dObj=dObj;
+        }
+
         public MultiViewElement createElement() {
-            return new XmlMultiViewElement(tc, support);
+            return new XmlMultiViewElement(tc, dObj);
         }
         
         public String getDisplayName() {
-            return "XML";
+            return org.openide.util.NbBundle.getMessage(XmlMultiViewEditorSupport.class,"LBL_XML_TAB");
         }
         
         public org.openide.util.HelpCtx getHelpCtx() {
@@ -344,12 +343,11 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         }
         
         public java.awt.Image getIcon() {
-            return getDataObject().getNodeDelegate().getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
-            //return org.openide.util.Utilities.loadImage("org/netbeans/modules/xml/multiview/resources/xmlObject.gif");
+            return dObj.getNodeDelegate().getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
         }
         
         public int getPersistenceType() {
-            return TopComponent.PERSISTENCE_NEVER;
+            return TopComponent.PERSISTENCE_ONLY_OPENED;
         }
         
         public String preferredID() {
@@ -357,12 +355,32 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         }
     }
     
-    CloneableTopComponent getMVTC() {
+    TopComponent getMVTC() {
         return mvtc;
+    }
+    
+    void setMVTC(TopComponent mvtc) {
+        this.mvtc=mvtc;
+    }
+    
+    TopComponent getXmlTopComponent() {
+        return xmlTC;
     }
     
     void setLastOpenView(int index) {
         lastOpenView=index;
+    }
+    
+    void addListener() {
+        if (xmlDocListener==null) {
+            xmlDocListener = new XmlDocumentListener();
+            getDocument().addDocumentListener(xmlDocListener);
+        }
+    }
+    
+    void removeListener() {
+        getDocument().removeDocumentListener(xmlDocListener);
+        xmlDocListener=null;
     }
 
     private class XmlDocumentListener implements javax.swing.event.DocumentListener {

@@ -801,8 +801,9 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
 
     }
 
-    private static class DDView extends DesignMultiViewDesc {
-
+    private static class DDView extends DesignMultiViewDesc  implements java.io.Serializable {
+        static final long serialVersionUID = -8759598009819101630L;
+        
         DDView(EjbJarMultiViewDataObject dataObject, String name) {
             super(dataObject, name);
         }

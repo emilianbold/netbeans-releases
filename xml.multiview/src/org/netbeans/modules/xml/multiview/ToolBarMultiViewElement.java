@@ -29,17 +29,18 @@ import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
  * @author  mkuchtiak
  */
 public abstract class ToolBarMultiViewElement implements MultiViewElement {
-    //private static final long serialVersionUID = 12345L;  
     MultiViewElementCallback observer;
     private javax.swing.JComponent toolbar;
     private ToolBarDesignEditor editor;
-
-
-    public ToolBarMultiViewElement() {
+    private XmlMultiViewDataObject dObj;
+    
+    public ToolBarMultiViewElement(XmlMultiViewDataObject dObj, ToolBarDesignEditor editor) {
+        this.dObj=dObj;
+        this.editor=editor;
     }
     
-    public ToolBarMultiViewElement(ToolBarDesignEditor editor) {
-        this.editor=editor;
+    public ToolBarMultiViewElement(XmlMultiViewDataObject dObj) {
+        this.dObj=dObj;
     }
     
     protected void setVisualEditor(ToolBarDesignEditor editor) {
@@ -91,6 +92,10 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     
     public void setMultiViewCallback(MultiViewElementCallback callback) {
         observer=callback;
+        if (dObj!=null) {
+            TopComponent tc = callback.getTopComponent();
+            if (tc.getDisplayName()==null) tc.setDisplayName(dObj.getDisplayName());
+        }
     }
 
     public javax.swing.JComponent getVisualRepresentation() {
