@@ -192,6 +192,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <condition property="java150">
             <or>
+                <equals arg1="${java.version}" arg2="1.5.0-beta2"/>
                 <equals arg1="${java.version}" arg2="1.5.0-beta"/>
                 <equals arg1="${java.version}" arg2="1.5.0"/>
             </or>
