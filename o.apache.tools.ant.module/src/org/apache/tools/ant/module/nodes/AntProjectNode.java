@@ -71,8 +71,13 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         Element pel = cookie.getProjectElement ();
         if (pel != null) {
             String projectName = pel.getAttribute ("name"); // NOI18N
-            // Set the name/display name in the IDE to the name of the project 
-            setDisplayName (NbBundle.getMessage (AntProjectNode.class, "LBL_script_display_name", getName (), projectName));
+            if (! projectName.equals("")) { // NOI18N
+                // Set the name/display name in the IDE to the name of the project 
+                setDisplayName (NbBundle.getMessage (AntProjectNode.class, "LBL_script_display_name", getName (), projectName));
+            } else {
+                // No name specified, OK.
+                setDisplayName(getName());
+            }
         }
         Throwable exc = cookie.getParseException ();
         if (exc == null) {
@@ -131,23 +136,12 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         return sheet;
     }
 
-    private class ProjectProperty extends AntProperty {
-        public ProjectProperty (String name, AntProjectCookie proj) {
+    private class ProjectNameProperty extends AntProperty {
+        public ProjectNameProperty (String name, AntProjectCookie proj) {
             super (name, proj);
         }
         protected Element getElement () {
             return ((AntProjectCookie) getCookie (AntProjectCookie.class)).getProjectElement ();
-        }
-        public boolean supportsDefaultValue () {
-            return false;
-        }
-        public void setValue (Object value) throws IllegalArgumentException, InvocationTargetException {
-            if (value == null || value.equals ("")) {
-                IllegalArgumentException iae = new IllegalArgumentException ("no default for " + this.getName ()); // NOI18N
-                AntModule.err.annotate (iae, NbBundle.getMessage (AntProjectNode.class, "EXC_no_default_value_for_prop", this.getDisplayName ()));
-                throw iae;
-            }
-            super.setValue (value);
         }
     }
 
@@ -170,9 +164,23 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         }
     }
 
-    private class ProjectTargetProperty extends ProjectProperty {
+    private class ProjectTargetProperty extends AntProperty {
         public ProjectTargetProperty (String name, AntProjectCookie proj) {
             super (name, proj);
+        }
+        protected Element getElement () {
+            return ((AntProjectCookie) getCookie (AntProjectCookie.class)).getProjectElement ();
+        }
+        public boolean supportsDefaultValue () {
+            return false;
+        }
+        public void setValue (Object value) throws IllegalArgumentException, InvocationTargetException {
+            if (value == null || value.equals ("")) {
+                IllegalArgumentException iae = new IllegalArgumentException ("no default for " + this.getName ()); // NOI18N
+                AntModule.err.annotate (iae, NbBundle.getMessage (AntProjectNode.class, "EXC_no_default_value_for_prop", this.getDisplayName ()));
+                throw iae;
+            }
+            super.setValue (value);
         }
         public PropertyEditor getPropertyEditor () {
             return new TargetEditor ();
@@ -248,7 +256,7 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         AntProjectCookie proj = (AntProjectCookie) getCookie (AntProjectCookie.class);
         
         // Create the required properties (XML attributes) of the Ant project
-        Node.Property prop = new ProjectProperty ("name", proj); // NOI18N
+        Node.Property prop = new ProjectNameProperty ("name", proj); // NOI18N
         // Cannot reuse 'name' because it conflicts with the DataObject.PROP_NAME:
         prop.setName ("projectName"); // NOI18N
         prop.setDisplayName (bundle.getString ("PROP_projectName"));
