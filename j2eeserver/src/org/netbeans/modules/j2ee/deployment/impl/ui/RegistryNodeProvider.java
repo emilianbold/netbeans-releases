@@ -61,14 +61,14 @@ public class RegistryNodeProvider {
     }
     
     public Node createTargetNode(ServerTarget target) {
-        TargetNode xnode = new TargetNode(target);
         if (factory != null) {
             Node original = factory.getTargetNode(createLookup(target));
             if (original != null) {
+                TargetBaseNode xnode = new TargetBaseNode(org.openide.nodes.Children.LEAF, target);
                 return new FilterXNode(original, xnode, true, false);
             }
         }
-        return xnode;
+        return new TargetNode(target);
     }
     
     public Node createInstanceTargetNode(ServerInstance instance) {
