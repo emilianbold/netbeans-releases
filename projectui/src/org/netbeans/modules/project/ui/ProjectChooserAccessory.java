@@ -211,8 +211,14 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
     // Private methods ---------------------------------------------------------
     
     private static boolean isProjectDir( File dir ) {
-        FileObject fo = convertToValidDir(dir);
-        return fo == null ? false : ProjectManager.getDefault().isProject( fo );
+        boolean retVal = false;
+        if (dir != null) {
+            FileObject fo = convertToValidDir(dir);
+            if (fo != null) {
+                retVal = ProjectManager.getDefault().isProject( fo );    
+            }            
+        }
+        return retVal;
     }
     
     private static FileObject convertToValidDir(File f) {

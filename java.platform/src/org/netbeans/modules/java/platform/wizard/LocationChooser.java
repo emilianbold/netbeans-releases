@@ -297,7 +297,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
         
         
         private boolean isPlatformDir ( File f ) {
-            FileObject fo = convertToValidDir(f);
+            FileObject fo = (f != null) ? convertToValidDir(f) : null;
             
             if (fo != null) {
                 for (Iterator it = this.regs.getInstallers().iterator(); it.hasNext();) {
