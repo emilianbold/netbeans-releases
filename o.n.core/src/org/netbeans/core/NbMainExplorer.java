@@ -159,7 +159,9 @@ public final class NbMainExplorer extends CloneableTopComponent
         final ExplorerTab localActivated = toBeActivated;
         SwingUtilities.invokeLater(new Runnable () {
                                        public void run () {
-                                           localActivated.requestFocus();
+                                           if (localActivated != null) {
+                                               localActivated.requestFocus();
+                                           }
                                        }
                                    });
     }
