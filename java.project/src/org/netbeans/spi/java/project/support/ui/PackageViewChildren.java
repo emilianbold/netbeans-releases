@@ -55,6 +55,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openidex.search.SimpleSearchInfo;
@@ -69,6 +70,8 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     
     private java.util.Map/*<String,NODE_NOT_CREATED|PackageNode>*/ names2nodes;
     private final FileObject root;
+    private FileChangeListener wfcl;    // Weak listener on the system filesystem
+    private ChangeListener wvqcl;       // Weak listener on the VisibilityQuery
 
     /**
      * Creates children based on a single source root.
@@ -100,19 +103,22 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         computeKeys();
         refreshKeys();
         try { 
-            root.getFileSystem().addFileChangeListener( this );
+            FileSystem fs = root.getFileSystem();
+            wfcl = (FileChangeListener)WeakListeners.create( FileChangeListener.class, this, fs );
+            fs.addFileChangeListener( wfcl );
         }
         catch ( FileStateInvalidException e ) {
             ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
         }
-        VisibilityQuery.getDefault().addChangeListener( this );
+        wvqcl = WeakListeners.change( this, VisibilityQuery.getDefault() );
+        VisibilityQuery.getDefault().addChangeListener( wvqcl );
     }
 
     protected void removeNotify() {
         // System.out.println("REMOVE NOTIFY" + root + " : " + this );        
-        VisibilityQuery.getDefault().removeChangeListener( this );
+        VisibilityQuery.getDefault().removeChangeListener( wvqcl );
         try {
-            root.getFileSystem().removeFileChangeListener( this );
+            root.getFileSystem().removeFileChangeListener( wfcl );
         }
         catch ( FileStateInvalidException e ) {
             ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
