@@ -196,6 +196,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         ctxt.setContextManager(cm);
         cm.addContext(ctxt);
 
+        // NotFoundServlet
         ServletWrapper nf = new ServletWrapper();
         nf.setServletClass("org.netbeans.modules.httpserver.NotFoundServlet");
         nf.setServletName("NotFoundServlet");
@@ -203,6 +204,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         ctxt.addServletMapping("/", "NotFoundServlet");
         nf.setContext(ctxt);
 
+        // RepositoryServlet
         ServletWrapper repo = new ServletWrapper();
         repo.setServletClass("org.netbeans.modules.httpserver.RepositoryServlet");
         repo.setServletName("RepositoryServlet");
@@ -210,6 +212,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         ctxt.addServletMapping(op.getRepositoryBaseURL() + "*", "RepositoryServlet");
         repo.setContext(ctxt);
 
+        // ClassPathServlet
         ServletWrapper claz = new ServletWrapper();
         claz.setServletClass("org.netbeans.modules.httpserver.ClasspathServlet");
         claz.setServletName("ClasspathServlet");
@@ -217,129 +220,17 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         ctxt.addServletMapping(op.getClasspathBaseURL() + "*", "ClasspathServlet");
         claz.setContext(ctxt);
 
+        // InvokerServlet
+        ServletWrapper invoker = new ServletWrapper();
+        invoker.setServletClass("org.apache.tomcat.servlets.InvokerServlet");
+        invoker.setServletName("invoker");
+        ctxt.addServlet(invoker);
+        ctxt.addServletMapping("/servlet/*", "invoker");
+        invoker.setContext(ctxt);
+
         cm.init();
         return cm;
     }
-
-
-    /*  private static HttpServer buildServer() {
-        HttpServerSettings op = HttpServerSettings.OPTIONS;
-
-        HttpServer server = new NbHttpServer(op.getPort(), null, null);
-
-        try {
-          server.setDocumentBase(new URL("file:///nonexistingdirectory")); // NOI18N
-        }
-        catch (MalformedURLException e) {
-          throw new InternalError();
-        }  
-        Context context = server.getDefaultContext();
-        context.setSecurityModule (new NbSecurityModule (context));
-        context.setClassLoader(TopManager.getDefault().systemClassLoader());
-        
-        Container container = context.getContainer();
-
-        container.addServlet("repositoryHandler", "org.netbeans.modules.httpserver.RepositoryServlet"); // NOI18N
-        container.addMapping("repositoryHandler", op.getRepositoryBaseURL()); // NOI18N
-        
-        container.addServlet("classpathHandler", "org.netbeans.modules.httpserver.ClasspathServlet"); // NOI18N
-        container.addMapping("classpathHandler", op.getClasspathBaseURL()); // NOI18N
-        
-        return server;
-      }
-      
-      static class NbHttpServer extends HttpServer {
-        
-        public NbHttpServer(int i, InetAddress inetaddress, String s) {
-          super(i, inetaddress, s);
-        }
-        
-        public void start() throws HttpServerException {
-          File wd = NbClassPath.toFile(
-            TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot());
-          wd = new File(wd, "httpwork"); // NOI18N
-            
-          try {
-            java.lang.reflect.Field ff = HttpServer.class.getDeclaredField("isWorkDirPersistent"); // NOI18N
-            ff.setAccessible(true);
-            boolean bb = ff.getBoolean(this);
-            
-            getDefaultContext().setWorkDir(wd, bb / *isWorkDirPersistent* /);
-            getDefaultContext().init();
-            EndpointManager endpointmanager = EndpointManager.getManager();
-
-            // endpointmanager.startServer(this);
-            java.lang.reflect.Method mm = EndpointManager.class.getDeclaredMethod("startServer", new Class[] {HttpServer.class}); // NOI18N
-            mm.setAccessible(true);
-            mm.invoke(endpointmanager, new Object[] { this });
-          }
-          catch (NoSuchMethodException e) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-              e.printStackTrace();
-            throw new IllegalArgumentException();  
-          }
-          catch (NoSuchFieldException e) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-              e.printStackTrace();
-            throw new IllegalArgumentException();  
-          }
-          catch (IllegalAccessException e) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-              e.printStackTrace();
-            throw new IllegalArgumentException();  
-          }
-          catch (InvocationTargetException e) {
-            Throwable th = e.getTargetException();
-            throw ((HttpServerException)th);
-          }
-        }
-          
-      }
-        
-      static class NbSecurityModule implements SecurityModule {
-
-        public NbSecurityModule (Context context1) {
-          context = context1;
-        }
-
-        public Context getContext() {
-          return context;
-        }
-
-        public boolean authenticateRequest(HttpServletRequest httpservletrequest, HttpServletResponse httpservletresponse)
-          throws IOException {
-          return true;
-        }
-
-        public boolean authorizeRequest(HttpServletRequest httpservletrequest, HttpServletResponse httpservletresponse)
-          throws IOException {
-
-          HttpServerSettings op = HttpServerSettings.OPTIONS;
-
-          String requestURI = httpservletrequest.getRequestURI ();
-          String contextPath = context.getPath();
-          String lookupPath = requestURI.substring(contextPath.length(), requestURI.length());
-          int i = lookupPath.indexOf("?"); // NOI18N
-          if(i > -1) lookupPath = lookupPath.substring(0, i);
-          if(lookupPath.length() < 1) lookupPath = "/"; // NOI18N
-          String s = lookupPath.toLowerCase();
-          if(s.startsWith("/servlet/")) { // NOI18N
-            return true;
-          }  
-          if(s.startsWith("/web-inf")) { // NOI18N
-            httpservletresponse.sendError(403);
-            return false;
-          } if (s.startsWith(op.getRepositoryBaseURL() + "/") || s.startsWith(op.getClasspathBaseURL() + "/")) { // NOI18N
-            return true;
-          } else {
-            httpservletresponse.sendError(404);
-            return false;
-          }
-                       
-        }
-
-        private Context context;
-      }*/
 
 }
 
