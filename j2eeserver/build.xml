@@ -41,6 +41,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="external">
       <ant dir="external" target="unscramble"/>
+      <ant dir="${nbroot}/libs/external" target="unscramble"/>
   </target>
 
   <target name="nbm" depends="netbeans">
