@@ -37,6 +37,7 @@ Microsystems, Inc. All Rights Reserved.
           <include name="openide*.jar" />
         </fileset>
        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
+       <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
       </classpath>
     </javac>
   </target>
