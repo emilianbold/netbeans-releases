@@ -41,6 +41,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="ant" testtypes="qa-functional" attributes="stable"/>
       <module name="projects" testtypes="qa-functional" attributes="stable"/>
       <module name="beans" testtypes="qa-func" attributes="stable"/>
+      <module name="clazz" testtypes="qa-functional" attributes="stable"/>
   </config>
   
   <!-- QA functional tests for FFJ CE -->
