@@ -178,11 +178,11 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             }
             command = "deploy?config=" + contextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
             cmdType = CommandType.DISTRIBUTE;
+            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
+            rp ().post (this, 0, Thread.NORM_PRIORITY);
         } catch (java.io.IOException ioex) {
             pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, ioex.getLocalizedMessage (), StateType.FAILED));
         }
-        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
-        rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
 
     public void remove(TomcatModule tmId) {
@@ -280,11 +280,11 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             }
             command = "deploy?config=" + contextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
             cmdType = CommandType.DISTRIBUTE;
+            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
+            rp ().post (this, 0, Thread.NORM_PRIORITY);
         } catch (java.io.IOException ioex) {
             pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, ioex.getLocalizedMessage (), StateType.FAILED));
         }
-        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
-        rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
     
     /** Lists web modules.
