@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/lib/ext"/>
+    <mkdir dir="netbeans/lib"/>
     <locjar jarfile="netbeans/lib/core.jar"
             basedir="src"
             manifest="src/org/netbeans/core/resources/mf-initializer.txt"
