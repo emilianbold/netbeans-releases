@@ -54,7 +54,7 @@ public class JavaHelpDialogTest extends JellyTestCase {
         suite.addTest(new JavaHelpDialogTest("testHelpF1"));
         suite.addTest(new JavaHelpDialogTest("testHelpFromMenu"));
         suite.addTest(new JavaHelpDialogTest("testHelpByButtonNonModal"));
-        suite.addTest(new JavaHelpDialogTest("testHelpByButtonModal"));
+        //TODO Help button is no more visible in Setup Wizard suite.addTest(new JavaHelpDialogTest("testHelpByButtonModal"));
         suite.addTest(new JavaHelpDialogTest("testSearchInIndex"));
         suite.addTest(new JavaHelpDialogTest("testContextualSearch"));
         //suite.addTest(new JavaHelpDialogTest("testHelpByButtonNestedModal"));
