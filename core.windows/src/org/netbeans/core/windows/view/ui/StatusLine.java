@@ -13,25 +13,38 @@
 
 package org.netbeans.core.windows.view.ui;
 
+import java.awt.Font;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.WeakListeners;
 
-/** The status line component of the main window. A text can be put into it.
+/** The status line component of the main window.
 *
 * @author Jaroslav Tulach, Jesse Glick
 */
 final class StatusLine extends JLabel implements ChangeListener, Runnable {
     private StatusDisplayer d = StatusDisplayer.getDefault();
 
-    /** Creates a new StatusLine with specified workspace switcher. */
+    /** Creates a new StatusLine */
     public StatusLine () {
         run();
         d.addChangeListener(WeakListeners.change(this, d));
+    }
+    
+    public void updateUI() {
+        super.updateUI();
+        Font f = UIManager.getFont ("controlFont"); //NOI18N
+        if (f == null) {
+            f = UIManager.getFont ("Tree.font"); //NOI18N
+        }
+        if (f != null) {
+            setFont(f);
+        }
     }
 
     public void stateChanged(ChangeEvent e) {
