@@ -110,22 +110,19 @@ public class JavaResourceHolder extends ResourceHolder {
         String keyValue     = UtilConvert.charsToUnicodes(UtilConvert.escapeJavaSpecialChars(UtilConvert.escapePropertiesSpecialChars(key.toString())));
         String valueValue   = value == null ? null : UtilConvert.charsToUnicodes(UtilConvert.escapeJavaSpecialChars(UtilConvert.escapeLineContinuationChar(UtilConvert.escapeOutsideSpaces(value.toString()))));
         String commentValue = comment == null ? null : UtilConvert.charsToUnicodes(comment);
-        
+
+        // write to bundle primary file
         BundleStructure bundleStructure = ((PropertiesDataObject)resource).getBundleStructure();
+        PropertiesStructure propStructure = bundleStructure.getNthEntry(0).getHandler().getStructure();
+        Element.ItemElem item = propStructure.getItem(keyValue);
 
-        for(int i=0; i<bundleStructure.getEntryCount(); i++) {
-            PropertiesStructure propStructure = bundleStructure.getNthEntry(i).getHandler().getStructure();
-            Element.ItemElem item = propStructure.getItem(keyValue);
-
-            if(item == null) {
-                // Item doesn't exist in this entry -> create it.
-                propStructure.addItem(keyValue, valueValue, commentValue);
-            } else if(!item.getValue().equals(valueValue) && forceNewValue) {
-                item.setValue(valueValue);
-                item.setComment(commentValue);
-            }
+        if(item == null) {
+            // Item doesn't exist in this entry -> create it.
+            propStructure.addItem(keyValue, valueValue, commentValue);
+        } else if(!item.getValue().equals(valueValue) && forceNewValue) {
+            item.setValue(valueValue);
+            item.setComment(commentValue);
         }
-
     }
 
 
