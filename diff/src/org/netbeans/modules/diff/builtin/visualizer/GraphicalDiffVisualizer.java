@@ -31,6 +31,7 @@ import org.netbeans.api.diff.DiffVisualizer;
  */
 public class GraphicalDiffVisualizer extends DiffVisualizer {
     
+    static final long serialVersionUID =-1135210647457196211L;
     /** Creates a new instance of BuiltInDiffVisualizer */
     public GraphicalDiffVisualizer() {
     }

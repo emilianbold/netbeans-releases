@@ -29,6 +29,7 @@ import org.netbeans.api.diff.DiffVisualizer;
  */
 public class TextDiffVisualizer extends DiffVisualizer {
 
+    static final long serialVersionUID =-2481513747957146261L;
     /** Creates a new instance of TextDiffVisualizer */
     public TextDiffVisualizer() {
     }

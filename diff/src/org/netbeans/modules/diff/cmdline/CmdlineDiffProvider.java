@@ -45,9 +45,10 @@ public class CmdlineDiffProvider extends DiffProvider {
                                               "(^[0-9]+[a][0-9]+(,[0-9]+|)$)".intern();
     private static final int BUFF_LENGTH = 1024;
 
-    private RE pattern;
+    private transient RE pattern;
     private String diffCmd;
     
+    static final long serialVersionUID =4101521743158176210L;
     /** Creates new CmdlineDiffProvider
      * @param diffCmd The diff command. Must contain "{0}" and "{1}", which
      * will be replaced with the files being compared.
