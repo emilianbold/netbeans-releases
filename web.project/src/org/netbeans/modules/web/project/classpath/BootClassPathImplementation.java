@@ -14,14 +14,10 @@ package org.netbeans.modules.web.project.classpath;
 
 import java.beans.PropertyChangeEvent;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
-import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
-import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.classpath.ClassPath;
 
 import java.beans.PropertyChangeListener;
@@ -31,13 +27,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.modules.web.project.Utils;
 import org.openide.util.WeakListeners;
 
 final class BootClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
 
     private static final String PLATFORM_ACTIVE = "platform.active";        //NOI18N
-    private static final String ANT_NAME = "platform.ant.name";             //NOI18N
-    private static final String J2SE = "j2se";                              //NOI18N
 
     private AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
@@ -78,21 +73,13 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     }
 
     private JavaPlatform findActivePlatform () {
-        JavaPlatformManager pm = JavaPlatformManager.getDefault();
-        String platformName = evaluator.getProperty(PLATFORM_ACTIVE);
-        if (platformName!=null) {
-            JavaPlatform[] installedPlatforms = pm.getInstalledPlatforms();
-            for (int i = 0; i< installedPlatforms.length; i++) {
-                Specification spec = installedPlatforms[i].getSpecification();
-                String antName = (String) installedPlatforms[i].getProperties().get (ANT_NAME);
-                if (J2SE.equalsIgnoreCase(spec.getName())
-                    && platformName.equals(antName)) {
-                    return installedPlatforms[i];
-                }
-            }
+        JavaPlatform javaPlatform = Utils.findJ2seJavaPlatform(evaluator.getProperty(PLATFORM_ACTIVE));
+        if (javaPlatform != null) {
+            return javaPlatform;
+        } else {
+            //Invalid platform ID or default platform
+            return JavaPlatformManager.getDefault().getDefaultPlatform();
         }
-        //Invalid platform ID or default platform
-        return pm.getDefaultPlatform();
     }
     
     public void propertyChange(PropertyChangeEvent evt) {

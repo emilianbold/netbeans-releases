@@ -42,8 +42,8 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.web.project.WebProjectType;
+import org.netbeans.modules.web.project.Utils;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -402,26 +402,20 @@ public class WebProjectProperties {
         }
     }
     
-    private void updateSourceLevel(boolean defaultPlatform, String platform, EditableProperties ep) {
+    private void updateSourceLevel(boolean defaultPlatform, String platformName, EditableProperties ep) {
         if (defaultPlatform) {
             ep.setProperty(JAVAC_SOURCE, "${default.javac.source}"); //NOI18N
             ep.setProperty(JAVAC_TARGET, "${default.javac.target}"); //NOI18N
         } else {
-            JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
-            for( int i = 0; i < platforms.length; i++ ) {
-                Specification spec = platforms[i].getSpecification();
-                if (!("j2se".equalsIgnoreCase(spec.getName()))) { // NOI18N
-                    continue;
-                }
-                if (platform.equals(platforms[i].getProperties().get(PLATFORM_ANT_NAME))) {
-                    String ver = platforms[i].getSpecification().getVersion().toString();
-                    ep.setProperty(JAVAC_SOURCE, ver);
-                    ep.setProperty(JAVAC_TARGET, ver);
-                    return;
-                }
+            JavaPlatform javaPlatform = Utils.findJ2seJavaPlatform(platformName);
+            if(javaPlatform != null) {
+                String ver = javaPlatform.getSpecification().getVersion().toString();
+                ep.setProperty(JAVAC_SOURCE, ver);
+                ep.setProperty(JAVAC_TARGET, ver);
+                return;
             }
-            // The platform does not exist. Perhaps this is project with broken references?
-            // Do not update target and source because nothing is known about the platform.
+            // The platformName does not exist. Perhaps this is project with broken references?
+            // Do not update target and source because nothing is known about the platformName.
         }
     }
     
@@ -441,7 +435,7 @@ public class WebProjectProperties {
                 el = (Element)sps.item(0);
             }
             boolean explicitSource = true;
-            JavaPlatform platform = findPlatform(platformAntID);
+            JavaPlatform platform = Utils.findJavaPlatform(platformAntID);
             if ((platform != null && platform.getSpecification().getVersion().compareTo(JDKSpec13) <= 0) || platform == null) {
                 explicitSource = false;
             }
@@ -912,22 +906,11 @@ public class WebProjectProperties {
         }
         return null;
     }
-    
-    private static JavaPlatform findPlatform(String platformAntID) {
-        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();            
-        for(int i = 0; i < platforms.length; i++) {
-            String normalizedName = (String)platforms[i].getProperties().get(PLATFORM_ANT_NAME);
-            if (normalizedName != null && normalizedName.equals(platformAntID)) {
-                return platforms[i];
-            }
-        }
-        return null;
-    }
-    
+
     private static class PlatformParser extends PropertyParser {
         
         public Object decode(String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
-            JavaPlatform platform = findPlatform(raw);
+            JavaPlatform platform = Utils.findJavaPlatform(raw);
             if (platform != null) {
                 return platform.getDisplayName();
             }

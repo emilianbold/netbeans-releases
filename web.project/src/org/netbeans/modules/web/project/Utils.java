@@ -18,6 +18,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +41,9 @@ public class Utils {
 
     private static final String JSP_PACKAGE_NAME = "org.apache.jsp";
     
+    private static final String PLATFORM_ANT_NAME = "platform.ant.name"; //NOI18N
+    public static final String SPECIFICATION_J2SE = "j2se";              //NOI18N
+
     public static File getRoot(File f) {
         File rootF = f;
         while (rootF.getParentFile() != null) {
@@ -98,6 +103,41 @@ public class Utils {
             }
         }
         return false;
+    }
+
+    /**
+     * Searches Java platform according to platform name
+     * Specification of the platform has to be J2SE
+     * @param platformName
+     * @return related JavaPlatform object if found, otherwise null
+     */
+    public static JavaPlatform findJ2seJavaPlatform(String platformName) {
+        return findJavaPlatform(platformName, SPECIFICATION_J2SE);
+    }
+
+    /**
+     * Searches Java platform according to platform name
+     * The platform sepecification does not need to be J2SE
+     * @param platformName
+     * @return related JavaPlatform object if found, otherwise null
+     */
+    public static JavaPlatform findJavaPlatform(String platformName) {
+        return findJavaPlatform(platformName, null);
+    }
+
+    private static JavaPlatform findJavaPlatform(String platformName, String specFilter) {
+        if(platformName != null) {
+            JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+            for(int i = 0; i < platforms.length; i++) {
+                JavaPlatform platform = platforms[i];
+                String antName = (String)platform.getProperties().get(PLATFORM_ANT_NAME);
+                if (antName != null && antName.equals(platformName)) {
+                    if(specFilter == null || specFilter.equals(platform.getSpecification()))
+                    return platform;
+                }
+            }
+        }
+        return null;
     }
 
     // COPIED FROM TOMCAT
