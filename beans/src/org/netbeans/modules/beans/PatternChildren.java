@@ -24,7 +24,7 @@ import org.openide.src.*;
 import org.openide.src.nodes.ClassChildren;
 import org.openide.src.nodes.ElementNodeFactory;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 
 /** Implements children for basic source code patterns
 * 
@@ -38,7 +38,7 @@ public class PatternChildren extends ClassChildren {
 
     private Listener elementListener = new Listener(this);
     
-    private PropertyChangeListener weakStyleListener = WeakListener.propertyChange( elementListener, PropertyActionSettings.getDefault());
+    private PropertyChangeListener weakStyleListener = WeakListeners.propertyChange( elementListener, PropertyActionSettings.getDefault());
     
     private RequestProcessor.Task   refreshTask;
     

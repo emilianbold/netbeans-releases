@@ -194,7 +194,7 @@ public class  PatternGroupNode extends AbstractNode {
             propertyPanel.setDialog( dialog );
             propertyPanel.setForInterface( forInterface );
             propertyPanel.setGroupNode( this );
-            dialog.show ();
+            dialog.setVisible(true);
 
             if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
                 PropertyPatternPanel.Result result = propertyPanel.getResult();
@@ -225,7 +225,7 @@ public class  PatternGroupNode extends AbstractNode {
             idxPropertyPanel.setDialog( dialog );
             idxPropertyPanel.setForInterface( forInterface );
             idxPropertyPanel.setGroupNode( this );
-            dialog.show ();
+            dialog.setVisible(true);
 
             if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
 
@@ -259,7 +259,7 @@ public class  PatternGroupNode extends AbstractNode {
             uEventSetPanel.setDialog( dialog );
             uEventSetPanel.setForInterface( forInterface );
             uEventSetPanel.setGroupNode( this );
-            dialog.show ();
+            dialog.setVisible(true);
 
             if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
                 UEventSetPatternPanel.Result result = uEventSetPanel.getResult();
@@ -286,7 +286,7 @@ public class  PatternGroupNode extends AbstractNode {
             eventSetPanel.setDialog( dialog );
             eventSetPanel.setForInterface( forInterface );
             eventSetPanel.setGroupNode( this );
-            dialog.show ();
+            dialog.setVisible(true);
 
             if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
                 EventSetPatternPanel.Result result = eventSetPanel.getResult();

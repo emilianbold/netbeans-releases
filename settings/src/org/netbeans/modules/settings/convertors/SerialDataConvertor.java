@@ -26,11 +26,11 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.Environment;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
-import org.openide.util.WeakListener;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.AbstractLookup;
 
@@ -70,7 +70,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         lkpContent = new InstanceContent();
         
         FileObject fo = dobj.getPrimaryFile();
-        fo.addFileChangeListener(WeakListener.fileChange(this, fo));
+        fo.addFileChangeListener(FileUtil.weakFileChangeListener(this, fo));
         
         SerialDataConvertor.SettingsInstance si = createInstance(null);
         if (isModuleEnabled(si)) {

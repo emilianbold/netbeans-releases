@@ -150,7 +150,7 @@ final class ModuleInfoManager {
             lsnr = new PCL(mi);
             mapOfListeners.put(mi, lsnr);
         }
-        PropertyChangeListener pcl = org.openide.util.WeakListener.propertyChange(sdc, lsnr);
+        PropertyChangeListener pcl = org.openide.util.WeakListeners.propertyChange(sdc, lsnr);
         lsnr.addPropertyChangeListener(sdc, pcl);
     }
     

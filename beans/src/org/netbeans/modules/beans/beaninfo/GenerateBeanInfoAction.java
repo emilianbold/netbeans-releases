@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,7 +30,7 @@ import org.netbeans.modules.beans.PatternAnalyser;
 import org.openide.DialogDisplayer;
 
 /**
-* Search doc action.
+* Generate BI action.
 *
 * @author   Petr Hrebejk
 */
@@ -139,7 +139,7 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
 
         RequestProcessor.getDefault().post( analyseTask );
 
-        biDialog.show ();
+        biDialog.setVisible(true);
 
         if ( biaReference.getReference() != null && dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
 

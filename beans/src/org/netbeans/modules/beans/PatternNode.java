@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,7 +17,6 @@ import java.awt.datatransfer.Transferable;
 import java.beans.*;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ResourceBundle;
 
 import org.openide.src.*;
 import org.openide.src.nodes.*;
@@ -26,7 +25,7 @@ import org.openide.actions.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.NotifyDescriptor;
 
@@ -100,11 +99,10 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
             sourceOptions = (SourceOptions) SharedClassObject.findObject (SourceOptions.class, true);
         }        
         setIconBase(resolveIconBase());
-        setDefaultAction(SystemAction.get(OpenAction.class));
         setActions(DEFAULT_ACTIONS);
 
-        //this.pattern.addPropertyChangeListener(new WeakListener.PropertyChange (this));
-        this.pattern.addPropertyChangeListener( WeakListener.propertyChange (this, this.pattern));
+        //this.pattern.addPropertyChangeListener(new WeakListeners.PropertyChange (this));
+        this.pattern.addPropertyChangeListener( WeakListeners.propertyChange (this, this.pattern));
         displayFormat = null;
     }
 
@@ -125,6 +123,10 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
     */
     abstract protected String resolveIconBase();
 
+    public javax.swing.Action getPreferredAction() {
+        return SystemAction.get(OpenAction.class);
+    }
+    
     /** Get the names of all element properties which might affect the choice of icon.
     * The default implementation just returns {@link #PROP_MODIFIERS}.
     * @return the property names, from {@link ElementProperties}
@@ -342,4 +344,5 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
     static String getString(String key) {
         return NbBundle.getBundle("org.netbeans.modules.beans.Bundle").getString(key);
     }
+
 }

@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.cookies.SaveCookie;
 import org.openide.cookies.InstanceCookie;
@@ -57,7 +58,7 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
         this.dobj = dobj;
         
         settingFO.addFileChangeListener(
-            org.openide.util.WeakListener.fileChange(this, settingFO));
+            FileUtil.weakFileChangeListener(this, settingFO));
         
         lkpContent = new org.openide.util.lookup.InstanceContent();
         lkpContent.add(createInstance(null));

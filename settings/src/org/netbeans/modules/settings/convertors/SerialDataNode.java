@@ -201,7 +201,7 @@ public final class SerialDataNode extends DataNode {
                 if (setter != null && setter.getName().equals("addPropertyChangeListener")) { // NOI18N
                     Object bean = ic.instanceCreate();
                     propertyChangeListener = new PropL();
-                    setter.invoke(bean, new Object[] {WeakListener.propertyChange(propertyChangeListener, bean)});
+                    setter.invoke(bean, new Object[] {WeakListeners.propertyChange(propertyChangeListener, bean)});
                     setSettingsInstance(bean);
                 }
             }
