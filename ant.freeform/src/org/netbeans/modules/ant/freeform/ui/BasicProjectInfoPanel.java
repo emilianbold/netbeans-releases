@@ -365,7 +365,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
     private void browseProjectLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseProjectLocationActionPerformed
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
-        if (getProjectLocation().exists()) {
+        if (projectLocation.getText().length() > 0 && getProjectLocation().exists()) {
             chooser.setSelectedFile(getProjectLocation());
         }
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
@@ -377,8 +377,10 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
     private void browseProjectFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseProjectFolderActionPerformed
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
-        if (getProjectFolder().exists()) {
+        if (projectFolder.getText().length() > 0 && getProjectFolder().exists()) {
             chooser.setSelectedFile(getProjectFolder());
+        } else if (projectLocation.getText().length() > 0 && getProjectLocation().exists()) {
+            chooser.setSelectedFile(getProjectLocation());
         }
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
             File projectDir = FileUtil.normalizeFile(chooser.getSelectedFile());
@@ -389,8 +391,10 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
     private void browseAntScriptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseAntScriptActionPerformed
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
-        if (getAntScript().exists()) {
+        if (antScript.getText().length() > 0 && getAntScript().exists()) {
             chooser.setSelectedFile(getAntScript());
+        } else if (projectLocation.getText().length() > 0 && getProjectLocation().exists()) {
+            chooser.setSelectedFile(getProjectLocation());
         }
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
             File script = FileUtil.normalizeFile(chooser.getSelectedFile());
