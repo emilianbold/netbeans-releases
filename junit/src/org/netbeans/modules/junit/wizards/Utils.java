@@ -308,7 +308,7 @@ public final class Utils {
         for (int i = 0; i < setToAdd.length; i++) {
             final Object objToAdd = setToAdd[i];
             for (int j = 0; j < targetSetSize; j++) {
-                final Object chosen = chooseTarget(targetSet[i], objToAdd);
+                final Object chosen = chooseTarget(targetSet[j], objToAdd);
                 if (chosen != null) {           //both point to the same folder
                     targetSet[j] = chosen;
                     continue toAdd;
