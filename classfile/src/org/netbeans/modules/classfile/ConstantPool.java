@@ -122,20 +122,7 @@ public class ConstantPool {
         ArrayList v = new ArrayList(oa.length);        
         for (int i = 0; i < oa.length; i++) {
             CPClassInfo ci = (CPClassInfo)oa[i];
-            v.add(ci.getName());
-        }
-
-        oa = getAllConstants(CPUTF8Info.class);
-        for (int i = 0; i < oa.length; i++) {
-            CPUTF8Info utf = (CPUTF8Info)oa[i];
-            String name = utf.getName();
-            if (name.length() > 0 && name.charAt(0) == 'L' &&
-                name.charAt(name.length() - 1) == ';') {
-                String clsName = name.substring(1, name.length() - 1);
-                if (!v.contains(clsName)) {
-                    v.add(clsName);
-                }
-            }
+            v.add(ci.getInternalName());
         }
         return (String[])v.toArray(new String[1]);
     }
