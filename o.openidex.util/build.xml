@@ -32,6 +32,7 @@ Microsystems, Inc. All Rights Reserved.
     <copyfile src="manifest.mf" dest="manifest-subst.mf" filtering="on"/>
     <!-- Make a dummy module file for purposes of dependencies. -->
     <!-- Note that Ant refuses to make a JAR if there are no contents. -->
+    <!-- (Fixed in CVS versions of Ant but not in 1.1.) -->
     <mkdir dir="nothing"/>
     <touch file="nothing/.exists"/>
     <jar jarfile="netbeans/modules/openidex.jar"
