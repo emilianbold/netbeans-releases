@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
@@ -39,6 +39,17 @@ Microsystems, Inc. All Rights Reserved.
             <file name="CurrentPC2.xml" url="CurrentPC2.xml"/>
             <file name="CurrentPC2LinePart.xml" url="CurrentPC2LinePart.xml"/>
             <file name="NextTargetName.xml" url="NextTargetName.xml"/>
+        </folder>
+    </folder>
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-ant+xml">
+                <folder name="Actions">
+                    <attr name="org-apache-tools-ant-module-nodes-RunTargetsAction.instance/org-netbeans-modules-ant-debugger-RunTargetsAction.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-ant-debugger-RunTargetsAction.instance"/>
+                    <attr name="org-netbeans-modules-ant-debugger-RunTargetsAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
+                </folder>
+            </folder>
         </folder>
     </folder>
 </filesystem>

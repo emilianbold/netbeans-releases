@@ -7,23 +7,18 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.loader;
 
-import java.io.*;
-import org.apache.tools.ant.module.AntModule;
-import org.apache.tools.ant.module.nodes.RunTargetsAction;
-import org.openide.*;
-import org.openide.actions.*;
-import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem;
-import org.openide.loaders.*;
+import java.io.IOException;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.io.SafeException;
 
 /**
  * Recognizes Ant project files according to XML signature.
@@ -50,25 +45,6 @@ public class AntProjectDataLoader extends UniFileLoader {
         getExtensions().addMimeType(REQUIRED_MIME);
     }
 
-    protected SystemAction[] defaultActions () {
-        return new SystemAction[] {
-            SystemAction.get (OpenAction.class),
-            SystemAction.get (RunTargetsAction.class),
-            SystemAction.get (FileSystemAction.class),
-            null,
-            SystemAction.get (CutAction.class),
-            SystemAction.get (CopyAction.class),
-            null,
-            SystemAction.get (DeleteAction.class),
-            SystemAction.get (RenameAction.class),
-            null,
-            SystemAction.get (SaveAsTemplateAction.class),
-            null,
-            SystemAction.get (ToolsAction.class),
-            SystemAction.get (PropertiesAction.class),
-        };
-    }
-    
     protected FileObject findPrimaryFile(FileObject fo) {
         FileObject prim = super.findPrimaryFile(fo);
         if (prim == null && fo.getNameExt().equals(KNOWN_ANT_FILENAME)) {
@@ -82,6 +58,10 @@ public class AntProjectDataLoader extends UniFileLoader {
 
     protected MultiDataObject createMultiObject (FileObject primaryFile) throws DataObjectExistsException, IOException {
         return new AntProjectDataObject(primaryFile, this);
+    }
+
+    protected String actionsContext() {
+        return "Loaders/" + REQUIRED_MIME + "/Actions"; // NOI18N
     }
 
 }
