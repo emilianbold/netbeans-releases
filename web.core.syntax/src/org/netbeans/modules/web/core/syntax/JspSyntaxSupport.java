@@ -91,6 +91,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     private static TagInfo[] directiveJspData;
     private static TagInfo[] directiveTagFileData;
     
+    /** Mapping the URI of tag library -> URL where the help files are. 
+     */
     private static HashMap helpMap = null;
     
     private static final TokenID[] JSP_BRACKET_SKIP_TOKENS = new TokenID[] {
@@ -593,6 +595,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 }
             }
             helpMap = new HashMap();
+            //           The URI from the tld file          URL, where are the files for the library
             helpMap.put("http://java.sun.com/jsp/jstl/core", url + "c/");
             helpMap.put("http://java.sun.com/jstl/core_rt", url + "c_rt/");
             helpMap.put("http://java.sun.com/jsp/jstl/fmt", url + "fmt/");
