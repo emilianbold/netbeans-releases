@@ -23,6 +23,8 @@ import threaddemo.locking.Lock;
 // XXX possibly need some method which is like getStaleValueNonBlocking but which
 // throws InvocationTargetException, to permit views to display an error marker
 // on stale data
+// XXX might want an optional ability to take a snapshot of data in a read lock
+// and then parse it outside the lock to avoid shutting out writers for too long
 
 /**
  * Support for bidirectional construction of a derived model from an underlying model.
