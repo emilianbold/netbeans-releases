@@ -54,6 +54,7 @@ import org.openide.windows.TopComponent;
 import org.netbeans.core.windows.WellKnownModeNames;
 import org.netbeans.core.windows.DeferredPerformer;
 import org.netbeans.core.windows.WindowManagerImpl;
+import org.netbeans.core.windows.ModeImpl;
 
 /** Main explorer - the class remains here for backward compatibility
 * with older serialization protocol. Its responsibilty is also
@@ -156,14 +157,28 @@ public final class NbMainExplorer extends CloneableTopComponent
         if (toBeActivated == null) {
             toBeActivated = getRootPanel(rootsArray[0]);
         }
-        final ExplorerTab localActivated = toBeActivated;
+        
+        //Bugfix #9352 20 Feb 2001 by Marek Slama
+        //requestFocus called directly on mode - it sets
+        //deferred request so that requestFocus is performed
+        //on correct workspace when component is shown.
+        //Delayed call of requestFocus on ExplorerTab
+        //was performed on incorrect workspace.
+        /*final ExplorerTab localActivated = toBeActivated;
         SwingUtilities.invokeLater(new Runnable () {
                                        public void run () {
+        System.out.println("++*** localActivated:" + localActivated);
                                            if (localActivated != null) {
+        System.out.println("++*** Call of localActivated.requestFocus()");
                                                localActivated.requestFocus();
                                            }
                                        }
-                                   });
+                                   });*/
+        ModeImpl mode = (ModeImpl)workspace.findMode(toBeActivated);
+        if (mode != null) {
+            mode.requestFocus(toBeActivated);
+        }
+        //End of bugfix #9352
     }
 
     /** Refreshes current state of main explorer's top components, so they
