@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.openide.filesystems.FileStateInvalidException;
 import org.w3c.dom.Element;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
@@ -142,10 +143,27 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
 
     private FileObject [] getSources () {
         SourceGroup sg [] = ProjectUtils.getSources (project).getSourceGroups (JavaProjectConstants.SOURCES_TYPE_JAVA);
-        FileObject[] sources = new FileObject[sg.length];
-        for (int i = 0; i < sg.length; i++)
-            sources[i] = sg [i].getRootFolder ();
-        return sources;
+        Set srcRootSet = new HashSet ();
+        for (int i = 0; i < sg.length; i++) {
+            URL entry; 
+            try {
+                entry = sg[i].getRootFolder().getURL();
+            } catch (FileStateInvalidException x) {
+                throw new AssertionError(x);
+            }
+            SourceForBinaryQuery.Result res = SourceForBinaryQuery.findSourceRoots (entry);
+            FileObject srcForBin [] = res.getRoots ();
+            for (int j = 0; j < srcForBin.length; j++) {
+                srcRootSet.add (srcForBin [j]);
+            }
+        }
+        Set filteredSources = new HashSet ();
+        for (int i = 0; i < sg.length; i++) {
+            if (srcRootSet.contains (sg [i].getRootFolder ())) {
+                filteredSources.add (sg [i].getRootFolder ());
+            }
+        }
+        return (FileObject []) filteredSources.toArray (new FileObject [filteredSources.size ()]);
     }
     
     /**
@@ -199,7 +217,8 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
     
         private FileObject docRootFO;
         private FileObject [] sourcesFOs;
-        private ClassPath classPath;
+        private ClassPath webClassPath;
+        private ClassPath javaSourcesClassPath;
         private String j2eeSpec;
         private String contextPath;
         
@@ -208,7 +227,8 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
             this.j2eeSpec = j2eeSpec;
             this.contextPath = (contextPath == null ? "" : contextPath);
             this.sourcesFOs = sourcesFOs;
-            this.classPath = classPath;
+            this.webClassPath = classPath;
+            javaSourcesClassPath = ClassPathSupport.createClassPath(sourcesFOs); 
         }
         
         boolean contais (FileObject fo) {
@@ -226,7 +246,19 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         }
         
         public ClassPath findClassPath (FileObject file, String type) {
-            return classPath;
+           int fileType = getType(file);
+            
+            if (fileType == 0)
+                return javaSourcesClassPath;
+            else 
+                if (fileType == 1)
+                    return webClassPath;
+           // This code shouldn't be executed. Always a source file includes in javasources or websources.
+            FileObject [] all = new FileObject [sourcesFOs.length+1];
+            all[0] = getDocumentBase ();
+            for (int i = 1; i<= sourcesFOs.length; i++)
+                all[i] =sourcesFOs[i-1];
+            return ClassPathSupport.createClassPath(all);
         }
         
         public String getJ2eePlatformVersion () {
@@ -256,5 +288,28 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
             return getDocumentBase ().getFileObject (FOLDER_WEB_INF);
         }
         
+        
+        /**
+         * Find what a given file represents.
+         * @param file a file in the project
+         * @return one of: <dl>
+         *         <dt>0</dt> <dd>java source</dd>
+         *         <dt>1</dt> <dd>web pages</dd>
+         *         <dt>-1</dt> <dd>something else</dd>
+         *         </dl>
+         */
+        private int getType(FileObject file) {
+            for (int i=0; i < sourcesFOs.length; i++) {
+                FileObject root = sourcesFOs[i];
+                if (root.equals(file) || FileUtil.isParentOf(root, file)) {
+                    return 0;
+                }
+            } 
+            FileObject dir = getDocumentBase();
+            if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
+                return 1;
+            }
+            return -1;
+        }
     }
 }
