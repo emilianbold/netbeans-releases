@@ -18,6 +18,9 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.net.URLDecoder;
+import java.util.StringTokenizer;
 import javax.servlet.ServletException;
 import javax.servlet.http.*;
 
@@ -89,25 +92,29 @@ public class WrapperServlet extends NbBaseServlet {
             String orig = url.toString ();
             int ind = orig.indexOf('#');
             orig = ind < 0 ? orig: orig.substring(0, ind);
-            int slash = orig.indexOf ('/');
-            if (slash >= 0 && orig.charAt (slash+1) == '/') {
-                slash = orig.indexOf (slash+2);
+            StringTokenizer slashTok = new StringTokenizer(orig, "/", true); // NOI18N
+            StringBuffer path = new StringBuffer();
+            for ( ; slashTok.hasMoreTokens(); ) {
+                String tok = slashTok.nextToken();
+                if (tok.startsWith("/")) { // NOI18N
+                    path.append(tok);
+                }
+                else {
+                    path.append(URLEncoder.encode(tok));
+                }
             }
-            String path;
-            if (slash >=0)
-                path = java.net.URLEncoder.encode (orig.substring (0, slash))+orig.substring (slash);
-            else
-                path = orig;
             
-            if (ind >=0) 
-                path = path + "#" + anchor; // NOI18N
+            if (ind >=0) {
+                path.append("#"); // NOI18N
+                path.append(anchor);
+            }
 
             HttpServerSettings settings = (HttpServerSettings)SharedClassObject.findObject(HttpServerSettings.class, true);
             settings.setRunning (true);
             newURL = new URL ("http",   // NOI18N
                               InetAddress.getLocalHost ().getHostName (), 
                               settings.getPort (),
-                              settings.getWrapperBaseURL () + path);
+                              settings.getWrapperBaseURL () + path.toString());
             return newURL;
         }
         catch (Exception ex) {
@@ -131,16 +138,22 @@ public class WrapperServlet extends NbBaseServlet {
         String path = request.getPathInfo ();
         ServletOutputStream out = response.getOutputStream ();
         try {
-            
             // resource name
             if (path.startsWith ("/")) path = path.substring (1); // NOI18N
             
-            String internalUrl;
-            int slash = path.indexOf ('/');
-            if (slash >= 0)
-                internalUrl = java.net.URLDecoder.decode (path.substring (0,slash))+path.substring (slash);
-            else
-                internalUrl = java.net.URLDecoder.decode (path);
+            StringTokenizer slashTok = new StringTokenizer(path, "/", true); // NOI18N
+            StringBuffer newPath = new StringBuffer();
+            for ( ; slashTok.hasMoreTokens(); ) {
+                String tok = slashTok.nextToken();
+                if (tok.startsWith("/")) { // NOI18N
+                    newPath.append(tok);
+                }
+                else {
+                    newPath.append(URLDecoder.decode(tok));
+                }
+            }
+            
+            String internalUrl = newPath.toString();
             URL innerURL = new URL (internalUrl);
             URLConnection conn = innerURL.openConnection ();
             
