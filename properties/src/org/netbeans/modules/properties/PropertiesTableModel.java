@@ -27,8 +27,12 @@ import org.openide.util.WeakListener;
 
 
 /** 
- * Model for the properties edit table.
+ * Model for the properties edit table. First column represents keys containing all .properties
+ * files belonging to bundle represnted by this model. Each next columns represents values
+ * for on .properties file from that bundle.
+ *
  * @author Petr Jiricka
+ * @see BundleEditPanel
  * @see javax.swing.table.AbstractTableModel
  */
 public class PropertiesTableModel extends AbstractTableModel {
@@ -44,10 +48,10 @@ public class PropertiesTableModel extends AbstractTableModel {
 
     
     /** Create a data node for a given data object.
-    * The provided children object will be used to hold all child nodes.
-    * @param obj object to work with
-    * @param ch children container for the node
-    */
+     * The provided children object will be used to hold all child nodes.
+     * @param obj object to work with
+     * @param ch children container for the node
+     */
     public PropertiesTableModel(PropertiesDataObject obj) {
         super();
         this.obj = obj;
@@ -56,116 +60,32 @@ public class PropertiesTableModel extends AbstractTableModel {
         bundleListener = new TablePropertyBundleListener();
 
         obj.getBundleStructure().addPropertyBundleListener(new WeakListenerPropertyBundle(bundleListener));
-
-        //PENDING move the column corresponding to curNode to the beginning
     }
-
     
-    /** Inner class. Listener for changes on bundle structure. */
-    private class TablePropertyBundleListener implements PropertyBundleListener {
-        public void bundleChanged(PropertyBundleEvent evt) {
-            // PENDING - should be maybe even finer
-            switch (evt.getChangeType()) {
-            // structure changed
-            case PropertyBundleEvent.CHANGE_STRUCT:
-                // Note: Nornal way would be use the next commented out rows, which should do in effect
-                // the same thing like reseting the model, but it doesn't, therefore we reset the model directly.
-                
-                //cancelEditingInTables(getDefaultCancelSelector());
-                //fireTableStructureChanged(); 
 
-                Object[] list = PropertiesTableModel.super.listenerList.getListenerList();
-                for(int i = 0; i < list.length; i++) {
-                    if(list[i] instanceof JTable) { 
-                        // Its necessary to create new instance of model otherwise the 'old' model values would remain.
-                        ((JTable)list[i]).setModel(new PropertiesTableModel(PropertiesTableModel.this.obj));
-                    }
-                }
-                break;
-            // all items changed (keyset)
-            case PropertyBundleEvent.CHANGE_ALL:
-                
-                cancelEditingInTables(getDefaultCancelSelector());
-                // reset all header values as well
-                list = PropertiesTableModel.super.listenerList.getListenerList();
-                for (int i = 0; i < list.length; i++) {
-                    if (list[i] instanceof JTable) {
-                        JTable jt = (JTable)list[i];
-
-                        for (int j=0 ; j < jt.getColumnModel().getColumnCount(); j++) {
-                            TableColumn column = jt.getColumnModel().getColumn(j);
-                            column.setHeaderValue(jt.getModel().getColumnName(column.getModelIndex()));
-                        }
-                    }
-                }
-                fireTableDataChanged();
-                
-                break;
-            // file changed
-            case PropertyBundleEvent.CHANGE_FILE:
-                final int index = obj.getBundleStructure().getEntryIndexByFileName(evt.getEntryName());
-                if (index == -1) {
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                        (new Exception("Changed file not found")).printStackTrace(); // NOI18N
-                    break;
-                }
-                cancelEditingInTables(new CancelSelector() {
-                    public boolean doCancelEditing(int row, int column) {
-                        if (!(row >= 0 && row < getRowCount() && column >= 0 && column < getColumnCount()))
-                            return false;
-                        return (column == index + 1);
-                    }
-                });
-                fireTableColumnChanged(index + 1);
-                //System.out.println(PropertiesTableModel.this.toString());
-                break;
-            // one item changed
-            case PropertyBundleEvent.CHANGE_ITEM:
-                final int index2 = obj.getBundleStructure().getEntryIndexByFileName(evt.getEntryName());
-                final int keyIndex = obj.getBundleStructure().getKeyIndexByName(evt.getItemName());
-                if (index2 == -1 || keyIndex == -1) {
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                        (new Exception("Changed file not found")).printStackTrace(); // NOI18N
-                    break;
-                }
-                cancelEditingInTables(new CancelSelector() {
-                    public boolean doCancelEditing(int row, int column) {
-                        if (!(row >= 0 && row < getRowCount() && column >= 0 && column < getColumnCount()))
-                            return false;
-                        return (column == index2 + 1 && row == keyIndex);
-                    }
-                });
-                fireTableCellUpdated(keyIndex, index2 + 1);
-                //System.out.println(PropertiesTableModel.this.toString());
-                break;
-            }
-            
-        }
-    }  // End of inner class TablePropertyBundleListener.
-
-    /** Returns the class for a model. */
+    /** Gets the class for a model. Overrides column class. */
     public Class getColumnClass(int columnIndex) {
         return StringPair.class;
     }
 
-    /** Returns the number of rows in the model */
+    /** Gets the number of rows in the model. Implements superclass abstract method. */
     public int getRowCount() {
         return obj.getBundleStructure().getKeyCount();
     }
 
-    /** Returns the number of columns in the model */
+    /** Gets the number of columns in the model. Implements superclass abstract method. */
     public int getColumnCount() {
         return obj.getBundleStructure().getEntryCount() + 1;
     }
 
-    /** Returns the value for the given row and column */
+    /** Gets the value for the given row and column. Implements superclass abstract method. */
     public Object getValueAt(int row, int column) {
         BundleStructure bs = obj.getBundleStructure();
-        switch (column) {
-        case 0:
+        
+        if(column == 0)
             // Get StringPair for key.
             return stringPairForKey(row);//bs.getNthKey(row);
-        default:
+        else {
             // Get StringPair for value.
             Element.ItemElem item;
             try {
@@ -177,7 +97,7 @@ public class PropertiesTableModel extends AbstractTableModel {
         }
     }
 
-    /* Returns a string pair for a key in an item (may be null). */
+    /** Gets string pair for a key in an item (may be null). */
     private StringPair stringPairForKey(int row) {
         BundleStructure bs = obj.getBundleStructure();
         Element.ItemElem item = bs.getItem(0, row);
@@ -193,7 +113,7 @@ public class PropertiesTableModel extends AbstractTableModel {
         return sp;
     }
 
-    /* Returns a string pair for a value in an item (may be null). */
+    /** Gets string pair for a value in an item (may be null). */
     private StringPair stringPairForValue(Element.ItemElem item) {
         if (item == null)
             // item doesnt't exist -> value is null
@@ -202,7 +122,7 @@ public class PropertiesTableModel extends AbstractTableModel {
             return new StringPair(item.getComment(), item.getValue());
     }
 
-    /** Gets name for column.
+    /** Gets name for column. Overrides superclass method.
      * @param column model index of column
      * @return name for column */
     public String getColumnName(int column) {
@@ -215,18 +135,19 @@ public class PropertiesTableModel extends AbstractTableModel {
         else
             leading = " "; // NOI18N
         
-        switch(column) {
-            case 0:
-                return leading+NbBundle.getBundle(PropertiesTableModel.class).getString("LAB_KeyColumnLabel");
-            default:
-                if(obj.getBundleStructure().getEntryCount() == 1)
-                    return leading+NbBundle.getBundle(PropertiesTableModel.class).getString("LBL_ColumnValue");
-                else
-                    return leading+Util.getLocaleLabel(obj.getBundleStructure().getNthEntry(column - 1));
+        if(column == 0)
+            return leading+NbBundle.getBundle(PropertiesTableModel.class).getString("LAB_KeyColumnLabel");
+        else {
+            if(obj.getBundleStructure().getEntryCount() == 1)
+                return leading+NbBundle.getBundle(PropertiesTableModel.class).getString("LBL_ColumnValue");
+            else {
+                PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(column - 1);
+                return entry == null ? "" : leading+Util.getLocaleLabel(entry); // NOI18N
+            }
         }
     }
 
-    /** Sets the value at rowIndex and columnIndex */
+    /** Sets the value at rowIndex and columnIndex. Overrides superclass method. */
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         // If values equals -> no change was made -> return immediatelly.
         if(aValue.equals(getValueAt(rowIndex, columnIndex)))
@@ -297,7 +218,7 @@ public class PropertiesTableModel extends AbstractTableModel {
         }
     }
 
-    /** Overrides superclass method.
+    /** Overrides superclass method. Overrides superclass method.
      * @return true for all cells */
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         return true;
@@ -346,7 +267,7 @@ public class PropertiesTableModel extends AbstractTableModel {
         return result.toString();
     }
 
-    /** Cancels editing in all listening JTables if appropriate */
+    /** Cancels editing in all listening JTables if appropriate. */
     private void cancelEditingInTables(CancelSelector can) {
         Object list[] = listenerList.getListenerList();
         for (int i = 0; i < list.length; i++) {
@@ -363,13 +284,7 @@ public class PropertiesTableModel extends AbstractTableModel {
         }
     }
 
-
-    /** Interface which finds out whether editing should be canceled if given cell is edited. */
-    private static interface CancelSelector {
-        /** Returns whether editing should be canceled for given row and column. */
-        public boolean doCancelEditing(int row, int column);
-    }
-
+    /** Gets <code>CancelSelector</code> for this table. */
     private CancelSelector getDefaultCancelSelector() {
         return new CancelSelector() {
                    /** Returns whether editing should be canceled for given row and column. */
@@ -378,8 +293,98 @@ public class PropertiesTableModel extends AbstractTableModel {
                    }
                };
     }
+    
 
+    /** Interface which finds out whether editing should be canceled if given cell is edited. */
+    private static interface CancelSelector {
+        /** Returns whether editing should be canceled for given row and column. */
+        public boolean doCancelEditing(int row, int column);
+    } // End of interface CancelSelector.
 
+    
+    /** Inner class. Listener for changes on bundle structure. */
+    private class TablePropertyBundleListener implements PropertyBundleListener {
+        public void bundleChanged(PropertyBundleEvent evt) {
+            int changeType = evt.getChangeType();
+            
+            if(changeType == PropertyBundleEvent.CHANGE_STRUCT) {
+                // Structure changed.
+                
+                // Note: Normal way would be use the next commented out rows, which should do in effect
+                // the same thing like reseting the model, but it doesn't, therefore we reset the model directly.
+                
+                //cancelEditingInTables(getDefaultCancelSelector());
+                //fireTableStructureChanged(); 
+
+                Object[] list = PropertiesTableModel.super.listenerList.getListenerList();
+                for(int i = 0; i < list.length; i++) {
+                    if(list[i] instanceof JTable) { 
+                        // Its necessary to create new instance of model otherwise the 'old' model values would remain.
+                        ((JTable)list[i]).setModel(new PropertiesTableModel(PropertiesTableModel.this.obj));
+                    }
+                }
+            } else if(changeType == PropertyBundleEvent.CHANGE_ALL) {
+                // All items changed (keyset).                
+                
+                cancelEditingInTables(getDefaultCancelSelector());
+                // reset all header values as well
+                Object[] list = PropertiesTableModel.super.listenerList.getListenerList();
+                for (int i = 0; i < list.length; i++) {
+                    if (list[i] instanceof JTable) {
+                        JTable jt = (JTable)list[i];
+
+                        for (int j=0 ; j < jt.getColumnModel().getColumnCount(); j++) {
+                            TableColumn column = jt.getColumnModel().getColumn(j);
+                            column.setHeaderValue(jt.getModel().getColumnName(column.getModelIndex()));
+                        }
+                    }
+                }
+                fireTableDataChanged();
+            } else if(changeType == PropertyBundleEvent.CHANGE_FILE) {
+                // File changed.
+                
+                final int index = obj.getBundleStructure().getEntryIndexByFileName(evt.getEntryName());
+                if (index == -1) {
+                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                        (new Exception("Changed file not found")).printStackTrace(); // NOI18N
+                    return;
+                }
+                
+                cancelEditingInTables(new CancelSelector() {
+                    public boolean doCancelEditing(int row, int column) {
+                        if (!(row >= 0 && row < getRowCount() && column >= 0 && column < getColumnCount()))
+                            return false;
+                        return (column == index + 1);
+                    }
+                });
+                
+                fireTableColumnChanged(index + 1);
+            } else if(changeType == PropertyBundleEvent.CHANGE_ITEM) {
+                // one item changed
+                final int index2 = obj.getBundleStructure().getEntryIndexByFileName(evt.getEntryName());
+                final int keyIndex = obj.getBundleStructure().getKeyIndexByName(evt.getItemName());
+                
+                if(index2 == -1 || keyIndex == -1) {
+                    if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                        (new Exception("Changed file not found")).printStackTrace(); // NOI18N
+                    
+                    return;
+                }
+                
+                cancelEditingInTables(new CancelSelector() {
+                    public boolean doCancelEditing(int row, int column) {
+                        if (!(row >= 0 && row < getRowCount() && column >= 0 && column < getColumnCount()))
+                            return false;
+                        return (column == index2 + 1 && row == keyIndex);
+                    }
+                });
+                
+                fireTableCellUpdated(keyIndex, index2 + 1);
+            }
+        }
+    }  // End of inner class TablePropertyBundleListener.
+    
+    
     /** 
      * Object for the value for one cell in a table view.
      * It is used to represent either (comment, value) pair of an item, or a key for an item.
@@ -388,11 +393,13 @@ public class PropertiesTableModel extends AbstractTableModel {
 
         /** Holds comment for this instance. */
         private String comment;
+        
         /** Key or value string depending on the <code>keyType</code>. */
         private String value;
-        /** Type of instance
-         * @return true when it is key-like or false when it is value-like instance. */
+        
+        /** Type of instance. */
         private boolean keyType;
+        
         /** Flag if comment is editable for this instance. */
         private boolean commentEditable;
 

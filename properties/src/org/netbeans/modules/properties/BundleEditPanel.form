@@ -75,8 +75,8 @@
             <Component class="javax.swing.JTextArea" name="textComment">
               <Properties>
                 <Property name="lineWrap" type="boolean" editor="sun.beans.editors.BoolEditor" value="true"/>
-                <Property name="rows" type="int" editor="sun.beans.editors.IntEditor" value="3"/>
                 <Property name="editable" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
+                <Property name="rows" type="int" editor="sun.beans.editors.IntEditor" value="3"/>
                 <Property name="enabled" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
               </Properties>
               <Constraints>
@@ -109,8 +109,8 @@
             <Component class="javax.swing.JTextArea" name="textValue">
               <Properties>
                 <Property name="lineWrap" type="boolean" editor="sun.beans.editors.BoolEditor" value="true"/>
-                <Property name="rows" type="int" editor="sun.beans.editors.IntEditor" value="3"/>
                 <Property name="editable" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
+                <Property name="rows" type="int" editor="sun.beans.editors.IntEditor" value="3"/>
                 <Property name="enabled" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
               </Properties>
               <Constraints>
@@ -167,9 +167,6 @@
         <Component class="javax.swing.JCheckBox" name="autoResizeCheck">
           <Properties>
             <Property name="selected" type="boolean" editor="sun.beans.editors.BoolEditor" value="true"/>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
-              <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" generateField="false" identifier="bundle" initFormat="org.openide.util.NbBundle.getBundle({2}.class)" key="CTL_AutoResize" replaceFormat="NbBundle.getBundle(PropertiesModule.class).getString(&quot;{1}&quot;)"/>
-            </Property>
           </Properties>
 
           <Events>

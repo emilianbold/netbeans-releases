@@ -68,7 +68,7 @@ implements EditCookie, PrintCookie, Serializable {
     /** New lines in this file was delimited by '\r\n'. */
     private static final byte NEW_LINE_RN = 2;
     
-    /** The type of new lines. */
+    /** The type of new lines. Default is <code>NEW_LINE_N</code>. */
     private byte newLineType = NEW_LINE_N;
     
     /** Visible view of underlying file entry */
@@ -239,12 +239,8 @@ implements EditCookie, PrintCookie, Serializable {
      *    or false if it refused it and the document should still be unmodified
      */
     protected boolean notifyModified () {
-        // Reparse file, but not in this AWT thread.
-        RequestProcessor.postRequest(new Runnable() {
-            public void run() {
-                myEntry.getHandler().autoParse();
-            }
-        });
+        // Reparse file.
+        myEntry.getHandler().autoParse();
         
         if (super.notifyModified()) {
             
@@ -815,8 +811,7 @@ implements EditCookie, PrintCookie, Serializable {
     } // End of nested class PropertiesEditor.
     
     
-    /** This stream is able to filter various new line delimiters and replace them by \n.
-     */
+    /** This stream is able to filter various new line delimiters and replace them by \n. */
     static class NewLineInputStream extends InputStream {
         
         /** Encapsulated input stream */
@@ -887,8 +882,7 @@ implements EditCookie, PrintCookie, Serializable {
     
     
     /** This stream is used for changing the new line delimiters.
-     * It replaces the '\n' by '\n', '\r' or "\r\n"
-     */
+     * Replaces the '\n' by '\n', '\r' or "\r\n". */
     static class NewLineOutputStream extends OutputStream {
         
         /** Underlaying stream. */
@@ -908,28 +902,27 @@ implements EditCookie, PrintCookie, Serializable {
         }
         
         
-        /** Write one character.
-         * @param b char to write.
+        /** Write one character. New line char replaces according the <code>newLineType</code> character.
+         * @param character character to write.
          */
-        public void write(int b) throws IOException {
-            if (b == '\r')
+        public void write(int character) throws IOException {
+            if(character == '\r')
+                // Do nothing.
                 return;
-            if (b == '\n') {
-                switch (newLineType) {
+            if(character == '\n') {
+                if(newLineType == NEW_LINE_R) {
                     // Replace new line by \r.
-                    case NEW_LINE_R:
-                        stream.write('\r');
-                        break;
-                    // Replace new line by \r\n.
-                    case NEW_LINE_RN:
-                        stream.write('\r');
+                    stream.write('\r');
+                } else if(newLineType == NEW_LINE_N) {
                     // Replace new line by \n.
-                    case NEW_LINE_N:
-                        stream.write('\n');
-                        break;
+                    stream.write('\n');
+                } else if(newLineType == NEW_LINE_RN) {
+                    // Replace new line by \r\n.
+                    stream.write('\r');
+                    stream.write('\n');
                 }
             } else {
-                stream.write(b);
+                stream.write(character);
             }
         }
         

@@ -15,37 +15,24 @@
 package org.netbeans.modules.properties;
 
 
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.datatransfer.*;
-import java.beans.*;
-import java.io.*;
-import java.lang.reflect.Array;
-import java.text.MessageFormat;
-import java.util.*;
-import javax.swing.table.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.TreeMap;
 
-import org.openide.*;
-import org.openide.actions.InstantiateAction;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.datatransfer.*;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
 
 
-/** General abstract structure for properties files, in its use similar to source hierarchy.
-*   Interoperates with Document, PropertiesTableModel, Nodes and other display-specific models
-*   Implementations of the model interfaces generally reference this structure.
-*   <br>This structure provides support for sorting <code>entries</code> and fast mapping of integers to <code>entries</code>.
-*
-* @author Petr Jiricka
-*/
+/** 
+ * Structure of bunlde of .properties files. Provides structure of entries (which each corresponds
+ * to one .properties file) for one <code>PropertiesDataObject</code>.
+ * <br>This structure provides support for sorting <code>entries</code> and fast mapping of integers to <code>entries</code>.
+ *
+ * @author Petr Jiricka
+ */
 public class BundleStructure {
     
     /** <code>PropertiesDataObject</code> which structure is provided. */
@@ -58,8 +45,7 @@ public class BundleStructure {
     /** List of keys. */
     private ArrayList keyList;
     
-    /** Compartor which sorts keylist. Default set is sort according keys 
-     * in ascending order. */
+    /** Compartor which sorts keylist. Default set is sort according keys in ascending order. */
     private KeyComparator comparator = new KeyComparator(0, true);
 
     /** Support for firing events when changes made on this bundle. */
@@ -73,10 +59,10 @@ public class BundleStructure {
     
     
     /** Create a data node for a given data object.
-    * The provided children object will be used to hold all child nodes.
-    * @param obj object to work with
-    * @param ch children container for the node
-    */
+     * The provided children object will be used to hold all child nodes.
+     * @param obj object to work with
+     * @param ch children container for the node
+     */
     public BundleStructure (PropertiesDataObject obj) {
         this.obj = obj;
         updateEntries();
@@ -94,31 +80,37 @@ public class BundleStructure {
     }
 
     
-    /** Retrieves n-th entry from the list, indexed from 0 */
+    /** Retrieves n-th entry from the list, indexed from 0.
+     * @return n-th ntry or null if index is out of bounds */
     public PropertiesFileEntry getNthEntry(int i) {
-        if (entries != null)
+        if (entries == null)
+            throw new InternalError(getClass().getName() + " - Entries not initialized"); // NOI18N
+
+        try {
             return entries[i];
-        else 
-            throw new InternalError(getClass().getName() +" - Entries not initialized"); // NOI18N
+        } catch(ArrayIndexOutOfBoundsException aibe) {
+            return null;
+        }
     }
 
     /** Retrieves the index of a file entry (primary or secondary) by the name of its file
-    *  @return index for entry with the given filename or -1 if not found
-    */
+     *  @return index for entry with the given filename or -1 if not found
+     */
     public int getEntryIndexByFileName(String fileName) {
-        if (entries != null) {
-            for (int i = 0; i < getEntryCount(); i++) {
-                if (entries[i].getFile().getName().equals(fileName))
-                    return i;
-            }
-            return -1;
-        } else 
-            throw new InternalError(getClass().getName() +" - Entries not initialized"); // NOI18N
+        if(entries == null)
+            throw new InternalError(getClass().getName() + " - Entries not initialized"); // NOI18N
+            
+        for (int i = 0; i < getEntryCount(); i++) {
+            if (entries[i].getFile().getName().equals(fileName))
+                return i;
+        }
+            
+        return -1;
     }
 
     /** Retrieves a file entry (primary or secondary) by the name of its file
-    *  @return entry with the given filename or null if not found
-    */
+     *  @return entry with the given filename or null if not found
+     */
     public PropertiesFileEntry getEntryByFileName(String fileName) {
         int index = getEntryIndexByFileName(fileName);
         return ((index == -1) ? null : entries[index]);
@@ -126,10 +118,10 @@ public class BundleStructure {
 
     /** Retrieves number of all entries */
     public int getEntryCount() {
-        if (entries != null)
-            return entries.length;
-        else
+        if(entries == null)
             throw new InternalError(getClass().getName() +" - Entries not initialized"); // NOI18N
+
+        return entries.length;
     }
 
     /** Retrieves all keys in bundle. */
@@ -144,27 +136,31 @@ public class BundleStructure {
         return stringArray;
     }
 
-    /** Retrieves n-th key from the list, indexed from 0 */
+    /** Retrieves n-th key from the list, indexed from 0. */
     public String getNthKey(int keyIndex) {
         if (keyList == null)
             throw new InternalError(getClass().getName() +" - KeyList not initialized"); // NOI18N
+        
         if ((keyIndex >= keyList.size()) || (keyIndex < 0))
             return null;
         
         return (String)keyList.get(keyIndex);
     }
 
-    /** Retrieves index for a key from the list, by name */
+    /** Retrieves index for a key from the list, by name. */
     public int getKeyIndexByName(String keyName) {
         return keyList.indexOf(keyName);
     }
 
     /** Retrieves keyIndex-th key in the entryIndex-th entry from the list, indexed from 0
-    * @return item for keyIndex-th key in the entryIndex-th entry 
-    *  or null if the entry does not contain the key
-    */
+     * @return item for keyIndex-th key in the entryIndex-th entry 
+     *  or null if the entry does not contain the key or entry doesn't exist
+     */
     public Element.ItemElem getItem(int entryIndex, int keyIndex) {
         PropertiesFileEntry pfe = getNthEntry(entryIndex);
+        if(pfe == null)
+            return null;
+        
         String key = getNthKey(keyIndex);
         PropertiesStructure ps = pfe.getHandler().getStructure();
         if (ps != null)
@@ -173,7 +169,7 @@ public class BundleStructure {
             return null;
     }
 
-    /** Retrieves number of all keys */
+    /** Retrieves number of all keys. */
     public int getKeyCount() {
         if (keyList != null)
             return keyList.size();
@@ -181,7 +177,7 @@ public class BundleStructure {
             throw new InternalError(getClass().getName() +" - KeyList not initialized"); // NOI18N
     }
     
-    /** Resorts the keylist according the values of entry which index is given to this method.
+    /** Sorts the keylist according the values of entry which index is given to this method.
      * @param index sorts accordinng nth-1 entry values, 0 means sort by keys,
      * if less than 0 it re-compares keylist with the same un-changed comparator.
      */
@@ -259,7 +255,7 @@ public class BundleStructure {
 
     /** Adds listener to the list that's notified each time a change
      * to the property bundle occurs.
-     * @param l the PropertyBundleListener
+     * @param l the <code>PropertyBundleListener</code>
      */
     public void addPropertyBundleListener(PropertyBundleListener l) {
         propBundleSupport.addPropertyBundleListener(l);
@@ -267,7 +263,7 @@ public class BundleStructure {
 
     /**
      * Removes listener from the list.
-     * @param l the PropertyBundleListener
+     * @param l the <code>PropertyBundleListener</code>
      */
     public void removePropertyBundleListener(PropertyBundleListener l) {
         propBundleSupport.removePropertyBundleListener(l);
@@ -301,8 +297,8 @@ public class BundleStructure {
     }
 
     /** One file in the bundle has changed, carries information about what particular items have changed.
-    * Fires changes for a bundle or a file according to the changes in the keys.
-    */
+     * Fires changes for a bundle or a file according to the changes in the keys.
+     */
     void oneFileChanged(StructHandler handler, ArrayMapList itemsChanged,
                         ArrayMapList itemsAdded, ArrayMapList itemsDeleted) {
         // PENDING - events should be finer

@@ -38,6 +38,7 @@ import org.openide.awt.UndoRedo;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.DataObject;
@@ -541,13 +542,16 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
             propDataObject.getOpenSupport().setRef(getReference());
 
             setName(propDataObject.getNodeDelegate().getDisplayName());
+            setToolTipText(messageToolTip());
 
             // Listen to saving and renaming.
             propDataObject.addPropertyChangeListener(WeakListener.propertyChange(
                 dataObjectListener = new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
-                        if (DataObject.PROP_NAME.equals(evt.getPropertyName()) || DataObject.PROP_COOKIE.equals(evt.getPropertyName())) 
+                        if (DataObject.PROP_NAME.equals(evt.getPropertyName()) || DataObject.PROP_COOKIE.equals(evt.getPropertyName())) {
                             setName(propDataObject.getNodeDelegate().getDisplayName());
+                            setToolTipText(messageToolTip());
+                        }
                     }
             }, propDataObject));
             
@@ -562,6 +566,26 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
                         CloneableEditorSupport.class.getResource("/org/openide/resources/editorMode.gif")); // NOI18N
                 }
                 editorMode.dockInto(this);
+            }
+        }
+        
+        /** Gets string for tooltip. */
+        private String messageToolTip() {
+            FileObject fo = propDataObject.getPrimaryFile();
+            
+            try {
+                return NbBundle.getMessage(PropertiesOpen.class, "LBL_EditorToolTip_Valid", new Object[] {
+                    fo.getPackageName('.'),
+                    fo.getName(),
+                    fo.getExt(),
+                    fo.getFileSystem().getDisplayName()
+                });
+            } catch(FileStateInvalidException fsie) {
+                return NbBundle.getMessage(PropertiesOpen.class, "LBL_EditorToolTip_Invalid", new Object[] {
+                    fo.getPackageName('.'),
+                    fo.getName(),
+                    fo.getExt()
+                });
             }
         }
 
@@ -602,9 +626,9 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
         }
 
         /** Overrides superclass method. Set the name of this top component. Handles saved/not saved state.
-        * Notifies the window manager.
-        * @param displayName the new display name
-        */
+         * Notifies the window manager.
+         * @param name the new name
+         */
         public void setName(String name) {
             String saveAwareName = name;
             if (propDataObject != null) {
@@ -665,32 +689,6 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
                 }
             });
         }
-
-        /** Set editable specified cell of table view.
-         * @param row Row index of cell to edit. 
-         * @param column Column index of cell to edit. 
-         */
-/*        public void editCellAt(final int row,final int column) {
-            SwingUtilities.invokeLater(
-                new Runnable() {
-                    public void run() {
-                        JTable table = ((BundleEditPanel)getComponent(0)).getTable();
-                        // Autoscroll to cell if possible and necessary.
-                        if (table.getAutoscrolls()) { 
-                            Rectangle cellRect = table.getCellRect(row, column, false);
-                            if (cellRect != null) {
-                                table.scrollRectToVisible(cellRect);
-                            }
-                        }
-                        // Update selection & edit.
-                        table.getColumnModel().getSelectionModel().setSelectionInterval(row, column);
-                        table.getSelectionModel().setSelectionInterval(row, column);
-
-                        table.editCellAt(row, column);
-                    }
-                }
-            );
-        }*/
 
         /** Inits the subcomponents. Sets layout for this top component and adds <code>BundleEditPanel</code> to it. 
          * @see BundleEditPanel */
@@ -806,8 +804,8 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
         }
         
         /** Implements <code>UndoRedo</code>. Test whether at least one of managers can Undo.
-        * @return <code>true</code> if undo is allowed
-        */
+         * @return <code>true</code> if undo is allowed
+         */
         public synchronized boolean canUndo () {
             for (Iterator it = managers.iterator(); it.hasNext(); ) {
                 if( ((UndoRedo)it.next()).canUndo() )
@@ -817,8 +815,8 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
         }
 
         /** Implements <code>UndoRedo</code>. Test whether at least one of managers can Redo.
-        * @return <code>true</code> if redo is allowed
-        */
+         * @return <code>true</code> if redo is allowed
+         */
         public synchronized boolean canRedo () {
             for (Iterator it = managers.iterator(); it.hasNext(); ) {
                 if( ((UndoRedo)it.next()).canRedo() )
@@ -828,9 +826,9 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
         }
 
         /** Implements <code>UndoRedo</code>. Undo an edit. It finds a manager which next undo edit has the highest 
-        * time stamp and makes undo on it.
-        * @exception CannotUndoException if it fails
-        */
+         * time stamp and makes undo on it.
+         * @exception CannotUndoException if it fails
+         */
         public synchronized void undo () throws CannotUndoException {
             PropertiesEditorSupport.UndoRedoStampFlagManager chosenManager = (PropertiesEditorSupport.UndoRedoStampFlagManager)getNextUndo();
 
@@ -857,9 +855,9 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
         }
 
         /** Implements <code>UndoRedo</code>. Redo a previously undone edit. It finds a manager which next undo edit has the highest 
-        * time stamp and makes undo on it.
-        * @exception CannotRedoException if it fails
-        */
+         * time stamp and makes undo on it.
+         * @exception CannotRedoException if it fails
+         */
         public synchronized void redo () throws CannotRedoException {
             PropertiesEditorSupport.UndoRedoStampFlagManager chosenManager = (PropertiesEditorSupport.UndoRedoStampFlagManager)getNextRedo();
 
@@ -886,24 +884,24 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
         }
 
         /** Implements <code>UndoRedo</code>. Empty implementation. Does nothing.
-        * @param l the listener to add
-        */
+         * @param l the listener to add
+         */
         public void addChangeListener (ChangeListener l) {
             // PENDING up to now listen on separate managers
         }
 
         /** Implements <code>UndoRedo</code>. Empty implementation. Does nothing.
-        * @param l the listener to remove
-        * @see #addChangeListener
-        */
+         * @param l the listener to remove
+         * @see #addChangeListener
+         */
         public void removeChangeListener (ChangeListener l) {
             // PENDING
         }
 
         /** Implements <code>UndoRedo</code>. Get a human-presentable name describing the
-        * undo operation.
-        * @return the name
-        */
+         * undo operation.
+         * @return the name
+         */
         public synchronized String getUndoPresentationName () {
             UndoRedo chosenManager = getNextUndo();
 
@@ -914,9 +912,9 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
         }
 
         /** Implements <code>UndoRedo</code>. Get a human-presentable name describing the
-        * redo operation.
-        * @return the name
-        */
+         * redo operation.
+         * @return the name
+         */
         public synchronized String getRedoPresentationName () {
             UndoRedo chosenManager = getNextRedo();
             if(chosenManager == null)

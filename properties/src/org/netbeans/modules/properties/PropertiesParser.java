@@ -15,7 +15,13 @@
 package org.netbeans.modules.properties;
 
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -26,6 +32,7 @@ import org.openide.text.PositionBounds;
 
 /** 
  * Parser of .properties files. It generates structure of comment-key-vaue property elements.
+ *
  * @author Petr Jiricka, Petr Hamernik
  * @see PropertiesStructure
  * @see Element.ItemElem
@@ -56,10 +63,10 @@ class PropertiesParser {
 
     
     /** Creates new input stream from the file object.
-    * Finds the properties data object, checks if the document is loaded
-    * and creates the stream either from the file object or from the document.
-    * @exception IOException if any i/o problem occured during reading
-    */
+     * Finds the properties data object, checks if the document is loaded
+     * and creates the stream either from the file object or from the document.
+     * @exception IOException if any i/o problem occured during reading
+     */
     private PropertiesReader createReader() throws IOException {
         if(editor.isDocumentLoaded()) {
             // Loading from the memory (Document)
@@ -87,19 +94,23 @@ class PropertiesParser {
         }
     }
 
-    /** Parses the file - this method starts the parser.
-    * After super.parseFile finish, the result is set to
-    * the appropriate SourceElementImpl.
-    */
-    public void parseFile() {
+    /** Parses .properties file specified by <code>pfe</code> and resets its properties
+     * structure.
+     * @return new properties structure or null if parsing failed
+     */
+    public PropertiesStructure parseFile() {
         try {
-            PropertiesStructure ps = parseFileMain(input);
-            input.close();
-            pfe.getHandler().setPropertiesStructure(ps);
-        } catch (IOException e) {
-            // parsing failed, the old copy remains valid
-            // if there is no old copy, notify user
-            // PENDING notify the user
+            PropertiesStructure propStructure = parseFileMain(input);
+            
+            return propStructure;
+        } catch(IOException e) {
+            // Parsing failed, return null.
+            return null;
+        } finally {
+            try {
+                input.close();
+            } catch(IOException ioe) {
+            }
         }
     }
 
@@ -120,7 +131,9 @@ class PropertiesParser {
         return new PropertiesStructure(createBiasBounds(0, in.position), aml);
     }
 
-    /** @return next element or null if the end of the stream occurred */
+    /**
+     * Reads next element from input stream. 
+     * @return next element or null if the end of the stream occurred */
     private Element.ItemElem readNextElem(PropertiesReader in) throws IOException {
         Element.CommentElem commE;
         Element.KeyElem keyE;
@@ -190,8 +203,8 @@ class PropertiesParser {
             }
             // now I have an ArrayList with strings representing lines and positions of the first non-whitespace character
 
-            PositionMap pm = new PositionMap(lines);
-            String line = pm.getString();
+            PositionMap positionMap = new PositionMap(lines);
+            String line = positionMap.getString();
 
             // Find start of key
             int len = line.length();
@@ -237,32 +250,33 @@ class PropertiesParser {
 
             int currentPos = in.position;
             int valuePosFile = 0;
+            
             try {
-                valuePosFile = pm.getFilePosition(valueIndex);
-            }
-            catch (ArrayIndexOutOfBoundsException e) {
+                valuePosFile = positionMap.getFilePosition(valueIndex);
+            } catch (ArrayIndexOutOfBoundsException e) {
                 valuePosFile = currentPos;
             }
+            
             keyE   = new Element.KeyElem  (createBiasBounds(keyPos, valuePosFile), key);
             valueE = new Element.ValueElem(createBiasBounds(valuePosFile, currentPos), value);
         }
+        
         return new Element.ItemElem(createBiasBounds(begPos, in.position), keyE, valueE, commE);
     }
 
-    /** Computes the real offset from the long value representing position
-    * in the parser.
-    * @return the offset
-    */
+    /** Utility method. Computes the real offset from the long value representing position in the parser.
+     * @return the offset
+     */
     private static int position(long p) {
         return (int)(p & 0xFFFFFFFFL);
     }
 
     /** Creates position bounds. For obtaining the real offsets is used
-    * previous method position()
-    * @param begin the begin in the internal position form
-    * @param end the end in the internal position form
-    * @return the bounds
-    */
+     * previous method position()
+     * @param begin the begin in the internal position form
+     * @param end the end in the internal position form
+     * @return the bounds
+     */
     private PositionBounds createBiasBounds(long begin, long end) {
         PositionRef posBegin = editor.createPositionRef(position(begin), Position.Bias.Forward);
         PositionRef posEnd = editor.createPositionRef(position(end), Position.Bias.Backward);
@@ -270,7 +284,7 @@ class PropertiesParser {
     }
 
     /** 
-     * A properties reader which allows reading from an input stream or from a string and remembers
+     * Properties reader which allows reading from an input stream or from a string and remembers
      * its position in the document.
      */
     private static class PropertiesReader {
@@ -312,8 +326,8 @@ class PropertiesParser {
 
         
         /** Read one character from the stream and increases the position.
-        * @return the character or -1 if the end of the stream has been reached
-        */
+         * @return the character or -1 if the end of the stream has been reached
+         */
         public int read() throws IOException {
             int character = peek();
             peekChar = -1;
@@ -324,9 +338,9 @@ class PropertiesParser {
         }
 
         /** Returns the next character without increasing the position. Subsequent calls
-        * to peek() and read() will return the same character.
-        * @return the character or -1 if the end of the stream has been reached
-        */
+         * to peek() and read() will return the same character.
+         * @return the character or -1 if the end of the stream has been reached
+         */
         private int peek() throws IOException {
             if(peekChar == -1)
                 peekChar = reader.read();
@@ -376,9 +390,8 @@ class PropertiesParser {
             return fl;
         }
 
-        /** Reads the next line .
-         *  If the input is empty returns null
-         */
+        /** Reads the next line. 
+         * @return <code>FlaggedLine</code> or null if the input is empty */
         public FlaggedLine readLineNoFrills() throws IOException {
             int charRead = read();
             if(charRead == -1)
@@ -437,11 +450,11 @@ class PropertiesParser {
         }
 
         /** Returns position in the file for a position in a string
-        * @param posString position in the string to find file position for
-        * @return position in the file 
-        * @exception ArrayIndexOutOfBoundsException if the requested position is outside 
-        *  the area represented by this object
-        */                  
+         * @param posString position in the string to find file position for
+         * @return position in the file 
+         * @exception ArrayIndexOutOfBoundsException if the requested position is outside 
+         * the area represented by this object
+         */                  
         public int getFilePosition(int posString) throws ArrayIndexOutOfBoundsException {
             // get the part
             int part;
@@ -479,14 +492,14 @@ class PropertiesParser {
         /** Line separator. */
         String lineSep;
         
-        /** STart position. */
+        /** Start position. */
         int startPosition;
         
         /** Value. */
         String stringValue;
 
         
-        /** Construtor. */
+        /** Constructor. */
         FlaggedLine() {
             line = new StringBuffer();
             flag = false;

@@ -1,3 +1,4 @@
+
 /*
  *                 Sun Public License Notice
  * 
@@ -15,11 +16,16 @@
 package org.netbeans.modules.properties;
 
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.OutputStream;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.ResourceBundle;
+import java.util.TreeSet;
 
 import org.openide.cookies.CompilerCookie;
 import org.openide.cookies.EditCookie;
@@ -80,7 +86,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
      * Overrides superclass method.
      * Look for a cookie in the current cookie set matching the requested class.
      *
-     * @param type the class to look for
+     * @param clazz the class to look for
      * @return an instance of that class, or <code>null</code> if this class of cookie is not supported
      */
     public Node.Cookie getCookie(Class clazz) {
@@ -97,7 +103,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
         return super.getCookie(clazz);
     }
 
-    /** Helper method. Actually lazilly creating cookie when first asked.*/
+    /** Helper method. Actually lazilly creates cookies when first asked. */
     private synchronized void initCookieSet() {
         // Necessary to set flag before add cookieSet method, cause
         // it fires property event change and some Cookie action in its
@@ -107,34 +113,37 @@ public class PropertiesFileEntry extends PresentableFileEntry {
         super.getCookieSet().add(new PropertiesEditorSupport(this));
     }
     
-    /** Creates a node delegate for this entry. */
+    /** Creates a node delegate for this entry. Implements superclass abstract method. */
     protected Node createNodeDelegate() {
         return new PropertiesLocaleNode(this);
     }
 
-    /** Constructs children for this file entry. */
+    /** Gets children for this file entry. */
     public Children getChildren() {
         return new PropKeysChildren();
     }
 
-    /** Returns a properties structure corresponding to this entry. Constructs itif necessary. */
+    /** Gets struct handler for this entry. 
+     * @return <StructHanlder</code> for this entry */
     public StructHandler getHandler() {
         if (propStruct == null)
             propStruct = new StructHandler(this);
         return propStruct;
     }
 
-    /** Deserialization */
+    /** Deserialization. */
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
     }
 
-    /** Returns editor support for properties */
+    /** Gets editor support for this entry.
+     * @return <code>PropertiesEditorSupport</code> instance for this entry */
     protected PropertiesEditorSupport getPropertiesEditor() {
         return (PropertiesEditorSupport)getCookieSet().getCookie(EditCookie.class);
     }
 
     /** Renames underlying fileobject. This implementation returns the same file.
+     * Overrides superclass method.
      *
      * @param name new base name of the bundle
      * @return file object with renamed file
@@ -150,8 +159,9 @@ public class PropertiesFileEntry extends PresentableFileEntry {
     }
 
     /** Renames underlying fileobject. This implementation returns the same file.
-     *
-     * @param name full name of the file
+     * Overrides superclass method.
+     * 
+     * @param name full name of the file represented by this entry
      * @return file object with renamed file
      */
     public FileObject renameEntry (String name) throws IOException {
@@ -176,7 +186,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
         return fo;
     }
 
-    /** Creates from template. */
+    /** Creates from template. Overrides superclass method. */
     public FileObject createFromTemplate (FileObject folder, String name) throws IOException {
         ResourceBundle bundle = NbBundle.getBundle (PropertiesFileEntry.class);
         if (! getFile ().getName ().startsWith (basicName))
@@ -265,7 +275,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
         }
     }
 
-    /** Whether the object may be deleted.
+    /** Whether the object may be deleted. Implemenst superclass abstract method.
      * @return <code>true</code> if it may (primary file can't be deleted)
      */
     public boolean isDeleteAllowed() {
@@ -273,7 +283,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
         return (!getFile ().isReadOnly ()) && (!basicName.equals(getFile().getName()));
     }
 
-    /** Whether the object may be copied.
+    /** Whether the object may be copied. Implements superclass abstract method.
      * @return <code>true</code> if it may
      */
     public boolean isCopyAllowed () {
@@ -282,21 +292,21 @@ public class PropertiesFileEntry extends PresentableFileEntry {
     // [PENDING] copy should be overridden because e.g. copy and then paste
     // to the same folder creates a new locale named "1"! (I.e. "foo_1.properties")
 
-    /** Getter for move action.
+    /** Getter for move action. Implements superclass abstract method.
      * @return true if the object can be moved
      */
     public boolean isMoveAllowed() {
         return !getFile ().isReadOnly ();
     }
 
-    /** Getter for rename action.
+    /** Getter for rename action. Implements superclass abstract method.
      * @return true if the object can be renamed
      */
     public boolean isRenameAllowed () {
         return !getFile ().isReadOnly ();
     }
 
-    /** Help context for this object.
+    /** Help context for this object. Implements superclass abstract method.
      * @return help context
      */
     public HelpCtx getHelpCtx() {
@@ -304,15 +314,12 @@ public class PropertiesFileEntry extends PresentableFileEntry {
     }
 
     
-    /** Children of a node representing s single properties file.
-     * Contains nodes representing individual properties. */
+    /** Children of a node representing single properties file.
+     * Contains nodes representing individual properties (key-value pairs with comments). */
     private class PropKeysChildren extends Children.Keys {
 
-        /** Listens to changes on the properties file entry */
-        private PropertyChangeListener pcl = null;
-
-        /** Listens to changes on the property bundle structure */
-        private PropertyBundleListener pbl = null;
+        /** Listens to changes on the property bundle structure. */
+        private PropertyBundleListener bundleListener = null;
 
         
         /** Constructor. */
@@ -321,84 +328,60 @@ public class PropertiesFileEntry extends PresentableFileEntry {
         }
 
         
-        /** Sets all keys in the correct order */
-        protected void mySetKeys() {
-            // use TreeSet because its iterator iterates in ascending order
-            TreeSet ts = new TreeSet(new KeyComparator());
-            PropertiesStructure ps = getHandler().getStructure();
-            if (ps != null) {
-                for (Iterator it = ps.nonEmptyItems();it.hasNext();) {
-                    Element.ItemElem el = (Element.ItemElem)it.next();
-                    ts.add(el.getKey());
+        /** Sets all keys in the correct order. Calls <code>setKeys</code>. Helper method. 
+         * @see org.openide.nodes.Children.Keys#setKeys(java.util.Collection) */
+        private void mySetKeys() {
+            // Use TreeSet because its iterator iterates in ascending order.
+            TreeSet keys = new TreeSet(new KeyComparator());
+            PropertiesStructure propStructure = getHandler().getStructure();
+            if(propStructure != null) {
+                for(Iterator iterator = propStructure.nonEmptyItems(); iterator.hasNext(); ) {
+                    Element.ItemElem item = (Element.ItemElem)iterator.next();
+                    keys.add(item.getKey());
                 }
             }
-            setKeys(ts);
+            
+            setKeys(keys);
         }
 
         /** Called to notify that the children has been asked for children
-         * after and that they should set its keys.
+         * after and that they should set its keys. Overrides superclass method.
          */
         protected void addNotify () {
             mySetKeys();
-            // listener
-            pcl = new PropertyChangeListener () {
-                      public void propertyChange(PropertyChangeEvent evt) {
-                          mySetKeys();
-                      }
 
-                  }; // end of inner class
-
-            PropertiesFileEntry.this.addPropertyChangeListener(WeakListener.propertyChange(pcl, PropertiesFileEntry.this));
-            PropertiesFileEntry.this.getHandler().addPropertyChangeListener(WeakListener.propertyChange(pcl, PropertiesFileEntry.this.getHandler()));
-
-            pbl = new PropertyBundleListener () {
+            bundleListener = new PropertyBundleListener () {
                 public void bundleChanged(PropertyBundleEvent evt) {
-                    switch (evt.getChangeType()) {
-                        case PropertyBundleEvent.CHANGE_STRUCT:
-                        case PropertyBundleEvent.CHANGE_ALL:
-                            mySetKeys();
-                            break;
-                        case PropertyBundleEvent.CHANGE_FILE:
-                            if (evt.getEntryName().equals(getFile().getName()))
-                                // if it's me
-                                mySetKeys();
-                            break;
-                        case PropertyBundleEvent.CHANGE_ITEM:
-                            if (evt.getEntryName().equals(getFile().getName())) {
-                                // the node should fire the change (to its property sheet, for example
-                                KeyNode kn = (KeyNode)findChild(evt.getItemName());
-                                if (kn != null) {                                  
-                                    PropertiesStructure ps = getHandler().getStructure();
-                                    if (ps != null) {
-                                        Element.ItemElem it = ps.getItem(evt.getItemName());
-                                        kn.fireChange(new PropertyChangeEvent(kn, Element.ItemElem.PROP_ITEM_VALUE, null, it.getValue()));
-                                        kn.fireChange(new PropertyChangeEvent(kn, Element.ItemElem.PROP_ITEM_COMMENT, null, it.getComment()));
-                                    } else
-                                        ;
-                                } else
-                                    ;
-                                // if it's me
-                                // in theory do nothing
-                                //PropKeysChildren.this.refreshKey(evt.getItemName());
-                            }
-                            break;
+                    int changeType = evt.getChangeType();
+                    
+                    if(changeType == PropertyBundleEvent.CHANGE_STRUCT 
+                        || changeType == PropertyBundleEvent.CHANGE_ALL) {
+                        mySetKeys();
+                    } else if(changeType == PropertyBundleEvent.CHANGE_FILE 
+                        && evt.getEntryName().equals(getFile().getName())) {
+                            
+                        // File underlying this entry changed.
+                        mySetKeys();
+                    } else if(changeType == PropertyBundleEvent.CHANGE_ITEM 
+                        && evt.getEntryName().equals(getFile().getName())) {
+                            
+                        refreshKey(evt.getItemName());
                     }
                 }
             }; // End of annonymous class.
 
-            ((PropertiesDataObject)PropertiesFileEntry.this.getDataObject()).getBundleStructure().
-            addPropertyBundleListener (new WeakListenerPropertyBundle(pbl));
+            ((PropertiesDataObject)PropertiesFileEntry.this.getDataObject()).getBundleStructure().addPropertyBundleListener(new WeakListenerPropertyBundle(bundleListener));
         }
 
         /** Called to notify that the children has lost all of its references to
          * its nodes associated to keys and that the keys could be cleared without
-         * affecting any nodes (because nobody listens to that nodes).
+         * affecting any nodes (because nobody listens to that nodes). Overrides superclass method.
          */
         protected void removeNotify () {
             setKeys(new ArrayList());
         }
 
-        /** Create nodes. */
+        /** Create nodes. Implements superclass abstract method. */
         protected Node[] createNodes (Object key) {
             String itemKey = (String)key;
             return new Node[] { new KeyNode(getHandler().getStructure(), itemKey) };

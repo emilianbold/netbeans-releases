@@ -20,10 +20,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 import org.openide.actions.*;
+import org.openide.cookies.EditCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.cookies.OpenCookie;
-import org.openide.cookies.ViewCookie;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -31,12 +30,13 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.NbBundle;
 
 
 /** 
  * Node representing a key-value-comment item in one .properties file.
+ *
  * @author Petr Jiricka
  */
 public class KeyNode extends AbstractNode {
@@ -50,20 +50,19 @@ public class KeyNode extends AbstractNode {
     /** Generated Serialized Version UID. */
     static final long serialVersionUID = -7882925922830244768L;
 
-    /** Icon base for the KeyNode node. */
-    static final String ITEMS_ICON_BASE = "org/netbeans/modules/properties/propertiesKey"; // NOI18N
 
-
-    /** Create a data node for a given key.
-    * The provided children object will be used to hold all child nodes.
-    * @param entry entry to work with
-    * @param ch children container for the node
-    */
+    /** Constructor.
+     * @param propStructure structure of .properties file to work with
+     * @param itemKey key value of item in properties structure
+     */
     public KeyNode (PropertiesStructure propStructure, String itemKey) {
         super(Children.LEAF);
+        
         this.propStructure = propStructure;
         this.itemKey = itemKey;
+        
         super.setName(UtilConvert.unicodesToChars(itemKey));
+        
         setDefaultAction(SystemAction.get(OpenAction.class));
         setActions(
             new SystemAction[] {
@@ -81,65 +80,63 @@ public class KeyNode extends AbstractNode {
                 SystemAction.get(PropertiesAction.class)
             }
         );
-        setIconBase (ITEMS_ICON_BASE);
+        
+        setIconBase("org/netbeans/modules/properties/propertiesKey"); // NOI18N
 
-        // edit as a viewcookie
+        // Sets short description.
+        setShortDescription();
+
+        // Sets cookies (Open and Edit).
         PropertiesDataObject pdo = ((PropertiesDataObject)propStructure.getParent().getEntry().getDataObject());
 
         getCookieSet().add(pdo.getOpenSupport().new PropertiesOpenAt(propStructure.getParent().getEntry(), itemKey));
         getCookieSet().add(propStructure.getParent().getEntry().getPropertiesEditor().new PropertiesEditAt(itemKey));
     }
 
-    /** Get the represented item.
-     * @return the item
-    */
+    /** Gets <code>Element.ItemElem</code> represented by this node.
+     * @return item element
+     */
     public Element.ItemElem getItem() {
-        Element.ItemElem item = propStructure.getItem(itemKey);
-        /*if (item == null)
-          // PENDING   */
-        return item;
+        return propStructure.getItem(itemKey);
     }
 
-
-    /** Indicate whether the node may be destroyed.
+    /** Indicates whether the node may be destroyed. Overrides superclass method.
      * @return true.
      */
     public boolean canDestroy () {
         return true;
     }
 
-    /* Destroyes the node
-    */
+    /** Destroyes the node. Overrides superclass method. */
     public void destroy () throws IOException {
         propStructure.deleteItem(itemKey);
         super.destroy ();
     }
 
-    /* Returns true if this node allows copying.
-    * @returns true.
-    */
+    /** Indicates if node allows copying. Overrides superclass method.
+     * @return true.
+     */
     public final boolean canCopy () {
         return true;
     }
 
-    /* Returns true if this node allows cutting.
-    * @returns true.
-    */
+    /** Indicates if node allows cutting. Overrides superclass method.
+     * @return true.
+     */
     public final boolean canCut () {
         return true;
     }
 
-    /* Returns true if this node can be renamed.
-    * @returns true.
-    */
+    /** Indicates if node can be renamed. Overrides superclass method.
+     * @returns true.
+     */
     public final boolean canRename () {
         return true;
     }
 
-    /* Rename the node.
-    * @param name new name for the object
-    * @exception IllegalArgumentException if the rename failed
-    */
+    /** Sets name of the node. Overrides superclass method.
+     * @param name new name for the object
+     */
     public void setName(String name) {
         // The new name is same -> do nothing.
         if(name.equals(UtilConvert.unicodesToChars(itemKey)))
@@ -157,45 +154,21 @@ public class KeyNode extends AbstractNode {
             TopManager.getDefault().notify(msg);
             return;
         }
+        
         updateCookieNames();
     }
 
-
-    /** Updates the cookies for editing/viewing at a given position. */
-    private void updateCookieNames() {
-        // open cookie
-        Node.Cookie opener = getCookie(OpenCookie.class);
-        if (opener instanceof PropertiesOpen.PropertiesOpenAt) {
-            ((PropertiesOpen.PropertiesOpenAt)opener).setKey(itemKey);
-        }
-
-        // view cookie
-        Node.Cookie viewer = getCookie(ViewCookie.class);
-        if (viewer instanceof PropertiesEditorSupport.PropertiesEditAt) {
-            ((PropertiesEditorSupport.PropertiesEditAt)viewer).setKey(itemKey);
-        }
-    }
-
-
-    /** Set all actions for this node.
-    * @param actions new list of actions
-    */
-    public void setActions(SystemAction[] actions) {
-        systemActions = actions;
-    }
-
-    /* Initializes sheet of properties. Allow subclasses to
-    * overwrite it.
-    * @return the default sheet to use
-    */
+    /** Initializes sheet of properties. Overrides superclass method.
+     * @return default sheet to use
+     */
     protected Sheet createSheet () {
-        Sheet s = Sheet.createDefault ();
-        Sheet.Set ss = s.get (Sheet.PROPERTIES);
+        Sheet sheet = Sheet.createDefault ();
+        Sheet.Set sheetSet = sheet.get (Sheet.PROPERTIES);
 
-        Node.Property p;
+        Node.Property property;
 
-        // Key property
-        p = new PropertySupport.ReadWrite (
+        // Key property.
+        property = new PropertySupport.ReadWrite (
                 PROP_NAME,
                 String.class,
                 NbBundle.getBundle(KeyNode.class).getString("PROP_item_key"),
@@ -213,11 +186,11 @@ public class KeyNode extends AbstractNode {
                     KeyNode.this.setName((String)val);
                 }
             };
-        p.setName(Element.ItemElem.PROP_ITEM_KEY);
-        ss.put (p);
+        property.setName(Element.ItemElem.PROP_ITEM_KEY);
+        sheetSet.put (property);
 
         // Value property
-        p = new PropertySupport.ReadWrite (
+        property = new PropertySupport.ReadWrite (
                 Element.ItemElem.PROP_ITEM_VALUE,
                 String.class,
                 NbBundle.getBundle(KeyNode.class).getString("PROP_item_value"),
@@ -235,11 +208,11 @@ public class KeyNode extends AbstractNode {
                     getItem().setValue((String)val);
                 }
             };
-        p.setName(Element.ItemElem.PROP_ITEM_VALUE);
-        ss.put (p);
+        property.setName(Element.ItemElem.PROP_ITEM_VALUE);
+        sheetSet.put (property);
 
         // Comment property
-        p = new PropertySupport.ReadWrite (
+        property = new PropertySupport.ReadWrite (
                 Element.ItemElem.PROP_ITEM_COMMENT,
                 String.class,
                 NbBundle.getBundle(KeyNode.class).getString("PROP_item_comment"),
@@ -257,28 +230,59 @@ public class KeyNode extends AbstractNode {
                     getItem().setComment((String)val);
                 }
             };
-        p.setName(Element.ItemElem.PROP_ITEM_COMMENT);
-        ss.put (p);
+        property.setName(Element.ItemElem.PROP_ITEM_COMMENT);
+        sheetSet.put (property);
 
-        return s;
+        return sheet;
     }
 
-    /** Returns all the item in addition to "normal" cookies. */
+    /** Returns item as cookie in addition to "normal" cookies. Overrides superclass method. */
     public Node.Cookie getCookie(Class clazz) {
-        if (clazz.isInstance(getItem())) return getItem();
-        if (clazz.equals(SaveCookie.class)) return propStructure.getParent().getEntry().getCookie(clazz);
+        if (clazz.isInstance(getItem())) 
+            return getItem();
+        
+        if (clazz.equals(SaveCookie.class)) 
+            return propStructure.getParent().getEntry().getCookie(clazz);
+        
         return super.getCookie(clazz);
     }
 
-    /** Support for firing property change.
-    * @param evt event describing the change
-    */
-   void fireChange(PropertyChangeEvent evt) {
-        firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-        if(evt.getPropertyName().equals(DataObject.PROP_NAME)) {
-            super.setName(itemKey);
-            return;
+    /** Sets short description. Helper method. Calls superclass <code>setShortDescription(String)</code> method. 
+     * @see java.beans.FeatureDescriptor#setShortDecription(String) */
+    private void setShortDescription() {
+        String description;
+        
+        Element.ItemElem item = getItem();
+
+        if(item != null)
+            description = UtilConvert.unicodesToChars(item.getKey() + "=" + item.getValue());
+        else {
+            description = UtilConvert.unicodesToChars(itemKey);
+        }
+        
+        setShortDescription(description);
+    }
+    
+    /** Updates the cookies for editing/viewing at a given position (position of key element representing by this node). Helper method. */
+    private void updateCookieNames() {
+        // Open cookie.
+        Node.Cookie opener = getCookie(OpenCookie.class);
+        if(opener instanceof PropertiesOpen.PropertiesOpenAt) {
+            ((PropertiesOpen.PropertiesOpenAt)opener).setKey(itemKey);
+        }
+
+        // Edit cookie.
+        Node.Cookie editor = getCookie(EditCookie.class);
+        if(editor instanceof PropertiesEditorSupport.PropertiesEditAt) {
+            ((PropertiesEditorSupport.PropertiesEditAt)editor).setKey(itemKey);
         }
     }
-
+    
+    /** Sets all actions for this node. Helper method.
+     * @param actions new list of actions
+     */
+    private void setActions(SystemAction[] actions) {
+        systemActions = actions;
+    }
+    
 }

@@ -20,6 +20,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.event.*;
@@ -36,7 +37,8 @@ import org.openide.windows.TopComponent;
 
 
 /**
- * Panel used for table view at bundle of properties files.
+ * Panel which shows bundle of .properties files encapsulated by <code>PropertiesDataObject</code> in one table view.
+ *
  * @author  Petr Jiricka
  */
 public class BundleEditPanel extends JPanel {
@@ -412,14 +414,16 @@ public class BundleEditPanel extends JPanel {
         if(key == null) return; 
         
         NotifyDescriptor.Confirmation msg = new NotifyDescriptor.Confirmation(
-                                                java.text.MessageFormat.format(
-                                                    NbBundle.getBundle(BundleEditPanel.class).getString("MSG_DeleteKeyQuestion"),
-                                                    new Object[] { key }),
-                                                NotifyDescriptor.OK_CANCEL_OPTION);
-                                                    
+            MessageFormat.format(
+                NbBundle.getBundle(BundleEditPanel.class).getString("MSG_DeleteKeyQuestion"),
+                new Object[] { key }
+            ),
+            NotifyDescriptor.OK_CANCEL_OPTION
+        );
+                
         if (TopManager.getDefault().notify(msg).equals(NotifyDescriptor.OK_OPTION)) {
             try {
-                // starts "atomic" acion for special undo redo manager of opend support
+                // Starts "atomic" acion for special undo redo manager of open support.
                 obj.getOpenSupport().atomicUndoRedoFlag = new Object();
 
                 for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {
@@ -455,12 +459,13 @@ public class BundleEditPanel extends JPanel {
                 // add key to all entries
                 for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {            
                     PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
-                    if (!entry.getHandler().getStructure().addItem(key, "", "")) {
+                    if (entry != null && !entry.getHandler().getStructure().addItem(key, "", "")) {
                         NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                                                           java.text.MessageFormat.format(
-                                                               NbBundle.getBundle(BundleEditPanel.class).getString("MSG_KeyExists"),
-                                                               new Object[] {UtilConvert.charsToUnicodes(UtilConvert.escapePropertiesSpecialChars(descr.getInputText()))}),
-                                                           NotifyDescriptor.ERROR_MESSAGE);
+                            java.text.MessageFormat.format(
+                                NbBundle.getBundle(BundleEditPanel.class).getString("MSG_KeyExists"),
+                                new Object[] {UtilConvert.charsToUnicodes(UtilConvert.escapePropertiesSpecialChars(descr.getInputText()))}
+                            ),
+                            NotifyDescriptor.ERROR_MESSAGE);
                         TopManager.getDefault().notify(msg);
                     }
                 }
