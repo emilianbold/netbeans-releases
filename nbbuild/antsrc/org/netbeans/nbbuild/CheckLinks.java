@@ -90,7 +90,7 @@ public class CheckLinks extends MatchingTask {
             try {
                 scan(this, file.getAbsolutePath(), fileurl, okurls, badurls, cleanurls, checkexternal, 1, mappers);
             } catch (IOException ioe) {
-                throw new BuildException ("Could not scan " + file, ioe, location);
+                throw new BuildException ("Could not scan " + file + ": " + ioe, ioe, location);
             }
         }
     }
@@ -174,7 +174,7 @@ public class CheckLinks extends MatchingTask {
                         if (names.add(name)) {
                             okurls.add(new URL(base, "#" + name));
                         } else if (recurse == 1) {
-                            task.log(referrer + ": duplicate anchor name: " + name, Project.MSG_WARN);
+                            task.log(normalize(referrer, mappers) + ": duplicate anchor name: " + name, Project.MSG_WARN);
                         }
                     } else {
                         // A link to some other document: href=, src=.
