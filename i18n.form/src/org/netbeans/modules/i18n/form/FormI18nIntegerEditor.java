@@ -125,12 +125,17 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
         if (dataObject == null || formI18nInteger.getKey() == null) {
             return bundle.getString("TXT_InvalidValue");
         } else {
-            ClassPath cp = ClassPath.getClassPath( dataObject.getPrimaryFile(), ClassPath.SOURCE );
+
+            String resourceName = org.netbeans.modules.i18n.Util.
+                getResourceName(formI18nInteger.getSupport().getSourceDataObject().getPrimaryFile(),
+                                dataObject.getPrimaryFile(),
+                                '/', false);// NOI18N
+
             return MessageFormat.format(
                 bundle.getString("TXT_Key"),
                 new Object[] {
                     formI18nInteger.getKey(),
-                    cp.getResourceName( dataObject.getPrimaryFile(), '/', false ), // NOI18N
+                    resourceName, // NOI18N
                 }
             );
         }            
@@ -249,10 +254,9 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
                 
                 FileObject sourceFo = sourceDataObject.getPrimaryFile();
                 if ( sourceFo != null ) {
-                    ClassPath sourcePath = ClassPath.getClassPath( sourceFo, ClassPath.SOURCE );
-                    FileObject fileObject = sourcePath.findResource( bundleName );
-               
-                
+                    FileObject fileObject = org.netbeans.modules.i18n.Util.
+                        getResource(sourceFo, bundleName);
+
                     if(fileObject != null) {
                         try {
                             DataObject dataObject = DataObject.find(fileObject);
@@ -384,12 +388,17 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
     public Node storeToXML(Document doc) {
         Element element = doc.createElement (XML_RESOURCESTRING);
 
-        FileObject fo = formI18nInteger.getSupport().getResourceHolder().getResource().getPrimaryFile();
-        ClassPath cp = ClassPath.getClassPath( fo, ClassPath.SOURCE );
-        
-        String bundleName = (formI18nInteger.getSupport().getResourceHolder().getResource() == null) ? "" : // NOI18N
-            cp.getResourceName( fo, '/', true ); // NOI18N
-            
+        String bundleName;
+        if (formI18nInteger.getSupport().getResourceHolder().getResource() == null) {
+            bundleName = "";
+        } else {
+            bundleName = org.netbeans.modules.i18n.Util.
+                getResourceName(formI18nInteger.getSupport().getSourceDataObject().getPrimaryFile(),
+                                formI18nInteger.getSupport().getResourceHolder().getResource().getPrimaryFile(),'/', true);
+            if (bundleName == null) bundleName = "";
+        }
+
+
         // Set bundle and key property.    
         element.setAttribute(ATTR_BUNDLE, bundleName);
         element.setAttribute(ATTR_KEY, (formI18nInteger.getKey() == null) ? "" : formI18nInteger.getKey()); // NOI18N

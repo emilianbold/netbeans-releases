@@ -83,21 +83,56 @@ public class Util {
   }
 
     /**
-     * Gets EXECUTION ClassPath for the given resource file accessible from the
-     * given source file.
+     * Gets classpath that contains the given resource bundel. 
+     * In addition to the bundle file, a source must be given that
+     * will access the resource in the run-time.
      */
     public static ClassPath getExecClassPath(FileObject srcFile, FileObject resFile) {
-        ClassPath cp = ClassPath.getClassPath( srcFile, ClassPath.EXECUTE );
-        String name = cp.getResourceName( resFile, '.', false );
+        // try SOURCE class-path first
+        ClassPath ecp = ClassPath.getClassPath( srcFile, ClassPath.EXECUTE );
+        if (ecp.getResourceName( resFile, '.',false) != null)
+            return ecp;
 
-        if (name == null) { // not found, try SOURCE class-path
-            ClassPath cp1 = ClassPath.getClassPath( srcFile, ClassPath.SOURCE );
-            return cp1;
-        } else {
-            return cp;
-        }
+        
+        ClassPath scp = ClassPath.getClassPath( srcFile, ClassPath.SOURCE);
+        // try to find  the resource on source class path
+        if (scp.getResourceName( resFile, '.',false) != null) 
+            return scp; 
+
+        else return null;
     }
         
-        
+    /**
+     * Tries to find the bundle either in sources or in execution
+     * classpath.
+     */
+    public static FileObject getResource(FileObject srcFile, String bundleName) {
+        // try to find it in sources
+        ClassPath scp = ClassPath.getClassPath( srcFile, ClassPath.SOURCE);
+        FileObject ret = scp.findResource(bundleName);
+        if (ret != null) return ret;
+
+        // or on the execution class-path
+        ClassPath ecp = ClassPath.getClassPath( srcFile, ClassPath.EXECUTE);
+        ret = scp.findResource(bundleName);
+        return ret;
+    }
+
+
+    /**
+     * Inverse to the previous method - finds name for the give
+     * resource bundle. It is equivalent but more effective to use
+     * this method instead of getExecClassPath(...).getResourceName(...) .
+     */
+    public static String getResourceName(FileObject srcFile, FileObject resFile, char separator, boolean bpar) {
+        // try SOURCE class-path first
+        ClassPath ecp = ClassPath.getClassPath( srcFile, ClassPath.EXECUTE );
+        String ret = ecp.getResourceName( resFile, separator, bpar);
+        if (ret != null) return ret;
+
+        ClassPath scp = ClassPath.getClassPath( srcFile, ClassPath.SOURCE );
+        ret = scp.getResourceName( resFile, separator, bpar);
+        return ret;
+    }
 
 }

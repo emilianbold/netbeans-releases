@@ -147,8 +147,7 @@ final class ResourceWizardPanel extends JPanel {
                         // but the reference file must be the
                         // corresponding source
                         DataObject dob = (DataObject)tableModel.getValueAt(row, 0);
-                        ClassPath cp = Util.getExecClassPath(dob.getPrimaryFile(), dataObject.getPrimaryFile());
-                        name = cp.getResourceName( dataObject.getPrimaryFile(), '.', false );
+                        name = Util.getResourceName(dob.getPrimaryFile(), dataObject.getPrimaryFile(), '.', false);
                     }
 
                     label.setText(name); // NOI18N
