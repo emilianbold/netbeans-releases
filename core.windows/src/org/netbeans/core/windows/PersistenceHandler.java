@@ -863,8 +863,8 @@ final class PersistenceHandler implements PersistenceObserver {
     
     // Projects>>
     public void loadProjectData() {
-        // Reset persistence manager.
-        PersistenceManager.getDefault().reset();
+        // Reset PersistenceManager
+        PersistenceManager.getDefault().resetAfterLayerSwitch();
         // Load window system.
         loadProjectWinsysData();
     }
@@ -874,6 +874,8 @@ final class PersistenceHandler implements PersistenceObserver {
         saveProjectWinsysData();
         // Remove all components from model.
         removeAll();
+        //Reset PersistenceManager
+        PersistenceManager.getDefault().resetBeforeLayerSwitch();
     }
     
     private void removeAll() {

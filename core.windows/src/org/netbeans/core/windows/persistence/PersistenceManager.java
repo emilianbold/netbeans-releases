@@ -843,12 +843,21 @@ public final class PersistenceManager implements PropertyChangeListener {
         return srcName;
     }
     
-    // Called during projects switch before loading the new project.
-    public void reset() {
+    /** Called during projects switch AFTER old project is saved and BEFORE
+     * project layer is switched. */
+    public void resetBeforeLayerSwitch() {
+        ImportManager.getDefault().reset();
+        ImportManager.getDefault().stopHandling();
+    }
+    
+    /** Called during projects switch BEFORE new project is loaded and AFTER
+     * project layer is switched. */
+    public void resetAfterLayerSwitch() {
         resetAllTCPairs();
         resetWindowManagerParser();
         copySettingsFiles();
         restoreAllTCPairs();
+        ImportManager.getDefault().startHandling();
     }
     
     /** Must be called during Project switch */
