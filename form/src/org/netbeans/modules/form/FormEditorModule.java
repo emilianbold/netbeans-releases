@@ -154,6 +154,9 @@ public class FormEditorModule implements ModuleInstall {
       InstanceDataObject.remove (formFolder, Utilities.getShortClassName (ShowGridAction.class), ShowGridAction.class.getName ());
       InstanceDataObject.remove (paletteFolder, Utilities.getShortClassName (PaletteAction.class), PaletteAction.class.getName ());
 
+      if (formFolder.getChildren ().length == 0) formFolder.delete ();
+      if (paletteFolder.getChildren ().length == 0) paletteFolder.delete ();
+
       // remove actions from action pool
       DataFolder formActions = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Form");
       removeAction (ComponentInspectorAction.class, formActions);
@@ -168,6 +171,8 @@ public class FormEditorModule implements ModuleInstall {
       removeAction (SelectLayoutAction.class, formActions);
       removeAction (ShowGridAction.class, formActions);
       removeAction (TestModeAction.class, formActions);
+
+      if (formActions.getChildren ().length == 0) formActions.delete ();
 
     } catch (Exception e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) {
@@ -513,6 +518,8 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  28   Gandalf   1.27        7/15/99  Ian Formanek    Better cleanup when 
+ *       uninstalling
  *  27   Gandalf   1.26        7/15/99  Ian Formanek    Installation of actions 
  *       into action pool, works better if actions already exist
  *  26   Gandalf   1.25        7/15/99  Ian Formanek    Items in 
