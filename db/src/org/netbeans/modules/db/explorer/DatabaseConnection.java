@@ -96,7 +96,7 @@ public class DatabaseConnection implements DBConnection {
     public static final String PROP_DRIVERNAME = "drivername"; //NOI18N
     public static final String PROP_NAME = "name"; //NOI18N
 
-    private OpenConnectionInterface openConnection;
+    private OpenConnectionInterface openConnection = null;
 
     static private final Lookup.Result openConnectionLookupResult;
     static private Collection openConnectionServices = null;
@@ -114,7 +114,6 @@ public class DatabaseConnection implements DBConnection {
     /** Default constructor */
     public DatabaseConnection() {
         propertySupport = new PropertyChangeSupport(this);
-        openConnection = new OpenConnection();
     }
     
     /** Advanced constructor
@@ -132,6 +131,24 @@ public class DatabaseConnection implements DBConnection {
         pwd = password;
         name = null;
         name = getName();
+    }
+
+     private Collection getOpenConnections() {
+         if (openConnectionServices == null) {
+             openConnectionServices = openConnectionLookupResult.allInstances();
+         }
+         return openConnectionServices;
+     }
+
+     private OpenConnectionInterface getOpenConnection() {
+         if (openConnection != null)
+             return openConnection;
+         
+         openConnection = new OpenConnection();
+         String driver = getDriver();
+         if (driver == null) {
+             return openConnection;
+         }
          
          // For Java Studio Enterprise. Create instanceof OpenConnection
          try {
@@ -146,15 +163,9 @@ public class DatabaseConnection implements DBConnection {
          } catch(Exception ex) {
              ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
          }
-    }
-
-     private Collection getOpenConnections() {
-         if (openConnectionServices == null) {
-             openConnectionServices = openConnectionLookupResult.allInstances();
-         }
-         return openConnectionServices;
+         return openConnection;
      }
-
+     
     /** Returns driver URL */
     public String getDriver() {
         return drv;
@@ -171,6 +182,7 @@ public class DatabaseConnection implements DBConnection {
         String olddrv = drv;
         drv = driver;
         propertySupport.firePropertyChange(PROP_DRIVER, olddrv, drv);
+        openConnection = null;
     }
 
     public String getDriverName() {
@@ -334,7 +346,7 @@ public class DatabaseConnection implements DBConnection {
             
 
             // For Java Studio Enterprise.
-            openConnection.enable();
+            getOpenConnection().enable();
             checkRuntime();
             
             if (drvs.length == 0) {
@@ -355,7 +367,7 @@ public class DatabaseConnection implements DBConnection {
             propertySupport.firePropertyChange("connected", null, null);
             
             // For Java Studio Enterprise.
-            openConnection.disable();
+            getOpenConnection().disable();
 
             return connection;
         } catch (SQLException e) {
@@ -370,7 +382,7 @@ public class DatabaseConnection implements DBConnection {
             propertySupport.firePropertyChange("failed", null, null);
             
             // For Java Studio Enterprise.
-            openConnection.disable();
+            getOpenConnection().disable();
 
             initSQLException(e);
             DDLException ddle = new DDLException(message);
@@ -382,7 +394,7 @@ public class DatabaseConnection implements DBConnection {
             propertySupport.firePropertyChange("failed", null, null);
 
             // For Java Studio Enterprise.
-            openConnection.disable();
+            getOpenConnection().disable();
 
             DDLException ddle = new DDLException(message);
             ddle.initCause(exc);
@@ -408,13 +420,13 @@ public class DatabaseConnection implements DBConnection {
                     propertySupport.firePropertyChange("connecting", null, null);
 
                     // For Java Studio Enterprise.
-                    openConnection.enable();
+                    getOpenConnection().enable();
 
                     Connection connection;
                     JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDriver(drv);
 
                     // For Java Studio Enterprise.
-                    openConnection.enable();
+                    getOpenConnection().enable();
                     checkRuntime();
 
                     if (drvs.length == 0) {
@@ -436,7 +448,7 @@ public class DatabaseConnection implements DBConnection {
                     propertySupport.firePropertyChange("connected", null, null);
 
                     // For Java Studio Enterprise.
-                    openConnection.disable();
+                    getOpenConnection().disable();
 
                 } catch (SQLException e) {
                     String message = MessageFormat.format(bundle.getString("EXC_CannotEstablishConnection"), new String[] {db, drv, e.getMessage()}); // NOI18N
@@ -450,7 +462,7 @@ public class DatabaseConnection implements DBConnection {
                     propertySupport.firePropertyChange("failed", null, null);
 
                     // For Java Studio Enterprise.
-                    openConnection.disable();
+                    getOpenConnection().disable();
 
                     initSQLException(e);
                     DDLException ddle = new DDLException(message);
@@ -460,7 +472,7 @@ public class DatabaseConnection implements DBConnection {
                     propertySupport.firePropertyChange("failed", null, null);
 
                     // For Java Studio Enterprise.
-                    openConnection.disable();
+                    getOpenConnection().disable();
 
                     sendException(exc);
                 }
