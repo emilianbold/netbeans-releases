@@ -134,7 +134,8 @@ modified in a specified time period within all open projects.</td>
 <tr>
 <td valign="top">Alt-Shift-O</td>
 <td valign="top">Go to Class</td>
-    <td valign="top">Goes to any specified class.</td>
+<td valign="top">Displays the source file containing the definition of the 
+selected class.</td>
 </tr>
 </table>
 
@@ -147,37 +148,26 @@ modified in a specified time period within all open projects.</td>
     <th align="left" scope="col">Action</th>
   </tr>
   <tr> 
-    <td valign="top" scope="col">Ctrl-Shift-F9</td>
-    <td valign="top" scope="col">Compile Project</td>
+    <td valign="top" scope="col">Ctrl-Numpad- -</td>
+    <td valign="top" scope="col">Collapse Fold</td>
     <td valign="top" scope="col">Compiles all of a project's uncompiled and out-of-date 
       class files, that have been changed or that have not been previously compiled.</td>
   </tr>
   <tr> 
-    <td valign="top">Ctrl-Shift-F11</td>
-    <td valign="top">Build Project</td>
+    <td valign="top">Ctrl-Numpad- +</td>
+    <td valign="top">Expand Fold</td>
     <td valign="top">Compiles all of the current project's classes and the classes 
       they are dependent on whether or not they were previously compiled.</td>
   </tr>
   <tr> 
-    <td valign="top">Ctrl-Shift-M</td>
-    <td valign="top">Set Project Main Class</td>
+    <td valign="top">Ctrl-Shift-Numpad- -</td>
+    <td valign="top">Collapse All</td>
     <td valign="top">Specifies the main class of a project.</td>
   </tr>
   <tr> 
-    <td valign="top">Ctrl-Shift-F6</td>
-    <td valign="top">Execute Project</td>
+    <td valign="top">Ctrl-Shift-Numpad- +</td>
+    <td valign="top">Expand All</td>
     <td valign="top">Runs the current project.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-Shift-F5</td>
-    <td valign="top">Debug Project</td>
-    <td valign="top">Starts the debugger on the existing project.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-Shift-N</td>
-    <td valign="top">Project Manager</td>
-    <td valign="top">Opens the Project Manager dialog box, in which you can create, 
-      delete, rename, and switch to IDE projects.</td>
   </tr>
 </table>
 
@@ -190,35 +180,25 @@ modified in a specified time period within all open projects.</td>
 <th align="left" scope="col">Action</th>
 </tr>
 <tr>
-<td valign="top">F9</td>
-<td valign="top">Compile</td>
-<td valign="top">Compiles the file. If you select a folder, the IDE
-compiles only the files that are new or have changed since the last
-compile.</td> 
-</tr>
-<tr>
-<td valign="top">Shift-F9</td> 
-<td valign="top">Compile All</td> 
-<td valign="top">Compiles all files within the selected
-folder that are new or that have changed.</td>
-</tr>
-<tr>
 <td valign="top">F11</td>
-<td valign="top">Build</td>
+<td valign="top">Build Main Project</td>
+<td valign="top">Compiles the file. If you select a folder, the IDE
+compiles all files regardless of whether they have changed since the
+last compile.</td> 
+</tr>
+<tr>
+<td valign="top">Shift-F11</td>
+<td valign="top">Clean and Build Main Project</td>
 <td valign="top">Compiles the file. If you select a folder, the IDE
 compiles all files regardless of whether they have changed since the
 last compile.</td> 
 </tr> 
 <tr>
-<td valign="top">Shift-F11</td>
-<td valign="top">Build All</td>
-<td valign="top">Compiles all files within the selected folder
-regardless of whether they have changed since the last compile.</td> 
-</tr>
-<tr>
-<td valign="top">Alt-Shift-C</td>
-<td valign="top">Stop Compile</td>
-<td valign="top">Stops compilation of the current program.</td>
+<td valign="top">F9</td>
+<td valign="top">Compile File</td>
+<td valign="top">Compiles the file. If you select a folder, the IDE
+compiles only the files that are new or have changed since the last
+compile.</td> 
 </tr>
 <tr>
 <td valign="top">F12</td>
@@ -232,44 +212,62 @@ the next build error.</td>
 <td valign="top">Scrolls the editor window to the line that contains
 the previous build error.</td>
 </tr>
-<tr>
-<td valign="top">F6</td>
-<td valign="top">Execute</td>
-<td valign="top">Run the current program.</td>
-</tr>
 </table>
 
-<a name="debug"></a>
-<h3>Debug Menu</h3>
+<a name="run"></a>
+<h3>Run Menu</h3>
 <table border="1" summary="This table displays keyboard shortcuts for Debug menu commands.">
   <tr> 
     <th align="left" scope="col">Keys</th>
     <th align="left" scope="col">Command</th>
     <th align="left" scope="col">Action</th>
   </tr>
-  <tr> 
-    <td valign="top">Alt-F5</td>
-    <td valign="top">Start Session&nbsp;<img src="../images/arrow.gif" width="5" height="11" alt="and choose"> 
-      Run in Debugger</td>
-    <td valign="top">Starts debugging the current program until a breakpoint or 
-      the end of the program is reached.</td>
+  <tr>
+     <td valign="top">F6</td>
+     <td valign="top">Run Main Project</td>
+     <td valign="top">Runs the main project.</td>
+  </tr>
+  <tr>
+     <td valign="top">F5</td>
+     <td valign="top">Debug Main Project</td>
+     <td valign="top">Debugs the main project.</td>
   </tr>
   <tr> 
-    <td valign="top">Shift-F5</td>
-    <td valign="top">Finish</td>
-    <td valign="top">Stops the current debugging session..</td>
+    <td valign="top">Alt-F6</td>
+    <td valign="top">Test Project</td>
+    <td valign="top">Starts JUnit test for project.</td>
   </tr>
   <tr> 
-    <td valign="top">Ctrl-F5</td>
+  <td valign="top">Shift-F6</td>
+    <td valign="top">Run File</td>
+    <td valign="top">Starts JUnit test for project.</td>
+  </tr>
+  <tr> 
+  <td valign="top">Ctrl-Shift-F5</td>
+    <td valign="top">Debug File</td>
+    <td valign="top">Starts debugging session for current file.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Ctrl-F6</td>
+    <td valign="top">Test File</td>
+    <td valign="top">Starts JUnit test for current file.</td>
+  </tr>
+  <tr> 
+  <td valign="top">Ctrl-Shift-F6</td>
+    <td valign="top">Debug Test for File</td>
+    <td valign="top">Starts debugging test for file in JUnit.</td>
+  </tr>
+  <tr> 
+  <td valign="top">Shift-F5</td>
+    <td valign="top">Finish Debugger Session</td>
+    <td valign="top">Ends the dugging session.</td>
+  </tr>
+  <tr> 
+  <td valign="top">Ctrl-F5</td>
     <td valign="top">Continue</td>
-    <td valign="top">Resume debugging until the next breakpoint or the end of 
+    <td valign="top">Resumes debugging until the next breakpoint or the end of 
       the program is reached.</td>
-  </tr>
-  <tr> 
-    <td valign="top">F4</td>
-    <td valign="top">Run to Cursor</td>
-    <td valign="top">Runs the current project to the cursor's location in the 
-      file and stop program execution. </td>
+  </tr> 
   <tr> 
     <td valign="top">F8</td>
     <td valign="top">Step Over</td>
@@ -289,6 +287,12 @@ the previous build error.</td>
       call, executes the methods and returns control to the caller.</td>
   </tr>
   <tr> 
+    <td valign="top">F4</td>
+    <td valign="top">Run to Cursor</td>
+    <td valign="top">Runs the current project to the cursor's location in the 
+	    file and stop program execution. </td>
+  </tr>
+  <tr> 
     <td valign="top">Ctrl-Alt-Up</td>
     <td valign="top">Make Callee Current</td>
     <td valign="top">Makes the method being called the current call. Only available 
@@ -299,16 +303,16 @@ the previous build error.</td>
     <td valign="top">Make Caller Current</td>
     <td valign="top">Makes the calling method the current call. Only available 
       when a call is selected in the Call Stack window.</td>
-  </tr>
+  </tr> 
   <tr> 
-    <td valign="top">Shift-F8</td>
+    <td valign="top">Ctrl-F8</td>
     <td valign="top">Toggle Breakpoint</td>
     <td valign="top">Adds a line breakpoint or removes the breakpoint at the cursor 
       location in the program.</td>
   </tr>
   <tr> 
     <td valign="top">Ctrl-Shift-F8</td>
-    <td valign="top">Add Breakpoint</td>
+    <td valign="top">New Breakpoint</td>
     <td valign="top">Sets a new breakpoint at the specified line, exception, or 
       method.</td>
   </tr>
@@ -328,21 +332,15 @@ the previous build error.</td>
     <th align="left" scope="col">Action</th>
   </tr>
   <tr> 
-    <td valign="top">Alt-Shift-O</td>
-    <td valign="top">Go To Class</td>
-    <td valign="top">Displays the source file containing the definition of the 
-      selected class in the filesystem.</td>
-  </tr>
-  <tr> 
     <td valign="top">Ctrl-Shift-J</td>
     <td valign="top">Insert Internationalized String</td>
     <td valign="top">Enables you to add an internationalization string as you 
       create the source.</td>
   </tr>
   <tr>
-    <td valign="top">Ctrl-I</td>
-    <td valign="top">Override Methods</td>
-    <td valign="top">Lets you override any inherited methods for a class.</td>
+    <td valign="top">Shift-F1</td>
+    <td valign="top">Javadoc Index Search</td>
+    <td valign="top">Lets you search the Javadoc index.</td>
   </tr>
 </table>
 
@@ -357,22 +355,22 @@ the previous build error.</td>
   <tr> 
     <td valign="top">Ctrl-0</td>
     <td valign="top">Source Editor</td>
-    <td valign="top">Switches to the fronted document tab in the Source Editor.</td>
+    <td valign="top">Switches to the Source Editor.</td>
   </tr>
   <tr> 
-    <td valign="top">Ctrl-1</td>
-    <td valign="top">Properties</td>
-    <td valign="top">Opens the Properties window.</td>
+    <td valign="top">Ctrl-1/Ctrl-Shift-1</td>
+    <td valign="top">Projects</td>
+    <td valign="top">Opens the Projects window.</td>
   </tr>
   <tr> 
-    <td valign="top">Ctrl-2</td>
-    <td valign="top">Filesystems</td>
-    <td valign="top">Opens the Filesystems window.</td>
+  <td valign="top">Ctrl-2/Ctrl-Shift-2</td>
+    <td valign="top">Files</td>
+    <td valign="top">Opens the Files window.</td>
   </tr>
   <tr> 
-    <td valign="top">Ctrl-3</td>
-    <td valign="top">Project</td>
-    <td valign="top">Opens the Project window.</td>
+  <td valign="top">Ctrl-3/Ctrl-Shift-3</td>
+    <td valign="top">Favorites</td>
+    <td valign="top">Opens the Favorites window.</td>
   </tr>
   <tr> 
     <td valign="top">Ctrl-4</td>
@@ -386,8 +384,8 @@ the previous build error.</td>
   </tr>
   <tr> 
     <td valign="top">Ctrl-6</td>
-    <td valign="top">Execution</td>
-    <td valign="top">Opens the Execution window.</td>
+    <td valign="top">To Do</td>
+    <td valign="top">Opens the To Do window.</td>
   </tr>
   <tr> 
     <td valign="top">Ctrl-7</td>
@@ -395,9 +393,9 @@ the previous build error.</td>
     <td valign="top">Opens the HTTP Monitor.</td>
   </tr>
   <tr> 
-    <td valign="top">Ctrl-8</td>
-    <td valign="top">To Do </td>
-    <td valign="top">Opens the To Do window.</td>
+    <td valign="top">Ctrl-8/Ctrl-Shift-8</td>
+    <td valign="top">Versioning</td>
+    <td valign="top">Opens the Versioning window.</td>
   </tr>
   <tr> 
     <td valign="top">Ctrl-9</td>
@@ -410,80 +408,78 @@ the previous build error.</td>
     <td valign="top">Debugging&nbsp;<img src="../images/arrow.gif" width="5" height="11" alt="and choose"> 
       Local Variables </td>
     <td valign="top">Opens the Local Variables debugger window.</td>
+  </tr>
   <tr> 
     <td valign="top">Alt-Shift-2</td>
     <td valign="top">Debugging&nbsp;<img src="../images/arrow.gif" width="5" height="11" alt="and choose"> 
       Watches</td>
     <td valign="top">Opens the Watches debugger window.</td>
+  </tr>
   <tr> 
     <td valign="top">Alt-Shift-3</td>
     <td valign="top">Debugging&nbsp;<img src="../images/arrow.gif" width="5" height="11" alt="and choose"> 
       Call Stack </td>
     <td valign="top">Opens the Call Stack debugger window.</td>
+  </tr>
   <tr> 
     <td valign="top">Alt-Shift-4</td>
     <td valign="top">Debugging&nbsp;<img src="../images/arrow.gif" width="5" height="11" alt="and choose"> 
       Classes</td>
     <td valign="top">Opens the Classes debugger window.</td>
+  </tr>
   <tr> 
     <td valign="top">Alt-Shift-5</td>
     <td valign="top">Debugging&nbsp;<img src="../images/arrow.gif" width="5" height="11" alt="and choose"> 
       Breakpoints</td>
     <td valign="top">Opens the Breakpoints debugger window.</td>
+  </tr>
   <tr> 
     <td valign="top">Alt-Shift-6</td>
     <td valign="top">Debugging&nbsp;<img src="../images/arrow.gif" width="5" height="11" alt="and choose"> 
       Sessions</td>
     <td valign="top">Opens the Sessions debugger window.</td>
+  </tr>
   <tr> 
     <td valign="top">Alt-Shift-7</td>
     <td valign="top">Debugging&nbsp;<img src="../images/arrow.gif" width="5" height="11" alt="and choose"> 
       Threads</td>
     <td valign="top">Opens the Threads debugger window.</td>
+  </tr>
   <tr> 
     <td valign="top">Alt-Shift-8</td>
     <td valign="top">Debugging&nbsp;<img src="../images/arrow.gif" width="5" height="11" alt="and choose"> 
-      All In One</td>
-    <td valign="top">Opens the All In One debugger window.</td>
+      Sources</td>
+    <td valign="top">Opens the Sources window.</td>
+  </tr>
   <tr> 
-    <td valign="top">Ctrl-Shift-2</td>
-    <td valign="top">Select in Filesystems</td>
-    <td valign="top">Selects the fronted Source Editor document in the Filesystems 
-      window.</td>
-  <tr> 
-    <td valign="top">Ctrl-Shift-3</td>
-    <td valign="top">Select in Project</td>
-    <td valign="top">Selects the fronted Source Editor document in the Project 
-      window.</td>
-  <tr> 
-    <td valign="top">Ctrl-Shift-8</td>
-    <td valign="top">Show Versions</td>
-    <td valign="top">Opens the file in the Versions window and displays the file's 
-      versioning history. This command is only available for files in VCS filesystems.</td>
-  <tr> 
-    <td valign="top">Ctrl-`</td>
+    <td valign="top">Ctrl-Tab (Ctrl-')</td>
     <td valign="top">Switch to Recent Window</td>
     <td valign="top">Toggles through the open windows in the order that they were 
       last used. The dialog box displays all open windows and each of the open 
       documents in the Source Editor.</td>
+  </tr>
   <tr> 
     <td valign="top">Shift-Escape</td>
     <td valign="top">Maximize</td>
     <td valign="top">Maximizes the Source Editor or the present window.</td>
+  </tr>
   <tr> 
     <td valign="top">Ctrl-F4</td>
     <td valign="top">Close</td>
     <td valign="top">Closes the current tab in the current window. If the window 
       has no tabs, the whole window is closed.</td>
+  </tr>
   <tr> 
     <td valign="top">Ctrl-Shift-F4</td>
     <td valign="top">Close All Documents</td>
     <td valign="top">Closes all open documents in the Source Editor.</td>
-  <tr> 
+ </tr>
+ <tr> 
     <td valign="top">Shift-F4</td>
     <td valign="top">Documents</td>
     <td valign="top">Opens the Documents dialog box, in which you can save and 
       close groups of open documents.</td>
+</tr>
   <tr> 
     <td valign="top">Alt-right</td>
     <td valign="top">Next Tab</td>
