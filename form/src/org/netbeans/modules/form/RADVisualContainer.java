@@ -11,21 +11,6 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-c/*
- * RADVisualContainer.java -- synopsis.
- *
- * Copyright (C) 1997, 1998 NetBeans, Inc.
- *
- * Date
- * Revision
- *
- * This file is part of $Project: Corona$.
- *
- * This software is the exclusive property of NetBeans, Inc. ("SOFTWARE").
- * Any distribution, public posting, duplication, or dissemination of this
- * SOFTWARE, either by print, electronically, or any other form, is strictly
- * prohibited and will be prosecuted to the full extent of the law.
- */
 package com.netbeans.developer.modules.loaders.form;
 
 import org.openide.nodes.Node;
@@ -196,6 +181,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
 /*
  * Log
+ *  19   Gandalf   1.18        7/5/99   Ian Formanek    Fixed last change
  *  18   Gandalf   1.17        7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
  *        getComponentClass->getBeanClass
  *  17   Gandalf   1.16        7/5/99   Ian Formanek    Added access to layout 
