@@ -94,14 +94,21 @@ public interface JspParserAPI {
     
     /** Returns the information necessary for opening a JSP page in the editor.
      * 
-     * @param wmRoot root of the web module which gives context to this page,
-     *   may be null if the page is not within a web module
      * @param jspFile the page to analyze
-     * @param proj project in whose context to compile
-     * @return open information
+     * @param wm web module in whose context to compile
+     * @return open information, using the file on the disk
      */    
     public JspOpenInfo getJspOpenInfo(FileObject jspFile, WebModule wm);
 
+    /** Returns the information necessary for opening a JSP page in the editor.
+     * 
+     * @param jspFile the page to analyze
+     * @param wm web module in whose context to compile
+     * @param useEditor whether to use data from the existing open JSP document, or from the file on the disk
+     * @return open information, using either the editor, or the file on the disk
+     */    
+    public JspOpenInfo getJspOpenInfo(FileObject jspFile, WebModule wm, boolean useEditor);
+    
     /** Analyzes JSP and returns the parsed data about the page.
      * 
      * @param wmRoot root of the web module which gives context to this page,

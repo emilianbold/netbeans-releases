@@ -69,13 +69,17 @@ public class JspParserImpl implements JspParserAPI {
     }
     
     public synchronized JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, WebModule wm) {
+        return getJspOpenInfo(jspFile, wm, false);
+    }
+    
+    public synchronized JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, WebModule wm, boolean useEditor) {
         FileObject wmRoot = wm.getDocumentBase();
         if (wmRoot == null) {
             // PENDING - we could do a better job here in making up a fallback
             return new JspParserAPI.JspOpenInfo(false, "8859_1"); // NOI18N
         }
         WebAppParseSupport ps = getParseSupport(wm);
-        return ps.getJspOpenInfo(jspFile);
+        return ps.getJspOpenInfo(jspFile, useEditor);
     }
 
     public synchronized JspParserAPI.ParseResult analyzePage(FileObject jspFile, WebModule wm, int errorReportingMode) {
