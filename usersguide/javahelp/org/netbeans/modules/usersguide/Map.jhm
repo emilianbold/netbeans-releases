@@ -239,8 +239,13 @@
    <mapID target="org.openide.filesystems.FileSystemCapability.Bean" url="filesystems/filesystems_propsheet_capabilities.html" />   
    
    <mapID target="org.netbeans.core.filesystems.MIMEResolverImpl" url="pending.html" /> 
+   
    <mapID target="org.netbeans.core.filesystems.MIMEResolverImpl.FileTypeNode" url="pending.html" />         
-
+   <!--probably a bad ID-->
+   
+   <mapID target="org.netbeans.core.filesystems.MIMEResolverImpl$FileTypeNode" url="pending.html" /> 
+   <!--ID for File Types; TODO: future - get rid of help button for this prop sheet?-->
+   
    <mapID target="org.netbeans.modules.usersguide.UGModule$GlobalJarFileSystem" url="filesystems/filesystems_node-JAR.html" />
    <mapID target="org.netbeans.modules.usersguide.UGModule$GlobalLocalFileSystem" url="filesystems/filesystems_node-dir.html" />
    
@@ -726,6 +731,9 @@
 
 <mapID target="org.netbeans.core.windows.MainWindow" url="pending.html" />
 
+<mapID target="org.netbeans.core.windows.view.ui.DocumentsDlg" url="pending.html" />
+<!--help for Documents window; pending deletion of Help button-->
+
 <mapID target="org.netbeans.modules.vcscore.annotation.AnnotPatternCustomEditor" url="vcs-nb/vcs_annotate.html" />
 
 <mapID target="i18n.pe.i18nString" url="internationalize/i18nwizard.html" />
@@ -869,6 +877,7 @@
   
   <mapID target="org.openide.loaders.XMLDataObject" url="objects/objects.html" />
   <mapID target="org.openide.nodes.BeanNode" url="pending.html" />
+  <!--TODO provide reasonable mapping for BeanNode-->
   <mapID target="org.openide.src.nodes.ElementNode" url="pending.html" />
   <mapID target="org.openide.src.nodes.SourceOptions" url="objects/objects_elements.html" />
   <mapID target="org.openide.text.EditorSupport$Editor" url="pending.html" />
