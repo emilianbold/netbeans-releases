@@ -450,14 +450,19 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                     visualWorkspace.activate();
             }
 
+            // open FormDesigner
             FormDesigner designer = formModel.getFormDesigner();
             designer.initialize();
             designer.open();
-            designer.requestFocus();
 
+            // open ComponentInspector
             ComponentInspector.getInstance().open();
             ComponentInspector.getInstance().focusForm(this, true);
+            
+            // open ComponentPalette
             PaletteTopComponent.getInstance().open();
+            
+            designer.requestFocus();
         }
         // if this is not "editing" workspace, attach a listener on
         // workspace switching and wait for the editing one

@@ -1100,7 +1100,7 @@ public class FormDesigner extends TopComponent
         public void showCurrentSizeInStatus() {
             Dimension size = fdPanel.getPreferredSize();
             int padding = 2 * fdPanel.getBorderThickness();
-            setStatusText("FMT_MSG_RESIZING_FORMDESIGENR", // NOI18N
+            setStatusText("FMT_MSG_RESIZING_FORMDESIGNER", // NOI18N
                             new Object[] { new Integer(size.width - padding).toString(), 
                                            new Integer(size.height - padding).toString() } );            
         }
@@ -1142,7 +1142,7 @@ public class FormDesigner extends TopComponent
                 if (component instanceof RADVisualFormContainer)
                     ((RADVisualFormContainer) component).setFormSize(new Dimension(w, h));
             }
-            setStatusText("FMT_MSG_RESIZING_FORMDESIGENR", // NOI18N
+            setStatusText("FMT_MSG_RESIZING_FORMDESIGNER", // NOI18N
                             new Object[] { new Integer(w).toString(), new Integer(h).toString() } );
         }
     }
