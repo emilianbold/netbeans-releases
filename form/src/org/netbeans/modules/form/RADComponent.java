@@ -555,8 +555,11 @@ public class RADComponent {
                         if (!(val instanceof HandlerSetChange)) {
                             if (val instanceof String) {
                                 HandlerSetChange change = new HandlerSetChange();
-                                change.getRenamedNewNames().add((String)val);
-                                change.getRenamedOldNames().add((String) getValue());
+                                if (event.getHandlers().size() > 0) {
+                                    change.getRenamedNewNames().add((String)val);
+                                    change.getRenamedOldNames().add((String) getValue());
+                                }
+                                else change.getAdded().add((String)val);
                                 val = change;
                             }
                             else {
