@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -15,30 +15,28 @@ package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.InputStream;
 import java.util.*;
 import java.text.MessageFormat;
 
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.*;
-import javax.swing.text.DefaultCaret;
-import java.io.InputStream;
-import javax.swing.event.TableModelEvent;
 
-import org.openide.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
-import org.netbeans.lib.ddl.impl.DriverSpecification;
-import org.netbeans.lib.ddl.impl.Specification;
-import org.netbeans.lib.ddl.impl.CreateTable;
-import org.netbeans.lib.ddl.util.CommandBuffer;
 import org.netbeans.lib.ddl.impl.CreateIndex;
+import org.netbeans.lib.ddl.impl.CreateTable;
+import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.lib.ddl.util.CommandBuffer;
 import org.netbeans.lib.ddl.util.PListReader;
-import org.netbeans.modules.db.explorer.*;
-import org.netbeans.modules.db.util.*;
+
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.util.TextFieldValidator;
+import org.netbeans.modules.db.util.ValidableTextField;
 
 public class CreateTableDialog {
     boolean result = false;
@@ -84,7 +82,7 @@ public class CreateTableDialog {
             pane.setLayout(layout);
             pane.setMinimumSize(new Dimension(200,100));
             pane.setPreferredSize(new Dimension(502,200));
-     
+
             // Table name field
 
             label = new JLabel(bundle.getString("CreateTableName")); // NOI18N
@@ -187,6 +185,7 @@ public class CreateTableDialog {
             table.getColumn("type").setCellEditor(new DefaultCellEditor(combo)); // NOI18N
             table.getColumn("size").setCellEditor(new DataCellEditor(new ValidableTextField(new TextFieldValidator.integer()))); // NOI18N
             table.getColumn("scale").setCellEditor(new DataCellEditor(new ValidableTextField(new TextFieldValidator.integer()))); // NOI18N
+            table.setRowHeight(combo.getPreferredSize().height);
 
             // Button pane
 
@@ -245,11 +244,10 @@ public class CreateTableDialog {
                               String tablename = getTableName();
                               DataModel dataModel = (DataModel)table.getModel();
                               Vector data = dataModel.getData();
-                              Vector icols = new Vector();
                               CreateTable cmd = spec.createCommandCreateTable(tablename);
-                              
+
                               cmd.setObjectOwner((String)ownercombo.getSelectedItem());
-                              
+
                               /* this variables and operation provide support for
                                * creating indexes for primary or unique keys,
                                * most of database are creating indexes by myself,
@@ -261,10 +259,10 @@ public class CreateTableDialog {
                                   ColumnItem enuele = (ColumnItem)enu.nextElement();
                                   String name = enuele.getName();
                                   if (enuele.isPrimaryKey()&&!dataModel.isTablePrimaryKey())
-                                      cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createPrimaryKeyColumn(name);
+                                      cmdcol = cmd.createPrimaryKeyColumn(name);
                                   else if (enuele.isUnique()&&!enuele.isPrimaryKey())
-                                      cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createUniqueColumn(name);
-                                  else cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createColumn(name);
+                                      cmdcol = cmd.createUniqueColumn(name);
+                                  else cmdcol = cmd.createColumn(name);
                                   cmdcol.setColumnType(Specification.getType(enuele.getType().getType()));
                                   cmdcol.setColumnSize(enuele.getSize());
                                   cmdcol.setDecimalSize(enuele.getScale());
@@ -285,7 +283,7 @@ public class CreateTableDialog {
                                   }
                               }
                               if(dataModel.isTablePrimaryKey()) {
-                                  cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createPrimaryKeyConstraint(tablename);
+                                  cmdcol = cmd.createPrimaryKeyConstraint(tablename);
                                   cmdcol.setTableConstraintColumns(dataModel.getTablePrimaryKeys());
                                   cmdcol.setColumnType(0);
                                   cmdcol.setColumnSize(0);
@@ -312,7 +310,7 @@ public class CreateTableDialog {
 
                           } catch (Exception e) {
                               e.printStackTrace();
-                              
+
                           }
                       } else {
                           String msg = bundle.getString("EXC_InsufficientCreateTableInfo");
@@ -365,15 +363,26 @@ public class CreateTableDialog {
         public DataTable(TableModel model) {
             super(model);
             TableColumnModel cmodel = getColumnModel();
-            int i, ccount = model.getColumnCount();
-            for (i=0;i<ccount;i++) {
+            int i;
+            int ccount = model.getColumnCount();
+            int columnWidth;
+            String columnName;
+            for (i = 0; i < ccount; i++) {
                 TableColumn col = cmodel.getColumn(i);
                 Map cmap = ColumnItem.getColumnProperty(i);
-                col.setIdentifier((String)cmap.get("name")); // NOI18N
+                col.setIdentifier(cmap.get("name")); //NOI18N
+                columnName = bundle.getString("CreateTable_" + i); //NOI18N
+                columnWidth = (new Double(getFontMetrics(getFont()).getStringBounds(columnName, getGraphics()).getWidth())).intValue() + 20;
                 if (cmap.containsKey("width")) // NOI18N
-                    col.setPreferredWidth(((Integer)cmap.get("width")).intValue()); // NOI18N
+                    if (((Integer)cmap.get("width")).intValue() < columnWidth)
+                        col.setPreferredWidth(columnWidth);
+                    else
+                        col.setPreferredWidth(((Integer)cmap.get("width")).intValue()); // NOI18N
                 if (cmap.containsKey("minwidth")) // NOI18N
-                    col.setMinWidth(((Integer)cmap.get("minwidth")).intValue()); // NOI18N
+                    if (((Integer)cmap.get("minwidth")).intValue() < columnWidth)
+                        col.setMinWidth(columnWidth);
+                    else
+                        col.setMinWidth(((Integer)cmap.get("minwidth")).intValue()); // NOI18N
                 //				if (cmap.containsKey("alignment")) {}
                 //				if (cmap.containsKey("tip")) ((JComponent)col.getCellRenderer()).setToolTipText((String)cmap.get("tip"));
             }
@@ -401,7 +410,7 @@ public class CreateTableDialog {
                 public void focusGained(FocusEvent e) {
                     SwingUtilities.invokeLater(new FocusInvoker(x));
                 }
-                
+
                 public void focusLost(FocusEvent e) {
                     table.setValueAt(x.getText(), table.getEditingRow(), table.getEditingColumn());
                 }
