@@ -152,11 +152,14 @@ public class TomcatWebModule implements TomcatWebModuleCookie {
                         if (command == CommandType.START) isRunning = true; else isRunning = false;
                         node.setDisplayName(constructDisplayName());
                 } else if (command == CommandType.UNDEPLOY) {
-                        Children children = node.getParentNode().getChildren();
-                        if (children instanceof TomcatWebModuleChildren){
-                            ((TomcatWebModuleChildren)children).updateKeys();
-                            StatusDisplayer.getDefault().setStatusText(deployStatus.getMessage());
-                        }                    
+                        Node parent = node.getParentNode();
+                        if (parent != null) {
+                            Children children = parent.getChildren();
+                            if (children instanceof TomcatWebModuleChildren){
+                                ((TomcatWebModuleChildren)children).updateKeys();
+                                StatusDisplayer.getDefault().setStatusText(deployStatus.getMessage());
+                            }
+                        }
                 }
             } else if (deployStatus.getState() == StateType.FAILED) {
                 NotifyDescriptor notDesc = new NotifyDescriptor.Message(
