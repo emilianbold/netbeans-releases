@@ -496,6 +496,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>        
   
   <target  name="lookup-src" description="Creates zip file with lookup sources.">
+    <mkdir dir="standalone"/>
     <zip compress="true" zipfile="standalone/lookup-src.zip">
         <fileset dir="src">
             <include name="org/openide/ErrorManager.java"/>
