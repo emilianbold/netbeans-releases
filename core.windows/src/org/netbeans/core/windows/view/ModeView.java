@@ -178,5 +178,10 @@ public class ModeView extends ViewElement {
             + (selected == null ? null : WindowManagerImpl.getInstance().getTopComponentDisplayName(selected)) + "]"; // NOI18N
     }
 
+    public void updateAWTHierarchy() {
+        // nothing needs to be done here?
+    }    
+    
+    
 }
 

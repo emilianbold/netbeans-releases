@@ -557,17 +557,21 @@ final class ViewHierarchy {
     }
     
     private void setMaximizedViewIntoDesktop(ViewElement elem) {
+        elem.updateAWTHierarchy();
         desktop.setMaximizedView(elem);
     }
     
     
     private void setSplitRootIntoDesktop(ViewElement root) {
-        desktop.setSplitRoot(root);
-        EditorView editView = findEditorAreaElement();
-        if (editView != null) {
-            // hack to trigger readding the editor view compnent into editor view..
-            editView.assureComponentInEditorArea();
+        if (root != null) {
+            root.updateAWTHierarchy();
         }
+        desktop.setSplitRoot(root);
+//        EditorView editView = findEditorAreaElement();
+//        if (editView != null) {
+//            // hack to trigger readding the editor view compnent into editor view..
+//            editView.assureComponentInEditorArea();
+//        }
     }
 
     // PENDING Revise, updating desktop and editor area, bounds... separate this method.

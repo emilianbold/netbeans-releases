@@ -96,9 +96,17 @@ public class SplitView extends ViewElement {
 
     
     public Component getComponent() {
+//        assureComponentInSplit(first.getComponent(), true);
+//        assureComponentInSplit(second.getComponent(), false);
+        return getSplitPane();
+    }
+    
+    
+    public void updateAWTHierarchy() {
+        first.updateAWTHierarchy();
+        second.updateAWTHierarchy();
         assureComponentInSplit(first.getComponent(), true);
         assureComponentInSplit(second.getComponent(), false);
-        return getSplitPane();
     }
     
     private void assureComponentInSplit(Component comp, boolean left){

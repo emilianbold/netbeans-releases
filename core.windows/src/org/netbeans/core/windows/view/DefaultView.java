@@ -425,6 +425,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 if(DEBUG) {
                     debugLog("Top Component Auto Hide changed"); // NOI18N
                 }
+                hierarchy.setMaximizedModeView(hierarchy.getModeViewForAccessor(wsa.getMaximizedModeAccessor()));
                 hierarchy.updateDesktop(wsa);
                 hierarchy.updateSplits();
                 hierarchy.activateMode(wsa.getActiveModeAccessor());

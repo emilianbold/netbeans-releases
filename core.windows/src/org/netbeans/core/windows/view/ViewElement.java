@@ -47,5 +47,7 @@ public abstract class ViewElement {
         return resizeWeight;
     }
     
+    public abstract void updateAWTHierarchy();
+    
 }
 

@@ -94,24 +94,23 @@ public class EditorView extends ViewElement {
     }
     
     public Component getComponent() {
-        assureComponentInEditorArea();
+//        assureComponentInEditorArea();
         return getEditorAreaComponent();
     }
     
+    public void updateAWTHierarchy() {
+        if (editorArea != null) {
+            editorArea.updateAWTHierarchy();
+        }
+        assureComponentInEditorArea();        
+    }
+    
     void assureComponentInEditorArea() {
-        // earlier was removing from current place and puting into EAcomponent..
-        // now automagically placing the editor area into the component only
-        // if not elsewhere -> like when maximized..
         EditorAreaComponent eac = getEditorAreaComponent();
         if(editorArea == null) {
             eac.setAreaComponent(null);
         } else {
-            if (editorArea.getComponent() != null && editorArea.getComponent().getParent() == null) {
-//                System.out.println("replacing editorArea..");
-                eac.setAreaComponent(editorArea.getComponent());
-//            } else {
-//                System.out.println("not replacing editorArea..");
-            }
+            eac.setAreaComponent(editorArea.getComponent());
         }
         manageBorder(eac);
         
