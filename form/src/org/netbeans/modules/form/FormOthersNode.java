@@ -74,8 +74,9 @@ class FormOthersNode extends FormNode {
         if (copy || cut) { // copy or cut some RADComponent
             RADComponent transComp = null;
             try {
-                transComp = (RADComponent) t.getTransferData(
-                                                t.getTransferDataFlavors()[0]);
+                Object data = t.getTransferData(t.getTransferDataFlavors()[0]);
+                if (data instanceof RADComponent)
+                    transComp = (RADComponent) data;
             }
             catch (UnsupportedFlavorException e) {} // should not happen
             catch (java.io.IOException e) {} // should not happen
