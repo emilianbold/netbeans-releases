@@ -71,8 +71,6 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         locationDocument = projectLocationTextField.getDocument ();
         locationDocument.addDocumentListener (this);
         projectNameTextField.getDocument ().addDocumentListener (this);
-        moduleDocument = moduleLocationTextField.getDocument ();
-        moduleDocument.addDocumentListener (this);
         nameDocument = projectNameTextField.getDocument();
         nameDocument.addDocumentListener(this);
 
@@ -142,6 +140,12 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jLabelSrcLocation, gridBagConstraints);
+
+        moduleLocationTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                moduleLocationTextFieldFocusLost(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -403,6 +407,10 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
 
     }//GEN-END:initComponents
 
+    private void moduleLocationTextFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_moduleLocationTextFieldFocusLost
+        updateTexts(moduleDocument);
+    }//GEN-LAST:event_moduleLocationTextFieldFocusLost
+
     private void serverInstanceComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverInstanceComboBoxActionPerformed
         String prevSelectedItem = (String)j2eeSpecComboBox.getSelectedItem();
         String servInsID = (String)serverInstanceIDs.get(serverInstanceComboBox.getSelectedIndex());
@@ -452,6 +460,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File projectDir = chooser.getSelectedFile();
             moduleLocationTextField.setText( projectDir.getAbsolutePath());
+            updateTexts(moduleDocument);
         }            
     }//GEN-LAST:event_jButtonSrcLocationActionPerformed
     
@@ -502,22 +511,22 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
     
     // Implementation of DocumentListener --------------------------------------
     public void changedUpdate(DocumentEvent e) {
-        updateTexts(e);
+        updateTexts(e.getDocument());
     }
     
     public void insertUpdate(DocumentEvent e) {
-        updateTexts(e);
+        updateTexts(e.getDocument());
     }
     
     public void removeUpdate(DocumentEvent e) {
-        updateTexts(e);
+        updateTexts(e.getDocument());
     }
     // End if implementation of DocumentListener -------------------------------
     
     /** Handles changes in the project name and project directory
      */
-    private void updateTexts(DocumentEvent e) {
-        if (e.getDocument() == moduleDocument) {
+    private void updateTexts(Document doc) {
+        if (doc == moduleDocument) {
             String moduleFolder = moduleLocationTextField.getText().trim();
             FileObject fo;
             try {
@@ -545,7 +554,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
             projectNameTextField.setText(projectName);
 
             jTextFieldLibraries.setText(librariesFolder);
-        } else if (e.getDocument() == locationDocument || !projectLocationTextField.getText ().equals (moduleLocationTextField.getText ())) {
+        } else if (doc == locationDocument || !projectLocationTextField.getText ().equals (moduleLocationTextField.getText ())) {
             StringBuffer folder = new StringBuffer(projectLocationTextField.getText().trim());
             if (!folder.toString ().endsWith(File.separator))
                 folder.append(File.separatorChar);
@@ -717,7 +726,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         try {
             while (ch.hasMoreElements ()) {
                 FileObject f = (FileObject) ch.nextElement ();
-                if (f.getExt ().equals ("java")) { //NOI18N
+                if (f.getExt ().equals ("java") && !f.isFolder()) { //NOI18N
                     String pckg = guessPackageName (f);
                     String pkgPath = f.getParent ().getPath (); 
                     if (pckg != null && pkgPath.endsWith (pckg.replace ('.', '/'))) {
