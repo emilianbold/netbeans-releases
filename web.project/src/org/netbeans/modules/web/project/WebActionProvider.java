@@ -1083,24 +1083,15 @@ class WebActionProvider implements ActionProvider {
                     AttachingDICookie attCookie = (AttachingDICookie)o;
                     if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
                         String shmem = attCookie.getSharedMemoryName();
-                        if (shmem == null) {
-                            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Shared memory name is null.");
-                            return false;
-                        }
-                        if (shmem.equalsIgnoreCase(sdi.getShmemName())) {
+                        if (shmem == null) continue;
+                        if (shmem.equalsIgnoreCase(sdi.getShmemName()))
                             return true;
-                        }
                     } else {
                         String hostname = attCookie.getHostName();
-                        if (hostname == null) {
-                            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Hostname is null.");
-                            return false;
-                        }
-                        if (hostname.equalsIgnoreCase(sdi.getHost())) {
-                            if (attCookie.getPortNumber() == sdi.getPort()) {
+                        if (hostname == null) continue;
+                        if (hostname.equalsIgnoreCase(sdi.getHost()))
+                            if (attCookie.getPortNumber() == sdi.getPort())
                                 return true;
-                            }
-                        }
                     }
                 }
             }
