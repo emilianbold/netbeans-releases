@@ -228,8 +228,7 @@
 		<tocitem text="Web Service Tasks: Quick Reference" target="tbd" />
   	 </tocitem>
 	 <tocitem text="Creating Web Services" >
-	        <tocitem text="About Creating Document-Style Web Services" target="about_web_service_message" />
-		<tocitem text="About Creating RPC-Style Web Services" target="about_web_service_rpc" />
+	        <tocitem text="About Creating Web Services" target="about_web_service_rpc" />
 		<tocitem text="Implementing an Existing WSDL File" target="create_ws_fromwsdl" />
 		<tocitem text="Exposing Existing Code as a Web Service" target="create_ws_fromcode" />
 		<tocitem text="Creating a Web Service from Scratch" target="create_ws" />
@@ -239,8 +238,8 @@
 	<tocitem text="Building Web Services" >
 		 <tocitem text="About Building Web Services" target="select_wscompile_ws" />
 	         <tocitem text="About the Web Service Compiler" target="about_wscompile" />
-		 <tocitem text="About Building from a WSDL File" target="about_wsdl" />
-                 <tocitem text="About Building from a Service Endpoint Interface" target="about_sei" />
+		 <tocitem text="About the WSDL File" target="about_wsdl" />
+                 <tocitem text="About the Service Endpoint Interface" target="about_sei" />
 		 <tocitem text="Building a Web Service from a WSDL File" target="compile_wsdl" />
 		 <tocitem text="Building a Document-Style Web Service" target="compile_doc" />
 		 <tocitem text="Building a RPC-Style Web Service" target="compile_rpc" />
@@ -252,9 +251,8 @@
 		 <tocitem text="Testing a Web Service on the Service Side" target="test_ws" /> 
 	 </tocitem>
 	 <tocitem text="Consuming Web Services" >
-		 <tocitem text="About Web Service Clients" target="about_wsc" />
-                 <tocitem text="Creating a JSR-101 Web Service Client" target="tbd" />
-		 <tocitem text="Creating a JSR-109 Web Service Client" target="create_wsc" />
+		 <tocitem text="About Web Service Clients" target="about_wsc" /> 
+		 <tocitem text="Creating a Web Service Client" target="create_wsc" />
 		 <tocitem text="Testing a Web Service on the Client Side" target="test_ws_clientside" /> 
 		 <tocitem text="Calling a Web Service Operation" target="call_ws_operation" />
 		 <tocitem text="Building a Web Service Client" target="select_wscompile_wsc" />
