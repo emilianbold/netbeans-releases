@@ -21,14 +21,13 @@ import com.netbeans.ide.modules.ModuleInstall;
 * Module installation class for editor
 *
 * @author Miloslav Metelka
-* @version 1.0
 */
 public class EditorModule implements ModuleInstall {
 
   /** Kit replacements that will be installed into JEditorPane */
   KitInfo[] replacements = new KitInfo[] {
-    new KitInfo("text/plain", NbEditorBaseKit.class.getName()),
-    new KitInfo("text/x-java", NbEditorJavaKit.class.getName())
+    new KitInfo("text/plain", "com.netbeans.developer.modules.text.NbEditorBaseKit"),
+    new KitInfo("text/x-java", "com.netbeans.developer.modules.text.NbEditorJavaKit")
   };
 
   /** Module installed for the first time. */
@@ -77,6 +76,9 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  9    Gandalf   1.8         4/13/99  Ian Formanek    Fixed bug #1518 - 
+ *       java.lang.NoClassDefFoundError: 
+ *       com/netbeans/developer/modules/text/NbEditorBaseKit thrown on startup.
  *  8    Gandalf   1.7         4/8/99   Miloslav Metelka 
  *  7    Gandalf   1.6         3/18/99  Miloslav Metelka 
  *  6    Gandalf   1.5         3/11/99  Jaroslav Tulach Works with plain 
