@@ -552,10 +552,7 @@ public class NonGui extends NbTopManager implements Runnable {
         // -----------------------------------------------------------------------------------------------------
         // 8. Advance Policy
 
-        Policy.getPolicy().getPermissions(new CodeSource(null, null)).implies(new AllPermission());
-
         // set security manager
-
         SecurityManager secman = new TopSecurityManager();
 
         // XXX(-trung) workaround for IBM JDK 1.3 Linux bug in

@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.jar.JarFile;
+import java.security.*;
 
 /** Bootstrap main class.
  * @author Jaroslav Tulach, Jesse Glick
@@ -120,6 +121,21 @@ public class Main extends Object {
                 }
                 return u;
             }
+        }
+        /** Startup optimalization. See issue 27226. */
+        protected PermissionCollection getPermissions(CodeSource cs) {
+            return getAllPermission();
+        }
+        /** Startup optimalization. See issue 27226. */
+        private static PermissionCollection modulePermissions;
+        /** Startup optimalization. See issue 27226. */
+        private static synchronized PermissionCollection getAllPermission() {
+            if (modulePermissions == null) {
+                modulePermissions = new Permissions();
+                modulePermissions.add(new AllPermission());
+                modulePermissions.setReadOnly();
+            }
+            return modulePermissions;
         }
     }
     
