@@ -356,7 +356,7 @@ public class NonGui extends NbTopManager implements Runnable {
                     "sun.beans.infos" // NOI18N
                 });
         java.beans.PropertyEditorManager.setEditorSearchPath (
-            new String[] { "org.openide.explorer.propertysheet.editors", "org.netbeans.beaninfo.editors", "sun.beans.editors" }); // NOI18N
+            new String[] { "org.netbeans.beaninfo.editors", "org.openide.explorer.propertysheet.editors", "sun.beans.editors" }); // NOI18N
         java.beans.PropertyEditorManager.registerEditor (String[].class, org.openide.explorer.propertysheet.editors.StringArrayEditor.class);
         java.beans.PropertyEditorManager.registerEditor (org.openide.src.MethodParameter[].class, org.openide.explorer.propertysheet.editors.MethodParameterArrayEditor.class);
         java.beans.PropertyEditorManager.registerEditor (org.openide.src.Identifier[].class, org.openide.explorer.propertysheet.editors.IdentifierArrayEditor.class);
