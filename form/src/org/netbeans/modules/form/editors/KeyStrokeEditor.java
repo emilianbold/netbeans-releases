@@ -379,9 +379,9 @@ public class KeyStrokeEditor extends PropertyEditorSupport
         }
 
         private class KeyGrabberField extends JTextField {
-            protected void processComponentKeyEvent(KeyEvent e) {
+            protected void processKeyEvent(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_TAB)
-                    super.processComponentKeyEvent(e);
+                    super.processKeyEvent(e);
                 else if (e.getID() == KeyEvent.KEY_PRESSED) {
                     int keycode = e.getKeyCode();
                     if (keycode != KeyEvent.VK_CONTROL
@@ -390,6 +390,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
                         KeyStroke key = KeyStroke.getKeyStroke(keycode, e.getModifiers());
                         setKeyStroke(key);
                     }
+                    e.consume();
                 }
             }
         }
