@@ -124,7 +124,7 @@ public class Kvetcher extends Task implements BuildListener {
             try {
                 pattern = Pattern.compile(p);
             } catch (PatternSyntaxException rese) {
-                throw new BuildException(rese, location);
+                throw new BuildException(rese, getLocation());
             }
         }
         /** Set which part of the message to actually send.
@@ -213,7 +213,7 @@ public class Kvetcher extends Task implements BuildListener {
                     mail.sendAndClose();
                 }
             } catch (IOException ioe) {
-                throw new BuildException("While sending mail", ioe, location);
+                throw new BuildException("While sending mail", ioe, getLocation());
             }
         }
     }

@@ -63,7 +63,7 @@ public class FindBadConstructions extends Task {
             try {
                 regexp = Pattern.compile(r, Pattern.MULTILINE);
             } catch (PatternSyntaxException rese) {
-                throw new BuildException(rese, location);
+                throw new BuildException(rese, getLocation());
             }
         }
         /** Set an optional message to display as output. */
@@ -79,8 +79,8 @@ public class FindBadConstructions extends Task {
     }
     
     public void execute() throws BuildException {
-        if (filesets.isEmpty()) throw new BuildException("Must give at least one fileset", location);
-        if (bad.isEmpty()) throw new BuildException("Must give at least one construction", location);
+        if (filesets.isEmpty()) throw new BuildException("Must give at least one fileset", getLocation());
+        if (bad.isEmpty()) throw new BuildException("Must give at least one construction", getLocation());
         Iterator it = filesets.iterator();
         while (it.hasNext()) {
             FileSet fs = (FileSet)it.next();
@@ -95,7 +95,7 @@ public class FindBadConstructions extends Task {
                     Iterator it2 = bad.iterator();
                     while (it2.hasNext()) {
                         Construction c = (Construction)it2.next();
-                        if (c.regexp == null) throw new BuildException("Must specify regexp on a construction", location);
+                        if (c.regexp == null) throw new BuildException("Must specify regexp on a construction", getLocation());
                         FileInputStream fis = new FileInputStream(f);
                         FileChannel fc = fis.getChannel();
                         try {
@@ -142,7 +142,7 @@ public class FindBadConstructions extends Task {
                         }
                     }
                 } catch (IOException ioe) {
-                    throw new BuildException("Error reading " + f, ioe, location);
+                    throw new BuildException("Error reading " + f, ioe, getLocation());
                 }
             }
         }
