@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JComponent;
+import javax.swing.JViewport;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
@@ -53,8 +54,9 @@ public class AnnotationView extends JComponent implements AnnotationsListener, F
     private static final int STATUS_BOX_SIZE = 7;
     private static final int THICKNESS = STATUS_BOX_SIZE + 6;
     private static final int PIXELS_FOR_LINE = 2/*height / lines*/;
-    private static final int LINE_SEPARATOR_SIZE = 2;
+    private static final int LINE_SEPARATOR_SIZE = 0/*2*/;
     private static final int HEIGHT_OFFSET = 20;
+    private static final int HEIGHT_LOWER_OFFSET = 10;
     
     private BaseDocument doc;
     private JTextComponent  pane;
@@ -97,7 +99,13 @@ public class AnnotationView extends JComponent implements AnnotationsListener, F
         }
 
         public int compareTo(Object o) {
-            return status.compareTo(((AnnotationStatusPair) o).getStatus());
+            int statusCompare = -status.compareTo(((AnnotationStatusPair) o).getStatus());
+            
+            if (statusCompare == 0) {
+                return annotation.getLine() - ((AnnotationStatusPair) o).annotation.getLine();
+            } else {
+                return statusCompare;
+            }
         }
 
     }
@@ -185,16 +193,6 @@ public class AnnotationView extends JComponent implements AnnotationsListener, F
         g.drawLine(x + STATUS_BOX_SIZE, y - 1,               x + STATUS_BOX_SIZE, y + STATUS_BOX_SIZE);
     }
     
-    /**
-     * Paints the border for the specified component with the specified 
-     * position and size.
-     * @param c the component for which this border is being painted
-     * @param g the paint graphics
-     * @param x the x position of the painted border
-     * @param y the y position of the painted border
-     * @param width the width of the painted border
-     * @param height the height of the painted border
-     */
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         
@@ -276,7 +274,7 @@ public class AnnotationView extends JComponent implements AnnotationsListener, F
     }
     
     private double getUsableHeight() {
-        return getHeight() - HEIGHT_OFFSET;
+        return getHeight() - HEIGHT_OFFSET - HEIGHT_LOWER_OFFSET;
     }
     
     private double modelToView(int line) {
@@ -301,13 +299,11 @@ public class AnnotationView extends JComponent implements AnnotationsListener, F
                 //1:1 mapping:
                 return r.getY() + HEIGHT_OFFSET;
             } else {
-                double pixelsPerBlock = (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE) * (getComponentHeight() / getUsableHeight());
+                double position = r.getY() / getComponentHeight();
+                int    blocksCount = (int) (getUsableHeight() / (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE));
+                int    block = (int) (position * blocksCount);
                 
-                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: pixelsPerBlock=" + pixelsPerBlock);
-                }
-                
-                return (r.getY() / pixelsPerBlock) * (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE) + HEIGHT_OFFSET;
+                return block * (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE) + HEIGHT_OFFSET;
             }
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
@@ -316,46 +312,40 @@ public class AnnotationView extends JComponent implements AnnotationsListener, F
     }
     
     private int[] viewToModel(double offset) {
-        try {
-            double componentOffset = -1;
-            
-            if (getComponentHeight() <= getUsableHeight()) {
-                //1:1 mapping:
-                componentOffset = offset - HEIGHT_OFFSET;
-            } else {
-                double pixelsPerBlock = (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE) * (getComponentHeight() / getUsableHeight());
-                
-                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: pixelsPerBlock=" + pixelsPerBlock);
-                }
-                
-                componentOffset = ((offset - HEIGHT_OFFSET) / (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE)) * pixelsPerBlock;
-            }
-                
-            int lineOffset = pane.viewToModel(new Point(0, (int) componentOffset));
-            
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: lineOffset=" + lineOffset);
-                ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: componentOffset=" + componentOffset);
-                ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: getComponentHeight()=" + getComponentHeight());
-                ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: getUsableHeight()=" + getUsableHeight());
+        int lowerBound = 0;
+        int upperBound = Utilities.getRowCount((BaseDocument) pane.getDocument());
+        
+        int foundLine  = -1;
+        
+        while ((upperBound - lowerBound) > 1) {
+            int testedLine = (lowerBound + upperBound) / 2;
+            double testedOffset = modelToView(testedLine);
+            boolean isAbove = (offset - LINE_SEPARATOR_SIZE / 2) <= testedOffset;
+            boolean isBelow = testedOffset < (offset + PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE / 2);
+
+            if (isAbove && isBelow) {
+                foundLine = testedLine;
+                break;
             }
             
-            if (lineOffset == (-1)) {
-                return new int[] {-1, -1};
+            if (isAbove) {
+                upperBound = testedLine;
             }
             
-            int line = Utilities.getLineOffset((BaseDocument) pane.getDocument(),  lineOffset);
-            
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: line=" + line);
+            if (isBelow) {
+                lowerBound = testedLine;
             }
-            
-            return getLinesSpan(line);
-        } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
-            return new int[] {-1, -1};
         }
+        
+        if (foundLine == (-1)) {
+            foundLine = upperBound;
+        }
+        
+        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+            ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: foundLine=" + foundLine);
+        }
+        
+        return getLinesSpan(foundLine);
     }
     
     private AnnotationDesc getAnnotationForPoint(double point) {
@@ -480,8 +470,9 @@ public class AnnotationView extends JComponent implements AnnotationsListener, F
         if (annotation != null) {
             String description = annotation.getShortDescription();
             
-            if (description != null)
-                return description;
+            if (description != null) {
+                return "<html>" + description.replaceAll("\n", "<br>");
+            }
         }
         
         return null;
