@@ -24,6 +24,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.projectimport.ProjectImporterException;
 import org.netbeans.modules.projectimport.eclipse.EclipseProject;
 import org.netbeans.modules.projectimport.eclipse.ProjectFactory;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 
 /**
@@ -66,7 +67,8 @@ final class EclipseWizardIterator implements
                 prjs.add(ProjectFactory.getInstance().load(
                         new File(workspacePanel.getProjectDir())));
             } catch (ProjectImporterException e) {
-                System.err.println("MK> ProjectImporterException catched: " + e);
+                ErrorManager.getDefault().log(ErrorManager.ERROR,
+                        "ProjectImporterException catched: " + e); // NOI18N
                 e.printStackTrace();
             }
             return prjs;

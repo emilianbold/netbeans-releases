@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -36,6 +37,7 @@ import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
+import org.netbeans.modules.projectimport.LoggerFactory;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -59,6 +61,12 @@ import org.w3c.dom.Element;
  * @author mkrauskopf
  */
 final class Importer {
+    
+    /**
+     * Logger for this class
+     */
+    private static final Logger logger =
+            LoggerFactory.getDefault().createLogger(Importer.class);
     
     private Set eclProjects;
     private String destination;
@@ -157,11 +165,12 @@ final class Importer {
         
         // recursivity check
         if (!recursionCheck.add(eclProject.getDirectory().toString())) {
-            J2SEProject project = (J2SEProject) loadedProject
-                    .get(eclProject.getDirectory().getAbsolutePath());
-            assert project != null : "nbSubProject cannot be null"; // NOI18N
+            J2SEProject project = (J2SEProject) loadedProject.get(
+                    eclProject.getDirectory().getAbsolutePath());
             return project;
         }
+        logger.finer("Importing of project: \"" + // NOI18N
+                eclProject.getDirectory().getAbsolutePath() + "\" started"); // NOI18N
         nOfProcessed++;
         progressInfo = NbBundle.getMessage(Importer.class,
                 "MSG_Progress_ProcessingProject", eclProject.getName()); // NOI18N
@@ -209,11 +218,20 @@ final class Importer {
             for (Iterator it = projects.iterator(); it.hasNext(); ) {
                 EclipseProject eclSubProject = (EclipseProject) it.next();
                 J2SEProject nbSubProject = importProject(eclSubProject);
-                AntArtifact[] artifact =
-                        AntArtifactQuery.findArtifactsByType(nbSubProject,
-                        JavaProjectConstants.ARTIFACT_TYPE_JAR);
-                nbProjectClassPath.addAntArtifact(
-                        artifact[0], artifact[0].getArtifactLocations()[0]);
+                // The project can be null when a cycle dependency is encountered.
+                // Just skip the dependency and try the best we can.
+                if (nbSubProject != null) {
+                    AntArtifact[] artifact =
+                            AntArtifactQuery.findArtifactsByType(nbSubProject,
+                            JavaProjectConstants.ARTIFACT_TYPE_JAR);
+                    nbProjectClassPath.addAntArtifact(
+                            artifact[0], artifact[0].getArtifactLocations()[0]);
+                } else {
+                    logger.warning("Project in directory \"" +  // NOI18N
+                            eclProject.getDirectory().getAbsolutePath() + 
+                            "\" is already being processed. Recursive " + // NOI18N
+                            "dependencies reached. "); // NOI18N
+                }
             }
         }
         
@@ -221,6 +239,8 @@ final class Importer {
         setJavaPlatform(eclProject, helper);
         
         ProjectManager.getDefault().saveProject(nbProject);
+        logger.finer("Project loaded: " + // NOI18N
+                eclProject.getDirectory().getAbsolutePath());
         loadedProject.put(eclProject.getDirectory().getAbsolutePath(), nbProject);
         return nbProject;
     }
@@ -331,7 +351,7 @@ final class Importer {
             }
             warnings.add(message);
         }
-        ErrorManager.getDefault().log(ErrorManager.WARNING, message);
+        logger.warning(message);
     }
     
     

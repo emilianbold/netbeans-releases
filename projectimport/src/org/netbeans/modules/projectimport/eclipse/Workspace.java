@@ -171,6 +171,10 @@ public final class Workspace {
         return (Collection) userLibraries.get(libRawPath);
     }
     
+    /**
+     * Tries to find an <code>EclipseProject</code> in the workspace and either
+     * returns its instance or null in the case it's not found.
+     */
     EclipseProject getProjectByRawPath(String rawPath) {
         for (Iterator it = projects.iterator(); it.hasNext(); ) {
             EclipseProject prj = (EclipseProject) it.next();

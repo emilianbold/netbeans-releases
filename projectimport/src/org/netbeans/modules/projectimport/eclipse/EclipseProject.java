@@ -235,11 +235,15 @@ public final class EclipseProject implements Comparable {
         return cp.getProjects();
     }
     
-    private Collection projectsWeDependOn;
-    public Collection getProjects() {
+    private Set projectsWeDependOn;
+    
+    /**
+     * Returns collection of <code>EclipseProject</code> this project requires.
+     */
+    public Set getProjects() {
         if (workspace != null) {
             if (projectsWeDependOn == null) {
-                projectsWeDependOn = new ArrayList();
+                projectsWeDependOn = new HashSet();
                 for (Iterator it = cp.getProjects().iterator(); it.hasNext(); ) {
                     ClassPathEntry cp = (ClassPathEntry) it.next();
                     projectsWeDependOn.add(workspace.getProjectByRawPath(

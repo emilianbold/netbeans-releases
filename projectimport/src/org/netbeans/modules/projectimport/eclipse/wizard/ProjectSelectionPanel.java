@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import javax.swing.AbstractCellEditor;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -34,10 +35,14 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.projectimport.LoggerFactory;
 import org.netbeans.modules.projectimport.ProjectImporterException;
 import org.netbeans.modules.projectimport.eclipse.EclipseProject;
 import org.netbeans.modules.projectimport.eclipse.Workspace;
 import org.netbeans.modules.projectimport.eclipse.WorkspaceFactory;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 /**
  * Represent "Project to import" step(panel) in the Eclipse importer wizard.
@@ -45,6 +50,12 @@ import org.netbeans.modules.projectimport.eclipse.WorkspaceFactory;
  * @author  mkrauskopf
  */
 final class ProjectSelectionPanel extends JPanel {
+    
+    /**
+     * Logger for this class
+     */
+    private static final Logger logger =
+            LoggerFactory.getDefault().createLogger(ProjectSelectionPanel.class);
     
     /** Rendererer for projects */
     private class ProjectCellRenderer extends JCheckBox
@@ -106,19 +117,26 @@ final class ProjectSelectionPanel extends JPanel {
         }
     }
     
+    /** All projects in a workspace. */
     private EclipseProject[] projects;
     
-    /** Projects selected by user. */
+    /**
+     * Projects selected by user. So it counts the projects which were selected
+     * by user and then became required (so became disabled). But project which
+     * weren't checked but are required are not members of this set.
+     * This all servers for remembering checked project when working with
+     * project dependencies.
+     */
     private Set selectedProjects;
-    
-    /** Error message displayed by wizard. */
-    private String errorMessage;
     
     /**
      * All projects we need to import (involving projects which selected
      * projects depend on.
      */
     private Set requiredProjects;
+    
+    /** Error message displayed by wizard. */
+    private String errorMessage;
     
     private class ProjectTableModel extends AbstractTableModel {
         public Object getValueAt(int rowIndex, int columnIndex) {
@@ -185,15 +203,39 @@ final class ProjectSelectionPanel extends JPanel {
         all.addAll(requiredProjects);
         return all;
     }
+    
+    // Helper for recursion check
+    private Set solved;
+    
     /**
      * Solves project dependencies. Fills up <code>requiredProjects</code> as
      * needed.
      */
     private void solveDependencies() {
         requiredProjects.clear();
-        for (Iterator it = selectedProjects.iterator(); it.hasNext(); ) {
+        solved = new HashSet();
+        fillUpRequiredProjects(selectedProjects);
+        solved = null;
+    }
+    
+    private void fillUpRequiredProjects(Set parentProjects) {
+        if (parentProjects == null || parentProjects.isEmpty()) {
+            return;
+        }
+        for (Iterator it = parentProjects.iterator(); it.hasNext(); ) {
             EclipseProject project = (EclipseProject) it.next();
-            requiredProjects.addAll(project.getProjects());
+            Set reqProjects = project.getProjects();
+            requiredProjects.addAll(reqProjects);
+            if (solved.contains(project)) {
+                NotifyDescriptor d = new DialogDescriptor.Message(
+                        ProjectImporterWizard.getMessage("MSG_CycleDependencies"),
+                        NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
+                logger.warning("Cycle dependencies was detected. Project: " + project);
+                return;
+            }
+            solved.add(project); // this one is as solved
+            fillUpRequiredProjects(reqProjects);
         }
     }
     
