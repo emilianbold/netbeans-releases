@@ -653,7 +653,11 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-property">
   <p>
-   No.
+   <api type="export" group="property" name="j2seproject.transparentUpdate" category="private">
+   If the property is set to true the j2seproject updates metadata of project.xml from 
+   "http://www.netbeans.org/ns/j2se-project/1" to "http://www.netbeans.org/ns/j2se-project/2"
+   without any explicit user feedback.
+   </api>
   </p>
  </answer>
 
