@@ -273,20 +273,6 @@
 <mapID target="workspace.dock" url="workspace/docking.html" />
 <mapID target="workspace.clone" url="workspace/clone.html" />
 
-<mapID target="corba.basics" url="corba/corba.html" />
-<mapID target="corba.features" url="corba/features.html" />
-<mapID target="corba.supp" url="corba/support.html" />
-<mapID target="corba.templates" url="corba/corbatemplates.html" />
-<mapID target="corba.nameservc" url="corba/addnameservice.html" />
-<mapID target="corba.servcnodes" url="corba/servcnodes.html" />
-<mapID target="corba.install" url="corba/installing.html" />
-<mapID target="corba.run" url="corba/runningIDL.html" />
-<mapID target="corba.config" url="corba/configuring.html" />
-<mapID target="corba.access" url="corba/accessing.html" />
-<mapID target="corba.props" url="corba/properties.html" />
-<mapID target="corba.genprops" url="corba/genprops.html" />
-<mapID target="corba.exprops" url="corba/expertprops.html" />
-<mapID target="corba.wizard" url="corba/wizardinfo.html" />
 
 <mapID target="configure" url="configure/configure.html" />
 

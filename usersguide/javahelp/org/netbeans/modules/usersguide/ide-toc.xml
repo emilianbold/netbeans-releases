@@ -294,23 +294,6 @@
   <tocitem text="Cloning the Source Editor or Web Browser" target="workspace.clone"/>
 </tocitem>
 
-<tocitem text="CORBA Basics" target="corba.basics">
-  <tocitem text="CORBA Features" target="corba.features">
-    <tocitem text="Adding a Running Naming Service" target="corba.nameservc" />
-    <tocitem text="Naming Service Nodes" target="corba.servcnodes" />
-  </tocitem>
-  <tocitem text="CORBA Support" target="corba.supp"></tocitem>
-  <tocitem text="CORBA Templates" target="corba.templates"></tocitem>
-  <tocitem text="Accessing ORB Utility Classes" target="corba.access"></tocitem>
-  <tocitem text="Installing CORBA Support" target="corba.install"></tocitem>
-  <tocitem text="Running the IDL Compiler From the IDE" target="corba.run"></tocitem>
-  <tocitem text="Configuring the IDE" target="corba.config"></tocitem>
-  <tocitem text="CORBA Properties" target="corba.props">
-    <tocitem text="General Properties" target="corba.genprops" />
-    <tocitem text="Expert Properties" target="corba.exprops" />
-  </tocitem>
-  <tocitem text="The CORBA Wizard" target="corba.wizard"></tocitem>
-</tocitem>
 
 <tocitem text="Configuring the IDE" target="configure"></tocitem>
 
