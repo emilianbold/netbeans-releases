@@ -14,7 +14,6 @@
 package org.netbeans.performance.test.utilities;
 
 import java.awt.Component;
-
 import java.util.HashMap;
 import java.util.ListIterator;
 
@@ -25,9 +24,9 @@ import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.WindowOperator;
-
+import org.netbeans.jemmy.util.PNGEncoder;
+        
 import org.netbeans.junit.NbPerformanceTest;
-import org.netbeans.modules.editor.options.BaseOptions;
 
 import org.netbeans.performance.test.guitracker.ActionTracker;
 import org.netbeans.performance.test.guitracker.ActionTracker.EventList;
@@ -288,7 +287,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     else
                         fail("Measured value ["+measuredTime+"] is not > 0 !");
                     
-//                    getScreenshotOfMeasuredIDEInTimeOfMeasurement(i);
+                    getScreenshotOfMeasuredIDEInTimeOfMeasurement(i);
                     
                 }catch(Exception exc){ // catch for prepare(), open()
                     log("------- [ "+i+" ] ---------------- Exception rises while measuring performance :"+exc.getMessage());
@@ -309,7 +308,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     }catch(Exception e){ // catch for close()
                         log("------- [ "+i+" ] ---------------- Exception rises while closing tested component :"+e.getMessage());
                         e.printStackTrace(getLog());
-//                        getScreenshot("measure");
+                        getScreenshot("exception_during_close");
                         exceptionDuringMeasurement = true;
                         //throw new JemmyException("Exception arises while closing tested component :"+e.getMessage());
                     }finally{ // finally for close()
@@ -326,7 +325,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         }catch (Exception e) { // catch for initialize(), shutdown(), closeAllDialogs()
             log("----------------------- Exception rises while shuting down / initializing:"+e.getMessage());
             e.printStackTrace(getLog());
-//            getScreenshot("init_or_shutdown");
+            getScreenshot("exception_during_init_or_shutdown");
             // throw new JemmyException("Exception rises while shuting down :"+e.getMessage());
             exceptionDuringMeasurement = true;
         }finally{ // finally for initialize(), shutdown(), closeAllDialogs()
@@ -437,11 +436,18 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * A method generally useful for any UI Responsiveness tests which measure actions
      * in the Java editor. This method should be called from a test's initialize() method.
      */
-    protected void setJavaEditorCaretFilteringOn() {
-        // turn off blinking of the caret in the Java editor
-        Class kitClass = org.netbeans.modules.editor.java.JavaKit.class;
-        BaseOptions options = BaseOptions.getOptions(kitClass);
+    protected void setEditorCaretFilteringOn(Class kitClass) {
+        org.netbeans.modules.editor.options.BaseOptions options = org.netbeans.modules.editor.options.BaseOptions.getOptions(kitClass);
         options.setCaretBlinkRate(0);
+    }
+    
+    /**
+     * Turn's off blinking of the caret in the Java editor.
+     * A method generally useful for any UI Responsiveness tests which measure actions
+     * in the Java editor. This method should be called from a test's initialize() method.
+     */
+    protected void setJavaEditorCaretFilteringOn() {
+        setEditorCaretFilteringOn(org.netbeans.modules.editor.java.JavaKit.class);
     }
     
     /**
@@ -450,10 +456,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * in the plain text editor. This method should be called from a test's initialize() method.
      */
     protected void setPlainTextEditorCaretFilteringOn() {
-        // turn off blinking of the caret in the plain text editor
-        Class kitClass = org.netbeans.modules.editor.plain.PlainKit.class;
-        BaseOptions options = BaseOptions.getOptions(kitClass);
-        options.setCaretBlinkRate(0);
+        setEditorCaretFilteringOn(org.netbeans.modules.editor.plain.PlainKit.class);
     }
     
     /**
@@ -462,10 +465,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * in the XML editor. This method should be called from a test's initialize() method.
      */
     protected void setXMLEditorCaretFilteringOn() {
-        // turn off blinking of the caret in the XML editor
-        Class kitClass = org.netbeans.modules.xml.text.syntax.XMLKit.class;
-        BaseOptions options = BaseOptions.getOptions(kitClass);
-        options.setCaretBlinkRate(0);
+        setEditorCaretFilteringOn(org.netbeans.modules.xml.text.syntax.XMLKit.class);
     }
     
     /**
@@ -474,10 +474,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * in the JSP editor. This method should be called from a test's initialize() method.
      */
     protected void setJSPEditorCaretFilteringOn() {
-        // turn off blinking of the caret in the JSP editor
-        Class kitClass = org.netbeans.modules.web.core.syntax.JSPKit.class;
-        BaseOptions options = BaseOptions.getOptions(kitClass);
-        options.setCaretBlinkRate(0);
+        setEditorCaretFilteringOn(org.netbeans.modules.web.core.syntax.JSPKit.class);
     }
     
     protected void setPaintFilteringForEditor () {
@@ -632,7 +629,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             }
         }
         if (start > end || start == 0) {
-            throw new IllegalStateException("measuring failed");
+            throw new IllegalStateException("Measuring failed, because we start["+start+"] > end["+end+"] or start=0");
         }
         return (end - start);
     }
@@ -750,8 +747,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         return(dialog);
     }
     
-    /**
-     * Close dialogs
+    /** 
+     * Close dialogs 
      * @param dialog find all dialogs of owner for this dialog
      * @param chooser chooser used for looking for dialogs
      */
@@ -765,44 +762,46 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         new org.netbeans.jemmy.operators.JDialogOperator(dialog).close();
     }
     
-//    /**
-//     * Get screenshot - if testedComponentOperator=null - then grap whole screen Black&White,
-//     * if isn't grap area with testedComponent (-100,-100, width+200, height+200)
-//     * @param i order of measurement in one test case
-//     */
-//    protected void getScreenshotOfMeasuredIDEInTimeOfMeasurement(int i){
-//        try {
-//            if(testedComponentOperator==null){
-//                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.BW_MODE);
-//            }else{
-//                java.awt.Point locationOnScreen = testedComponentOperator.getLocationOnScreen();
-//                java.awt.Rectangle bounds = testedComponentOperator.getBounds();
-//                java.awt.Rectangle bounds_new = new java.awt.Rectangle(locationOnScreen.x-100, locationOnScreen.y-100, bounds.width+200, bounds.height+200);
-//                java.awt.Rectangle screen_size = new java.awt.Rectangle(java.awt.Toolkit.getDefaultToolkit().getScreenSize());
-//                
-//                if(bounds_new.height > screen_size.height/2 || bounds_new.width > screen_size.width/2)
-//                    PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.BW_MODE);
-//                else
-//                    PNGEncoder.captureScreen(bounds_new,getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.GREYSCALE_MODE);
-//            }
-//        } catch (Exception exc) {
-//            log(" Exception rises during capturing screenshot of measurement ");
-//            exc.printStackTrace(getLog());
-//        }
-//    }
+    /**
+     * Get screenshot - if testedComponentOperator=null - then grap whole screen Black&White,
+     * if isn't grap area with testedComponent (-100,-100, width+200, height+200)
+     * @param i order of measurement in one test case
+     */
+    protected void getScreenshotOfMeasuredIDEInTimeOfMeasurement(int i){
+        try {
+            if(testedComponentOperator==null){
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.BW_MODE);
+            }else{
+                java.awt.Point locationOnScreen = testedComponentOperator.getLocationOnScreen();
+                java.awt.Rectangle bounds = testedComponentOperator.getBounds();
+                java.awt.Rectangle bounds_new = new java.awt.Rectangle(locationOnScreen.x-100, locationOnScreen.y-100, bounds.width+200, bounds.height+200);
+                java.awt.Rectangle screen_size = new java.awt.Rectangle(java.awt.Toolkit.getDefaultToolkit().getScreenSize());
+                
+                if(bounds_new.height > screen_size.height/2 || bounds_new.width > screen_size.width/2)
+                    PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.BW_MODE);
+                else
+                    PNGEncoder.captureScreen(bounds_new,getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.GREYSCALE_MODE);
+//System.err.println("XX "+rm.getRepaintedArea());                
+//                PNGEncoder.captureScreen(rm.getRepaintedArea(),getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.GREYSCALE_MODE);
+            }
+        } catch (Exception exc) {
+            log(" Exception rises during capturing screenshot of measurement ");
+            exc.printStackTrace(getLog());
+        }
+    }
     
     /** 
      * Get screenshot of whole screen if exception rised during initialize()
      * @param title title is part of the screenshot file name
      */
-//    protected void getScreenshot(String title){
-//        try{
-//            PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"error_screenshot_" + title + ".png");
-//        }catch(Exception exc){
-//            log(" Exception rises during capturing screenshot ");
-//            exc.printStackTrace(getLog());
-//        }
-//        
-//    }
+    protected void getScreenshot(String title){
+        try{
+            PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"error_screenshot_" + title + ".png");
+        }catch(Exception exc){
+            log(" Exception rises during capturing screenshot ");
+            exc.printStackTrace(getLog());
+        }
+        
+    }
     
 }
