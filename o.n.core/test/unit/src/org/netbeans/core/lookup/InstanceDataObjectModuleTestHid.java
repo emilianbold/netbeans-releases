@@ -52,6 +52,8 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
     protected Module m1, m2;
 
     protected void runTest () throws Throwable {
+        ErrManager.messages.setLength (0);
+        ErrManager.log = getLog ();
         try {
             super.runTest();
         } catch (Error err) {
@@ -225,6 +227,7 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
     
     private static final class ErrManager extends org.openide.ErrorManager {
         public static final StringBuffer messages = new StringBuffer ();
+        public static java.io.PrintStream log = System.err;
         
         private String prefix;
         
@@ -252,15 +255,19 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         }
         
         public void log (int severity, String s) {            
-            messages.append ('[');
-            messages.append (prefix);
-            messages.append (']');
-            messages.append (s);
-            messages.append ('\n');
+            if (messages.length () > 500000) {
+                messages.delete (0,  250000);
+            }
+            messages.append ('['); log.print ('[');
+            messages.append (prefix); log.print (prefix);
+            messages.append (']'); log.print (']');
+            messages.append (s); log.print (s);
+            messages.append ('\n'); log.println ();
         }
         
         public void notify (int severity, Throwable t) {
             messages.append (t.getMessage ());
+            t.printStackTrace (log);
         }
         
     } 
