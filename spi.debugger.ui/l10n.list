@@ -1,9 +1,4 @@
-debuggercore/api/src/org/netbeans/api/debugger/Bundle.properties
-debuggercore/oldapi/src/org/openide/debugger/Bundle.properties
-debuggercore/oldapi/src/org/openide/debugger/module/Bundle.properties
-debuggercore/src/org/netbeans/modules/debugger/resources/Bundle.properties
-debuggercore/src/org/netbeans/modules/debugger/ui/actions/Bundle.properties
-debuggercore/src/org/netbeans/modules/debugger/ui/Bundle.properties
-debuggercore/src/org/netbeans/modules/debugger/ui/models/Bundle.properties
-debuggercore/src/org/netbeans/modules/debugger/ui/views/Bundle.properties
-debuggercore/viewmodel/src/org/netbeans/modules/viewmodel/Bundle.properties
+debuggercore/api/src/**/Bundle.properties
+debuggercore/oldapi/src/**/Bundle.properties
+debuggercore/src/**/Bundle.properties
+debuggercore/viewmodel/src/**/Bundle.properties
