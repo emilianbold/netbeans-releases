@@ -48,6 +48,15 @@ cvs update -A -d -P 2>&1 >> $CVS_ROOT/"${DATE_STAMP}__1.update.txt"
 
 
 #
+# update libs
+#
+cd $CVS_ROOT/nb_all/libs
+echo "#################" >> $CVS_ROOT/"${DATE_STAMP}__1.update.txt"
+echo "# cvs update libs" >> $CVS_ROOT/"${DATE_STAMP}__1.update.txt"
+cvs update -A -d -P 2>&1 >> $CVS_ROOT/"${DATE_STAMP}__1.update.txt"
+
+
+#
 # update xml
 #
 cd $CVS_ROOT/nb_all/xml
