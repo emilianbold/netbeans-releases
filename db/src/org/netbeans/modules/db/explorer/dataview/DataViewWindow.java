@@ -175,7 +175,7 @@ public class DataViewWindow extends TopComponent {
     public void executeCommand() {
         try {
             String command = queryarea.getText().trim();
-
+            System.out.println(command);
             dbadaptor.execute(command);
             RecentCommand rcmd = new RecentCommand(command);
             ((ComboModel)rcmdscombo.getModel()).addElement(rcmd);
@@ -237,30 +237,56 @@ public class DataViewWindow extends TopComponent {
             bric = flag;
         }
     }
+    
+     static int tstrg = 0; 
+        static int gtcmd = 0;
 
     class RecentCommand
     {
         private String command;
+        
+        /** The command with no new lines */
+        private String shortCommand;
 
         public RecentCommand(String cmd)
         {
             command = cmd;
+            shortCommand = getShortCommand();
         }
+        
+       
 
         public String toString()
         {
-            return command;
+            return shortCommand;
         }
 
         public String getCommand()
-        {
+        {           
             return command;
         }
 
         public boolean equals(Object obj)
         {
-            if (obj instanceof RecentCommand) return ((RecentCommand)obj).getCommand().equals(command);
+            if (obj instanceof RecentCommand) return ((RecentCommand)obj).getShortCommand().equals(shortCommand);
             return super.equals(obj);
+        }
+        
+        /**
+         * Gets the command String for display in the JComboBox without 
+         * new lines.
+         *
+         * @return the command for display in the JComboBox
+         */
+         private String getShortCommand() 
+        {
+            StringTokenizer tokenizer = new StringTokenizer(command);
+            StringBuffer buffer = new StringBuffer();
+            while (tokenizer.hasMoreElements()) { 
+                buffer.append(tokenizer.nextElement());
+                buffer.append(" ");
+            }
+            return buffer.toString();
         }
     }
 
