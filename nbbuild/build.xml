@@ -721,7 +721,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../vcsgeneric/profiles/vss" target="netbeans"/>
   </target>
 
-  <target name="all-vcscore" depends="all-openide,all-openidex,all-openide/io,all-openide/execution,all-openide/loaders">
+  <target name="all-vcscore" depends="all-openide,all-openidex,all-openide/io,all-openide/execution,all-openide/loaders,all-openide/masterfs">
     <echo message="Building module vcscore..."/>
     <ant dir="../vcscore" target="netbeans"/>
   </target>
