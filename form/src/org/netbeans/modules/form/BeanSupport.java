@@ -200,6 +200,16 @@ public class BeanSupport {
 // Private methods
 
   private static Object getSpecialDefaultAWTValue (Object beanObject, String propertyName) {
+    if ((beanObject instanceof Frame) ||
+        (beanObject instanceof Dialog)) {
+      if ("background".equals (propertyName))
+        return SystemColor.window;
+      else if ("foreground".equals (propertyName))
+        return SystemColor.windowText;
+      else if ("font".equals (propertyName))
+        return new Font ("Dialog", Font.PLAIN, 12);
+    }
+
     if ((beanObject instanceof Label) ||
         (beanObject instanceof Button) ||
         (beanObject instanceof TextField) ||
@@ -208,17 +218,16 @@ public class BeanSupport {
         (beanObject instanceof Choice) ||
         (beanObject instanceof List) ||
         (beanObject instanceof Scrollbar) ||
-        (beanObject instanceof ScrollPane) ||
-        (beanObject instanceof Frame) ||
-        (beanObject instanceof Dialog) ||
-        (beanObject instanceof Panel)) {
+        (beanObject instanceof Panel) ||
+        (beanObject instanceof ScrollPane)) {
       if ("background".equals (propertyName))
-        return Color.lightGray;
+        return SystemColor.control;
       else if ("foreground".equals (propertyName))
-        return Color.black;
+        return SystemColor.controlText;
       else if ("font".equals (propertyName))
         return new Font ("Dialog", Font.PLAIN, 12);
     }
+
     return null;
   }
 
@@ -226,6 +235,9 @@ public class BeanSupport {
 
 /*
  * Log
+ *  10   Gandalf   1.9         9/6/99   Ian Formanek    Defaults for Window and 
+ *       Dialog fixed, default colors for components are taken from SystemColor 
+ *       rather than hardcoded colors (was Color.lightGray and Color.black)
  *  9    Gandalf   1.8         9/2/99   Ian Formanek    Fixed bug 3696 - When 
  *       connection is copied and pasted into form, the initialization code of 
  *       the ConnectionSource component is not correctly generated. and 3695 - 
