@@ -37,7 +37,7 @@
   <li>A general deployment descriptor that configures deployment settings on any 
     J2EE-compliant implementation. The general deployment descriptor is named 
     <tt><i>moduleType</i>.xml</tt> (for example, <tt>ejb-jar.xml</tt> for EJB 
-    modules and <tt>web.xml</tt> for web modules.)</li>
+    modules and <tt>web.xml</tt> for web application modules.)</li>
   <li>A server-specific deployment descriptor that configures deployment settings 
   for a specific server implementation. The deployment descriptors for 
   the SJS Application Server are named <tt>sun-<i>moduleType</i>.xml</tt> and the
@@ -45,14 +45,14 @@
 </ul>
 <h3>Deployment Descriptors in the IDE</h3>
 <p>The&nbsp;IDE generates a deployment descriptor from the settings for EJB modules, 
-  web modules, and J2EE applications.when you create an empty enterprise project. 
+  web application modules, and J2EE applications.when you create an empty enterprise project. 
   It also reads your existing deployment descriptors when you import existing 
   enterprise beans, enterprise applications, and web applications into the IDE. 
   The deployment descriptors are located in the conf folder of your project directory, 
   and are displayed under the Configuration Files node in the Projects window.</p>
 <p>As you work with your projects, the IDE updates the deployment descriptors 
   to reflect changes you have made, such as adding business methods to an enterprise 
-  bean or adding a web module to an enterprise application. You can open a graphical 
+  bean or adding a web application module to an enterprise application. You can open a graphical 
   editor for a deployment descriptor by double-clicking its node in the Projects 
   window. You can edit the deplyment descriptor's XML by right-clicking its node 
   and choosing Edit.</p>

@@ -14,80 +14,87 @@
 <body>
 <!-- #BeginEditable "body" --> 
 <h2>About Servers</h2>
-<p><small> 
-<a href="#seealso">See Also</a> 
-</small></p>
-<p>A server is a computer that serves up applications. 
-Any computer can be turned into a server if you install server software
-and connect the computer to the Internet. The following servers
-are supported by the IDE:</p>
+<p><small> <a href="#seealso">See Also</a> </small></p>
+<p>A server is a computer that serves up applications. Any computer can be turned 
+  into a server if you install server software and connect the computer to the 
+  Internet. The following servers are supported by the IDE:</p>
 <ul>
-<li><b>SJS Application Server</b>
-<p>Use this server and its libraries for the following activities:
-    <ul><li>Deploying <a href="../enterprise/general/about_ent_apps.html">enterprise applications</a> 
-	    and <a href="../ejb/general/about_ejbs.html">enterprise beans</a>.</li>
-	    <li>Deploying <a href="../webservice/about/about_ws.html">web services</a>
-	    and <a href="../webservice/consume/about_wsc.html">web service clients</a> that use JSR-109 or JSR-101 stubs.</li>
-	<li>Deploying <a href="../web/about/about_webapps.html">web applications</a>, 
-	<a href="../web/create/jsp/about_jsp_technology.html">JSP pages</a>,
-       	and <a href="../web/create/servlet/about_servlet.html">servlets</a>.</li>
-	<li>Libraries included with the SJS Application Server can be used 
-            to <a href="../webservice/build/about_wscompile.html">compile</a> web services and clients,
-            <a href="../enterprise/general/ent_app_verify.html">verify</a> that your application
-            implements the J2EE 1.4 specification correctly, create a new web application with
-            <a href="../web/create/tag/framework/framework_jsf_create.html">JavaServer Faces (JSF) support</a>,
-            or <a href="../web/create/tag/framework/framework_jsf_add.html">add JSF support</a>
-	    to an existing web application</li>
-    </ul></li>
-<li><b>Tomcat Web Server</b>
-<p>Use this server and its libraries for the following activities:
-<ul><li>Deploying web applications, JSP pages,
-       	and servlets.</li>
-	<li>Deploying web services and web service clients that use JSR-101 stubs.
-	    <table cellpadding="3" cellspacing="0" border="0">
-            <tr valign="top"> 
+  <li><b>SJS Application Server</b> 
+    <p>Use this server and its libraries for the following activities: 
+    <ul>
+      <li>Deploying <a href="../enterprise/general/about_ent_apps.html">enterprise 
+        applications</a> and <a href="../ejb/general/about_ejbs.html">enterprise 
+        beans</a>.</li>
+      <li>Deploying <a href="../webservice/about/about_ws.html">web services</a> 
+        and <a href="../webservice/consume/about_wsc.html">web service clients</a> 
+        that use JSR-109 or JSR-101 stubs.</li>
+      <li>Deploying <a href="../web/about/about_webapps.html">web applications</a>, 
+        <a href="../web/create/jsp/about_jsp_technology.html">JSP pages</a>, and 
+        <a href="../web/create/servlet/about_servlet.html">servlets</a>.</li>
+      <li>Libraries included with the SJS Application Server can be used to <a href="../webservice/build/about_wscompile.html">compile</a> 
+        web services and clients, <a href="../enterprise/general/ent_app_verify.html">verify</a> 
+        that your application implements the J2EE 1.4 specification correctly, 
+        create a new web application with <a href="../web/create/tag/framework/framework_jsf_create.html">JavaServer 
+        Faces (JSF) support</a>, or <a href="../web/create/tag/framework/framework_jsf_add.html">add 
+        JSF support</a> to an existing web application</li>
+    </ul>
+  </li>
+  <li><b>Tomcat Web Server</b> 
+    <p>Use this server and its libraries for the following activities: 
+    <ul>
+      <li>Deploying web applications, JSP pages, and servlets.</li>
+      <li>Deploying web services and web service clients that use JSR-101 stubs. 
+        <table cellpadding="3" cellspacing="0" border="0">
+          <tr valign="top"> 
             <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
-            <td>The Tomcat Web Server is not a J2EE 1.4 container. Therefore, you cannot deploy a web service client
-		    that uses JSR-109 stubs to this server. When you <a href="../webservice/consume/wsc_create.html">create the web service client</a>,
-		make sure that you select JAXRPC Static Stub in the Web service client type drop-down.</td></tr></table></li></ul>
+            <td>The Tomcat Web Server is not a J2EE 1.4 container. Therefore, 
+              you cannot deploy a web service client that uses JSR-109 stubs to 
+              this server. When you <a href="../webservice/consume/wsc_create.html">create 
+              the web service client</a>, make sure that you select JAXRPC Static 
+              Stub in the Web service client type drop-down.</td>
+          </tr>
+        </table>
+      </li>
+    </ul>
 </ul>
 <h3>Servers in the IDE</h3>
-<p>Before you can deploy an enterprise application, web application, JSP, servlet, or EJB module, 
-the server to which you are going to deploy needs to be registered with the IDE. 
-By default, only the bundled Tomcat Web Server is registered with the IDE. 
-You are not able to deploy to the SJS Application Server
-or an external Tomcat web Server until you <a href="server_register.html">register</a> it with the IDE yourself.</p>
+<p>Before you can deploy an enterprise application, web application, JSP, servlet, 
+  or EJB module, the server to which you are going to deploy needs to be <a href="server_register.html">registered</a> 
+  with the IDE. If you download the NetBeans IDE 4.1 Installer, the Tomcat Web 
+  Server is registered with the IDE. If you download the NetBeans IDE 4.1 + AS 
+  8.1 PE Bundle Installer, both the Tomcat Web Server and the SJS Application 
+  Server is registered with the IDE.</p>
 <table cellpadding="3" cellspacing="0" border="0">
-   <tr valign="top">
-      <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
-      <td>
-	      Only once you have registered the SJS Application Server
-	      can you begin developing enterprise applications.
-      </td>
-   </tr>
+  <tr valign="top"> 
+    <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
+    <td> Only once you have a registered SJS Application Server can you begin 
+      developing enterprise applications. </td>
+  </tr>
 </table>
-<p>When you register a server with the IDE, you make its libraries available for production,
- or deployment, or both. If you deploy your applications to a remote instance of the
- SJS Application Server, its libraries are available at runtime. However, during 
- development, you might need a local instance of this server.
-You can have multiple instances of the SJS Application Server registered with the 
-IDE. Once you have registered your local instance, you can register remote instances, 
-but you always have to specify the local folder that contains the local installation of 
-the SJS Application Server.</p>
+<p>When you register a server with the IDE, you make its libraries available for 
+  production, or deployment, or both. If you deploy your applications to a remote 
+  instance of the SJS Application Server, its libraries are available at runtime. 
+  However, during development, you might need a local instance of this server. 
+  You can have multiple instances of the SJS Application Server registered with 
+  the IDE. Once you have registered your local instance, you can register remote 
+  instances, but you always have to specify the local folder that contains the 
+  local installation of the SJS Application Server.</p>
 <p>When a server is registered with the IDE, you can see its node in the Runtime 
   window under the the Servers node. When you create a project in the New Project 
   wizard, you select the server to which you want to deploy your application. 
   After you create the application, you can change the server by right-clicking 
   the project, choosing Properties, clicking Run, and selecting a different server.</p>
 <table>
-<tr>
-<th colspan=2 align=left><a name="seealso">See Also</a></th>
-</tr>
-<tr>
-<td width="23"></td>
-<td><a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/aboutplugin.html">About the SJS Application Server</a><br>
-<a href="nbdocs:/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_plugintro.html">About the Tomcat Web Server</a></td>
-</tr>
+  <tr> 
+    <th colspan=2 align=left><a name="seealso">See Also</a></th>
+  </tr>
+  <tr> 
+    <td width="23"></td>
+    <td><a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/aboutplugin.html">About 
+      the SJS Application Server</a><br>
+      <a href="nbdocs:/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_plugintro.html">About 
+      the Tomcat Web Server</a></td>
+  </tr>
 </table>
 <!-- #EndEditable --> 
 <hr> <small>
