@@ -114,18 +114,31 @@ public class PaletteItem implements java.io.Serializable {
     }
 
     public String getName() {
-        String name = instanceCookie.instanceName();
-        int i = name.lastIndexOf('.');
-        if (i >= 0)
-            name = name.substring(i+1);
-        i = name.lastIndexOf('-');
-        if (i >= 0)
-            name = name.substring(i+1);
-        return name;
+        if (itemNode instanceof PaletteItemNode) {
+            String expName = ((PaletteItemNode)itemNode).getExplicitDisplayName();
+            if (expName != null)
+                return expName;
+        }
+
+        if (instanceDO != null) {
+            String name = instanceCookie.instanceName();
+            int i = name.lastIndexOf('.');
+            if (i >= 0)
+                name = name.substring(i+1);
+            return name;
+        }
+        else return itemNode.getName();
     }
 
     public String getDisplayName() {
-        return itemNode.getDisplayName().replace('-', '.');
+        if (itemNode instanceof PaletteItemNode) {
+            String expName = ((PaletteItemNode)itemNode).getExplicitDisplayName();
+            if (expName != null)
+                return expName;
+        }
+
+        return instanceDO != null ?
+               instanceDO.instanceName() : itemNode.getName();
     }
 
     public Object getSharedInstance() throws InstantiationException, IllegalAccessException {

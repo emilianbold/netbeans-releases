@@ -26,7 +26,6 @@ import org.openide.util.datatransfer.NewType;
 import org.openide.explorer.propertysheet.editors.NodeCustomizer;
 
 import org.netbeans.modules.form.actions.*;
-import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.layoutsupport.*;
 
 import java.awt.*;
