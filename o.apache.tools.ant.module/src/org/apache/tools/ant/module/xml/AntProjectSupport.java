@@ -35,13 +35,15 @@ import org.openide.execution.NbClassPath;
 import org.openide.nodes.*;
 import org.openide.loaders.*;
 import org.openide.filesystems.*;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListener;
 
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 
-public class AntProjectSupport implements AntProjectCookie, DocumentListener, FileChangeListener, org.w3c.dom.events.EventListener, Runnable {
+public class AntProjectSupport implements AntProjectCookie, DocumentListener, FileChangeListener, org.w3c.dom.events.EventListener, Runnable, ChangeListener {
   
     private final File file;
     private FileObject fo;
@@ -96,6 +98,9 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
                 if (editor == null) {
                     try {
                         editor = (EditorCookie) DataObject.find (fo).getCookie (EditorCookie.class);
+                        if (editor != null && (editor instanceof CloneableEditorSupport)) {
+                            ((CloneableEditorSupport) editor).addChangeListener (WeakListener.change (this, editor));
+                        }
                     } catch (DataObjectNotFoundException donfe) {
                         AntModule.err.notify (ErrorManager.INFORMATIONAL, donfe);
                     }
@@ -163,8 +168,12 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
             } else if (fo != null) {
                 rd = new InputStreamReader (fo.getInputStream ());
                 fo.addFileChangeListener (this);
-            } else {
+            } else if (file != null) {
                 rd = new FileReader (file);
+            } else {
+                // [PENDING] this happens sometimes...why?
+                exception = new NullPointerException ();
+                return;
             }
             try {
                 InputSource in = new InputSource (rd);
@@ -332,6 +341,11 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
         if (ev.getDocument ().getProperty (expectingDocUpdates) == null) {
             invalidate ();
         }
+    }
+    
+    // Called when editor support changes state: #11616
+    public void stateChanged (ChangeEvent changeEvent) {
+        invalidate ();
     }
     
     public void fileDeleted (org.openide.filesystems.FileEvent p1) {
