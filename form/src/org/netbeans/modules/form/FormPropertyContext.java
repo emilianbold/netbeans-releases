@@ -21,7 +21,7 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 
 /** 
  * An interface for working with "context" of properties
- * (of FormProperty type). The interface has two methods.
+ * (of FormProperty type). The interface has three methods.
  * First:
  *     boolean useMultipleEditors();
  * describes whether the FormPropertyEditor can be used for editing properties.
@@ -36,6 +36,11 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
  * are usually constructed with no parameters, but often needs some
  * context (e.g. FormAwareEditor needs FormModel).
  *
+ * Third:
+ *     FormModel getFormModel();
+ * provides the form the property belongs to. The context is needed for loading
+ * classes of property editors (from the right classpath).
+ *
  * @author Tomas Pavek
  */
 
@@ -44,6 +49,8 @@ public interface FormPropertyContext {
     public boolean useMultipleEditors();
 
     public void initPropertyEditor(PropertyEditor prEd);
+
+    public FormModel getFormModel();
 
     /** 
      * Support for default implementation of FormPropertyContext interface.
@@ -65,8 +72,6 @@ public interface FormPropertyContext {
             if (formModel != null && prEd instanceof FormAwareEditor)
                 ((FormAwareEditor)prEd).setFormModel(formModel);
         }
-
-        public abstract FormModel getFormModel();
     }
 
     /** Defualt implementation of FormPropertyContext interface. */
@@ -74,8 +79,8 @@ public interface FormPropertyContext {
 
         FormModel formModel;
 
-        public DefaultImpl(FormModel model) {
-            formModel = model;
+        public DefaultImpl(FormModel form) {
+            formModel = form;
         }
 
         public FormModel getFormModel() {
@@ -91,6 +96,10 @@ public interface FormPropertyContext {
         }
 
         public void initPropertyEditor(PropertyEditor prEd) {
+        }
+
+        public FormModel getFormModel() {
+            return null;
         }
 
         // ------

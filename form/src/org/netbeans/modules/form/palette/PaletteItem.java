@@ -17,14 +17,22 @@ import java.beans.*;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
+import java.util.List;
+import java.io.File;
 
+import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.*;
-
+import org.openide.filesystems.*;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.api.project.libraries.*;
+import org.netbeans.api.project.ant.*;
+import org.netbeans.api.project.*;
 
 /**
- * PaletteItem holds all important information needed by the Form  about one
- * component (item) in the palette.
+ * PaletteItem holds important information about one component (item)
+ * in the palette.
  *
  * @author Tomas Pavek
  */
@@ -50,10 +58,10 @@ public final class PaletteItem implements Node.Cookie {
     private boolean tooltipResolved;
     private boolean icon16Resolved;
     private boolean icon32Resolved;
-    private boolean componentTypeResolved;
 
     // resolved data
     private Class componentClass;
+    private int originType = -1;
     private Throwable lastError;
 //    private Boolean componentIsContainer;
     private String displayName;
@@ -70,11 +78,9 @@ public final class PaletteItem implements Node.Cookie {
     private static final int TYPE_MASK = 15;
 
     // type of item origin constants
-    public static final int JAR = 1;
-    public static final int LIBRARY = 2;
-    public static final int PROJECT = 3;
-
-//    private static final String DEFAULT_ICON = "org/openide/resources/pending.gif"; // NOI18N
+    public static final int FROM_JAR = 1;
+    public static final int FROM_LIBRARY = 2;
+    public static final int FROM_PROJECT = 3;
 
     // -------
 
@@ -82,50 +88,79 @@ public final class PaletteItem implements Node.Cookie {
         itemDataObject = dobj;
     }
 
+    /** @return a node visually representing this palette item */
     public Node getNode() {
         return itemDataObject.getNodeDelegate();
     }
 
+    /** @return a String identifying this palette item */
     public String getId() {
         return componentClassName;
     }
 
+    /** @return the class of the component represented by this pallete item.
+     * May return null - if class loading fails. */
     public Class getComponentClass() {
         if (componentClass == null && lastError == null)
             componentClass = loadComponentClass();
         return componentClass;
     }
 
+    /** @return the exception occurred when trying to resolve the component
+     *  class of this pallette item */
     public Throwable getError() {
         return lastError;
     }
 
+    /** @return the type of source where the component class of this palette
+     * item is located. Can be JAR, LIBRARY or PROJECT. */
+    public int getOriginType() {
+        if (originType == -1)
+            resolveOriginType();
+        return originType;
+    }
+
+    /** @return the location of the component class source (according to the
+     * origin type) */
+    public String getOriginValue() {
+        return originLocation;
+    }
+
+    /** @return type of the component as String, e.g. "visual", "menu",
+     * "layout", border */
     public String getExplicitComponentType() {
         return componentType_explicit;
     }
 
+    /** @return whether the component of this palette item is a visual component
+     * (java.awt.Component subclass) */
     public boolean isVisual() {
-        if (!componentTypeResolved)
+        if (componentType == -1)
             resolveComponentType();
         return (componentType & VISUAL) != 0;
     }
 
+    /** @return whether the component of this palette item is a menu component */
+    public boolean isMenu() {
+        if (componentType == -1)
+            resolveComponentType();
+        return (componentType & MENU) != 0;
+    }
+
+    /** @return whether the component of this palette item is a layout mamanger
+     * (java.awt.LayoutManager implementation) */
     public boolean isLayout() {
-        if (!componentTypeResolved)
+        if (componentType == -1)
             resolveComponentType();
         return (componentType & TYPE_MASK) == LAYOUT;
     }
 
+    /** @return whether the component of this palette item is a border
+     * (javax.swing.border.Border implementation) */
     public boolean isBorder() {
-        if (!componentTypeResolved)
+        if (componentType == -1)
             resolveComponentType();
         return (componentType & TYPE_MASK) == BORDER;
-    }
-
-    public boolean isMenu() {
-        if (!componentTypeResolved)
-            resolveComponentType();
-        return (componentType & MENU) != 0;
     }
 
 //    public boolean isContainer() {
@@ -257,13 +292,14 @@ public final class PaletteItem implements Node.Cookie {
 
     void reset() {
         componentClass = null;
+        originType = -1;
         lastError = null;
 //        componentIsContainer = null; 
         displayNameResolved = false;
         tooltipResolved = false;
         icon16Resolved = false;
         icon32Resolved = false;
-        componentTypeResolved = false;
+        componentType = -1;
     }
 
     // -------
@@ -271,10 +307,56 @@ public final class PaletteItem implements Node.Cookie {
     private Class loadComponentClass() {
         d("Loading class: "+componentClassName); // NOI18N
 
+        int origin = getOriginType();
         ClassLoader loader = null;
-        if (originType_explicit == null)
+
+        if (origin == 0) { // no origin, use system class loader
             loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-//        else TBD
+        }
+        else try { // the class comes from an external JAR, installed library,
+                   // or some project output JAR
+            URL[] roots = null;
+
+            if (origin == FROM_JAR) { // NOI18N
+                // expecting full path to the JAR file in 'originLocation'
+                File jarFile = new File(originLocation);
+                roots = new URL[] { FileUtil.getArchiveRoot(jarFile.toURI().toURL()) };
+            }
+            else if (origin == FROM_LIBRARY) { // NOI18N
+                // expecting the library name in 'originLocation'
+                Library lib = LibraryManager.getDefault().getLibrary(originLocation);
+                if (lib != null) {
+                    List content = lib.getContent("classpath"); // NOI18N
+                    roots = new URL[content.size()];
+                    content.toArray(roots);
+                    for (int i=0; i < roots.length; i++)
+                        if (FileUtil.isArchiveFile(roots[i]))
+                            roots[i] = FileUtil.getArchiveRoot(roots[i]);
+                }
+            }
+            else if (origin == FROM_PROJECT) { // NOI18N
+                Project project = ProjectManager.getDefault().findProject(
+                    FileUtil.toFileObject(new File(originLocation)));
+                if (project != null) {
+                    AntArtifact[] artifacts =
+                        AntArtifactQuery.findArtifactsByType(project, "jar"); // NOI18N
+                    roots = new URL[artifacts.length];
+                    for (int i=0; i < artifacts.length; i++) {
+                        File jarFile = new File(
+                            originLocation + artifacts[i].getArtifactLocation().toString());
+                        roots[i] = FileUtil.getArchiveRoot(jarFile.toURI().toURL());
+                    }
+                }
+            }
+
+            if (roots != null)
+                loader = ClassPathSupport.createClassPath(roots).getClassLoader(true);
+        }
+        catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            lastError = ex;
+            return null;
+        }
 
         if (loader != null) {
             lastError = null;
@@ -282,9 +364,11 @@ public final class PaletteItem implements Node.Cookie {
                 return loader.loadClass(componentClassName);
             }
             catch (Exception ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 lastError = ex;
             }
             catch (LinkageError ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 lastError = ex;
             }
         }
@@ -312,6 +396,17 @@ public final class PaletteItem implements Node.Cookie {
             catch (IntrospectionException ex) {} // ignore failure
         }
         return null;
+    }
+
+    private void resolveOriginType() {
+        if ("jar".equals(originType_explicit)) // NOI18N
+            originType = FROM_JAR;
+        else if ("library".equals(originType_explicit)) // NOI18N
+            originType = FROM_LIBRARY;
+        else if ("project".equals(originType_explicit)) // NOI18N
+            originType = FROM_PROJECT;
+        else
+            originType = 0;
     }
 
     private void resolveComponentType() {
@@ -352,8 +447,6 @@ public final class PaletteItem implements Node.Cookie {
             componentType = MENU | VISUAL;
         else
             componentType = 0;
-
-        componentTypeResolved = true;
     }
 
     // -------

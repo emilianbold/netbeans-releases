@@ -35,7 +35,7 @@ class PaletteItemDataObject extends MultiDataObject {
     static final String ATTR_TYPE = "type"; // NOI18N
 //    static final String ATTR_IS_CONTAINER = "is-container"; // NOI18N
     static final String TAG_ORIGIN = "origin"; // NOI18N
-    static final String ATTR_ID = "id"; // NOI18N
+    static final String ATTR_LOCATION = "location"; // NOI18N
     static final String TAG_DESCRIPTION = "description"; // NOI18N
     static final String ATTR_BUNDLE = "localizing-bundle"; // NOI18N
     static final String ATTR_DISPLAY_NAME_KEY = "display-name-key"; // NOI18N
@@ -43,6 +43,8 @@ class PaletteItemDataObject extends MultiDataObject {
     static final String TAG_ICON16 = "icon16"; // NOI18N
     static final String ATTR_URL = "urlvalue"; // NOI18N
     static final String TAG_ICON32 = "icon32"; // NOI18N
+    // component types: "visual", "menu", "layout", "border"
+    // origin types: "jar", "library", "project"
 
     private static SystemAction[] staticActions;
 
@@ -154,7 +156,7 @@ class PaletteItemDataObject extends MultiDataObject {
                 if (node != null) {
                     item.originType_explicit = node.getNodeValue();
 
-                    node = attr.getNamedItem(ATTR_ID);
+                    node = attr.getNamedItem(ATTR_LOCATION);
                     if (node != null)
                         item.originLocation = node.getNodeValue();
                     else
@@ -201,25 +203,29 @@ class PaletteItemDataObject extends MultiDataObject {
 
     // -------
 
-static final class PaletteItemDataLoader extends UniFileLoader {
+    /** DataLoader for the palette item files. */
+    static final class PaletteItemDataLoader extends UniFileLoader {
 
-    static final String ITEM_EXT = "palette_item"; // NOI18N
+        static final String ITEM_EXT = "palette_item"; // NOI18N
 
-    PaletteItemDataLoader() {
-        super("org.netbeans.modules.form.palette.PaletteItemDataObject"); // NOI18N
+        PaletteItemDataLoader() {
+            super("org.netbeans.modules.form.palette.PaletteItemDataObject"); // NOI18N
 
-        ExtensionList ext = new ExtensionList();
-        ext.addExtension(ITEM_EXT);
-        setExtensions(ext);
+            ExtensionList ext = new ExtensionList();
+            ext.addExtension(ITEM_EXT);
+            setExtensions(ext);
+        }
+
+        protected MultiDataObject createMultiObject(FileObject primaryFile)
+            throws DataObjectExistsException, java.io.IOException
+        {
+            return new PaletteItemDataObject(primaryFile, this);
+        }
     }
 
-    protected MultiDataObject createMultiObject(FileObject primaryFile)
-        throws DataObjectExistsException, java.io.IOException
-    {
-        return new PaletteItemDataObject(primaryFile, this);
-    }
-}
-    /** Node representing the palette item. */
+    // --------
+
+    /** Node representing the palette item (node delegate for the DataObject). */
     class ItemNode extends DataNode {
 
         ItemNode() {

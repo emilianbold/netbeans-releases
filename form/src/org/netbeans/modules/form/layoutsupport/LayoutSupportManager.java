@@ -81,14 +81,16 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         LayoutSupportDelegate delegate = null;
         LayoutManager lmInstance = null;
 
+        FormModel formModel = metaContainer.getFormModel();
+        LayoutSupportRegistry layoutRegistry =
+            LayoutSupportRegistry.getRegistry(formModel);
+
         // first try to find a dedicated layout delegate (for the container)
-        Class layoutDelegateClass =
-            LayoutSupportRegistry.getSupportClassForContainer(
-                                      metaContainer.getBeanClass());
+        Class layoutDelegateClass = layoutRegistry.getSupportClassForContainer(
+                                                  metaContainer.getBeanClass());
 
         if (layoutDelegateClass != null) {
-            delegate = LayoutSupportRegistry.createSupportInstance(
-                                                 layoutDelegateClass);
+            delegate = layoutRegistry.createSupportInstance(layoutDelegateClass);
         }
         else {
             // find a general layout delegate (for LayoutManager of the container)
@@ -102,8 +104,8 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                 if (statements.length > 0) { // setLayout method found
                     CodeExpressionOrigin layoutOrigin =
                         statements[0].getStatementParameters()[0].getOrigin();
-                    delegate = LayoutSupportRegistry.createSupportForLayout(
-                                                     layoutOrigin.getType());
+                    delegate = layoutRegistry.createSupportForLayout(
+                                                  layoutOrigin.getType());
                     // handle special case of null layout
                     if (delegate == null)
                         if (layoutOrigin.getType() == LayoutManager.class
@@ -124,8 +126,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                     // we can still handle only empty containers ...
                     lmInstance = contDel.getLayout();
                     delegate = lmInstance != null ?
-                        LayoutSupportRegistry.createSupportForLayout(
-                                                lmInstance.getClass()) :
+                        layoutRegistry.createSupportForLayout(lmInstance.getClass()) :
                         new NullLayoutSupport();
                 }
                 else {

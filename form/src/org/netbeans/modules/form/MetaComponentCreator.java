@@ -772,12 +772,12 @@ public class MetaComponentCreator {
         try {
             if (LayoutManager.class.isAssignableFrom(layoutClass)) {
                 // LayoutManager -> find LayoutSupportDelegate for it
-                layoutDelegate = LayoutSupportRegistry
+                layoutDelegate = LayoutSupportRegistry.getRegistry(formModel)
                                      .createSupportForLayout(layoutClass);
             }
             else if (LayoutSupportDelegate.class.isAssignableFrom(layoutClass)) {
                 // LayoutSupportDelegate -> use it directly
-                layoutDelegate = LayoutSupportRegistry
+                layoutDelegate = LayoutSupportRegistry.getRegistry(formModel)
                                      .createSupportInstance(layoutClass);
             }
         }

@@ -26,7 +26,9 @@ import java.security.*;
 import org.openide.util.*;
 import org.openide.nodes.Node;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
-import org.netbeans.api.java.classpath.ClassPath;
+import org.openide.filesystems.FileObject;
+import org.netbeans.api.java.classpath.*;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 //import org.netbeans.api.java.platform.JavaPlatform;
 
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
@@ -450,8 +452,7 @@ public class FormUtils
                 oos.close();
 
                 ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-//                ObjectInputStream ois = new ObjectInputStream(bais);
-                return new OIS(bais).readObject();
+                return new OIS(bais, bean.getClass().getClassLoader()).readObject();
             }
             catch (Exception ex) {
                 if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
@@ -1118,47 +1119,92 @@ public class FormUtils
 
     // ---------
 
-    public static ClassLoader getClassLoader() {
-        // we keep the classloader to have the same instance as long as possible
-//        FormEditorSupport.userClassLoader =
-//            ClassPath.getClassPath(null, ClassPath.EXECUTE).getClassLoader(true);
-        
-        // XXX: temporarily return the classloader of the Java Platform (i.e. JDK)
-        //FormEditorSupport.userClassLoader = 
-        //    JavaPlatform.getDefault().getBootstrapLibraries().getClassLoader(false);
-        
-        // XXX: use Form module classloader instead of platform one to prevent:
-        // java.lang.ClassNotFoundException: org.netbeans.modules.form.layoutsupport.delegates.BorderLayoutSupport
-        //FormEditorSupport.userClassLoader = FormUtils.class.getClassLoader();
-        
-        // XXX: Is this correct? It at least can load the needed classes e,g.
-        // from i18n/form module        
-        FormEditorSupport.userClassLoader = (ClassLoader)Lookup.getDefault().lookup( ClassLoader.class );
-        
-        return FormEditorSupport.userClassLoader;
+    public static Class loadClass(String name, FormModel form)
+        throws ClassNotFoundException
+    {
+        return loadClass(name, FormEditorSupport.getFormDataObject(form).getFormFile());
     }
 
-    private static PermissionCollection allPermission;
+    public static Class loadClass(String name, FileObject formFile)
+        throws ClassNotFoundException
+    {
+        Class theClass = null;
 
-    static PermissionCollection getAllPermissions() {
-        if (allPermission == null) {
-            allPermission = new Permissions();
-            allPermission.add(new AllPermission());
+        ClassNotFoundException exception = null;
+        LinkageError error = null;
+
+        // first try the system class loader (for Swing and IDE components)
+        try {
+            ClassLoader loader = (ClassLoader)
+                                 Lookup.getDefault().lookup(ClassLoader.class);
+            theClass = loader.loadClass(name);
         }
-        return allPermission;
+        catch (ClassNotFoundException ex) {
+            exception = ex;
+        }
+        catch (LinkageError ex) {
+            error = ex;
+        }
+
+        // second try the project class loader
+        if (theClass == null && formFile != null) {
+            try {
+                ClassLoader loader =
+                    ClassPath.getClassPath(formFile, ClassPath.EXECUTE)
+                        .getClassLoader(true);
+                theClass = loader.loadClass(name);
+            }
+            catch (ClassNotFoundException ex) {
+                exception = ex;
+            }
+            catch (LinkageError ex) {
+                error = ex;
+            }
+        }
+
+        // third try all registered project classpath loaders
+        // [does it make sense? can it work?]
+/*        if (theClass == null) {
+            try {
+                Set paths = GlobalPathRegistry.getDefault().getPaths(ClassPath.EXECUTE);
+                ClassLoader loader =
+                    ClassPathSupport.createProxyClassPath((ClassPath[])paths.toArray())
+                        .getClassLoader(true);
+                theClass = loader.loadClass(name);
+                System.out.println("3rd loaded "+name);
+            }
+            catch (ClassNotFoundException ex) {
+                exception = ex;
+            }
+            catch (LinkageError ex) {
+                error = ex;
+            }
+        } */
+
+        if (theClass != null)
+            return theClass; // success
+
+        if (exception != null)
+            throw exception;
+        if (error != null)
+            throw error;
+        throw new ClassNotFoundException();
     }
 
     // ---------
 
     private static class OIS extends ObjectInputStream {
-        public OIS(InputStream is) throws IOException {
+        private ClassLoader classLoader;
+
+        public OIS(InputStream is, ClassLoader loader) throws IOException {
             super(is);
+            classLoader = loader;
         }
 
         protected Class resolveClass(ObjectStreamClass streamCls)
             throws IOException, ClassNotFoundException
         {
-            return getClassLoader().loadClass(streamCls.getName());
+            return classLoader.loadClass(streamCls.getName());
         }
     }
 }

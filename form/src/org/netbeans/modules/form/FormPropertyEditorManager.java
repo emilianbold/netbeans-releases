@@ -30,20 +30,31 @@ final public class FormPropertyEditorManager extends Object
 
     private static HashMap expliciteEditors = new HashMap(10);
 
+    // -------
 
-    public static synchronized PropertyEditor findEditor(Class type) {
-        Class[] edClasses = findEditorClasses(type);
+    public static synchronized PropertyEditor findEditor(FormProperty property) {
+        Class propType = property.getValueType();
+        FormModel form = property.getPropertyContext().getFormModel();
+        Class[] edClasses = findEditorClasses(propType, form);
         if (edClasses.length > 0) {
             PropertyEditor[] editors =
-                createEditorInstances(new Class[] { edClasses[0] }, type);
+                createEditorInstances(new Class[] { edClasses[0] }, propType);
             if (editors.length > 0)
                 return editors[0];
         }
         return null;
     }
 
-    public static synchronized void registerEditor(Class type, Class editorClass) {
-        Class[] currentEditors = (Class[])expliciteEditors.get(getTypeName(type));
+    public static synchronized PropertyEditor[] getAllEditors(FormProperty property) {
+        Class propType = property.getValueType();
+        FormModel form = property.getPropertyContext().getFormModel();
+        return createEditorInstances(findEditorClasses(propType, form), propType);
+    }
+
+    public static synchronized void registerEditor(Class propertyType,
+                                                   Class editorClass)
+    {
+        Class[] currentEditors = (Class[])expliciteEditors.get(getTypeName(propertyType));
         Class[] newEditors;
         if (currentEditors == null) {
             newEditors = new Class[1];
@@ -60,11 +71,7 @@ final public class FormPropertyEditorManager extends Object
             System.arraycopy(currentEditors, 0, newEditors, 0, currentEditors.length);
             newEditors[newEditors.length - 1] = editorClass;
         }
-        expliciteEditors.put(getTypeName(type), newEditors);
-    }
-
-    public static synchronized PropertyEditor[] getAllEditors(Class type) {
-        return createEditorInstances(findEditorClasses(type), type);
+        expliciteEditors.put(getTypeName(propertyType), newEditors);
     }
 
     synchronized static void clearEditorsCache() {
@@ -88,14 +95,13 @@ final public class FormPropertyEditorManager extends Object
         return typeName;
     }
 
-    private static Class[] findEditorClasses(Class type) {
+    private static Class[] findEditorClasses(Class type, FormModel form) {
         // try the editors cache
         Class[] edClasses = (Class[]) editorsCache.get(type);
         if (edClasses != null)
             return edClasses;
 
-        FormLoaderSettings formSettings = (FormLoaderSettings)
-            SharedClassObject.findObject(FormLoaderSettings.class, true);
+        FormLoaderSettings formSettings = FormLoaderSettings.getInstance();
 
         ArrayList editorsList = new ArrayList(5);
 
@@ -117,12 +123,12 @@ final public class FormPropertyEditorManager extends Object
                 for (int i = 0; i < searchPath.length; i++) {
                     String name = searchPath[i] + "." + editorName + "Editor"; // NOI18N
                     try {
-                        Class edClass = Class.forName(name, true,
-                                                      FormUtils.getClassLoader());
+                        Class edClass = FormUtils.loadClass(name, form);
                         editorsList.add(edClass);
                         break; // stop on first found editor
                     }
-                    catch (Exception e) {} // silently ignore not found editors
+                    catch (Exception e) {} // silently ignore
+                    catch (LinkageError e) {} // silently ignore
                 }
             }
         }
@@ -136,8 +142,7 @@ final public class FormPropertyEditorManager extends Object
                 if (typereg[0].equals(typeName)) {
                     for (int j = 1; j < typereg.length; j++) {
                         try {
-                            Class edClass = Class.forName(typereg[j], true,
-                                                          FormUtils.getClassLoader());
+                            Class edClass = FormUtils.loadClass(typereg[j], form);
                             if (!editorsList.contains(edClass))
                                 editorsList.add(edClass);
                         }

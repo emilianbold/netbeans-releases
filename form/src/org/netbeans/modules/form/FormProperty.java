@@ -812,10 +812,9 @@ public abstract class FormProperty extends Node.Property {
 
     private PropertyEditor findDefaultEditor() {
         PropertyEditor defaultEditor = getExpliciteEditor();
-        if (defaultEditor == null) {
-            return FormPropertyEditorManager.findEditor(getValueType());
-        } 
-        return defaultEditor;
+        if (defaultEditor != null)
+            return defaultEditor;
+        return FormPropertyEditorManager.findEditor(this);
     }
 
     // --------

@@ -79,8 +79,6 @@ public class FormEditorSupport extends JavaEditor
     /** Table of FormModel instances (FormModel to FormEditorSupport map) */
     private static Hashtable openForms = new Hashtable();
 
-    static ClassLoader userClassLoader;
-
     // --------------
     // constructor
 
@@ -759,8 +757,6 @@ public class FormEditorSupport extends JavaEditor
             detachSettingsListener();
             detachTopComponentsListener();
             detachPaletteListener();
-
-            userClassLoader = null;
         }
         else { // still any opened forms - focus some
             FormEditorSupport next = (FormEditorSupport)

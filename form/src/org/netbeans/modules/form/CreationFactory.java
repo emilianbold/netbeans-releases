@@ -71,17 +71,17 @@ public class CreationFactory {
         private void exchangeClass() {
             // hack - use the class loaded by NbClassLoader, avoid using class
             // loaded by another loader from InstanceSupport
-            String name = instClass.getName();
-            if (!name.startsWith("javax.") && !name.startsWith("java.")) { // NOI18N
-                ClassLoader filesysClassLoader = FormUtils.getClassLoader();
-                if (!instClass.getClassLoader().getClass().equals(filesysClassLoader.getClass())) {
-                    try {
-                        instClass = filesysClassLoader.loadClass(name);
-                    }
-                    catch (LinkageError ex) {}
-                    catch (Exception ex) {}
-                }
-            }
+//            String name = instClass.getName();
+//            if (!name.startsWith("javax.") && !name.startsWith("java.")) { // NOI18N
+//                ClassLoader filesysClassLoader = FormUtils.getClassLoader();
+//                if (!instClass.getClassLoader().getClass().equals(filesysClassLoader.getClass())) {
+//                    try {
+//                        instClass = filesysClassLoader.loadClass(name);
+//                    }
+//                    catch (LinkageError ex) {}
+//                    catch (Exception ex) {}
+//                }
+//            }
         }
     }
 

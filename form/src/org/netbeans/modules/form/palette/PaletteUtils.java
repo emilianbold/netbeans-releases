@@ -24,7 +24,7 @@ import org.openide.ErrorManager;
  * Class providing various useful methods for palette classes.
  */
 
-final class PaletteUtils {
+public final class PaletteUtils {
 
     private static DataFolder paletteFolder;
 
@@ -86,7 +86,7 @@ final class PaletteUtils {
                                        .getAttribute(PaletteNode.CAT_HIDDEN))); // NOI18N
     }
 
-    static DataFolder getPaletteFolder() {
+    public static DataFolder getPaletteFolder() {
         if (paletteFolder != null)
             return paletteFolder;
 

@@ -15,6 +15,7 @@ package org.netbeans.modules.form;
 
 import java.util.*;
 import org.openide.*;
+import org.openide.util.Lookup;
 
 /**
  * An abstract class which defines interface for persistence managers (being
@@ -89,9 +90,7 @@ public abstract class PersistenceManager {
         Iterator iter = getManagersNamesList().iterator();
         while (iter.hasNext()) { // create managers registered by name
             if (classLoader == null)
-                classLoader = FormUtils.getClassLoader();
-            // (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-            //  - could be enough
+                classLoader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
 
             String pmClassName = (String) iter.next();
             try {

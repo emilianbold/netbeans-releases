@@ -17,6 +17,7 @@ package org.netbeans.modules.form;
 import java.util.Map;
 import java.util.HashMap;
 import org.openide.util.Utilities;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -50,18 +51,20 @@ public class PersistenceObjectRegistry
         _nameToClassname.put(alias, clazz.getName());
     }
 
-    public static Object createInstance(String name)
+    public static Object createInstance(String classname, FileObject form)
         throws InstantiationException, IllegalAccessException, ClassNotFoundException
     {
-        return loadClass(name).newInstance();
+        return loadClass(classname, form).newInstance();
     }
 
-    public static Class loadClass(String name) throws ClassNotFoundException {
+    public static Class loadClass(String name, FileObject form)
+        throws ClassNotFoundException
+    {
         name = Utilities.translate(name);
         String classname =(String) _nameToClassname.get(name);
         if (classname == null)
             classname = name;
-        return FormUtils.getClassLoader().loadClass(classname);
+        return FormUtils.loadClass(classname, form);
     }
 
     public static String getPrimaryName(Object instance) {
@@ -82,9 +85,4 @@ public class PersistenceObjectRegistry
         String classname = (String) _nameToClassname.get(primaryName);
         return classname != null ? classname : primaryName;
     }
-
-//    static {
-        //      registerPrimaryName("org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$ConstraintsDesc",
-        //                          "org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription");
-//    }
 }

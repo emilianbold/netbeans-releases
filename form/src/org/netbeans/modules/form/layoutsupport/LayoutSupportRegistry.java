@@ -18,7 +18,12 @@ import java.util.*;
 
 import org.openide.loaders.*;
 import org.openide.filesystems.*;
-import org.openide.cookies.InstanceCookie;
+import org.openide.ErrorManager;
+
+import org.netbeans.modules.form.FormModel;
+import org.netbeans.modules.form.FormUtils;
+import org.netbeans.modules.form.palette.PaletteItem;
+import org.netbeans.modules.form.palette.PaletteUtils;
 
 /**
  * Registry and factory class for LayoutSupportDelegate implementations.
@@ -28,21 +33,45 @@ import org.openide.cookies.InstanceCookie;
 
 public class LayoutSupportRegistry {
 
-    private static HashMap containerToLayoutDelegate;
-    private static HashMap layoutToLayoutDelegate;
+    private static Map containerToLayoutDelegate;
+    private static Map layoutToLayoutDelegate;
 
     private static boolean needPaletteRescan = true;
 
     public static final String DEFAULT_SUPPORT = "<default>"; // NOI18N
 
-    private static DataFolder paletteFolder;
-
     private static FileChangeListener paletteListener;
 
-    // --------------
-    // getting methods
+    private static Map instanceMap;
 
-    public static Class getSupportClassForContainer(Class containerClass) {
+    private FormModel formModel;
+
+    // -------
+
+    private LayoutSupportRegistry(FormModel formModel) {
+        this.formModel = formModel;
+    }
+
+    public static LayoutSupportRegistry getRegistry(FormModel formModel) {
+        LayoutSupportRegistry reg;
+        if (instanceMap == null) {
+            instanceMap = new WeakHashMap(); 
+            reg = null;
+        }
+        else reg = (LayoutSupportRegistry) instanceMap.get(formModel);
+
+        if (reg == null) {
+            reg = new LayoutSupportRegistry(formModel);
+            instanceMap.put(formModel, reg);
+        }
+
+        return reg;
+    }
+
+    // --------------
+    // get methods
+
+    public Class getSupportClassForContainer(Class containerClass) {
         String className = (String)
                            getContainersMap().get(containerClass.getName());
         if (className == null) {
@@ -55,31 +84,15 @@ public class LayoutSupportRegistry {
 //            }
         }
 
-        if (className != null) {
-            try {
-                return loadClass(className);
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
+        return className != null ? loadClass(className) : null;
     }
 
-    public static String getSupportNameForContainer(String containerClassName) {
+    public String getSupportNameForContainer(String containerClassName) {
         String className = (String) getContainersMap().get(containerClassName);
         if (className == null) {
-            Class containerClass;
-            try {
-                containerClass = loadClass(containerClassName);
-            }
-            catch (ClassNotFoundException e) {
-                e.printStackTrace();
-                return null;
-            }
-
-            className = findSuperClass(getContainersMap(), containerClass);
+            Class containerClass = loadClass(containerClassName);
+            if (containerClass != null)
+                className = findSuperClass(getContainersMap(), containerClass);
 //            if (className == null && needPaletteRescan) {
 //                className = scanPalette(containerClassName);
 //                if (className == null) // try container superclass again
@@ -91,40 +104,24 @@ public class LayoutSupportRegistry {
         return className;
     }
 
-    public static Class getSupportClassForLayout(Class layoutClass) {
+    public Class getSupportClassForLayout(Class layoutClass) {
         String className = (String) getLayoutsMap().get(layoutClass.getName());
         if (className == null && needPaletteRescan)
             className = scanPalette(layoutClass.getName());
         if (className == null)
             className = findSuperClass(getLayoutsMap(), layoutClass);
 
-        if (className != null) {
-            try {
-                return loadClass(className);
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
+        return className != null ? loadClass(className) : null;
     }
 
-    public static String getSupportNameForLayout(String layoutClassName) {
+    public String getSupportNameForLayout(String layoutClassName) {
         String className = (String) getLayoutsMap().get(layoutClassName);
         if (className == null && needPaletteRescan)
             className = scanPalette(layoutClassName);
         if (className == null) {
-            Class layoutClass;
-            try {
-                layoutClass = loadClass(layoutClassName);
-            }
-            catch (ClassNotFoundException e) {
-                e.printStackTrace();
-                return null;
-            }
-
-            className = findSuperClass(getLayoutsMap(), layoutClass);
+            Class layoutClass = loadClass(layoutClassName);
+            if (layoutClass != null)
+                className = findSuperClass(getLayoutsMap(), layoutClass);
         }
 
         return className;
@@ -164,10 +161,9 @@ public class LayoutSupportRegistry {
     }
 
     // ------------
-    // creating methods
+    // creation methods
 
-    public static LayoutSupportDelegate createSupportForContainer(
-                                            Class containerClass)
+    public LayoutSupportDelegate createSupportForContainer(Class containerClass)
         throws ClassNotFoundException,
                InstantiationException,
                IllegalAccessException
@@ -179,8 +175,7 @@ public class LayoutSupportRegistry {
         return (LayoutSupportDelegate) delegateClass.newInstance();
     }
 
-    public static LayoutSupportDelegate createSupportForLayout(
-                                            Class layoutClass)
+    public LayoutSupportDelegate createSupportForLayout(Class layoutClass)
         throws ClassNotFoundException,
                InstantiationException,
                IllegalAccessException
@@ -206,25 +201,19 @@ public class LayoutSupportRegistry {
     // -----------
     // private methods
 
-    private static String findSuperClass(Map map, Class subClass) {
+    private String findSuperClass(Map map, Class subClass) {
         for (Iterator it=map.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry en = (Map.Entry) it.next();
             String className = (String) en.getKey();
-            try {
-                Class keyClass = loadClass(className);
-                if (keyClass.isAssignableFrom(subClass))
-                    return (String) en.getValue();
-            }
-            catch (Exception ex) {
-                ex.printStackTrace();
-            }
+            Class keyClass = loadClass(className);
+            if (keyClass != null && keyClass.isAssignableFrom(subClass))
+                return (String) en.getValue();
         }
         return null;
     }
 
     private static String scanPalette(String wantedClassName) {
-        if (getPaletteFolder() == null)
-            return null; // Palette folder does not exist - should not happen
+        DataFolder paletteFolder = PaletteUtils.getPaletteFolder();
 
         // create palette content listener - only once
         boolean newPaletteListener = paletteListener == null;
@@ -260,21 +249,17 @@ public class LayoutSupportRegistry {
                 categoryFolder.getPrimaryFile().addFileChangeListener(
                                                        paletteListener);
 
-            DataObject[] items = categoryFolder.getChildren();
-            for (int j=0; j < items.length; j++) {
-                InstanceCookie ic = (InstanceCookie)
-                                    items[j].getCookie(InstanceCookie.class);
-                if (ic == null)
+            DataObject[] paletteItems = categoryFolder.getChildren();
+            for (int j=0; j < paletteItems.length; j++) {
+                PaletteItem item = (PaletteItem)
+                                   paletteItems[j].getCookie(PaletteItem.class);
+
+                if (item == null || !item.isLayout())
                     continue;
 
-                Class itemClass = null;
-                try {
-                    itemClass = loadClass(ic.instanceClass().getName());
-                }
-                catch (Exception ex) {} // ignnore
-
+                Class itemClass = item.getComponentClass();
                 if (itemClass == null)
-                    continue; // invalid class - ignore
+                    continue; // cannot resolve class - ignore
 
                 Class delegateClass = null;
                 Class supportedClass = null;
@@ -288,7 +273,8 @@ public class LayoutSupportRegistry {
                         supportedClass = delegate.getSupportedClass();
                     }
                     catch (Exception ex) {
-                        org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+                        org.openide.ErrorManager.getDefault().notify(
+                            org.openide.ErrorManager.INFORMATIONAL, ex);
                         continue; // invalid - ignore
                     }
                 }
@@ -324,20 +310,17 @@ public class LayoutSupportRegistry {
         return foundSupportClassName;
     }
 
-    private static DataFolder getPaletteFolder() {
-        if (paletteFolder == null) {
-            FileObject fo = Repository.getDefault()
-                              .getDefaultFileSystem().findResource("Palette"); // NOI18N
-            if (fo != null)
-                paletteFolder = DataFolder.findFolder(fo);
+    private Class loadClass(String className) {
+        try {
+            return FormUtils.loadClass(className, formModel);
         }
-        return paletteFolder;
-    }
-
-    private static Class loadClass(String className)
-        throws ClassNotFoundException
-    {
-        return org.netbeans.modules.form.FormUtils.getClassLoader().loadClass(className);
+        catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        catch (LinkageError ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        return null;
     }
 
     private static Map getContainersMap() {

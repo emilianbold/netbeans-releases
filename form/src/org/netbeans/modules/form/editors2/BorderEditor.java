@@ -582,7 +582,8 @@ public final class BorderEditor extends PropertyEditorSupport
             }
         }
 
-        // writing property to XML didn't succeed (should not happen
+        // TODO for custom borders
+/*        // writing property to XML didn't succeed (should not happen
         // for standard swing borders)
         try {
             String encodedSerializeValue = GandalfPersistenceManager
@@ -592,7 +593,7 @@ public final class BorderEditor extends PropertyEditorSupport
         }
         catch (Exception ex) { // should not happen
             ex.printStackTrace();
-        }
+        } */
     }
 
     private static Object readProperty(String xmlPropName,
@@ -630,8 +631,7 @@ public final class BorderEditor extends PropertyEditorSupport
             }
 
             IOException lastEx = null;
-            PropertyEditor editors[] = FormPropertyEditorManager.getAllEditors(
-                                                           prop.getValueType());
+            PropertyEditor editors[] = FormPropertyEditorManager.getAllEditors(prop);
 
             for (int i=0; i < editors.length && !valueRead; i++) {
                 PropertyEditor prEd = editors[i];
@@ -662,7 +662,8 @@ public final class BorderEditor extends PropertyEditorSupport
                 throw lastEx;
             }
         }
-        else { // node not found, try attribute (of the element) with encoded
+        // TODO for custom borders
+/*        else { // node not found, try attribute (of the element) with encoded
                // serialized value
             org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
             org.w3c.dom.Node attr = attributes == null ? null :
@@ -702,7 +703,7 @@ public final class BorderEditor extends PropertyEditorSupport
                     }
                 }
             }
-        }
+        } */
 
         return value;
     }

@@ -260,8 +260,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             Class superclass;
             if (superclassId != null) {
                 declaredSuperclassName = superclassId.getFullName();
-                superclass = FormUtils.getClassLoader()
-                                         .loadClass(declaredSuperclassName);
+                superclass = FormUtils.loadClass(declaredSuperclassName, formFile);
             }
             else superclass = Object.class;
 
@@ -434,7 +433,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         Class compClass = null;
         Throwable compEx = null;
         try {
-            compClass = PersistenceObjectRegistry.loadClass(className);
+            compClass = PersistenceObjectRegistry.loadClass(className, formFile);
         }
         catch (Exception ex) {
             compEx = ex;
@@ -1651,7 +1650,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             if (editorStr != null) {
                 Class editorClass = null;
                 try {
-                    editorClass = PersistenceObjectRegistry.loadClass(editorStr);
+                    editorClass = PersistenceObjectRegistry.loadClass(editorStr, formFile);
                 }
                 catch (Exception ex) {
                     t = ex;
@@ -4124,7 +4123,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         else return CodeStructure.EMPTY_PARAMS;
     }
 
-    private static Method loadMethod(org.w3c.dom.Node node) {
+    private /*static */Method loadMethod(org.w3c.dom.Node node) {
         org.w3c.dom.NamedNodeMap attr = node.getAttributes();
         if (attr == null)
             return null; // no attributes error
@@ -4177,7 +4176,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
     }
 
-    private static Field loadField(org.w3c.dom.Node node) {
+    private /*static */Field loadField(org.w3c.dom.Node node) {
         org.w3c.dom.NamedNodeMap attr = node.getAttributes();
         if (attr == null)
             return null; // no attributes error
@@ -4287,7 +4286,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             Class editorClass = null;
             try {
                 editorClass = PersistenceObjectRegistry.loadClass(
-                                         editorNode.getNodeValue());
+                                         editorNode.getNodeValue(), formFile);
             }
             catch (Exception ex) {
                 t = ex;
@@ -4422,7 +4421,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         return value;
     }
 
-    private static Class getClassFromString(String type)
+    private /*static */Class getClassFromString(String type)
         throws ClassNotFoundException
     {
         if ("int".equals(type)) // NOI18N
@@ -4448,7 +4447,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     char c = type.charAt(i);
                     if (c == 'L' && type.endsWith(";")) { // NOI18N
                         String clsName = type.substring(i+1, n-1);
-                        PersistenceObjectRegistry.loadClass(clsName);
+                        PersistenceObjectRegistry.loadClass(clsName, formFile);
                         break;
                     }
                     else if (c != '[')
@@ -4456,7 +4455,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 }
             }
 
-            return PersistenceObjectRegistry.loadClass(type);
+            return PersistenceObjectRegistry.loadClass(type, formFile);
         }
     }
 
@@ -4491,7 +4490,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (Class.class.isAssignableFrom(type)) {
             Throwable t;
             try {
-                return PersistenceObjectRegistry.loadClass(encoded);
+                return PersistenceObjectRegistry.loadClass(encoded, formFile);
             }
             catch (Exception ex) {
                 t = ex;
@@ -4539,7 +4538,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * @exception IOException thrown if an error occurres during deserializing
      *            the object
      */
-    public static Object decodeValue(String strValue)
+    public Object decodeValue(String strValue)
         throws IOException, ClassNotFoundException
     {
         if (strValue == null || strValue.length() == 0)
@@ -4586,7 +4585,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
 
     // ObjectInputStream subclass for reading serialized property values
-    private static class OIS extends ObjectInputStream {
+    private class OIS extends ObjectInputStream {
         public OIS(InputStream is) throws IOException {
             super(is);
         }
@@ -4596,19 +4595,19 @@ public class GandalfPersistenceManager extends PersistenceManager {
         {
             String name = streamCls.getName();
             if (name.startsWith("[")) { // NOI18N
-                // workaround: load array element class first to avoid failure
+                // load array element class first to avoid failure
                 for (int i=1, n=name.length(); i < n; i++) {
                     char c = name.charAt(i);
                     if (c == 'L' && name.endsWith(";")) { // NOI18N
                         String clsName = name.substring(i+1, n-1);
-                        PersistenceObjectRegistry.loadClass(clsName);
+                        PersistenceObjectRegistry.loadClass(clsName, formFile);
                         break;
                     }
                     else if (c != '[')
                         return super.resolveClass(streamCls);
                 }
             }
-            return PersistenceObjectRegistry.loadClass(name);
+            return PersistenceObjectRegistry.loadClass(name, formFile);
         }
     }
 
@@ -4931,24 +4930,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (formInfoName == null)
             return null; // no FormInfo name found in form file
 
-        Class formClass = getClassForKnownFormInfo(formInfoName);
-        if (formClass != null)
-            return formClass; // a well-known FormInfo
-
-        try { // try to instantiate the unknown FormInfo
-            org.netbeans.modules.form.forminfo.FormInfo formInfo =
-                (org.netbeans.modules.form.forminfo.FormInfo)
-                    PersistenceObjectRegistry.createInstance(formInfoName);
-            return formInfo.getFormInstance().getClass();
-        }
-        catch (Exception ex) { // ignore
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-        }
-        catch (LinkageError ex) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-        }
-
-        return null;
+        return getClassForKnownFormInfo(formInfoName);
+        // ignore unknown FormInfo - it's deep past...
     }
 
     private static Class getCompatibleFormClass(Class formBaseClass) {

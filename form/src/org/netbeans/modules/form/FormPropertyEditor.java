@@ -282,8 +282,8 @@ public class FormPropertyEditor implements PropertyEditor,
     synchronized PropertyEditor[] getAllEditors() {
         if (allEditors == null) {
             PropertyEditor expliciteEditor = property.getExpliciteEditor();
-            PropertyEditor[] typeEditors = FormPropertyEditorManager
-                                        .getAllEditors(property.getValueType());
+            PropertyEditor[] typeEditors =
+                FormPropertyEditorManager.getAllEditors(property);
             if (expliciteEditor != null) {
                 // expliciteEditor could be already in typeEditors
                 for (int i=0; i < typeEditors.length; i++)

@@ -381,7 +381,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module filecopy..."/>
     <ant dir="../filecopy" target="netbeans"/>
   </target>
-  <target name="all-form" depends="build-platform,all-java/api,all-java,all-java/srcmodel,all-java/platform">
+  <target name="all-form" depends="build-platform,all-projects/projectapi,all-projects/libraries,all-ant/project,all-java/api,all-java,all-java/srcmodel,all-java/platform">
     <echo message="Building module form..."/>
     <ant dir="../form" target="netbeans"/>
   </target>
