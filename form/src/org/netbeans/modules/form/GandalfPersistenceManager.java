@@ -4731,6 +4731,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
     // Utility DOM access methods
 
     private static String encodeToProperXML(String text) {
+        if (text == null)
+            return ""; // NOI18N
+
         if (text.indexOf('&') != -1)
             text = Utilities.replaceString(text, "&", "&amp;"); // must be the first to prevent changes in the &XX; codes // NOI18N
 
