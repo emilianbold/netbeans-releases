@@ -698,6 +698,7 @@ public class NbEditorKit extends ExtKit {
         }
         
         protected void addAdditionalItems(JTextComponent target, JMenu menu){
+            setAddSeparatorBeforeNextAction(false);
         }
         
         public JMenuItem getPopupMenuItem(JTextComponent target) {

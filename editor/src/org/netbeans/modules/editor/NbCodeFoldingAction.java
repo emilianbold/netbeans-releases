@@ -16,6 +16,7 @@ package org.netbeans.modules.editor;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -100,6 +101,10 @@ public  class NbCodeFoldingAction extends SystemAction implements Presenter.Menu
         
         public CodeFoldsMenu(String s){
             super(s);
+            //#40585 fix start - setting the empty, transparent icon for the menu item to align it correctly with other items
+            setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/openide/resources/actions/empty.gif"))); //NOI18N
+            //#40585 fix end
+            
         }
         
         public JPopupMenu getPopupMenu(){
