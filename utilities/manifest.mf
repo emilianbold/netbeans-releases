@@ -1,4 +1,30 @@
 OpenIDE-Module: org.openidex.util/1
 OpenIDE-Module-Name: Utilities
-OpenIDE-Module-Specification-Version: 0.9.0
-OpenIDE-Module-Implementation-Version: 0.9.0
+OpenIDE-Module-Specification-Version: 0.9.1
+OpenIDE-Module-Implementation-Version: 0.9.1
+OpenIDE-Module-Install: com/netbeans/developer/modules/utilities/Installer.class
+
+Name: com/netbeans/developer/modules/search/types/FullTextType.class
+OpenIDE-Module-Class: Service
+
+Name: com/netbeans/developer/modules/search/types/ObjectNameType.class
+OpenIDE-Module-Class: Service
+
+Name: com/netbeans/developer/modules/search/types/ModificationDateType.class
+OpenIDE-Module-Class: Service
+
+Name: com/netbeans/developer/modules/openfile/Settings.class
+OpenIDE-Module-Class: Option
+
+Name: com/netbeans/enterprise/modules/group/GroupShadowLoader.class
+OpenIDE-Module-Class: Loader
+
+Name: com/netbeans/enterprise/modules/group/CreateGroupAction.class
+OpenIDE-Module-Class: Action
+
+Name: com/netbeans/developer/modules/loaders/url/URLDataLoader.class
+OpenIDE-Module-Class: Loader
+
+Name: com/netbeans/developer/modules/loaders/url/BookmarksNode.class
+OpenIDE-Module-Class: Node
+Type: Session
