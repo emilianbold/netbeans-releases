@@ -85,6 +85,8 @@ public final class TLDLoader extends UniFileLoader {
 	    null,
 	    SystemAction.get(DeleteAction.class),
 	    SystemAction.get(RenameAction.class),
+            null,
+            SystemAction.get (SaveAsTemplateAction.class),
 	    null,
 	    SystemAction.get(ToolsAction.class),
 	    SystemAction.get(PropertiesAction.class),
