@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<!--       
+ *        Copyright (C) 2000  Sun Microsystems, Inc
+ *                    All rights reserved.
+ *          Notice of copyright on this source code 
+ *          product does not indicate publication. 
+ * 
+ * RESTRICTED RIGHTS LEGEND: Use, duplication, or disclosure by 
+ * the U.S. Government is subject to restrictions as set forth 
+ * in subparagraph (c)(1)(ii) of the Rights in Technical Data
+ * and Computer Software Clause at DFARS 252.227-7013 (Oct. 1988) 
+ * and FAR 52.227-19 (c) (June 1988).
+ *
+ *    Sun Microsystems, Inc., 901 San Antonio Road,
+ *    Palo Alto, California 94303 U.S.A.
+ *
+-->
+<HTML>
+<HEAD>
+<TITLE>Setting a Proxy</TITLE>
+</HEAD>
+<body bgcolor="ffffff">
+
+<h2>Setting a Proxy</h2>
+<p>If you want to use the Update Center or access the Internet through the IDE but your system is behind a firewall or you use a proxy server, you 
+need to configure the IDE with your proxy settings.</p>
+<p><b>To configure the IDE to use an HTTP proxy:</b></p>
+<ol>
+<li>Choose Tools <img src="../images/arrow.gif"> Options from the main window.<p></p></li>
+<li>Select the System Settings Node.<p></p></li>
+<li>Enter the proxy host name in the Proxy Host field and the port number in the Proxy Port field.<p></p></li>
+<li>Set the Use Proxy property to True. </li>
+</ol>
+
+<p>To run the IDE using a SOCKS proxy, you must pass the SOCKS proxy host and proxy port parameters to the JVM 
+when you start the IDE. On Microsoft Windows machines, use the <code>ide.cfg</code> file to pass the parameters. 
+On UNIX and LINUX machines, you can write a wrapper shell script.</p>
+
+<p><b>To configure the IDE to use a SOCKS proxy, when running on a Microsoft Windows machine:</b></p>
+<ol>
+<li>In the IDE's installation directory, expand the <code>bin</code> directory.<p></p></li>
+<li>If there is a not a <code>ide.cfg</code> file there, create one.<p></p></li>
+<li>Open <code>ide.cfg</code> in a text editor and enter the line
+<p><code>-J-DsocksProxyHost=<i>SOCKS-SERVER</i> -DsocksProxyPort=1080</code></p> 
+where <i>SOCKS-SERVER</i> is the host name of your SOCKS proxy.<p></p></li>
+<li>Save <code>ide.cfg</code> and close it.<p></p></li>
+<li>Restart the IDE.</li></ol>
+
+
+
+<p><b>To configure the IDE to use a SOCKS proxy, 
+when running on a UNIX or LINUX machine:</b></p>
+<ol>
+<li>Change directory to <code><i>FFJHOME</i>/bin</code>.<p></p></li>
+<li>Create a new shell script file.<p></p></li>
+<li>Open the new shell file in a text editor and enter the line 
+<pre>runide.sh -J-DsocksProxyHost=SOCKS-SERVER -DsocksProxyPort=1080</pre>
+where <i>SOCKS-SERVER</i> is the host name of your SOCKS proxy.<p></p></li>
+<li>Save the shell script and close it.<p></p></li>
+<li>Restart the IDE with the new shell script.</li></ol>
+
+
+
+
+<table>
+<tr>
+<th colspan=2 align=left>See also</th>
+</tr>
+<tr>
+<td width="23"></td>
+<td>
+<a href="webbrowser.html">Using the Internal Web Browser</a>
+<br>
+<a href="httpserver-options.html">Configuring HTTP Server Options</a>
+<br>
+</td></tr>
+</table>
+<hr>
+<font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+</body>
+</html>

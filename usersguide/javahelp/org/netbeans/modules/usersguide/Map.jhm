@@ -14,16 +14,24 @@
 <mapID target="gs.tour" url="getstart/idetour.html" />
 <mapID target="gs.key" url="getstart/keyconcepts.html" />
 <mapID target="gs.wkspc" url="getstart/wkspcs.html" />
-<mapID target="gs.csw" url="getstart/colorswitch.html" />
-<mapID target="gs.cont" url="getstart/createcontainer.html" />
-<mapID target="gs.lyt" url="getstart/chooselyout.html" />
-<mapID target="gs.label" url="getstart/addinglabel.html" />
-<mapID target="gs.button" url="getstart/addingbutton.html" />
-<mapID target="gs.setup" url="getstart/setupbutton.html" />
-<mapID target="gs.evt" url="getstart/addingevt.html" />
-<mapID target="gs.run" url="getstart/compandrun.html" />
-<mapID target="gs.step" url="getstart/steppingcode.html" />
-<mapID target="gs.view" url="getstart/viewingclass.html" />
+<mapID target="gs.gstutor" url="getstart/tutorials.html" />
+<mapID target="gs.csw" url="getstart/colorswitch/colorswitch.html" />
+<mapID target="gs.cont" url="getstart/colorswitch/createcontainer.html" />
+<mapID target="gs.lyt" url="getstart/colorswitch/chooselyout.html" />
+<mapID target="gs.label" url="getstart/colorswitch/addinglabel.html" />
+<mapID target="gs.button" url="getstart/colorswitch/addingbutton.html" />
+<mapID target="gs.setup" url="getstart/colorswitch/setupbutton.html" />
+<mapID target="gs.evt" url="getstart/colorswitch/addingevt.html" />
+<mapID target="gs.run" url="getstart/colorswitch/compandrun.html" />
+<mapID target="gs.step" url="getstart/colorswitch/steppingcode.html" />
+<mapID target="gs.view" url="getstart/colorswitch/viewingclass.html" />
+<mapID target="gs.guis" url="getstart/radiobutton/guiSwitch-tutorial.html" />
+<mapID target="gs.guicont" url="getstart/radiobutton/create-container.html" />
+<mapID target="gs.addjbean" url="getstart/radiobutton/add-bean.html" />
+<mapID target="gs.addswing" url="getstart/radiobutton/add-components.html" />
+<mapID target="gs.connect" url="getstart/radiobutton/connect-components.html" />
+<mapID target="gs.runswing" url="getstart/radiobutton/compile-run.html" />
+<mapID target="gs.addpalette" url="getstart/radiobutton/extend-ide.html" />
 
 <mapID target="project" url="project/project.html" />
 <mapID target="project.adding-existing" url="project/project_adding-existing.html" />
@@ -35,7 +43,6 @@
 <mapID target="project.save-options" url="project/project_save-options.html" />
 <mapID target="project.settings" url="project/project_settings.html" />
 <mapID target="project.switching" url="project/project_switching.html" />
-
 
 <mapID target="objects" url="objects/objects.html" />
 <mapID target="browser" url="objects/browser.html" />
@@ -76,6 +83,14 @@
 <mapID target="search.status" url="objects/search/search_status.html" />
 <mapID target="search.text" url="objects/search/search_text.html" />
 
+<mapID target="template.jump" url="objects/templates/template_jump.html" />
+<mapID target="template.new" url="objects/templates/template_new.html" />
+<mapID target="template.group" url="objects/templates/template_group.html" />
+<mapID target="template.macros" url="objects/templates/template_macros.html" />
+<mapID target="template.modifying" url="objects/templates/template_modifying.html" />
+
+<mapID target="objects.group" url="objects/objects_group.html" />
+<mapID target="filesystems.disable-compile" url="objects/filesystems/filesystems_disable-compile.html" />
 
 <mapID target="gui.intro" url="gui/intro.html" />
 <mapID target="gui.formeditor" url="gui/formeditor.html" />
@@ -108,7 +123,7 @@
 <mapID target="gui.source.guarded" url="gui/source/guarded.html" />
 <mapID target="gui.source.modifying.intro" url="gui/source/modifying/intro.html" />
 <mapID target="gui.source.modifying.component" url="gui/source/modifying/component.html" />
-<mapID target="gui.source.modifying.container" url="gui/source/modifying/container.html" />
+<mapID target="gui.source.modifying.form" url="gui/source/modifying/form.html" />
 <mapID target="gui.source.modifying.property" url="gui/source/modifying/property.html" />
 <mapID target="gui.source.external" url="gui/source/external.html" />
 <mapID target="gui.events.intro" url="gui/events/intro.html" />
@@ -146,6 +161,13 @@
 <mapID target="beans.container" url="beans/container.html" />
 <mapID target="beans.adding" url="beans/adding.html" />
 
+<mapID target="jsp.jsp_jump" url="jsp/jsp_jump.html" />
+<mapID target="jsp.jsp_create" url="jsp/jsp_create.html" />
+<mapID target="jsp.jsp_edit" url="jsp/jsp_edit.html" />
+<mapID target="jsp.jsp_compile" url="jsp/jsp_compile.html" />
+<mapID target="jsp.jsp_run" url="jsp/jsp_run.html" />
+<mapID target="jsp.jsp_queryparams" url="jsp/jsp_queryparams.html" />
+
 <mapID target="synchronizing.intro" url="synchronizing/intro.html" />
 <mapID target="synchronizing.properties" url="synchronizing/properties.html" />
 <mapID target="synchronizing.new-interface" url="synchronizing/new-interface.html" />
@@ -172,7 +194,6 @@
 
 <mapID target="run.jump" url="run/run_jump.html" />
 <mapID target="run.run" url="run/run.html" />
-<mapID target="run.debug" url="run/debug.html" />
 <mapID target="run.arguments" url="run/arguments.html" />
 <mapID target="run.disable" url="run/disable.html" />
 <mapID target="run.workspace" url="run/workspace.html" />
@@ -193,15 +214,13 @@
 <mapID target="editing.intro" url="editing/intro.html" />
 <mapID target="editing.editorwindow" url="editing/editorwindow.html" />
 <mapID target="editing.opening" url="editing/opening.html" />
-<mapID target="editing.selecting-text" url="editing/selecting-text.html" />
+<mapID target="editing.newcode" url="editing/newcode.html" />
 <mapID target="editing.using-abbreviations" url="editing/using-abbreviations.html" />
 <mapID target="editing.wordmatch" url="editing/wordmatch.html" />
 <mapID target="editing.find" url="editing/find.html" />
 <mapID target="editing.formatting" url="editing/formatting.html" />
-<mapID target="editing.navigating" url="editing/navigating/navigating.html" />
-<mapID target="editing.scrolling" url="editing/navigating/scrolling.html" />
-<mapID target="editing.jumplist" url="editing/navigating/jumplist.html" />
-<mapID target="editing.bookmarks" url="editing/navigating/bookmarks.html" />
+<mapID target="editing.jumplist" url="editing/jumplist.html" />
+<mapID target="editing.bookmarks" url="editing/bookmarks.html" />
 <mapID target="editing.codecompletion" url="editing/codecompletion/intro.html" />
 <mapID target="editing.completing-exp" url="editing/codecompletion/completing-exp.html" />
 <mapID target="editing.completing-tag" url="editing/codecompletion/completing-tag.html" />
@@ -209,7 +228,6 @@
 <mapID target="editing.settingdelay" url="editing/codecompletion/settingdelay.html" />
 <mapID target="editing.disablingdelay" url="editing/codecompletion/disabling.html" />
 <mapID target="editing.configuring" url="editing/configuring/configuring.html" />
-<mapID target="editing.setting-globalshorts" url="editing/configuring/setting-globalshorts.html" />
 <mapID target="editing.settingkeybdshorts" url="editing/configuring/settingkeybdshorts.html" />
 <mapID target="editing.javaeditor-props" url="editing/configuring/javaeditor-props.html" />
 <mapID target="editing.indentation" url="editing/configuring/indentation.html" />
@@ -220,8 +238,10 @@
 <mapID target="debug.workspace" url="debug/environment/workspace.html" />
 <mapID target="debug.options" url="debug/environment/options.html" />
 <mapID target="debug.menu" url="debug/environment/menu.html" />
+<mapID target="debug.toolbar" url="debug/environment/toolbar.html" />
 
 <mapID target="debug.breakpoint" url="debug/breakpoint/breakpoint_set.html" />
+<mapID target="debug.breakpoint.pane" url="debug/breakpoint/breakpoint_pane.html" />
 <mapID target="debug.breakpoint.line" url="debug/breakpoint/breakpoint_line.html" />
 <mapID target="debug.breakpoint.method" url="debug/breakpoint/breakpoint_method.html" />
 <mapID target="debug.breakpoint.thread" url="debug/breakpoint/breakpoint_thread.html" />
@@ -265,10 +285,16 @@
 <mapID target="debug.jpda" url="debug/jpda/jpda.html" />
 <mapID target="debug.jpda.install" url="debug/jpda/install.html" />
 
+<mapID target="debug.debugger.configure" url="debug/debugger/configure.html" />
+<mapID target="debug.debugger.default" url="debug/debugger/default.html" />
+<mapID target="debug.debugger.jdk" url="debug/debugger/jdk.html" />
+<mapID target="debug.debugger.applet" url="debug/debugger/applet.html" />
 <mapID target="debug.debugger.project_default" url="debug/debugger/project_default.html" />
 <mapID target="debug.debugger.file_default" url="debug/debugger/file_default.html" />
 <mapID target="debug.service.new" url="debug/debugger/new.html" />
 <mapID target="debug.service.remove" url="debug/debugger/remove.html" />
+<mapID target="debug.debugger.template" url="debug/debugger/template.html" />
+<mapID target="debug.debugger.explorer" url="debug/debugger/explorer.html" />
 
 
 <mapID target="javadoc.jump" url="javadoc/javadoc_jump.html" />
@@ -280,7 +306,16 @@
 <mapID target="javadoc.search.window" url="javadoc/search_window.html" />
 <mapID target="javadoc.auto.comment" url="javadoc/auto_comment.window.html" />
 <mapID target="javadoc.comment" url="javadoc/comment.html" />
-<mapID target="javadoc.doc.window" url="javadoc/doc_comment.window.html" />
+<mapID target="javadoc.doc.window" url="javadoc/doc_comment_window.html" />
+
+<mapID target="jarpackager" url="jarpackager/jarpackager.html" />
+<mapID target="jarpackager.creating" url="jarpackager/jarpackager_creating.html" />
+<mapID target="jarpackager.filter" url="jarpackager/jarpackager_filter.html" />
+<mapID target="jarpackager.history" url="jarpackager/jarpackager_history.html" />
+<mapID target="jarpackager.manifest" url="jarpackager/jarpackager_manifest.html" />
+<mapID target="jarpackager.modifying" url="jarpackager/jarpackager_modifying.html" />
+<mapID target="jarpackager.options" url="jarpackager/jarpackager_options.html" />
+<mapID target="jarpackager.updating" url="jarpackager/jarpackager_updating.html" />
 
 <mapID target="cvs" url="cvs-nb/cvs.html" />
 <mapID target="cvs.commands" url="cvs-nb/cvs_commands.html" />
@@ -290,6 +325,9 @@
 <mapID target="cvs.repository" url="cvs-nb/cvs_repository.html" />
 <mapID target="cvs.settings" url="cvs-nb/cvs_settings.html" />
 
+<mapID target="webbrowser" url="webbrowser/webbrowser.html" />
+<mapID target="proxy" url="webbrowser/proxy.html" />
+<mapID target="httpserver-options" url="webbrowser/httpserver-options.html" />
 
 <mapID target="workspace.jump" url="workspace/workspace_jump.html" />
 <mapID target="workspace.defined" url="workspace/workspace.html" />
@@ -308,7 +346,24 @@
 <mapID target="propfiles.addlocale" url="propfiles/addinglocale.html" />
 <mapID target="propfiles.editlocale" url="propfiles/editinglocale.html" />
 
+<mapID target="internation.internation" url="internationalize/international.html" />
+<mapID target="internation.autoinsert" url="internationalize/autoinsert.html" />
+<mapID target="internation.maninsert" url="internationalize/manualinsert.html" />
+<mapID target="internation.formed" url="internationalize/formedstrings.html" />
+<mapID target="internation.addparams" url="internationalize/addparams.html" />
+
 <mapID target="configure" url="configure/configure.html" />
+<mapID target="configure.menu" url="configure/menu.html" />
+<mapID target="configure.menucommands" url="configure/menu_commands.html" />
+<mapID target="configure.menucreate" url="configure/menu_create.html" />
+<mapID target="configure.menudelete" url="configure/menu_delete.html" />
+<mapID target="configure.toolbar" url="configure/toolbar.html" />
+<mapID target="configure.tbcommands" url="configure/tb_commands.html" />
+<mapID target="configure.tbmove" url="configure/tb_move.html" />
+<mapID target="configure.tbsave" url="configure/tb_save.html" />
+<mapID target="configure.tbcreate" url="configure/tb_create.html" />
+<mapID target="configure.tbdelete" url="configure/tb_delete.html" />
+<mapID target="configure.output" url="configure/output.html" />
 
 <mapID target="shortcuts.editor" url="shortcuts/editorcuts.html" />
 <mapID target="shortcuts.kybd" url="shortcuts/kybdshortcuts.html" />

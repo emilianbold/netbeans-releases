@@ -23,8 +23,21 @@
 
 <h2>Editor Shortcuts</h2>
 
-Shortcuts for the commands available from the main menu:
+Shortcuts are available for the following operations:
+<ul>
+<li><a href="#mvpt">Moving the Insertion Point</a>
+<li><a href="#selecttxt">Selecting Text</a>
+<li><a href="#scrolltxt">Scrolling Text</a>
+<li><a href="#modtxt">Modifying Text</a>
+<li><a href="#ccpdtxt">Cutting, Copying, Pasting, and Deleting Text</a>
+<li><a href="#searchtxt">Searching Text</a>
+<li><a href="#settabs">Setting Tabs</a>
+<li><a href="#modcode">Modifying Code</a>
+<li><a href="#openfiles">Opening Files</a>
+<li><a href="#usebkmks">Using Bookmarks</a>
+</ul>
 
+<a name="mvpt"></a>
 <h3>Moving the Insertion Point</h3>
 
 <table border="1">
@@ -43,7 +56,7 @@ Shortcuts for the commands available from the main menu:
 <td valign="top">Ctrl-right arrow</td>
 <td>Moves the insertion point one word to the right.</td> 
 </tr>
-<td valign="top">Ctrol-left arrow</td>
+<td valign="top">Ctrl-left arrow</td>
 <td>Moves the insertion point one word to the left.</td> 
 </tr>
 <tr>
@@ -90,16 +103,9 @@ Shortcuts for the commands available from the main menu:
 <td valign="top">PgDn</td>
 <td>Moves the insertion point one page down.</td> 
 </tr>
-<tr>
-<td valign="top">Ctrl-up arrow</td>
-<td>Scrolls the window up without moving the insertion point.</td> 
-</tr>
-<tr>
-<td valign="top">Ctrl-down arrow</td>
-<td>Scrolls the window down without moving the insertion point.</td> 
-</tr>
 </table>
 
+<a name="selecttxt"></a>
 <h3>Selecting Text</h3>
 
 <table border="1">
@@ -164,11 +170,12 @@ document.</td>
 <td>Creates a text selection and extends it one page up.</td> 
 </tr>
 <tr>
-<td valign="top">Shift-Pgdn</td>
+<td valign="top">Shift-PgDn</td>
 <td>Creates a text selection and extends it one page down.</td> 
 </tr>
 </table>
 
+<a name="scrolltxt"></a>
 <h3>Scrolling Text</h3>
 
 <table border="1">
@@ -177,19 +184,28 @@ document.</td>
 <th align="left">Action</th>
 </tr>
 <tr>
-<td valign="top">Ctrl-Alt-T</td>
+<td valign="top">Alt-T</td>
 <td>Scrolls text to top of window.</td>
 </tr>
 <tr>
-<td valign="top">Ctrl-Alt-M</td>
+<td valign="top">Alt-M</td>
 <td>Scrolls text to middle of window.</td>
 </tr>
 <tr>
-<td valign="top">Ctrl-Alt-B</td>
+<td valign="top">Alt-B</td>
 <td>Scrolls text to bottom of window.</td>
+</tr>
+<tr>
+<td valign="top">Ctrl-up arrow</td>
+<td>Scrolls the window up without moving the insertion point.</td> 
+</tr>
+<tr>
+<td valign="top">Ctrl-down arrow</td>
+<td>Scrolls the window down without moving the insertion point.</td> 
 </tr>
 </table>
 
+<a name="modtxt"></a>
 <h3>Modifying Text</h3>
 
 <table border="1">
@@ -227,6 +243,7 @@ insertion point is on.</td>
 </tr>
 </table>
 
+<a name="ccpdtxt"></a>
 <h3>Cutting, Copying, Pasting, and Deleting Text</h3>
 
 <table border="1">
@@ -301,6 +318,7 @@ point and pastes it at the insertion point.</td>
 </tr>
 </table>
 
+<a name="searchtxt"></a>
 <h3>Searching for Text</h3>
 
 <table border="1">
@@ -329,6 +347,7 @@ occurrence of the word.</td>
 </tr>
 </table>
 
+<a name="settabs"></a>
 <h3>Setting Tabs</h3>
 
 <table border="1">
@@ -352,6 +371,7 @@ the left.</td>
 </tr>
 </table>
 
+<a name="modcode"></a>
 <h3>Modifying Code</h3>
 
 <table border="1">
@@ -377,7 +397,7 @@ the left.</td>
 </tr>
 <tr>
 <td valign="top">Alt-G</td>
-<td>Goes to next variable declaration.</td>
+<td>Goes to next method or variable declaration.</td>
 </tr>
 <tr>
 <td valign="top">Ctrl-Shift-T</td>
@@ -413,6 +433,31 @@ the left.</td>
 </tr>
 </table>
 
+<a name="openfiles"></a>
+<h3>Opening Files</h3>
+
+<table border="1">
+<tr>
+<th align="left">Keys</th>
+<th align="left">Action</th>
+</tr>
+<tr>
+<td valign="top">Alt-O</td>
+<td>Opens the source based on the current location of the insertion point. The source
+file must be in a directory mounted in Filesystems, and the parser
+database must be updated for that source.</td>
+</tr>
+<tr>
+<td valign="top">Alt-F1</td>
+<td>Opens the web browser on the Javadoc file pertaining to the item
+that the insertion point is on. The source file must be in a
+directory mounted in Filesystems, and the parser database must be
+updated for that source. Also, the Javadoc documentation for that
+source must be mounted under the Javadoc tab in the Explorer.</td>
+</tr>
+</table>
+
+<a name="usebkmks"></a>
 <h3>Using Bookmarks</h3>
 
 <table border="1">

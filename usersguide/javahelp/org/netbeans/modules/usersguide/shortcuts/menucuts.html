@@ -23,8 +23,19 @@
 
 <h2>Menu Shortcuts</h2>
 
-Shortcuts for the commands available from the main menu:
+Shortcuts for commands available from the main menu:
+<ul>
+<li><a href="#file">File Menu</a>
+<li><a href="#edit">Edit Menu</a>
+<li><a href="#view">View Menu</a>
+<li><a href="#project">Project Menu</a>
+<li><a href="#build">Build Menu</a>
+<li><a href="#debug">Debug Menu</a>
+<li><a href="#window">Window Menu</a>
+<li><a href="#help">Help Menu</a>
+</ul>
 
+<a name="file"></a>
 <h3>File Menu</h3>
 
 <table border="1">
@@ -55,6 +66,7 @@ Shortcuts for the commands available from the main menu:
 </tr>
 </table>
 
+<a name="edit"></a>
 <h3>Edit Menu</h3>
 <table  border="1">
 <tr>
@@ -113,6 +125,7 @@ string specified.</td>
 </tr>
 </table>
 
+<a name="view"></a>
 <h3>View Menu</h3>
 <table  border="1">
 <tr>
@@ -177,6 +190,7 @@ string specified.</td>
 </tr>
 </table>
 
+<a name="project"></a>
 <h3>Project Menu</h3>
 
 <table border="1">
@@ -243,6 +257,7 @@ Debugging workspace.</td>
 </tr>
 </table>
 
+<a name="build"></a>
 <h3>Build Menu</h3>
 
 <table border="1">
@@ -254,26 +269,28 @@ Debugging workspace.</td>
 <tr>
 <td valign="top">F9</td>
 <td valign="top">Compile</td>
-<td valign="top">Compiles only the files of the selected node that
-that have been changed or that have not been previously compiled.</td>
+<td valign="top">Compiles the file. If you select a folder, the IDE
+compiles only the files that are new or have changed since the last
+compile.</td> 
 </tr>
 <tr>
 <td valign="top">Ctrl-F9</td> 
 <td valign="top">Compile All</td> 
-<td valign="top">Compiles files of the selected node and its subnodes
-that have been changed or have not been previously compiled.</td>
+<td valign="top">Compiles all files within the selected
+folder that are new or that have changed.</td>
 </tr>
 <tr>
 <td valign="top">F10</td>
 <td valign="top">Build</td>
-<td valign="top">Compiles all files of the selected node whether or
-not they have changed since the last compilation.</td>
-</tr>
+<td valign="top">Compiles the file. If you select a folder, the IDE
+compiles all files regardless of whether they have changed since the
+last compile.</td> 
+</tr> 
 <tr>
 <td valign="top">Ctrl-F10</td>
 <td valign="top">Build All</td>
-<td valign="top">Compiles all files of the selected node and its
-subnodes whether or not they have changed since the last compilation.</td>
+<td valign="top">Compiles all files within the selected folder
+regardless of whether they have changed since the last compile.</td> 
 </tr>
 <tr>
 <td valign="top">F11</td>
@@ -311,6 +328,7 @@ the previous build error.</td>
 </tr>
 </table>
 
+<a name="debug"></a>
 <h3>Debug Menu</h3>
 
 <table border="1">
@@ -328,7 +346,7 @@ workspace to the Debugging workspace.</td>
 </tr>
 <tr>
 <td valign="top">Ctrl-F5</td>
-<td valign="top">Continue Debugging</td>
+<td valign="top">Continue</td>
 <td valign="top">Resume debugging until the next
 breakpoint or the end of the program is reached.</td>
 </tr>
@@ -393,6 +411,7 @@ caller.</td>
 </tr>
 </table>
 
+<a name="window"></a>
 <h3>Window Menu</h3>
 
 <table border="1">
@@ -438,6 +457,7 @@ caller.</td>
 </tr>-->
 </table>
 
+<a name="help"></a>
 <h3>Help Menu</h3>
 
 <table border="1">
