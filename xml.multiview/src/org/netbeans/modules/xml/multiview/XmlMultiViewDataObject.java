@@ -56,6 +56,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     private Boolean overwriteUnparseable = Boolean.TRUE;
     private long handleUnparseableTimeout = 0;
     private static final int HANDLE_UNPARSABLE_TIMEOUT = 2000;
+    private static final long WAIT_FINISHED_TIMEOUT = 10000;
     protected boolean parseable;
     private ToolBarMultiViewElement activeMVElement;
 
@@ -415,7 +416,11 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
 
     public void waitForSync() {
         if (synchronizeModelTask != null) {
-            synchronizeModelTask.waitFinished();
+            try {
+                synchronizeModelTask.waitFinished(WAIT_FINISHED_TIMEOUT);
+            } catch (InterruptedException e) {
+                ErrorManager.getDefault().notify(e);
+            }
         }
     }
     
