@@ -89,4 +89,8 @@ public class ShowDocAction extends CookieAction {
         indexSearch.open ();
         indexSearch.requestFocus();        
     }
+
+    protected String iconResource(){
+        return "/org/netbeans/modules/javadoc/resources/showjavadoc.gif"; //NO I18N
+    }
 }
