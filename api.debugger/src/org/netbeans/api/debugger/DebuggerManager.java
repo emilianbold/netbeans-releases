@@ -472,7 +472,7 @@ public final class DebuggerManager {
     ) {
         if (!breakpointsInitialized) initBreakpoints ();
         breakpoints.removeElement (breakpoint);
-        breakpoint.dispose ();
+        breakpoint.disposeOut ();
         fireBreakpointRemoved (breakpoint);
     }
 

@@ -21,6 +21,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
+import org.netbeans.api.debugger.LookupProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
@@ -32,11 +33,12 @@ import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.spi.debugger.jpda.EngineContextProvider;
 
 
 /**
  * Listens on JPDADebugger.PROP_STATE and DebuggerManager.PROP_BREAKPOINTS, and
- * and creates XXXBreakpointImple classes for all JPDABreakpoints.
+ * and creates XXXBreakpointImpl classes for all JPDABreakpoints.
  *
  * @author   Jan Jancura
  */
@@ -47,14 +49,15 @@ implements PropertyChangeListener, DebuggerManagerListener {
         System.getProperty ("netbeans.debugger.breakpoints") != null;
 
     private JPDADebuggerImpl        debugger;
-    private DebuggerEngine          engine;
+    private EngineContextProvider   engineContextProvider;
     private boolean                 started = false;
     
     
-    public BreakpointsEngineListener (DebuggerEngine engine) {
-        this.debugger = (JPDADebuggerImpl) engine.lookupFirst 
+    public BreakpointsEngineListener (LookupProvider lookupProvider) {
+        debugger = (JPDADebuggerImpl) lookupProvider.lookupFirst 
             (JPDADebugger.class);
-        this.engine = engine;
+        engineContextProvider = (EngineContextProvider) lookupProvider.
+            lookupFirst (EngineContextProvider.class);
         debugger.addPropertyChangeListener (
             JPDADebugger.PROP_STATE,
             this
@@ -140,17 +143,17 @@ implements PropertyChangeListener, DebuggerManagerListener {
         if (b instanceof LineBreakpoint) {
             breakpointToImpl.put (
                 b,
-                new JPDALineBreakpointImpl (
+                new LineBreakpointImpl (
                     (LineBreakpoint) b,
                     debugger,
-                    engine
+                    engineContextProvider
                 )
             );
         } else
         if (b instanceof ExceptionBreakpoint) {
             breakpointToImpl.put (
                 b,
-                new JPDAExceptionBreakpointImpl (
+                new ExceptionBreakpointImpl (
                     (ExceptionBreakpoint) b,
                     debugger
                 )
@@ -159,7 +162,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
         if (b instanceof MethodBreakpoint) {
             breakpointToImpl.put (
                 b,
-                new JPDAMethodBreakpointImpl (
+                new MethodBreakpointImpl (
                     (MethodBreakpoint) b,
                     debugger
                 )
@@ -168,7 +171,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
         if (b instanceof FieldBreakpoint) {
             breakpointToImpl.put (
                 b,
-                new JPDAFieldBreakpointImpl (
+                new FieldBreakpointImpl (
                     (FieldBreakpoint) b,
                     debugger
                 )
@@ -177,7 +180,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
         if (b instanceof ThreadBreakpoint) {
             breakpointToImpl.put (
                 b,
-                new JPDAThreadBreakpointImpl (
+                new ThreadBreakpointImpl (
                     (ThreadBreakpoint) b,
                     debugger
                 )
@@ -186,7 +189,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
         if (b instanceof ClassLoadUnloadBreakpoint) {
             breakpointToImpl.put (
                 b,
-                new JPDAClassBreakpointImpl (
+                new ClassBreakpointImpl (
                     (ClassLoadUnloadBreakpoint) b,
                     debugger
                 )
@@ -195,8 +198,9 @@ implements PropertyChangeListener, DebuggerManagerListener {
     }
 
     private void removeBreakpoint (Breakpoint b) {
-        JPDABreakpointImpl impl = (JPDABreakpointImpl) breakpointToImpl.get (b);
+        BreakpointImpl impl = (BreakpointImpl) breakpointToImpl.get (b);
         if (impl == null) return;
+        impl.remove ();
         breakpointToImpl.remove (b);
     }
 }

@@ -36,7 +36,7 @@ public final class MethodBreakpoint extends JPDABreakpoint {
     /** Property name constant. */
     public static final String          PROP_ALL_METHODS = "allMethods"; // NOI18N
     /** Property name constant. */
-    public static final String          PROP_METHOD_ENTRY = "methodEntry"; // NOI18N
+    public static final String          PROP_BREAKPOINT_TYPE = "breakpointtType"; // NOI18N
     /** Property name constant. */
     public static final String          PROP_CONDITION = "condition"; // NOI18N
     /** Property name constant. */
@@ -44,12 +44,17 @@ public final class MethodBreakpoint extends JPDABreakpoint {
     /** Property name constant */
     public static final String          PROP_CLASS_NAME = "className"; // NOI18N
 
+    /** Breakpoint type property value constant. */
+    public static final int             TYPE_METHOD_ENTRY = 1;
+    /** Breakpoint type property value constant. */
+    public static final int             TYPE_METHOD_EXIT = 2;
+
     /** Property variable. */
     private boolean                     anonymousInnerClasses = true;
     private String                      className = "";
     private String                      methodName = "";
     private boolean                     allMethods = false;
-    private boolean                     methodEntry = true;
+    private int                         breakpointType = TYPE_METHOD_ENTRY;
     private String                      condition = "";
     
     
@@ -172,29 +177,28 @@ public final class MethodBreakpoint extends JPDABreakpoint {
         allMethods = all;
         firePropertyChange (PROP_ALL_METHODS, new Boolean (!allMethods), new Boolean (allMethods));
     }
-    
+
     /**
-     * If true debuggeing will be stoped on method entry.
-     * 
-     * @return If true debuggeing will be stoped on method entry
+     * Returns type of this breakpoint.
+     *
+     * @return type of this breakpoint
      */
-    public boolean getMethodEntry () {
-        return methodEntry;
+    public int getBreakpointType () {
+        return breakpointType;
     }
 
     /**
-     * Sets method entry property value.
+     * Sets type of this breakpoint (TYPE_METHOD_ENTRY or TYPE_METHOD_EXIT).
      *
-     * @param methodEntry a new value of method entry property
+     * @param breakpointType a new value of breakpoint type property
      */
-    public void setMethodEntry (boolean methodEntry) {
-        if (this.methodEntry == methodEntry) return;
-        this.methodEntry = methodEntry;
-        firePropertyChange (
-            PROP_METHOD_ENTRY, 
-            new Boolean (!methodEntry), 
-            new Boolean (methodEntry)
-        );
+    public void setBreakpointType (int breakpointType) {
+        if (breakpointType == this.breakpointType) return;
+        if ((breakpointType & (TYPE_METHOD_ENTRY | TYPE_METHOD_EXIT)) == 0)
+            throw new IllegalArgumentException  ();
+        int old = this.breakpointType;
+        this.breakpointType = breakpointType;
+        firePropertyChange (PROP_BREAKPOINT_TYPE, new Integer (old), new Integer (breakpointType));
     }
 
     /**

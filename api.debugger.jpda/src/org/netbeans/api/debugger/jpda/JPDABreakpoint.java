@@ -29,7 +29,7 @@ import org.netbeans.api.debugger.Breakpoint;
  *
  * @author   Jan Jancura
  */
-public abstract class JPDABreakpoint extends Breakpoint {
+public class JPDABreakpoint extends Breakpoint {
     
     // static ..................................................................
     
@@ -50,8 +50,6 @@ public abstract class JPDABreakpoint extends Breakpoint {
     
     // private variables .....................................................
 
-    /** Support for property listeners. */
-    private PropertyChangeSupport       pcs;
     /** Set of actions. */
     private boolean                     enabled = true;
     private boolean                     hidden = false;
@@ -59,11 +57,7 @@ public abstract class JPDABreakpoint extends Breakpoint {
     private String                      printText = null;
     private HashSet                     breakpointListeners = new HashSet ();
     
-    
-    {
-        pcs = new PropertyChangeSupport (this);
-    }
-
+   
     JPDABreakpoint () {
     }
     
@@ -163,52 +157,6 @@ public abstract class JPDABreakpoint extends Breakpoint {
     }
     
     /** 
-     * Add a listener to property changes.
-     *
-     * @param listener the listener to add
-     */
-    public synchronized void addPropertyChangeListener (
-        PropertyChangeListener listener
-    ) {
-        pcs.addPropertyChangeListener (listener);
-    }
-
-    /** 
-     * Remove a listener to property changes.
-     *
-     * @param listener the listener to remove
-     */
-    public synchronized void removePropertyChangeListener (
-        PropertyChangeListener listener
-    ) {
-        pcs.removePropertyChangeListener (listener);
-    }
-
-    /**
-     * Adds a property change listener.
-     *
-     * @param propertyName a name of property to listen on
-     * @param l the listener to add
-     */
-    public void addPropertyChangeListener (
-        String propertyName, PropertyChangeListener l
-    ) {
-        pcs.addPropertyChangeListener (propertyName, l);
-    }
-
-    /**
-     * Removes a property change listener.
-     *
-     * @param propertyName a name of property to stop listening on
-     * @param l the listener to remove
-     */
-    public void removePropertyChangeListener (
-        String propertyName, PropertyChangeListener l
-    ) {
-        pcs.removePropertyChangeListener (propertyName, l);
-    }
-    
-    /** 
      * Adds a JPDABreakpointListener.
      *
      * @param listener the listener to add
@@ -228,17 +176,6 @@ public abstract class JPDABreakpoint extends Breakpoint {
         JPDABreakpointListener listener
     ){
         breakpointListeners.remove (listener);
-    }
-
-    /**
-     * Fire property change.
-     *
-     * @param name name of property
-     * @param o old value of property
-     * @param n new value of property
-     */
-    protected void firePropertyChange (String name, Object o, Object n) {
-        pcs.firePropertyChange (name, o, n);
     }
 
     /**

@@ -36,12 +36,18 @@ public final class LineBreakpoint extends JPDABreakpoint {
     public static final String          PROP_URL = "url"; // NOI18N
     /** Property name constant. */
     public static final String          PROP_CONDITION = "condition"; // NOI18N
-    
+    /** Property name constant. */
+    public static final String          PROP_SOURCE_NAME = "sourceName"; // NOI18N
+    /** Property name constant. */
+    public static final String          PROP_STRATUM = "stratum"; // NOI18N
     
     private String                      url = "";
     private int                         lineNumber;
     private String                      condition = ""; // NOI18N
+    private String                      sourceName = null; // NOI18N
+    private String                      stratum = "Java"; // NOI18N
 
+    
     private LineBreakpoint () {
     }
     
@@ -61,20 +67,6 @@ public final class LineBreakpoint extends JPDABreakpoint {
         b.setLineNumber (lineNumber);
         return b;
     }
-    
-    /**
-     * Sets name of class to stop on.
-     *
-     * @param cn a new name of class to stop on
-     */
-    public void setURL (String url) {
-        if ( (url == this.url) ||
-             ((url != null) && (this.url != null) && url.equals (this.url))
-        ) return;
-        String old = url;
-        this.url = url;
-        firePropertyChange (PROP_URL, old, url);
-    }
 
     /**
      * Gets name of class to stop on.
@@ -83,6 +75,21 @@ public final class LineBreakpoint extends JPDABreakpoint {
      */
     public String getURL () {
         return url;
+    }
+    
+    /**
+     * Sets name of class to stop on.
+     *
+     * @param cn a new name of class to stop on
+     */
+    public void setURL (String url) {
+        if (url == null) url = "";
+        if ( (url == this.url) ||
+             ((url != null) && (this.url != null) && url.equals (this.url))
+        ) return;
+        String old = url;
+        this.url = url;
+        firePropertyChange (PROP_URL, old, url);
     }
     
     /**
@@ -111,12 +118,22 @@ public final class LineBreakpoint extends JPDABreakpoint {
     }
     
     /**
+     * Returns condition.
+     *
+     * @return cond a condition
+     */
+    public String getCondition () {
+        return condition;
+    }
+    
+    /**
      * Sets condition.
      *
      * @param c a new condition
      */
     public void setCondition (String c) {
-        if (c != null) c = c.trim ();
+        if (c == null) c = "";
+        c = c.trim ();
         if ( (c == condition) ||
              ((c != null) && (condition != null) && condition.equals (c))
         ) return;
@@ -126,12 +143,53 @@ public final class LineBreakpoint extends JPDABreakpoint {
     }
     
     /**
-     * Returns condition.
+     * Returns stratum.
      *
-     * @return cond a condition
+     * @return a stratum
      */
-    public String getCondition () {
-        return condition;
+    public String getStratum () {
+        return stratum;
+    }
+    
+    /**
+     * Sets stratum.
+     *
+     * @param s a new stratum
+     */
+    public void setStratum (String s) {
+        if (s == null) s = "";
+        s = s.trim ();
+        if ( (s == stratum) ||
+             ((s != null) && (stratum != null) && stratum.equals (s))
+        ) return;
+        String old = stratum;
+        stratum = s;
+        firePropertyChange (PROP_CONDITION, old, stratum);
+    }
+    
+    /**
+     * Returns source name.
+     *
+     * @return a source name
+     */
+    public String getSourceName () {
+        return sourceName;
+    }
+    
+    /**
+     * Sets source name.
+     *
+     * @param c a new source name
+     */
+    public void setSourceName (String sn) {
+        if (sn == null) sn = "";
+        sn = sn.trim ();
+        if ( (sn == sourceName) ||
+             ((sn != null) && (sourceName != null) && sourceName.equals (sn))
+        ) return;
+        String old = sourceName;
+        sourceName = sn;
+        firePropertyChange (PROP_SOURCE_NAME, old, sourceName);
     }
 
     /**

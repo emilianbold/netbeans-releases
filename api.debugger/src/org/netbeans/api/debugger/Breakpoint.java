@@ -14,6 +14,7 @@
 package org.netbeans.api.debugger;
 
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 /**
  * Abstract definition of breakpoint.
@@ -25,12 +26,17 @@ public abstract class Breakpoint {
     
     /** Property name for enabled status of the breakpoint. */
     public static final String          PROP_ENABLED = "enabled"; // NOI18N
-    
+    /** Property name for disposed state of the breakpoint. */
+    public static final String          PROP_DISPOSED = "disposed"; // NOI18N
+
+    /** Support for property listeners. */
+    private PropertyChangeSupport       pcs;
+    { pcs = new PropertyChangeSupport (this); }
+
     /**
      * Called when breakpoint is removed.
      */
-    protected void dispose () {
-    }
+    protected void dispose () {}
 
     /**
      * Test whether the breakpoint is enabled.
@@ -48,19 +54,69 @@ public abstract class Breakpoint {
      * Enables the breakpoint.
      */
     public abstract void enable ();
+    
+    /** 
+     * Add a listener to property changes.
+     *
+     * @param listener the listener to add
+     */
+    public synchronized void addPropertyChangeListener (
+        PropertyChangeListener listener
+    ) {
+        pcs.addPropertyChangeListener (listener);
+    }
 
+    /** 
+     * Remove a listener to property changes.
+     *
+     * @param listener the listener to remove
+     */
+    public synchronized void removePropertyChangeListener (
+        PropertyChangeListener listener
+    ) {
+        pcs.removePropertyChangeListener (listener);
+    }
 
     /**
-     * Add a property change listener.
+     * Adds a property change listener.
      *
+     * @param propertyName a name of property to listen on
      * @param l the listener to add
      */
-    public abstract void addPropertyChangeListener (PropertyChangeListener l);
+    public void addPropertyChangeListener (
+        String propertyName, PropertyChangeListener l
+    ) {
+        pcs.addPropertyChangeListener (propertyName, l);
+    }
 
     /**
-     * Remove a property change listener.
+     * Removes a property change listener.
      *
+     * @param propertyName a name of property to stop listening on
      * @param l the listener to remove
      */
-    public abstract void removePropertyChangeListener (PropertyChangeListener l);
+    public void removePropertyChangeListener (
+        String propertyName, PropertyChangeListener l
+    ) {
+        pcs.removePropertyChangeListener (propertyName, l);
+    }
+
+    /**
+     * Fire property change.
+     *
+     * @param name name of property
+     * @param o old value of property
+     * @param n new value of property
+     */
+    protected void firePropertyChange (String name, Object o, Object n) {
+        pcs.firePropertyChange (name, o, n);
+    }
+    
+    /**
+     * Called when breakpoint is removed.
+     */
+    void disposeOut () {
+        dispose ();
+        firePropertyChange (PROP_DISPOSED, Boolean.FALSE, Boolean.TRUE);
+    }
 }

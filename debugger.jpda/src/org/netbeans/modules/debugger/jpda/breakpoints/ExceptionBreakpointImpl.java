@@ -1,0 +1,78 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.debugger.jpda.breakpoints;
+
+import com.sun.jdi.ReferenceType;
+import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.event.ClassPrepareEvent;
+import com.sun.jdi.event.Event;
+import com.sun.jdi.event.ExceptionEvent;
+import com.sun.jdi.request.ClassPrepareRequest;
+import com.sun.jdi.request.ExceptionRequest;
+import java.util.Iterator;
+import java.util.List;
+import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
+
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.util.Executor;
+
+
+/**
+* Implementation of breakpoint on method.
+*
+* @author   Jan Jancura
+*/
+public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
+
+    
+    private ExceptionBreakpoint breakpoint;
+    
+    
+    public ExceptionBreakpointImpl (ExceptionBreakpoint breakpoint, JPDADebuggerImpl debugger) {
+        super (breakpoint, debugger);
+        this.breakpoint = breakpoint;
+        set ();
+    }
+    
+    protected void setRequests () {
+        setClassRequests (breakpoint.getExceptionClassName ());
+    }
+    
+    protected void classLoaded (ReferenceType referenceType) {
+        try {
+            ExceptionRequest er = getEventRequestManager ().
+                createExceptionRequest (
+                    referenceType, 
+                    (breakpoint.getCatchType () & 
+                        ExceptionBreakpoint.TYPE_EXCEPTION_CATCHED) != 0, 
+                    (breakpoint.getCatchType () & 
+                        ExceptionBreakpoint.TYPE_EXCEPTION_UNCATCHED) != 0
+                );
+            addEventRequest (er);
+        } catch (VMDisconnectedException e) {
+        }
+    }
+
+    public boolean exec (Event event) {
+        if (event instanceof ExceptionEvent)
+            return perform (
+                breakpoint.getCondition (),
+                ((ExceptionEvent) event).thread (),
+                ((ExceptionEvent) event).exception ().referenceType ()
+            );
+        return super.exec (event);
+    }
+}
+
