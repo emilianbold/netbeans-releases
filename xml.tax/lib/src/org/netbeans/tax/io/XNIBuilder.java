@@ -558,7 +558,7 @@ public final class XNIBuilder implements TreeBuilder {
                 if (idtd.charAt (pos) == '[') {
                     start = ++pos;
                 }
-            } else {  // PUBLIC "" "" [
+            } else if (idtd.charAt (pos) == 'P') {  // PUBLIC "" "" [
                 for (; StringUtil.isWS (idtd.charAt (pos)) == false; pos ++);
                 for (; StringUtil.isWS (idtd.charAt (pos)); pos ++);
                 delimiter = idtd.charAt (pos++);
