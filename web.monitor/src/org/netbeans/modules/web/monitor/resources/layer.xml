@@ -22,30 +22,8 @@ Microsystems, Inc. All Rights Reserved.
         <file name="org-netbeans-modules-web-monitor-client-MonitorAction.instance"/>
         <attr name="org-netbeans-modules-web-monitor-client-MonitorAction.instance/Form" boolvalue="true" />
     </folder>
-
-   <folder name="Help">
-      <folder name="HelpShortcuts">
-        <!-- Insert helpset under the separator line below the Usersguide help -->
-        <attr name="org-netbeans-modules-usersguide-sep.instance/org-netbeans-modules-web-monitor-mainpage.xml" boolvalue="true"/>
-        <!-- Insert helpset under JSP/Servlet Help -->
-        <attr name="org-netbeans-modules-web-ie-mainpage.xml/org-netbeans-modules-web-monitor-mainpage.xml" boolvalue="true"/>
-        <file name="org-netbeans-modules-web-monitor-mainpage.xml" url="help-main-ref.xml">
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.monitor.Bundle"/>
-          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/monitor/resources/blank.gif"/>
-        </file>
-        <attr name="org-netbeans-modules-web-monitor-mainpage.xml/org-netbeans-modules-usersguide-second-sep.instance" boolvalue="true"/>
-      </folder>
-    </folder>
   </folder>
 
-  <folder name="Actions">
-    <folder name="Help">
-      <file name="org-netbeans-modules-web-monitor-mainpage.xml" url="help-main-ref.xml">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.monitor.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/monitor/client/icons/menuitem.gif"/>
-      </file>
-    </folder>
-  </folder>
 
   <folder name="Toolbars">
 

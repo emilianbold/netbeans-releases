@@ -75,30 +75,7 @@ Microsystems, Inc. All Rights Reserved.
 
     </folder>
     
-  <folder name="Menu">
-    <folder name="Help">
-      <folder name="HelpShortcuts">
-        <!-- Insert helpset under the separator line below the Usersguide help -->
-        <attr name="org-netbeans-modules-usersguide-sep.instance/org-netbeans-modules-tomcat5-mainpage.xml" boolvalue="true"/>
-        <!-- Insert helpset under Web Services Help -->
-        <attr name="com-sun-forte4j-webdesigner-docs-mainpage.xml/org-netbeans-modules-web-monitor-mainpage.xml" boolvalue="true"/>
-        <file name="org-netbeans-modules-tomcat5-mainpage.xml" url="help-main-ref.xml">
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.tomcat5.Bundle"/>
-          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/tomcat5/resources/blank.gif"/>
-        </file>
-        <attr name="org-netbeans-modules-tomcat5-mainpage.xml/org-netbeans-modules-usersguide-lower-sep.instance" boolvalue="true"/>
-      </folder>
-    </folder>
-  </folder>
-
-  <folder name="Actions">
-    <folder name="Help">
-      <file name="org-netbeans-modules-tomcat5-mainpage.xml" url="help-main-ref.xml">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.tomcat5.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/tomcat5/resources/Tomcat5Icon.gif"/>
-      </file>
-    </folder>
-  </folder>    
+   
 
     <!-- PENDING: settings for storing of Tomcat instances    
     <folder name="xml">
