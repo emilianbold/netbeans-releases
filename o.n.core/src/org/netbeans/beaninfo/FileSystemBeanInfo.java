@@ -60,8 +60,10 @@ public class FileSystemBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  3    Gandalf   1.2         3/1/99   Jesse Glick     Typo.
  *  2    Gandalf   1.1         3/1/99   Jesse Glick     [JavaDoc]
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  * Beta Change History:
  *  0    Tuborg    0.11        --/--/98 Jaroslav Tulach added hidden property
+ */
