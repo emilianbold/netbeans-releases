@@ -107,7 +107,6 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
                 update(e);
             }
         };
-        this.projectLocation.getDocument().addDocumentListener(documentListener);
         this.projectName.getDocument().addDocumentListener(documentListener);
         this.projectFolder.getDocument().addDocumentListener(documentListener);
     }
@@ -166,6 +165,12 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         jLabelSrcLocation.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("ACS_LBL_IW_Location_A11Desc"));
 
         projectLocation.setNextFocusableComponent(browseProjectLocation);
+        projectLocation.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                projectLocationFocusLost(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -175,7 +180,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         add(projectLocation, gridBagConstraints);
         projectLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_IW_ImportLocation_A11YDesc"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseProjectLocation, NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
+        org.openide.awt.Mnemonics.setLocalizedText(browseProjectLocation,NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
         browseProjectLocation.setNextFocusableComponent(projectName);
         browseProjectLocation.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -386,6 +391,12 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     }
     // </editor-fold>//GEN-END:initComponents
 
+    private void projectLocationFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_projectLocationFocusLost
+            updateProjectName();
+            updateProjectFolder();
+            listener.stateChanged(null);
+    }//GEN-LAST:event_projectLocationFocusLost
+
     private void j2eeSpecComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_j2eeSpecComboBoxActionPerformed
         String errorMessage;
         String selectedItem = (String)j2eeSpecComboBox.getSelectedItem();
@@ -447,7 +458,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         chooser.setDialogTitle(NbBundle.getMessage(ImportLocationVisual.class, "LBL_SelectExistingLocation")); // NOI18N
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File projectLoc = FileUtil.normalizeFile(chooser.getSelectedFile());
-            FileObject configFilesPath = guessConfigFilesPath(FileUtil.toFileObject(projectLoc));
+            FileObject configFilesPath = FileSearchUtility.guessConfigFilesPath(FileUtil.toFileObject(projectLoc));
             if (configFilesPath != null) {
                 FileObject ejbJarXml = configFilesPath.getFileObject("ejb-jar.xml"); // NOI18N
                 checkEjbJarXmlJ2eeVersion(ejbJarXml);
@@ -550,7 +561,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     }
 
     private boolean isEjbJarModule(FileObject dir) {
-        return guessConfigFilesPath(dir) != null && guessJavaRoots(dir) != null;
+        return FileSearchUtility.guessConfigFilesPath(dir) != null && FileSearchUtility.guessJavaRoots(dir) != null;
     }
     
     public boolean valid(WizardDescriptor wizardDescriptor) {
@@ -669,7 +680,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         File moduleLocFile =  new File(moduleLoc);
         d.putProperty(WizardProperties.SOURCE_ROOT, moduleLocFile);
         d.putProperty(WizardProperties.NAME, name);
-        d.putProperty(WizardProperties.JAVA_ROOT, guessJavaRootsAsFiles(FileUtil.toFileObject(moduleLocFile)));
+        d.putProperty(WizardProperties.JAVA_ROOT, FileSearchUtility.guessJavaRootsAsFiles(FileUtil.toFileObject(moduleLocFile)));
         d.putProperty(WizardProperties.SERVER_INSTANCE_ID, getSelectedServerInstanceID());
         d.putProperty(WizardProperties.J2EE_LEVEL, getSelectedJ2eeSpec());
         d.putProperty(WizardProperties.EAR_APPLICATION, getSelectedEarApplication());
@@ -735,11 +746,16 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     }
 
     //use it as a project root iff it is not sources or document root
+    // NOTE: the order of the searches in kind of important in this method for
+    //   performance reasons
     public boolean isSuitableProjectRoot(FileObject dir) {
-        FileObject[] srcRoots = guessJavaRoots(dir);
-        FileObject configFilesRoot = guessConfigFilesPath(dir);
-        return (configFilesRoot == null || FileUtil.isParentOf(dir, configFilesRoot))
-        && (srcRoots == null || isParentOf(dir, srcRoots));
+        FileObject configFilesRoot = FileSearchUtility.guessConfigFilesPath(dir);
+        if (configFilesRoot != null && !FileUtil.isParentOf(dir, configFilesRoot))
+            return false;
+        FileObject[] srcRoots = FileSearchUtility.guessJavaRoots(dir);
+        if (srcRoots != null && !isParentOf(dir, srcRoots))
+            return false;
+        return true;
     }
     
     private boolean isParentOf(FileObject dir, FileObject[] fos) {
@@ -755,97 +771,6 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         return result;
     }
     
-    private FileObject guessConfigFilesPath (FileObject dir) {
-        Enumeration ch = dir.getChildren (true);
-        try {
-            while (ch.hasMoreElements ()) {
-                FileObject f = (FileObject) ch.nextElement ();
-                if (f.getNameExt().equals ("ejb-jar.xml")) { //NOI18N
-                    String rootName = f.getParent ().getPath ();
-                    return f.getFileSystem ().findResource (rootName);
-                }
-            }
-        } catch (FileStateInvalidException fsie) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, fsie);
-        }
-        return null;
-    }
-    
-    // TODO: ma154696: really just-to-have implementation, should be reimplemented
-    private FileObject[] guessJavaRoots(FileObject dir) {
-        List foundRoots = new ArrayList();
-        Enumeration ch = dir.getChildren (true);
-        try {
-            while (ch.hasMoreElements ()) {
-                FileObject f = (FileObject) ch.nextElement ();
-                if (f.getExt ().equals ("java") && !f.isFolder()) { //NOI18N
-                    String pckg = guessPackageName (f);
-                    String pkgPath = f.getParent ().getPath (); 
-                    if (pckg != null && pkgPath.endsWith (pckg.replace ('.', '/'))) {
-                        String rootName = pkgPath.substring (0, pkgPath.length () - pckg.length ());
-                        FileObject fr = f.getFileSystem().findResource(rootName);
-                        if (!foundRoots.contains(fr)) {
-                            foundRoots.add(fr);
-                        }
-                    }
-                }
-            }
-        } catch (FileStateInvalidException fsie) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, fsie);
-        }
-        if (foundRoots.size() == 0) {
-            return null;
-        } else {
-            FileObject[] resultArr = new FileObject[foundRoots.size()];
-            for (int i = 0; i < foundRoots.size(); i++) {
-                resultArr[i] = (FileObject) foundRoots.get(i);
-            }
-            return resultArr;
-        }
-    }
-    
-    private File[] guessJavaRootsAsFiles(FileObject dir) {
-        FileObject[] rootsFOs = guessJavaRoots(dir);
-        if (rootsFOs == null) {
-            return new File[0];
-        }
-        File[] resultArr = new File[rootsFOs.length];
-        for (int i = 0; i < resultArr.length; i++) {
-            resultArr[i] = FileUtil.toFile(rootsFOs[i]);
-        }
-        return resultArr;
-    }
-
-    private String guessPackageName (FileObject f) {
-        java.io.Reader r = null;
-        try {
-            r = new BufferedReader (new InputStreamReader (f.getInputStream (), "utf-8")); // NOI18N
-            StringBuffer sb = new StringBuffer ();
-            final char[] BUFFER = new char[4096];
-            int len;
-
-            for (;;) {
-                len = r.read (BUFFER);
-                if (len == -1) break;
-                sb.append (BUFFER, 0, len);
-            }
-            int idx = sb.indexOf ("package"); // NOI18N
-            if (idx >= 0) {
-                int idx2 = sb.indexOf (";", idx);  // NOI18N
-                if (idx2 >= 0) {
-                    return sb.substring (idx + "package".length (), idx2).trim ();
-                }
-            }
-        } catch (java.io.IOException ioe) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
-        } finally {
-            try { if (r != null) r.close (); } catch (java.io.IOException ioe) { // ignore this 
-            }
-        }
-        // AB: fix for #56160: assume the class is in the default package
-        return ""; // NOI18N
-    }
-
     private void initServerInstances() {
         String[] servInstIDs = Deployment.getDefault().getServerInstanceIDs();
         serverInstanceIDs = new ArrayList();

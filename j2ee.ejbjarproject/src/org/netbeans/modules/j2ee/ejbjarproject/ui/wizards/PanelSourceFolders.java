@@ -64,47 +64,15 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         ((FolderList) this.sourcePanel).setLastUsedDir(FileUtil.toFile(fo));
         ((FolderList) this.testsPanel).setLastUsedDir(FileUtil.toFile(fo));
         
-        String configFiles = FileUtil.toFile(guessConfigFilesPath(fo)).getAbsolutePath();
+        String configFiles = FileUtil.toFile(FileSearchUtility.guessConfigFilesPath(fo)).getAbsolutePath();
         jTextFieldConfigFiles.setText(configFiles);
-        FileObject librariesFO = guessLibrariesFolder(fo);
+        FileObject librariesFO = FileSearchUtility.guessLibrariesFolder(fo);
         if (librariesFO != null) {
             String libraries = FileUtil.toFile(librariesFO).getAbsolutePath();
             jTextFieldLibraries.setText(libraries);
         }
     }
 
-    private FileObject guessConfigFilesPath (FileObject dir) {
-        Enumeration ch = dir.getChildren (true);
-        try {
-            while (ch.hasMoreElements ()) {
-                FileObject f = (FileObject) ch.nextElement ();
-                if (f.getNameExt().equals ("ejb-jar.xml")) { //NOI18N
-                    String rootName = f.getParent ().getPath ();
-                    return f.getFileSystem ().findResource (rootName);
-                }
-            }
-        } catch (FileStateInvalidException fsie) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, fsie);
-        }
-        return null;
-    }
-
-    private FileObject guessLibrariesFolder (FileObject dir) {
-        if (dir != null) {
-            FileObject lib = dir.getFileObject ("lib"); //NOI18N
-            if (lib != null) {
-                return lib;
-            }
-        }
-        Enumeration ch = dir.getChildren (true);
-        while (ch.hasMoreElements ()) {
-            FileObject f = (FileObject) ch.nextElement ();
-            if (f.getExt ().equals ("jar")) { //NOI18N
-                return f.getParent ();
-            }
-        }
-        return null;
-    }
     
     public void propertyChange(PropertyChangeEvent evt) {
         if (FolderList.PROP_FILES.equals(evt.getPropertyName())) {
