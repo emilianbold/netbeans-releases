@@ -378,19 +378,27 @@ implements ItemListener, Runnable {
   }
 
   private void updateTitle () {
-    ExplorerManager currentManager = getRootPanel (currentRoot).getExplorerManager ();
-    String name = currentManager.getExploredContext().getDisplayName();
+    Node[] selNodes = getRootPanel (currentRoot).getExplorerManager ().getSelectedNodes ();
+    String name = null;
+    if (selNodes.length == 0) {
+      name = NbBundle.getBundle (NbMainExplorer.class).getString ("CTL_MainExplorerTitle_No");
+    } else if (selNodes.length > 1) {
+      name = NbBundle.getBundle (NbMainExplorer.class).getString ("CTL_MainExplorerTitle_Multiple");
+    } else { // one node selected
+      if (formatExplorerTitle == null) {
+        formatExplorerTitle = new MessageFormat (
+          NbBundle.getBundle (NbMainExplorer.class).getString ("FMT_MainExplorerTitle")
+        );
+      }
+      name = formatExplorerTitle.format (new Object[] { 
+          selNodes[0].getDisplayName () 
+        }
+      );
+    }
     if (name == null) {
       name = "";
     }
-    if (formatExplorerTitle == null) {
-      formatExplorerTitle = new MessageFormat (
-        NbBundle.getBundle (NbMainExplorer.class).getString ("FMT_MainExplorerTitle")
-      );
-    }
-    setName(formatExplorerTitle.format (
-      new Object[] { name }
-    ));
+    setName(name);
   }
 
   /** Activates copy/cut/paste actions.
@@ -710,6 +718,8 @@ implements ItemListener, Runnable {
 
 /*
 * Log
+*  41   Gandalf   1.40        10/25/99 Ian Formanek    Fixed title of Main 
+*       Explorer - now displays selected node instead of explored context
 *  40   Gandalf   1.39        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  39   Gandalf   1.38        10/7/99  David Simonek   request focus related 
