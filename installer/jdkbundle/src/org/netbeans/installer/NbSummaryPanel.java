@@ -19,8 +19,6 @@ import com.installshield.product.service.product.ProductService;
 import com.installshield.wizard.service.ServiceException;
 import com.installshield.wizardx.panels.TextDisplayPanel;
 import com.installshield.util.Log;
-import com.installshield.product.GenericSoftwareObject;
-import com.installshield.product.ProductTree;
 
 import java.util.Properties;
 
@@ -29,6 +27,7 @@ public class NbSummaryPanel extends TextDisplayPanel
     private int type = ProductService.PRE_INSTALL;
     
     private String nbInstallDir = "";
+    private String j2seInstallDir = "";
     
     public NbSummaryPanel() {
         setTextSource(TEXT_PROPERTY);
@@ -52,22 +51,41 @@ public class NbSummaryPanel extends TextDisplayPanel
             String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
             nbInstallDir = (String) service.getProductBeanProperty
             (productURL, "beanNB", "installLocation");
+            j2seInstallDir = (String) System.getProperties().get("j2seInstallDir");
             logEvent(this, Log.DBG, "queryEnter nbInstallDir: " + nbInstallDir);
             if (type == ProductService.POST_INSTALL) {
                 logEvent(this, Log.DBG, "queryEnter POST_INSTALL PANEL");
-                ProductTree pt = service.getSoftwareObjectTree(productURL);
-                GenericSoftwareObject gso = (GenericSoftwareObject) pt.getRoot();
-                
-                if (gso.getInstallStatus() == gso.UNINSTALLED) {
-                    //Installation failed
-                    Properties summary = service.getProductSummary(
-                    productURL,
-                    ProductService.POST_INSTALL,
-                    ProductService.HTML);
-                    logEvent(this, Log.DBG, "queryEnter INSTALLATION FAILED");
-                    logEvent(this, Log.DBG, "queryEnter summaryPostMsg:'"
-                    + summary.getProperty(ProductService.SUMMARY_MSG) + "'");
-                    setText(summary.getProperty(ProductService.SUMMARY_MSG));
+                logEvent(this, Log.DBG, "queryEnter exitCode: " + getWizard().getExitCode());
+                //#48305: Method GenericSoftwareObject.getInstallStatus() does not work. It returns
+                //always 0. We must use getWizard().getExitCode() as workaround.
+                //ProductTree pt = service.getSoftwareObjectTree(productURL);
+                //GenericSoftwareObject gso = (GenericSoftwareObject) pt.getRoot();
+                //if (gso.getInstallStatus() == gso.UNINSTALLED) {
+                if (getWizard().getExitCode() != -1) {
+                    //Installation failed or cancelled.
+                    String summaryMessage;
+                    if (getWizard().getExitCode() == InstallJ2sdkAction.J2SDK_UNHANDLED_ERROR) {
+                        summaryMessage = "$L(org.netbeans.installer.Bundle,SummaryPanel.description1)";
+                        summaryMessage += " " + "$L(org.netbeans.installer.Bundle,Product.displayName)";
+                        summaryMessage += " " + "$L(org.netbeans.installer.Bundle,SummaryPanel.description3)";
+                        summaryMessage += "<br><br>"
+                        + "$L(org.netbeans.installer.Bundle,Product.displayName)" + " "
+                        + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
+                        + nbInstallDir;
+                        summaryMessage += "<br><br>"
+                        + "$L(org.netbeans.installer.Bundle, SummaryPanel.errorJDK,"
+                        + "$L(org.netbeans.installer.Bundle, JDK.shortName),"
+                        + j2seInstallDir + ")";
+                    } else {
+                        logEvent(this, Log.DBG, "queryEnter INSTALLATION FAILED OR CANCELLED");
+                        Properties summary = service.getProductSummary(
+                        ProductService.DEFAULT_PRODUCT_SOURCE,
+                        ProductService.POST_INSTALL,
+                        ProductService.HTML);
+                        summaryMessage = summary.getProperty(ProductService.SUMMARY_MSG);
+                        summaryMessage += resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.errorNB)");
+                    }
+                    setText(summaryMessage);
                 } else {
                     //setText(resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.description)"));
                     logEvent(this, Log.DBG, "queryEnter INSTALLATION SUCCESSFUL");
@@ -99,49 +117,40 @@ public class NbSummaryPanel extends TextDisplayPanel
     }
     
     private String getPostInstallSummaryMessage() {
-        String j2seInstallDir = (String) System.getProperties().get("j2seInstallDir");
-        
         String summaryMessage = "$L(org.netbeans.installer.Bundle,SummaryPanel.description1)";
         if (!Util.isJDKAlreadyInstalled()) {
-            summaryMessage = summaryMessage + " "
-            + "$L(org.netbeans.installer.Bundle,JDK.shortName)"
+            summaryMessage += " " + "$L(org.netbeans.installer.Bundle,JDK.shortName)"
             + " " + "$L(org.netbeans.installer.Bundle,SummaryPanel.description2)";
         }
-        summaryMessage = summaryMessage + " "
-        + "$L(org.netbeans.installer.Bundle,Product.displayName)";
-        summaryMessage = summaryMessage + " "
-        + "$L(org.netbeans.installer.Bundle,SummaryPanel.description3)";
+        summaryMessage += " " + "$L(org.netbeans.installer.Bundle,Product.displayName)";
+        summaryMessage += " " + "$L(org.netbeans.installer.Bundle,SummaryPanel.description3)";
         
         if (!Util.isJDKAlreadyInstalled()) {
-            summaryMessage = summaryMessage + "<br><br>"
+            summaryMessage += "<br><br>"
             + "$L(org.netbeans.installer.Bundle,JDK.shortName)" + " "
             + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
             + j2seInstallDir;
         }
         
-        summaryMessage = summaryMessage + "<br><br>"
+        summaryMessage += "<br><br>"
         + "$L(org.netbeans.installer.Bundle,Product.displayName)" + " "
         + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
         + nbInstallDir;
         
         if (Util.isWindowsOS()) {
-            summaryMessage = summaryMessage
-            + "$L(org.netbeans.installer.Bundle,SummaryPanel.description5,netbeans.exe,uninstaller.exe)";
+            summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description5,netbeans.exe,uninstaller.exe)";
         } else {
-            summaryMessage = summaryMessage
-            + "$L(org.netbeans.installer.Bundle,SummaryPanel.description5,netbeans,uninstaller)";
+            summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description5,netbeans,uninstaller)";
         }
         
         //How to uninstall JDK. We will show this message only when we installed
         //JDK.
         if (!Util.isJDKAlreadyInstalled()) {
             if (Util.isWindowsOS()) {
-                summaryMessage = summaryMessage
-                + "$L(org.netbeans.installer.Bundle,SummaryPanel.description7,"
+                summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description7,"
                 + "$L(org.netbeans.installer.Bundle,JDK.shortName))";
             } else {
-                summaryMessage = summaryMessage
-                + "$L(org.netbeans.installer.Bundle,SummaryPanel.description6,"
+                summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description6,"
                 + "$L(org.netbeans.installer.Bundle,JDK.shortName),"
                 + j2seInstallDir + ",uninstall.sh)";
             }
@@ -151,8 +160,6 @@ public class NbSummaryPanel extends TextDisplayPanel
     }
     
     private String getPreInstallSummaryMessage() {
-        String j2seInstallDir = (String) System.getProperties().get("j2seInstallDir");
-        
         String summaryMessage = "$L(org.netbeans.installer.Bundle,Product.displayName)"
         + " "
         + "$L(org.netbeans.installer.Bundle,PreviewPanel.previewInstallMessage)"
@@ -160,15 +167,14 @@ public class NbSummaryPanel extends TextDisplayPanel
         
         // only show j2se install if no prior installation was found
         if (!Util.isJDKAlreadyInstalled()) {
-            summaryMessage = summaryMessage + "<br>" + "<br>"
+            summaryMessage += "<br><br>"
             + "$L(org.netbeans.installer.Bundle,JDK.shortName)"
             + " "
             + "$L(org.netbeans.installer.Bundle,PreviewPanel.previewInstallMessage)" + "<br>"
             + j2seInstallDir + "<br>";
         }
         
-        summaryMessage = summaryMessage + "<br>"
-        + "$L(org.netbeans.installer.Bundle,PreviewPanel.previewSize)" + "<br>"
+        summaryMessage += "<br>" + "$L(org.netbeans.installer.Bundle,PreviewPanel.previewSize)" + "<br>"
         + getTotalSize();
         return summaryMessage;
     }

@@ -666,7 +666,11 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
              if (fileService != null) {
                  File srcFile = new File(j2seInstallDir);
                  File[] srcFileList = srcFile.listFiles();
-                 String parent = srcFile.getParent();
+                 if (srcFileList == null) {
+                     logEvent(this, Log.DBG, "Could not rename the J2SE files.");
+                     return false;
+                 }
+                 String parent = srcFile.getParent();                 
                  logEvent(this, Log.DBG, "Moving files from " + j2seInstallDir +
                           "\n to  " + parent);
                  try {
