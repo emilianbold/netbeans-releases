@@ -35,12 +35,6 @@ Microsystems, Inc. All Rights Reserved.
 	 compress="false"/>
   </target>
 
-  <target name="release">
-    <copy todir="netbeans">
-      <fileset dir="release"/>
-    </copy>
-  </target>
-
   <target name="javahelp">
     <copy todir="netbeans/docs">
       <fileset dir="javahelp">
@@ -55,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
     </copy>
   </target>
 
-  <target name="netbeans" depends="jars,release,javahelp"/>
+  <target name="netbeans" depends="jars,javahelp"/>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="usersguide.nbm"
