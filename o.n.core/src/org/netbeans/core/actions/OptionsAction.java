@@ -51,7 +51,7 @@ import org.netbeans.core.NbMainExplorer;
  */
 public class OptionsAction extends CallableSystemAction {
 
-    public static final String HELP_ID = "configure"; // NOI18N 
+    private static final String HELP_ID = "org.netbeans.core.actions.OptionsAction"; // NOI18N 
 
     /** Creates new OptionsAction. */
     public OptionsAction() {
@@ -169,10 +169,7 @@ public class OptionsAction extends CallableSystemAction {
             gridBagConstraints.insets.left = 5;
             help.addActionListener (new ActionListener () {
                 public void actionPerformed (ActionEvent e) {
-                    TopManager.getDefault ().getActionManager ().invokeAction (
-                        SystemAction.get (org.openide.actions.HelpAction.class),
-                        new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null)
-                    );
+                    TopManager.getDefault ().showHelp (OptionsPanel.this.getHelpCtx ());
                 }
             });
             add (help, gridBagConstraints);
