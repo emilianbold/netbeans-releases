@@ -18,6 +18,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
@@ -783,7 +784,10 @@ public class MergePanel extends javax.swing.JPanel {
                 scrollBarV3.setValue(verticalScroll3ChangedValue);
             }
         });
-        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        //jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        // The vertical scroll bar must be there for mouse wheel to work correctly.
+        // However it's not necessary to be seen (but must be visible so that the wheel will work).
+        jScrollPane1.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
         scrollBarV2.getModel().addChangeListener(new javax.swing.event.ChangeListener()  {
             public void stateChanged(javax.swing.event.ChangeEvent e) {
                 int value = scrollBarV2.getValue();

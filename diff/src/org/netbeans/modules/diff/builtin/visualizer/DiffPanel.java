@@ -17,6 +17,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+//import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
@@ -478,7 +480,10 @@ public class DiffPanel extends javax.swing.JPanel {
                 }
             }
         });
-        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        //jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        // The vertical scroll bar must be there for mouse wheel to work correctly.
+        // However it's not necessary to be seen (but must be visible so that the wheel will work).
+        jScrollPane1.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
         scrollBarV2.getModel().addChangeListener(new javax.swing.event.ChangeListener()  {
             public void stateChanged(javax.swing.event.ChangeEvent e) {
                 int value = scrollBarV2.getValue();
@@ -913,4 +918,59 @@ public class DiffPanel extends javax.swing.JPanel {
     private javax.swing.JPanel commandPanel;
     // End of variables declaration//GEN-END:variables
 
+    /* scroll pane with unvisible scroll bar
+     * if necessary can be solved this way, however easier approach was chosen:
+     * jScrollPane1.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
+     * If the easier approach stop to work, this class can be used instead.
+    private static final class JScrollPaneWithUnvisibleVerticalScrollBar extends JScrollPane {
+        
+        public JScrollBar createVerticalScrollBar() {
+            return new UnvisibleScrollBar(JScrollBar.VERTICAL);
+        }
+        
+        private final class UnvisibleScrollBar extends JScrollPane.ScrollBar {
+            
+            public UnvisibleScrollBar(int orientation) {
+                super(orientation);
+            }
+            
+            public boolean contains(int x, int y) {
+                return false;
+            }
+            
+            public Rectangle getBounds() {
+                return new Rectangle(0, 0, 0, 0);
+            }
+            
+            public Rectangle getBounds(Rectangle rv) {
+                if (rv == null) rv = new Rectangle(0, 0, 0, 0);
+                else rv.setBounds(0, 0, 0, 0);
+                return rv;
+            }
+            
+            public int getHeight() {
+                return 0;
+            }
+            
+            public int getWidth() {
+                return 0;
+            }
+            
+            public Dimension getSize() {
+                return new Dimension(0, 0);
+            }
+            
+            public Dimension getSize(Dimension rv) {
+                if (rv == null) rv = new Dimension(0, 0);
+                else rv.setSize(0, 0);
+                return rv;
+            }
+            
+            public Dimension getPreferredSize() {
+                return new Dimension(0, 0);
+            }
+        }
+    }
+     */
+    
 }
