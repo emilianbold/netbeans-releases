@@ -57,7 +57,7 @@ function usage()
   echo "  --wtk      |-w wtk_archive_zip  ZIP file containing wtk emulator archive"
   echo "                                  (something like wtk_lin-latest.zip)"
   echo "  --target   |-t work_dir         the target directory where the packages will be placed. Default is the current directory."
-  cleanExit 2
+  exit 2
 }
 
 function pinfo()
