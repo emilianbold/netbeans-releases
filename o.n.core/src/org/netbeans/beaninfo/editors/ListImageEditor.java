@@ -16,10 +16,13 @@ package org.netbeans.beaninfo.editors;
 import java.awt.Image;
 import java.beans.PropertyEditorSupport;
 import java.beans.FeatureDescriptor;
+import java.text.MessageFormat;
+import org.openide.ErrorManager;
 
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 
 /** Editor for property of enumerated integers, each integer should
@@ -106,9 +109,15 @@ public class ListImageEditor extends PropertyEditorSupport implements ExProperty
     
     public void setAsText (String str) throws java.lang.IllegalArgumentException {
         int i = findIndex (descriptions, str);
-        if (i == -1)
-            throw new IllegalArgumentException ();
-        
+        if (i == -1) {
+            IllegalArgumentException iae = new IllegalArgumentException (
+                "negative: " + str); //NOI18N
+            String msg = NbBundle.getMessage(ListImageEditor.class, 
+                "CTL_NegativeSize"); //NOI18N
+            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, 
+                iae.getMessage(), msg, null, new java.util.Date());
+            throw iae;
+        }
         setValue (findObject (values, i));
     }
     

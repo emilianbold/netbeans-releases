@@ -15,6 +15,7 @@ package org.netbeans.beaninfo.editors;
 
 import java.util.StringTokenizer;
 import java.text.MessageFormat;
+import org.openide.ErrorManager;
 
 /** Support for property editors for several integers.
 * for example:  Point - [2,4], Insets [2,3,4,4],...
@@ -127,14 +128,14 @@ abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport implem
         while (tuk.hasMoreTokens()) {
             String token = tuk.nextToken();
             if (nextNumber >= count)
-                badFormat();
+                badFormat(null);
 
             try {
                 newVal[nextNumber] = new Integer(token).intValue();
                 nextNumber++;
             }
             catch (NumberFormatException e) {
-                badFormat();
+                badFormat(e);
             }
         }
 
@@ -150,9 +151,13 @@ abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport implem
     }
 
     /** Always throws the new exception */
-    private void badFormat() throws IllegalArgumentException {
-        throw new IllegalArgumentException(new MessageFormat(VALUE_FORMAT).format(
-                                               new Object[] { className , getHintFormat() } ));
+    private void badFormat(Exception e) throws IllegalArgumentException {
+        String msg = new MessageFormat(VALUE_FORMAT).format(new Object[] 
+            { className , getHintFormat() } );
+        IllegalArgumentException iae = new IllegalArgumentException(msg);
+        ErrorManager.getDefault().annotate(iae, ErrorManager.USER, e == null ? "" : e.getMessage(), 
+             msg, e, new java.util.Date()); //NOI18N
+        throw iae;                                          
     }
 
     /** @return the format info for the user. Can be rewritten in subclasses. */

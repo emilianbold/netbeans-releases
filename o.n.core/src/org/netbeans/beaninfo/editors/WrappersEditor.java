@@ -14,8 +14,12 @@
 package org.netbeans.beaninfo.editors;
 
 import java.beans.*;
+import java.text.MessageFormat;
+import org.openide.ErrorManager;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.util.NbBundle;
+
 /**
  * Abstract class represents Editor for Wrappers of 8 known primitive types
  * (Byte, Short, Integer, Long, Boolean, Float, Double, Character)
@@ -56,7 +60,21 @@ public abstract class WrappersEditor implements ExPropertyEditor {
     public void setAsText(String text) throws IllegalArgumentException {
         if ( "null".equals( text ) )    // NOI18N
             return;
-        pe.setAsText(text);
+        try {
+            pe.setAsText(text);
+        } catch (Exception e) {
+            //Reasonable to assume any exceptions from core/jdk editors are legit
+            IllegalArgumentException iae = new IllegalArgumentException (e.getMessage());
+            String msg = e.getLocalizedMessage();
+            if (msg == null) {
+                msg = MessageFormat.format(
+                NbBundle.getMessage(
+                    WrappersEditor.class, "FMT_EXC_GENERIC_BAD_VALUE"), new Object[] {text}); //NOI18N
+            }
+            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, iae.getMessage(), 
+                msg, e, new java.util.Date());
+            throw iae;
+        }
     }
     
     public String[] getTags() {

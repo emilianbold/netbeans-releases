@@ -13,8 +13,11 @@
 
 package org.netbeans.beaninfo.editors;
 
+import java.text.MessageFormat;
+import org.openide.ErrorManager;
 
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /** A property editor for Class.
 * @author   Jan Jancura
@@ -63,7 +66,13 @@ public class ClassEditor extends java.beans.PropertyEditorSupport {
             ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
             setValue (loader.loadClass (text));
         } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException(e.toString());
+            IllegalArgumentException iae = new IllegalArgumentException (e.getMessage());
+            String msg = MessageFormat.format(
+                NbBundle.getMessage(
+                    ClassEditor.class, "FMT_EXC_CANT_LOAD_CLASS"), new Object[] {text}); //NOI18N
+            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, e.getMessage(), 
+             msg, e, new java.util.Date());
+            throw iae;
         }
     }
 }

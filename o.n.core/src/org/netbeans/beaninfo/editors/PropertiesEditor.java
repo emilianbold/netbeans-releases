@@ -17,10 +17,12 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.beans.PropertyEditorSupport;
+import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.Properties;
 
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 
 /** A property editor for Properties class.
@@ -57,11 +59,10 @@ public class PropertiesEditor extends PropertyEditorSupport {
      * @exception IllegalArgumentException if <code>null</code> value
      * is passes in or some io problem by converting occured */
     public void setAsText(String text) throws IllegalArgumentException {
-        if(text == null) {
-            throw new IllegalArgumentException("Inserted value can't be null."); // NOI18N
-        }
-        
         try {
+            if(text == null) {
+                throw new IllegalArgumentException("Inserted value can't be null."); // NOI18N
+            }
             Properties prop = new Properties();
             InputStream is = new ByteArrayInputStream(
                 text.replace(';', '\n').getBytes("ISO8859_1") // NOI18N
@@ -69,8 +70,16 @@ public class PropertiesEditor extends PropertyEditorSupport {
             prop.load(is);
             setValue(prop);
         } catch(IOException ioe) {
-            throw (IllegalArgumentException)ErrorManager.getDefault()
-                .annotate(new IllegalArgumentException(), ioe);
+            IllegalArgumentException iae = new IllegalArgumentException (ioe.getMessage());
+            String msg = ioe.getLocalizedMessage();
+            if (msg == null) {
+                msg = MessageFormat.format(
+                NbBundle.getMessage(
+                    PropertiesEditor.class, "FMT_EXC_GENERIC_BAD_VALUE"), new Object[] {text}); //NOI18N
+            }
+            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, iae.getMessage(), 
+             msg, ioe, new java.util.Date());
+            throw iae;
         }
     }
 

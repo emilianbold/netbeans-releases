@@ -14,7 +14,9 @@
 package org.netbeans.beaninfo.editors;
 
 import java.beans.*;
+import java.text.MessageFormat;
 import java.util.*;
+import org.openide.ErrorManager;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
@@ -131,6 +133,7 @@ public class ExtensionListEditor extends Object implements PropertyEditor,
     * @param text  The string to be parsed.
     */
     public void setAsText (String text) throws java.lang.IllegalArgumentException {
+        try {
         if ( NbBundle.getMessage ( org.openide.explorer.propertysheet.PropertyPanel.class, "CTL_Different_Values").equals( text ) ) {
             // XXX huh?!
             setValue( new String[] { text } );
@@ -138,6 +141,19 @@ public class ExtensionListEditor extends Object implements PropertyEditor,
         else {
             StringTokenizer st = new StringTokenizer (text, ",. \n\t"); // NOI18N
             setAs (st);
+        }
+        } catch (Exception e) {
+            IllegalArgumentException iae = new IllegalArgumentException (e.getMessage());
+            String msg = e.getLocalizedMessage();
+            if (msg == null) {
+                msg = MessageFormat.format(
+                NbBundle.getMessage(
+                    ExtensionListEditor.class, "FMT_EXC_GENERIC_BAD_VALUE"),  //NOI18N
+                    new Object[] {text});
+            }
+            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, iae.getMessage(), 
+             msg, e, new java.util.Date());
+            throw iae;     
         }
     }
 

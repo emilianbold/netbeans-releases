@@ -15,6 +15,7 @@ package org.netbeans.beaninfo.editors;
 
 import java.awt.Point;
 import java.util.ResourceBundle;
+import org.openide.ErrorManager;
 
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -44,17 +45,13 @@ public class PointEditor extends ArrayOfIntSupport {
     */
     void setValues(int[] val) {
         if ((val[0] < 0) || (val[1] < 0)) {
-            //DilaogDisplayer.getDefault().notify(...) cannot be called synchronous, because when error dialog is displayed
-            //PropertyEditor lost focus and setValues() method is called. After closing error dialog is focus returned
-            //to PropertyEditor and setValues() method is called again.
-            javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                   public void run() {
-                       org.openide.DialogDisplayer.getDefault().notify(
-                           new NotifyDescriptor.Message(
-                               bundle.getString("CTL_NegativeSize"),
-                               NotifyDescriptor.ERROR_MESSAGE));
-                   }
-               });
+            String msg = NbBundle.getMessage(DimensionEditor.class, 
+                "CTL_NegativeSize"); //NOI18N
+            IllegalArgumentException iae = new IllegalArgumentException (
+                "Negative value"); //NOI18N
+            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, 
+                iae.getMessage(), msg, null, new java.util.Date());
+            throw iae;
         }
         else
             setValue(new Point(val[0], val[1]));

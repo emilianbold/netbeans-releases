@@ -14,6 +14,8 @@
 package org.netbeans.beaninfo.editors;
 
 import java.beans.*;
+import java.text.MessageFormat;
+import org.openide.ErrorManager;
 
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -21,6 +23,7 @@ import org.openide.nodes.NodeAcceptor;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataFilter;
 import org.openide.explorer.propertysheet.*;
+import org.openide.util.NbBundle;
 
 /**
  * Property editor for [org.openide.loaders.DataObject].
@@ -267,7 +270,21 @@ public class DataObjectArrayEditor extends PropertyEditorSupport implements ExPr
     }
 
     public void setAsText(String text) throws java.lang.IllegalArgumentException {
-        if ((text==null)||(text.equals(""))) setValue(null);
+        try {
+            if ((text==null)||(text.equals(""))) setValue(null);
+        } catch (Exception e) {
+            IllegalArgumentException iae = new IllegalArgumentException (e.getMessage());
+            String msg = e.getLocalizedMessage();
+            if (msg == null) {
+                msg = MessageFormat.format(
+                NbBundle.getMessage(
+                    DataObjectArrayEditor.class, 
+                    "FMT_EXC_GENERIC_BAD_VALUE"), new Object[] {text}); //NOI18N
+            }
+            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, iae.getMessage(), 
+                msg, e, new java.util.Date());
+            throw iae;
+        }
     }
 
     /** CookieFilter allows you to filter DataObjects

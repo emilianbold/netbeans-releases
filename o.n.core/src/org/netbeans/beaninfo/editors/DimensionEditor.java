@@ -15,6 +15,7 @@ package org.netbeans.beaninfo.editors;
 
 import java.awt.Dimension;
 import java.util.ResourceBundle;
+import org.openide.ErrorManager;
 
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -39,22 +40,34 @@ public class DimensionEditor extends ArrayOfIntSupport {
         return new int[] { d.width, d.height };
     }
 
+    static String toArr (int[] ints) {
+        StringBuffer sb = new StringBuffer();
+        if ((ints != null) && (ints.length > 0)) {
+            for (int i=0; i < ints.length; i++) {
+                sb.append (ints[i]);
+                if (i != ints.length-1) {
+                    sb.append (','); //NOI18N
+                }
+            }
+        } else {
+            return NbBundle.getMessage (DimensionEditor.class,
+                "MSG_NULL_OR_EMPTY"); //NOI18N
+        }
+        return sb.toString();
+    }
+    
     /** Abstract method for translating the array of int to value
     * which is set to method setValue(XXX)
     */
     void setValues(int[] val) {
         if ((val[0] < 0) || (val[1] < 0)) {
-            //DialogDisplayer.getDefault().notify(...) cannot be called synchronous, because when error dialog is displayed
-            //PropertyEditor lost focus and setValues() method is called. After closing error dialog is focus returned
-            //to PropertyEditor and setValues() method is called again.
-            javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                   public void run() {
-                       org.openide.DialogDisplayer.getDefault().notify(
-                           new NotifyDescriptor.Message(
-                               bundle.getString("CTL_NegativeSize"),
-                               NotifyDescriptor.ERROR_MESSAGE));
-                   }
-               });
+            String msg = NbBundle.getMessage(DimensionEditor.class, 
+                "CTL_NegativeSize"); //NOI18N
+            IllegalArgumentException iae = new IllegalArgumentException (
+                "Negative value"); //NOI18N
+            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, 
+                iae.getMessage(), msg, null, new java.util.Date());
+            throw iae;
         }
         else
             setValue(new Dimension(val[0], val[1]));
@@ -71,7 +84,7 @@ public class DimensionEditor extends ArrayOfIntSupport {
 
     /** @return the format of value set in property editor. */
     String getHintFormat() {
-        return bundle.getString ("CTL_HintFormat");
+        return bundle.getString ("CTL_HintFormat"); //NOI18N
     }
 
     /** Provides name of XML tag to use for XML persistence of the property value */

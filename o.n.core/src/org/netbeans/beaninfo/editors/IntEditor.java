@@ -170,7 +170,7 @@ public class IntEditor extends ExPropertyEditorSupport {
                 IntEditor.class, "EXC_ILLEGAL_VALUE_TEXT") + s; //NOI18N
             RuntimeException iae = new IllegalArgumentException(msg); //NOI18N
             ErrorManager.getDefault().annotate(iae, ErrorManager.USER, msg,
-            msg, iae, new java.util.Date());
+            msg, nfe, new java.util.Date());
             throw iae;
         }
     }

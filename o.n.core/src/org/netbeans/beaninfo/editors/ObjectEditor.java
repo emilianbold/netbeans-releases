@@ -15,6 +15,7 @@ package org.netbeans.beaninfo.editors;
 
 import java.beans.*;
 import java.awt.Component;
+import java.text.MessageFormat;
 import java.util.*;
 
 import org.openide.ErrorManager;
@@ -219,8 +220,14 @@ implements ExPropertyEditor, PropertyChangeListener {
                 return;
             }
         }
-        
-        throw new IllegalArgumentException ();
+        IllegalArgumentException iae = new IllegalArgumentException (str);
+        String msg = MessageFormat.format(
+            NbBundle.getMessage(
+                ObjectEditor.class, "FMT_EXC_GENERIC_BAD_VALUE"),  //NOI18N
+                new Object[] {str});
+        ErrorManager.getDefault().annotate(iae, ErrorManager.USER, str, 
+         msg, null, new java.util.Date());
+        throw iae;        
     }
     
     /** List of all display names for items.

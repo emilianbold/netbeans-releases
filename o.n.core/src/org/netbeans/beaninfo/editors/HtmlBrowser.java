@@ -14,6 +14,7 @@
 package org.netbeans.beaninfo.editors;
 
 import java.beans.*;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -56,7 +57,7 @@ public class HtmlBrowser extends Object {
             catch (Exception ex) {
                 ErrorManager.getDefault ().notify (ex);
             }
-            return NbBundle.getMessage (FactoryEditor.class, "CTL_UnspecifiedBrowser");
+            return NbBundle.getMessage (FactoryEditor.class, "CTL_UnspecifiedBrowser"); //NOI18N
         }
         
         public boolean supportsCustomEditor () {
@@ -65,7 +66,7 @@ public class HtmlBrowser extends Object {
         
         public void setAsText (java.lang.String str) throws java.lang.IllegalArgumentException {
             try {
-                if (NbBundle.getMessage (FactoryEditor.class, "CTL_UnspecifiedBrowser").equals (str)
+                if (NbBundle.getMessage (FactoryEditor.class, "CTL_UnspecifiedBrowser").equals (str) //NOI18N
                 ||  str == null) {
                     setValue (null);
                     return;
@@ -82,9 +83,18 @@ public class HtmlBrowser extends Object {
                     }
                 }
             }
-            catch (Exception ex) {
-                ErrorManager.getDefault ().notify (ex);
-                return;
+            catch (Exception e) {
+            IllegalArgumentException iae = new IllegalArgumentException (e.getMessage());
+            String msg = e.getLocalizedMessage();
+            if (msg == null) {
+                msg = MessageFormat.format(
+                    NbBundle.getMessage(
+                    HtmlBrowser.class, "FMT_EXC_GENERIC_BAD_VALUE"), //NOI18N
+                    new Object[] {str}); 
+            }
+            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, str, 
+                msg, e, new java.util.Date());
+            throw iae;
             }
         }
         
