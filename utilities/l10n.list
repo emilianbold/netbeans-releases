@@ -1,10 +1,6 @@
-utilities/src/org/netbeans/modules/group/Bundle.properties
-utilities/src/org/netbeans/modules/openfile/Bundle.properties
-utilities/src/org/netbeans/modules/openfile/info-OpenFileAction.html
-utilities/src/org/netbeans/modules/pdf/Bundle.properties
-utilities/src/org/netbeans/modules/search/Bundle.properties
-utilities/src/org/netbeans/modules/search/types/Bundle.properties
-utilities/src/org/netbeans/modules/url/Bundle.properties
-utilities/src/org/netbeans/modules/group/resources/TemplateHelp.html
-utilities/src/org/netbeans/modules/url/TemplateHelp.html
-utilities/src/org/netbeans/modules/utilities/Bundle.properties
+utilities/group/**/Bundle.properties
+utilities/group/**/*.html
+utilities/loaderswitcher/**/Bundle.properties
+utilities/loaderswitcher/**/*.html
+utilities/src/**/Bundle.properties
+utilities/src/**/*.html
