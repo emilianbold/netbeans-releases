@@ -42,7 +42,12 @@ public class FormDataNode extends JavaNode {
     }
     
     public Action getPreferredAction() {
-        return SystemAction.get(OpenAction.class);
+        // issue 56351
+        return new javax.swing.AbstractAction() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                ((FormDataObject)getDataObject()).getFormEditor().openFormEditor(false);
+            }
+        };
     }
 
     public Action[] getActions(boolean context) {
