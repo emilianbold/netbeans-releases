@@ -128,7 +128,7 @@ public class BodyTagHandler extends BodyTagSupport {
      * Instead, modify the methods that this method calls.
      */
     
-    public int doStartTag() throws JspException, JspException {//GEN-BEGIN:doStartTag
+    public int doStartTag() throws JspException, JspException {
         otherDoStartTagOperations();
         
         if (theBodyShouldBeEvaluated()) {
@@ -136,7 +136,7 @@ public class BodyTagHandler extends BodyTagSupport {
         } else {
             return SKIP_BODY;
         }
-    }//GEN-END:doStartTag
+    }
     
     /**
      * This method is called after the JSP engine finished processing the tag.
@@ -144,7 +144,7 @@ public class BodyTagHandler extends BodyTagSupport {
      * This method is automatically generated. Do not modify this method.
      * Instead, modify the methods that this method calls.
      */
-    public int doEndTag() throws JspException, JspException {//GEN-BEGIN:doEndTag
+    public int doEndTag() throws JspException, JspException {
         otherDoEndTagOperations();
         
         if (shouldEvaluateRestOfPageAfterEndTag()) {
@@ -152,7 +152,7 @@ public class BodyTagHandler extends BodyTagSupport {
         } else {
             return SKIP_PAGE;
         }
-    }//GEN-END:doEndTag
+    }
     
     /**
      * This method is called after the JSP engine processes the body content of the tag.
@@ -160,7 +160,7 @@ public class BodyTagHandler extends BodyTagSupport {
      * This method is automatically generated. Do not modify this method.
      * Instead, modify the methods that this method calls.
      */
-    public int doAfterBody() throws JspException {//GEN-BEGIN:doAfterBody
+    public int doAfterBody() throws JspException {
         try {
             //
             // This code is generated for tags whose bodyContent is "JSP"
@@ -178,7 +178,7 @@ public class BodyTagHandler extends BodyTagSupport {
         } else {
             return SKIP_BODY;
         }
-    }//GEN-END:doAfterBody
+    }
     
     /**
      * Handles exception from processing the body content.
