@@ -18,6 +18,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -70,6 +71,9 @@ public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provi
         return projectLocationPanel.valid(wizardDescriptor) && optionsPanel.valid(wizardDescriptor);
     }
 
+    public void validateProjectLocation() throws WizardValidationException {
+        projectLocationPanel.validateProjectLocation();
+    }
     void read (WizardDescriptor d) {
         projectLocationPanel.read(d);
         optionsPanel.read(d);

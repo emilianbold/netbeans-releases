@@ -14,17 +14,21 @@
 package org.netbeans.modules.web.project.ui.wizards;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.modules.web.project.Utils;
 
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
@@ -59,9 +63,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
         setLayout(new java.awt.GridBagLayout());
 
-        projectNameLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectName_LabelMnemonic").charAt(0));
+        projectNameLabel.setDisplayedMnemonic(getBundleResource("LBL_NWP1_ProjectName_LabelMnemonic").charAt(0));
         projectNameLabel.setLabelFor(projectNameTextField);
-        projectNameLabel.setText(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectName_Label"));
+        projectNameLabel.setText(getBundleResource("LBL_NWP1_ProjectName_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
@@ -73,11 +77,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         add(projectNameTextField, gridBagConstraints);
-        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NWP1_ProjectName_A11YDesc"));
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(getBundleResource("ACS_LBL_NWP1_ProjectName_A11YDesc"));
 
-        projectLocationLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectLocation_LabelMnemonic").charAt(0));
+        projectLocationLabel.setDisplayedMnemonic(getBundleResource("LBL_NWP1_ProjectLocation_LabelMnemonic").charAt(0));
         projectLocationLabel.setLabelFor(projectLocationTextField);
-        projectLocationLabel.setText(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectLocation_Label"));
+        projectLocationLabel.setText(getBundleResource("LBL_NWP1_ProjectLocation_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -91,9 +95,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(projectLocationTextField, gridBagConstraints);
-        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NPW1_ProjectLocation_A11YDesc"));
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription(getBundleResource("ACS_LBL_NPW1_ProjectLocation_A11YDesc"));
 
-        Button.setText(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
+        Button.setText(getBundleResource("LBL_NWP1_BrowseLocation_Button"));
         Button.setActionCommand("BROWSE");
         Button.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -106,11 +110,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
         add(Button, gridBagConstraints);
-        Button.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NWP1_BrowseLocation_A11YDesc"));
+        Button.getAccessibleContext().setAccessibleDescription(getBundleResource("ACS_LBL_NWP1_BrowseLocation_A11YDesc"));
 
-        createdFolderLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_LablelMnemonic").charAt(0));
+        createdFolderLabel.setDisplayedMnemonic(getBundleResource("LBL_NWP1_CreatedProjectFolder_LablelMnemonic").charAt(0));
         createdFolderLabel.setLabelFor(createdFolderTextField);
-        createdFolderLabel.setText(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Lablel"));
+        createdFolderLabel.setText(getBundleResource("LBL_NWP1_CreatedProjectFolder_Lablel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -126,16 +130,21 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(createdFolderTextField, gridBagConstraints);
-        createdFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NWP1_CreatedProjectFolder_A11YDesc"));
+        createdFolderTextField.getAccessibleContext().setAccessibleDescription(
+                getBundleResource("ACS_LBL_NWP1_CreatedProjectFolder_A11YDesc"));
 
     }//GEN-END:initComponents
+
+    private static String getBundleResource(final String resourceName) {
+        return NbBundle.getMessage(PanelProjectLocationVisual.class, resourceName);
+    }
 
     private void browseLocationAction(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocationAction
         String command = evt.getActionCommand();
         
         if ("BROWSE".equals(command)) { //NOI18N
             JFileChooser chooser = new JFileChooser();
-            chooser.setDialogTitle(NbBundle.getMessage(PanelProjectLocationVisual.class,"LBL_NWP1_SelectProjectLocation")); //NOI18N
+            chooser.setDialogTitle(getBundleResource("LBL_NWP1_SelectProjectLocation")); //NOI18N
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             String path = projectLocationTextField.getText();
             if (path.length() > 0) {
@@ -156,17 +165,39 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         //same problem as in 31086, initial focus on Cancel button
         projectNameTextField.requestFocus();
     }
-    
+
     boolean valid(WizardDescriptor wizardDescriptor) {
-        if (projectNameTextField.getText().length() == 0) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_IllegalProjectName")); //NOI18N
-            return false; // Display name not specified
+        File f = new File(projectLocationTextField.getText().trim());
+        String createdFolderText = f.getAbsolutePath();
+        f = getCanonicalFile(f);
+        if(f == null) {
+            final String message = getBundleResource("MSG_IllegalProjectLocation");
+            createdFolderTextField.setText(createdFolderText + " - " + message);
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            return false; // Invalid project location
         }
-        
+        final String projectName = projectNameTextField.getText().trim();
+        f = new File(f, projectName);
+        createdFolderText = f.getAbsolutePath();
+        f = getCanonicalFile(f);
+        if(f == null || !projectName.equals(f.getName())) {
+            final String message = getBundleResource("MSG_IllegalProjectName");
+            createdFolderTextField.setText(createdFolderText + " - " + message);
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            return false; // Invalid project name
+        }
+        createdFolderText = f.getAbsolutePath();
+        createdFolderTextField.setText(createdFolderText);
+        if(!f.exists()) {
+            if(!Utils.getRoot(f).exists()) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", getBundleResource("MSG_IllegalDisk"));
+                return false; // Invalid disk
+            }
+        }
         File prjParent = new File(projectLocationTextField.getText().trim());
         if (prjParent.exists() && !prjParent.canWrite()) {
             // Read only project location
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_ProjectLocationRO")); //NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", getBundleResource("MSG_ProjectLocationRO")); //NOI18N
             return false;
         }
         
@@ -174,15 +205,50 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         File[] children = destFolder.listFiles();
         if (destFolder.exists() && children != null && children.length > 0) {
             // Folder exists and is not empty
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_ProjectFolderExists")); //NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", getBundleResource("MSG_ProjectFolderExists")); //NOI18N
             return false;
         }
                 
         wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
         return true;
     }
-    
-    void store(WizardDescriptor d) {        
+
+    public static File getCanonicalFile(File f) {
+        File f1;
+        try {
+            f1 = f.getCanonicalFile();
+        } catch (IOException e) {
+            f1 = null;
+        }
+        return f1;
+    }
+
+    public void validateProjectLocation() throws WizardValidationException {
+        final File dir = new File(createdFolderTextField.getText());
+
+        final File parentDir = dir.getParentFile();
+        if(!parentDir.exists()) {
+            NotifyDescriptor notifyDescriptor = new NotifyDescriptor.Confirmation(
+                    parentDir.getAbsolutePath() + "\n" + getBundleResource("MSG_CreateDir"),
+
+                    NotifyDescriptor.YES_NO_OPTION);
+            if (!NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(notifyDescriptor))) {
+                throw new WizardValidationException(projectLocationTextField, "", "");
+            }
+            try {
+                Utils.getValidDir(parentDir);
+            } catch (IOException ex) {
+                throw new WizardValidationException(projectLocationTextField, ex.getMessage(), ex.getLocalizedMessage());
+            }
+        }
+        try {
+            Utils.getValidEmptyDir(dir);
+        } catch (IOException ex) {
+            throw new WizardValidationException(projectNameTextField, ex.getMessage(), ex.getLocalizedMessage());
+        }
+    }
+
+    void store(WizardDescriptor d) {
         String name = projectNameTextField.getText().trim();
         
         d.putProperty(WizardProperties.PROJECT_DIR, new File(createdFolderTextField.getText().trim()));
@@ -206,7 +272,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         String projectName = (String) settings.getProperty(WizardProperties.NAME);
         if (projectName == null) {
             int baseCount = FoldersListSettings.getDefault().getNewProjectCount() + 1;
-            String formater = NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NPW1_DefaultProjectName");
+            String formater = getBundleResource("LBL_NPW1_DefaultProjectName");
             while ((projectName = validFreeProjectName(projectLocation, formater, baseCount)) == null)
                 baseCount++;
             settings.putProperty(NewWebProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
@@ -258,20 +324,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     /** Handles changes in the project name and project directory
      */
     private void updateTexts(DocumentEvent e) {
-        createdFolderTextField.setText(getCreatedFolderPath());
-
         panel.fireChangeEvent(); // Notify that the panel changed
     }
-    
-    private String getCreatedFolderPath() {
-        StringBuffer folder = new StringBuffer(projectLocationTextField.getText().trim());
-        if (!projectLocationTextField.getText().endsWith(File.separator))
-            folder.append(File.separatorChar);
-        folder.append(projectNameTextField.getText().trim());
-        
-        return folder.toString();
-    }
-    
 }
-
-//TODO implement check for project folder name and location

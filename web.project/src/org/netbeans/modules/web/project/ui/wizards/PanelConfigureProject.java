@@ -23,13 +23,15 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 
 /**
  * Panel just asking for basic info.
  * @author Jesse Glick
  */
-final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
+final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel, 
+        WizardDescriptor.ValidatingPanel {
     
     private WizardDescriptor wizardDescriptor;
     private PanelConfigureProjectVisual component;
@@ -96,5 +98,8 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
         component.store(d);
         ((WizardDescriptor) d).putProperty("NewProjectWizard_Title", null); // NOI18N
     }
-    
+
+    public void validate() throws WizardValidationException {
+        component.validateProjectLocation();
+    }
 }
