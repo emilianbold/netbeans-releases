@@ -26,7 +26,6 @@ import org.openide.util.*;
 class FormLAF {
 
     private static LookAndFeel defaultLookAndFeel;
-    private static DefaultMetalTheme defaultMetalTheme;
     private static Map ideDefaults;
     private static int useIdeLaf = -1;
     private static boolean lafBlockEntered;
@@ -149,12 +148,6 @@ class FormLAF {
 
         if (ideDefaults == null)
             saveIDELookAndFeelDefaults();
-
-        if (defaultLookAndFeel instanceof MetalLookAndFeel) {
-            if (defaultMetalTheme == null)
-                defaultMetalTheme = new DefaultMetalTheme();
-            MetalLookAndFeel.setCurrentTheme(defaultMetalTheme);
-        }
 
         copyMap(UIManager.getDefaults(), defaultLookAndFeel.getDefaults());
     }
