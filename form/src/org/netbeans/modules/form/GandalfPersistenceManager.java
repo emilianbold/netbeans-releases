@@ -578,9 +578,9 @@ return null;
      StringBuffer sb = new StringBuffer (bosBytes.length);
      for (int i = 0; i < bosBytes.length; i++) {
        if (i != bosBytes.length - 1) {
-         sb.append (Integer.toHexString (bosBytes[i])+",");
+         sb.append (Integer.toHexString ((int)bosBytes[i] & 0xFF)+",");
        } else {
-         sb.append (Integer.toHexString (bosBytes[i]));
+         sb.append (Integer.toHexString ((int)bosBytes[i] & 0xFF));
        }
      }
      return sb.toString ();
@@ -630,6 +630,8 @@ return null;
 
 /*
  * Log
+ *  10   Gandalf   1.9         7/11/99  Ian Formanek    hex encoding is 2-char 
+ *       for all bytes
  *  9    Gandalf   1.8         7/11/99  Ian Formanek    
  *  8    Gandalf   1.7         7/8/99   Ian Formanek    
  *  7    Gandalf   1.6         7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
