@@ -900,7 +900,6 @@
    <mapID target="org.netbeans.modules.form.RADLayoutNode" url="pending.html" /> 
    <mapID target="org.netbeans.modules.form.RADChildren$NonVisualNode" url="pending.html" />
    <mapID target="org.netbeans.modules.editor.java.JCUpdateAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.javadoc.search.JavaDocNode" url="javadoc/javadoc_tab.html" />
 
    <mapID target="org.netbeans.modules.javadoc.search.SearchDocAction" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.nodes.BreakpointsView" url="pending.html" />
@@ -1109,7 +1108,7 @@
 <!--used for folder nodes in explorer, including root nodes of filesystems, such as JARs, and folders in JARs-->
    <mapID target="org.openide.loaders.DataFolder" url="filesystems/filesystems-objects.html" />
 <!--used for root node of a Javadoc filesystem on the javadoc tab in the Explorer-->
-   <mapID target="org.netbeans.modules.javadoc.search.JavaDocNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.javadoc.search.JavaDocNode" url="javadoc/javadoc_tab.html" />
 
    <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.UNCONFIG" url="pending.html" />
    <mapID target="org.openide.windows.TopComponent" url="pending.html" /> 
