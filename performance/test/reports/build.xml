@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project basedir="." default="all" name="Performance reports">
+    <property name="nbroot" location="../../.."/>
+
+    <target name="bootstrap">
+        <ant dir="${nbroot}/libs/external" target="unscramble"/>
+        <ant dir="${nbroot}/xml/external" target="unscramble"/>
+    </target>
+    
+    <target name="init" depends="bootstrap">
+        <taskdef name="compare" classname="org.netbeans.performance.results.AnalyzeResultsTask" classpath="perfresults.jar"/>
+        <taskdef name="issues" classname="org.netbeans.nbbuild.PlansPreprocess" classpath="${nbroot}/nbbuild/nbantext.jar"/>
+         <available property="already-converted" file="all_features-subst.xml"/>
+         <property name="http.proxyPort" value="-1" />
+         <property name="http.proxyHost" value="" />
+         <property name="http.proxyPool" value="" />
+    </target>
+    
+    <target name="all" depends="init">
+    <!--
+	<style destdir="." 
+               in="${nbroot}/core/test/results/xmlresults/testreport-performance.xml" 
+               out="testresults-performance.html" 
+               style="style-html.xsl"/>
+               -->
+<!--        <compare refFile="${nbroot}/core/test/results/xmlresults/testreport-performance.xml"-->
+        <compare refFile="${nbroot}/core/test/results/testrun_040222-155643/xmlresults/testrun-performance.xml"
+                 destFile="output.xml">
+           <fileset dir="${nbroot}/core/test/results">
+               <include name="testrun_*/xmlresults/testrun-performance.xml"/>
+               <exclude name="testrun_040222-155643/xmlresults/testrun-performance.xml"/>
+           </fileset>
+        </compare>
+    </target>
+    
+    <target name="compile" depends="init">
+        <mkdir dir="classes"/>
+        <javac srcdir="src" destdir="classes"
+               deprecation="${build.compiler.deprecation}" 
+               debug="${build.compiler.debug}">
+<!--
+           <classpath>
+             <pathelement location="${nbroot}/"/>
+           </classpath>
+-->
+        </javac>
+    </target>
+    
+    <target name="jar" depends="compile">
+      <jar jarfile="perfresults.jar">
+      </jar>
+        <jar basedir="classes" compress="false" jarfile="perfresults.jar">
+<!--          <include name="testUtilities/**"/>
+          <patternset refid="standard-jar-excludes"/>
+          -->
+        </jar>
+    </target>
+</project>
