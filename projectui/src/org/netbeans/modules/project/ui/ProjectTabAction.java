@@ -23,7 +23,8 @@ import org.openide.windows.TopComponent;
 
 public class ProjectTabAction extends AbstractAction {
     
-    private static final String ICON = "org/netbeans/modules/project/ui/resources/projectTab.gif"; //NOI18N
+    private static final String ICON1 = "org/netbeans/modules/project/ui/resources/projectTab.gif"; //NOI18N
+    private static final String ICON2 = "org/netbeans/modules/project/ui/resources/filesTab.gif"; //NOI18N
     
     private static final String PHYSICAL_NAME = NbBundle.getMessage( ProjectTabAction.class, "LBL_ProjectsPhysicalTabAction_Name" ); // NOI18N
     private static final String LOGICAL_NAME = NbBundle.getMessage( ProjectTabAction.class, "LBL_ProjectsLogicalTabAction_Name" ); // NOI18N
@@ -31,11 +32,11 @@ public class ProjectTabAction extends AbstractAction {
     private int type;
     
     public static Action projectsPhysical() {
-        return new ProjectTabAction( PHYSICAL_NAME, ICON, 0 );
+        return new ProjectTabAction( PHYSICAL_NAME, ICON2, 0 );
     }
     
     public static Action projectsLogical() {
-        return new ProjectTabAction( LOGICAL_NAME, ICON, 1 );
+        return new ProjectTabAction( LOGICAL_NAME, ICON1, 1 );
     }
     
     /** Creates a new instance of BrowserAction */
