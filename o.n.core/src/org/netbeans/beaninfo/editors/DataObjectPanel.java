@@ -45,6 +45,7 @@ public class DataObjectPanel extends JPanel {
     protected NodeAcceptor     nodeFilter;
     protected Insets           insets;
     protected String           subTitle;
+    protected String           description;
     protected DataObject       rootObject;
     
     protected Node             rootNode;

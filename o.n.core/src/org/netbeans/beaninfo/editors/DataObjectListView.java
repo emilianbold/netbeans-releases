@@ -130,9 +130,12 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         chooser = new NodeFileChooser(rootFile, new NodeFileSystemView());
         FileEditor.hackFileChooser(chooser);
         //We must initialize it after JFileChooser is created
-        chooser.getAccessibleContext().setAccessibleName
-        (NbBundle.getBundle (DataObjectPanel.class).getString ( "ACSN_DataObjectPanel" ));
-        setDescription( NbBundle.getBundle (DataObjectPanel.class).getString ( "ACSD_DataObjectPanel" ) );
+        if (description != null) {
+            setDescription(description);
+        } else {
+            //Set default value
+            setDescription( NbBundle.getBundle (DataObjectPanel.class).getString ( "ACSD_DataObjectPanel" ) );
+        }
         
         chooser.setFileView(new NodeFileView());
         
@@ -192,9 +195,11 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
      * @param desc Desciption of the panel.
      */
     public void setDescription(String desc) {
+        this.description = desc;
         getAccessibleContext().setAccessibleDescription(desc);
-        //reposTree.getAccessibleContext().setAccessibleDescription(desc);
-        chooser.getAccessibleContext().setAccessibleDescription(desc);
+        if (chooser != null) {
+            chooser.getAccessibleContext().setAccessibleDescription(desc);
+        }
     }
     
     /** Finds node by path from root node. It can return null if node is not found.
