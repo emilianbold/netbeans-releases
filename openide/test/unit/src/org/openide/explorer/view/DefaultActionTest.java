@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,17 +17,12 @@
 package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
-import java.awt.Robot;
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
 
 
 import junit.textui.TestRunner;
@@ -40,9 +35,10 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
+
 
 /**
  * Test DefaulAction of node selected in a view.
@@ -77,7 +73,7 @@ public class DefaultActionTest extends NbTestCase {
     }
     
     private boolean performed;
-    private Node root;
+    private Node root, investigatedNode;
     private List fails = new ArrayList ();
     
     protected void setUp () {
@@ -85,8 +81,7 @@ public class DefaultActionTest extends NbTestCase {
         root = new AbstractNode (children);
         final NodeAction a = new NodeAction () {
             protected void performAction (Node[] activatedNodes) {
-                log ("Action performed.");
-                performed = true;
+                assertActionPerformed (activatedNodes);
             }                 
             
             public boolean asynchronous () {
@@ -97,6 +92,9 @@ public class DefaultActionTest extends NbTestCase {
                 return true;
             }
             
+            public boolean isEnabled () {
+                return true;
+            }
             
             public HelpCtx getHelpCtx () {
                 return null;
@@ -106,14 +104,15 @@ public class DefaultActionTest extends NbTestCase {
                 return "Test default action";
             }
         };
-        children.add (new Node[] {new AbstractNode (Children.LEAF) {
+        investigatedNode = new AbstractNode (Children.LEAF, Lookup.EMPTY) {
             public String getName () {
                 return "Node with default action";
             }
             public Action getPreferredAction () {
                 return a;
             }
-        }});
+        };
+        children.add (new Node[] { investigatedNode });
     }
     
     private TopComponent prepareExplorerPanel (JScrollPane view) {
@@ -149,6 +148,15 @@ public class DefaultActionTest extends NbTestCase {
         }
     }
     
+    public void testNodeInLoopup () throws Exception {
+        TreeView tv = new BeanTreeView ();
+        TopComponent tc = prepareExplorerPanel (tv);
+        TreeView.PopupSupport supp = tv.defaultActionListener;
+        tv.manager = ((ExplorerPanel)tc).getExplorerManager ();
+        supp.actionPerformed (null);
+        assertDefaultActionWasPerformed ("BeanTreeView");
+    }
+    
     public void testListView () {
         TopComponent tc = prepareExplorerPanel (new ListView ());
         invokeDefaultAction (tc);
@@ -176,6 +184,14 @@ public class DefaultActionTest extends NbTestCase {
     
     void assertDefaultActionWasPerformed (String nameOfView) {
         assertTrue ("[" + nameOfView + "] DefaultAction was preformed.", performed);
+    }
+    
+    void assertActionPerformed (Node[] nodes) {
+        log ("Action performed.");
+        assertNotNull ("Activated nodes exist.", nodes);
+        assertEquals ("Only one node is activated.", 1, nodes.length);
+        assertEquals ("It's the testedNode.", investigatedNode, nodes[0]);
+        performed = true;
     }
     
 }
