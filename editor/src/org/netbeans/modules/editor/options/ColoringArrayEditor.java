@@ -45,7 +45,7 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
   }
 
   public String getAsText() {
-    return "Colorings";
+    return "Fonts and Colors";
   }
 
   public void setAsText(String s) {
@@ -166,7 +166,7 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
         throw new IllegalArgumentException();
       }
       colorings[index] = ((ColoringBean)val).getColoring();
-      Settings.touchValue(Settings.COLORING_MANAGER);
+      Settings.touchValue(null, Settings.COLORING_MANAGER); // kit class null right now
 //      System.out.println("setValue(): colorings=" + System.identityHashCode(colorings) + ", coloring=" + colorings[index]);
     }
 
@@ -180,6 +180,7 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
 
 /*
 * Log
+*  7    Gandalf   1.6         8/27/99  Miloslav Metelka 
 *  6    Gandalf   1.5         8/17/99  Miloslav Metelka 
 *  5    Gandalf   1.4         7/30/99  Miloslav Metelka 
 *  4    Gandalf   1.3         7/29/99  Miloslav Metelka 

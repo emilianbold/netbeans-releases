@@ -47,13 +47,6 @@ public class OptionSupport extends SystemOption {
   public OptionSupport(Class kitClass, String typeName) {
     this.kitClass = kitClass;
     this.typeName = typeName;
-    
-    settingsListener = new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          refresh(evt);
-        }
-    };
-    Settings.addPropertyChangeListener(settingsListener);
   }
 
   Class getKitClass() {
@@ -80,16 +73,21 @@ public class OptionSupport extends SystemOption {
     firePropertyChange(name, oldValue, newValue);
   }
 
-  Object getSettingValue(String name) {
-//    Object val = getProperty(name);
-//    if (val == null) {
-      Object val = Settings.getValue(kitClass, name);
-//      putProperty(name, val);
-//    }
-    return val;
+  Object getSettingValue(String settingName) {
+    return Settings.getValue(kitClass, settingName);
+  }
+  
+  Settings.KitAndValue[] getSettingKitAndValueArray(String settingName) {
+    return Settings.getKitAndValueArray(kitClass, settingName);
   }
 
-  void refresh(PropertyChangeEvent evt) {
+  boolean getSettingBoolean(String settingName) {
+    Boolean val = (Boolean)getSettingValue(settingName);
+    return (val != null) ? val.booleanValue() : false;
+  }
+
+  void setSettingBoolean(String settingName, boolean newValue) {
+    setSettingValue(settingName, newValue ? Boolean.TRUE : Boolean.FALSE);
   }
 
   public void setColoringsHelper(Object[] value, int[] sets) {
@@ -99,7 +97,7 @@ public class OptionSupport extends SystemOption {
       System.arraycopy(cols, 0,
           cm.getColorings(getKitClass(), sets[i]), 0, cols.length);
     }
-    Settings.touchValue(Settings.COLORING_MANAGER);
+    Settings.touchValue(getKitClass(), Settings.COLORING_MANAGER);
   }
   
   public Object[] getColoringsHelper(int[] sets) {
@@ -136,6 +134,7 @@ public class OptionSupport extends SystemOption {
 
 /*
  * Log
+ *  5    Gandalf   1.4         8/27/99  Miloslav Metelka 
  *  4    Gandalf   1.3         8/17/99  Miloslav Metelka 
  *  3    Gandalf   1.2         7/21/99  Miloslav Metelka 
  *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 

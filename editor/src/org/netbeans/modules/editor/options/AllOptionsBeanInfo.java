@@ -24,48 +24,29 @@ import org.openide.util.NbBundle;
 * @author Miloslav Metelka
 * @version 1.00
 */
-public final class AllOptionsBeanInfo extends SimpleBeanInfo {
+public class AllOptionsBeanInfo extends BaseOptionsBeanInfo {
+  
+  public static final String[] PROP_NAMES = new String[] {
+    BaseOptions.KEY_BINDING_LIST_PROP
+  };
 
-  /** Prefix of the icon location. */
-  private String iconPrefix = "/com/netbeans/developer/modules/text/resources/allOptions";
-
-  /** Icons for compiler settings objects. */
-  private Image icon;
-  private Image icon32;
-
-  /** Propertydescriptors */
-  private static PropertyDescriptor[] descriptors;
-
-  /*
-  * @return Returns an array of PropertyDescriptors
-  * describing the editable properties supported by this bean.
-  */
-  public PropertyDescriptor[] getPropertyDescriptors () {
-    if (descriptors == null) {
-      descriptors = new PropertyDescriptor[0];
-    }
-    return descriptors;
+  public AllOptionsBeanInfo() {
+    super("/com/netbeans/developer/modules/text/resources/allOptions", "base_");
   }
 
-  /* @param type Desired type of the icon
-  * @return returns the Java loader's icon
-  */
-  public Image getIcon(final int type) {
-    if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-      if (icon == null)
-        icon = loadImage(iconPrefix + ".gif");
-      return icon;
-    }
-    else {
-      if (icon32 == null)
-        icon32 = loadImage(iconPrefix + "32.gif");
-      return icon32;
-    }
+  protected Class getBeanClass() {
+    return AllOptions.class;
   }
+  
+  protected String[] getPropNames() {
+    return PROP_NAMES;
+  }
+      
 }
 
 /*
 * Log
+*  4    Gandalf   1.3         8/27/99  Miloslav Metelka 
 *  3    Gandalf   1.2         7/9/99   Ales Novak      print options change
 *  2    Gandalf   1.1         7/3/99   Ian Formanek    Changed package statement
 *       to make it compilable

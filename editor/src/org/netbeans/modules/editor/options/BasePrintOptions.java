@@ -34,23 +34,17 @@ public class BasePrintOptions extends OptionSupport {
   
   public static final String PRINT_LINE_NUMBER_VISIBLE_PROP = "printLineNumberVisible";
   
-  public static final String PRINT_SYSTEM_COLORING_ARRAY_PROP = "printSystemColoringArray";
+  public static final String PRINT_COLORING_ARRAY_PROP = "printColoringArray";
   
-  public static final String PRINT_TOKEN_COLORING_ARRAY_PROP = "printTokenColoringArray";
-  
-  private static final int[] SYSTEM_COLORING_SETS = new int[] {
+  private static final int[] COLORING_SETS = new int[] {
     ColoringManager.PRINT_DEFAULT_SET,
     ColoringManager.PRINT_DOCUMENT_SET,
-  };
-
-  private static final int[] TOKEN_COLORING_SETS = new int[] {
     ColoringManager.PRINT_TOKEN_SET
   };
 
   static final String[] BASE_PROP_NAMES = {
     PRINT_LINE_NUMBER_VISIBLE_PROP,
-    PRINT_SYSTEM_COLORING_ARRAY_PROP,
-    PRINT_TOKEN_COLORING_ARRAY_PROP
+    PRINT_COLORING_ARRAY_PROP,
   };
 
   public BasePrintOptions() {
@@ -72,24 +66,18 @@ public class BasePrintOptions extends OptionSupport {
     setSettingValue(Settings.PRINT_LINE_NUMBER_VISIBLE, (b ? Boolean.TRUE : Boolean.FALSE));
   }
 
-  public Object[] getPrintSystemColoringArray() {
-    return getColoringsHelper(SYSTEM_COLORING_SETS);
+  public Object[] getPrintColoringArray() {
+    return getColoringsHelper(COLORING_SETS);
   }
-  public void setPrintSystemColoringArray(Object[] value) {
-    setColoringsHelper(value, SYSTEM_COLORING_SETS);
-  }
-  
-  public Object[] getPrintTokenColoringArray() {
-    return getColoringsHelper(TOKEN_COLORING_SETS);
-  }
-  public void setPrintTokenColoringArray(Object[] value) {
-    setColoringsHelper(value, TOKEN_COLORING_SETS);
+  public void setPrintColoringArray(Object[] value) {
+    setColoringsHelper(value, COLORING_SETS);
   }
   
 }
 
 /*
  * Log
+ *  5    Gandalf   1.4         8/27/99  Miloslav Metelka 
  *  4    Gandalf   1.3         8/17/99  Miloslav Metelka 
  *  3    Gandalf   1.2         7/21/99  Miloslav Metelka 
  *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 

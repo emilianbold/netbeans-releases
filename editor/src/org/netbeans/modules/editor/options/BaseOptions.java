@@ -17,6 +17,7 @@ import java.awt.Color;
 import java.awt.Insets;
 import java.util.Map;
 import java.util.List;
+import java.util.ArrayList;
 import javax.swing.text.JTextComponent;
   
 import com.netbeans.editor.Settings;
@@ -55,6 +56,8 @@ public class BaseOptions extends OptionSupport {
   
   public static final String CARET_COLOR_OVERWRITE_MODE_PROP = "caretColorOverwriteMode";
   
+  public static final String COLORING_ARRAY_PROP = "coloringArray";
+  
   public static final String EXPAND_TABS_PROP = "expandTabs";
   
   public static final String KEY_BINDING_LIST_PROP = "keyBindingList";
@@ -77,20 +80,35 @@ public class BaseOptions extends OptionSupport {
 
   public static final String STATUS_BAR_VISIBLE_PROP = "statusBarVisible";
   
-  public static final String SYSTEM_COLORING_ARRAY_PROP = "systemColoringArray";
-  
   public static final String TAB_SIZE_PROP = "tabSize";
   
-  public static final String TOKEN_COLORING_ARRAY_PROP = "tokenColoringArray";
+  public static final String FIND_HIGHLIGHT_SEARCH = "findHighlightSearch";
   
-  private static final int[] SYSTEM_COLORING_SETS = new int[] {
+  public static final String FIND_INC_SEARCH_PROP = "findIncSearch";
+
+  public static final String FIND_INC_SEARCH_DELAY_PROP = "findIncSearchDelay";
+
+  public static final String FIND_WRAP_SEARCH_PROP = "findWrapSearch";
+
+  public static final String FIND_MATCH_CASE_PROP = "findMatchCase";
+
+  public static final String FIND_SMART_CASE_PROP = "findSmartCase";
+
+  public static final String FIND_WHOLE_WORDS_PROP = "findWholeWords";
+
+  public static final String FIND_REG_EXP_PROP = "findRegExp";
+
+  public static final String FIND_HISTORY_PROP = "findHistory";
+
+  public static final String FIND_HISTORY_SIZE_PROP = "findHistorySize";
+  
+  public static final String FONT_SIZE_PROP = "fontSize";
+  
+  private static final int[] COLORING_SETS = new int[] {
     ColoringManager.DEFAULT_SET,
     ColoringManager.DOCUMENT_SET,
     ColoringManager.COMPONENT_SET,
-    ColoringManager.STATUS_BAR_SET
-  };
-
-  private static final int[] TOKEN_COLORING_SETS = new int[] {
+    ColoringManager.STATUS_BAR_SET,
     ColoringManager.TOKEN_SET
   };
 
@@ -103,7 +121,9 @@ public class BaseOptions extends OptionSupport {
     CARET_TYPE_OVERWRITE_MODE_PROP,
     CARET_COLOR_INSERT_MODE_PROP,
     CARET_COLOR_OVERWRITE_MODE_PROP,
+    COLORING_ARRAY_PROP,
     EXPAND_TABS_PROP,
+    FONT_SIZE_PROP,
     KEY_BINDING_LIST_PROP,
     LINE_HEIGHT_CORRECTION_PROP,
     LINE_NUMBER_MARGIN_PROP,
@@ -114,12 +134,12 @@ public class BaseOptions extends OptionSupport {
     SPACES_PER_TAB_PROP,
     STATUS_BAR_CARET_DELAY_PROP,
     STATUS_BAR_VISIBLE_PROP,
-    SYSTEM_COLORING_ARRAY_PROP,
     TAB_SIZE_PROP,
-    TOKEN_COLORING_ARRAY_PROP
   };
 
-static final long serialVersionUID =-5469192431366914841L;
+
+  static final long serialVersionUID =-5469192431366914841L;
+  
   public BaseOptions() {
     this(BaseKit.class, BASE);
   }
@@ -136,10 +156,10 @@ static final long serialVersionUID =-5469192431366914841L;
   }
 
   public boolean getExpandTabs() {
-    return ((Boolean)getSettingValue(Settings.EXPAND_TABS)).booleanValue();
+    return getSettingBoolean(Settings.EXPAND_TABS);
   }
   public void setExpandTabs(boolean expandTabs) {
-    setSettingValue(Settings.EXPAND_TABS, new Boolean(expandTabs));
+    setSettingBoolean(Settings.EXPAND_TABS, expandTabs);
   }
   
   public int getSpacesPerTab() {
@@ -172,17 +192,17 @@ static final long serialVersionUID =-5469192431366914841L;
   }
   
   public boolean getCaretItalicInsertMode() {
-    return ((Boolean) getSettingValue(Settings.CARET_ITALIC_INSERT_MODE)).booleanValue();
+    return getSettingBoolean(Settings.CARET_ITALIC_INSERT_MODE);
   }
   public void setCaretItalicInsertMode(boolean b) {
-    setSettingValue(Settings.CARET_ITALIC_INSERT_MODE, (b ? Boolean.TRUE : Boolean.FALSE));
+    setSettingBoolean(Settings.CARET_ITALIC_INSERT_MODE, b);
   }
   
   public boolean getCaretItalicOverwriteMode() {
-    return ((Boolean) getSettingValue(Settings.CARET_ITALIC_OVERWRITE_MODE)).booleanValue();
+    return getSettingBoolean(Settings.CARET_ITALIC_OVERWRITE_MODE);
   }
   public void setCaretItalicOverwriteMode(boolean b) {
-    setSettingValue(Settings.CARET_ITALIC_OVERWRITE_MODE, (b ? Boolean.TRUE : Boolean.FALSE));
+    setSettingBoolean(Settings.CARET_ITALIC_OVERWRITE_MODE, b);
   }
   
   public Color getCaretColorInsertMode() {
@@ -207,10 +227,10 @@ static final long serialVersionUID =-5469192431366914841L;
   }
 
   public boolean getLineNumberVisible() {
-    return ((Boolean) getSettingValue(Settings.LINE_NUMBER_VISIBLE)).booleanValue();
+    return getSettingBoolean(Settings.LINE_NUMBER_VISIBLE);
   }
   public void setLineNumberVisible(boolean b) {
-    setSettingValue(Settings.LINE_NUMBER_VISIBLE, (b ? Boolean.TRUE : Boolean.FALSE));
+    setSettingBoolean(Settings.LINE_NUMBER_VISIBLE, b);
   }
   
   public Insets getScrollJumpInsets() {
@@ -228,7 +248,18 @@ static final long serialVersionUID =-5469192431366914841L;
   }
   
   public List getKeyBindingList() {
-    List kbList = (List)getSettingValue(Settings.KEY_BINDING_LIST);
+    Class kitClass = getKitClass();
+    Settings.KitAndValue[] kav = getSettingKitAndValueArray(Settings.KEY_BINDING_LIST);
+    List kbList = null;
+    for (int i = 0; i < kav.length; i++) {
+      if (kav[i].kitClass == kitClass) {
+        kbList = (List)kav[i].value;
+      }
+    }
+    if (kbList == null) {
+      kbList = new ArrayList();
+    }
+    
     // must convert all members to serializable MultiKeyBinding
     int cnt = kbList.size();
     for (int i = 0; i < cnt; i++) {
@@ -241,24 +272,30 @@ static final long serialVersionUID =-5469192431366914841L;
 
     return kbList;
   }
+  
   public void setKeyBindingList(List list) {
     setSettingValue(Settings.KEY_BINDING_LIST, list);
   }
 
-  public Object[] getSystemColoringArray() {
-    return getColoringsHelper(SYSTEM_COLORING_SETS);
+  public Object[] getColoringArray() {
+    return getColoringsHelper(COLORING_SETS);
   }
 
-  public void setSystemColoringArray(Object[] value) {
-    setColoringsHelper(value, SYSTEM_COLORING_SETS);
+  public void setColoringArray(Object[] value) {
+    setColoringsHelper(value, COLORING_SETS);
   }
   
-  public Object[] getTokenColoringArray() {
-    return getColoringsHelper(TOKEN_COLORING_SETS);
+  public int getFontSize() {
+    ColoringManager cm = (ColoringManager)getSettingValue(Settings.COLORING_MANAGER);
+    return cm.getDefaultColoring(getKitClass()).getFont().getSize();
   }
-
-  public void setTokenColoringArray(Object[] value) {
-    setColoringsHelper(value, TOKEN_COLORING_SETS);
+  
+  public void setFontSize(int size) {
+    ColoringManager cm = (ColoringManager)getSettingValue(Settings.COLORING_MANAGER);
+    for (int i = 0; i < COLORING_SETS.length; i++) {
+      ColoringManager.updateFontSize(cm.getColorings(getKitClass(), COLORING_SETS[i]), size);
+    }
+    Settings.touchValue(getKitClass(), Settings.COLORING_MANAGER);
   }
   
   public float getLineHeightCorrection() {
@@ -283,10 +320,10 @@ static final long serialVersionUID =-5469192431366914841L;
   }
   
   public boolean getStatusBarVisible() {
-    return ((Boolean)getSettingValue(Settings.STATUS_BAR_VISIBLE)).booleanValue();
+    return getSettingBoolean(Settings.STATUS_BAR_VISIBLE);
   }
   public void setStatusBarVisible(boolean v) {
-    setSettingValue(Settings.STATUS_BAR_VISIBLE, v ? Boolean.TRUE : Boolean.FALSE);
+    setSettingBoolean(Settings.STATUS_BAR_VISIBLE, v);
   }
   
   public int getStatusBarCaretDelay() {
@@ -295,12 +332,70 @@ static final long serialVersionUID =-5469192431366914841L;
   public void setStatusBarCaretDelay(int delay) {
     setSettingValue(Settings.STATUS_BAR_CARET_DELAY, new Integer(delay));
   }
+
+  public boolean getFindHighlightSearch() {
+    return getSettingBoolean(Settings.FIND_HIGHLIGHT_SEARCH);
+  }
   
+  public void setFindHighlightSearch(boolean b) {
+    setSettingBoolean(Settings.FIND_HIGHLIGHT_SEARCH, b);
+  }
+  
+  public boolean getFindIncSearch() {
+    return getSettingBoolean(Settings.FIND_INC_SEARCH);
+  }
+  
+  public void setFindIncSearch(boolean b) {
+    setSettingBoolean(Settings.FIND_INC_SEARCH, b);
+  }
+  
+  public int getFindIncSearchDelay() {
+    Integer i = (Integer)getSettingValue(Settings.FIND_INC_SEARCH_DELAY);
+    return (i != null) ? i.intValue() : 0;
+  }
+  
+  public void setFindIncSearchDelay(int delay) {
+    setSettingValue(Settings.FIND_INC_SEARCH_DELAY, new Integer(delay));
+  }
+
+  public boolean getFindWrapSearch() {
+    return getSettingBoolean(Settings.FIND_WRAP_SEARCH);
+  }
+  
+  public void setFindWrapSearch(boolean b) {
+    setSettingBoolean(Settings.FIND_WRAP_SEARCH, b);
+  }
+  
+  public boolean getFindSmartCase() {
+    return getSettingBoolean(Settings.FIND_SMART_CASE);
+  }
+  
+  public void setFindSmartCase(boolean b) {
+    setSettingBoolean(Settings.FIND_SMART_CASE, b);
+  }
+
+  public Map getFindHistory() {
+    return (Map)getSettingValue(Settings.FIND_HISTORY);
+  }
+  
+  public void setFindHistory(Map m) {
+    setSettingValue(Settings.FIND_HISTORY, m);
+  }
+
+  public int getFindHistorySize() {
+    Integer i = (Integer)getSettingValue(Settings.FIND_HISTORY_SIZE);
+    return (i != null) ? i.intValue() : 0;
+  }
+  
+  public void setFindHistorySize(int size) {
+    setSettingValue(Settings.FIND_HISTORY_SIZE, new Integer(size));
+  }
 
 }
 
 /*
  * Log
+ *  8    Gandalf   1.7         8/27/99  Miloslav Metelka 
  *  7    Gandalf   1.6         8/17/99  Miloslav Metelka 
  *  6    Gandalf   1.5         8/9/99   Ian Formanek    Generated Serial Version
  *       UID

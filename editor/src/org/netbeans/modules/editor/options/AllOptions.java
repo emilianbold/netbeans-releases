@@ -13,6 +13,7 @@
 
 package com.netbeans.developer.modules.text.options;
 
+import java.util.List;
 import org.openide.options.ContextSystemOption;
 import org.openide.util.NbBundle;
 import org.openide.text.PrintSettings;
@@ -25,7 +26,10 @@ import org.openide.text.PrintSettings;
 */
 public class AllOptions extends ContextSystemOption {
 
-static final long serialVersionUID =-5703125420292694573L;
+  static final long serialVersionUID =-5703125420292694573L;
+  
+  BaseOptions baseOptions = new BaseOptions(); // base kit settings
+  
   public AllOptions() {
     addOption(new PlainOptions());
     addOption(new JavaOptions());
@@ -41,10 +45,19 @@ static final long serialVersionUID =-5703125420292694573L;
     return NbBundle.getBundle(PlainOptions.class).getString("OPTIONS_all");
   }
 
+  public List getKeyBindingList() {
+    return baseOptions.getKeyBindingList();
+  }
+
+  public void setKeyBindingList(List list) {
+    baseOptions.setKeyBindingList(list);
+  }
+
 }
 
 /*
  * Log
+ *  6    Gandalf   1.5         8/27/99  Miloslav Metelka 
  *  5    Gandalf   1.4         8/9/99   Ian Formanek    Generated Serial Version
  *       UID
  *  4    Gandalf   1.3         7/20/99  Miloslav Metelka 

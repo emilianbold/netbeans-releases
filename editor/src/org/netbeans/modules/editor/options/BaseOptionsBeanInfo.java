@@ -47,6 +47,9 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
 
   /** Prefix of the icon location. */
   private String iconPrefix;
+  
+  /** Prefix for getting localized strings for property name and hint */
+  private String bundlePrefix;
 
   /** Icons for compiler settings objects. */
   private Image icon;
@@ -54,13 +57,36 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
 
   /** Propertydescriptors */
   PropertyDescriptor[] descriptors;
+  
+  private static final String[] EXPERT_PROP_NAMES = new String[] {
+    BaseOptions.CARET_BLINK_RATE_PROP,
+    BaseOptions.CARET_ITALIC_INSERT_MODE_PROP,
+    BaseOptions.CARET_ITALIC_OVERWRITE_MODE_PROP,
+    BaseOptions.CARET_TYPE_INSERT_MODE_PROP,
+    BaseOptions.CARET_TYPE_OVERWRITE_MODE_PROP,
+    BaseOptions.CARET_COLOR_INSERT_MODE_PROP,
+    BaseOptions.CARET_COLOR_OVERWRITE_MODE_PROP,
+    BaseOptions.LINE_HEIGHT_CORRECTION_PROP,
+    BaseOptions.LINE_NUMBER_MARGIN_PROP,
+    BaseOptions.MARGIN_PROP,
+    BaseOptions.SCROLL_JUMP_INSETS_PROP,
+    BaseOptions.SCROLL_FIND_INSETS_PROP,
+    BaseOptions.STATUS_BAR_CARET_DELAY_PROP,
+    BaseOptions.STATUS_BAR_VISIBLE_PROP,
+  };
+
 
   public BaseOptionsBeanInfo() {
     this("/com/netbeans/developer/modules/text/resources/baseOptions");
   }
 
   public BaseOptionsBeanInfo(String iconPrefix) {
+    this(iconPrefix, "");
+  }
+  
+  public BaseOptionsBeanInfo(String iconPrefix, String bundlePrefix) {
     this.iconPrefix = iconPrefix;
+    this.bundlePrefix = bundlePrefix;
   }
 
   /*
@@ -76,17 +102,18 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
         for (int i = 0; i < propNames.length; i++) {
 //          System.out.println("property=" + propNames[i]);
           descriptors[i] = new PropertyDescriptor(propNames[i], getBeanClass());
-          descriptors[i].setDisplayName(getString("PROP_" + propNames[i]));
-          descriptors[i].setShortDescription(getString("HINT_" + propNames[i]));
+          descriptors[i].setDisplayName(getString("PROP_" + bundlePrefix + propNames[i]));
+          descriptors[i].setShortDescription(getString("HINT_" + bundlePrefix + propNames[i]));
         }
 
-        getPD(BaseOptions.ABBREV_MAP_PROP).setPropertyEditorClass(AbbrevMapEditor.class);
-        getPD(BaseOptions.CARET_TYPE_INSERT_MODE_PROP).setPropertyEditorClass(CaretTypeEditor.class);
-        getPD(BaseOptions.CARET_TYPE_OVERWRITE_MODE_PROP).setPropertyEditorClass(CaretTypeEditor.class);
-        getPD(BaseOptions.KEY_BINDING_LIST_PROP).setPropertyEditorClass(KeyBindingListPropertyEditor.class);
-        getPD(BaseOptions.SYSTEM_COLORING_ARRAY_PROP).setPropertyEditorClass(ColoringArrayEditor.class);
-        getPD(BaseOptions.TOKEN_COLORING_ARRAY_PROP).setPropertyEditorClass(ColoringArrayEditor.class);
-        
+        setPropertyEditor(BaseOptions.ABBREV_MAP_PROP, AbbrevMapEditor.class);
+        setPropertyEditor(BaseOptions.CARET_TYPE_INSERT_MODE_PROP, CaretTypeEditor.class);
+        setPropertyEditor(BaseOptions.CARET_TYPE_OVERWRITE_MODE_PROP, CaretTypeEditor.class);
+        setPropertyEditor(BaseOptions.KEY_BINDING_LIST_PROP, KeyBindingListPropertyEditor.class);
+        setPropertyEditor(BaseOptions.COLORING_ARRAY_PROP, ColoringArrayEditor.class);
+
+        setExpert(EXPERT_PROP_NAMES);
+
       } catch (IntrospectionException e) {
         descriptors = new PropertyDescriptor[0];
       }
@@ -111,6 +138,31 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
     }
     return null;
   }
+  
+  protected void setPropertyEditor(String propName, Class propEditor) {
+    PropertyDescriptor pd = getPD(propName);
+    if (pd != null) {
+      pd.setPropertyEditorClass(propEditor);
+    }
+  }
+  
+  protected void setExpert(String[] propNames) {
+    for (int i = 0; i < propNames.length; i++) {
+      PropertyDescriptor pd = getPD(propNames[i]);
+      if (pd != null) {
+        pd.setExpert(true);
+      }
+    }
+  }
+  
+  protected void setHidden(String[] propNames) {
+    for (int i = 0; i < propNames.length; i++) {
+      PropertyDescriptor pd = getPD(propNames[i]);
+      if (pd != null) {
+        pd.setHidden(true);
+      }
+    }
+  }    
 
   /* @param type Desired type of the icon
   * @return returns the Java loader's icon
@@ -431,6 +483,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  4    Gandalf   1.3         8/27/99  Miloslav Metelka 
 *  3    Gandalf   1.2         8/17/99  Miloslav Metelka 
 *  2    Gandalf   1.1         7/29/99  Miloslav Metelka 
 *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
