@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -355,7 +355,7 @@ public class JarClassLoader extends ProxyClassLoader {
         JarFile src;
         
         public JarSource(JarFile file) throws MalformedURLException {
-            super(new URL("file:" + file.getName()));
+            super(fileToURL(new File(file.getName())));
             src = file;
         }
 
@@ -377,7 +377,7 @@ public class JarClassLoader extends ProxyClassLoader {
                 if (ze != null)
                     System.err.println("Loading " + name + " from " + src.getName()); // NOI18N
             }
-            return ze == null ? null : new URL("jar:file:" + src.getName() + "!/" + ze.getName()); // NOI18N
+            return ze == null ? null : new URL("jar:" + fileToURL(new File(src.getName())).toExternalForm() + "!/" + ze.getName()); // NOI18N
         }
         
         protected byte[] readClass(String name, String path) throws IOException {
@@ -402,13 +402,13 @@ public class JarClassLoader extends ProxyClassLoader {
         File dir;
         
         public DirSource(File file) throws MalformedURLException {
-            super(file.toURL());
+            super(fileToURL(file));
             dir = file;
         }
 
         protected URL doGetResource(String name) throws MalformedURLException {
             File resFile = new File(dir, name);
-            return resFile.exists() ? resFile.toURL() : null;
+            return resFile.exists() ? fileToURL(resFile) : null;
         }
         
         protected byte[] readClass(String name, String path) throws IOException {
@@ -427,6 +427,15 @@ public class JarClassLoader extends ProxyClassLoader {
         
     }
     
+    /**
+     * Convert a file to a URL as safely as possible.
+     * <strong>Should be overridden in subclasses.</strong>
+     * @see #27330
+     * @see org.openide.util.Utilities#toURL
+     */
+    protected URL fileToURL(File f) throws MalformedURLException {
+        return f.toURL();
+    }
     
     //
     // ErrorManager's methods

@@ -16,6 +16,8 @@ package org.netbeans;
 import java.io.File;
 import java.util.*;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.jar.JarFile;
 
 /** Bootstrap main class.
@@ -89,6 +91,52 @@ public class Main extends Object {
         public BootClassLoader(List cp, ClassLoader[] parents) {
             super(cp, parents);
         }
+        protected URL fileToURL(File f) throws MalformedURLException {
+            // #27330: installation in a dir containing hash marks etc.
+            if (convertor != null) {
+                return convertor.toURL(f);
+            } else {
+                // This will be called early and used for setting permissions.
+                // If there are hashes in the install path, this must be made
+                // to work, or everything will get security exceptions.
+                // So special-case that part and hope for the best.
+                try {
+                    Method m = File.class.getMethod("toURI", null); // NOI18N
+                    Object o = m.invoke(f, null);
+                    m = o.getClass().getMethod("toURL", null); // NOI18N
+                    return (URL)m.invoke(o, null);
+                } catch (Throwable t) {
+                    // No such luck, JDK 1.3.
+                }
+                // Copied from Utilities.FileURLConvertor13.toURL.
+                URL u = f.toURL();
+                String u2 = u.toExternalForm();
+                if (u2.indexOf('#') != -1) {
+                    int i;
+                    while ((i = u2.indexOf('#')) != -1) {
+                        u2 = u2.substring(0, i) + "%23" + u2.substring(i + 1); // NOI18N
+                    }
+                    u = new URL(u2);
+                }
+                return u;
+            }
+        }
+    }
+    
+    /**
+     * File to URL convertor.
+     * @see #27330
+     */
+    public interface URLConvertor {
+        URL toURL(File f) throws MalformedURLException;
+    }
+    private static URLConvertor convertor = null;
+    /**
+     * Someone please call this!
+     * @see org.openide.util.Utilities#toURL
+     */
+    public static void setURLConvertor(URLConvertor c) {
+        convertor = c;
     }
     
     

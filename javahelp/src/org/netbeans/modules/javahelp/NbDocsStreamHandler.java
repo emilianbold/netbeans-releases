@@ -19,6 +19,7 @@ import java.util.*;
 
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /** Handler & connection cribbed from NbResourceStreamHandler.
  * @author Jesse Glick
@@ -96,8 +97,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
                     // OK, try file.
                     File f = InstalledFileLocator.getDefault().locate("docs/" + resource, null, true); // NOI18N
                     if (f != null) {
-                        // XXX JDK 1.4: target = f.toURI().toURL();
-                        target = f.toURL();
+                        target = Utilities.toURL(f);
                     } else {
                         IOException ioe = new IOException("cannot connect to " + url + ": " + mre);
                         Installer.err.annotate(ioe, NbBundle.getMessage(NbDocsStreamHandler.class, "EXC_nbdocs_cannot_connect", url));

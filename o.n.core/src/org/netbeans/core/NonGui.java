@@ -23,6 +23,7 @@ import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,7 @@ import org.openide.explorer.*;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
+import org.openide.util.Utilities;
 import org.openide.util.io.*;
 import org.openide.nodes.*;
 
@@ -55,6 +57,15 @@ import org.netbeans.core.modules.ModuleSystem;
 * @author Ales Novak, Jaroslav Tulach, Ian Formanek, Petr Hamernik, Jan Jancura
 */
 public class NonGui extends NbTopManager implements Runnable {
+    
+    static {
+        // #27330: installation in directory with hash marks
+        org.netbeans.Main.setURLConvertor(new org.netbeans.Main.URLConvertor() {
+            public URL toURL(File f) throws MalformedURLException {
+                return Utilities.toURL(f);
+            }
+        });
+    }
 
     /** directory for modules */
     static final String DIR_MODULES = "modules"; // NOI18N
@@ -399,8 +410,7 @@ public class NonGui extends NbTopManager implements Runnable {
                             // This module is included in our distro somewhere... may or may not be turned on.
                             // Whatever - try running some classes from it anyway.
                             try {
-                                // XXX JDK 1.4: use toURI().toURL()
-                                ClassLoader l = new URLClassLoader(new URL[] {coreide.toURL()}, NonGui.class.getClassLoader());
+                                ClassLoader l = new URLClassLoader(new URL[] {Utilities.toURL(coreide)}, NonGui.class.getClassLoader());
                                 Class wizardClass = Class.forName("org.netbeans.core.upgrade.UpgradeWizard", true, l); // NOI18N
                                 Method showMethod = wizardClass.getMethod( "showWizard", new Class[] { Splash.SplashOutput.class } ); // NOI18N
 
