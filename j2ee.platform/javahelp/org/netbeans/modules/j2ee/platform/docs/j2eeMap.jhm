@@ -120,6 +120,7 @@
 	
 <!-- Start of CSH for Web Applications -->
 
+        <!-- PROJECT PROPERTIES DIALOG BOX FOR A STANDARD WEB APPLICATION: -->
 	<!-- The Sources panel in Project Properties for a Standard Web Application: -->
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerSources" url="web/csh/dbox_projprops/WebCustomizerSources.html" />
 	<!-- The Libraries panel in Project Properties for a Standard Web Application: -->
@@ -135,6 +136,7 @@
 	<!-- The Non-Panel panel in Project Properties for a Standard Web Application (temporarily for web service hook-up): -->
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.WebCustomizer" url="web/csh/dbox_projprops/WebCustomizer.html" />
 
+        <!-- PROJECT PROPERTIES DIALOG BOX FOR A FREE-FORM WEB APPLICATION: -->
 	<!-- The Web Sources panel in Project Properties for a Free-Form Web Application: -->
 	<mapID target="org.netbeans.modules.web.freeform.ui.WebLocationsPanel" url="web/csh/dbox_projprops_freeform/WebLocationsPanel.html" />
 	<!-- The Sources Folder panel in Project Properties for a Free-Form Web Application: -->
@@ -143,6 +145,11 @@
 	<mapID target="org.netbeans.modules.java.freeform.ui.ClasspathPanel" url="web/csh/dbox_projprops_freeform/ClasspathPanel.html" />
 	<!-- The Output Folder panel in Project Properties for a Free-Form Web Application: -->
 	<mapID target="org.netbeans.modules.java.freeform.ui.OutputPanel" url="web/csh/dbox_projprops_freeform/OutputPanel.html" />
+
+	<!-- NEW PROJECT WIZARD FOR A STANDARD WEB APPLICATION :-->
+	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelConfigureProject" url="web/csh/projwiz_standard/PanelConfigureProject.html" />
+	<mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$ThePanel" url="web/csh/projwiz_standard/ThePanel.html" />
+	<mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$SecondPanel" url="web/csh/projwiz_standard/SecondPanel.html" />
 	
 	<!-- The Library Manager dialog box: -->
 	<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/create/tag/taglib/taglib_manage.html" />
