@@ -13,26 +13,24 @@
 
 package org.netbeans.modules.xml.multiview.ui;
 
-import org.netbeans.modules.xml.multiview.cookies.LinkCookie;
-import org.netbeans.modules.xml.multiview.cookies.ErrorLocator;
 import org.netbeans.modules.xml.multiview.Error;
 import org.netbeans.modules.xml.multiview.Refreshable;
+import org.netbeans.modules.xml.multiview.cookies.ErrorLocator;
+import org.netbeans.modules.xml.multiview.cookies.LinkCookie;
 import org.openide.util.RequestProcessor;
 
-import javax.swing.text.JTextComponent;
 import javax.swing.*;
-import java.awt.event.FocusListener;
-import java.awt.event.FocusEvent;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 
 /**
  * @author mkuchtiak
  */
-public abstract class SectionInnerPanel extends javax.swing.JPanel implements LinkCookie, ErrorLocator, PropertyChangeListener {
+public abstract class SectionInnerPanel extends javax.swing.JPanel implements LinkCookie, ErrorLocator {
     private SectionView sectionView;
     private java.util.List refreshableList = new LinkedList();
 
@@ -57,7 +55,8 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
     });
 
     private static final int REFRESH_DELAY = 50;
-    private java.util.List flushFocusListeners = new LinkedList();
+    private ValidateFocusListener activeListener = null;
+    private boolean closing = false;
 
     /** Constructor that takes the enclosing SectionView object as its argument
      * @param sectionView enclosing SectionView object
@@ -113,28 +112,26 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
      * @param tc JTextComponent whose content is related to data model
      */
     public final void addModifier(final JTextComponent tc) {
-        final ModifyFocusListener listener = new ModifyFocusListener(tc);
-        flushFocusListeners.add(listener);
-        tc.addFocusListener(listener);
+        tc.addFocusListener(new ModifyFocusListener(tc));
     }
 
-    /** Adds text component to the set of JTextComponentc that should be validated correctness.
+    /** Adds text component to the set of JTextComponents that should be validated correctness.
      * After the value in this component is changed either setValue() method is called(value is correct)
      * or rollbackValue() method is called(value is incorrect). Also the documentChanged() method is called during editing.
      * @param tc JTextComponent whose content is related to data model and should be validated before saving to data model.
      */
     public final void addValidatee(final JTextComponent tc) {
-
         tc.getDocument().addDocumentListener(new TextListener(tc));
-        ValidateFocusListener listener = new ValidateFocusListener(tc);
-        flushFocusListeners.add(listener);
-        tc.addFocusListener(listener);
+        tc.addFocusListener(new ValidateFocusListener(tc));
     }
 
     protected void scheduleRefreshView() {
         refreshTask.schedule(REFRESH_DELAY);
     }
 
+    /**
+     * Reloads data from data model
+     */
     public void refreshView() {
         for (Iterator it = refreshableList.iterator(); it.hasNext();) {
             ((Refreshable) it.next()).refresh();
@@ -147,25 +144,6 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
 
     public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
         scheduleRefreshView();
-    }
-
-    /**
-     * This method gets called when a bound property is changed.
-     *
-     * @param evt A PropertyChangeEvent object describing the event source
-     *            and the property that has changed.
-     */
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (ToolBarDesignEditor.PROPERTY_FLUSH_DATA.equals(evt.getPropertyName())) {
-            flushData();
-        }
-    }
-
-    public void flushData() {
-        for (Iterator it = flushFocusListeners.iterator(); it.hasNext();) {
-            ((FlushFocusListener) it.next()).flushData();
-        }
     }
 
     private class TextListener implements javax.swing.event.DocumentListener {
@@ -207,7 +185,7 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
     }
 
     private abstract class FlushFocusListener extends java.awt.event.FocusAdapter {
-        public abstract void flushData();
+        public abstract boolean flushData();
     }
 
     private class ValidateFocusListener extends FlushFocusListener {
@@ -220,6 +198,7 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
         }
 
         public void focusGained(FocusEvent evt) {
+            activeListener = this;
             orgValue = tc.getText();
             if (sectionView.getErrorPanel().getError() != null) {
                 viewIsBuggy = true;
@@ -229,10 +208,21 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
         }
 
         public void focusLost(FocusEvent evt) {
-            flushData();
+            if (!closing) {
+                if (!flushData()) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            //todo: make sure the panel is visible
+                            tc.requestFocus();
+                        }
+                    });
+                } else {
+                    activeListener = null;
+                }
+            }
         }
 
-        public void flushData() {
+        public boolean flushData() {
             Error error = sectionView.getErrorPanel().getError();
             if (error != null && error.isEditError() && tc == error.getFocusableComponent()) {
                 if (Error.TYPE_WARNING == error.getSeverityLevel()) {
@@ -241,7 +231,7 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
                     dialog.show();
                     Integer opt = (Integer) desc.getValue();
                     if (opt.equals(RefreshSaveDialog.OPTION_FIX)) {
-                        tc.requestFocus();
+                        return false;
                     } else if (opt.equals(RefreshSaveDialog.OPTION_REFRESH)) {
                         rollbackValue(tc);
                         sectionView.checkValidity();
@@ -255,7 +245,7 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
                     dialog.show();
                     Integer opt = (Integer) desc.getValue();
                     if (opt.equals(RefreshDialog.OPTION_FIX)) {
-                        tc.requestFocus();
+                        return false;
                     } else if (opt.equals(RefreshDialog.OPTION_REFRESH)) {
                         rollbackValue(tc);
                         sectionView.checkValidity();
@@ -271,6 +261,7 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
                     }
                 }
             }
+            return true;
         }
     }
 
@@ -287,13 +278,28 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
         }
 
         public void focusLost(FocusEvent evt) {
-            flushData();
+            if (!closing) {
+                flushData();
+            }
         }
 
-        public void flushData() {
+        public boolean flushData() {
             if (!tc.getText().equals(orgValue)) {
                 setValue(tc, tc.getText());
             }
+            return true;
+        }
+    }
+
+    public boolean canClose() {
+        closing = true;
+        try {
+            if (activeListener != null) {
+                return activeListener.flushData();
+            }
+            return true;
+        } finally {
+            closing = false;
         }
     }
 }

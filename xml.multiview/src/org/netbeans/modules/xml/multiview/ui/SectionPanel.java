@@ -23,6 +23,9 @@ import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.beans.VetoableChangeListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
 
 /**
  * @author mkuchtiak
@@ -42,6 +45,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
             setActive(true);
         }
     };
+    private ToolBarDesignEditor toolBarDesignEditor;
 
     /**
      * Creates new form SectionPanel
@@ -99,14 +103,25 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     }
 
     protected void openInnerPanel() {
+        if (toolBarDesignEditor == null) {
+            toolBarDesignEditor = sectionView.getToolBarDesignEditor();
+            if (toolBarDesignEditor != null) {
+                toolBarDesignEditor.addVetoableChangeListener(new VetoableChangeListener() {
+                    public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+                        if (ToolBarDesignEditor.PROPERTY_FLUSH_DATA.equals(evt.getPropertyName()) &&
+                                evt.getNewValue() == null) {
+                            if (innerPanel != null && !innerPanel.canClose()) {
+                                throw new PropertyVetoException("", evt);
+                            }
+                        }
+                    }
+                });
+            }
+        }
         if (innerPanel != null) {
             return;
         }
         innerPanel = createInnerpanel();
-        final ToolBarDesignEditor toolBarDesignEditor = sectionView.getToolBarDesignEditor();
-        if (toolBarDesignEditor != null) {
-            toolBarDesignEditor.addPropertyChangeListener(innerPanel);
-        }
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -130,8 +145,6 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     protected void closeInnerPanel() {
         if (innerPanel != null) {
             innerPanel.removeFocusListener(sectionFocusListener);
-            sectionView.getToolBarDesignEditor().removePropertyChangeListener(innerPanel);
-            innerPanel.flushData();
             remove(innerPanel);
             innerPanel = null;
         }

@@ -24,6 +24,7 @@ import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 import javax.swing.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
 import java.awt.*;
 
 /**
@@ -62,7 +63,11 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     }
     
     public CloseOperationState canCloseElement() {
-        editor.firePropertyChange(ToolBarDesignEditor.PROPERTY_FLUSH_DATA, false, true);
+        try {
+            editor.fireVetoableChange(ToolBarDesignEditor.PROPERTY_FLUSH_DATA, this, null);
+        } catch (PropertyVetoException e) {
+            return MultiViewFactory.createUnsafeCloseState(ToolBarDesignEditor.PROPERTY_FLUSH_DATA, null, null);
+        }
         if (!dObj.canClose()) {
             return MultiViewFactory.createUnsafeCloseState(NbBundle.getMessage(ToolBarMultiViewElement.class,
                     "LBL_DataObjectModified"), null, null);

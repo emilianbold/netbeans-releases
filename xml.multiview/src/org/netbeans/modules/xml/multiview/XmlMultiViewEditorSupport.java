@@ -16,6 +16,7 @@ package org.netbeans.modules.xml.multiview;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.*;
+import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 import org.openide.cookies.*;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -326,40 +327,48 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         }
         
         public boolean resolveCloseOperation(CloseOperationState[] elements) {
+            for (int i = 0; i < elements.length; i++) {
+                CloseOperationState element = elements[i];
+                if (ToolBarDesignEditor.PROPERTY_FLUSH_DATA.equals(element.getCloseWarningID())) {
+                    return false;
+                }
+            }
             if (dObj.isModified () || dObj.isChangedFromUI()) {
                 XmlMultiViewEditorSupport support = dObj.getEditorSupport();
-                String msg = support.messageSave ();
+                String msg = support.messageSave();
 
-                java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(org.openide.text.CloneableEditorSupport.class);
+                java.util.ResourceBundle bundle =
+                        org.openide.util.NbBundle.getBundle(org.openide.text.CloneableEditorSupport.class);
 
-                javax.swing.JButton saveOption = new javax.swing.JButton (bundle.getString("CTL_Save")); // NOI18N
-                saveOption.getAccessibleContext ().setAccessibleDescription (bundle.getString("ACSD_CTL_Save")); // NOI18N
-                saveOption.getAccessibleContext ().setAccessibleName (bundle.getString("ACSN_CTL_Save")); // NOI18N
-                javax.swing.JButton discardOption = new javax.swing.JButton (bundle.getString("CTL_Discard")); // NOI18N
-                discardOption.getAccessibleContext ().setAccessibleDescription (bundle.getString("ACSD_CTL_Discard")); // NOI18N
-                discardOption.getAccessibleContext ().setAccessibleName (bundle.getString("ACSN_CTL_Discard")); // NOI18N
-                discardOption.setMnemonic (bundle.getString ("CTL_Discard_Mnemonic").charAt (0)); // NOI18N
+                javax.swing.JButton saveOption = new javax.swing.JButton(bundle.getString("CTL_Save")); // NOI18N
+                saveOption.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Save")); // NOI18N
+                saveOption.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CTL_Save")); // NOI18N
+                javax.swing.JButton discardOption = new javax.swing.JButton(bundle.getString("CTL_Discard")); // NOI18N
+                discardOption.getAccessibleContext()
+                        .setAccessibleDescription(bundle.getString("ACSD_CTL_Discard")); // NOI18N
+                discardOption.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CTL_Discard")); // NOI18N
+                discardOption.setMnemonic(bundle.getString("CTL_Discard_Mnemonic").charAt(0)); // NOI18N
 
                 NotifyDescriptor nd = new NotifyDescriptor(
-                    msg,
-                    bundle.getString("LBL_SaveFile_Title"),
-                    NotifyDescriptor.YES_NO_CANCEL_OPTION,
-                    NotifyDescriptor.QUESTION_MESSAGE,
-                    new Object[] {saveOption, discardOption, NotifyDescriptor.CANCEL_OPTION},
-                    saveOption
+                        msg,
+                        bundle.getString("LBL_SaveFile_Title"),
+                        NotifyDescriptor.YES_NO_CANCEL_OPTION,
+                        NotifyDescriptor.QUESTION_MESSAGE,
+                        new Object[]{saveOption, discardOption, NotifyDescriptor.CANCEL_OPTION},
+                        saveOption
                 );
 
                 Object ret = org.openide.DialogDisplayer.getDefault().notify(nd);
 
                 if (NotifyDescriptor.CANCEL_OPTION.equals(ret)
                         || NotifyDescriptor.CLOSED_OPTION.equals(ret)
-                   ) {
+                ) {
                     return false;
                 }
 
                 if (saveOption.equals(ret)) {
                     try {
-                        support.saveDocument ();
+                        support.saveDocument();
                     } catch (java.io.IOException e) {
                         org.openide.ErrorManager.getDefault().notify(e);
                         return false;
