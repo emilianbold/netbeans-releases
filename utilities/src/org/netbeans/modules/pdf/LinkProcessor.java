@@ -28,9 +28,9 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 
+import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.XMLDataObject;
-import org.openide.TopManager;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 
@@ -159,7 +159,7 @@ public class LinkProcessor implements InstanceCookie, XMLDataObject.Processor, A
             // [PENDING] in-process PDF viewer support
             new PDFOpenSupport(file).open();
         } catch(Exception e) {
-            TopManager.getDefault().notifyException(e);
+            ErrorManager.getDefault().notify(e);
         }
     }
     

@@ -34,7 +34,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
-import org.openide.TopManager;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
@@ -55,7 +54,8 @@ import org.openide.util.Utilities;
 public class ResultModel implements TaskListener {
 
     /** For debug purposes. */
-    private static final ErrorManager em = TopManager.getDefault().getErrorManager().getInstance ("org.netbeans.modules.search"); // NOI18N
+    private static final ErrorManager em = ErrorManager.getDefault()
+            .getInstance("org.netbeans.modules.search");                //NOI18N
 
     /** ChangeEvent object being used to notify about the search task finish. */
     private final ChangeEvent EVENT;
@@ -413,7 +413,7 @@ public class ResultModel implements TaskListener {
         protected void addNotify() {
             setKeys(Collections.EMPTY_SET);
             
-            RequestProcessor.postRequest(new Runnable() {
+            RequestProcessor.getDefault().post(new Runnable() {
                  public void run() {
                      setKeys(keys);
                  }

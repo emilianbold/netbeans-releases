@@ -33,7 +33,7 @@ import org.openidex.search.SearchType;
  */
 public class SearchTask extends Task {
 
-    /** Root nodes to search on. */
+    /** nodes to search */
     private Node[] nodes;
     /** ResultModel result model. */
     private ResultModel resultModel;

@@ -141,7 +141,7 @@ public class FindActionManager implements PropertyChangeListener {
             // PREVENT deadlock
             // do not depend on locking order of
             // CookieSet[.add/remove()] and TopComponent[.attach()].
-            RequestProcessor.postRequest(new Runnable() {
+            RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     someoneActivated();
                 }

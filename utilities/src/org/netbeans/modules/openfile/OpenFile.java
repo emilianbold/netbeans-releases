@@ -38,6 +38,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.ViewCookie;
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -53,10 +54,15 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
 import org.openide.text.NbDocument;
-import org.openide.TopManager;
 import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
+import org.openide.loaders.DataFilter;
+import org.openide.loaders.DataLoaderPool;
+import org.openide.loaders.RepositoryNodeFactory;
+import org.openide.nodes.NodeOperation;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -79,7 +85,9 @@ public class OpenFile extends Object {
     private static final String PACKAGE = "package"; // NOI18N
 
     /** For debug purposes. */
-    private static final ErrorManager em = TopManager.getDefault().getErrorManager().getInstance ("org.netbeans.modules.openfile"); // NOI18N
+    private static final ErrorManager em
+            = ErrorManager.getDefault().getInstance(
+                    "org.netbeans.modules.openfile");                   //NOI18N
 
     
     /** Open the file either by calling {@link OpenCookie} ({@link ViewCookie}), or by
@@ -91,7 +99,7 @@ public class OpenFile extends Object {
         em.log ("OpenFile.open: " + fileName);
 
         final File f = new File (fileName);
-        RequestProcessor.postRequest
+        RequestProcessor.getDefault().post
             (new Runnable () {
                     public void run () {
                         open (f, false, null, -1, -1);
@@ -127,8 +135,9 @@ public class OpenFile extends Object {
             final String fileName = file.toString();
             new Thread (new Runnable () {
                     public void run () {
-                        TopManager.getDefault().notify (new NotifyDescriptor.Message
-                            (SettingsBeanInfo.getString ("MSG_fileNotFound", fileName)));
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                SettingsBeanInfo.getString("MSG_fileNotFound",  //NOI18N
+                                                           fileName)));
                     }
                 }).start();
             return;
@@ -147,7 +156,10 @@ public class OpenFile extends Object {
             final ViewCookie viewCookie = (ViewCookie)dataObject.getCookie (ViewCookie.class);
             
             if (openCookie != null || viewCookie != null || editorCookie != null) {
-                TopManager.getDefault().setStatusText(SettingsBeanInfo.getString(wait ? "MSG_openingAndWaiting" : "MSG_opening", file.toString ()));
+                StatusDisplayer.getDefault().setStatusText(
+                        SettingsBeanInfo.getString(wait ? "MSG_openingAndWaiting"   //NOI18N
+                                                        : "MSG_opening",            //NOI18N
+                                                   file.toString ()));
                 
                 if(editorCookie != null) {
                     editorCookie.open ();
@@ -157,7 +169,8 @@ public class OpenFile extends Object {
                     if(panes.length > 0)
                         panes[0].setCaretPosition (NbDocument.findLineOffset (doc, line));
                     else
-                        TopManager.getDefault().setStatusText(SettingsBeanInfo.getString("MSG_couldNotOpenAt"));
+                        StatusDisplayer.getDefault().setStatusText(
+                                SettingsBeanInfo.getString("MSG_couldNotOpenAt"));  //NOI18N
                     
                 } else if(openCookie != null) {
                     openCookie.open();
@@ -165,7 +178,7 @@ public class OpenFile extends Object {
                     viewCookie.view();
                 }
                 
-                TopManager.getDefault().setStatusText(""); // NOI18N
+                StatusDisplayer.getDefault().setStatusText(""); // NOI18N
                 
                 if(wait) {
                     // Could look for a SaveCookie just to see, but need not.
@@ -186,7 +199,8 @@ public class OpenFile extends Object {
                     // Try to get the node used in the usual Repository, which
                     // has a non-blank display name and is thus nicer.
                     FileSystem fs = fileObject.getFileSystem ();
-                    Node reponode = TopManager.getDefault ().getPlaces ().nodes ().repository ();
+                    Node reponode = RepositoryNodeFactory.getDefault()
+                                    .repository(DataFilter.ALL);
                     Children repokids = reponode.getChildren ();
                     Enumeration fsenum = repokids.nodes();
                     
@@ -209,7 +223,8 @@ public class OpenFile extends Object {
                 // 4) If the default action is not FileSystemAction we assume text module
                 // is avilable and the default action is Convert to text.
                 // 5) Perform the action, find changed data object and open it.
-                Enumeration loaders = TopManager.getDefault().getLoaderPool().allLoaders();
+                Enumeration loaders = ((DataLoaderPool) Lookup.getDefault().lookup(DataLoaderPool.class))
+                                      .allLoaders();
                 DataLoader DDOLoader = null;
                 // get last data loader from enumeration which have to be default data loader
                 for(; loaders.hasMoreElements(); )
@@ -219,7 +234,7 @@ public class OpenFile extends Object {
                 
                 if(DDOLoader != null && dataObject.getClass().getName().equals(DDOLoader.getRepresentationClass().getName())) {
                     // Is default data object.
-                    SystemAction defaultAction = node.getDefaultAction();
+                    Action defaultAction = node.getPreferredAction();
                     
                     if(defaultAction != null && !(defaultAction instanceof FileSystemAction)) {
                         // Now we suppose Convert To Text Action is available.
@@ -242,13 +257,16 @@ public class OpenFile extends Object {
 
                 if(!opened)
                     // As last resort, explore the node.
-                    TopManager.getDefault().getNodeOperation().explore(node);
+                    NodeOperation.getDefault().explore(node);
                 
                 if(wait)
-                    TopManager.getDefault().notify(new NotifyDescriptor.Message(SettingsBeanInfo.getString("MSG_cannotOpenWillClose", file)));
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(SettingsBeanInfo.getString(
+                                    "MSG_cannotOpenWillClose",          //NOI18N
+                                    file)));
             }
         } catch(IOException ioe) {
-            TopManager.getDefault ().notifyException (ioe);
+            ErrorManager.getDefault().notify(ioe);
         }
     }
     
@@ -260,16 +278,16 @@ public class OpenFile extends Object {
         try {
             jarFileSystem.setJarFile(file);
         } catch (IOException ioe) {
-            TopManager.getDefault().notifyException(ioe);
+            ErrorManager.getDefault().notify(ioe);
             
             return null;
         } catch(PropertyVetoException pve) {
-            TopManager.getDefault().notifyException(pve);
+            ErrorManager.getDefault().notify(pve);
             
             return null;
         }
         
-        Repository repository = TopManager.getDefault().getRepository();
+        Repository repository = Repository.getDefault();
         
         FileSystem existing = repository.findFileSystem(jarFileSystem.getSystemName());
         
@@ -372,12 +390,12 @@ public class OpenFile extends Object {
                 }
             }
         } catch (IOException e1) {
-            TopManager.getDefault ().notifyException (e1);
+            ErrorManager.getDefault().notify(e1);
         } finally {
             try {
                 if (rd != null) rd.close ();
             } catch (IOException e2) {
-                TopManager.getDefault ().notifyException (e2);
+                ErrorManager.getDefault().notify(e2);
             }
         }
         
@@ -520,18 +538,20 @@ public class OpenFile extends Object {
         try {
             fs.setRootDirectory (dirToMount[0]);
         } catch (PropertyVetoException e3) {
-            TopManager.getDefault().notifyException (e3);
+            ErrorManager.getDefault().notify(e3);
             return null;
         } catch (IOException e4) {
-            TopManager.getDefault().notifyException (e4);
+            ErrorManager.getDefault().notify(e4);
             return null;
         }
         
-        Repository repo = TopManager.getDefault ().getRepository ();
+        Repository repo = Repository.getDefault();
         if (repo.findFileSystem (fs.getSystemName ()) != null) {
-            TopManager.getDefault ().notify (new NotifyDescriptor.Message
-                                             (MessageFormat.format (NbBundle.getBundle (OpenFile.class).getString ("MSG_wasAlreadyMounted"),
-                                                                    new Object[] { fs.getSystemName () })));
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    MessageFormat.format(
+                            NbBundle.getBundle(OpenFile.class)
+                                    .getString("MSG_wasAlreadyMounted"),
+                            new Object[] { fs.getSystemName() })));
             return null;
         }
         repo.addFileSystem (fs);
@@ -598,7 +618,7 @@ public class OpenFile extends Object {
         JButton cancelButton = panel.getCancelButton();
         final JList list = panel.getList();
         
-        dialog[0] = TopManager.getDefault ().createDialog
+        dialog[0] = DialogDisplayer.getDefault().createDialog
             (new DialogDescriptor
              (panel,                   // object
               SettingsBeanInfo.getString ("LBL_wizTitle"), // title

@@ -27,9 +27,9 @@ Microsystems, Inc. All Rights Reserved.
     <path id="utilities-cp">
       <pathelement location="../openide/openide-13javac-workaround.jar"/>
       <pathelement location="../openide/netbeans/lib/openide.jar"/>
-      <pathelement location="../openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
       <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/>
       <pathelement location="../openidex/netbeans/modules/autoload/openidex.jar"/>
+      <pathelement location="../core/javahelp/netbeans/modules/autoload/javahelp-api.jar"/>
       <fileset dir="../core/external">
         <include name="regexp*.jar"/>
         <include name="xml-apis*.jar"/>

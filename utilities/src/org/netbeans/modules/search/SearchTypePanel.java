@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,12 +24,20 @@ import java.beans.Customizer;
 import java.beans.IntrospectionException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -37,9 +45,10 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.openide.DialogDescriptor;
-import org.openide.ServiceType;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openidex.search.SearchType;
@@ -68,6 +77,12 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
     private Customizer customizer;
     /** Customizer component. */
     private Component customizerComponent;
+    /**
+     * saved criteria for this panel
+     *
+     * @see  #addSavedCriteria
+     */
+    private SearchCriterion[] savedCriteria;
 
     private String lastSavedName;
     
@@ -88,25 +103,37 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
             } else {
                 // PENDING use property sheet as it will implement Customizer
                 // allow hiding tabs, ....
-                System.err.println("No customizer for " + this.searchType.getName() + ", skipping...");
+                System.err.println("No customizer for "                 //NOI18N
+                                   + this.searchType.getName()
+                                   + ", skipping...");                  //NOI18N
             }
         } catch(IntrospectionException ie) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ie);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ie);
         }
 
         customizer.setObject(this.searchType);
         this.searchType.addPropertyChangeListener(this);
         
-        applyCheckBox.setText(NbBundle.getBundle(SearchTypePanel.class).getString("TEXT_BUTTON_APPLY")); // NOI18N
-        applyCheckBox.setMnemonic(NbBundle.getBundle(SearchTypePanel.class).getString("TEXT_BUTTON_APPLY_MNEM").charAt(0)); // NOI18N
+        ResourceBundle bundle = NbBundle.getBundle(SearchTypePanel.class);
+        applyCheckBox.setText(
+                bundle.getString("TEXT_BUTTON_APPLY"));                 //NOI18N
+        applyCheckBox.setMnemonic(
+                bundle.getString("TEXT_BUTTON_APPLY_MNEM").charAt(0));  //NOI18N
         
-        saveButton.setText(NbBundle.getBundle(SearchTypePanel.class).getString("TEXT_BUTTON_SAVE_AS")); // NOI18N
-        saveButton.setMnemonic(NbBundle.getBundle(SearchTypePanel.class).getString("TEXT_BUTTON_SAVE_AS_MNEM").charAt(0)); // NOI18N
+        saveButton.setText(
+                bundle.getString("TEXT_BUTTON_SAVE_AS"));               //NOI18N
+        saveButton.setMnemonic(
+                bundle.getString("TEXT_BUTTON_SAVE_AS_MNEM").charAt(0));//NOI18N
         
         saveButton.setEnabled(false);
         
-        restoreButton.setText(NbBundle.getBundle(SearchTypePanel.class).getString("TEXT_BUTTON_RESTORE")); // NOI18N
-        restoreButton.setMnemonic(NbBundle.getBundle(SearchTypePanel.class).getString("TEXT_BUTTON_RESTORE_MNEM").charAt(0)); // NOI18N
+        restoreButton.setText(
+                bundle.getString("TEXT_BUTTON_RESTORE"));               //NOI18N
+        restoreButton.setMnemonic(
+                bundle.getString("TEXT_BUTTON_RESTORE_MNEM").charAt(0));//NOI18N
+
+        /* The button is disabled until saved criteria are available. */
+        restoreButton.setEnabled(false);
 
         customizerPanel.add(customizerComponent, BorderLayout.CENTER);
 
@@ -117,10 +144,15 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
     }
 
     private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchTypePanel.class).getString("ACS_DIALOG_DESC")); // NOI18N        
-        restoreButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchTypePanel.class).getString("ACS_TEXT_BUTTON_RESTORE")); // NOI18N        
-        saveButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchTypePanel.class).getString("ACS_TEXT_BUTTON_SAVE_AS")); // NOI18N        
-        applyCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchTypePanel.class).getString("ACS_TEXT_BUTTON_APPLY")); // NOI18N        
+        ResourceBundle bundle = NbBundle.getBundle(SearchTypePanel.class);
+        this.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACS_DIALOG_DESC"));                   //NOI18N        
+        restoreButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACS_TEXT_BUTTON_RESTORE"));           //NOI18N        
+        saveButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACS_TEXT_BUTTON_SAVE_AS"));           //NOI18N        
+        applyCheckBox.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACS_TEXT_BUTTON_APPLY"));             //NOI18N        
     }
     
     /** This method is called from within the constructor to
@@ -309,11 +341,15 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         JPanel pane = new JPanel();
         pane.setLayout(new BorderLayout(12,0));
         
-        JLabel nameLab = new JLabel(NbBundle.getBundle(SearchTypePanel.class).getString("TEXT_LABEL_NAME")); // NOI18N
-        nameLab.setDisplayedMnemonic(NbBundle.getBundle(SearchTypePanel.class).getString("TEXT_LABEL_NAME_MNEM").charAt(0)); // NOI18N
+        ResourceBundle bundle = NbBundle.getBundle(SearchTypePanel.class);
+        JLabel nameLab = new JLabel(
+                bundle.getString("TEXT_LABEL_NAME"));                   //NOI18N
+        nameLab.setDisplayedMnemonic(
+                bundle.getString("TEXT_LABEL_NAME_MNEM").charAt(0));    //NOI18N
         
         pane.add(nameLab, BorderLayout.WEST); 
-        pane.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchTypePanel.class).getString("ACS_SaveAsPanel")); // NOI18N
+        pane.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACS_SaveAsPanel"));                   //NOI18N
         
         JTextField textField;
         if (lastSavedName != null) {
@@ -321,83 +357,105 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         } else {
             textField = new JTextField(20);
         }
-        textField.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchTypePanel.class).getString("ACS_TEXT_LABEL_SELECT")); // NOI18N
+        textField.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACS_TEXT_LABEL_SELECT"));             //NOI18N
         
         nameLab.setLabelFor(textField);
         pane.add(textField, BorderLayout.CENTER);
         pane.setBorder(BorderFactory.createEmptyBorder(12,12,0,11));
         
-        DialogDescriptor desc = new DialogDescriptor(pane, NbBundle.getBundle(SearchTypePanel.class).getString("TEXT_LABEL_SAVE_CRITERION")); // NOI18N        
-        Dialog dialog = TopManager.getDefault().createDialog(desc);
+        DialogDescriptor desc = new DialogDescriptor(
+                pane,
+                bundle.getString("TEXT_LABEL_SAVE_CRITERION"));         //NOI18N        
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
         
         while (true) {
             dialog.show();
-            Object retVal = desc.getValue();
-            
-            if (retVal.toString().equals("0")) { // NOI18N
+            if (desc.getValue().equals(DialogDescriptor.OK_OPTION)) {
                 String name = textField.getText();
                 if (name.length() > 0) {
-                    saveSearchType(name);
+                    saveCriterion(name);
                     lastSavedName = name;
                     break;
                 }
-            } else
+            } else {
                 return; // cancel
+            }
+        }
+    }
+    
+    /** */
+    private void saveCriterion(String name) {
+        SearchType copy = (SearchType) searchType.clone();
+        copy.setName(name);
+        
+        /* serialize the copy of the search type: */
+        ObjectOutputStream oos = null;
+        byte[] serializedData;
+        try {
+            ByteArrayOutputStream bos;
+            oos = new ObjectOutputStream(bos = new ByteArrayOutputStream(8192));
+            oos.writeObject(copy);
+            serializedData = bos.toByteArray();
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);       //PENDING
+            return;
+        } finally {
+            if (oos != null) {
+                try {
+                    oos.close();
+                } catch (IOException ex2) {
+                    /* give up */
+                }
+            }
+        }
+        oos = null;
+        
+        /* modify an existing or create a new criterion: */
+        SearchCriterion foundCriterion = null;
+        if (savedCriteria != null) {
+            for (int i = 0; i < savedCriteria.length; i++) {
+                if (savedCriteria[i].criterionName.equals(name)) {
+                    foundCriterion = savedCriteria[i];
+                    break;
+                }
+            }
+        }
+        if (foundCriterion != null) {
+            foundCriterion.searchTypeClassName = copy.getClass().getName();
+            foundCriterion.criterionData = serializedData;
+            SearchProjectSettings.getInstance().markSearchCriteriaChanged();
+        } else {
+            SearchCriterion c = new SearchCriterion();
+            c.isDefault = false;        //PENDING
+            c.criterionName = name;
+            c.searchTypeClassName = copy.getClass().getName();
+            c.criterionData = serializedData;
+            SearchProjectSettings.getInstance().addSearchCriterion(c);
+            addSavedCriteria(Collections.singleton(c));
         }
     }
     
     /**
-     * Saves the search type.
-     *
-     * @return true if new value was created
-     */
-    private boolean saveSearchType(String name) throws IllegalArgumentException {
-        boolean savedNew;
-
-        SearchType copy = (SearchType)searchType.clone();
-        copy.setName(name);
-
-        // overwrite existing
-        if(existInRegistry(copy)) {
-            removeFromRegistry(copy);
-            savedNew = false;
-        } else savedNew = true;
-
-        appendToRegistry(copy);
-
-        return savedNew;
-    }
-    
-    /**
-     * Restores the criterion.
+     * Displays a dialog for choosing from a list of (saved) criteria
+     * and loads the selected criterion (if the choice is confirmed).
      */
     private void restoreCriterion() {
         JPanel pane = new JPanel();
         pane.setLayout(new BorderLayout(12,0));
-        pane.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchTypePanel.class).getString("ACS_RestorePanel")); // NOI18N
         
-        JLabel resLabel = new JLabel(NbBundle.getBundle(SearchTypePanel.class).getString("TEXT_LABEL_SELECT")); // NOI18N
-        resLabel.setDisplayedMnemonic(NbBundle.getBundle(SearchTypePanel.class).getString("TEXT_LABEL_SELECT_MNEM").charAt(0)); // NOI18N        
+        ResourceBundle bundle = NbBundle.getBundle(SearchTypePanel.class);
+        pane.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACS_RestorePanel"));                  //NOI18N
+        
+        JLabel resLabel = new JLabel(
+                bundle.getString("TEXT_LABEL_SELECT"));                 //NOI18N
+        resLabel.setDisplayedMnemonic(
+                bundle.getString("TEXT_LABEL_SELECT_MNEM").charAt(0));  //NOI18N        
         
         pane.add(resLabel, BorderLayout.WEST); 
         
-        Map searchTypesMap = new HashMap(10);
-        Enumeration en = TopManager.getDefault().getServices().services(searchType.getClass());
-        
-        while (en.hasMoreElements()) {
-            SearchType type = (SearchType)en.nextElement();
-            String name = type.getName();
-            
-            if(name != null) {
-                if(name.equals(searchType.getName())) {
-                    searchTypesMap.put(NbBundle.getBundle(SearchTypePanel.class).getString("TEXT_DEFAULT_CRITERION"), type);
-                } else { 
-                    searchTypesMap.put(name, type);
-                }
-            }
-        }
-        
-        JComboBox combo = new JComboBox(searchTypesMap.keySet().toArray());
+        JComboBox combo = new JComboBox(savedCriteria);
         Dimension dim = combo.getPreferredSize();
         dim.width = 160;
         combo.setPreferredSize(dim);
@@ -405,16 +463,38 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         pane.add(combo, BorderLayout.CENTER);
         pane.setBorder(BorderFactory.createEmptyBorder(12,12,0,11));
         
-        DialogDescriptor desc = new DialogDescriptor(pane, NbBundle.getBundle(SearchTypePanel.class).getString("TEXT_LABEL_RESTORE_CRITERION")); // NOI18N
-        Dialog dialog = TopManager.getDefault().createDialog(desc);
+        DialogDescriptor desc = new DialogDescriptor(
+                pane,
+                bundle.getString("TEXT_LABEL_RESTORE_CRITERION"));      //NOI18N
+        DialogDisplayer.getDefault().createDialog(desc).show();
         
-        dialog.show();
-        
-        if (desc.getValue().toString().equals("0")) { // NOI18N
-            String name = (String)combo.getSelectedItem();
-            if (name != null)
-                restoreSearchType((SearchType)searchTypesMap.get(name));
+        if (desc.getValue().equals(DialogDescriptor.OK_OPTION)) {
+            SearchCriterion c = (SearchCriterion) combo.getSelectedItem();
+            restoreCriterion(c);
         }
+    }
+    
+    /** */
+    private void restoreCriterion(SearchCriterion c) {
+        SearchType searchType;
+        ObjectInputStream ois = null;
+        try {
+            ois = new ObjectInputStream(
+                    new ByteArrayInputStream(c.criterionData));
+            searchType = (SearchType) ois.readObject();
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ex);       //PENDING
+            return;
+        } finally {
+            if (ois != null) {
+                try {
+                    ois.close();
+                } catch (IOException ex2) {
+                    /* give up */
+                }
+            }
+        }
+        restoreSearchType(searchType);
     }
 
     /** Restores the search type. */
@@ -440,7 +520,8 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
      */
     public boolean equals(Object obj) {
         try {
-            return searchType.getClass().equals(((SearchTypePanel)obj).getSearchType().getClass());
+            return searchType.getClass().equals(
+                    ((SearchTypePanel)obj).getSearchType().getClass());
         } catch (ClassCastException ex) {
             return false;
         }
@@ -451,52 +532,35 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         return searchType.getHelpCtx();
     }
     
-    // PENDING: It shoudn't be stored services this way
-    // in registry. It's necessary to meka out cleaner solution.
-    /** Tests whether exist specified search type. */
-    private static boolean existInRegistry(SearchType obj) {
-        ServiceType.Registry registry = TopManager.getDefault().getServices();
-        Enumeration en = registry.services(obj.getClass());
-
-        while (en.hasMoreElements()) {
-            SearchType next = (SearchType) en.nextElement();
-
-            if (next.getName().equals(obj.getName()))
-                return true;
-        }
-
-        return false;
-    }
-
-    /** Adds specified search type to services registry. */
-    private static void appendToRegistry(SearchType obj) {
-        ServiceType.Registry registry = TopManager.getDefault().getServices();
-        List result = registry.getServiceTypes();
-        result.add(obj);
-        registry.setServiceTypes(result);
-    }
-
     /**
-     * Remove specified search type from service registry.
+     * Adds the specified set of search criteria to the list of saved criteria
+     * available in this panel.
      *
-     * @param obj service template - used name and class
+     * @param  criteria  search criteria to add
      */
-    private static void removeFromRegistry(SearchType obj) {
-        ServiceType.Registry registry = TopManager.getDefault().getServices();
-        List result = registry.getServiceTypes();
-
-        ArrayList ret = new ArrayList();
-
-        Iterator it = result.iterator();
-        while (it.hasNext()) {
-            ServiceType next = (ServiceType) it.next();
-
-            if ( ! next.getName().equals(obj.getName()) ||
-                    ! next.getClass().equals(obj.getClass()) )
-                ret.add(next);
+    void addSavedCriteria(Collection criteria) {
+        if (criteria.isEmpty()) {
+            return;
         }
-
-        registry.setServiceTypes(ret);
-    }    
+        
+        SearchCriterion[] newCriteria = new SearchCriterion[criteria.size()];
+        criteria.toArray(newCriteria);
+        if (savedCriteria == null) {
+            savedCriteria = newCriteria;
+            restoreButton.setEnabled(true);
+        } else {
+            
+            /* append the specified criteria to the current set of criteria: */
+            SearchCriterion[] oldCriteria = savedCriteria;
+            savedCriteria = new SearchCriterion[oldCriteria.length
+                                                + newCriteria.length];
+            System.arraycopy(oldCriteria, 0,
+                             savedCriteria, 0,
+                             oldCriteria.length);
+            System.arraycopy(newCriteria, 0,
+                             savedCriteria, oldCriteria.length,
+                             newCriteria.length);
+        }
+    }
     
 }

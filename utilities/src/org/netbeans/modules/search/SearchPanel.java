@@ -24,8 +24,11 @@ import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -36,7 +39,7 @@ import org.netbeans.modules.search.types.ObjectNameType;
 import org.netbeans.modules.search.types.ObjectTypeType;
 
 import org.openide.DialogDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openidex.search.SearchType;
@@ -100,29 +103,39 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
         this.orderedSearchTypePanels = new ArrayList(searchTypeList.size());
         this.customized = isCustomized;
 
-        // Default values of criterions.
-        Iterator it = searchTypeList.iterator();
-
-        while (it.hasNext()) {
+        // Default values of criteria.
+        Iterator it;
+        
+        /* Create search type panels: */
+        Map sortedCriteria = SearchProjectSettings.getInstance()
+                             .sortCriteriaBySearchType();
+        for (it = searchTypeList.iterator(); it.hasNext(); ) {
             SearchType searchType = (SearchType) it.next();
-
-            SearchTypePanel searchTypePanel = new SearchTypePanel(searchType);
+            SearchTypePanel newPanel = new SearchTypePanel(searchType);
+            Collection savedCriteria = (sortedCriteria == null)
+                    ? null
+                    : (Collection)
+                      sortedCriteria.get(searchType.getClass().getName());
             
-            if (orderedSearchTypePanels.contains(searchTypePanel)) {
+            int index = orderedSearchTypePanels.indexOf(newPanel);
+            if (savedCriteria != null) {
+                SearchTypePanel targetPanel = (index == -1)
+                        ? newPanel
+                        : (SearchTypePanel) orderedSearchTypePanels.get(index);
+                targetPanel.addSavedCriteria(
+                        Collections.unmodifiableCollection(savedCriteria));
+            }
+            if (index != -1) {
                 continue;
             }
-            
-            searchTypePanel.addPropertyChangeListener(this);
-                
-            orderedSearchTypePanels.add(searchTypePanel);
+            orderedSearchTypePanels.add(newPanel);
+            newPanel.addPropertyChangeListener(this);
         }
         
         initComponents();	
 
         // For each search type create one tab as its search type panel.
-        it = orderedSearchTypePanels.iterator();
-
-        while (it.hasNext()) {
+        for (it = orderedSearchTypePanels.iterator(); it.hasNext(); ) {
             tabbedPane.add((Component) it.next());
         }
 
@@ -266,7 +279,7 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
 
     /** Shows dialog created from <code>DialogDescriptor</code> which wraps this instance. */
     public void showDialog()  {
-        dialog = TopManager.getDefault().createDialog(dialogDescriptor);
+        dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setModal(true);
         dialog.addComponentListener(new ComponentAdapter() {
             public void componentShown(ComponentEvent evt) {

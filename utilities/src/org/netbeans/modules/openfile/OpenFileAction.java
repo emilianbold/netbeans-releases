@@ -19,12 +19,13 @@ import java.io.File;
 import java.util.Enumeration;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.JFileChooser;
+import org.openide.DialogDisplayer;
 
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.JarFileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -84,7 +85,7 @@ public class OpenFileAction extends CallableSystemAction {
             String defaultDir = null;
             try
             {
-                Enumeration enu = TopManager.getDefault().getRepository().getFileSystems();
+                Enumeration enu = Repository.getDefault().getFileSystems();
                 while (enu.hasMoreElements())
                 {
                     FileSystem fs = (FileSystem)enu.nextElement();
@@ -120,8 +121,9 @@ public class OpenFileAction extends CallableSystemAction {
                     files = new File[] {selected};
                 } else {
                     // Selected file doesn't exist.
-                    TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                        SettingsBeanInfo.getString("MSG_noFileSelected"),NotifyDescriptor.WARNING_MESSAGE));
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                            SettingsBeanInfo.getString("MSG_noFileSelected"),   //NOI18N
+                            NotifyDescriptor.WARNING_MESSAGE));
 
                     continue;
                 }

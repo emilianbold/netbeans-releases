@@ -18,7 +18,7 @@ import java.beans.IntrospectionException;
 import java.io.*;
 
 import org.openide.DialogDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.cookies.OpenCookie;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.BeanNode;
@@ -74,7 +74,7 @@ class PDFOpenSupport implements OpenCookie {
                 DialogDescriptor.DEFAULT_ALIGN, // alignment
                 new HelpCtx (PDFOpenSupport.class.getName () + ".dialog"), // help context NOI18N
                 null); // action listener
-            if (DialogDescriptor.OK_OPTION == TopManager.getDefault ().notify (d))
+            if (DialogDescriptor.OK_OPTION == DialogDisplayer.getDefault().notify(d))
                 open ();
         }
     }

@@ -21,8 +21,8 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.SimpleBeanInfo;
 
+import org.openide.ErrorManager;
 import org.openide.loaders.UniFileLoader;
-import org.openide.TopManager;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -38,7 +38,7 @@ public class PDFDataLoaderBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
         } catch (IntrospectionException ie) {
-            TopManager.getDefault().getErrorManager().notify(ie);
+            ErrorManager.getDefault().notify(ie);
             
             return null;
         }

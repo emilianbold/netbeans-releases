@@ -20,6 +20,7 @@ import org.netbeans.modules.openfile.Settings;
 import org.netbeans.modules.openfile.SettingsBeanInfo;
 import org.netbeans.modules.openfile.OpenFile;
 import org.netbeans.modules.pdf.LinkProcessor;
+import org.openide.ErrorManager;
 
 
 /** Module install class for Utilities module.
@@ -50,7 +51,7 @@ public class Installer extends ModuleInstall {
         searchInstaller.restored();
 
         // Don't ask.
-        RequestProcessor.postRequest (new Runnable() {
+        RequestProcessor.getDefault().post(new Runnable() {
                 public void run () {
                     Settings.getDefault().isRunning();
                 }
@@ -59,7 +60,8 @@ public class Installer extends ModuleInstall {
         // test netbeans.openfile property
         String fileName = System.getProperty (NETBEANS_OPENFILE);
 
-        org.openide.ErrorManager em = org.openide.TopManager.getDefault().getErrorManager().getInstance ("org.netbeans.modules.openfile"); // NOI18N
+        ErrorManager em = ErrorManager.getDefault()
+                          .getInstance("org.netbeans.modules.openfile");//NOI18N
         String msg = "../utilities/Installer.restored: " + NETBEANS_OPENFILE + "='" + fileName + "'"; // NOI18N
         em.log (msg);
 
