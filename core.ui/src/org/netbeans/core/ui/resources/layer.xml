@@ -469,11 +469,6 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="editor">
             </folder>
                 
-            <file name="output.wsmode" url="windowmanager/output.wsmode" />
-            <folder name="output">
-                <file name="output.wstcref" url="windowmanager/output/output.wstcref" />
-            </folder>
-
             <file name="properties.wsmode" url="windowmanager/properties.wsmode" />
             <folder name="properties">
                 <file name="properties.wstcref" url="windowmanager/properties/properties.wstcref" />
@@ -482,11 +477,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         
         <folder name="Groups">
-            <!-- commented out as bugfix #40102
-            <folder name="execution">
-                <file name="output.wstcgrp" url="groups/execution/output.wstcgrp" />
-            </folder>
-            -->
             <folder name="form">
                 <file name="properties.wstcgrp" url="groups/form/properties.wstcgrp" />
             </folder>
