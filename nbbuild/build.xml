@@ -221,7 +221,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module core/settings..."/>
     <ant dir="../core/settings" target="netbeans"/>
   </target>
-  <target name="all-openide/looks" depends="all-openide,all-openide/registry">
+  <target name="all-openide/looks" depends="all-openide,all-openide/registry,all-core/registry">
     <echo message="Building module openide/looks..."/>
     <ant dir="../openide/looks" target="netbeans"/>
   </target>
