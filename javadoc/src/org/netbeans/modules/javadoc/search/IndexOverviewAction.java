@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -45,11 +45,11 @@ public class IndexOverviewAction extends SystemAction implements Presenter.Menu,
     }
     
     protected String iconResource() {
-        return "org/netbeans/modules/javadoc/resources/JavaDoc.gif";
+        return "org/netbeans/modules/javadoc/resources/JavaDoc.gif"; // NOI18N
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("javadoc.search");
+        return new HelpCtx("javadoc.search"); // NOI18N
     }
     
     public JMenuItem getMenuPresenter() {
@@ -134,12 +134,12 @@ public class IndexOverviewAction extends SystemAction implements Presenter.Menu,
             associatedInfo = new ArrayList();
             Enumeration e = FileSystemCapability.DOC.fileSystems();
             String[] names = {
-                "overview-summary.html",
-                "api/overview-summary.html",
-                "index.html",
-                "api/index.html",
-                "index.htm",
-                "api/index.htm",
+                "overview-summary.html", // NOI18N
+                "api/overview-summary.html", // NOI18N
+                "index.html", // NOI18N
+                "api/index.html", // NOI18N
+                "index.htm", // NOI18N
+                "api/index.htm", // NOI18N
             };
             while (e.hasMoreElements()) {
                 FileSystem fs = (FileSystem)e.nextElement();
@@ -157,7 +157,7 @@ public class IndexOverviewAction extends SystemAction implements Presenter.Menu,
                         try {
                             class TitleParser extends Parser {
                                 public TitleParser() throws IOException {
-                                    super(DTD.getDTD("html32"));
+                                    super(DTD.getDTD("html32")); // NOI18N
                                 }
                                 protected void handleTitle(char[] text) {
                                     title[0] = new String(text);
