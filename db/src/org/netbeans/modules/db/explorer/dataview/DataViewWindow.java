@@ -55,6 +55,7 @@ public class DataViewWindow extends TopComponent
 	{
 		schema = user;
 		try {
+		  setName("Data View");
 			setBorder(new EmptyBorder(new Insets(5,5,5,5)));
 			GridBagLayout layout = new GridBagLayout();
 			GridBagConstraints con = new GridBagConstraints ();
