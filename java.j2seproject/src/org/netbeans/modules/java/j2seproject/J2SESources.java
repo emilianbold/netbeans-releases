@@ -37,6 +37,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 public class J2SESources implements Sources, PropertyChangeListener, ChangeListener  {
     
     private static final String BUILD_DIR_PROP = "${" + J2SEProjectProperties.BUILD_DIR + "}";    //NOI18N
+    private static final String DIST_DIR_PROP = "${" + J2SEProjectProperties.DIST_DIR + "}";    //NOI18N
 
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
@@ -54,6 +55,7 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
         this.testRoots = testRoots;
         this.sourceRoots.addPropertyChangeListener(this);
         this.testRoots.addPropertyChangeListener(this);        
+        this.evaluator.addPropertyChangeListener(this);
         initSources(); // have to register external build roots eagerly
     }
 
@@ -95,6 +97,7 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
             this.sourcesHelper.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
         }        
         this.sourcesHelper.addNonSourceRoot (BUILD_DIR_PROP);
+        this.sourcesHelper.addNonSourceRoot(DIST_DIR_PROP);
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
@@ -136,7 +139,10 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (SourceRoots.PROP_ROOT_PROPERTIES.equals(evt.getPropertyName())) {
+        String propName = evt.getPropertyName();
+        if (SourceRoots.PROP_ROOT_PROPERTIES.equals(propName) ||
+            J2SEProjectProperties.BUILD_DIR.equals(propName)  ||
+            J2SEProjectProperties.DIST_DIR.equals(propName)) {
             this.fireChange();
         }
     }
