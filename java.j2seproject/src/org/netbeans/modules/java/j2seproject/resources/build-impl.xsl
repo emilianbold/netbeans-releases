@@ -151,7 +151,10 @@ is divided into following sections:
                         <xsl:attribute name="name">value</xsl:attribute>
                     </attribute>
                     <sequential>
-                        <property name="@{{name}}" value="${{@{{value}}}}"/>
+                        <property>
+                            <xsl:attribute name="name">@{name}</xsl:attribute>
+                            <xsl:attribute name="value">${@{value}}</xsl:attribute>
+                        </property>
                     </sequential>
                   </macrodef>
             </target>
