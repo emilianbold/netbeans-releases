@@ -17,6 +17,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDragEvent;
@@ -25,6 +26,8 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import java.io.ObjectStreamException;
 
@@ -53,8 +56,10 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.SplittedPanel;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.datatransfer.ExClipboard;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.windows.TopComponent;
@@ -73,7 +78,8 @@ public class DataViewWindow extends TopComponent {
     private JLabel status;
     private ResourceBundle bundle;
     private Node node;
-
+    private JPopupMenu tablePopupMenu;
+    
     static final long serialVersionUID = 6855188441469780252L;
 
     public DataViewWindow(DatabaseNodeInfo info, String query) throws SQLException {
@@ -235,6 +241,20 @@ public class DataViewWindow extends TopComponent {
             sublayout2.setConstraints(tableLabel, subcon2);
             subpane2.add(tableLabel);
 
+            // content popup menu on table with results
+            tablePopupMenu = new JPopupMenu ();
+            JMenuItem miCopyValue = new JMenuItem (bundle.getString ("CopyCellValue")); //NOI18N
+            miCopyValue.addActionListener(new ActionListener () {
+                public void actionPerformed (ActionEvent e) {
+                    Object o = jtable.getValueAt(jtable.getSelectedRow(), jtable.getSelectedColumn());
+                    String output = (o != null) ? o.toString () : "";
+                    ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup (ExClipboard.class);
+                    StringSelection strSel = new StringSelection (output);
+                    clipboard.setContents (strSel, strSel);
+                }
+            });
+            tablePopupMenu.add (miCopyValue);
+
             // Table with results
             //      TableSorter sorter = new TableSorter();
             jtable = new JTable(dbadaptor/*sorter*/);
@@ -243,6 +263,12 @@ public class DataViewWindow extends TopComponent {
             jtable.setToolTipText(bundle.getString("ACS_DataViewTableA11yDesc")); //NOI18N
             jtable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             //    	sorter.addMouseListenerToHeaderInTable(table);
+            jtable.addMouseListener (new MouseAdapter () {
+                public void mouseReleased (MouseEvent e) {
+                    if (e.getButton() == MouseEvent.BUTTON3)
+                        tablePopupMenu.show(jtable, e.getX (), e.getY ());
+                }
+            });
             tableLabel.setLabelFor(jtable);
 
             scrollpane = new JScrollPane(jtable);
