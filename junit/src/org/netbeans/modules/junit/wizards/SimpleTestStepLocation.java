@@ -16,6 +16,7 @@ package org.netbeans.modules.junit.wizards;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -199,86 +200,64 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         JPanel targetPanel
                 = new SizeRestrictedPanel(new GridBagLayout(), false, true);
         
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.WEST;
+        GridBagConstraints gbcLeft = new GridBagConstraints();
+        gbcLeft.anchor = GridBagConstraints.WEST;
+        gbcLeft.gridwidth = 1;
+        gbcLeft.insets = new Insets(0, 0, 6, 12);
+        gbcLeft.fill = GridBagConstraints.NONE;
+        gbcLeft.weightx = 0.0f;
         
-        gbc.gridy = 0;
+        GridBagConstraints gbcRight = new GridBagConstraints();
+        gbcRight.anchor = GridBagConstraints.WEST;
+        gbcRight.gridwidth = GridBagConstraints.REMAINDER;
+        gbcRight.insets = new Insets(0, 0, 6, 0);
+        gbcRight.fill = GridBagConstraints.BOTH;
+        gbcRight.weightx = 1.0f;
         
-        gbc.gridwidth = 1;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0.0d;
-        gbc.insets = new Insets(0, 0, 6, 12);
-        targetPanel.add(lblClassToTest, gbc);
+        // first row:
         
-        gbc.gridwidth = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0d;
-        gbc.insets = new Insets(0, 0, 6, 0);
-        targetPanel.add(tfClassToTest, gbc);
+        gbcRight.gridwidth = 1;
         
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 0.0d;
-        gbc.insets = new Insets(0, 11, 6, 0);
-        targetPanel.add(btnBrowse, gbc);
+        GridBagConstraints gbcBrowse = new GridBagConstraints();
+        gbcBrowse.insets = new Insets(0, 11, 6, 0);
+        gbcBrowse.gridwidth = GridBagConstraints.REMAINDER;
         
-        gbc.gridy++;
+        targetPanel.add(lblClassToTest, gbcLeft);
+        targetPanel.add(tfClassToTest, gbcRight);
+        targetPanel.add(btnBrowse, gbcBrowse);
         
-        gbc.gridwidth = 1;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0.0d;
-        gbc.insets = new Insets(0, 0, 24, 12);
-        targetPanel.add(lblCreatedTestClass, gbc);
+        // second row:
         
-        gbc.gridwidth = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0d;
-        gbc.insets = new Insets(0, 0, 24, 0);
-        targetPanel.add(tfTestClass, gbc);
+        gbcLeft.insets.bottom = gbcRight.insets.bottom = 24;
         
-        gbc.gridy++;
+        targetPanel.add(lblCreatedTestClass, gbcLeft);
+        targetPanel.add(tfTestClass, gbcRight);
+        targetPanel.add(new JPanel(), gbcBrowse);               //filler
         
-        gbc.gridx = 0;
-        gbc.gridwidth = 1;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0.0d;
-        gbc.insets = new Insets(0, 0, 6, 12);
-        targetPanel.add(lblProject, gbc);
+        // third row:
         
-        gbc.gridx = GridBagConstraints.RELATIVE;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0d;
-        gbc.insets = new Insets(0, 0, 6, 0);
-        targetPanel.add(tfProjectName, gbc);
+        gbcRight.gridwidth = GridBagConstraints.REMAINDER;
         
-        gbc.gridy++;
+        gbcLeft.insets.bottom = gbcRight.insets.bottom = 6;
         
-        gbc.gridwidth = 1;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0.0d;
-        gbc.insets = new Insets(0, 0, 12, 12);
-        targetPanel.add(lblLocation, gbc);
+        targetPanel.add(lblProject, gbcLeft);
+        targetPanel.add(tfProjectName, gbcRight);
         
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0d;
-        gbc.insets = new Insets(0, 0, 12, 0);
-        targetPanel.add(cboxLocation, gbc);
+        // fourth row:
         
-        gbc.gridy++;
+        gbcLeft.insets.bottom = gbcRight.insets.bottom = 12;
         
-        gbc.gridwidth = 1;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0.0d;
-        gbc.insets = new Insets(0, 0, 0, 12);
-        targetPanel.add(lblFile, gbc);
+        targetPanel.add(lblLocation, gbcLeft);
+        targetPanel.add(cboxLocation, gbcRight);
         
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0d;
-        gbc.insets = new Insets(0, 0, 0, 0);
-        targetPanel.add(tfCreatedFile, gbc);
+        // fifth row:
+        
+        gbcLeft.insets.bottom = gbcRight.insets.bottom = 0;
+        
+        targetPanel.add(lblFile, gbcLeft);
+        targetPanel.add(tfCreatedFile, gbcRight);
+        
+        //
         
         JComponent accessLevelsBox = new SizeRestrictedPanel(true, false);
         accessLevelsBox.setLayout(
@@ -305,13 +284,10 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         Box result = Box.createVerticalBox();
         result.add(targetPanel);
         result.add(Box.createVerticalStrut(12));
-        result.add(new JSeparator() {
-            public java.awt.Dimension getMaximumSize() {
-                java.awt.Dimension maximumSize = super.getMaximumSize();
-                maximumSize.height = getPreferredSize().height;
-                return maximumSize;
-            }
-        });
+            JPanel separatorPanel = new SizeRestrictedPanel(new GridLayout(),
+                                                            false, true);
+            separatorPanel.add(new JSeparator());
+        result.add(separatorPanel);
         result.add(Box.createVerticalStrut(12));
         result.add(optionsBox);
         //result.add(Box.createVerticalGlue());  //not necessary
