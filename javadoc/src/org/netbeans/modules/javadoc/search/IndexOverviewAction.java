@@ -53,7 +53,7 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
     }
     
     protected String iconResource() {
-        return "org/netbeans/modules/javadoc/resources/JavaDoc.gif"; // NOI18N
+        return null; //"org/netbeans/modules/javadoc/resources/JavaDoc.gif"; // NOI18N
     }
     
     public HelpCtx getHelpCtx() {
