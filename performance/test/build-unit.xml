@@ -79,7 +79,7 @@ Microsystems, Inc. All Rights Reserved.
             <!-- Opens project at specified location -->
             <property name="xtest.ide.open.project" location="${xtest.tmpdir}/jEdit41"/>
             
-            <property name="xtest.timeout" value="1200000" />
+            <property name="xtest.timeout" value="1800000" />
         </executeTests>
         <antcall target="copy_original_ide_cfg_file"/>
     </target>

@@ -99,7 +99,7 @@ Microsystems, Inc. All Rights Reserved.
             <classpath refid="jemmy.and.jelly.path"/>
             <classpath refid="performance.testutilities"/>
             
-            <property name="xtest.timeout" value="5400000" />
+            <property name="xtest.timeout" value="3600000" />
             
             <!-- Opens project at specified location -->
             <property name="xtest.ide.open.project" location="${xtest.tmpdir}/jEdit41"/>
@@ -127,7 +127,7 @@ Microsystems, Inc. All Rights Reserved.
             
             <property name="xtest.enable.assertions" value="false" /> 
             <property name="xtest.ide.reuse.userdir" value="true" />
-            <property name="xtest.timeout" value="5400000" />
+            <property name="xtest.timeout" value="3600000" />
         </executeTests>
         
         <antcall target="copy_original_ide_cfg_file"/>
