@@ -92,12 +92,12 @@ public class RADComponent {
     this.formManager = formManager;
   }
 
-  /** USed by TuborgPersistenceManager */
+  /** Used by TuborgPersistenceManager */
   void initDeserializedEvents (java.util.Hashtable eventHandlers) {
     eventsList.initEvents (eventHandlers);
   }
   
-  void setComponent (Class beanClass) {
+  public void setComponent (Class beanClass) {
     if (this.beanClass != null) {
       throw new InternalError ("Component already initialized: current: "+this.beanClass +", new: "+beanClass);
     }
@@ -106,6 +106,39 @@ public class RADComponent {
     beanInstance = createBeanInstance ();
     beanInfo = BeanSupport.createBeanInfo (beanClass);
     
+    initInternal ();
+  }
+
+  public void setInstance (Object beanInstance) {
+    if (this.beanClass != null) {
+      throw new InternalError ("Component already initialized: current: "+this.beanClass +", new: "+beanClass);
+    }
+    this.beanClass = beanInstance.getClass ();
+    this.beanInstance = beanInstance;
+    beanInfo = BeanSupport.createBeanInfo (beanClass);
+    
+    initInternal ();
+
+    PropertyDescriptor[] props = beanInfo.getPropertyDescriptors ();
+    for (int i = 0; i < props.length; i++) {
+      RADProperty prop = (RADProperty)nameToProperty.get (props[i].getName ());
+      try {
+        if ((!prop.canRead ()) || (!prop.canWrite ())) continue; // ignore this property
+        Object currentValue = prop.getValue ();
+        Object defaultValue = defaultPropertyValues.get (props[i].getName ());
+        if ((defaultValue != null) && !Utilities.compareObjects (currentValue, defaultValue)) {
+          // add the property to the list of changed properties
+          changedPropertyValues.put (prop, currentValue);
+        }
+      } catch (Exception e) {
+//        if ( // [PENDING] notify exception
+        // simply ignore this property
+      }
+    }
+    // [PENDING - initialize changed properties]
+  }
+
+  private void initInternal () {
     nameToProperty = new HashMap ();
 
     syntheticProperties = createSyntheticProperties ();
@@ -1058,6 +1091,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  40   Gandalf   1.39        8/6/99   Ian Formanek    setComponent is public, 
+ *       added method setInstance
  *  39   Gandalf   1.38        8/1/99   Ian Formanek    NodePropertyEditor 
  *       employed
  *  38   Gandalf   1.37        8/1/99   Ian Formanek    Fixed bug which caused 
