@@ -7,18 +7,22 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
-import java.beans.*;
-import java.io.*;
-import java.util.*;
-
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import org.openide.ErrorManager;
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.nodes.NodeOp;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -189,9 +193,13 @@ public abstract class DataLoader extends SharedClassObject {
      * be manipulated from DataLoader getActions/setActions methods.
      * <p>
      * The default implementation returns null to indicate that no
-     * layer reading should be used
+     * layer reading should be used (use {@link #defaultActions} instead).
+     * <p>
+     * {@link javax.swing.JSeparator} instances may be used to separate items.
+     * <p>
+     * Suggested context name: <samp>Loaders/<em>PRIMARY-FILE/MIME-TYPE</em>/Actions</samp>
      *
-     * @return the string name of the context on layer files to read/write acitons to
+     * @return the string name of the context on layer files to read/write actions to
      * @since 5.0
      */
     protected String actionsContext () {
@@ -200,7 +208,7 @@ public abstract class DataLoader extends SharedClassObject {
     
     /** Get default actions.
     * @return array of default system actions or <CODE>null</CODE> if this loader
-    * does not have any actions.
+    * does not have any actions or is using {@link #actionsContext} instead.
     * Typical example of usage:
     * <pre>
     * return new SystemAction[] {

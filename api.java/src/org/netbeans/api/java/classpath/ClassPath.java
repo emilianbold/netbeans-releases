@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,6 +18,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -614,9 +616,9 @@ public final class ClassPath {
         return f;
     }
 
-    private static final java.lang.ref.Reference EMPTY_REF = new java.lang.ref.SoftReference(null);
+    private static final Reference EMPTY_REF = new SoftReference(null);
 
-    private java.lang.ref.Reference refClassLoader = EMPTY_REF;
+    private Reference refClassLoader = EMPTY_REF;
 
     /* package private */synchronized void resetClassLoader(ClassLoader cl) {
         if (refClassLoader.get() == cl)
@@ -624,12 +626,14 @@ public final class ClassPath {
     }
 
     /**
-     * Returns a ClassLoader for loading classes from this ClassPath. If `cache' is false, then
-     * the method will always return a new initialized instance of ClassLoader. If that parameter is true,
-     * the method may return a ClassLoader which survived from a previous call.
+     * Returns a ClassLoader for loading classes from this ClassPath.
+     * <p>
+     * If <code>cache</code> is false, then
+     * the method will always return a new class loader. If that parameter is true,
+     * the method may return a loader which survived from a previous call to the same <code>ClassPath</code>.
      *
-     * @param cache True, if a new ClassLoader is requested
-     * @return ClassLoader that loads classes
+     * @param cache true if it is permissible to cache class loaders between calls
+     * @return class loader which uses the roots in this class path to search for classes and resources
      * @since 1.2.1
      */
     public final synchronized ClassLoader getClassLoader(boolean cache) {
@@ -637,7 +641,7 @@ public final class ClassPath {
         Object o = refClassLoader.get();
         if (!cache || o == null) {
             o = ClassLoaderSupport.create(this);
-            refClassLoader = new java.lang.ref.SoftReference(o);
+            refClassLoader = new SoftReference(o);
         }
         return (ClassLoader)o;
     }

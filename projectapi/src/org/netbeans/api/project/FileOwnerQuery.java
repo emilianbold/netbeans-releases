@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -150,7 +150,8 @@ public class FileOwnerQuery {
      * persistent algorithm is selected.
      * </p>
      * @param root a folder which should be considered part of a project
-     * @param owner a project which should be considered to own that folder tree,
+     * @param owner a project which should be considered to own that folder tree
+     *              (any prior marked external owner is overridden),
      *              or null to cancel external ownership for this folder root
      * @param algorithm an algorithm to use for retaining this information;
      *                  currently may only be {@link #EXTERNAL_ALGORITHM_TRANSIENT}
