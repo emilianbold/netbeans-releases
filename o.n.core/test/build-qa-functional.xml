@@ -43,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
              this file will be searched in directories specified by property xtest.extra.jars.path 
                  example: <property name="xtest.extra.jars.ide" value="jdbc_driver1.zip;jdbcd_river2.jar"/>
           -->
-        <property name="xtest.extra.jars.ide" value="jemmy.jar;jelly-nb.jar;openide.jar;core.jar"/>
+        <property name="xtest.extra.jars.ide" value="jemmy.jar;jelly-nb.jar"/>
 
 
         <!-- Arguments which will be added into commandline of starting IDE. 
@@ -87,7 +87,9 @@ Microsystems, Inc. All Rights Reserved.
                    example: <property name="compile.srcdir" value="unit/src1;unit/src2"/>
              -->
            <property name="compile.srcdir" value="qa-functional/src"/>
-	   <property name="compile.excludes" value="**/data/**"/>           
+	   <!-- 
+	       <property name="compile.excludes" value="**/data/**"/>
+	   -->              
        </ant>
     </target>
 
