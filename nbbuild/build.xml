@@ -272,8 +272,7 @@ workspaceswitcher
     <echo message="Virgin build created; see NetBeans-${buildnumber}-virgin.zip (in nbbuild/)."/>
   </target>
 
-  <target name="firststart" depends="init,build-messaging"
-          description="Build the IDE and start it, but do not create a build archive.">
+  <target name="firststart-merge" depends="init,build-messaging">
     <mkdir dir="firststart"/>
     <nbmerge dest="firststart" topdir=".." modules="openide,openidex,core,${modules}" targetprefix="all-"/>
     <chmod perm="ugo+x">
@@ -284,6 +283,9 @@ workspaceswitcher
         <include name="fastjavac/fastjavac.sun.intel"/>
       </fileset>
     </chmod>
+  </target>
+  <target name="firststart" depends="firststart-merge"
+          description="Build the IDE and start it, but do not create a build archive.">
     <echo>Starting the IDE...
 (This both acts as a test, and primes some files
 to make the first user start faster and better.)
@@ -336,6 +338,9 @@ the nbbuild/firststart/bin/ directory.
       <arg line="runide.sh ${tryme.args}"/>
     </exec>
   </target>
+
+  <target name="trybuild" depends="firststart-merge,tryme"
+          description="Build the IDE and try it immediately (no first start)."/>
 
   <target name="update-info" depends="init,all-openide,all-core"
           description="Build Auto Update NBM files and XML descriptions.">
