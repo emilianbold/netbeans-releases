@@ -157,6 +157,7 @@ public class NbEditorKit extends ExtKit {
         addSystemActionMapping(copyAction, org.openide.actions.CopyAction.class);
         addSystemActionMapping(pasteAction, org.openide.actions.PasteAction.class);
         addSystemActionMapping(removeSelectionAction, org.openide.actions.DeleteAction.class);
+        addSystemActionMapping(showPopupMenuAction, org.openide.actions.PopupAction.class);
 
         addSystemActionMapping(findAction, org.openide.actions.FindAction.class);
         addSystemActionMapping(replaceAction, org.openide.actions.ReplaceAction.class);

@@ -120,6 +120,7 @@ public class NbEditorUI extends ExtEditorUI {
             attachSystemActionPerformer(ExtKit.findAction);
             attachSystemActionPerformer(ExtKit.replaceAction);
             attachSystemActionPerformer(ExtKit.gotoAction);
+            attachSystemActionPerformer(ExtKit.showPopupMenuAction);
 
             // replacing DefaultEditorKit.deleteNextCharAction by BaseKit.removeSelectionAction
             // #41223
