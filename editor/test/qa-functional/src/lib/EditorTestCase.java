@@ -25,6 +25,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -34,14 +35,13 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
  * @author  Petr Felenda
  */
-public class EditorTestCase extends NbTestCase {
+public class EditorTestCase extends JellyTestCase {
     
     private static final int OPENED_PROJECT_ACCESS_TIMEOUT = 1000;
     
