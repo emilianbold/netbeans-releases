@@ -64,7 +64,7 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
       NbBundle.getBundle(URLDataLoaderBeanInfo.class);
     try {
       descriptors =  new PropertyDescriptor[] {
-        new PropertyDescriptor ("displayName", URLDataLoader.class, "getDisplayName", null),
+        new PropertyDescriptor ("displayName", URLDataLoader.class, "getDisplayName", null), // NOI18N
       };
       descriptors[0].setDisplayName(bundle.getString("PROP_Name"));
       descriptors[0].setShortDescription(bundle.getString("HINT_Name"));
@@ -77,6 +77,7 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  8    Gandalf   1.7         1/12/00  Ian Formanek    NOI18N
 *  7    Gandalf   1.6         1/5/00   Ian Formanek    NOI18N
 *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
