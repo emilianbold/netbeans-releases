@@ -656,7 +656,21 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @return data directory
      */
     public File getDataDir() {
-        return Manager.normalizeFile(new File(System.getProperty("xtest.data")));
+        String xtestData = System.getProperty("xtest.data");
+        if(xtestData != null) {
+            return Manager.normalizeFile(new File(xtestData));
+        } else {
+            // property not set (probably run from IDE) => try to find it
+            String className = getClass().getName();
+            int index = 0;
+            StringBuffer dataPath = new StringBuffer();
+            while((index = className.indexOf('.', index)+1) > 0) {
+                dataPath.append("../");
+            }
+            dataPath.append("../data");
+            URL url = this.getClass().getResource("");
+            return Manager.normalizeFile(new File(url.getFile()+dataPath));
+        }
     }
     
     /** Get the default testmethod specific golden file from
