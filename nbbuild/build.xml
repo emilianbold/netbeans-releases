@@ -206,7 +206,7 @@ treefs
     <echo message="to make the first user start faster and better.)"/>
     <!-- XXX should perhaps preset JAVA_PATH to ${java.home} or something? -->
     <!-- XXX check these OS names... -->
-    <exec os="Windows" dir="firststart/bin" command="forte4j.exe ${firststart.args}" output="firststart.log" failonerror="yes"/>
+    <exec os="Windows NT" dir="firststart/bin" command="forte4j.exe ${firststart.args}" output="firststart.log" failonerror="yes"/>
     <!-- XXX chmod does not work reliably...investigate -->
     <exec os="Linux" dir="firststart/bin" command="sh ffj.sh ${firststart.args}" output="firststart.log" failonerror="yes"/>
     <exec os="Solaris" dir="firststart/bin" command="sh ffj.sh ${firststart.args}" output="firststart.log" failonerror="yes"/>
