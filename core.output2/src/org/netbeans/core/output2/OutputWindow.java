@@ -38,6 +38,9 @@ import org.openide.windows.WindowManager;
 public class OutputWindow extends AbstractOutputWindow {
     private Controller controller;
     static OutputWindow DEFAULT = null;
+    public static final String ICON_RESOURCE =
+        "/org/netbeans/core/resources/frames/output.gif"; // NOI18N
+        
 
     public OutputWindow() {
         this (new Controller());
@@ -51,6 +54,7 @@ public class OutputWindow extends AbstractOutputWindow {
         if (Controller.log) Controller.log("Created an output window");
         this.controller = controller;
         setDisplayName (NbBundle.getMessage(OutputWindow.class, "LBL_OUTPUT")); //NOI18N
+        setIcon(Utilities.loadImage(ICON_RESOURCE)); // NOI18N
     }
     
     public static synchronized OutputWindow findDefault() {
