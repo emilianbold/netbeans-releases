@@ -92,6 +92,7 @@ import org.netbeans.modules.j2ee.common.ui.IconBaseProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
 /**
  * Represents an Enterprise Application project.
@@ -517,6 +518,9 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
+            
+            J2eeModuleProvider pwm = (J2eeModuleProvider) EarProject.this.getLookup ().lookup (J2eeModuleProvider.class);
+            pwm.getConfigSupport().ensureConfigurationReady();
             
             // Make it easier to run headless builds on the same machine at least.
             ProjectManager.mutex().writeAccess(new Mutex.Action() {
