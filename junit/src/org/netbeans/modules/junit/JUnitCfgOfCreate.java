@@ -27,6 +27,7 @@ import org.openide.TopManager;
 import org.openide.filesystems.*;
 import org.openide.explorer.propertysheet.*;
 import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -187,6 +188,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
             cfg,
             bundle.getString("LBL_JUnitCfgOfCreate_Title")
         );
+        descriptor.setHelpCtx(new HelpCtx(JUnitCfgOfCreate.class));
         Dialog dialog = TopManager.getDefault().createDialog(descriptor);
         dialog.show();
         dialog.dispose();

@@ -123,9 +123,7 @@ public class JUnitSettings extends SystemOption {
     }
 
     public HelpCtx getHelpCtx () {
-        return HelpCtx.DEFAULT_HELP;
-        // If you provide context help then use:
-        // return new HelpCtx (JUnitSettings.class);
+        return new HelpCtx(JUnitSettings.class);
     }
 
     /** Default instance of this system option, for the convenience of associated classes. */
