@@ -45,6 +45,7 @@ import javax.swing.event.ChangeEvent;
 
 import org.openide.loaders.*;
 import org.openide.*;
+import org.openide.cookies.CompilerCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.util.datatransfer.*;
 import org.openide.filesystems.FileLock;
@@ -61,10 +62,19 @@ import org.openide.nodes.*;
 */
 public class PropertiesFileEntry extends PresentableFileEntry {
 
-    protected String basicName;
-    transient protected StructHandler propStruct;
+    /** Basic name of bundle .properties file. */
+    private String basicName;
+    
+    /** Structure handler for .properties file represented by this instance. */
+    private transient StructHandler propStruct;
 
+    /** Helper variable. Flag if cookies were initialized. */
+    private transient boolean cookiesInitialized = false;
+    
+    /** Generated serial version UID. */    
     static final long serialVersionUID =-3882240297814143015L;
+    
+    
     /** Creates new PropertiesFileEntry */
     PropertiesFileEntry(MultiDataObject obj, FileObject file) {
         super(obj, file);
@@ -74,15 +84,46 @@ public class PropertiesFileEntry extends PresentableFileEntry {
             basicName = getFile().getName();
         else
             basicName = fo.getName();
-        init();
     }
 
-    /** Initializes the object after creation and deserialization */
-    private void init() {
-        // edit as a viewcookie
-        getCookieSet().add (new PropertiesEditorSupport(this));
+    
+    /** Overrides superclass method. */
+    public CookieSet getCookieSet() {
+        if (!cookiesInitialized) {
+            initCookieSet();
+        }
+        return super.getCookieSet();
+    }
+    
+    /** 
+     * Overrides superclass method.
+     * Look for a cookie in the current cookie set matching the requested class.
+     *
+     * @param type the class to look for
+     * @return an instance of that class, or <code>null</code> if this class of cookie
+     *    is not supported
+     */
+    public Node.Cookie getCookie(Class clazz) {
+        if(CompilerCookie.class.isAssignableFrom(clazz)) {
+            return null;
+        }
+        
+        if(!cookiesInitialized) {
+            initCookieSet();
+        }
+        
+        return super.getCookie(clazz);
     }
 
+    /** Helper method. Actually lazilly creating cookie when first asked.*/
+    private synchronized void initCookieSet() {
+        if(cookiesInitialized) {
+            return;
+        }
+        super.getCookieSet().add(new PropertiesEditorSupport(this));
+        cookiesInitialized = true;
+    }
+    
     /** Creates a node delegate for this entry. */
     protected Node createNodeDelegate() {
         return new PropertiesLocaleNode(this);
@@ -103,7 +144,6 @@ public class PropertiesFileEntry extends PresentableFileEntry {
     /** Deserialization */
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        init();
     }
 
     /** Returns editor support for properties */
@@ -120,7 +160,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
     public FileObject rename (String name) throws IOException {
     
         if (!getFile().getName().startsWith(basicName))
-            throw new InternalError("Never happens - error in Properties loader / rename");
+            throw new InternalError("Never happens - error in Properties loader / rename"); // NOI18N
 
         FileObject fo = super.rename(name + getFile().getName().substring(basicName.length()));
         basicName = name;
@@ -136,14 +176,13 @@ public class PropertiesFileEntry extends PresentableFileEntry {
     public FileObject renameEntry (String name) throws IOException {
 
         if (!getFile().getName().startsWith(basicName))
-            throw new InternalError("Never happens - error in Properties loader / rename");
+            throw new InternalError("Never happens - error in Properties loader / rename"); // NOI18N
 
         if (basicName.equals(getFile().getName())) {
             // primary entry - can not rename
             NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                                               NbBundle.getBundle(PropertiesDataLoader.class).
-                                               getString("MSG_AttemptToRenamePrimaryFile"),
-                                               NotifyDescriptor.ERROR_MESSAGE);
+                NbBundle.getBundle(PropertiesDataLoader.class).getString("MSG_AttemptToRenamePrimaryFile"),
+                NotifyDescriptor.ERROR_MESSAGE);
             TopManager.getDefault().notify(msg);
             return getFile();
         }
@@ -159,7 +198,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
     public FileObject createFromTemplate (FileObject folder, String name) throws IOException {
         ResourceBundle bundle = NbBundle.getBundle (PropertiesFileEntry.class);
         if (! getFile ().getName ().startsWith (basicName))
-            throw new InternalError("Never happens - error in Properties createFromTemplate");
+            throw new InternalError("Never happens - error in Properties createFromTemplate"); // NOI18N
         String suffix = getFile ().getName ().substring (basicName.length ());
         String nuename = name + suffix;
         String ext = getFile ().getExt ();
@@ -282,6 +321,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
         return new HelpCtx (PropertiesFileEntry.class);
     }
 
+    
     /** Children of a node representing s single properties file.
     * Contains nodes representing individual properties. */
     class PropKeysChildren extends Children.Keys {
@@ -292,10 +332,13 @@ public class PropertiesFileEntry extends PresentableFileEntry {
         /** Listens to changes on the property bundle structure */
         private PropertyBundleListener pbl = null;
 
+        
+        /** Constructor. */
         PropKeysChildren() {
             super();
         }
 
+        
         /** Sets all keys in the correct order */
         protected void mySetKeys() {
             // use TreeSet because its iterator iterates in ascending order
@@ -327,41 +370,39 @@ public class PropertiesFileEntry extends PresentableFileEntry {
             PropertiesFileEntry.this.getHandler().addPropertyChangeListener (new WeakListener.PropertyChange(pcl));
 
             pbl = new PropertyBundleListener () {
-                      public void bundleChanged(PropertyBundleEvent evt) {
-                          switch (evt.getChangeType()) {
-                          case PropertyBundleEvent.CHANGE_STRUCT:
-                          case PropertyBundleEvent.CHANGE_ALL:
-                              mySetKeys();
-                              break;
-                          case PropertyBundleEvent.CHANGE_FILE:
-                              if (evt.getEntryName().equals(getFile().getName()))
-                                  // if it's me
-                                  mySetKeys();
-                              break;
-                          case PropertyBundleEvent.CHANGE_ITEM:
-                              if (evt.getEntryName().equals(getFile().getName())) {
-                                  // the node should fire the change (to its property sheet, for example
-                                  KeyNode kn = (KeyNode)findChild(evt.getItemName());
-                                  if (kn != null) {
-                                      PropertiesStructure ps = getHandler().getStructure();
-                                      if (ps != null) {
-                                          Element.ItemElem it = ps.getItem(evt.getItemName());
-                                          kn.fireChange(new PropertyChangeEvent(kn, Element.ItemElem.PROP_ITEM_VALUE, null, it.getValue()));
-                                          kn.fireChange(new PropertyChangeEvent(kn, Element.ItemElem.PROP_ITEM_COMMENT, null, it.getComment()));
-                                      }
-                                      else
-                                          ;
-                                  }
-                                  else
-                                      ;
-                                  // if it's me
-                                  // in theory do nothing
-                                  //PropKeysChildren.this.refreshKey(evt.getItemName());
-                              }
-                              break;
-                          }
-                      }
-                  }; // end of inner class
+                public void bundleChanged(PropertyBundleEvent evt) {
+                    switch (evt.getChangeType()) {
+                        case PropertyBundleEvent.CHANGE_STRUCT:
+                        case PropertyBundleEvent.CHANGE_ALL:
+                            mySetKeys();
+                            break;
+                        case PropertyBundleEvent.CHANGE_FILE:
+                            if (evt.getEntryName().equals(getFile().getName()))
+                                // if it's me
+                                mySetKeys();
+                            break;
+                        case PropertyBundleEvent.CHANGE_ITEM:
+                            if (evt.getEntryName().equals(getFile().getName())) {
+                                // the node should fire the change (to its property sheet, for example
+                                KeyNode kn = (KeyNode)findChild(evt.getItemName());
+                                if (kn != null) {                                  
+                                    PropertiesStructure ps = getHandler().getStructure();
+                                    if (ps != null) {
+                                        Element.ItemElem it = ps.getItem(evt.getItemName());
+                                        kn.fireChange(new PropertyChangeEvent(kn, Element.ItemElem.PROP_ITEM_VALUE, null, it.getValue()));
+                                        kn.fireChange(new PropertyChangeEvent(kn, Element.ItemElem.PROP_ITEM_COMMENT, null, it.getComment()));
+                                    } else
+                                        ;
+                                } else
+                                    ;
+                                // if it's me
+                                // in theory do nothing
+                                //PropKeysChildren.this.refreshKey(evt.getItemName());
+                            }
+                            break;
+                    }
+                }
+            }; // end of inner class
 
             ((PropertiesDataObject)PropertiesFileEntry.this.getDataObject()).getBundleStructure().
             addPropertyBundleListener (new WeakListenerPropertyBundle(pbl));
@@ -375,41 +416,13 @@ public class PropertiesFileEntry extends PresentableFileEntry {
             setKeys(new ArrayList());
         }
 
+        /** Create nodes. */
         protected Node[] createNodes (Object key) {
             String itemKey = (String)key;
             return new Node[] { new KeyNode(getHandler().getStructure(), itemKey) };
         }
 
-    } // end of class PropKeysChildren
+    } // End of inner class PropKeysChildren.
 
 
 }
-
-
-
-/*
- * <<Log>>
- *  18   Gandalf-post-FCS1.16.1.0    3/28/00  Jesse Glick     Properties files used as
- *       templates can merge into one another.
- *  17   Gandalf   1.16        11/27/99 Patrik Knakal   
- *  16   Gandalf   1.15        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  15   Gandalf   1.14        10/12/99 Petr Jiricka    
- *  14   Gandalf   1.13        9/13/99  Petr Jiricka    Removed debug println
- *  13   Gandalf   1.12        9/10/99  Petr Jiricka    Comparator change
- *  12   Gandalf   1.11        8/18/99  Petr Jiricka    Some fix
- *  11   Gandalf   1.10        8/17/99  Petr Jiricka    Changes erlated to 
- *       saving
- *  10   Gandalf   1.9         8/9/99   Petr Jiricka    Removed debug prints
- *  9    Gandalf   1.8         6/24/99  Petr Jiricka    
- *  8    Gandalf   1.7         6/11/99  Petr Jiricka    
- *  7    Gandalf   1.6         6/10/99  Petr Jiricka    
- *  6    Gandalf   1.5         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  5    Gandalf   1.4         6/8/99   Petr Jiricka    
- *  4    Gandalf   1.3         6/6/99   Petr Jiricka    
- *  3    Gandalf   1.2         5/14/99  Petr Jiricka    
- *  2    Gandalf   1.1         5/13/99  Petr Jiricka    
- *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
- * $
- */
