@@ -97,8 +97,6 @@
       <tocitem text="Tags">
 	  <tocitem text="About Tag Libraries" target="webmod_addtglb"/>
 	  <tocitem text="About the JSTL" target="webmod_jstl" />
-	  <tocitem text="About the JSF Framework" target="mod_jsf" /> 
-	  <tocitem text="About the Struts Framework" target="mod_struts" /> 	  	  
       <tocitem text="Tag Libraries" >
           <tocitem text="Managing Libraries" target="ctx_repaddto"/>
           <tocitem text="Creating a Separate Tag Library"  target="taglib_packlib"/>
@@ -120,11 +118,11 @@
           <tocitem text="Creating a Tag Handler" target="ctx_tagcust" />
           <tocitem text="Defining a Tag Handler's TLD Information" target="edit_taghandler" />
       </tocitem> <!-- Developing Tag Libraries and Tag Files -->
-     <tocitem text="Frameworks" >
-          <tocitem text="About Frameworks" target="tbd"  />        
+      <tocitem text="Web Application Frameworks" >
+          <tocitem text="About Web Application Frameworks" target="mod_framework"  />        
 	  <tocitem text="Creating a New Application with JSF Support" target="mod_setjsf" />
-          <tocitem text="Creating a New Application with Struts Support" target="mod_setstruts" />
 	  <tocitem text="Adding JSF Support to an Existing Application" target="mod_addjsf" />
+          <tocitem text="Creating a New Application with Struts Support" target="mod_setstruts" />
 	  <tocitem text="Adding Struts Support to an Existing Application" target="mod_addstruts" />
       </tocitem>
       </tocitem>
