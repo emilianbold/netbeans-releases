@@ -39,6 +39,7 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.core.NotifyException;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.ErrorManager;
@@ -143,6 +144,9 @@ public final class MainWindow extends JFrame {
                 JPanel panel = new JPanel(new BorderLayout());
                 panel.add(new JSeparator(), BorderLayout.NORTH);
                 panel.add(status, BorderLayout.CENTER);
+                Component exceptionStatus = NotifyException.getNotificationVisualizer();
+                if( null != exceptionStatus )
+                    panel.add( exceptionStatus, BorderLayout.EAST );
                 panel.setName("statusLine"); //NOI18N
                 getContentPane().add(panel, BorderLayout.SOUTH);
             } else { // custom status line provided
@@ -248,6 +252,9 @@ public final class MainWindow extends JFrame {
                 sep.setPreferredSize(d);
                 panel.add(sep, BorderLayout.WEST);
                 panel.add(status, BorderLayout.CENTER);
+                Component exceptionStatus = NotifyException.getNotificationVisualizer();
+                if( null != exceptionStatus )
+                    panel.add( exceptionStatus, BorderLayout.EAST );
                 panel.setName("statusLine"); //NOI18N
                 menu.add(panel);
             } else {
