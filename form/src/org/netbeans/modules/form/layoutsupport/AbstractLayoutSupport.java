@@ -150,7 +150,16 @@ public abstract class AbstractLayoutSupport implements LayoutSupport
     public ConstraintsDesc fixConstraints(ConstraintsDesc constraintsDesc) {
         return constraintsDesc;
     }
-    
+
+    public int getResizableDirections(Component comp, Container cont) {
+        return 0;
+    }
+
+    public ConstraintsDesc getResizedConstraints(Component comp, Container cont,
+                                                 int dx, int dy) {
+        return null;
+    }
+
     public void addComponent(RADVisualComponent component, ConstraintsDesc desc) {
         if (desc != null)
             component.setConstraintsDesc(getClass(), desc);
@@ -245,6 +254,19 @@ public abstract class AbstractLayoutSupport implements LayoutSupport
 
     protected FormProperty[] getCreationProperties() {
         return metaLayout.getAllBeanProperties();
+    }
+
+    protected ConstraintsDesc getConstraints(Component comp, Container cont) {
+        if (comp == null || cont == null) return null;
+
+        Component[] comps = cont.getComponents();
+        for (int i=0; i < comps.length; i++)
+            if (comps[i] == comp) {
+                RADVisualComponent[] metacomps = container.getSubComponents();
+                return getConstraints(metacomps[i]);
+            }
+
+        return null;
     }
 
     static protected ResourceBundle getBundle() {
