@@ -13,18 +13,8 @@
 
 package org.netbeans.modules.debugger.jpda.models;
 
-import com.sun.jdi.ArrayReference;
-import com.sun.jdi.CharValue;
-import com.sun.jdi.ClassObjectReference;
-import com.sun.jdi.ClassType;
-import com.sun.jdi.Method;
-import com.sun.jdi.ObjectReference;
-import com.sun.jdi.PrimitiveValue;
-import com.sun.jdi.ReferenceType;
-import com.sun.jdi.StringReference;
-import com.sun.jdi.Type;
-import com.sun.jdi.Value;
-import java.util.ArrayList;
+import com.sun.jdi.*;
+
 import java.util.List;
 import java.io.PushbackReader;
 import java.io.StringReader;
@@ -155,6 +145,7 @@ public class AbstractVariable implements Variable {
     public String getValue () {
         Value v = getInnerValue ();
         if (v == null) return "null";
+        if (v instanceof VoidValue) return "void";
         if (v instanceof CharValue)
             return "\'" + v.toString () + "\'";
         if (v instanceof PrimitiveValue)
