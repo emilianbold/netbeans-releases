@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.Collections;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.openide.util.WeakListeners;
 
 /** ProxyClassPathImplementation provides read only proxy for ClassPathImplementations.
  *  The order of the resources is given by the order of its delegates.
@@ -32,16 +33,17 @@ public class ProxyClassPathImplementation implements ClassPathImplementation {
     private ClassPathImplementation[] classPaths;
     private List resourcesCache;
     private ArrayList listeners;
+    private PropertyChangeListener classPathsListener;
 
     public ProxyClassPathImplementation (ClassPathImplementation[] classPaths) {
         if (classPaths == null)
             throw new IllegalArgumentException ();
         List impls = new ArrayList ();
-        PropertyChangeListener l = new DelegatesListener ();
+        classPathsListener = new DelegatesListener ();
         for (int i=0; i< classPaths.length; i++) {
             if (classPaths[i] == null)
                 continue;
-            classPaths[i].addPropertyChangeListener (l);
+            classPaths[i].addPropertyChangeListener (WeakListeners.propertyChange(classPathsListener,classPaths[i]));
             impls.add (classPaths[i]);
         }
         this.classPaths = (ClassPathImplementation[]) impls.toArray(new ClassPathImplementation[impls.size()]);
