@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE catalog PUBLIC "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN"
+         "nbres:/org/netbeans/modules/xml/catalog/impl/oasis/catalog.dtd">
+<!-- if HTTP connection is established (proxy) the original systemId can be used: -->
+<!--
+<!DOCTYPE catalog PUBLIC "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN"
          "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
+-->
 <!--
     Document   : __NAME__
     Created on : __DATE__, __TIME__
@@ -16,10 +21,16 @@
     <!-- TODO fill real entries instead of sample one. -->
     <public publicId="-//Company//Entity ID//EN" uri="file:/path/entity.dtd"/>
     
-    <!-- TODO: for XML schema it is recommended to use both <public> and <system> elements
-         to specify the schema location, e.g : -->
+    <!-- For XML schemas the <uri> element is recommended 
+         to specify the resource, e.g: -->
     <!--
-    <public publicId="http://org.company/xml/ns/entity.xsd" uri="file:/path/entity.xsd"/>
-    <system systemId="http://org.company/xml/ns/entity.xsd" uri="file:/path/entity.xsd"/>
+    <uri name="http://org.company/xml/schemas" uri="file:/path/schema.xsd"/>
+    -->
+        
+    <!-- If xsi:schemaLocation is specified in XML document e.g.
+         xsi:schemaLocation="http://org.company/xml/schemas http://org.company/xml/schemas/schema.xsd"
+         the <system> element can be used to specify the local resource, e.g: -->
+    <!--
+    <system systemId="http://org.company/xml/schemas/schema.xsd" uri="file:/path/schema.xsd"/>
     -->
 </catalog>
