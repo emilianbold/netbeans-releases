@@ -434,7 +434,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module j2eeserver/ant..."/>
     <ant dir="../j2eeserver/ant" target="netbeans"/>
   </target>
-  <target name="all-junit" depends="build-platform,all-java/srcmodel,all-ant,all-java/api">
+  <target name="all-junit" depends="build-platform,all-java/srcmodel,all-ant,all-java/api,all-projects/projectapi,all-projects/projectuiapi,all-java/project">
     <echo message="Building module junit..."/>
     <ant dir="../junit" target="netbeans"/>
   </target>

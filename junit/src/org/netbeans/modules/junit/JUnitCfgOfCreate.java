@@ -13,11 +13,9 @@
 
 package org.netbeans.modules.junit;
 
-import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
@@ -53,18 +51,6 @@ public class JUnitCfgOfCreate extends JPanel {
      */
     private final boolean forFolders;
 
-    private class Pair {
-        public String  name;
-        public Object  item;
-        public Pair(String name, Object item) {
-            this.name = name;
-            this.item = item;
-        }
-        public String toString() {
-            return name.toString();
-        }
-    }
-    
     /**
      * Creates a JUnit configuration panel.
      *
@@ -138,7 +124,7 @@ public class JUnitCfgOfCreate extends JPanel {
     }
     
     private void fillTemplates() {
-        Pair        item;
+        NamedObject item;
         FileObject  foJUnitTmpl;
         FileObject  foTemplates[];
         
@@ -150,7 +136,7 @@ public class JUnitCfgOfCreate extends JPanel {
             if (!foTemplates[i].getExt().equals("java"))
                 continue;
             
-            item = new Pair(foTemplates[i].getName(), foTemplates[i]);
+            item = new NamedObject(foTemplates[i], foTemplates[i].getName());
             if (forFolders) {
                 // add template to Suite templates list
                 cboSuiteClass.addItem(item);
@@ -214,12 +200,12 @@ public class JUnitCfgOfCreate extends JPanel {
             
             if (forFolders) {
                 // store Suite class template
-                foTemplate = (FileObject)((Pair)cfg.cboSuiteClass.getSelectedItem()).item;
+                foTemplate = (FileObject) ((NamedObject) cfg.cboSuiteClass.getSelectedItem()).object;
                 JUnitSettings.getDefault().setSuiteTemplate(foTemplate.getPath());
             }
             
             // store Test class template
-            foTemplate = (FileObject)((Pair)cfg.cboTestClass.getSelectedItem()).item;
+            foTemplate = (FileObject) ((NamedObject) cfg.cboTestClass.getSelectedItem()).object;
             JUnitSettings.getDefault().setClassTemplate(foTemplate.getPath());
             
             // store code generation options
@@ -341,84 +327,73 @@ public class JUnitCfgOfCreate extends JPanel {
     private void createOptionsPanel() {
         
         /* create the components: */
-        chkPublic = new JCheckBox();
-        chkProtected = new JCheckBox();
-        chkPackage = new JCheckBox();
+        String[] chkBoxIDs;
+        JCheckBox[] chkBoxes;
         if (forFolders) {
-            chkPackagePrivateClasses = new JCheckBox();
-            chkAbstractImpl = new JCheckBox();
-            chkExceptions = new JCheckBox();
-            chkGenerateSuites = new JCheckBox();
+            chkBoxIDs = new String[] {
+                GuiUtils.CHK_PUBLIC,
+                GuiUtils.CHK_PROTECTED,
+                GuiUtils.CHK_PACKAGE,
+                GuiUtils.CHK_PACKAGE_PRIVATE_CLASSES,
+                GuiUtils.CHK_ABSTRACT_CLASSES,
+                GuiUtils.CHK_EXCEPTION_CLASSES,
+                GuiUtils.CHK_SUITES,
+                GuiUtils.CHK_SETUP,
+                GuiUtils.CHK_TEARDOWN,
+                GuiUtils.CHK_METHOD_BODIES,
+                GuiUtils.CHK_JAVADOC,
+                GuiUtils.CHK_HINTS
+            };
+        } else {
+            chkBoxIDs = new String[] {
+                GuiUtils.CHK_PUBLIC,
+                GuiUtils.CHK_PROTECTED,
+                GuiUtils.CHK_PACKAGE,
+                null, // CHK_PACKAGE_PRIVATE_CLASSES,
+                null, // CHK_ABSTRACT_CLASSES,
+                null, // CHK_EXCEPTION_CLASSES,
+                null, // CHK_SUITES,
+                GuiUtils.CHK_SETUP,
+                GuiUtils.CHK_TEARDOWN,
+                GuiUtils.CHK_METHOD_BODIES,
+                GuiUtils.CHK_JAVADOC,
+                GuiUtils.CHK_HINTS
+            };
         }
-        chkSetUp = new JCheckBox();
-        chkTearDown = new JCheckBox();
-        chkContent = new JCheckBox();
-        chkJavaDoc = new JCheckBox();
-        chkComments = new JCheckBox();
-        
-        /* set texts: */
-        Mnemonics.setLocalizedText(
-                chkPublic,
-                bundle.getString("JUnitCfgOfCreate.chkPublic.text"));   //NOI18N
-        Mnemonics.setLocalizedText(
-                chkProtected,
-                bundle.getString("JUnitCfgOfCreate.chkProtected.text"));//NOI18N
-        Mnemonics.setLocalizedText(
-                chkPackage,
-                bundle.getString("JUnitCfgOfCreate.chkPackage.text"));  //NOI18N
-        if (forFolders) {
-            Mnemonics.setLocalizedText(
-                chkPackagePrivateClasses,
-                bundle.getString(
-                    "JUnitCfgOfCreate.chkPackagePrivateClasses.text")); //NOI18N
-            Mnemonics.setLocalizedText(
-                chkAbstractImpl,
-                bundle.getString(
-                    "JUnitCfgOfCreate.chkAbstractImpl.text"));          //NOI18N
-            Mnemonics.setLocalizedText(
-                chkExceptions,
-                bundle.getString(
-                    "JUnitCfgOfCreate.chkExceptions.text"));            //NOI18N
-            Mnemonics.setLocalizedText(
-                chkGenerateSuites,
-                bundle.getString(
-                    "JUnitCfgOfCreate.chkGenerateSuites.text"));        //NOI18N
-        }
-        Mnemonics.setLocalizedText(
-                chkSetUp,
-                bundle.getString("JUnitCfgOfCreate.chkSetUp.text"));    //NOI18N
-        Mnemonics.setLocalizedText(
-                chkTearDown,
-                bundle.getString("JUnitCfgOfCreate.chkTearDown.text")); //NOI18N
-        Mnemonics.setLocalizedText(
-                chkContent,
-                bundle.getString("JUnitCfgOfCreate.chkContent.text"));  //NOI18N
-        Mnemonics.setLocalizedText(
-                chkJavaDoc,
-                bundle.getString("JUnitCfgOfCreate.chkJavaDoc.text"));  //NOI18N
-        Mnemonics.setLocalizedText(
-                chkComments,
-                bundle.getString("JUnitCfgOfCreate.chkComments.text")); //NOI18N
+        chkBoxes = GuiUtils.createCheckBoxes(chkBoxIDs);
+        int i = 0;
+        chkPublic           = chkBoxes[i++];
+        chkProtected        = chkBoxes[i++];
+        chkPackage          = chkBoxes[i++];
+        chkPackagePrivateClasses = chkBoxes[i++];       //may be null
+        chkAbstractImpl     = chkBoxes[i++];            //may be null
+        chkExceptions       = chkBoxes[i++];            //may be null
+        chkGenerateSuites   = chkBoxes[i++];            //may be null
+        chkSetUp            = chkBoxes[i++];
+        chkTearDown         = chkBoxes[i++];
+        chkContent          = chkBoxes[i++];
+        chkJavaDoc          = chkBoxes[i++];
+        chkComments         = chkBoxes[i++];
         
         /* create groups of checkboxes: */
-        JComponent methodAccessLevels = createChkBoxGroup(
+        JComponent methodAccessLevels = GuiUtils.createChkBoxGroup(
                 bundle.getString("JUnitCfgOfCreate.groupAccessLevels"), //NOI18N
                 new JCheckBox[] {chkPublic, chkProtected, chkPackage});
         JComponent classTypes = null;
         JComponent optionalClasses = null;
         if (forFolders) {
-            classTypes = createChkBoxGroup(
+            classTypes = GuiUtils.createChkBoxGroup(
                 bundle.getString("JUnitCfgOfCreate.groupClassTypes"),   //NOI18N
                 new JCheckBox[] {chkPackagePrivateClasses,
                                  chkAbstractImpl, chkExceptions});
-            optionalClasses = createChkBoxGroup(
+            optionalClasses = GuiUtils.createChkBoxGroup(
                 bundle.getString("JUnitCfgOfCreate.groupOptClasses"),   //NOI18N
                 new JCheckBox[] {chkGenerateSuites});
         }
-        JComponent optionalCode = createChkBoxGroup(
+        JComponent optionalCode = GuiUtils.createChkBoxGroup(
                 bundle.getString("JUnitCfgOfCreate.groupOptCode"),      //NOI18N
                 new JCheckBox[] {chkSetUp, chkTearDown, chkContent});
-        JComponent optionalComments = createChkBoxGroup(
+        JComponent optionalComments = GuiUtils.createChkBoxGroup(
                 bundle.getString("JUnitCfgOfCreate.groupOptComments"),  //NOI18N
                 new JCheckBox[] {chkJavaDoc, chkComments});
         
@@ -461,62 +436,6 @@ public class JUnitCfgOfCreate extends JPanel {
         jpCodeGen.add(leftColumn);
         jpCodeGen.add(Box.createHorizontalStrut(12));
         jpCodeGen.add(rightColumn);
-    }
-    
-    /**
-     * Creates a labelled group of checkboxes.
-     *
-     * @param  title  title for the group of checkboxes
-     * @param  elements  checkboxes - members of the group
-     * @return  visual component representing the group
-     */
-    private static JComponent createChkBoxGroup(String title,
-                                                JCheckBox[] elements) {
-        
-        /* create a component representing the group without title: */
-        JComponent content;
-        if (elements.length == 1) {
-            content = elements[0];
-        } else {
-            content = new JPanel(new GridLayout(0, 1, 0, 5));
-            for (int i = 0; i < elements.length; i++) {
-                content.add(elements[i]);
-            }
-        }
-        
-        /* add the title and insets to the group: */
-        JPanel result = new JPanel(new BorderLayout());
-        result.add(new JLabel(title), BorderLayout.NORTH);
-        addBorder(content, BorderFactory.createEmptyBorder(6, 12, 0, 0));
-        result.add(content, BorderLayout.CENTER);
-        
-        /*
-         * restrict the size so that the component is not resized when put
-         * into a container layed out by BoxLayout:
-         */
-        result.setMaximumSize(result.getPreferredSize());
-        
-        return result;
-    }
-    
-    /**
-     * Adds a given border to a given component.
-     * If the component already has some border, the given border is put
-     * around the existing border.
-     *
-     * @param  component  component the border should be added to
-     * @param  border  the border to be added
-     */
-    private static void addBorder(JComponent component,
-                                  Border newBorder) {
-        Border currentBorder = component.getBorder();
-        if (currentBorder == null) {
-            component.setBorder(newBorder);
-        } else {
-            component.setBorder(BorderFactory.createCompoundBorder(
-                    newBorder,          //outside
-                    currentBorder));    //inside
-        }
     }
     
     /**

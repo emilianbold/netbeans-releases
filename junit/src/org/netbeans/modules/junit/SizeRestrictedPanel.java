@@ -13,6 +13,10 @@
 
 package org.netbeans.modules.junit;
 
+import java.awt.Dimension;
+import java.awt.LayoutManager;
+import javax.swing.JPanel;
+
 /**
  * Panel whose dimension can be restricted by its preferred size.
  * It is supposed to be used in containers using <code>BoxLayout</code>.
@@ -20,7 +24,7 @@ package org.netbeans.modules.junit;
  * @see  javax.swing.BoxLayout  BoxLayout
  * @author  Marian Petras
  */
-class SizeRestrictedPanel extends javax.swing.JPanel {
+public class SizeRestrictedPanel extends JPanel {
     
     /** whether the panel's width is restricted */
     private final boolean widthRestriction;
@@ -53,7 +57,7 @@ class SizeRestrictedPanel extends javax.swing.JPanel {
      *
      * @param  layoutMgr  layout manager for this panel
      */
-    public SizeRestrictedPanel(java.awt.LayoutManager layoutMgr) {
+    public SizeRestrictedPanel(LayoutManager layoutMgr) {
         this(layoutMgr, true, true);
     }
     
@@ -65,7 +69,7 @@ class SizeRestrictedPanel extends javax.swing.JPanel {
      * @param  widthRestriction  whether the panel's width should be restricted
      * @param  heightRestriction whether the panel's height should be restricted
      */
-    public SizeRestrictedPanel(java.awt.LayoutManager layoutMgr,
+    public SizeRestrictedPanel(LayoutManager layoutMgr,
                                boolean widthRestriction,
                                boolean heightRestriction) {
         super(layoutMgr);
@@ -82,7 +86,7 @@ class SizeRestrictedPanel extends javax.swing.JPanel {
      *          and then modified according to restrictions specified
      *          by the constructor's parameters
      */
-    public java.awt.Dimension getMaximumSize() {
+    public Dimension getMaximumSize() {
         if (widthRestriction && heightRestriction) {    //both true
             return getPreferredSize();
         }
@@ -90,7 +94,7 @@ class SizeRestrictedPanel extends javax.swing.JPanel {
             return super.getMaximumSize();
         }
         
-        java.awt.Dimension maximumSize = super.getMaximumSize();
+        Dimension maximumSize = super.getMaximumSize();
         if (widthRestriction) {
             maximumSize.width = getPreferredSize().width;
         } else {
