@@ -46,9 +46,15 @@ public class MainClassChooser extends JPanel {
 
     private static final Node NO_CLASSES_NODE = new AbstractNode (Children.LEAF);
     private ChangeListener changeListener;
+    private String dialogSubtitle = null;
             
     /** Creates new form MainClassChooser */
     public MainClassChooser (FileObject sourcesRoot) {
+        this (sourcesRoot, null);
+    }
+
+    public MainClassChooser (FileObject sourcesRoot, String subtitle) {
+        dialogSubtitle = subtitle;
         initComponents();
         initClassesView (sourcesRoot);
         NO_CLASSES_NODE.setName (NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_NO_CLASSES_NODE")); // NOI18N
@@ -80,6 +86,9 @@ public class MainClassChooser extends JPanel {
             public void mouseEntered (MouseEvent e) {}
             public void mouseExited (MouseEvent e) {}
         });
+        if (dialogSubtitle != null) {
+            jLabel1.setText (dialogSubtitle);
+        }
     }
     
     // XXX temporary obtain the main classes in project's sources
