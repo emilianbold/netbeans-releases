@@ -166,7 +166,10 @@ stringvalue="org.netbeans.modules.web.core.Bundle"/>
           </file>
       </folder>
       <folder name="Javadoc">
-          <file name="org-netbeans-modules-web-core-resources-javadoc_servletjsp.xml" url="javadoc-servletjsp.xml">
+          <file name="org-netbeans-modules-web-core-resources-javadoc_servlet.xml" url="javadoc-servlet.xml">
+              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />
+          </file>
+          <file name="org-netbeans-modules-web-core-resources-javadoc_jsp.xml" url="javadoc-jsp.xml">
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />
           </file>
       </folder> <!-- Javadoc -->

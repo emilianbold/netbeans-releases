@@ -80,7 +80,8 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="release" depends="init">
     <!-- javadoc -->
-    <copy file="../external/servlet23jsp12-docs.zip" todir="netbeans/docs"/>
+    <copy file="../external/servlet24-docs.zip" todir="netbeans/docs"/>
+    <copy file="../external/jsp20-docs.zip" todir="netbeans/docs"/>
   </target>
 
   <target name="netbeans" depends="jars,release">
