@@ -83,7 +83,7 @@ public final class XMLUtil extends Object {
     }
     
     static void write(Document doc, Writer out) throws IOException {
-        write( doc, out, null );
+        write( doc, out, "UFT-8" );
     }
         
     private static void write(Document doc, Object out, String encoding) throws IOException {
@@ -143,7 +143,7 @@ public final class XMLUtil extends Object {
                         detectedEncoding = ((OutputStreamWriter)out).getEncoding();  
                         // no general way how to transorm XML encoding names to Java names
                         // and vice versa
-                        detectedEncoding = null;
+//                        detectedEncoding = null;
                     } else {
                         detectedEncoding = null;
                     }
