@@ -36,7 +36,14 @@ implements TableOwnerOperations
 			String[] filter = new String[] {"TABLE"};
 			String catalog = (String)get(DatabaseNode.CATALOG);
 //			ResultSet rs = dmd.getTables(catalog, getUser(), null, filter);
-			ResultSet rs = dmd.getTables(catalog, dmd.getUserName(), null, filter);
+
+//je to BARBARSTVI, po beta 6 rozumne prepsat
+ResultSet rs;
+if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+	rs = dmd.getTables(catalog, null, null, filter);
+else
+	rs = dmd.getTables(catalog, dmd.getUserName(), null, filter);
+	
 			while (rs.next()) {
 				DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, rs);
 				if (info != null) {
@@ -63,7 +70,14 @@ implements TableOwnerOperations
 			boolean uc = dmd.storesUpperCaseIdentifiers();
 			String cname = (uc ? tname.toUpperCase() : tname.toLowerCase());
 //			ResultSet rs = dmd.getTables(catalog, getUser(), cname, filter);
-			ResultSet rs = dmd.getTables(catalog, dmd.getUserName(), cname, filter);
+
+//je to BARBARSTVI, po beta 6 rozumne prepsat
+ResultSet rs;
+if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+	rs = dmd.getTables(catalog, null, cname, filter);
+else
+	rs = dmd.getTables(catalog, dmd.getUserName(), cname, filter);
+	
 			rs.next();
 			DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, rs);
 			rs.close();
@@ -130,6 +144,7 @@ implements TableOwnerOperations
 }
 /*
  * <<Log>>
+ *  11   Gandalf   1.10        11/15/99 Radko Najman    MS ACCESS
  *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         10/8/99  Radko Najman    getUser() method 

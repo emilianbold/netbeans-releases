@@ -83,7 +83,14 @@ public class ColumnNodeInfo extends DatabaseNodeInfo
 			} else throw new DatabaseException("unknown code "+code);
 
 //			ResultSet rs = dmd.getColumns((String)get(DatabaseNode.CATALOG), getUser(), (String)get(DatabaseNode.TABLE), (String)get(code));
-			ResultSet rs = dmd.getColumns((String)get(DatabaseNode.CATALOG), dmd.getUserName(), (String)get(DatabaseNode.TABLE), (String)get(code));
+
+//je to BARBARSTVI, po beta 6 rozumne prepsat
+ResultSet rs;
+if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+	rs = dmd.getColumns((String)get(DatabaseNode.CATALOG), null, (String)get(DatabaseNode.TABLE), (String)get(code));
+else
+	rs = dmd.getColumns((String)get(DatabaseNode.CATALOG), dmd.getUserName(), (String)get(DatabaseNode.TABLE), (String)get(code));
+			
 			rs.next();
 			
 			col.setColumnType(rs.getInt(5));
@@ -210,6 +217,7 @@ public class ColumnNodeInfo extends DatabaseNodeInfo
 
 /*
  * <<Log>>
+ *  11   Gandalf   1.10        11/15/99 Radko Najman    MS ACCESS
  *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         10/8/99  Radko Najman    getUser() method 

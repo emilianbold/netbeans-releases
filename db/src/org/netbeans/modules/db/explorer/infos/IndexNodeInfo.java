@@ -36,7 +36,14 @@ public class IndexNodeInfo extends TableNodeInfo
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
 //			ResultSet rs = dmd.getIndexInfo(catalog,getUser(),table, true, false);
-			ResultSet rs = dmd.getIndexInfo(catalog, dmd.getUserName(), table, true, false);
+
+//je to BARBARSTVI, po beta 6 rozumne prepsat
+ResultSet rs;
+if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+	rs = dmd.getIndexInfo(catalog, null, table, true, false);
+else
+	rs = dmd.getIndexInfo(catalog, dmd.getUserName(), table, true, false);
+			
 			Hashtable ixmap = new Hashtable();
 			while (rs.next()) {
 //				System.out.println("index column "+rs.getString("INDEX_NAME"));
@@ -90,6 +97,7 @@ public class IndexNodeInfo extends TableNodeInfo
 
 /*
  * <<Log>>
+ *  11   Gandalf   1.10        11/15/99 Radko Najman    MS ACCESS
  *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         10/12/99 Radko Najman    debug messages removed

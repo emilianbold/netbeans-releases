@@ -34,7 +34,14 @@ public class ViewListNodeInfo extends DatabaseNodeInfo
 			String[] filter = new String[] {"VIEW"};
 			String catalog = (String)get(DatabaseNode.CATALOG);
 //			ResultSet rs = dmd.getTables(catalog, getUser(), null, filter);
-			ResultSet rs = dmd.getTables(catalog, dmd.getUserName(), null, filter);
+
+//je to BARBARSTVI, po beta 6 rozumne prepsat
+ResultSet rs;
+if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+	rs = dmd.getTables(catalog, null, null, filter);
+else
+	rs = dmd.getTables(catalog, dmd.getUserName(), null, filter);
+	
 			while (rs.next()) {
 				DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, rs);
 				if (info != null) {
@@ -62,7 +69,14 @@ public class ViewListNodeInfo extends DatabaseNodeInfo
 			boolean uc = dmd.storesUpperCaseIdentifiers();
 			String cname = (uc ? name.toUpperCase() : name.toLowerCase());
 //			ResultSet rs = dmd.getTables(catalog, getUser(), cname, filter);
-			ResultSet rs = dmd.getTables(catalog, dmd.getUserName(), cname, filter);
+
+//je to BARBARSTVI, po beta 6 rozumne prepsat
+ResultSet rs;
+if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+	rs = dmd.getTables(catalog, null, cname, filter);
+else
+	rs = dmd.getTables(catalog, dmd.getUserName(), cname, filter);
+			
 			rs.next();
 			DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, rs);
 			if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
@@ -76,6 +90,7 @@ public class ViewListNodeInfo extends DatabaseNodeInfo
 
 /*
  * <<Log>>
+ *  10   Gandalf   1.9         11/15/99 Radko Najman    MS ACCESS
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  8    Gandalf   1.7         10/8/99  Radko Najman    getUser() method 

@@ -652,8 +652,6 @@
   
     TypeMap = {
       java.sql.Types.BIGINT = BIGINT;  
-//      java.sql.Types.BINARY = BINARY;  
-//      java.sql.Types.BIT = BOOLEAN;
       java.sql.Types.BLOB = BLOB;  //JDBC 2.0 A type representing an SQL Binary Large Object
       java.sql.Types.CHAR = CHAR;    
       java.sql.Types.CLOB = CLOB;  //JDBC 2.0 A type representing an SQL Character Large Object
@@ -662,20 +660,18 @@
       java.sql.Types.DOUBLE = DOUBLE;
       java.sql.Types.FLOAT = FLOAT;
       java.sql.Types.REAL = REAL;    
-//      java.sql.Types.LONGVARBINARY = LONGVARBINARY;
       java.sql.Types.LONGVARCHAR = "LONG VARCHAR";
       java.sql.Types.NUMERIC = NUMERIC;      
       java.sql.Types.SMALLINT = SMALLINT;  
       java.sql.Types.TIME = TIME;    
       java.sql.Types.TIMESTAMP = TIMESTAMP;  
-//      java.sql.Types.TINYINT = TINYINT;    
       java.sql.Types.VARCHAR = VARCHAR;  
       java.sql.Types.INTEGER = INTEGER;
     };
 
     Column = {
       Class = com.netbeans.ddl.impl.TableColumn;
-      Format = "{column.name} {column.type}";
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}]";
     };
 
 //
@@ -690,11 +686,6 @@
       };
     };
 
-    DropTableCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
-      Format = "drop table [{object.owner}.]{object.name}";
-    };
-    
   };
 
 //  ********************************************************************************
@@ -748,5 +739,16 @@
     };
   };
 
+//  ********************************************************************************
+//
+//  Microsoft Access
+//
+//  ********************************************************************************/
+
+  "ACCESS" = {
+    DatabaseProductName = "ACCESS";
+    DatabaseProductVersion = 2;
+    
+  };
   
 }

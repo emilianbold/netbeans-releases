@@ -35,7 +35,14 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
 //			ResultSet rs = dmd.getIndexInfo(catalog,getUser(),table, true, false);
-			ResultSet rs = dmd.getIndexInfo(catalog, dmd.getUserName(), table, true, false);
+
+//je to BARBARSTVI, po beta 6 rozumne prepsat
+ResultSet rs;
+if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+	rs = dmd.getIndexInfo(catalog, null, table, true, false);
+else
+	rs = dmd.getIndexInfo(catalog, dmd.getUserName(), table, true, false);
+			
 			Set ixmap = new HashSet();
 			while (rs.next()) {
 				if (rs.getString("INDEX_NAME") != null) {
@@ -63,7 +70,14 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
 //			ResultSet rs = dmd.getIndexInfo(catalog,getUser(),table, true, false);
-			ResultSet rs = dmd.getIndexInfo(catalog, dmd.getUserName(), table, true, false);
+
+//je to BARBARSTVI, po beta 6 rozumne prepsat
+ResultSet rs;
+if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+	rs = dmd.getIndexInfo(catalog, null, table, true, false);
+else
+	rs = dmd.getIndexInfo(catalog, dmd.getUserName(), table, true, false);
+			
 			while (rs.next()) {
 				String findex = rs.getString("INDEX_NAME");
 				if (findex != null) {
@@ -83,6 +97,7 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 
 /*
  * <<Log>>
+ *  10   Gandalf   1.9         11/15/99 Radko Najman    MS ACCESS
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  8    Gandalf   1.7         10/8/99  Radko Najman    getUser() method 

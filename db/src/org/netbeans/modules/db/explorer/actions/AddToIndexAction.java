@@ -51,7 +51,14 @@ public class AddToIndexAction extends DatabaseAction
 
 			HashSet ixrm = new HashSet();
 //			ResultSet rs = dmd.getIndexInfo(catalog,nfo.getUser(),tablename, true, false);
-			ResultSet rs = dmd.getIndexInfo(catalog, dmd.getUserName(), tablename, true, false);
+
+//je to BARBARSTVI, po beta 6 rozumne prepsat
+ResultSet rs;
+if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+	rs = dmd.getIndexInfo(catalog, null, tablename, true, false);
+else
+	rs = dmd.getIndexInfo(catalog, dmd.getUserName(), tablename, true, false);
+	
 			while (rs.next()) {
 				String ixname = rs.getString("INDEX_NAME");
 				if (ixname != null) {
@@ -65,7 +72,13 @@ public class AddToIndexAction extends DatabaseAction
 
 			Vector cols = new Vector(5);
 //			rs = dmd.getColumns(catalog, nfo.getUser(), tablename, null);
-			rs = dmd.getColumns(catalog, dmd.getUserName(), tablename, null);
+
+//je to BARBARSTVI, po beta 6 rozumne prepsat
+if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+	rs = dmd.getColumns(catalog, null, tablename, null);
+else
+	rs = dmd.getColumns(catalog, dmd.getUserName(), tablename, null);
+	
 			while (rs.next()) {
 				String colname = rs.getString("COLUMN_NAME");
 				if (!ixrm.contains(colname)) cols.add(colname);
@@ -99,6 +112,7 @@ public class AddToIndexAction extends DatabaseAction
 }
 /*
  * <<Log>>
+ *  9    Gandalf   1.8         11/15/99 Radko Najman    MS ACCESS
  *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  7    Gandalf   1.6         10/8/99  Radko Najman    getUser() method 

@@ -43,12 +43,21 @@ public class TableNodeInfo extends DatabaseNodeInfo
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 //			String user = getUser();
-			String user = dmd.getUserName();
+
+//je to BARBARSTVI, po beta 6 rozumne prepsat
+String user;
+if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+	user = null;
+else
+	user = dmd.getUserName();
+
 			String table = (String)get(DatabaseNode.TABLE);
         
 			// Primary keys
 				
+//BARBARSTVI podruhe
 			Hashtable ihash = new Hashtable(); 		
+if (! dmd.getDatabaseProductName().trim().equals("ACCESS")) {
 			rs = dmd.getPrimaryKeys(catalog,user,table);
 			while (rs.next()) {
 				DatabaseNodeInfo iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PRIMARY_KEY, rs);
@@ -56,6 +65,7 @@ public class TableNodeInfo extends DatabaseNodeInfo
 				ihash.put(iname,iinfo);
 			}
 			rs.close();
+}
 
 			// Indexes
 				
@@ -81,18 +91,28 @@ public class TableNodeInfo extends DatabaseNodeInfo
 */        
 			// Columns
 
-			rs = dmd.getColumns(catalog,user,table,columnname);
+			rs = dmd.getColumns(catalog, user, table, columnname);
 			while (rs.next()) {
 				DatabaseNodeInfo nfo;
+				
+//BARBARSTVI potreti - nemuzu zavolat 2x getObject na stejny index (druhe volani je v createNodeInfo())
+if (! dmd.getDatabaseProductName().trim().equals("ACCESS")) {
 				String cname = (String)rs.getObject(4);
-				if (ihash.containsKey(cname)) {
-					nfo = (DatabaseNodeInfo)ihash.get(cname);
-				} else if (ixhash.containsKey(cname)) {
-					nfo = (DatabaseNodeInfo)ixhash.get(cname);
+
+  			if (ihash.containsKey(cname))
+				  nfo = (DatabaseNodeInfo)ihash.get(cname);
+			  else
+  			  if (ixhash.containsKey(cname))
+				    nfo = (DatabaseNodeInfo)ixhash.get(cname);
 //				} else if (fhash.containsKey(cname)) {
 //					nfo = (DatabaseNodeInfo)fhash.get(cname);
-				} else nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, rs);
-				children.add(nfo);
+			    else
+  			    nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, rs);
+} else
+  nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, rs);
+  			    
+			  children.add(nfo);
+
 			}
 			rs.close();
 
@@ -183,7 +203,14 @@ public class TableNodeInfo extends DatabaseNodeInfo
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 //			String user = getUser();
-			String user = dmd.getUserName();
+
+//je to BARBARSTVI, po beta 6 rozumne prepsat
+String user;
+if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+	user = null;
+else
+	user = dmd.getUserName();
+
 			String table = (String)get(DatabaseNode.TABLE);
 			
 			initChildren(chvec, tname);
@@ -200,6 +227,7 @@ public class TableNodeInfo extends DatabaseNodeInfo
 }
 /*
  * <<Log>>
+ *  13   Gandalf   1.12        11/15/99 Radko Najman    MS ACCESS
  *  12   Gandalf   1.11        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  11   Gandalf   1.10        10/8/99  Radko Najman    getUser() method 

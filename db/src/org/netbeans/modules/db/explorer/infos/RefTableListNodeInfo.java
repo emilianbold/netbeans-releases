@@ -34,7 +34,14 @@ public class RefTableListNodeInfo extends DatabaseNodeInfo
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 //			String user = getUser();
-			String user = dmd.getUserName();
+
+//je to BARBARSTVI, po beta 6 rozumne prepsat
+String user;
+if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+	user = null;
+else
+	user = dmd.getUserName();
+			
 			String table = (String)get(DatabaseNode.TABLE);
 
 			rs = dmd.getExportedKeys(catalog, user, table);
@@ -52,6 +59,7 @@ public class RefTableListNodeInfo extends DatabaseNodeInfo
 
 /*
  * <<Log>>
+ *  10   Gandalf   1.9         11/15/99 Radko Najman    MS ACCESS
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  8    Gandalf   1.7         10/8/99  Radko Najman    getUser() method 

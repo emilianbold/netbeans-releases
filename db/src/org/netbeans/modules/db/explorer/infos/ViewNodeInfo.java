@@ -37,7 +37,14 @@ public class ViewNodeInfo extends DatabaseNodeInfo
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 //			String user = getUser();
-			String user = dmd.getUserName();
+
+//je to BARBARSTVI, po beta 6 rozumne prepsat
+String user;
+if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+	user = null;
+else
+	user = dmd.getUserName();
+
 			String view = (String)get(DatabaseNode.VIEW);
                 
 			// Columns
@@ -93,6 +100,7 @@ public class ViewNodeInfo extends DatabaseNodeInfo
 }
 /*
  * <<Log>>
+ *  9    Gandalf   1.8         11/15/99 Radko Najman    MS ACCESS
  *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  7    Gandalf   1.6         10/8/99  Radko Najman    getUser() method 
