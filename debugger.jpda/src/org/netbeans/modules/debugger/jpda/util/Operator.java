@@ -59,11 +59,11 @@ public class Operator {
               }
               Executor exec = null;
               if (e.request () == null) {
-                System.out.println ("EVENT: " + e + " REQUEST: null");          
+                //S ystem.out.println ("EVENT: " + e + " REQUEST: null");          
               } else 
                 exec = (Executor) e.request ().getProperty ("executor");
               
-              printEvent (e, exec);
+              //printEvent (e, exec);
 
               // safe invocation of user action
               if (exec != null) 
@@ -71,11 +71,9 @@ public class Operator {
                   exec.exec (e);
                 } catch (Exception ex) {
                   ex.printStackTrace ();
-                } catch (Error ex) {
-                  ex.printStackTrace ();
                 }
             }
-            System.out.println ("END (" + set.suspendPolicy () + ") ===========================================================================");
+            //S ystem.out.println ("END (" + set.suspendPolicy () + ") ===========================================================================");
             if (resume) {
               resume = false;
               virtualMachine.resume ();
@@ -102,30 +100,42 @@ public class Operator {
   }
   
   private void printEvent (Event e, Executor exec) {
-    if (e instanceof ClassPrepareEvent) {
-      System.out.println ("EVENT: ClassPrepareEvent " + ((ClassPrepareEvent) e).referenceType ());
-    } else
-    if (e instanceof ClassUnloadEvent) {
-      System.out.println ("EVENT: ClassUnloadEvent " + ((ClassUnloadEvent) e).className ());
-    } else
-    if (e instanceof ThreadStartEvent) {
-      System.out.println ("EVENT: ThreadStartEvent " + ((ThreadStartEvent) e).thread ());
-    } else
-    if (e instanceof ThreadDeathEvent) {
-      System.out.println ("EVENT: ThreadDeathEvent " + ((ThreadDeathEvent) e).thread ());
-    } else
-    if (e instanceof BreakpointEvent) {
-      System.out.println ("EVENT: BreakpointEvent " + ((BreakpointEvent) e).thread () + " : " + ((BreakpointEvent) e).location ());
-    } else
-    if (e instanceof StepEvent) {
-      System.out.println ("EVENT: BreakpointEvent " + ((StepEvent) e).thread () + " : " + ((StepEvent) e).location ());
-    } else
-      System.out.println ("EVENT: " + e + " : " + exec);          
+    try {
+      if (e instanceof ClassPrepareEvent) {
+        System.out.println ("EVENT: ClassPrepareEvent " + ((ClassPrepareEvent) e).referenceType ());
+      } else
+      if (e instanceof ClassUnloadEvent) {
+        System.out.println ("EVENT: ClassUnloadEvent " + ((ClassUnloadEvent) e).className ());
+      } else
+      if (e instanceof ThreadStartEvent) {
+        try {
+          System.out.println ("EVENT: ThreadStartEvent " + ((ThreadStartEvent) e).thread ());
+        } catch (Exception ex) {
+          System.out.println ("EVENT: ThreadStartEvent1 " + e);
+        }
+      } else
+      if (e instanceof ThreadDeathEvent) {
+        try {
+          System.out.println ("EVENT: ThreadDeathEvent " + ((ThreadDeathEvent) e).thread ());
+        } catch (Exception ex) {
+          System.out.println ("EVENT: ThreadDeathEvent1 " + e);
+        }
+      } else
+      if (e instanceof BreakpointEvent) {
+        System.out.println ("EVENT: BreakpointEvent " + ((BreakpointEvent) e).thread () + " : " + ((BreakpointEvent) e).location ());
+      } else
+      if (e instanceof StepEvent) {
+        System.out.println ("EVENT: BreakpointEvent " + ((StepEvent) e).thread () + " : " + ((StepEvent) e).location ());
+      } else
+        System.out.println ("EVENT: " + e + " : " + exec);          
+    } catch (Exception ex) {
+    }
   }
 }
 
 /*
  * Log
+ *  7    Gandalf   1.6         11/9/99  Jan Jancura     sout commented out.
  *  6    Gandalf   1.5         11/8/99  Jan Jancura     Somma classes renamed
  *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
