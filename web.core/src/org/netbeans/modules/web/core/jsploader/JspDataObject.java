@@ -84,6 +84,7 @@ import org.openidex.nodes.looks.Look;
 import org.openidex.nodes.looks.DefaultLook;
 import org.openidex.nodes.looks.LookNode;
 import org.openidex.nodes.looks.CompositeLook;
+import org.netbeans.modules.web.core.WebExecSupport;
 
 /** Object that provides main functionality for internet data loader.
 *
@@ -987,6 +988,11 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         for (int i = 0; i < included.length; i++) {
             IncludedPagesSupport.setIncludedIn(getPrimaryFile(), included[i]);
         }
+    }
+    
+    public void setQueryString (String params) throws java.io.IOException {
+        WebExecSupport.setQueryString(getPrimaryEntry ().getFile (), params);
+        firePropertyChange (ServletDataNode.PROP_REQUEST_PARAMS, null, null);
     }
     
     ////// -------- INNER CLASSES ---------

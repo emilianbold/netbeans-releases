@@ -132,7 +132,6 @@ public class JspLoader extends UniFileLoader {
             obj.getCookieSet0 ().add (es);
         }
         
-        obj.getCookieSet0 ().add (new QueryStringCookie() {});
         obj.getCookieSet0 ().add (new TagLibParseSupport(obj));
 
         if (isFileBased) {

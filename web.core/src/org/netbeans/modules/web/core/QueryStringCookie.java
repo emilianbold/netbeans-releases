@@ -24,4 +24,5 @@ import org.openide.nodes.Node;
 */
 public interface QueryStringCookie extends Node.Cookie {
 
+    public void setQueryString (String params) throws java.io.IOException;
 }

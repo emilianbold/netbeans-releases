@@ -44,6 +44,7 @@ public class EditQueryStringAction extends CookieAction {
     */
     public void performAction (final Node[] activatedNodes) {
         DataObject dObj = (DataObject)(activatedNodes[0]).getCookie(DataObject.class);
+        QueryStringCookie qsc = (QueryStringCookie)activatedNodes[0].getCookie(QueryStringCookie.class);
 
         NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
                                              NbBundle.getBundle(EditQueryStringAction.class).getString("CTL_QueryStringLabel"),
@@ -53,8 +54,8 @@ public class EditQueryStringAction extends CookieAction {
 
         if (NotifyDescriptor.OK_OPTION.equals(TopManager.getDefault().notify(dlg))) {
             try {
-                WebExecSupport.setQueryString(dObj.getPrimaryFile(), dlg.getInputText());
-                // PENDING - am I able to fire the change so the node's propertysheet chnges its value ?
+                // WebExecSupport.setQueryString(dObj.getPrimaryFile(), dlg.getInputText());
+                qsc.setQueryString (dlg.getInputText());
             }
             catch (IOException e) {
                 TopManager.getDefault().notifyException(e);
@@ -69,35 +70,13 @@ public class EditQueryStringAction extends CookieAction {
         return MODE_EXACTLY_ONE;
     }
 
-    /** Adds test of executor for JavaDataObjects */
-    protected boolean enable (Node[] activatedNodes) {
-        if (super.enable(activatedNodes)) {
-            Node.Cookie c = (activatedNodes[0]).getCookie(QueryStringCookie.class);
-            if (c != null)
-                return true;
-            DataObject dObj = (DataObject)(activatedNodes[0]).getCookie(DataObject.class);
-            if (dObj instanceof MultiDataObject) {
-                Executor exec = ExecSupport.getExecutor(((MultiDataObject)dObj).getPrimaryEntry());
-                if (exec == null) {
-                    ServerExecSupport wes = (ServerExecSupport)dObj.getCookie(ServerExecSupport.class);
-                    if (wes != null)
-                        exec = wes.defaultExecutor();
-                }
-                return ((exec != null) && (exec instanceof QueryStringCookie));
-            }
-            else
-                return false;
-        }
-        else
-            return false;
-    }
-
     /**
-    * Returns ThreadCookie
+    * Returns QueryStringCookie
     */
     protected Class[] cookieClasses () {
         return new Class [] {
-                   ExecCookie.class, DataObject.class
+                   // ExecCookie.class, DataObject.class
+                   QueryStringCookie.class 
                };
     }
 
