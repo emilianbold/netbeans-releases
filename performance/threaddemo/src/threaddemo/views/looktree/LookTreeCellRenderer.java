@@ -25,9 +25,6 @@ import org.netbeans.spi.looks.Look;
  */
 class LookTreeCellRenderer extends DefaultTreeCellRenderer {
     
-    public LookTreeCellRenderer() {
-    }
-    
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         LookTreeNode n = (LookTreeNode)value;
         Look l = n.getLook();

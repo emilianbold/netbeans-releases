@@ -13,9 +13,6 @@
 
 package threaddemo.data;
 
-import java.awt.EventQueue;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.lang.ref.*;
 import java.lang.reflect.InvocationTargetException;
@@ -26,8 +23,6 @@ import javax.swing.event.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.SaveCookie;
-import org.openide.text.NbDocument;
 import org.openide.util.*;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -207,7 +202,6 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
         Document newDom = (Document)derivedDelta;
         // ignoring oldValue, returning same newDom
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CharArrayWriter wr = new CharArrayWriter();
         try {
             XMLUtil.write(newDom, baos, "UTF-8");
         } catch (IOException ioe) {

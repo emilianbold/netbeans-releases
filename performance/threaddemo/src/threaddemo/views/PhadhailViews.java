@@ -27,13 +27,10 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import threaddemo.model.Phadhail;
 import org.netbeans.api.nodes2looks.Nodes;
-import org.openide.actions.PopupAction;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
-import org.openide.util.actions.CallbackSystemAction;
-import org.openide.util.actions.SystemAction;
 import threaddemo.locking.LockAction;
 import threaddemo.locking.Locks;
 
@@ -47,14 +44,14 @@ public class PhadhailViews {
     private PhadhailViews() {}
     
     private static Component nodeBasedView(Node root) {
-        root = new EQReplannedNode(root);
+        Node root2 = new EQReplannedNode(root);
         ExplorerPanel p = new ExplorerPanel();
         p.setLayout(new BorderLayout());
         JComponent tree = new BeanTreeView();
         p.add(tree, BorderLayout.CENTER);
-        p.getExplorerManager().setRootContext(root);
+        p.getExplorerManager().setRootContext(root2);
         try {
-            p.getExplorerManager().setSelectedNodes(new Node[] {root});
+            p.getExplorerManager().setSelectedNodes(new Node[] {root2});
         } catch (PropertyVetoException pve) {
             pve.printStackTrace();
         }

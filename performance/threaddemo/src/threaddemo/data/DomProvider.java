@@ -15,7 +15,6 @@ package threaddemo.data;
 
 import java.io.IOException;
 import javax.swing.event.ChangeListener;
-import org.openide.util.Task;
 import org.w3c.dom.Document;
 import threaddemo.locking.Lock;
 

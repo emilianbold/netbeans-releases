@@ -132,11 +132,7 @@ public class ElementLook extends Look implements EventListener {
     
     public boolean canDestroy(Object o, Lookup env) {
         Element e = (Element)o;
-        if (e.getParentNode() instanceof Document) {
-            return false;
-        } else {
-            return true;
-        }
+        return !(e.getParentNode() instanceof Document);
     }
     
     public void destroy(Object o, Lookup env) {

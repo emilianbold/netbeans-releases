@@ -13,11 +13,8 @@
 
 package threaddemo.locking;
 
-import java.awt.EventQueue;
-import java.io.IOException;
 import java.lang.ref.*;
 import java.util.*;
-import org.openide.ErrorManager;
 import junit.framework.*;
 
 /**

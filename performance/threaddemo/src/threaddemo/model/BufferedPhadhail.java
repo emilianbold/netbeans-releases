@@ -137,20 +137,20 @@ final class BufferedPhadhail implements Phadhail, PhadhailListener {
         // clear cache
         kids = null;
         if (listeners != null) {
-            ev = PhadhailEvent.create(this);
+            PhadhailEvent ev2 = PhadhailEvent.create(this);
             Iterator it = listeners.iterator();
             while (it.hasNext()) {
-                ((PhadhailListener)it.next()).childrenChanged(ev);
+                ((PhadhailListener)it.next()).childrenChanged(ev2);
             }
         }
     }
     
     public void nameChanged(PhadhailNameEvent ev) {
         if (listeners != null) {
-            ev = PhadhailNameEvent.create(this, ev.getOldName(), ev.getNewName());
+            PhadhailNameEvent ev2 = PhadhailNameEvent.create(this, ev.getOldName(), ev.getNewName());
             Iterator it = listeners.iterator();
             while (it.hasNext()) {
-                ((PhadhailListener)it.next()).nameChanged(ev);
+                ((PhadhailListener)it.next()).nameChanged(ev2);
             }
         }
     }

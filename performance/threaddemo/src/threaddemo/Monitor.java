@@ -39,7 +39,6 @@ final class Monitor extends JPanel implements ActionListener {
     private final JTextField blockageField;
     private final JTextField heapField;
     private static final NumberFormat format = new DecimalFormat("0.00");
-    private int tick = 0;
     private JCheckBox heapLiveCheckBox;
     private boolean heapLive;
     

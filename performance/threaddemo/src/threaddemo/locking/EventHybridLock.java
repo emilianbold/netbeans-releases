@@ -13,7 +13,6 @@
 
 package threaddemo.locking;
 
-import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 

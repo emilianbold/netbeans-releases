@@ -18,10 +18,7 @@ import org.netbeans.spi.looks.Look;
 import org.netbeans.spi.looks.LookSelector;
 import org.netbeans.modules.looks.LookListener;
 import org.netbeans.modules.looks.LookEvent;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.enum.AlterEnumeration;
-import org.openide.util.enum.EmptyEnumeration;
 
 /**
  * One node in a tree of looks.

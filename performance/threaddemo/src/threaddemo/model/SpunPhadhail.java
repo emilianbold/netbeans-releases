@@ -17,7 +17,6 @@ import java.awt.EventQueue;
 import java.lang.ref.*;
 import java.lang.reflect.*;
 import java.util.*;
-import org.openide.util.Queue;
 import spin.*;
 import threaddemo.locking.Locks;
 
@@ -144,16 +143,16 @@ final class SpunPhadhail extends Spin {
                 assert EventQueue.isDispatchThread() : mname;
                 assert args != null;
                 assert args.length == 1;
+                Object arg2;
                 // Need to translate the original Phadhail event source to the proxy.
                 if (mname.equals("childrenChanged")) {
-                    PhadhailEvent orig = (PhadhailEvent)args[0];
-                    args[0] = PhadhailEvent.create(ph);
+                    arg2 = PhadhailEvent.create(ph);
                 } else {
                     assert mname.equals("nameChanged");
                     PhadhailNameEvent orig = (PhadhailNameEvent)args[0];
-                    args[0] = PhadhailNameEvent.create(ph, orig.getOldName(), orig.getNewName());
+                    arg2 = PhadhailNameEvent.create(ph, orig.getOldName(), orig.getNewName());
                 }
-                return super.invoke(proxy, method, args);
+                return super.invoke(proxy, method, new Object[] {arg2});
             }
         }
     

@@ -14,8 +14,6 @@
 package threaddemo.views.looktree;
 
 import java.awt.event.*;
-import javax.swing.Action;
-import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.event.*;
 import org.netbeans.spi.looks.LookSelector;

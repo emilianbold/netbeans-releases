@@ -13,7 +13,6 @@
 
 package threaddemo.data;
 
-import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
 import java.io.*;

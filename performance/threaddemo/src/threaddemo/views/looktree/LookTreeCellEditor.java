@@ -17,7 +17,6 @@ import java.awt.Component;
 import java.util.EventObject;
 import javax.swing.*;
 import javax.swing.tree.*;
-import org.netbeans.spi.looks.Look;
 
 /**
  * @author Jesse Glick

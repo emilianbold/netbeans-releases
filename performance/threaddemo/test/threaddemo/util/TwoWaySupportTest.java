@@ -16,7 +16,6 @@ package threaddemo.util;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import junit.framework.TestCase;
-import org.openide.util.Mutex;
 import threaddemo.locking.Lock;
 import threaddemo.locking.Locks;
 import threaddemo.locking.PrivilegedLock;

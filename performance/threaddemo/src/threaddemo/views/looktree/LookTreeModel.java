@@ -21,8 +21,6 @@ import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.*;
 import org.netbeans.spi.looks.*;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 
 /**
  * Tree model displaying a tree of represented objects using looks.
