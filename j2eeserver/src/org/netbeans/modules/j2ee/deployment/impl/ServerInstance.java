@@ -124,15 +124,14 @@ public class ServerInstance implements Node.Cookie {
         return manager;
     }
     
-    public void refresh(boolean running) {
-        if (running) {
-            state = NbBundle.getMessage(ServerInstance.class, "LBL_StateRunning");
+    public void refresh(ServerState serverState) {
+        state = serverState.getMessage();
+        if (serverState == ServerState.RUNNING) {
             initCoTarget();
-        } else {        
-            state = NbBundle.getMessage(ServerInstance.class, "LBL_StateStopped");
+        } else if (serverState == ServerState.STOPPED) {
             reset();
         }
-        fireInstanceRefreshed(running);
+        fireInstanceRefreshed(serverState);
     }
     
     public void reset() {
@@ -257,7 +256,8 @@ public class ServerInstance implements Node.Cookie {
             boolean state = (ss != null && ss.isRunning());
             if (isRunning != state) {
                 isRunning = state;
-                refresh(state);
+                refresh(state ? ServerState.RUNNING 
+                              : ServerState.STOPPED);
             }
         } catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -475,7 +475,7 @@ public class ServerInstance implements Node.Cookie {
             }
 
             managerStartedByIde = true;
-            refresh(true);
+            refresh(ServerState.RUNNING);
             return true;
             
         } finally {
@@ -530,7 +530,7 @@ public class ServerInstance implements Node.Cookie {
             }
 
             managerStartedByIde = true;
-            refresh(true);
+            refresh(ServerState.RUNNING);
             return true;
             
         } finally {
@@ -584,7 +584,7 @@ public class ServerInstance implements Node.Cookie {
             }
             
             managerStartedByIde = false;
-            refresh(false);
+            refresh(ServerState.STOPPED);
             return true;
             
         } finally {
@@ -684,7 +684,7 @@ public class ServerInstance implements Node.Cookie {
     }
     
     public static interface RefreshListener {
-        public void handleRefresh(boolean running) ;
+        public void handleRefresh(ServerState serverState) ;
     }
     
     Vector rListeners = new Vector();
@@ -694,10 +694,10 @@ public class ServerInstance implements Node.Cookie {
     public void removeRefreshListener(RefreshListener rl) {
         rListeners.remove(rl);
     }
-    private void fireInstanceRefreshed(boolean running) {
+    private void fireInstanceRefreshed(ServerState serverState) {
         for (Iterator i=rListeners.iterator(); i.hasNext();) {
             RefreshListener rl = (RefreshListener) i.next();
-            rl.handleRefresh(running);
+            rl.handleRefresh(serverState);
         }
     }
     private void showStatusText(String msg) {

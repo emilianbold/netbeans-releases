@@ -18,20 +18,28 @@
  */
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
+import java.awt.Component;
+import java.awt.Cursor;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 import org.openide.nodes.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.*;
-import org.openide.util.actions.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.RemoveInstanceAction;
-import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
 
+import org.openide.windows.WindowManager;
+
+import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 /**
  * @author George FinKlang
  */
 
 public class InstanceNode extends AbstractNode implements ServerInstance.RefreshListener {
+    
+    private static int cursorChangeCounter = 0;
     
     protected ServerInstance instance;
     
@@ -107,13 +115,42 @@ public class InstanceNode extends AbstractNode implements ServerInstance.Refresh
     
     class Refresher implements RefreshAction.RefreshCookie {
         public void refresh() {
-            instance.reset();
-            instance.refresh(instance.isRunning());
+            // show busy cursor
+            if (cursorChangeCounter++ == 0) {
+                JFrame f = (JFrame)WindowManager.getDefault().getMainWindow();
+                Component c = f.getGlassPane();                    
+                c.setVisible(true);
+                c.setCursor(Utilities.createProgressCursor(f));
+            }
+            instance.refresh(ServerState.CHECKING);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        instance.refresh(instance.isRunning() ? ServerState.RUNNING 
+                                                              : ServerState.STOPPED);
+                    } finally {
+                        // hide busy cursor
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                if (--cursorChangeCounter == 0) {
+                                    JFrame f = (JFrame)WindowManager.getDefault().getMainWindow();
+                                    Component c = f.getGlassPane();
+                                    c.setVisible(false);
+                                    c.setCursor(null);
+                                }
+                            }
+                        });
+                    }
+                }
+            });
         }
     }
 
-    public void handleRefresh(boolean running) {
-        if (! running) {
+    public void handleRefresh(ServerState serverState) {
+        if (serverState == ServerState.CHECKING) {
+            return;
+        }
+        if (serverState != ServerState.RUNNING) {
             setChildren(new InstanceChildren(instance));
         }
         InstanceChildren ch = (InstanceChildren) getChildren();

@@ -20,6 +20,7 @@ package org.netbeans.modules.j2ee.deployment.impl.ui;
 
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.SetAsDefaultServerAction;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.impl.ServerState;
 import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.nodes.Children;
@@ -187,7 +188,11 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
         return c;
     }
     
-    public void handleRefresh(boolean running) {
+    public void handleRefresh(ServerState serverState) {
+        if (serverState == ServerState.CHECKING) {
+            setDisplayName(instance.getDisplayNameWithState());
+            return;
+        }
         //if (! running) {
             instanceTarget = null;
             resetDelegateTargetNode();
