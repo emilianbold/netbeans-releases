@@ -1155,12 +1155,16 @@ public class XMLDataObject extends MultiDataObject {
                         newID = parsedId;
                     } catch (SAXException checkStop) {
                         // stop parsing anyway
-                        String msg = "Thread:" + Thread.currentThread().getName(); //NOI18N
-                        emgr().annotate(checkStop, "DocListener should not throw SAXException but STOP one.\n" + msg);  //NOI18N
-                        emgr().notify(emgr().INFORMATIONAL, checkStop);
-                        Exception ex = checkStop.getException();
-                        if (ex != null) {
-                            emgr().notify(emgr().INFORMATIONAL, ex);
+                        if (STOP.getMessage ().equals (checkStop.getMessage ())) {
+                            newID = parsedId;
+                        } else {
+                            String msg = "Thread:" + Thread.currentThread().getName(); //NOI18N
+                            emgr().annotate(checkStop, "DocListener should not throw SAXException but STOP one.\n" + msg);  //NOI18N
+                            emgr().notify(emgr().INFORMATIONAL, checkStop);
+                            Exception ex = checkStop.getException();
+                            if (ex != null) {
+                                emgr().notify(emgr().INFORMATIONAL, ex);
+                            }
                         }
                     } catch (FileNotFoundException ex) {
                         // thrown when there is a problem with URL for example
