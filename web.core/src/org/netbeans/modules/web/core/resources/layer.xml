@@ -237,25 +237,6 @@ Microsystems, Inc. All Rights Reserved.
 
   </folder>
 
-    <folder name="UI">
-        <folder name="Services">
-            <folder name="Building">
-                <file name="ServletSettingsNode.instance">
-                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.ServletSettingsNode.getBuildingNode"/>
-                     <attr name="instanceClass" stringvalue="org.openide.nodes.Node"/>
-                </file>
-            </folder>
-            
-            <folder name="DebuggingAndExecuting">
-                <file name="ServletSettingsNode.instance">
-                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.ServletSettingsNode.getExecutionDebuggingNode"/>
-                     <attr name="instanceClass" stringvalue="org.openide.nodes.Node"/>
-                </file>
-            </folder>
-            
-        </folder>
-    </folder>
-
   <folder name="J2EE">
     <folder name="JSPParser">
     </folder>
