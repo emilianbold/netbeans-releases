@@ -15,8 +15,11 @@ package org.netbeans.beaninfo.editors;
 
 import java.beans.*;
 import java.io.File;
+import java.text.MessageFormat;
+import org.openide.ErrorManager;
 
 import org.openide.loaders.DataFolder;
+import org.openide.util.NbBundle;
 
 /**
  * 
@@ -74,12 +77,20 @@ public class DataFolderEditor extends PropertyEditorSupport {
     public void setAsText(String text) {
         if (text==null || 
             "".equals(text) || 
-            text.equals( getString ("LAB_DefaultDataFolder")) || 
+            text.equals(getString ("LAB_DefaultDataFolder")) || 
             File.pathSeparator.equals(text)) {
+            //XXX Mysterious why a real implementation of setAsText is not here
             setValue(null);
         } else {
-            throw new IllegalArgumentException();
-        }
+            //Reasonable to assume any exceptions from core/jdk editors are legit
+            IllegalArgumentException iae = new IllegalArgumentException ();
+            String msg = MessageFormat.format(
+                NbBundle.getMessage(
+                    DataFolderEditor.class, "FMT_DF_UNKNOWN"), new Object[] {text}); //NOI18N
+            ErrorManager.getDefault().annotate(iae, ErrorManager.USER, iae.getMessage(), 
+                msg, null, new java.util.Date());
+            throw iae;
+        }        
     }
 
     public boolean supportsCustomEditor () {
