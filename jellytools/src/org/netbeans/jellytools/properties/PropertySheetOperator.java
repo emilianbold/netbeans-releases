@@ -168,4 +168,9 @@ public class PropertySheetOperator extends TopComponentOperator {
         };
         return contOper.waitComponent((Container)contOper.getSource(), chooser);
     }
+    
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        tbpPropertySheetTabbedPane();
+    }
 }

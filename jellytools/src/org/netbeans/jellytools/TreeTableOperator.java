@@ -90,4 +90,10 @@ public class TreeTableOperator extends JTableOperator {
 	    return(subFinder.getDescription());
 	}
     }
+    
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        tree();
+    }
+
 }

@@ -112,5 +112,12 @@ public class FormCustomEditorOperator extends NbDialogOperator {
         cboMode().selectItem(mode);
     }
 
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        btAdvanced();
+        btDefault();
+        cboMode();
+    }
+
 }
 

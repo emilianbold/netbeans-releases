@@ -172,6 +172,12 @@ public class EditorWindowOperator extends NbFrameOperator {
     public EditorOperator getEditor(int index) {
         return selectPage(index);
     }
+
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        tbpEditorTabbedPane();
+        getEditor().verify();
+    }
 }
 
 

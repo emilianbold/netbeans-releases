@@ -296,4 +296,23 @@ public class ParametersPickerOperator extends FormCustomEditorOperator {
         txtUserCode().setText(text);
     }
     
+    
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        lblGetParameterFrom();
+        txtMethodCall();
+        txtProperty();
+        txtUserCode();
+        txtValue();
+        rbBean();
+        rbMethodCall();
+        rbProperty();
+        rbUserCode();
+        rbValue();
+        btSelectMethod();
+        btSelectProperty();
+        cboBean();
+        super.verify();
+    }
+
 }

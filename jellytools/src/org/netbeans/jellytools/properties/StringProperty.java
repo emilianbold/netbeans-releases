@@ -12,6 +12,7 @@
  */
 package org.netbeans.jellytools.properties;
 
+import org.netbeans.jellytools.NbDialogOperator;
 /*
  * StringProperty.java
  *
@@ -55,4 +56,10 @@ public class StringProperty extends TextFieldProperty {
         customizer.close();
         return s;
     }
+
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        invokeCustomizer().verify();
+        new NbDialogOperator(getName()).close();
+    }    
 }

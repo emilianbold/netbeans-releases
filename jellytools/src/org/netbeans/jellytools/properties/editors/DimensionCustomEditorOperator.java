@@ -87,4 +87,10 @@ public class DimensionCustomEditorOperator extends NbDialogOperator {
         return _txtFieldHeight;
     }
     
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        txtFieldHeight();
+        txtFieldWidth();
+    }
+    
 }

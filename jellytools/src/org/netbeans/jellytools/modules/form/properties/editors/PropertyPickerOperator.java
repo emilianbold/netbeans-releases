@@ -112,5 +112,13 @@ public class PropertyPickerOperator extends NbDialogOperator {
     public void setProperty(String item) {
         lstProperties().selectItem(item);
     }
+
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        lblComponent();
+        lblProperties();
+        cboComponent();
+        lstProperties();
+    }
     
 }

@@ -19,6 +19,7 @@ package org.netbeans.jellytools.properties;
  */
 
 import java.awt.Color;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.properties.editors.ColorCustomEditorOperator;
 import org.netbeans.jemmy.operators.*;
 
@@ -108,5 +109,10 @@ public class ColorProperty extends Property {
         customizer.close();
         return value;
     }
-    
+
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        invokeCustomizer().verify();
+        new NbDialogOperator(getName()).close();
+    }        
 }

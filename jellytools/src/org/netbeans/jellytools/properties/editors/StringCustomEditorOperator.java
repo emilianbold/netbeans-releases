@@ -57,4 +57,10 @@ public class StringCustomEditorOperator extends NbDialogOperator {
         }
         return _txtArea;
     }
+        
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        txtArea();
+    }
+
 }

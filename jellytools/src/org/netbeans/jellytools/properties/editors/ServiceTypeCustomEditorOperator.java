@@ -108,5 +108,12 @@ public class ServiceTypeCustomEditorOperator extends NbDialogOperator {
     public void setServiceTypeValue(String serviceName) {
         lstServices().selectItem(serviceName);
     }
+    
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        btDefault();
+        lstServices();
+        propertySheet();
+    }
 }
 

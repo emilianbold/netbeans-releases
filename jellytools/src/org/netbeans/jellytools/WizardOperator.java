@@ -167,4 +167,14 @@ public class WizardOperator extends NbDialogOperator {
         }
     }
     
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        btBack();
+        btNext();
+        btFinish();
+        btCancel();
+        btHelp();
+        lstSteps();
+    }
+    
 }

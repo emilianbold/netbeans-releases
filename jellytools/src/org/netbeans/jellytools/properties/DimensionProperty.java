@@ -12,6 +12,7 @@
  */
 package org.netbeans.jellytools.properties;
 
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.properties.editors.DimensionCustomEditorOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
 
@@ -52,5 +53,10 @@ public class DimensionProperty extends TextFieldProperty {
         customizer.close();
         return value;
     }
-     
+
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        invokeCustomizer().verify();
+        new NbDialogOperator(getName()).close();
+    }         
 }

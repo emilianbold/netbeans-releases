@@ -89,4 +89,10 @@ public class PointCustomEditorOperator extends NbDialogOperator {
         return _txtFieldY;
     }
     
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        txtFieldX();
+        txtFieldY();
+    }
+    
 }

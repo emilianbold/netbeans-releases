@@ -71,4 +71,8 @@ public class ColorCustomEditorOperator extends NbDialogOperator {
         colorChooser().setColor(r, g, b);
     }
     
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        colorChooser();
+    }
 }

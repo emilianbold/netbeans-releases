@@ -131,5 +131,13 @@ public class ProcessDescriptorCustomEditorOperator extends NbDialogOperator {
     public void setArguments( String text ) {
         txtArguments().setText(text);
     }
+    
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        txtArgumentKey();
+        txtArguments();
+        txtProcess();
+        btSelectProcessExecutable();
+    }
 }
 

@@ -222,4 +222,12 @@ public class FormDesignerOperator extends TopComponentOperator {
             return("Any FakePeerContainer");
         }
     }
+
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        handleLayer();
+        componentLayer();
+        fakePane();
+    }
+    
 }

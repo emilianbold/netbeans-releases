@@ -137,4 +137,12 @@ public class RectangleCustomEditorOperator extends NbDialogOperator {
         return _txtFieldHeight;
     }
     
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        txtFieldHeight();
+        txtFieldWidth();
+        txtFieldX();
+        txtFieldY();
+    }
+    
 }

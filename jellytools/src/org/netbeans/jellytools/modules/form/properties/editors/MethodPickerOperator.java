@@ -113,4 +113,12 @@ public class MethodPickerOperator extends NbDialogOperator {
         lstMethods().selectItem(item);
     }
 
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        lblComponent();
+        lblMethods();
+        cboComponent();
+        lstMethods();
+    }
+
 }

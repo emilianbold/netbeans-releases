@@ -326,4 +326,11 @@ public class OptionsOperator extends NbFrameOperator {
                                                  rect.y + rect.height/2,
                                                  1);
     }
+
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        btClose();
+        btHelp();
+        treeTable().verify();
+    }
 }

@@ -694,6 +694,15 @@ public class EditorOperator extends TopComponentOperator {
         if (getVerification())
             waitModified(false);
     }
+
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        txtEditorPane();
+        cboQuickBrowse();
+        lblInputMode();
+        lblRowColumn();
+        lblStatusBar();
+    }
 }
 
 

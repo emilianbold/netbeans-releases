@@ -69,4 +69,9 @@ public class FileCustomEditorOperator extends NbDialogOperator {
     public void setFileValue(String fileName) {
         setFileValue(new File(fileName));
     }
+    
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        fileChooser();
+    }
 }

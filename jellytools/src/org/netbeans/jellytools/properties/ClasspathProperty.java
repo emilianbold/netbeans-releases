@@ -12,6 +12,7 @@
  */
 package org.netbeans.jellytools.properties;
 
+import org.netbeans.jellytools.NbDialogOperator;
 /*
  * ClasspathProperty.java
  *
@@ -56,5 +57,10 @@ public class ClasspathProperty extends TextFieldProperty {
         customizer.setClasspathValue(classPathElements);
         customizer.ok();
     }        
-    
+
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        invokeCustomizer().verify();
+        new NbDialogOperator(getName()).close();
+    }    
 }

@@ -70,4 +70,9 @@ public class RuntimeTabOperator extends TopComponentOperator {
     public Node getRootNode() {
         return new Node(tree(), "");
     }
+
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        tree();
+    }
 }

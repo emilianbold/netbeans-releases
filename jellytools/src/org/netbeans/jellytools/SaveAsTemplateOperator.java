@@ -90,5 +90,13 @@ public class SaveAsTemplateOperator extends NbDialogOperator {
         }
         new Node(tree(), templatePath).select();
     }
+
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        btOK();
+        btCancel();
+        lblSelectTheCategory();
+        tree();
+    }
     
 }

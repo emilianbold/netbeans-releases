@@ -77,4 +77,10 @@ public class ComponentInspectorOperator extends TopComponentOperator {
             return("Any ComponentInspector");
         }
     }
+
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        treeComponents();
+        properties().verify();
+    }
 }

@@ -322,4 +322,20 @@ public class SearchResultsOperator extends NbFrameOperator {
         result.setComparator(new DefaultStringComparator(true, false));
         return(result);
     }
+
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        btStopSearch();
+        btShowDetails();
+        btModifySearch();
+        btClose();
+        btShowInExplorer();
+        btHelp();
+        treeResult();
+        lstPositions();
+        txtFilesystem();
+        txtPath();
+        rbSortByName();
+        rbDoNotSort();
+    }
 }

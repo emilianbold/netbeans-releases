@@ -50,7 +50,7 @@ public class HelpOperator extends NbFrameOperator {
     private JButtonOperator _btPrint;
     private JButtonOperator _btPageSetup;
     private JSplitPaneOperator _splpHelpSplitPane;
-    private JTabbedPaneOperator _splpHelpTabPane;
+    private JTabbedPaneOperator _tbpHelpTabPane;
     private JTreeOperator _treeContents;
     private JTreeOperator _treeIndex;
     private JTextFieldOperator _txtIndexFind;
@@ -121,11 +121,11 @@ public class HelpOperator extends NbFrameOperator {
      * @throws TimeoutExpiredException when component not found
      * @return JButtonOperator
      */
-    public JTabbedPaneOperator splpHelpTabPane() {
-        if (_splpHelpTabPane==null) {
-            _splpHelpTabPane = new JTabbedPaneOperator( splpHelpSplitPane() );
+    public JTabbedPaneOperator tbpHelpTabPane() {
+        if (_tbpHelpTabPane==null) {
+            _tbpHelpTabPane = new JTabbedPaneOperator( splpHelpSplitPane() );
         }
-        return _splpHelpTabPane;
+        return _tbpHelpTabPane;
     }
 
     /** Tries to find "" JButton in this dialog.
@@ -146,7 +146,7 @@ public class HelpOperator extends NbFrameOperator {
     public JTreeOperator treeContents() {
         selectPageContents();
         if (_treeContents==null) {
-            _treeContents = new JTreeOperator( splpHelpTabPane(), 0 );
+            _treeContents = new JTreeOperator( tbpHelpTabPane(), 0 );
         }
         return _treeContents;
     }
@@ -158,7 +158,7 @@ public class HelpOperator extends NbFrameOperator {
     public JTreeOperator treeIndex() {
         selectPageIndex();
         if (_treeIndex==null) {
-            _treeIndex = new JTreeOperator( splpHelpTabPane(), 0 );
+            _treeIndex = new JTreeOperator( tbpHelpTabPane(), 0 );
         }
         return _treeIndex;
     }
@@ -170,7 +170,7 @@ public class HelpOperator extends NbFrameOperator {
     public JTextFieldOperator txtIndexFind() {
         selectPageIndex();
         if (_txtIndexFind==null) {
-            _txtIndexFind = new JTextFieldOperator( splpHelpTabPane(), 0 );
+            _txtIndexFind = new JTextFieldOperator( tbpHelpTabPane(), 0 );
         }
         return _txtIndexFind;
     }
@@ -182,7 +182,7 @@ public class HelpOperator extends NbFrameOperator {
     public JTreeOperator treeSearch() {
         selectPageSearch();
         if (_treeSearch==null) {
-            _treeSearch = new JTreeOperator( splpHelpTabPane(), 0 );
+            _treeSearch = new JTreeOperator( tbpHelpTabPane(), 0 );
         }
         return _treeSearch;
     }
@@ -194,7 +194,7 @@ public class HelpOperator extends NbFrameOperator {
     public JTextFieldOperator txtSearchFind() {
         selectPageSearch();
         if (_txtSearchFind==null) {
-            _txtSearchFind = new JTextFieldOperator( splpHelpTabPane(), 0 );
+            _txtSearchFind = new JTextFieldOperator( tbpHelpTabPane(), 0 );
         }
         return _txtSearchFind;
     }
@@ -240,17 +240,17 @@ public class HelpOperator extends NbFrameOperator {
 
     /** selects page Contents */    
     public void selectPageContents() {
-        splpHelpTabPane().selectPage(0);
+        tbpHelpTabPane().selectPage(0);
     }
     
     /** selects page Index */    
     public void selectPageIndex() {
-        splpHelpTabPane().selectPage(1);
+        tbpHelpTabPane().selectPage(1);
     }
 
     /** selects page Search */    
     public void selectPageSearch() {
-        splpHelpTabPane().selectPage(2);
+        tbpHelpTabPane().selectPage(2);
     }
 
     /** tries to find and set text of txtIndexFind
@@ -272,6 +272,20 @@ public class HelpOperator extends NbFrameOperator {
      */
     public String getContentText() {
         return txtContentViewer().getText();
+    }
+
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        btBack();
+        btNext();
+        btPageSetup();
+        btPrint();
+        treeContents();
+        txtContentViewer();
+        treeIndex();
+        txtIndexFind();
+        treeSearch();
+        txtSearchFind();
     }
 }
 

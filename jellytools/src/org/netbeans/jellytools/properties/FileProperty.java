@@ -19,6 +19,7 @@ package org.netbeans.jellytools.properties;
  */
 
 import java.io.File;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.properties.editors.FileCustomEditorOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
 
@@ -65,5 +66,10 @@ public class FileProperty extends TextFieldProperty {
         customizer.close();
         return value;
     }
-    
+
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        invokeCustomizer().verify();
+        new NbDialogOperator(getName()).close();
+    }        
 }

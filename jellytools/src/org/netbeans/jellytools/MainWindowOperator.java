@@ -436,5 +436,11 @@ public class MainWindowOperator extends JFrameOperator {
             return "Toolbar button with tooltip \""+buttonTooltip+"\".";
         }
     }
+
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        menuBar();
+        getTabControl();
+    }
 }
 

@@ -71,4 +71,9 @@ public class ProjectsTabOperator extends TopComponentOperator {
     public ProjectRootNode getRootNode() {
         return new ProjectRootNode(tree());
     }
+
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        tree();
+    }
 }

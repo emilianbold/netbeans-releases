@@ -160,6 +160,16 @@ public class FontCustomEditorOperator extends NbDialogOperator {
     public void setFontStyle( String style ) {
         lstFontStyle().selectItem(style);
     }
+    
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        txtFontName();
+        txtFontSize();
+        txtFontStyle();
+        lstFontName();
+        lstFontSize();
+        lstFontStyle();
+    }
 
 }
 

@@ -223,5 +223,16 @@ public class StringArrayCustomEditorOperator extends NbDialogOperator {
         for (int i=0; i<value.length; i++)
             add(value[i]);
     }
+    
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        btAdd();
+        btRemove();
+        btEdit();
+        btUp();
+        btDown();
+        lstItemList();
+        txtItemText();
+    }
 }
 

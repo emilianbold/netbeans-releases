@@ -211,4 +211,18 @@ public class ComponentPaletteOperator extends TopComponentOperator {
             return("Any PaletteTopComponent");
         }
     }
+
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        btTestForm();
+        tbConnectionMode();
+        tbSelectionMode();
+        lstComponents();
+        selectAWTPage();
+        selectBeansPage();
+        selectBordersPage();
+        selectLayoutsPage();
+        selectSwingOtherPage();
+        selectSwingPage();
+    }
 }

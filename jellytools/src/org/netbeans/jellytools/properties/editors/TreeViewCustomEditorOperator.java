@@ -69,4 +69,9 @@ public class TreeViewCustomEditorOperator extends NbDialogOperator {
         }
         return _tree;
     }
+    
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        tree();
+    }
 }
