@@ -16,15 +16,12 @@ package org.netbeans.modules.j2ee.ddloaders.app;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.*;
-import java.beans.*;
 import java.io.*;
 import java.util.*;
 import javax.swing.JButton;
 import javax.swing.event.ChangeListener;
 
 import org.openide.DialogDescriptor;
-import org.openide.actions.*;
-import org.openide.cookies.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
@@ -514,7 +511,7 @@ public class EarDataObject extends DD2beansDataObject
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.j2ee.ejbjarproject.dd.EjbJarDataObject");//NOI18N
+        return new HelpCtx(EarDataObject.class);
     }
 
     private RequestProcessor.Task elementTask;
