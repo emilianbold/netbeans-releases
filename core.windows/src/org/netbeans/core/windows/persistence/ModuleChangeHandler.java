@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,7 +25,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.windows.WindowManager;
 
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.WindowManagerImpl;
@@ -245,7 +244,7 @@ class ModuleChangeHandler implements FileChangeListener {
     }
     
     private void addGroup (String groupName) {
-        log("addGroup" + " group:" + groupName);
+        log("addGroup group:" + groupName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         final GroupConfig groupConfig = wmParser.addGroup(groupName);
         if (groupConfig != null) {
@@ -259,7 +258,7 @@ class ModuleChangeHandler implements FileChangeListener {
     }
     
     private void addTCRef (final String modeName, String tcRefName) {
-        log("addTCRef" + " modeName:" + modeName
+        log("addTCRef modeName:" + modeName
         + " tcRefName:" + tcRefName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         List tcRefNameList = new ArrayList(10);
@@ -276,7 +275,7 @@ class ModuleChangeHandler implements FileChangeListener {
     }
     
     private void addTCGroup (final String groupName, String tcGroupName) {
-        log("addTCGroup" + " groupName:" + groupName
+        log("addTCGroup groupName:" + groupName
         + " tcGroupName:" + tcGroupName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         final TCGroupConfig tcGroupConfig = wmParser.addTCGroup(groupName, tcGroupName);
@@ -291,7 +290,7 @@ class ModuleChangeHandler implements FileChangeListener {
     }
     
     private void removeMode (final String modeName) {
-        log("removeMode" + " mo:" + modeName);
+        log("removeMode mo:" + modeName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         wmParser.removeMode(modeName);
         //Mode is not removed from model because it can already contain TCs added
@@ -305,7 +304,7 @@ class ModuleChangeHandler implements FileChangeListener {
     }
     
     private void removeGroup (final String groupName) {
-        log("removeGroup" + " group:" + groupName);
+        log("removeGroup group:" + groupName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         wmParser.removeGroup(groupName);
         // #37529 WindowsAPI to be called from AWT thread only.
@@ -317,7 +316,7 @@ class ModuleChangeHandler implements FileChangeListener {
     }
     
     private void removeTCRef (final String tcRefName) {
-        log("removeTCRef" + " tcRefName:" + tcRefName);
+        log("removeTCRef tcRefName:" + tcRefName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         if (wmParser.removeTCRef(tcRefName)) {
             // #37529 WindowsAPI to be called from AWT thread only.
@@ -330,7 +329,7 @@ class ModuleChangeHandler implements FileChangeListener {
     }
     
     private void removeTCGroup (final String groupName, final String tcGroupName) {
-        log("removeTCGroup" + " groupName:" + groupName
+        log("removeTCGroup groupName:" + groupName
         + " tcGroupName:" + tcGroupName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
         if (wmParser.removeTCGroup(groupName, tcGroupName)) {

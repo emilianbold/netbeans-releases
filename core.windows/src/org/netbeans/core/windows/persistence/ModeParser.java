@@ -83,6 +83,8 @@ class ModeParser {
      * the second one in partial ordering. */
     private static final char SEP = '/';
     
+    private static final boolean DEBUG = Debug.isLoggable(ModeParser.class);
+    
     /** Module parent folder */
     private FileObject moduleParentFolder;
     
@@ -119,24 +121,24 @@ class ModeParser {
     
     /** Load mode configuration including all tcrefs. */
     ModeConfig load () throws IOException {
-        //log("load ENTER" + " mo:" + name);
+        //if (DEBUG) Debug.log(ModeParser.class, "load ENTER" + " mo:" + name);
         ModeConfig mc = new ModeConfig();
         readProperties(mc);
         readTCRefs(mc);
-        //log("load LEAVE" + " mo:" + name);
+        //if (DEBUG) Debug.log(ModeParser.class, "load LEAVE" + " mo:" + name);
         return mc;
     }
     
     /** Save mode configuration including all tcrefs. */
     void save (ModeConfig mc) throws IOException {
-        //log("save ENTER" + " mo:" + name);
+        //if (DEBUG) Debug.log(ModeParser.class, "save ENTER" + " mo:" + name);
         writeProperties(mc);
         writeTCRefs(mc);
-        //log("save LEAVE" + " mo:" + name);
+        //if (DEBUG) Debug.log(ModeParser.class, "save LEAVE" + " mo:" + name);
     }
     
     private void readProperties (ModeConfig mc) throws IOException {
-        log("readProperties ENTER" + " mo:" + getName());
+        if (DEBUG) Debug.log(ModeParser.class, "readProperties ENTER" + " mo:" + getName());
         if (propertyHandler == null) {
             propertyHandler = new PropertyHandler();
         }
@@ -144,16 +146,16 @@ class ModeParser {
         internalCfg.clear();
         propertyHandler.readData(mc, internalCfg);
         
-        /*log("               specVersion: " + internalCfg.specVersion);
-        log("        moduleCodeNameBase: " + internalCfg.moduleCodeNameBase);
-        log("     moduleCodeNameRelease: " + internalCfg.moduleCodeNameRelease);
-        log("moduleSpecificationVersion: " + internalCfg.moduleSpecificationVersion);*/
+        /*if (DEBUG) Debug.log(ModeParser.class, "               specVersion: " + internalCfg.specVersion);
+        if (DEBUG) Debug.log(ModeParser.class, "        moduleCodeNameBase: " + internalCfg.moduleCodeNameBase);
+        if (DEBUG) Debug.log(ModeParser.class, "     moduleCodeNameRelease: " + internalCfg.moduleCodeNameRelease);
+        if (DEBUG) Debug.log(ModeParser.class, "moduleSpecificationVersion: " + internalCfg.moduleSpecificationVersion);*/
         
-        log("readProperties LEAVE" + " mo:" + getName());
+        if (DEBUG) Debug.log(ModeParser.class, "readProperties LEAVE" + " mo:" + getName());
     }
     
     private void readTCRefs (ModeConfig mc) throws IOException {
-        log("readTCRefs ENTER" + " mo:" + getName());
+        if (DEBUG) Debug.log(ModeParser.class, "readTCRefs ENTER" + " mo:" + getName());
         
         for (Iterator it = tcRefParserMap.keySet().iterator(); it.hasNext(); ) {
             TCRefParser tcRefParser = (TCRefParser) tcRefParserMap.get(it.next());
@@ -161,17 +163,17 @@ class ModeParser {
             tcRefParser.setInLocalFolder(false);
         }
         
-        //log("moduleParentFolder: " + moduleParentFolder);
-        //log(" localParentFolder: " + localParentFolder);
-        //log("  moduleModeFolder: " + moduleModeFolder);
-        //log("   localModeFolder: " + localModeFolder);
+        //if (DEBUG) Debug.log(ModeParser.class, "moduleParentFolder: " + moduleParentFolder);
+        //if (DEBUG) Debug.log(ModeParser.class, " localParentFolder: " + localParentFolder);
+        //if (DEBUG) Debug.log(ModeParser.class, "  moduleModeFolder: " + moduleModeFolder);
+        //if (DEBUG) Debug.log(ModeParser.class, "   localModeFolder: " + localModeFolder);
         
         if (isInModuleFolder()) {
             FileObject moduleModeFolder = moduleParentFolder.getFileObject(modeName);
             if (moduleModeFolder != null) {
                 FileObject [] files = moduleModeFolder.getChildren();
                 for (int i = 0; i < files.length; i++) {
-                    //log("-- -- MODULE fo[" + i + "]: " + files[i]);
+                    //if (DEBUG) Debug.log(ModeParser.class, "-- -- MODULE fo[" + i + "]: " + files[i]);
                     if (!files[i].isFolder() && PersistenceManager.TCREF_EXT.equals(files[i].getExt())) {
                         //wstcref file
                         TCRefParser tcRefParser;
@@ -193,7 +195,7 @@ class ModeParser {
             if (localModeFolder != null) {
                 FileObject [] files = localModeFolder.getChildren();
                 for (int i = 0; i < files.length; i++) {
-                    //log("-- -- LOCAL fo[" + i + "]: " + files[i]);
+                    //if (DEBUG) Debug.log(ModeParser.class, "-- -- LOCAL fo[" + i + "]: " + files[i]);
                     if (!files[i].isFolder() && PersistenceManager.TCREF_EXT.equals(files[i].getExt())) {
                         //wstcref file
                         TCRefParser tcRefParser;
@@ -212,7 +214,7 @@ class ModeParser {
         
         /*for (Iterator it = tcRefParserMap.keySet().iterator(); it.hasNext(); ) {
             TCRefParser tcRefParser = (TCRefParser) tcRefParserMap.get(it.next());
-            log("tcRefParser: " + tcRefParser.getName()
+            if (DEBUG) Debug.log(ModeParser.class, "tcRefParser: " + tcRefParser.getName()
             + " isInModuleFolder:" + tcRefParser.isInModuleFolder()
             + " isInLocalFolder:" + tcRefParser.isInLocalFolder());
         }*/
@@ -224,9 +226,9 @@ class ModeParser {
         Map localMap = (Map) ((HashMap) tcRefParserMap).clone();
         
         if (tcRefOrder != null) {
-            //log("-- -- ORDER IS DEFINED");
-            //log("-- -- map.size:" + localMap.size());
-            //log("-- -- order.size:" + tcRefOrder.size());
+            //if (DEBUG) Debug.log(ModeParser.class, "-- -- ORDER IS DEFINED");
+            //if (DEBUG) Debug.log(ModeParser.class, "-- -- map.size:" + localMap.size());
+            //if (DEBUG) Debug.log(ModeParser.class, "-- -- order.size:" + tcRefOrder.size());
             TCRefParser [] tcRefParserArray = new TCRefParser[tcRefOrder.size()];
             for (Iterator it = tcRefOrder.entrySet().iterator(); it.hasNext(); ) {
                 Map.Entry en = (Map.Entry) it.next();
@@ -235,7 +237,7 @@ class ModeParser {
                 TCRefParser tcRefParser = (TCRefParser) localMap.remove(tcRefName);
                 //Put instances to array according to defined order
                 //Order should be defined from 0 to N-1
-                //log("-- -- ADD [" + index + "]: " + tcRefParser.getName());
+                //if (DEBUG) Debug.log(ModeParser.class, "-- -- ADD [" + index + "]: " + tcRefParser.getName());
                 tcRefParserArray[index] = tcRefParser;
             }
             for (int i = 0; i < tcRefParserArray.length; i++) {
@@ -249,25 +251,25 @@ class ModeParser {
                 localList.add(tcRefParser);
             }
         } else {
-            //log("-- -- NO ORDER, USING PARTIAL ORDERING");
+            //if (DEBUG) Debug.log(ModeParser.class, "-- -- NO ORDER, USING PARTIAL ORDERING");
             for (Iterator it = localMap.keySet().iterator(); it.hasNext(); ) {
                 TCRefParser tcRefParser = (TCRefParser) localMap.get(it.next());
                 localList.add(tcRefParser);
             }
             
-            /*log("LIST BEFORE SORT");
+            /*if (DEBUG) Debug.log(ModeParser.class, "LIST BEFORE SORT");
             for (int i = 0; i < localList.size(); i++) {
                 TCRefParser tcRefParser = (TCRefParser) localList.get(i);
-                log(" p[" + i + "]: " + tcRefParser.getName());
+                if (DEBUG) Debug.log(ModeParser.class, " p[" + i + "]: " + tcRefParser.getName());
             }*/
             
             //Sort using partial ordering
             localList = carefullySort(localList);
             
-            /*log("LIST AFTER SORT");
+            /*if (DEBUG) Debug.log(ModeParser.class, "LIST AFTER SORT");
             for (int i = 0; i < localList.size(); i++) {
                 TCRefParser tcRefParser = (TCRefParser) localList.get(i);
-                log(" p[" + i + "]: " + tcRefParser.getName());
+                if (DEBUG) Debug.log(ModeParser.class, " p[" + i + "]: " + tcRefParser.getName());
             }*/
             
             if (tcRefOrder == null) {
@@ -342,7 +344,7 @@ class ModeParser {
             pm.addUsedTCId(mc.tcRefConfigs[i].tc_id);
         }
         
-        log("readTCRefs LEAVE" + " mo:" + getName());
+        if (DEBUG) Debug.log(ModeParser.class, "readTCRefs LEAVE" + " mo:" + getName());
     }
     
     /** Checks if module for given tcRef exists.
@@ -355,14 +357,7 @@ class ModeParser {
             ModuleInfo curModuleInfo = PersistenceManager.findModule
             (cfg.moduleCodeNameBase, cfg.moduleCodeNameRelease,
              cfg.moduleSpecificationVersion);
-            if ((curModuleInfo != null) && curModuleInfo.isEnabled()) {
-                //Module is present and is enabled
-                return true;
-            } else {
-                //Module is NOT present (it could be deleted offline)
-                //or is NOT enabled
-                return false;
-            }
+             return (curModuleInfo != null) && curModuleInfo.isEnabled();
         } else {
             //No module info
             return true;
@@ -370,17 +365,17 @@ class ModeParser {
     }
     
     private void writeProperties (ModeConfig mc) throws IOException {
-        //log("writeProperties ENTER");
+        //if (DEBUG) Debug.log(ModeParser.class, "writeProperties ENTER");
         if (propertyHandler == null) {
             propertyHandler = new PropertyHandler();
         }
         InternalConfig internalCfg = getInternalConfig();
         propertyHandler.writeData(mc, internalCfg);
-        //log("writeProperties LEAVE");
+        //if (DEBUG) Debug.log(ModeParser.class, "writeProperties LEAVE");
     }
     
     private void writeTCRefs (ModeConfig mc) throws IOException {
-        //log("writeTCRefs ENTER" + " mo:" + getName());
+        //if (DEBUG) Debug.log(ModeParser.class, "writeTCRefs ENTER" + " mo:" + getName());
         //Step 0: Create order
         if (mc.tcRefConfigs.length > 0) {
             if (tcRefOrder == null) {
@@ -397,7 +392,7 @@ class ModeParser {
         //Step 1: Clean obsolete tcRef parsers
         Map tcRefConfigMap = new HashMap(19);
         for (int i = 0; i < mc.tcRefConfigs.length; i++) {
-            //log("-- -- tcRefCfg[" + i + "]: " + mc.tcRefConfigs[i].tc_id);
+            //if (DEBUG) Debug.log(ModeParser.class, "-- -- tcRefCfg[" + i + "]: " + mc.tcRefConfigs[i].tc_id);
             tcRefConfigMap.put(mc.tcRefConfigs[i].tc_id, mc.tcRefConfigs[i]);
         }
         TCRefParser tcRefParser;
@@ -409,19 +404,19 @@ class ModeParser {
             }
         }
         for (int i = 0; i < toDelete.size(); i++) {
-            //log(" ** REMOVE FROM MAP tcRefParser: " + toDelete.get(i));
+            //if (DEBUG) Debug.log(ModeParser.class, " ** REMOVE FROM MAP tcRefParser: " + toDelete.get(i));
             tcRefParserMap.remove(toDelete.get(i));
-            //log(" ** DELETE tcRefParser: " + toDelete.get(i));
+            //if (DEBUG) Debug.log(ModeParser.class, " ** DELETE tcRefParser: " + toDelete.get(i));
             deleteLocalTCRef((String) toDelete.get(i));
         }
         
         //Step 2: Create missing tcRefs parsers
-        //log("-- -- mc.tcRefConfigs.length:" + mc.tcRefConfigs.length);
+        //if (DEBUG) Debug.log(ModeParser.class, "-- -- mc.tcRefConfigs.length:" + mc.tcRefConfigs.length);
         for (int i = 0; i < mc.tcRefConfigs.length; i++) {
-            //log("-- -- tcRefCfg[" + i + "]: " + mc.tcRefConfigs[i].tc_id);
+            //if (DEBUG) Debug.log(ModeParser.class, "-- -- tcRefCfg[" + i + "]: " + mc.tcRefConfigs[i].tc_id);
             if (!tcRefParserMap.containsKey(mc.tcRefConfigs[i].tc_id)) {
                 tcRefParser = new TCRefParser(mc.tcRefConfigs[i].tc_id);
-                //log(" ** CREATE tcRefParser:" + tcRefParser.getName());
+                //if (DEBUG) Debug.log(ModeParser.class, " ** CREATE tcRefParser:" + tcRefParser.getName());
                 tcRefParserMap.put(mc.tcRefConfigs[i].tc_id, tcRefParser);
             }
         }
@@ -430,10 +425,10 @@ class ModeParser {
         FileObject localFolder = localParentFolder.getFileObject(getName());
         if ((localFolder == null) && (tcRefParserMap.size() > 0)) {
             //Create local mode folder
-            //log("-- ModeParser.writeTCRefs" + " CREATE LOCAL FOLDER");
+            //if (DEBUG) Debug.log(ModeParser.class, "-- ModeParser.writeTCRefs" + " CREATE LOCAL FOLDER");
             localFolder = FileUtil.createFolder(localParentFolder, getName());
         }
-        //log("writeTCRefs" + " localFolder:" + localFolder);
+        //if (DEBUG) Debug.log(ModeParser.class, "writeTCRefs" + " localFolder:" + localFolder);
         
         for (Iterator it = tcRefParserMap.keySet().iterator(); it.hasNext(); ) {
             tcRefParser = (TCRefParser) tcRefParserMap.get(it.next());
@@ -442,11 +437,11 @@ class ModeParser {
             tcRefParser.save((TCRefConfig) tcRefConfigMap.get(tcRefParser.getName()));
         }
         
-        //log("writeTCRefs LEAVE" + " mo:" + getName());
+        //if (DEBUG) Debug.log(ModeParser.class, "writeTCRefs LEAVE" + " mo:" + getName());
     }
     
     private void deleteLocalTCRef (String tcRefName) {
-        log("deleteLocalTCRef" + " tcRefName:" + tcRefName);
+        if (DEBUG) Debug.log(ModeParser.class, "deleteLocalTCRef" + " tcRefName:" + tcRefName);
         if (localParentFolder == null) {
             return;
         }
@@ -505,7 +500,7 @@ class ModeParser {
     /** Stores the order of tcRefs to disk.
     */
     private void writeOrder () throws IOException {
-        //log("-- ModeParser.writeOrder ENTER" + " mo:" + getName());
+        //if (DEBUG) Debug.log(ModeParser.class, "-- ModeParser.writeOrder ENTER" + " mo:" + getName());
         if (localParentFolder == null) {
             localParentFolder = PersistenceManager.getDefault().getModesLocalFolder();
         }
@@ -535,7 +530,7 @@ class ModeParser {
                 }
                 buf.append(tcRefNames[i]);
             }
-            //log("-- ModeParser.writeOrder buf:" + buf);
+            //if (DEBUG) Debug.log(ModeParser.class, "-- ModeParser.writeOrder buf:" + buf);
             localModeFolder.setAttribute(EA_ORDER, buf.toString ());
         }
     }
@@ -545,8 +540,8 @@ class ModeParser {
      * with extension, where a should come before b.
      */
     private Set readPartials () { // Set<String>
-        //log("++ ++");
-        //log("++ ModeParser.readPartials ENTER");
+        //if (DEBUG) Debug.log(ModeParser.class, "++ ++");
+        //if (DEBUG) Debug.log(ModeParser.class, "++ ModeParser.readPartials ENTER");
         Set s = new HashSet(19);
         
         //Partials are defined only in module folder
@@ -555,7 +550,7 @@ class ModeParser {
         }
         FileObject moduleModeFolder = moduleParentFolder.getFileObject(modeName);
         if (moduleModeFolder == null) {
-            //log("++ ModeParser.readPartials LEAVE 1");
+            //if (DEBUG) Debug.log(ModeParser.class, "++ ModeParser.readPartials LEAVE 1");
             return s;
         }
         
@@ -569,7 +564,7 @@ class ModeParser {
                     //Remove file extension 'wstcref'.
                     String name1 = name.substring(0, ind);
                     String name2 = name.substring(ind + 1);
-                    //log("name1:" + name1 + " name2:" + name2);
+                    //if (DEBUG) Debug.log(ModeParser.class, "name1:" + name1 + " name2:" + name2);
                     int indExt = name1.indexOf('.');
                     if (indExt != -1) {
                         name1 = name1.substring(0, indExt);
@@ -578,15 +573,15 @@ class ModeParser {
                     if (indExt != -1) {
                         name2 = name2.substring(0, indExt);
                     }
-                    //log("++ ModeParser.readPartials name BEFORE:" + name);
+                    //if (DEBUG) Debug.log(ModeParser.class, "++ ModeParser.readPartials name BEFORE:" + name);
                     name = name1 + SEP + name2;
                     s.add(name);
-                    //log("++ ModeParser.readPartials name AFTER:" + name);
+                    //if (DEBUG) Debug.log(ModeParser.class, "++ ModeParser.readPartials name AFTER:" + name);
                 }
             }
         }
-        //log("++ ModeParser.readPartials LEAVE 2");
-        //log("++");
+        //if (DEBUG) Debug.log(ModeParser.class, "++ ModeParser.readPartials LEAVE 2");
+        //if (DEBUG) Debug.log(ModeParser.class, "++");
         return s;
     }
     
@@ -597,28 +592,28 @@ class ModeParser {
      * @return a constraint map, or null if there are no constraints
      */
     private Map getOrderingConstraints (List tcRefParsers) {
-        //log("getOrderingConstraints ENTER");
+        //if (DEBUG) Debug.log(ModeParser.class, "getOrderingConstraints ENTER");
         final Set partials = readPartials();
         if (partials.isEmpty()) {
-            //log("getOrderingConstraints LEAVE 1");
+            //if (DEBUG) Debug.log(ModeParser.class, "getOrderingConstraints LEAVE 1");
             return null;
         } else {
             //Remove items from partials which are in ordering
             if (tcRefOrder != null) {
-                //log("getOrderingConstraints CLEAN partials");
+                //if (DEBUG) Debug.log(ModeParser.class, "getOrderingConstraints CLEAN partials");
                 Iterator it = partials.iterator();
                 while (it.hasNext()) {
                     String constraint = (String) it.next();
-                    //log("getOrderingConstraints CLEAN constraint:" + constraint);
+                    //if (DEBUG) Debug.log(ModeParser.class, "getOrderingConstraints CLEAN constraint:" + constraint);
                     int idx = constraint.indexOf(SEP);
                     String a = constraint.substring(0, idx);
                     String b = constraint.substring(idx + 1);
-                    //log("getOrderingConstraints CLEAN a:" + a + " b:" + b);
+                    //if (DEBUG) Debug.log(ModeParser.class, "getOrderingConstraints CLEAN a:" + a + " b:" + b);
                     if (tcRefOrder.containsKey(a) && tcRefOrder.containsKey(b)) {
-                        //log("getOrderingConstraints REMOVE:" + constraint);
+                        //if (DEBUG) Debug.log(ModeParser.class, "getOrderingConstraints REMOVE:" + constraint);
                         it.remove();
                     } /*else {
-                        log("getOrderingConstraints KEEP:" + constraint);
+                        if (DEBUG) Debug.log(ModeParser.class, "getOrderingConstraints KEEP:" + constraint);
                     }*/
                 }
             }
@@ -651,7 +646,7 @@ class ModeParser {
                 }
                 l.add(bd);
             }
-            //log("getOrderingConstraints LEAVE 2");
+            //if (DEBUG) Debug.log(ModeParser.class, "getOrderingConstraints LEAVE 2");
             return m;
         }
     }
@@ -688,7 +683,7 @@ class ModeParser {
      * @param tcRefName unique name of tcRef
      */
     void removeTCRef (String tcRefName) {
-        log("removeTCRef ENTER" + " tcRef:" + tcRefName);
+        if (DEBUG) Debug.log(ModeParser.class, "removeTCRef ENTER" + " tcRef:" + tcRefName);
         //Update order
         List localList = new ArrayList(10);
         Map localMap = (Map) ((HashMap) tcRefParserMap).clone();
@@ -703,7 +698,7 @@ class ModeParser {
             TCRefParser tcRefParser = (TCRefParser) localMap.remove(name);
             //Put instances to array according to defined order
             //Order should be defined from 0 to N-1
-            //log("-- -- ADD [" + index + "]: " + tcRefParser.getName());
+            //if (DEBUG) Debug.log(ModeParser.class, "-- -- ADD [" + index + "]: " + tcRefParser.getName());
             tcRefParserArray[index] = tcRefParser;
         }
         for (int i = 0; i < tcRefParserArray.length; i++) {
@@ -741,14 +736,14 @@ class ModeParser {
         }
         
         deleteLocalTCRef(tcRefName);
-        log("removeTCRef LEAVE" + " tcRef:" + tcRefName);
+        if (DEBUG) Debug.log(ModeParser.class, "removeTCRef LEAVE" + " tcRef:" + tcRefName);
     }
     
     /** Adds TCRefParser to ModeParser.
      * @param tcRefName unique name of tcRef
      */
     TCRefConfig addTCRef (String tcRefName, List tcRefNameList) {
-        log("addTCRef ENTER" + " mo:" + getName()
+        if (DEBUG) Debug.log(ModeParser.class, "addTCRef ENTER" + " mo:" + getName()
         + " tcRef:" + tcRefName);
         //Check consistency. TCRefParser instance should not exist.
         TCRefParser tcRefParser = (TCRefParser) tcRefParserMap.get(tcRefName);
@@ -801,18 +796,18 @@ class ModeParser {
             localList.add(tcRefParser);
         }
         
-        /*log("LIST BEFORE SORT");
+        /*if (DEBUG) Debug.log(ModeParser.class, "LIST BEFORE SORT");
         for (int i = 0; i < localList.size(); i++) {
             tcRefParser = (TCRefParser) localList.get(i);
-            log("p[" + i + "]: " + tcRefParser.getName());
+            if (DEBUG) Debug.log(ModeParser.class, "p[" + i + "]: " + tcRefParser.getName());
         }*/
         
         localList = carefullySort(localList);
         
-        /*log("LIST AFTER SORT");
+        /*if (DEBUG) Debug.log(ModeParser.class, "LIST AFTER SORT");
         for (int i = 0; i < localList.size(); i++) {
             tcRefParser = (TCRefParser) localList.get(i);
-            log("p[" + i + "]: " + tcRefParser.getName());
+            if (DEBUG) Debug.log(ModeParser.class, "p[" + i + "]: " + tcRefParser.getName());
         }*/
         
         //Create updated order
@@ -838,7 +833,7 @@ class ModeParser {
             tcRefNameList.add(tcRefParser.getName());
         }
         
-        log("addTCRef LEAVE" + " mo:" + getName()
+        if (DEBUG) Debug.log(ModeParser.class, "addTCRef LEAVE" + " mo:" + getName()
         + " tcRef:" + tcRefName);
         
         return tcRefConfig;
@@ -849,7 +844,7 @@ class ModeParser {
      * @param tcRefName unique name of tcRef
      */
     void addTCRefImport (String tcRefName, InternalConfig internalCfg) {
-        log("addTCRefImport ENTER" + " mo:" + getName()
+        if (DEBUG) Debug.log(ModeParser.class, "addTCRefImport ENTER" + " mo:" + getName()
         + " tcRef:" + tcRefName);
         //Check consistency. TCRefParser instance should not exist.
         TCRefParser tcRefParser = (TCRefParser) tcRefParserMap.get(tcRefName);
@@ -868,14 +863,14 @@ class ModeParser {
         tcRefParser.setLocalParentFolder(localFolder);
         tcRefParser.setInternalConfig(internalCfg);
         
-        //log("CodeNameBase:" + internalCfg.moduleCodeNameBase);
-        //log("CodeNameRelease:" + internalCfg.moduleCodeNameRelease);
-        //log("SpecificationVersion:" + internalCfg.moduleSpecificationVersion);
-        //log("specVersion:" + internalCfg.specVersion);
+        //if (DEBUG) Debug.log(ModeParser.class, "CodeNameBase:" + internalCfg.moduleCodeNameBase);
+        //if (DEBUG) Debug.log(ModeParser.class, "CodeNameRelease:" + internalCfg.moduleCodeNameRelease);
+        //if (DEBUG) Debug.log(ModeParser.class, "SpecificationVersion:" + internalCfg.moduleSpecificationVersion);
+        //if (DEBUG) Debug.log(ModeParser.class, "specVersion:" + internalCfg.specVersion);
         
         tcRefParserMap.put(tcRefName, tcRefParser);
         
-        log("addTCRefImport LEAVE" + " mo:" + getName()
+        if (DEBUG) Debug.log(ModeParser.class, "addTCRefImport LEAVE" + " mo:" + getName()
         + " tcRef:" + tcRefName);
     }
     
@@ -884,7 +879,7 @@ class ModeParser {
      * @param tcRefName unique name of tcRef
      */
     TCRefParser findTCRefParser (String tcRefName) {
-        //log("findTCRefParser ENTER" + " tcRef:" + tcRefName);
+        //if (DEBUG) Debug.log(ModeParser.class, "findTCRefParser ENTER" + " tcRef:" + tcRefName);
         return (TCRefParser) tcRefParserMap.get(tcRefName);
     }
     
@@ -934,10 +929,6 @@ class ModeParser {
         this.inSessionLayer = inSessionLayer;
     }
     
-    void log (String s) {
-        Debug.log(ModeParser.class, s);
-    }
-    
     private final class PropertyHandler extends DefaultHandler {
         
         /** Mode configuration data */
@@ -961,11 +952,11 @@ class ModeParser {
         private FileObject getConfigFOInput () {
             FileObject modeConfigFO;
             if (isInLocalFolder()) {
-                //log("-- ModeParser.getConfigFOInput" + " looking for LOCAL");
+                //if (DEBUG) Debug.log(ModeParser.class, "-- ModeParser.getConfigFOInput" + " looking for LOCAL");
                 modeConfigFO = localParentFolder.getFileObject
                 (ModeParser.this.getName(), PersistenceManager.MODE_EXT);
             } else if (isInModuleFolder()) {
-                //log("-- ModeParser.getConfigFOInput" + " looking for MODULE");
+                //if (DEBUG) Debug.log(ModeParser.class, "-- ModeParser.getConfigFOInput" + " looking for MODULE");
                 modeConfigFO = moduleParentFolder.getFileObject
                 (ModeParser.this.getName(), PersistenceManager.MODE_EXT);
                 //Check layer attribute and if it is session copy it to create
@@ -979,7 +970,7 @@ class ModeParser {
                 //XXX should not happen
                 modeConfigFO = null;
             }
-            //log("-- ModeParser.getConfigFOInput" + " modeConfigFO:" + modeConfigFO);
+            //if (DEBUG) Debug.log(ModeParser.class, "-- ModeParser.getConfigFOInput" + " modeConfigFO:" + modeConfigFO);
             return modeConfigFO;
         }
 
@@ -988,7 +979,7 @@ class ModeParser {
             modeConfigFO = localParentFolder.getFileObject
             (ModeParser.this.getName(), PersistenceManager.MODE_EXT);
             if (modeConfigFO != null) {
-                //log("-- ModeParser.getConfigFOOutput" + " modeConfigFO LOCAL:" + modeConfigFO);
+                //if (DEBUG) Debug.log(ModeParser.class, "-- ModeParser.getConfigFOOutput" + " modeConfigFO LOCAL:" + modeConfigFO);
                 return modeConfigFO;
             } else {
                 StringBuffer buffer = new StringBuffer();
@@ -1003,7 +994,7 @@ class ModeParser {
                 if (ModeParser.this.isInSessionLayer()) {
                     SystemFileSystem.setLayerForNew(localParentFolder.getPath(),null);
                 }
-                //log("-- ModeParser.getConfigFOOutput" + " LOCAL not found CREATE");
+                //if (DEBUG) Debug.log(ModeParser.class, "-- ModeParser.getConfigFOOutput" + " LOCAL not found CREATE");
 
                 return modeConfigFO;
             }
@@ -1030,9 +1021,9 @@ class ModeParser {
                         InputStream is = cfgFOInput.getInputStream();
                         byte [] arr = new byte [is.available()];
                         is.read(arr);
-                        log("DUMP Mode:");
+                        if (DEBUG) Debug.log(ModeParser.class, "DUMP Mode:");
                         String s = new String(arr);
-                        log(s);
+                        if (DEBUG) Debug.log(ModeParser.class, s);
                     }*/
                     //DUMP END
                     
@@ -1086,7 +1077,7 @@ class ModeParser {
                     handleEmptyBehavior(attrs);
                 }
             } else {
-                log("-- ModeParser.startElement PARSING OLD");
+                if (DEBUG) Debug.log(ModeParser.class, "-- ModeParser.startElement PARSING OLD");
                 //Parse version < 2.0
             }
         }
@@ -1504,13 +1495,12 @@ class ModeParser {
          */
         private StringBuffer fillBuffer (ModeConfig mc, InternalConfig ic) throws IOException {
             StringBuffer buff = new StringBuffer(800);
-            String curValue = null;
             // header
-            buff.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"); // NOI18N
+            buff.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"). // NOI18N
             /*buff.append("<!DOCTYPE mode PUBLIC\n"); // NOI18N
             buff.append("          \"-//NetBeans//DTD Mode Properties 2.0//EN\"\n"); // NOI18N
             buff.append("          \"http://www.netbeans.org/dtds/mode-properties2_0.dtd\">\n\n"); // NOI18N*/
-            buff.append("<mode version=\"2.0\">\n"); // NOI18N
+                append("<mode version=\"2.0\">\n"); // NOI18N
             
             appendModule(ic, buff);
             appendName(mc, buff);
@@ -1535,11 +1525,10 @@ class ModeParser {
                 return;
             }
             if (ic.moduleCodeNameBase != null) {
-                buff.append("    <module"); // NOI18N
-                buff.append(" name=\""); // NOI18N
+                buff.append("    <module name=\""); // NOI18N
                 buff.append(ic.moduleCodeNameBase);
                 if (ic.moduleCodeNameRelease != null) {
-                    buff.append("/" + ic.moduleCodeNameRelease); // NOI18N
+                    buff.append("/").append(ic.moduleCodeNameRelease); // NOI18N
                 }
                 if (ic.moduleSpecificationVersion != null) { 
                     buff.append("\" spec=\""); // NOI18N
@@ -1556,9 +1545,7 @@ class ModeParser {
         }
 
         private void appendKind (ModeConfig mc, StringBuffer buff) {
-            StringBuffer sb = getOffset(2);
-            buff.append(sb);
-            buff.append("<kind type=\""); // NOI18N
+            buff.append("  <kind type=\""); // NOI18N
             if (mc.kind == Constants.MODE_KIND_EDITOR) {
                 buff.append("editor"); // NOI18N
             } else if (mc.kind == Constants.MODE_KIND_VIEW) {
@@ -1568,9 +1555,7 @@ class ModeParser {
         }
 
         private void appendState (ModeConfig mc, StringBuffer buff) {
-            StringBuffer sb = getOffset(2);
-            buff.append(sb);
-            buff.append("<state type=\""); // NOI18N
+            buff.append("  <state type=\""); // NOI18N
             if (mc.state == Constants.MODE_STATE_JOINED) {
                 buff.append("joined"); // NOI18N
             } else if (mc.kind == Constants.MODE_STATE_SEPARATED) {
@@ -1583,103 +1568,52 @@ class ModeParser {
             if (mc.constraints.length == 0) {
                 return;
             }
-            StringBuffer sb = getOffset(2);
-            buff.append(sb);
-            buff.append("<constraints>\n"); // NOI18N
+            buff.append("  <constraints>\n"); // NOI18N
             for (int i = 0; i < mc.constraints.length; i++) {
                 SplitConstraint item = mc.constraints[i];
-                buff.append(sb);
-                buff.append("    <path"); // NOI18N
-                buff.append(" orientation=\""); // NOI18N
+                buff.append("    <path orientation=\""); // NOI18N
                 if (item.orientation == Constants.HORIZONTAL) {
                     buff.append("horizontal"); // NOI18N
                 } else {
                     buff.append("vertical"); // NOI18N
                 }
-                buff.append("\""); // NOI18N
-                buff.append(" number=\""); // NOI18N
-                buff.append(item.index); // NOI18N
-                buff.append("\""); // NOI18N
-                buff.append(" weight=\""); // NOI18N
-                buff.append(item.splitWeight);
-                buff.append("\""); // NOI18N
-                buff.append(" />\n"); // NOI18N
+                buff.append("\" number=\"").append(item.index).append("\" weight=\"").append(item.splitWeight).append("\"/>\n"); // NOI18N
             }
-            buff.append(sb);
-            buff.append("</constraints>\n"); // NOI18N
+            buff.append("  </constraints>\n"); // NOI18N
         }
         
         private void appendBounds (ModeConfig mc, StringBuffer buff) {
             if (mc.bounds == null) {
                 return;
             }
-            StringBuffer sb = getOffset(2);
-            buff.append(sb);
-            buff.append("<bounds"); // NOI18N
-            buff.append(" x=\""); // NOI18N
-            buff.append(mc.bounds.x);
-            buff.append("\" y=\""); // NOI18N
-            buff.append(mc.bounds.y);
-            buff.append("\" width=\""); // NOI18N
-            buff.append(mc.bounds.width);
-            buff.append("\" height=\""); // NOI18N
-            buff.append(mc.bounds.height);
-            buff.append("\" />\n"); // NOI18N
+            buff.append("  <bounds x=\"").append(mc.bounds.x).
+                append("\" y=\"").append(mc.bounds.y).
+                append("\" width=\"").append(mc.bounds.width).
+                append("\" height=\"").append(mc.bounds.height).append("\" />\n"); // NOI18N
         }
         
         private void appendRelativeBounds (ModeConfig mc, StringBuffer buff) {
             if (mc.relativeBounds == null) {
                 return;
             }
-            StringBuffer sb = getOffset(2);
-            buff.append(sb);
-            buff.append("<relative-bounds"); // NOI18N
-            buff.append(" x=\""); // NOI18N
-            buff.append(mc.relativeBounds.x);
-            buff.append("\" y=\""); // NOI18N
-            buff.append(mc.relativeBounds.y);
-            buff.append("\" width=\""); // NOI18N
-            buff.append(mc.relativeBounds.width);
-            buff.append("\" height=\""); // NOI18N
-            buff.append(mc.relativeBounds.height);
-            buff.append("\" />\n"); // NOI18N
+            buff.append("  <relative-bounds x=\"").append(mc.relativeBounds.x).
+                append("\" y=\"").append(mc.relativeBounds.y).
+                append("\" width=\"").append(mc.relativeBounds.width).
+                append("\" height=\"").append(mc.relativeBounds.height).append("\" />\n"); // NOI18N
         }
         
         private void appendFrame (ModeConfig mc, StringBuffer buff) {
-            StringBuffer sb = getOffset(2);
-            buff.append(sb);
-            buff.append("<frame"); // NOI18N
-            buff.append(" state=\""); // NOI18N
-            buff.append(mc.frameState);
-            buff.append("\""); // NOI18N
-            buff.append(" />\n"); // NOI18N
+            buff.append("  <frame state=\"").append(mc.frameState).append("\"/>\n"); // NOI18N
         }
         
         private void appendActiveTC (ModeConfig mc, StringBuffer buff) {
             if ((mc.selectedTopComponentID != null) && !"".equals(mc.selectedTopComponentID)) {
-                buff.append("    <active-tc id=\""); // NOI18N
-                buff.append(mc.selectedTopComponentID);
-                buff.append("\" />\n"); // NOI18N
+                buff.append("    <active-tc id=\"").append(mc.selectedTopComponentID).append("\"/>\n"); // NOI18N
             }
         }
         
         private void appendEmptyBehavior (ModeConfig mc, StringBuffer buff) {
-            buff.append("    <empty-behavior permanent=\""); // NOI18N
-            if (mc.permanent) {
-                buff.append("true");
-            } else {
-                buff.append("false");
-            }
-            buff.append("\""); // NOI18N
-            buff.append(" />\n"); // NOI18N
-        }
-        
-        private StringBuffer getOffset (int ind) {
-            StringBuffer sb = new StringBuffer();
-            for (int i = 0; i < ind; i++) {
-                sb.append("    "); // NOI18N
-            }
-            return sb;
+            buff.append("    <empty-behavior permanent=\"").append(mc.permanent).append("\"/>\n"); // NOI18N
         }
         
         /** @return Newly created parser with set content handler, errror handler
@@ -1716,4 +1650,3 @@ class ModeParser {
     }
     
 }
-

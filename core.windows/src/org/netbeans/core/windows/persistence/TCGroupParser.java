@@ -492,11 +492,11 @@ class TCGroupParser {
             StringBuffer buff = new StringBuffer(800);
             String curValue = null;
             // header
-            buff.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"); // NOI18N
+            buff.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"). // NOI18N
             /*buff.append("<!DOCTYPE tc-group PUBLIC\n"); // NOI18N
             buff.append("          \"-//NetBeans//DTD Top Component in Group Properties 2.0//EN\"\n"); // NOI18N
             buff.append("          \"http://www.netbeans.org/dtds/tc-group2_0.dtd\">\n\n"); // NOI18N*/
-            buff.append("<tc-group version=\"2.0\">\n"); // NOI18N
+                append("<tc-group version=\"2.0\">\n"); // NOI18N
             
             appendModule(ic, buff);
             appendTcId(tcGroupCfg, buff);
@@ -511,11 +511,10 @@ class TCGroupParser {
                 return;
             }
             if (ic.moduleCodeNameBase != null) {
-                buff.append("    <module"); // NOI18N
-                buff.append(" name=\""); // NOI18N
+                buff.append(" <module name=\""); // NOI18N
                 buff.append(ic.moduleCodeNameBase);
                 if (ic.moduleCodeNameRelease != null) {
-                    buff.append("/" + ic.moduleCodeNameRelease); // NOI18N
+                    buff.append("/").append(ic.moduleCodeNameRelease); // NOI18N
                 }
                 if (ic.moduleSpecificationVersion != null) { 
                     buff.append("\" spec=\""); // NOI18N
@@ -526,36 +525,13 @@ class TCGroupParser {
         }
 
         private void appendTcId (TCGroupConfig tcGroupCfg, StringBuffer buff) {
-            buff.append("    <tc-id id=\""); // NOI18N
-            buff.append(tcGroupCfg.tc_id);
-            buff.append("\""); // NOI18N
-            buff.append(" />\n"); // NOI18N
+            buff.append(" <tc-id id=\"").append(tcGroupCfg.tc_id).append("\"/>\n"); // NOI18N
         }
         
         private void appendOpenCloseBehavior (TCGroupConfig tcGroupCfg, StringBuffer buff) {
-            buff.append("    <open-close-behavior"); // NOI18N
-            buff.append(" open=\""); // NOI18N
-            if (tcGroupCfg.open) {
-                buff.append("true"); // NOI18N
-            } else {
-                buff.append("false"); // NOI18N
-            }
-            buff.append("\""); // NOI18N
-            buff.append(" close=\""); // NOI18N
-            if (tcGroupCfg.close) {
-                buff.append("true"); // NOI18N
-            } else {
-                buff.append("false"); // NOI18N
-            }
-            buff.append("\""); // NOI18N
-            buff.append(" was-opened=\""); // NOI18N
-            if (tcGroupCfg.wasOpened) {
-                buff.append("true"); // NOI18N
-            } else {
-                buff.append("false"); // NOI18N
-            }
-            buff.append("\""); // NOI18N
-            buff.append(" />\n"); // NOI18N
+            buff.append(" <open-close-behavior open=\"").append(tcGroupCfg.open). // NOI18N
+                append("\" close=\"").append(tcGroupCfg.close). // NOI18N
+                append("\" was-opened=\"").append(tcGroupCfg.wasOpened).append("\"/>\n"); // NOI18N
         }
         
         /** @return Newly created parser with grou content handler, errror handler

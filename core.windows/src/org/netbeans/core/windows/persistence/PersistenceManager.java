@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -91,6 +91,8 @@ public final class PersistenceManager implements PropertyChangeListener {
     
     /** default base name for noname top components */
     private static final String DEFAULT_TC_NAME = "untitled_tc"; // NOI18N
+    
+    private static final boolean DEBUG = Debug.isLoggable(PersistenceManager.class);
     
     /** Root folder for win sys module */
     private FileObject rootModuleFolder;
@@ -1284,10 +1286,6 @@ public final class PersistenceManager implements PropertyChangeListener {
         }
     }
     
-    void log (String s) {
-        Debug.log(PersistenceManager.class, s);
-    }
-    
     /** Read from XML */
 //    public void readXML () throws IOException, ClassNotFoundException {
 //        readProcessed = true;
@@ -1308,7 +1306,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     private void copySettingsFiles () {
         //long start, end, diff;
         //start = System.currentTimeMillis();
-        log("copySettingsFiles ENTER");
+        if (DEBUG) Debug.log(PersistenceManager.class, "copySettingsFiles ENTER");
         Set localSet = new HashSet(100);
         FileObject [] filesLocal = getComponentsLocalFolder().getChildren();
         for (int i = 0; i < filesLocal.length; i++) {
@@ -1325,7 +1323,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                 }
             }
         }
-        log("copySettingsFiles LEAVE");
+        if (DEBUG) Debug.log(PersistenceManager.class, "copySettingsFiles LEAVE");
         //end = System.currentTimeMillis();
         //diff = end - start;
         //System.out.println("Copying of settings files takes " + diff + " ms");
@@ -1334,7 +1332,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     /** Copy settings file from Module Components module folder (Windows2/Components)
      * to Local Components folder (Windows2Local/Components). */
     private void copySettingsFile (FileObject fo) {
-        log("copySettingsFile fo:" + fo);
+        if (DEBUG) Debug.log(PersistenceManager.class, "copySettingsFile fo:" + fo);
         FileObject destFolder = getComponentsLocalFolder();
         try {
             fo.copy(destFolder,fo.getName(),fo.getExt());

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -57,6 +57,8 @@ class GroupParser {
     private static final String INSTANCE_DTD_ID_2_0
         = "-//NetBeans//DTD Group Properties 2.0//EN"; // NOI18N
     
+    private static final boolean DEBUG = Debug.isLoggable(GroupParser.class);
+    
     /** Module parent folder */
     private FileObject moduleParentFolder;
     
@@ -85,26 +87,26 @@ class GroupParser {
     
     /** Load group configuration including all tcgrp's. */
     GroupConfig load () throws IOException {
-        //log("");
-        //log("++ GroupParser.load ENTER" + " group:" + name);
+        //if (DEBUG) Debug.log(GroupParser.class, "");
+        //if (DEBUG) Debug.log(GroupParser.class, "++ GroupParser.load ENTER" + " group:" + name);
         GroupConfig sc = new GroupConfig();
         readProperties(sc);
         readTCGroups(sc);
-        //log("++ GroupParser.load LEAVE" + " group:" + name);
-        //log("");
+        //if (DEBUG) Debug.log(GroupParser.class, "++ GroupParser.load LEAVE" + " group:" + name);
+        //if (DEBUG) Debug.log(GroupParser.class, "");
         return sc;
     }
     
     /** Save group configuration including all tcgrp's. */
     void save (GroupConfig sc) throws IOException {
-        //log("-- GroupParser.save ENTER" + " group:" + name);
+        //if (DEBUG) Debug.log(GroupParser.class, "-- GroupParser.save ENTER" + " group:" + name);
         writeProperties(sc);
         writeTCGroups(sc);
-        //log("-- GroupParser.save LEAVE" + " group:" + name);
+        //if (DEBUG) Debug.log(GroupParser.class, "-- GroupParser.save LEAVE" + " group:" + name);
     }
     
     private void readProperties (GroupConfig sc) throws IOException {
-        log("readProperties ENTER" + " group:" + getName());
+        if (DEBUG) Debug.log(GroupParser.class, "readProperties ENTER" + " group:" + getName());
         if (propertyHandler == null) {
             propertyHandler = new PropertyHandler();
         }
@@ -112,15 +114,15 @@ class GroupParser {
         internalCfg.clear();
         propertyHandler.readData(sc, internalCfg);
         
-        /*log("               specVersion: " + internalCfg.specVersion);
-        log("        moduleCodeNameBase: " + internalCfg.moduleCodeNameBase);
-        log("     moduleCodeNameRelease: " + internalCfg.moduleCodeNameRelease);
-        log("moduleSpecificationVersion: " + internalCfg.moduleSpecificationVersion);*/
-        log("readProperties LEAVE" + " group:" + getName());
+        /*if (DEBUG) Debug.log(GroupParser.class, "               specVersion: " + internalCfg.specVersion);
+        if (DEBUG) Debug.log(GroupParser.class, "        moduleCodeNameBase: " + internalCfg.moduleCodeNameBase);
+        if (DEBUG) Debug.log(GroupParser.class, "     moduleCodeNameRelease: " + internalCfg.moduleCodeNameRelease);
+        if (DEBUG) Debug.log(GroupParser.class, "moduleSpecificationVersion: " + internalCfg.moduleSpecificationVersion);*/
+        if (DEBUG) Debug.log(GroupParser.class, "readProperties LEAVE" + " group:" + getName());
     }
     
     private void readTCGroups (GroupConfig sc) throws IOException {
-        log("readTCGroups ENTER" + " group:" + getName());
+        if (DEBUG) Debug.log(GroupParser.class, "readTCGroups ENTER" + " group:" + getName());
         
         for (Iterator it = tcGroupParserMap.keySet().iterator(); it.hasNext(); ) {
             TCGroupParser tcGroupParser = (TCGroupParser) tcGroupParserMap.get(it.next());
@@ -128,17 +130,17 @@ class GroupParser {
             tcGroupParser.setInLocalFolder(false);
         }
         
-        /*log("moduleParentFolder: " + moduleParentFolder);
-        log(" localParentFolder: " + localParentFolder);
-        log("   moduleGroupFolder: " + moduleGroupFolder);
-        log("    localGroupFolder: " + localGroupFolder);*/
+        /*if (DEBUG) Debug.log(GroupParser.class, "moduleParentFolder: " + moduleParentFolder);
+        if (DEBUG) Debug.log(GroupParser.class, " localParentFolder: " + localParentFolder);
+        if (DEBUG) Debug.log(GroupParser.class, "   moduleGroupFolder: " + moduleGroupFolder);
+        if (DEBUG) Debug.log(GroupParser.class, "    localGroupFolder: " + localGroupFolder);*/
         
         if (isInModuleFolder()) {
             FileObject moduleGroupFolder = moduleParentFolder.getFileObject(groupName);
             if (moduleGroupFolder != null) {
                 FileObject [] files = moduleGroupFolder.getChildren();
                 for (int i = 0; i < files.length; i++) {
-                    //log("-- MODULE fo[" + i + "]: " + files[i]);
+                    //if (DEBUG) Debug.log(GroupParser.class, "-- MODULE fo[" + i + "]: " + files[i]);
                     if (!files[i].isFolder() && PersistenceManager.TCGROUP_EXT.equals(files[i].getExt())) {
                         //wstcgrp file
                         TCGroupParser tcGroupParser;
@@ -160,7 +162,7 @@ class GroupParser {
             if (localGroupFolder != null) {
                 FileObject [] files = localGroupFolder.getChildren();
                 for (int i = 0; i < files.length; i++) {
-                    //log("-- LOCAL fo[" + i + "]: " + files[i]);
+                    //if (DEBUG) Debug.log(GroupParser.class, "-- LOCAL fo[" + i + "]: " + files[i]);
                     if (!files[i].isFolder() && PersistenceManager.TCGROUP_EXT.equals(files[i].getExt())) {
                         //wstcgrp file
                         TCGroupParser tcGroupParser;
@@ -179,7 +181,7 @@ class GroupParser {
         
         /*for (Iterator it = tcGroupParserMap.keySet().iterator(); it.hasNext(); ) {
             TCGroupParser tcGroupParser = (TCGroupParser) tcGroupParserMap.get(it.next());
-            log("tcGroupParser: " + tcGroupParser.getName()
+            if (DEBUG) Debug.log(GroupParser.class, "tcGroupParser: " + tcGroupParser.getName()
             + " isInModuleFolder:" + tcGroupParser.isInModuleFolder()
             + " isInLocalFolder:" + tcGroupParser.isInLocalFolder());
         }*/
@@ -220,7 +222,7 @@ class GroupParser {
             pm.addUsedTCId(sc.tcGroupConfigs[i].tc_id);
         }
         
-        log("readTCGroups LEAVE" + " group:" + getName());
+        if (DEBUG) Debug.log(GroupParser.class, "readTCGroups LEAVE" + " group:" + getName());
     }
     
     /** Checks if module for given tcGroup exists.
@@ -248,17 +250,17 @@ class GroupParser {
     }
     
     private void writeProperties (GroupConfig sc) throws IOException {
-        log("writeProperties ENTER");
+        if (DEBUG) Debug.log(GroupParser.class, "writeProperties ENTER");
         if (propertyHandler == null) {
             propertyHandler = new PropertyHandler();
         }
         InternalConfig internalCfg = getInternalConfig();
         propertyHandler.writeData(sc, internalCfg);
-        log("writeProperties LEAVE");
+        if (DEBUG) Debug.log(GroupParser.class, "writeProperties LEAVE");
     }
     
     private void writeTCGroups (GroupConfig sc) throws IOException {
-        log("writeTCGroups ENTER");
+        if (DEBUG) Debug.log(GroupParser.class, "writeTCGroups ENTER");
         //Step 1: Clean obsolete tcGroup parsers
         Map tcGroupConfigMap = new HashMap(19);
         for (int i = 0; i < sc.tcGroupConfigs.length; i++) {
@@ -272,10 +274,10 @@ class GroupParser {
             }
         }
         for (int i = 0; i < toDelete.size(); i++) {
-            /*log("-- GroupParser.writeTCGroups"
+            /*if (DEBUG) Debug.log(GroupParser.class, "-- GroupParser.writeTCGroups"
             + " ** REMOVE FROM MAP tcGroupParser: " + toDelete.get(i));*/
             tcGroupParserMap.remove(toDelete.get(i));
-            /*log("-- GroupParser.writeTCGroups"
+            /*if (DEBUG) Debug.log(GroupParser.class, "-- GroupParser.writeTCGroups"
             + " ** DELETE tcGroupParser: " + toDelete.get(i));*/
             deleteLocalTCGroup((String) toDelete.get(i));
         }
@@ -292,10 +294,10 @@ class GroupParser {
         FileObject localFolder = localParentFolder.getFileObject(getName());
         if ((localFolder == null) && (tcGroupParserMap.size() > 0)) {
             //Create local group folder
-            //log("-- GroupParser.writeTCGroups" + " CREATE LOCAL FOLDER");
+            //if (DEBUG) Debug.log(GroupParser.class, "-- GroupParser.writeTCGroups" + " CREATE LOCAL FOLDER");
             localFolder = FileUtil.createFolder(localParentFolder, getName());
         }
-        //log("-- GroupParser.writeTCGroups" + " localFolder:" + localFolder);
+        //if (DEBUG) Debug.log(GroupParser.class, "-- GroupParser.writeTCGroups" + " localFolder:" + localFolder);
         
         for (Iterator it = tcGroupParserMap.keySet().iterator(); it.hasNext(); ) {
             TCGroupParser tcGroupParser = (TCGroupParser) tcGroupParserMap.get(it.next());
@@ -304,11 +306,11 @@ class GroupParser {
             tcGroupParser.save((TCGroupConfig) tcGroupConfigMap.get(tcGroupParser.getName()));
         }
         
-        log("writeTCGroups LEAVE");
+        if (DEBUG) Debug.log(GroupParser.class, "writeTCGroups LEAVE");
     }
     
     private void deleteLocalTCGroup (String tcGroupName) {
-        log("deleteLocalTCGroup" + " tcGroupName:" + tcGroupName);
+        if (DEBUG) Debug.log(GroupParser.class, "deleteLocalTCGroup" + " tcGroupName:" + tcGroupName);
         if (localParentFolder == null) {
             return;
         }
@@ -326,7 +328,7 @@ class GroupParser {
      * @param tcGroupName unique name of tcgroup
      */
     void removeTCGroup (String tcGroupName) {
-        //log("-- GroupParser.removeTCGroup" + " group:" + getName() + " tcGroup:" + tcGroupName);
+        //if (DEBUG) Debug.log(GroupParser.class, "-- GroupParser.removeTCGroup" + " group:" + getName() + " tcGroup:" + tcGroupName);
         tcGroupParserMap.remove(tcGroupName);
         deleteLocalTCGroup(tcGroupName);
     }
@@ -335,7 +337,7 @@ class GroupParser {
      * @param tcGroupName unique name of tcGroup
      */
     TCGroupConfig addTCGroup (String tcGroupName) {
-        //log("-- GroupParser.addTCGroup" + " group:" + getName() + " tcGroup:" + tcGroupName);
+        //if (DEBUG) Debug.log(GroupParser.class, "-- GroupParser.addTCGroup" + " group:" + getName() + " tcGroup:" + tcGroupName);
         //Check consistency. TCGroupParser instance should not exist.
         TCGroupParser tcGroupParser = (TCGroupParser) tcGroupParserMap.get(tcGroupName);
         if (tcGroupParser != null) {
@@ -411,10 +413,6 @@ class GroupParser {
         this.inSessionLayer = inSessionLayer;
     }
     
-    void log (String s) {
-        Debug.log(GroupParser.class, s);
-    }
-    
     private final class PropertyHandler extends DefaultHandler {
         
         /** Group configuration data */
@@ -435,11 +433,11 @@ class GroupParser {
         private FileObject getConfigFOInput () {
             FileObject groupConfigFO;
             if (isInLocalFolder()) {
-                //log("-- GroupParser.getConfigFOInput" + " looking for LOCAL");
+                //if (DEBUG) Debug.log(GroupParser.class, "-- GroupParser.getConfigFOInput" + " looking for LOCAL");
                 groupConfigFO = localParentFolder.getFileObject
                 (GroupParser.this.getName(), PersistenceManager.GROUP_EXT);
             } else if (isInModuleFolder()) {
-                //log("-- GroupParser.getConfigFOInput" + " looking for MODULE");
+                //if (DEBUG) Debug.log(GroupParser.class, "-- GroupParser.getConfigFOInput" + " looking for MODULE");
                 groupConfigFO = moduleParentFolder.getFileObject
                 (GroupParser.this.getName(), PersistenceManager.GROUP_EXT);
                 //Check layer attribute and if it is session copy it to create
@@ -453,7 +451,7 @@ class GroupParser {
                 //XXX should not happen
                 groupConfigFO = null;
             }
-            //log("-- GroupParser.getConfigFOInput" + " groupConfigFO:" + groupConfigFO);
+            //if (DEBUG) Debug.log(GroupParser.class, "-- GroupParser.getConfigFOInput" + " groupConfigFO:" + groupConfigFO);
             return groupConfigFO;
         }
 
@@ -462,7 +460,7 @@ class GroupParser {
             groupConfigFO = localParentFolder.getFileObject
             (GroupParser.this.getName(), PersistenceManager.GROUP_EXT);
             if (groupConfigFO != null) {
-                //log("-- GroupParser.getConfigFOOutput" + " groupConfigFO LOCAL:" + groupConfigFO);
+                //if (DEBUG) Debug.log(GroupParser.class, "-- GroupParser.getConfigFOOutput" + " groupConfigFO LOCAL:" + groupConfigFO);
                 return groupConfigFO;
             } else {
                 StringBuffer buffer = new StringBuffer();
@@ -477,7 +475,7 @@ class GroupParser {
                 if (GroupParser.this.isInSessionLayer()) {
                     SystemFileSystem.setLayerForNew(localParentFolder.getPath(),null);
                 }
-                //log("-- GroupParser.getConfigFOOutput" + " LOCAL not found CREATE");
+                //if (DEBUG) Debug.log(GroupParser.class, "-- GroupParser.getConfigFOOutput" + " LOCAL not found CREATE");
 
                 return groupConfigFO;
             }
@@ -503,9 +501,9 @@ class GroupParser {
                     /*InputStream is = cfgFOInput.getInputStream();
                     byte [] arr = new byte [is.available()];
                     is.read(arr);
-                    log("DUMP Group: " + GroupParser.this.getName());
+                    if (DEBUG) Debug.log(GroupParser.class, "DUMP Group: " + GroupParser.this.getName());
                     String s = new String(arr);
-                    log(s);*/
+                    if (DEBUG) Debug.log(GroupParser.class, s);*/
                     //DUMP END
                     
                     getXMLParser().parse(new InputSource(cfgFOInput.getInputStream()));
@@ -539,7 +537,7 @@ class GroupParser {
                     handleState(attrs);
                 }
             } else {
-                log("-- GroupParser.startElement PARSING OLD");
+                if (DEBUG) Debug.log(GroupParser.class, "-- GroupParser.startElement PARSING OLD");
                 //Parse version < 2.0
             }
         }
@@ -694,8 +692,8 @@ class GroupParser {
                     OutputStream os = cfgFOOutput.getOutputStream(lock);
                     osw = new OutputStreamWriter(os, "UTF-8"); // NOI18N
                     osw.write(buff.toString());
-                    //log("-- DUMP Group: " + GroupParser.this.getName());
-                    //log(buff.toString());
+                    //if (DEBUG) Debug.log(GroupParser.class, "-- DUMP Group: " + GroupParser.this.getName());
+                    //if (DEBUG) Debug.log(GroupParser.class, buff.toString());
                 } finally {
                     if (osw != null) {
                         osw.close();

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -73,6 +73,8 @@ public class WindowManagerParser {
     private static final String INSTANCE_DTD_ID_2_0
         = "-//NetBeans//DTD Window Manager Properties 2.0//EN"; // NOI18N
     
+    private static final boolean DEBUG = Debug.isLoggable(WindowManagerParser.class);
+    
     /** Unique wm name */
     private String wmName;
     
@@ -126,7 +128,7 @@ public class WindowManagerParser {
      */
     void removeMode (String modeName) {
         synchronized (SAVING_LOCK) {
-            log("removeMode" + " mo:" + modeName);
+            if (DEBUG) Debug.log(WindowManagerParser.class, "removeMode" + " mo:" + modeName);
             ModeParser modeParser = (ModeParser) modeParserMap.get(modeName);
             if (modeParser != null) {
                 modeParser.setInModuleFolder(false);
@@ -141,7 +143,7 @@ public class WindowManagerParser {
      */
     ModeConfig addMode (String modeName) {
         synchronized (SAVING_LOCK) {
-            log("addMode ENTER" + " mo:" + modeName);
+            if (DEBUG) Debug.log(WindowManagerParser.class, "addMode ENTER" + " mo:" + modeName);
             ModeParser modeParser = (ModeParser) modeParserMap.get(modeName);
             if (modeParser == null) {
                 //Create new ModeParser if it does not exist.
@@ -171,7 +173,7 @@ public class WindowManagerParser {
      */
     void removeGroup (String groupName) {
         synchronized (SAVING_LOCK) {
-            log("WMParser.removeGroup" + " group:" + groupName);
+            if (DEBUG) Debug.log(WindowManagerParser.class, "WMParser.removeGroup" + " group:" + groupName);
             groupParserMap.remove(groupName);
             deleteLocalGroup(groupName);
         }
@@ -183,7 +185,7 @@ public class WindowManagerParser {
      */
     GroupConfig addGroup (String groupName) {
         synchronized (SAVING_LOCK) {
-            log("WMParser.addGroup ENTER" + " group:" + groupName);
+            if (DEBUG) Debug.log(WindowManagerParser.class, "WMParser.addGroup ENTER" + " group:" + groupName);
             GroupParser groupParser = (GroupParser) groupParserMap.get(groupName);
             if (groupParser != null) {
                 ErrorManager.getDefault().log(ErrorManager.WARNING,
@@ -220,17 +222,17 @@ public class WindowManagerParser {
      */
     public boolean removeTCRef (String tcRefName) {
         synchronized (SAVING_LOCK) {
-            log("removeTCRef ENTER" + " tcRef:" + tcRefName);
+            if (DEBUG) Debug.log(WindowManagerParser.class, "removeTCRef ENTER" + " tcRef:" + tcRefName);
             ModeParser modeParser = findModeParser(tcRefName);
             if (modeParser == null) {
                 //modeParser was already removed -> its local folder was cleaned
-                log("removeTCRef LEAVE 1" + " tcRef:" + tcRefName);
+                if (DEBUG) Debug.log(WindowManagerParser.class, "removeTCRef LEAVE 1" + " tcRef:" + tcRefName);
                 return false;
             }
-            log("removeTCRef REMOVING tcRef:" + tcRefName
-            + " FROM mo:" + modeParser.getName());
+            if (DEBUG) Debug.log(WindowManagerParser.class, "removeTCRef REMOVING tcRef:" + tcRefName
+            + " FROM mo:" + modeParser.getName());  // NOI18N
             modeParser.removeTCRef(tcRefName);
-            log("removeTCRef LEAVE 2" + " tcRef:" + tcRefName);
+            if (DEBUG) Debug.log(WindowManagerParser.class, "removeTCRef LEAVE 2" + " tcRef:" + tcRefName);
             return true;
         }
     }
@@ -241,11 +243,11 @@ public class WindowManagerParser {
      */
     TCRefConfig addTCRef (String modeName, String tcRefName, List tcRefNameList) {
         synchronized (SAVING_LOCK) {
-            log("WMParser.addTCRef ENTER" + " mo:" + modeName
-            + " tcRef:" + tcRefName);
+            if (DEBUG) Debug.log(WindowManagerParser.class, "WMParser.addTCRef ENTER" + " mo:" + modeName
+            + " tcRef:" + tcRefName);  // NOI18N
             ModeParser modeParser = (ModeParser) modeParserMap.get(modeName);
             if (modeParser == null) {
-                log("WMParser.addTCRef LEAVE 1" + " mo:" + modeName
+                if (DEBUG) Debug.log(WindowManagerParser.class, "WMParser.addTCRef LEAVE 1" + " mo:" + modeName
                 + " tcRef:" + tcRefName);
                 ErrorManager.getDefault().log(ErrorManager.WARNING,
                 "[WinSys.WindowManagerParser.addTCRef]" // NOI18N
@@ -253,8 +255,8 @@ public class WindowManagerParser {
                 return null;
             }
             TCRefConfig tcRefConfig = modeParser.addTCRef(tcRefName, tcRefNameList);
-            log("WMParser.addTCRef LEAVE 2" + " mo:" + modeName
-            + " tcRef:" + tcRefName);
+            if (DEBUG) Debug.log(WindowManagerParser.class, "WMParser.addTCRef LEAVE 2" + " mo:" + modeName
+            + " tcRef:" + tcRefName);  // NOI18N
             return tcRefConfig;
         }
     }
@@ -265,18 +267,18 @@ public class WindowManagerParser {
      */
     boolean removeTCGroup (String groupName, String tcGroupName) {
         synchronized (SAVING_LOCK) {
-            log("WMParser.removeTCGroup ENTER" + " group:" + groupName
-            + " tcGroup:" + tcGroupName);
+            if (DEBUG) Debug.log(WindowManagerParser.class, "WMParser.removeTCGroup ENTER" + " group:" + groupName
+            + " tcGroup:" + tcGroupName);  // NOI18N
             GroupParser groupParser = (GroupParser) groupParserMap.get(groupName);
             if (groupParser == null) {
                 //groupParser was already removed -> its local folder was cleaned
-                log("WMParser.removeTCGroup LEAVE 1" + " group:" + groupName
-                + " tcGroup:" + tcGroupName);
+                if (DEBUG) Debug.log(WindowManagerParser.class, "WMParser.removeTCGroup LEAVE 1" + " group:" + groupName
+                + " tcGroup:" + tcGroupName);  // NOI18N
                 return false;
             }
             groupParser.removeTCGroup(tcGroupName);
-            log("WMParser.removeTCGroup LEAVE 2" + " group:" + groupName
-            + " tcGroup:" + tcGroupName);
+            if (DEBUG) Debug.log(WindowManagerParser.class, "WMParser.removeTCGroup LEAVE 2" + " group:" + groupName
+            + " tcGroup:" + tcGroupName);  // NOI18N
             return true;
         }
     }
@@ -287,20 +289,20 @@ public class WindowManagerParser {
      */
     TCGroupConfig addTCGroup (String groupName, String tcGroupName) {
         synchronized (SAVING_LOCK) {
-            log("WMParser.addTCGroup ENTER" + " group:" + groupName
-            + " tcGroup:" + tcGroupName);
+            if (DEBUG) Debug.log(WindowManagerParser.class, "WMParser.addTCGroup ENTER" + " group:" + groupName
+            + " tcGroup:" + tcGroupName);  // NOI18N
             GroupParser groupParser = (GroupParser) groupParserMap.get(groupName);
             if (groupParser == null) {
-                log("WMParser.addTCGroup LEAVE 1" + " group:" + groupName
-                + " tcGroup:" + tcGroupName);
+                if (DEBUG) Debug.log(WindowManagerParser.class, "WMParser.addTCGroup LEAVE 1" + " group:" + groupName
+                + " tcGroup:" + tcGroupName);  // NOI18N
                 ErrorManager.getDefault().log(ErrorManager.WARNING,
                 "[WinSys.WindowManagerParser.addTCGroup]" // NOI18N
                 + " Warning: Cannot add tcGroup " + tcGroupName + ". GroupParser " + groupName + " not found."); // NOI18N
                 return null;
             }
             TCGroupConfig tcGroupConfig = groupParser.addTCGroup(tcGroupName);
-            log("WMParser.addTCGroup LEAVE 2" + " group:" + groupName
-            + " tcGroup:" + tcGroupName);
+            if (DEBUG) Debug.log(WindowManagerParser.class, "WMParser.addTCGroup LEAVE 2" + " group:" + groupName
+            + " tcGroup:" + tcGroupName);  // NOI18N
             return tcGroupConfig;
         }
     }
@@ -310,12 +312,12 @@ public class WindowManagerParser {
      * @param tcRefName unique name of tcRef
      */
     public void addTCRefImport (String modeName, String tcRefName, InternalConfig internalCfg) {
-        log("addTCRefImport ENTER" + " mo:" + modeName
-        + " tcRef:" + tcRefName);
+        if (DEBUG) Debug.log(WindowManagerParser.class, "addTCRefImport ENTER" + " mo:" + modeName
+        + " tcRef:" + tcRefName);  // NOI18N
         ModeParser modeParser = (ModeParser) modeParserMap.get(modeName);
         if (modeParser == null) {
-            log("addTCRefImport LEAVE 1" + " mo:" + modeName
-            + " tcRef:" + tcRefName);
+            if (DEBUG) Debug.log(WindowManagerParser.class, "addTCRefImport LEAVE 1" + " mo:" + modeName
+            + " tcRef:" + tcRefName);  // NOI18N
             ErrorManager.getDefault().log(ErrorManager.WARNING,
             "[WinSys.WindowManagerParser.addTCRef]" // NOI18N
             + " Warning: Cannot add tcRef " + tcRefName // NOI18N
@@ -323,8 +325,8 @@ public class WindowManagerParser {
             return;
         }
         modeParser.addTCRefImport(tcRefName, internalCfg);
-        log("addTCRefImport LEAVE 2" + " mo:" + modeName
-        + " tcRef:" + tcRefName);
+        if (DEBUG) Debug.log(WindowManagerParser.class, "addTCRefImport LEAVE 2" + " mo:" + modeName
+        + " tcRef:" + tcRefName);  // NOI18N
     }
     
     /** Finds ModeParser containing TCRef with given ID. Returns null if such ModeParser
@@ -332,7 +334,7 @@ public class WindowManagerParser {
      * @param tcRefName unique name of tcRef
      */
     ModeParser findModeParser (String tcRefName) {
-        log("findModeParser ENTER" + " tcRef:" + tcRefName);
+        if (DEBUG) Debug.log(WindowManagerParser.class, "findModeParser ENTER" + " tcRef:" + tcRefName);
         for (Iterator it = modeParserMap.keySet().iterator(); it.hasNext(); ) {
             ModeParser modeParser = (ModeParser) modeParserMap.get(it.next());
             TCRefParser tcRefParser = modeParser.findTCRefParser(tcRefName);
@@ -344,17 +346,17 @@ public class WindowManagerParser {
     }
     
     private void readProperties (WindowManagerConfig wmc) throws IOException {
-        log("readProperties ENTER");
+        if (DEBUG) Debug.log(WindowManagerParser.class, "readProperties ENTER");
         if (propertyHandler == null) {
             propertyHandler = new PropertyHandler();
         }
         internalConfig = new InternalConfig();
         propertyHandler.readData(wmc, internalConfig);
-        log("readProperties LEAVE");
+        if (DEBUG) Debug.log(WindowManagerParser.class, "readProperties LEAVE");
     }
     
     private void readModes (WindowManagerConfig wmc) throws IOException {
-        log("readModes ENTER");
+        if (DEBUG) Debug.log(WindowManagerParser.class, "readModes ENTER");
         
         for (Iterator it = modeParserMap.keySet().iterator(); it.hasNext(); ) {
             ModeParser modeParser = (ModeParser) modeParserMap.get(it.next());
@@ -363,11 +365,11 @@ public class WindowManagerParser {
         }
         
         FileObject modesModuleFolder = pm.getRootModuleFolder().getFileObject(PersistenceManager.MODES_FOLDER);
-        //log("modesModuleFolder: " + modesModuleFolder);
+        //if (DEBUG) Debug.log(WindowManagerParser.class, "modesModuleFolder: " + modesModuleFolder);
         if (modesModuleFolder != null) {
             FileObject [] files = modesModuleFolder.getChildren();
             for (int i = 0; i < files.length; i++) {
-                //log("fo[" + i + "]: " + files[i]);
+                //if (DEBUG) Debug.log(WindowManagerParser.class, "fo[" + i + "]: " + files[i]);
                 if (!files[i].isFolder() && PersistenceManager.MODE_EXT.equals(files[i].getExt())) {
                     //wsmode file
                     ModeParser modeParser;
@@ -384,12 +386,12 @@ public class WindowManagerParser {
         }
         
         FileObject modesLocalFolder = pm.getRootLocalFolder().getFileObject(PersistenceManager.MODES_FOLDER);
-        //log(" modesLocalFolder: " + modesLocalFolder);
+        //if (DEBUG) Debug.log(WindowManagerParser.class, " modesLocalFolder: " + modesLocalFolder);
         tcRefNameLocalSet.clear();
         if (modesLocalFolder != null) {
             FileObject [] files = modesLocalFolder.getChildren();
             for (int i = 0; i < files.length; i++) {
-                //log("fo[" + i + "]: " + files[i]);
+                //if (DEBUG) Debug.log(WindowManagerParser.class, "fo[" + i + "]: " + files[i]);
                 if (!files[i].isFolder() && PersistenceManager.MODE_EXT.equals(files[i].getExt())) {
                     //wsmode file
                     ModeParser modeParser;
@@ -407,7 +409,7 @@ public class WindowManagerParser {
                     FileObject [] subFiles = files[i].getChildren();
                     for (int j = 0; j < subFiles.length; j++) {
                         if (!subFiles[j].isFolder() && PersistenceManager.TCREF_EXT.equals(subFiles[j].getExt())) {
-                            //log("-- name: [" + files[i].getName() + "][" + subFiles[j].getName() + "]");
+                            //if (DEBUG) Debug.log(WindowManagerParser.class, "-- name: [" + files[i].getName() + "][" + subFiles[j].getName() + "]");
                             tcRefNameLocalSet.add(subFiles[j].getName());
                         }
                     }
@@ -417,7 +419,7 @@ public class WindowManagerParser {
         
         /*for (Iterator it = modeParserMap.keySet().iterator(); it.hasNext(); ) {
             ModeParser modeParser = (ModeParser) modeParserMap.get(it.next());
-            log("modeParser: " + modeParser.getName()
+            if (DEBUG) Debug.log(WindowManagerParser.class, "modeParser: " + modeParser.getName()
             + " isInModuleFolder:" + modeParser.isInModuleFolder()
             + " isInLocalFolder:" + modeParser.isInLocalFolder());
         }*/
@@ -452,7 +454,7 @@ public class WindowManagerParser {
         
         wmc.modes = (ModeConfig []) modeCfgList.toArray(new ModeConfig[modeCfgList.size()]);
         
-        log("readModes LEAVE");
+        if (DEBUG) Debug.log(WindowManagerParser.class, "readModes LEAVE");
     }
     
     /** Checks if module for given mode exists.
@@ -480,7 +482,7 @@ public class WindowManagerParser {
     }
     
     private void readGroups (WindowManagerConfig wmc) throws IOException {
-        log("readGroups ENTER");
+        if (DEBUG) Debug.log(WindowManagerParser.class, "readGroups ENTER");
         
         for (Iterator it = groupParserMap.keySet().iterator(); it.hasNext(); ) {
             GroupParser groupParser = (GroupParser) groupParserMap.get(it.next());
@@ -489,13 +491,13 @@ public class WindowManagerParser {
         }
         
         FileObject groupsModuleFolder = pm.getRootModuleFolder().getFileObject(PersistenceManager.GROUPS_FOLDER);
-        log("readGroups groupsModuleFolder: " + groupsModuleFolder);
+        if (DEBUG) Debug.log(WindowManagerParser.class, "readGroups groupsModuleFolder: " + groupsModuleFolder);
         
         if (groupsModuleFolder != null) {
             FileObject [] files;
             files = groupsModuleFolder.getChildren();
             for (int i = 0; i < files.length; i++) {
-                log("readGroups fo[" + i + "]: " + files[i]);
+                if (DEBUG) Debug.log(WindowManagerParser.class, "readGroups fo[" + i + "]: " + files[i]);
                 if (!files[i].isFolder() && PersistenceManager.GROUP_EXT.equals(files[i].getExt())) {
                     GroupParser groupParser;
                     //wsgrp file
@@ -513,10 +515,10 @@ public class WindowManagerParser {
         
         FileObject groupsLocalFolder = pm.getRootLocalFolder().getFileObject(PersistenceManager.GROUPS_FOLDER);
         if (groupsLocalFolder != null) {
-            log("readGroups groupsLocalFolder: " + groupsLocalFolder);
+            if (DEBUG) Debug.log(WindowManagerParser.class, "readGroups groupsLocalFolder: " + groupsLocalFolder);
             FileObject [] files = groupsLocalFolder.getChildren();
             for (int i = 0; i < files.length; i++) {
-                log("readGroups fo[" + i + "]: " + files[i]);
+                if (DEBUG) Debug.log(WindowManagerParser.class, "readGroups fo[" + i + "]: " + files[i]);
                 if (!files[i].isFolder() && PersistenceManager.GROUP_EXT.equals(files[i].getExt())) {
                     //wsgrp file
                     GroupParser groupParser;
@@ -534,7 +536,7 @@ public class WindowManagerParser {
         
         for (Iterator it = groupParserMap.keySet().iterator(); it.hasNext(); ) {
             GroupParser groupParser = (GroupParser) groupParserMap.get(it.next());
-            log("readGroups groupParser: " + groupParser.getName()
+            if (DEBUG) Debug.log(WindowManagerParser.class, "readGroups groupParser: " + groupParser.getName()
             + " isInModuleFolder:" + groupParser.isInModuleFolder()
             + " isInLocalFolder:" + groupParser.isInLocalFolder());
         }
@@ -569,7 +571,7 @@ public class WindowManagerParser {
         
         wmc.groups = (GroupConfig []) groupCfgList.toArray(new GroupConfig[groupCfgList.size()]);
         
-        log("readGroups LEAVE");
+        if (DEBUG) Debug.log(WindowManagerParser.class, "readGroups LEAVE");
     }
     
     /** Checks if module for given group exists.
@@ -595,16 +597,16 @@ public class WindowManagerParser {
     }
     
     private void writeProperties (WindowManagerConfig wmc) throws IOException {
-        log("writeProperties ENTER");
+        if (DEBUG) Debug.log(WindowManagerParser.class, "writeProperties ENTER");
         if (propertyHandler == null) {
             propertyHandler = new PropertyHandler();
         }
         propertyHandler.writeData(wmc);
-        log("writeProperties LEAVE");
+        if (DEBUG) Debug.log(WindowManagerParser.class, "writeProperties LEAVE");
     }
     
     private void writeModes (WindowManagerConfig wmc) throws IOException {
-        log("writeModes ENTER");
+        if (DEBUG) Debug.log(WindowManagerParser.class, "writeModes ENTER");
         //Step 1: Clean obsolete mode parsers
         HashMap modeConfigMap = new HashMap();
         for (int i = 0; i < wmc.modes.length; i++) {
@@ -618,9 +620,9 @@ public class WindowManagerParser {
             }
         }
         for (int i = 0; i < toDelete.size(); i++) {
-            //log("-- WMParser.writeModes ** REMOVE FROM MAP modeParser: " + toDelete.get(i));
+            //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.writeModes ** REMOVE FROM MAP modeParser: " + toDelete.get(i));
             modeParserMap.remove(toDelete.get(i));
-            //log("-- WMParser.writeModes ** DELETE modeParser: " + toDelete.get(i));
+            //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.writeModes ** DELETE modeParser: " + toDelete.get(i));
             deleteLocalMode((String) toDelete.get(i));
         }
         
@@ -629,7 +631,7 @@ public class WindowManagerParser {
             if (!modeParserMap.containsKey(wmc.modes[i].name)) {
                 ModeParser modeParser = new ModeParser(wmc.modes[i].name,tcRefNameLocalSet);
                 modeParserMap.put(wmc.modes[i].name, modeParser);
-                //log("-- WMParser.writeModes ** CREATE modeParser:" + modeParser.getName());
+                //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.writeModes ** CREATE modeParser:" + modeParser.getName());
             }
         }
         
@@ -645,16 +647,16 @@ public class WindowManagerParser {
             modeParser.save((ModeConfig) modeConfigMap.get(modeParser.getName()));
         }
         
-        log("writeModes LEAVE");
+        if (DEBUG) Debug.log(WindowManagerParser.class, "writeModes LEAVE");
     }
     
     private void writeGroups (WindowManagerConfig wmc) throws IOException {
-        log("writeGroups ENTER");
+        if (DEBUG) Debug.log(WindowManagerParser.class, "writeGroups ENTER");
         //Step 1: Clean obsolete group parsers
         HashMap groupConfigMap = new HashMap();
-        log("writeGroups List of groups to be saved:");
+        if (DEBUG) Debug.log(WindowManagerParser.class, "writeGroups List of groups to be saved:");
         for (int i = 0; i < wmc.groups.length; i++) {
-            log("writeGroups group[" + i + "]: " + wmc.groups[i].name);
+            if (DEBUG) Debug.log(WindowManagerParser.class, "writeGroups group[" + i + "]: " + wmc.groups[i].name);
             groupConfigMap.put(wmc.groups[i].name, wmc.groups[i]);
         }
         List toDelete = new ArrayList(10);
@@ -665,9 +667,9 @@ public class WindowManagerParser {
             }
         }
         for (int i = 0; i < toDelete.size(); i++) {
-            //log("-- WMParser.writeGroups ** REMOVE FROM MAP groupParser: " + toDelete.get(i));
+            //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.writeGroups ** REMOVE FROM MAP groupParser: " + toDelete.get(i));
             groupParserMap.remove(toDelete.get(i));
-            //log("-- WMParser.writeGroups ** DELETE groupParser: " + toDelete.get(i));
+            //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.writeGroups ** DELETE groupParser: " + toDelete.get(i));
             deleteLocalGroup((String) toDelete.get(i));
         }
         //Step 2: Create missing group parsers
@@ -675,7 +677,7 @@ public class WindowManagerParser {
             if (!groupParserMap.containsKey(wmc.groups[i].name)) {
                 GroupParser groupParser = new GroupParser(wmc.groups[i].name);
                 groupParserMap.put(wmc.groups[i].name, groupParser);
-                //log("-- WMParser.writeGroups ** CREATE groupParser:" + groupParser.getName());
+                //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.writeGroups ** CREATE groupParser:" + groupParser.getName());
             }
         }
         //Step 3: Save all groups
@@ -683,20 +685,20 @@ public class WindowManagerParser {
         if ((groupsLocalFolder == null) && (groupParserMap.size() > 0)) {
             groupsLocalFolder = pm.getGroupsLocalFolder();
         }
-        log("writeGroups groupsLocalFolder:" + groupsLocalFolder);
+        if (DEBUG) Debug.log(WindowManagerParser.class, "writeGroups groupsLocalFolder:" + groupsLocalFolder);
         for (Iterator it = groupParserMap.keySet().iterator(); it.hasNext(); ) {
             GroupParser groupParser = (GroupParser) groupParserMap.get(it.next());
             groupParser.setLocalParentFolder(groupsLocalFolder);
             groupParser.setInLocalFolder(true);
-            log("writeGroups save group:" + groupParser.getName());
+            if (DEBUG) Debug.log(WindowManagerParser.class, "writeGroups save group:" + groupParser.getName());
             groupParser.save((GroupConfig) groupConfigMap.get(groupParser.getName()));
         }
         
-        log("writeGroups LEAVE");
+        if (DEBUG) Debug.log(WindowManagerParser.class, "writeGroups LEAVE");
     }
     
     private void deleteLocalMode (String modeName) {
-        log("deleteLocalMode" + " mo:" + modeName);
+        if (DEBUG) Debug.log(WindowManagerParser.class, "deleteLocalMode" + " mo:" + modeName);
         FileObject modesLocalFolder = pm.getRootLocalFolder().getFileObject(PersistenceManager.MODES_FOLDER);
         if (modesLocalFolder == null) {
             return;
@@ -713,7 +715,7 @@ public class WindowManagerParser {
     }
     
     private void deleteLocalGroup (String groupName) {
-        log("deleteLocalGroup" + " groupName:" + groupName);
+        if (DEBUG) Debug.log(WindowManagerParser.class, "deleteLocalGroup" + " groupName:" + groupName);
         FileObject groupsLocalFolder = pm.getRootLocalFolder().getFileObject(PersistenceManager.GROUPS_FOLDER);
         if (groupsLocalFolder == null) {
             return;
@@ -742,7 +744,9 @@ public class WindowManagerParser {
     }
     
     void log (String s) {
-        Debug.log(WindowManagerParser.class, s);
+        if (DEBUG) {
+            Debug.log(WindowManagerParser.class, s);
+        }
     }
     
     private final class PropertyHandler extends DefaultHandler {
@@ -776,10 +780,10 @@ public class WindowManagerParser {
 
             rootFolder = pm.getRootLocalFolder();
 
-            //log("-- WMParser.getConfigFOInput" + " rootFolder:" + rootFolder);
+            //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.getConfigFOInput" + " rootFolder:" + rootFolder);
 
             FileObject wmConfigFO;
-            //log("-- WMParser.getConfigFOInput" + " looking for LOCAL");
+            //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.getConfigFOInput" + " looking for LOCAL");
             wmConfigFO = rootFolder.getFileObject
             (WindowManagerParser.this.getName(), PersistenceManager.WINDOWMANAGER_EXT);
             if (wmConfigFO != null) {
@@ -790,11 +794,11 @@ public class WindowManagerParser {
                     // setting the session layer works only for new files :(
                     //WindowManagerParser.this.setInSessionLayer(true);
                 }
-                //log("-- WMParser.getConfigFOInput" + " wmConfigFO LOCAL:" + wmConfigFO);
+                //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.getConfigFOInput" + " wmConfigFO LOCAL:" + wmConfigFO);
                 return wmConfigFO;
             } else {
-                //log("-- WMParser.getConfigFOInput" + " LOCAL not found");
-                //log("-- WMParser.getConfigFOInput" + " looking for MODULE");
+                //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.getConfigFOInput" + " LOCAL not found");
+                //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.getConfigFOInput" + " looking for MODULE");
                 //Local data not found, try module
                 rootFolder = pm.getRootModuleFolder();
                 wmConfigFO = rootFolder.getFileObject
@@ -807,7 +811,7 @@ public class WindowManagerParser {
                     WindowManagerParser.this.setInSessionLayer(true);
                 }
 
-                //log("-- WMParser.getConfigFOInput" + " wmConfigFO MODULE:" + wmConfigFO);
+                //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.getConfigFOInput" + " wmConfigFO MODULE:" + wmConfigFO);
 
                 return wmConfigFO;
             }
@@ -817,14 +821,14 @@ public class WindowManagerParser {
             FileObject rootFolder;
             rootFolder = pm.getRootLocalFolder();
             
-            //log("-- WMParser.getConfigFOOutput" + " rootFolder:" + rootFolder);
+            //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.getConfigFOOutput" + " rootFolder:" + rootFolder);
             
             FileObject wmConfigFO;
-            //log("-- WMParser.getConfigFOOutput" + " looking for LOCAL");
+            //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.getConfigFOOutput" + " looking for LOCAL");
             wmConfigFO = rootFolder.getFileObject
             (WindowManagerParser.this.getName(), PersistenceManager.WINDOWMANAGER_EXT);
             if (wmConfigFO != null) {
-                //log("-- WMParser.getConfigFOOutput" + " wmConfigFO LOCAL:" + wmConfigFO);
+                //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.getConfigFOOutput" + " wmConfigFO LOCAL:" + wmConfigFO);
                 return wmConfigFO;
             } else {
                 StringBuffer buffer = new StringBuffer();
@@ -838,7 +842,7 @@ public class WindowManagerParser {
                 if (WindowManagerParser.this.isInSessionLayer()) {
                     SystemFileSystem.setLayerForNew(rootFolder.getPath(),null);
                 }
-                //log("-- WMParser.getConfigFOOutput" + " LOCAL not found CREATE");
+                //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.getConfigFOOutput" + " LOCAL not found CREATE");
                 return wmConfigFO;
             }
         }
@@ -867,12 +871,13 @@ public class WindowManagerParser {
                     /*InputStream is = cfgFOInput.getInputStream();
                     byte [] arr = new byte [is.available()];
                     is.read(arr);
-                    log("DUMP WindowManager:");
+                    if (DEBUG) Debug.log(WindowManagerParser.class, "DUMP WindowManager:");
                     String s = new String(arr);
-                    log(s);*/
+                    if (DEBUG) Debug.log(WindowManagerParser.class, s);*/
                     //DUMP END
-                    
+//                    long time = System.currentTimeMillis();
                     getXMLParser().parse(new InputSource(cfgFOInput.getInputStream()));
+//                    System.out.println("WindowManagerParser.readData "+(System.currentTimeMillis()-time));
                 }
             } catch (SAXException exc) {
                 //Turn into annotated IOException
@@ -931,7 +936,7 @@ public class WindowManagerParser {
                     handleTCRefItem(attrs);
                 }
             } else {
-                log("WMP.startElement PARSING OLD");
+                if (DEBUG) Debug.log(WindowManagerParser.class, "WMP.startElement PARSING OLD");
                 //Parse version < 2.0
             }
         }
@@ -1782,8 +1787,8 @@ public class WindowManagerParser {
                     OutputStream os = cfgFOOutput.getOutputStream(lock);
                     osw = new OutputStreamWriter(os, "UTF-8"); // NOI18N
                     osw.write(buff.toString());
-                    //log("-- DUMP WindowManager:");
-                    //log(buff.toString());
+                    //if (DEBUG) Debug.log(WindowManagerParser.class, "-- DUMP WindowManager:");
+                    //if (DEBUG) Debug.log(WindowManagerParser.class, buff.toString());
                 } finally {
                     if (osw != null) {
                         osw.close();
@@ -1799,11 +1804,11 @@ public class WindowManagerParser {
             StringBuffer buff = new StringBuffer(800);
             String curValue = null;
             // header
-            buff.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"); // NOI18N
+            buff.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"). // NOI18N
             /*buff.append("<!DOCTYPE windowmanager PUBLIC\n"); // NOI18N
             buff.append("          \"-//NetBeans//DTD Window Manager Properties 2.0//EN\"\n"); // NOI18N
             buff.append("          \"http://www.netbeans.org/dtds/windowmanager-properties2_0.dtd\">\n\n"); // NOI18N*/
-            buff.append("<windowmanager version=\"2.0\">\n"); // NOI18N
+                append("<windowmanager version=\"2.0\">\n"); // NOI18N
             
             appendMainWindow(wmc, buff);
             appendEditorArea(wmc, buff);
@@ -1820,255 +1825,96 @@ public class WindowManagerParser {
         
 
         private void appendMainWindow (WindowManagerConfig wmc, StringBuffer buff) {
-            buff.append("    <main-window>\n"); // NOI18N
-            
-            //JOINED
-            StringBuffer sb2 = getOffset(2);
-            buff.append(sb2);
-            buff.append("<joined-properties\n"); // NOI18N
-            
-            StringBuffer sb3 = getOffset(3);
-            buff.append(sb3);
-            buff.append(" x=\""); // NOI18N
-            buff.append(wmc.xJoined);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" y=\""); // NOI18N
-            buff.append(wmc.yJoined); 
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" width=\""); // NOI18N
-            buff.append(wmc.widthJoined);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" height=\""); // NOI18N
-            buff.append(wmc.heightJoined);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" relative-x=\""); // NOI18N
-            buff.append(wmc.relativeXJoined);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" relative-y=\""); // NOI18N
-            buff.append(wmc.relativeYJoined); 
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" relative-width=\""); // NOI18N
-            buff.append(wmc.relativeWidthJoined);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" relative-height=\""); // NOI18N
-            buff.append(wmc.relativeHeightJoined);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" centered-horizontally=\""); // NOI18N
-            buff.append(wmc.centeredHorizontallyJoined);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" centered-vertically=\""); // NOI18N
-            buff.append(wmc.centeredVerticallyJoined);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" maximize-if-width-below=\""); // NOI18N
-            buff.append(wmc.maximizeIfWidthBelowJoined);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" maximize-if-height-below=\""); // NOI18N
-            buff.append(wmc.maximizeIfHeightBelowJoined);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" frame-state=\""); // NOI18N
-            buff.append(wmc.mainWindowFrameStateJoined);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb2);
-            buff.append("/>\n"); // NOI18N
+            buff.append("    <main-window>\n  <joined-properties\n"). // NOI18N
+                append("   x=\"").append(wmc.xJoined).append("\"\n"). // NOI18N
+                append("   y=\"").append(wmc.yJoined).append("\"\n"). // NOI18N
+                append("   width=\"").append(wmc.widthJoined).append("\"\n"). // NOI18N
+                append("   height=\"").append(wmc.heightJoined).append("\"\n"). // NOI18N
+                append("   relative-x=\"").append(wmc.relativeXJoined).append("\"\n"). // NOI18N
+                append("   relative-y=\"").append(wmc.relativeYJoined).append("\"\n"). // NOI18N
+                append("   relative-width=\"").append(wmc.relativeWidthJoined).append("\"\n"). // NOI18N
+                append("   relative-height=\"").append(wmc.relativeHeightJoined).append("\"\n"). // NOI18N
+                append("   centered-horizontally=\"").append(wmc.centeredHorizontallyJoined).append("\"\n"). // NOI18N
+                append("   centered-vertically=\"").append(wmc.centeredVerticallyJoined).append("\"\n"). // NOI18N
+                append("   maximize-if-width-below=\"").append(wmc.maximizeIfWidthBelowJoined).append("\"\n"). // NOI18N
+                append("   maximize-if-height-below=\"").append(wmc.maximizeIfHeightBelowJoined).append("\"\n"). // NOI18N
+                append("   frame-state=\"").append(wmc.mainWindowFrameStateJoined).append("\"\n/>\n"). // NOI18N
             
             //SEPARATED
-            buff.append(sb2);
-            buff.append("<separated-properties\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" x=\""); // NOI18N
-            buff.append(wmc.xSeparated);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" y=\""); // NOI18N
-            buff.append(wmc.ySeparated); 
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" width=\""); // NOI18N
-            buff.append(wmc.widthSeparated);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" height=\""); // NOI18N
-            buff.append(wmc.heightSeparated);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" relative-x=\""); // NOI18N
-            buff.append(wmc.relativeXSeparated);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" relative-y=\""); // NOI18N
-            buff.append(wmc.relativeYSeparated); 
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" relative-width=\""); // NOI18N
-            buff.append(wmc.relativeWidthSeparated);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" relative-height=\""); // NOI18N
-            buff.append(wmc.relativeHeightSeparated);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" centered-horizontally=\""); // NOI18N
-            buff.append(wmc.centeredHorizontallySeparated);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" centered-vertically=\""); // NOI18N
-            buff.append(wmc.centeredVerticallySeparated);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb3);
-            buff.append(" frame-state=\""); // NOI18N
-            buff.append(wmc.mainWindowFrameStateSeparated);
-            buff.append("\"\n"); // NOI18N
-            
-            buff.append(sb2);
-            buff.append("/>\n"); // NOI18N
-            
-            buff.append("    </main-window>\n"); // NOI18N
+                append("  <separated-properties\n").  // NOI18N
+                append("   x=\"").append(wmc.xSeparated).append("\"\n"). // NOI18N
+                append("   y=\"").append(wmc.ySeparated).append("\"\n"). // NOI18N
+                append("   width=\"").append(wmc.widthSeparated).append("\"\n"). // NOI18N
+                append("   height=\"").append(wmc.heightSeparated).append("\"\n"). // NOI18N
+                append("   relative-x=\"").append(wmc.relativeXSeparated).append("\"\n"). // NOI18N
+                append("   relative-y=\"").append(wmc.relativeYSeparated).append("\"\n"). // NOI18N
+                append("   relative-width=\"").append(wmc.relativeWidthSeparated).append("\"\n"). // NOI18N
+                append("   relative-height=\"").append(wmc.relativeHeightSeparated).append("\"\n"). // NOI18N
+                append("   centered-horizontally=\"").append(wmc.centeredHorizontallySeparated).append("\"\n"). // NOI18N
+                append("   centered-vertically=\"").append(wmc.centeredVerticallySeparated).append("\"\n"). // NOI18N
+                append("   frame-state=\"").append(wmc.mainWindowFrameStateSeparated).append("\"\n"). // NOI18N
+                append("/>\n  </main-window>\n"); // NOI18N
         }
         
         private void appendEditorArea (WindowManagerConfig wmc, StringBuffer buff) {
-            buff.append("    <editor-area"); // NOI18N
-            buff.append(" state=\""); // NOI18N
+            buff.append("    <editor-area state=\""); // NOI18N
             if (wmc.editorAreaState == Constants.EDITOR_AREA_JOINED) {
                 buff.append("joined"); // NOI18N
             } else {
                 buff.append("separated"); // NOI18N
             }
-            buff.append("\""); // NOI18N
-            
-            buff.append(" frame-state=\""); // NOI18N
-            buff.append(wmc.editorAreaFrameState);
-            buff.append("\">\n"); // NOI18N
+            buff.append("\" frame-state=\"").append(wmc.editorAreaFrameState).append("\">\n"); // NOI18N
             
             //BEGIN Write constraints
-            StringBuffer sb = getOffset(2);
-            buff.append(sb);
-            buff.append("<constraints>\n"); // NOI18N
+            buff.append("  <constraints>\n"); // NOI18N
             for (int i = 0; i < wmc.editorAreaConstraints.length; i++) {
                 SplitConstraint item = wmc.editorAreaConstraints[i];
-                buff.append(sb);
-                buff.append("    <path"); // NOI18N
-                buff.append(" orientation=\""); // NOI18N
+                buff.append("  <path orientation=\""); // NOI18N
                 if (item.orientation == Constants.HORIZONTAL) {
                     buff.append("horizontal"); // NOI18N
                 } else {
                     buff.append("vertical"); // NOI18N
                 }
-                buff.append("\""); // NOI18N
-                buff.append(" number=\""); // NOI18N
-                buff.append(item.index); // NOI18N
-                buff.append("\""); // NOI18N
-                buff.append(" weight=\""); // NOI18N
-                buff.append(item.splitWeight);
-                buff.append("\""); // NOI18N
-                buff.append(" />\n"); // NOI18N
+                buff.append("\" number=\"").append(item.index).append("\" weight=\"").append(item.splitWeight).append("\" />\n"); // NOI18N
             }
-            buff.append(sb);
-            buff.append("</constraints>\n"); // NOI18N
+            buff.append("  </constraints>\n"); // NOI18N
             //END Write constraints
             //BEGIN bounds or relative bounds
             if (wmc.editorAreaBounds != null) {
-                buff.append(sb);
-                buff.append("<bounds"); // NOI18N
-                buff.append(" x=\""); // NOI18N
-                buff.append(wmc.editorAreaBounds.x);
-                buff.append("\" y=\""); // NOI18N
-                buff.append(wmc.editorAreaBounds.y);
-                buff.append("\" width=\""); // NOI18N
-                buff.append(wmc.editorAreaBounds.width);
-                buff.append("\" height=\""); // NOI18N
-                buff.append(wmc.editorAreaBounds.height);
-                buff.append("\" />\n"); // NOI18N
+                buff.append("  <bounds x=\"").append(wmc.editorAreaBounds.x).
+                    append("\" y=\"").append(wmc.editorAreaBounds.y).
+                    append("\" width=\"").append(wmc.editorAreaBounds.width).append("\" height=\""); // NOI18N
+                buff.append(wmc.editorAreaBounds.height).append("\" />\n"); // NOI18N
             } else if (wmc.editorAreaRelativeBounds != null) {
-                buff.append(sb);
-                buff.append("<relative-bounds"); // NOI18N
-                buff.append(" x=\""); // NOI18N
-                buff.append(wmc.editorAreaRelativeBounds.x);
-                buff.append("\" y=\""); // NOI18N
-                buff.append(wmc.editorAreaRelativeBounds.y);
-                buff.append("\" width=\""); // NOI18N
-                buff.append(wmc.editorAreaRelativeBounds.width);
-                buff.append("\" height=\""); // NOI18N
-                buff.append(wmc.editorAreaRelativeBounds.height);
-                buff.append("\" />\n"); // NOI18N
+                buff.append("  <relative-bounds x=\"").append(wmc.editorAreaRelativeBounds.x).
+                    append("\" y=\"").append(wmc.editorAreaRelativeBounds.y).
+                    append("\" width=\"").append(wmc.editorAreaRelativeBounds.width).
+                    append("\" height=\"").append(wmc.editorAreaRelativeBounds.height).append("\"/>\n"); // NOI18N
             }
             //END
             buff.append("    </editor-area>\n"); // NOI18N
         }
         
         private void appendScreen (WindowManagerConfig wmc, StringBuffer buff) {
-            buff.append("    <screen"); // NOI18N
-            buff.append(" width=\""); // NOI18N
-            buff.append(wmc.screenSize.width);
-            buff.append("\""); // NOI18N
-            buff.append(" height=\""); // NOI18N
-            buff.append(wmc.screenSize.height); 
-            buff.append("\""); // NOI18N
-            buff.append(" />\n"); // NOI18N
+            buff.append("    <screen width=\"").append(wmc.screenSize.width).  // NOI18N
+                append("\" height=\"").append(wmc.screenSize.height).append("\"/>\n"); // NOI18N
         }
         
         private void appendActiveMode (WindowManagerConfig wmc, StringBuffer buff) {
             if ((wmc.activeModeName != null) && !"".equals(wmc.activeModeName)) {
-                buff.append("    <active-mode"); // NOI18N
-                buff.append(" name=\""); // NOI18N
-                buff.append(wmc.activeModeName);
-                buff.append("\""); // NOI18N
-                buff.append(" />\n"); // NOI18N
+                buff.append("    <active-mode name=\"").append(wmc.activeModeName).append("\"/>\n"); // NOI18N
             }
         }
         
         private void appendMaximizedMode (WindowManagerConfig wmc, StringBuffer buff) {
             if ((wmc.maximizedModeName != null) && !"".equals(wmc.maximizedModeName)) {
-                buff.append("    <maximized-mode"); // NOI18N
-                buff.append(" name=\""); // NOI18N
-                buff.append(wmc.maximizedModeName);
-                buff.append("\""); // NOI18N
-                buff.append(" />\n"); // NOI18N
+                buff.append("    <maximized-mode name=\"").append(wmc.maximizedModeName).append("\"/>\n"); // NOI18N
             }
         }
         
         private void appendToolbar (WindowManagerConfig wmc, StringBuffer buff) {
             if ((wmc.toolbarConfiguration != null) && !"".equals(wmc.toolbarConfiguration)) {
-                buff.append("    <toolbar"); // NOI18N
-                buff.append(" configuration=\""); // NOI18N
-                buff.append(wmc.toolbarConfiguration);
-                buff.append("\""); // NOI18N
-                buff.append(" />\n"); // NOI18N
+                buff.append("    <toolbar configuration=\"").append(wmc.toolbarConfiguration).append("\"/>\n"); // NOI18N
             }
         }
         
@@ -2077,14 +1923,8 @@ public class WindowManagerParser {
                 return;
             }
             buff.append("    <tc-list>\n"); // NOI18N
-            StringBuffer sb = getOffset(2);
             for (int i = 0; i < wmc.tcIdViewList.length; i++) {
-                buff.append(sb);
-                buff.append("<tc-id"); // NOI18N
-                buff.append(" id=\""); // NOI18N
-                buff.append(wmc.tcIdViewList[i]);
-                buff.append("\""); // NOI18N
-                buff.append(" />\n"); // NOI18N
+                buff.append("  <tc-id id=\"").append(wmc.tcIdViewList[i]).append("\"/>\n"); // NOI18N
             }
             buff.append("    </tc-list>\n"); // NOI18N
         }
@@ -2095,33 +1935,14 @@ public class WindowManagerParser {
                 return;
             }
             buff.append("    <imported-tcrefs>\n"); // NOI18N
-            StringBuffer sb = getOffset(2);
             for (Iterator it =  tcRefMap.keySet().iterator(); it.hasNext(); ) {
                 ImportedItem item = (ImportedItem) tcRefMap.get(it.next());
-                buff.append(sb);
-                buff.append("<tcref-item"); // NOI18N
-                buff.append(" workspace=\""); // NOI18N
-                buff.append(item.workspaceName);
-                buff.append("\""); // NOI18N
-                buff.append(" mode=\""); // NOI18N
-                buff.append(item.modeName);
-                buff.append("\""); // NOI18N
-                buff.append(" id=\""); // NOI18N
-                buff.append(item.tc_id);
-                buff.append("\""); // NOI18N
-                buff.append(" />\n"); // NOI18N
+                buff.append("  <tcref-item workspace=\"").append(item.workspaceName).append("\" mode=\""). // NOI18N
+                    append(item.modeName).append("\" id=\"").append(item.tc_id).append("\"/>\n"); // NOI18N
             }
             buff.append("    </imported-tcrefs>\n"); // NOI18N
         }
 
-        private StringBuffer getOffset (int ind) {
-            StringBuffer sb = new StringBuffer();
-            for (int i = 0; i < ind; i++) {
-                sb.append("    "); // NOI18N
-            }
-            return sb;
-        }
-        
         /** @return Newly created parser with set content handler, errror handler
          * and entity resolver
          */
@@ -2165,8 +1986,8 @@ public class WindowManagerParser {
     }
     
     private static final String[] floatStrings = new String[] {
-        "0", "0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8",
-        "0.9","1","1.0"
+        "0", "0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", // NOI18N
+        "0.9","1","1.0" // NOI18N
     };
     
     private static final float[] floatVals = new float[] {
