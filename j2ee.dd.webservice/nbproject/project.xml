@@ -62,6 +62,7 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages>
                 <package>org.netbeans.modules.j2ee.dd.api.webservices</package>
             </public-packages>
+        <javadoc/>
         </data>
     </configuration>
 </project>

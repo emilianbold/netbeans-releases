@@ -68,24 +68,6 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${s2b_root_1_1}"/>
   </target>
   
-  <target name="javadoc" depends="build-init" description="Build Javadoc."> 
-      <property name="_cp" refid="cp"/> 
-      <ant dir="${nb_all}/nbbuild/javadoctools" antfile="template.xml" target="javadoc"> 
-       <property name="javadoc.base" location="."/> 
-       <property name="javadoc.name" value="WEBSERVICES-DD-API"/> 
-       <property name="javadoc.title" value="WebServices Deployment Descriptor API"/> 
-       <property name="javadoc.packages" value="org.netbeans.j2ee.dd.api.*"/> 
-       <property name="javadoc.classpath" value="${_cp}"/> 
-       <property name="javadoc.arch" location="../arch/arch-DD-API.xml"/>
-       <property name="javadoc.overview" location="doc/overview.html"/>
-       <property name="javadoc.docfiles" location="doc"/>
-      </ant>
-      <mkdir dir="javadoc/WEBSERVICES-DD-API/arch"/>
-      <copy file="doc/ddapi_architecture.html" todir="javadoc/WEBSERVICES-DD-API/arch"/>
-      <copy file="doc/dd_api_schema.jpg" todir="javadoc/WEBSERVICES-DD-API/arch"/>
-      <copy file="doc/usage.html" todir="javadoc/WEBSERVICES-DD-API/arch"/>
-  </target>
-  
   <target name="clean-javadoc">
   	<delete dir="javadoc"/>
   </target>
