@@ -84,6 +84,8 @@ class TransactionView extends ExplorerPanel implements
     // Misc
     private transient JToggleButton timeAButton, 	timeDButton,
 	alphaButton; 
+    
+    private transient JToggleButton timestampButton;
 
     /* These buttons were used for the feature that allows the user to
      * specify whether the browser's cookie should be used or whether
@@ -442,7 +444,7 @@ class TransactionView extends ExplorerPanel implements
 
 	*/
 
-	JToggleButton timestampButton = new
+	timestampButton = new
 	    JToggleButton(timestampIcon,
 				TransactionNode.showTimeStamp());
 	timestampButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Show_time_25"));
@@ -763,4 +765,49 @@ class TransactionView extends ExplorerPanel implements
     protected String preferredID() {
         return "TransactionView"; //NOI18N
     }
+    
+    // methods needed for binding with context menu ------
+    void setTimestampButtonSelected(boolean state) {        
+        timestampButton.setSelected(state);
+    }
+    
+    boolean isTimestampButtonSelected() {        
+        return timestampButton.isSelected();
+    }
+    
+    void addTimestampButtonActionListener(ActionListener l) {
+        timestampButton.addActionListener(l);
+    }
+    
+    boolean isAscButtonSelected() {   
+        return timeAButton.isSelected();
+    }
+
+    boolean isDescButtonSelected() {   
+        return timeDButton.isSelected();
+    }
+
+    boolean isAlphButtonSelected() {         
+        return alphaButton.isSelected();
+    }
+
+    void setAscButtonSelected() {        
+        toggleTaskbarButtons(true, false, false);
+    } 
+    
+    void setDescButtonSelected() {        
+        toggleTaskbarButtons(false, true, false);
+    }     
+    
+    void setAlphButtonSelected() {
+        toggleTaskbarButtons(false, false, true);
+    }
+    
+    private void toggleTaskbarButtons(boolean asc, boolean desc, boolean alph) {
+        timeAButton.setSelected(asc);
+        timeDButton.setSelected(desc);
+        alphaButton.setSelected(alph);    
+    }
+    
+    // EOF: methods needed for binding with context menu ------
 }
