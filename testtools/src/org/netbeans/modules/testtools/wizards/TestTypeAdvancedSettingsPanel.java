@@ -24,12 +24,19 @@ import org.openide.util.HelpCtx;
 import javax.swing.event.ChangeListener;
 import org.openide.loaders.TemplateWizard;
 import java.awt.CardLayout;
+import java.io.File;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import java.util.StringTokenizer;
 
 /**
  *
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
 public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements WizardDescriptor.Panel {
+    
+    private File baseDir=null;
+    private String netbeansHome=null;
     
     /** Creates new form TestTypePanel */
     public TestTypeAdvancedSettingsPanel() {
@@ -64,7 +71,7 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
 
         setLayout(new java.awt.GridBagLayout());
 
-        excludesLabel.setText("Compilation Excludes: ");
+        excludesLabel.setText("Compilation Exclude Pattern: ");
         excludesLabel.setDisplayedMnemonic(88);
         excludesLabel.setLabelFor(excludesField);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -127,6 +134,12 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
         compileButton.setText("...");
         compileButton.setPreferredSize(new java.awt.Dimension(30, 20));
         compileButton.setMinimumSize(new java.awt.Dimension(30, 20));
+        compileButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                compileButtonActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
@@ -169,6 +182,12 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
         executeButton.setText("...");
         executeButton.setPreferredSize(new java.awt.Dimension(30, 20));
         executeButton.setMinimumSize(new java.awt.Dimension(30, 20));
+        executeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                executeButtonActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
@@ -209,7 +228,7 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(jvmField, gridBagConstraints);
 
-        jemmyLabel.setText("Jemmy Home: ");
+        jemmyLabel.setText("Jemmy Jar Home: ");
         jemmyLabel.setDisplayedMnemonic(77);
         jemmyLabel.setLabelFor(jemmyField);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -241,6 +260,12 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
         jemmyButton.setText("...");
         jemmyButton.setPreferredSize(new java.awt.Dimension(30, 20));
         jemmyButton.setMinimumSize(new java.awt.Dimension(30, 20));
+        jemmyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jemmyButtonActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 11;
@@ -251,7 +276,7 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
         add(jemmyButton, gridBagConstraints);
 
-        jellyLabel.setText("Jelly Home: ");
+        jellyLabel.setText("Jelly Jar Home: ");
         jellyLabel.setDisplayedMnemonic(76);
         jellyLabel.setLabelFor(jellyField);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -283,6 +308,12 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
         jellyButton.setText("...");
         jellyButton.setPreferredSize(new java.awt.Dimension(30, 20));
         jellyButton.setMinimumSize(new java.awt.Dimension(30, 20));
+        jellyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jellyButtonActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 13;
@@ -294,6 +325,64 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
         add(jellyButton, gridBagConstraints);
 
     }//GEN-END:initComponents
+
+    private String substitutePath(File file, File dir, String subst) {
+        try {
+            if (!(dir.exists() && file.exists()))
+                return null;
+            String d=dir.getCanonicalPath()+file.separator;
+            String f=file.getCanonicalPath();
+            if (f.startsWith(d))
+                return subst+'/'+f.substring(d.length()).replace('\\','/');
+        } catch (Exception e) {}
+        return null;
+    }
+    
+    private String add(String path, File elem) {
+        String file=null;
+        if (netbeansHome!=null)
+            file=substitutePath(elem, new File(baseDir, netbeansHome), "${netbeans.home}");
+        if (file==null && netbeansHome!=null)
+            file=substitutePath(elem, new File(netbeansHome), "${netbeans.home}");
+        if (file==null)
+            file=substitutePath(elem, new File(System.getProperty("netbeans.home")), "${netbeans.home}");
+        if (file==null)
+            file=substitutePath(elem, baseDir, "..");
+        if (file==null)
+            file=elem.getAbsolutePath();
+        if (path.length()==0) 
+            return file;
+        StringTokenizer tok=new StringTokenizer(path, ":;");
+        while (tok.hasMoreTokens())
+            if (file.equals(tok.nextToken())) return path;
+        return path+';'+file;
+    }    
+    
+    private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeButtonActionPerformed
+        File elem=WizardIterator.showFileChooser(this, "Select Extra Jar", false, true);
+        if (elem!=null) {
+            executeField.setText(add(executeField.getText(), elem));
+        }
+    }//GEN-LAST:event_executeButtonActionPerformed
+
+    private void compileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compileButtonActionPerformed
+        File jar=WizardIterator.showFileChooser(this, "Select Class Path Element", true, true);
+        if (jar!=null) {
+            compileField.setText(add(compileField.getText(), jar));
+        }
+    }//GEN-LAST:event_compileButtonActionPerformed
+
+    private void jellyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jellyButtonActionPerformed
+        File home=WizardIterator.showFileChooser(this, "Select Jelly Home Directory", true, false);
+        if (home!=null) 
+            jellyField.setText(home.getAbsolutePath());
+    }//GEN-LAST:event_jellyButtonActionPerformed
+
+    private void jemmyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jemmyButtonActionPerformed
+        File home=WizardIterator.showFileChooser(this, "Select Jemmy Home Directory", true, false);
+        if (home!=null) 
+            jemmyField.setText(home.getAbsolutePath());
+    }//GEN-LAST:event_jemmyButtonActionPerformed
 
     private void jellyFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jellyFieldFocusGained
         jellyField.selectAll();
@@ -344,6 +433,17 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
             jemmyField.setText(set.typeJemmyHome);
         if (set.typeJellyHome!=null)
             jellyField.setText(set.typeJellyHome);
+        TemplateWizard wizard=(TemplateWizard)obj;
+        if (baseDir==null) try {
+            baseDir=FileUtil.toFile(wizard.getTargetFolder().getPrimaryFile());
+            if (set.startFromWorkspace) {
+                netbeansHome=set.netbeansHome;
+            } else {
+                baseDir=baseDir.getParentFile();
+                XMLDocument doc=new XMLDocument(DataObject.find(wizard.getTargetFolder().getPrimaryFile().getFileObject("build","xml")));
+                netbeansHome=doc.getProperty("netbeans.home","location");
+            }
+        } catch (Exception e) {}
     }
     
     public void removeChangeListener(javax.swing.event.ChangeListener l) {

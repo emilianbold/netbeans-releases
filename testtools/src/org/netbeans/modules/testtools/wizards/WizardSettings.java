@@ -107,22 +107,23 @@ class WizardSettings extends Object {
         value=doc.getProperty("xtest.extra.jars.path", "value");
         typeUseJemmy=(value!=null)&&(value.indexOf("jemmy")>=0);
         value=doc.getProperty("xtest.ide.winsys", "value");;
-        typeSDI=(value!=null)&&value.equals("sdi");
+        typeSDI=(value!=null)&&!value.equals("mdi");
         typeJVMSuffix=doc.getProperty("xtest.jvmargs", "value");
         typeExcludes=doc.getProperty("compile.excludes", "value");
-        typeCompPath=doc.getProperty("compiletest.classpath", "classpath");
+        typeCompPath=doc.getProperty("compiletest.classpath", "value");
         typeExecPath=doc.getProperty("xtest.extra.jars", "value");
         if (typeJemmyHome==null)
             typeJemmyHome=doc.getProperty("jemmy.home", "location");
         if (typeJellyHome==null)
             typeJellyHome=doc.getProperty("jelly.home", "location");
+        doc=null;
         for (int i=0; (i<o.length)&&(doc==null); i++) 
             if ((o[i] instanceof DataObject) && (((DataObject)o[i]).getName().indexOf("cfg-")>=0))
                 doc=new XMLDocument((DataObject)o[i]);
-        bagAttrs=doc.getElement("testbag", null, null, "testattribs");
-        bagIncludes=doc.getElement("include", null, null, "name");
-        bagExcludes=doc.getElement("exclude", null, null, "name");
-        bagIDEExecutor="ide".equals(doc.getElement("testbag",null,null,"executor"));
+        bagAttrs=doc.getElement("testbag", "testattribs");
+        bagIncludes=doc.getElement("include", "name");
+        bagExcludes=doc.getElement("exclude", "name");
+        bagIDEExecutor=!"code".equals(doc.getElement("testbag", "executor"));
     }
     
     void writeTypeSettings() throws IOException {
@@ -141,7 +142,7 @@ class WizardSettings extends Object {
         }
         doc.setProperty("xtest.extra.jars", "value", typeExecPath);
         doc.setProperty("xtest.jvmargs", "value", typeJVMSuffix);
-        doc.setProperty("compiletest.classpath", "classpath", typeCompPath);
+        doc.setProperty("compiletest.classpath", "value", typeCompPath);
         doc.setProperty("compile.excludes", "value", typeExcludes);
         if (typeSDI) {
             doc.setProperty("xtest.ide.winsys", "value", "sdi");
@@ -152,17 +153,18 @@ class WizardSettings extends Object {
         
         doc=new XMLDocument(typeConfig);
         doc.setElement("mconfig", "name", typeName+" Test Type Config");
+        doc.setElement("testset", "dir", typeName+"/src");
         String antfile=typeScript.getPrimaryFile().getNameExt();
         doc.setElement("compiler", "antfile", antfile);
         doc.setElement("executor", "antfile", antfile);
-        doc.setElement("testbag", null, null, "name", bagName);
-        doc.setElement("testbag", null, null, "testattribs", bagAttrs);
-        doc.setElement("include", null, null, "name", bagIncludes);
-        doc.setElement("exclude", null, null, "name", bagExcludes);
+        doc.setElement("testbag", "name", bagName);
+        doc.setElement("testbag", "testattribs", bagAttrs);
+        doc.setElement("include", "name", bagIncludes);
+        doc.setElement("exclude", "name", bagExcludes);
         if (bagIDEExecutor) {
-            doc.setElement("testbag",null,null,"executor", "ide");
+            doc.setElement("testbag", "executor", "ide");
         } else {
-            doc.setElement("testbag",null,null,"executor", "code");
+            doc.setElement("testbag", "executor", "code");
         }
         WizardIterator.save(typeConfig);
         

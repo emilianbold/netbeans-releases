@@ -78,7 +78,7 @@ public class jellyTest extends NbTestCase {
                 Dumper.dumpAll(getWorkDirPath()+File.separator+"screen.xml");
             } catch (Exception e2) {}
         }
-        throw new AssertionFailedExceptionError(e);
+        throw new AssertionFailedErrorException(e);
     }
     
     /** simple test case

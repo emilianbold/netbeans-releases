@@ -40,11 +40,10 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
     private static final String xtestPath="../../../nb_all/xtest";
     private static final String jemmyPath="../../../nbextra/jemmy";
     private static final String jellyPath="../../../nbextra/jelly";
-    private String type="";
-    private String attr="";
     private String jemmyHome=jemmyPath;
     private String jellyHome=jellyPath;
     private TemplateWizard wizard;
+
     /** Creates new form TestWorkspacePanel */
     public TestWorkspaceSettingsPanel() {
         initComponents();
@@ -322,27 +321,15 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
     }//GEN-END:initComponents
 
     private void xtestButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xtestButtonActionPerformed
-        File target=new File("..");
-        try {
-            target=FileUtil.toFile(wizard.getTargetFolder().getPrimaryFile());
-        } catch (Exception ieo) {}
-        JFileChooser f=new JFileChooser(target);
-        f.setDialogTitle("Select XTest Home Directory");
-        f.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        if (Utilities.showJFileChooser(f, this, f.getApproveButtonText())==JFileChooser.APPROVE_OPTION)
-            xtestField.setText(f.getSelectedFile().getAbsolutePath());
+        File home=WizardIterator.showFileChooser(this, "Select XTest Home Directory", true, false);
+        if (home!=null) 
+            xtestField.setText(home.getAbsolutePath());
     }//GEN-LAST:event_xtestButtonActionPerformed
 
     private void netbeansButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_netbeansButtonActionPerformed
-        File target=new File("..");
-        try {
-            target=FileUtil.toFile(wizard.getTargetFolder().getPrimaryFile());
-        } catch (Exception ieo) {}
-        JFileChooser f=new JFileChooser(target);
-        f.setDialogTitle("Select Netbeans Home Directory");
-        f.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        if (Utilities.showJFileChooser(f, this, f.getApproveButtonText())==JFileChooser.APPROVE_OPTION)
-            netbeansField.setText(f.getSelectedFile().getAbsolutePath());
+        File home=WizardIterator.showFileChooser(this, "Select Netbeans Home Directory", true, false);
+        if (home!=null) 
+            netbeansField.setText(home.getAbsolutePath());
     }//GEN-LAST:event_netbeansButtonActionPerformed
 
     private void xtestFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_xtestFieldFocusGained
@@ -384,8 +371,6 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
         xtestField.setEnabled(advanced);
         xtestButton.setEnabled(advanced);
         if (!advanced) {
-            typeField.setText(type);
-            attrField.setText(attr);
             switch (levelCombo.getSelectedIndex()) {
                  case 0:netbeansField.setText(netbeansPath);
                         xtestField.setText(xtestPath);
@@ -440,8 +425,10 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
             WizardSettings set=WizardSettings.get(obj);
             if (set.workspaceLevel<0)
                 levelCombo.setSelectedIndex(WizardIterator.detectWorkspaceLevel(df));
-            if (set.defaultType!=null) type=set.defaultType;
-            if (set.defaultAttributes!=null) attr=set.defaultAttributes;
+            if (set.defaultType!=null) 
+                typeField.setText(set.defaultType);
+            if (set.defaultAttributes!=null) 
+                attrField.setText(set.defaultAttributes);
             updatePanel();
         }
     }

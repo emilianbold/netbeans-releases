@@ -65,8 +65,6 @@ public class TestBagSettingsPanel extends javax.swing.JPanel implements WizardDe
         includeField = new javax.swing.JTextField();
         excludeLabel = new javax.swing.JLabel();
         excludeField = new javax.swing.JTextField();
-        includeButton = new javax.swing.JButton();
-        excludeButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -128,10 +126,10 @@ public class TestBagSettingsPanel extends javax.swing.JPanel implements WizardDe
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 10.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
         add(codeRadio, gridBagConstraints);
 
         attrLabel.setText("Attributes: ");
@@ -164,7 +162,7 @@ public class TestBagSettingsPanel extends javax.swing.JPanel implements WizardDe
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(attrField, gridBagConstraints);
 
-        includeLabel.setText("Execution Includes : ");
+        includeLabel.setText("Execution Include Pattern: ");
         includeLabel.setDisplayedMnemonic(73);
         includeLabel.setLabelFor(includeField);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -184,15 +182,15 @@ public class TestBagSettingsPanel extends javax.swing.JPanel implements WizardDe
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(includeField, gridBagConstraints);
 
-        excludeLabel.setText("Execution Excludes: ");
+        excludeLabel.setText("Execution Exclude Pattern: ");
         excludeLabel.setDisplayedMnemonic(69);
         excludeLabel.setLabelFor(excludeField);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -214,39 +212,13 @@ public class TestBagSettingsPanel extends javax.swing.JPanel implements WizardDe
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(excludeField, gridBagConstraints);
-
-        includeButton.setText("...");
-        includeButton.setPreferredSize(new java.awt.Dimension(30, 20));
-        includeButton.setMinimumSize(new java.awt.Dimension(30, 20));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 0.01;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
-        add(includeButton, gridBagConstraints);
-
-        excludeButton.setText("...");
-        excludeButton.setPreferredSize(new java.awt.Dimension(30, 20));
-        excludeButton.setMinimumSize(new java.awt.Dimension(30, 20));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 0.01;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
-        add(excludeButton, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -294,7 +266,10 @@ public class TestBagSettingsPanel extends javax.swing.JPanel implements WizardDe
     
     public void storeSettings(Object obj) {
         WizardSettings set=WizardSettings.get(obj);
-        set.bagName=nameField.getText();
+        String name=nameField.getText();
+        if (DEFAULT_NAME.equals(name))
+            name=null;
+        set.bagName=name;
         set.bagAttrs=attrField.getText();
         set.bagIncludes=includeField.getText();
         set.bagExcludes=excludeField.getText();
@@ -321,7 +296,6 @@ public class TestBagSettingsPanel extends javax.swing.JPanel implements WizardDe
     private javax.swing.JRadioButton ideRadio;
     private javax.swing.JLabel includeLabel;
     private javax.swing.JTextField nameField;
-    private javax.swing.JButton includeButton;
     private javax.swing.JTextField includeField;
     private javax.swing.JLabel executorLabel;
     private javax.swing.JLabel attrLabel;
@@ -329,7 +303,6 @@ public class TestBagSettingsPanel extends javax.swing.JPanel implements WizardDe
     private javax.swing.ButtonGroup buttonGroup;
     private javax.swing.JLabel excludeLabel;
     private javax.swing.JRadioButton codeRadio;
-    private javax.swing.JButton excludeButton;
     private javax.swing.JTextField excludeField;
     // End of variables declaration//GEN-END:variables
     

@@ -57,6 +57,9 @@ import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import java.util.Iterator;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
 
 /**
  *
@@ -269,12 +272,14 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         if (set.typeName==null)
             set.typeName=set.typeTemplate.getPrimaryFile().getName();
         set.suiteTarget=DataFolder.create(set.typeTarget, set.typeName+"/src");
+        res.add(set.suiteTarget);
         File root=FileUtil.toFile(set.suiteTarget.getPrimaryFile());
         if (root!=null) try {
             LocalFileSystem lfs=new LocalFileSystem();
             lfs.setRootDirectory(root);
             Repository.getDefault().addFileSystem(lfs);
             set.suiteTarget=DataFolder.findFolder(lfs.getRoot());
+            res.add(set.suiteTarget);
         } catch (Exception e) {}
         
         if (set.createSuite) {
@@ -288,6 +293,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         HashSet res=new HashSet();
         
         set.typeTarget=DataFolder.create(set.workspaceTarget,"test");
+        res.add(set.typeTarget);
         
         try {
             set.workspaceScript=set.workspaceTemplate.createFromTemplate(set.typeTarget, "build");
@@ -341,5 +347,38 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
                 }
             }, 5000);
    }
+   
+   private  static File target=new File(".");
     
+    private static class JarAndZipFilter extends FileFilter {
+        public boolean accept(File f) {
+            if (f.isDirectory ()) return true;
+            String s = f.getPath().toLowerCase();
+            return s.endsWith(".jar") || s.endsWith(".zip");
+        }
+        public String getDescription() {
+            return "Jar and Zip File Filter";
+        }
+    }
+   
+   public static File showFileChooser(Component parent, String title, boolean selectDirectories, boolean selectJars) {
+        JFileChooser f=new JFileChooser(target);
+        f.setDialogTitle(title);
+        if (selectJars) {
+            f.setFileFilter(new JarAndZipFilter());
+            if (selectDirectories)
+                f.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            else
+                f.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        } else {
+            if (selectDirectories)
+                f.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        }
+        if (Utilities.showJFileChooser(f, parent, f.getApproveButtonText())==JFileChooser.APPROVE_OPTION) {
+            target=f.getCurrentDirectory();
+            return f.getSelectedFile();
+        }
+        return null;
+   }
+
 }

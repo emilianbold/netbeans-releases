@@ -13,7 +13,7 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="excludesLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Compilation Excludes: "/>
+        <Property name="text" type="java.lang.String" value="Compilation Exclude Pattern: "/>
         <Property name="displayedMnemonic" type="int" value="88"/>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="excludesField" type="bean"/>
@@ -74,6 +74,10 @@
           <Dimension value="[30, 20]"/>
         </Property>
       </Properties>
+
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="compileButtonActionPerformed"/>
+      </Events>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints gridX="1" gridY="7" gridWidth="0" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="4" insetsLeft="0" insetsBottom="4" insetsRight="4" anchor="18" weightX="0.01" weightY="1.0"/>
@@ -115,6 +119,10 @@
           <Dimension value="[30, 20]"/>
         </Property>
       </Properties>
+
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="executeButtonActionPerformed"/>
+      </Events>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints gridX="1" gridY="9" gridWidth="0" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="4" insetsLeft="0" insetsBottom="4" insetsRight="4" anchor="18" weightX="0.01" weightY="1.0"/>
@@ -148,7 +156,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jemmyLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Jemmy Home: "/>
+        <Property name="text" type="java.lang.String" value="Jemmy Jar Home: "/>
         <Property name="displayedMnemonic" type="int" value="77"/>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="jemmyField" type="bean"/>
@@ -181,6 +189,10 @@
           <Dimension value="[30, 20]"/>
         </Property>
       </Properties>
+
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jemmyButtonActionPerformed"/>
+      </Events>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints gridX="1" gridY="11" gridWidth="0" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="4" insetsLeft="0" insetsBottom="4" insetsRight="4" anchor="18" weightX="0.01" weightY="1.0"/>
@@ -189,7 +201,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jellyLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Jelly Home: "/>
+        <Property name="text" type="java.lang.String" value="Jelly Jar Home: "/>
         <Property name="displayedMnemonic" type="int" value="76"/>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="jellyField" type="bean"/>
@@ -222,6 +234,10 @@
           <Dimension value="[30, 20]"/>
         </Property>
       </Properties>
+
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jellyButtonActionPerformed"/>
+      </Events>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints gridX="1" gridY="13" gridWidth="0" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="4" insetsLeft="0" insetsBottom="4" insetsRight="4" anchor="18" weightX="0.01" weightY="1.0"/>

@@ -84,6 +84,8 @@ public class TestSuiteTargetPanel extends javax.swing.JPanel implements WizardDe
 
         setLayout(new java.awt.GridBagLayout());
 
+        setPreferredSize(new java.awt.Dimension(408, 334));
+        setMinimumSize(new java.awt.Dimension(135, 156));
         nameLabel.setText("Name: ");
         nameLabel.setDisplayedMnemonic(110);
         nameLabel.setLabelFor(nameField);

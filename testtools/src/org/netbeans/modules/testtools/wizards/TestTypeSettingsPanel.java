@@ -101,10 +101,10 @@ public class TestTypeSettingsPanel extends javax.swing.JPanel implements WizardD
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 10.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
         panel.add(mdiRadio, gridBagConstraints);
 
         jemmyCheck.setMnemonic('j');
@@ -149,6 +149,9 @@ public class TestTypeSettingsPanel extends javax.swing.JPanel implements WizardD
                     name=wizard.getTemplate().getPrimaryFile().getName();
                 stop=WizardIterator.detectTestType(wizard.getTargetFolder(), name);
             } else {
+                name=set.typeName;
+                if (name==null)
+                    name=set.typeTemplate.getPrimaryFile().getName();
                 stop=false;
             }
         } catch (Exception e) {}

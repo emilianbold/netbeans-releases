@@ -61,6 +61,9 @@ public class XMLDocument {
         return getElement("property", "name", name, valueName);
     }
     
+    public String getElement(String element, String valueName) {
+        return getElement(element, null, null, valueName);
+    }
     public String getElement(String element, String nameName, String nameValue, String valueName) {
         NodeList list = doc.getElementsByTagName(element);
         for (int i=0; i<list.getLength(); i++) try {
