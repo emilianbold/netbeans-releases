@@ -16,12 +16,14 @@ package com.netbeans.developer.modules.loaders.form;
 import java.awt.*;
 import java.beans.*;
 
+import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
+
 /**
 * RADConnectionPropertyEditor is a property editor for ListModel, which encapsulates a connection to existing ListModel beans on the form
 *
 * @author  Ian Formanek
 */
-public class RADConnectionPropertyEditor extends Object implements PropertyEditor, FormAwareEditor {
+public class RADConnectionPropertyEditor extends Object implements PropertyEditor, FormAwareEditor, XMLPropertyEditor {
 
   protected PropertyChangeSupport support;
   private Class propertyType;
@@ -186,6 +188,96 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
       throw new InternalError ();
     }
   }
+
+//--------------------------------------------------------------------------
+// XMLPropertyEditor implementation
+
+  public static final String XML_CONNECTION = "Connection";
+
+  public static final String ATTR_TYPE = "type";
+  public static final String ATTR_COMPONENT = "component";
+  public static final String ATTR_NAME = "name";
+  public static final String ATTR_CODE = "code";
+  public static final String ATTR_VALUE = "value";
+
+  public static final String VALUE_VALUE = "value";
+  public static final String VALUE_PROPERTY = "property";
+  public static final String VALUE_METHOD = "method";
+  public static final String VALUE_CODE = "code";
+
+  /** Called to load property value from specified XML subtree. If succesfully loaded, 
+  * the value should be available via the getValue method.
+  * An IOException should be thrown when the value cannot be restored from the specified XML element
+  * @param element the XML DOM element representing a subtree of XML from which the value should be loaded
+  * @exception IOException thrown when the value cannot be restored from the specified XML element
+  */
+  public void readFromXML (org.w3c.dom.Node element) throws java.io.IOException {
+    if (!XML_CONNECTION.equals (element.getNodeName ())) {
+      throw new java.io.IOException ();
+    }
+    org.w3c.dom.NamedNodeMap attributes = element.getAttributes ();
+    try {
+      String typeString = attributes.getNamedItem (ATTR_TYPE).getNodeValue ();
+      int type = RADConnectionDesignValue.TYPE_CODE;
+      if (VALUE_VALUE.equals (typeString)) {
+        String value = attributes.getNamedItem (ATTR_VALUE).getNodeValue ();
+//        setValue (new RADConnectionDesignValue ()); // [PENDING]
+      } else if (VALUE_PROPERTY.equals (typeString)) {
+        String component = attributes.getNamedItem (ATTR_COMPONENT).getNodeValue ();
+        String name = attributes.getNamedItem (ATTR_NAME).getNodeValue ();
+//        setValue (new RADConnectionDesignValue (rcomponent, )); // [PENDING]
+      } else if (VALUE_METHOD.equals (typeString)) {
+        String component = attributes.getNamedItem (ATTR_COMPONENT).getNodeValue ();
+        String name = attributes.getNamedItem (ATTR_NAME).getNodeValue ();
+//        setValue (new RADConnectionDesignValue (rcomponent, )); // [PENDING]
+      } else {
+        String code = attributes.getNamedItem (ATTR_CODE).getNodeValue ();
+        setValue (new RADConnectionDesignValue (code));
+      }
+
+
+    } catch (NullPointerException e) {
+      throw new java.io.IOException ();
+    }
+  }
+  
+  /** Called to store current property value into XML subtree. The property value should be set using the
+  * setValue method prior to calling this method.
+  * @param doc The XML document to store the XML in - should be used for creating nodes only
+  * @return the XML DOM element representing a subtree of XML from which the value should be loaded
+  */
+  public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
+    org.w3c.dom.Element el = doc.createElement (XML_CONNECTION);
+    String typeString;
+    switch (currentValue.type) {
+      case RADConnectionDesignValue.TYPE_VALUE: typeString = VALUE_VALUE; break;
+      case RADConnectionDesignValue.TYPE_PROPERTY: typeString = VALUE_PROPERTY; break;
+      case RADConnectionDesignValue.TYPE_METHOD: typeString = VALUE_METHOD; break;
+      case RADConnectionDesignValue.TYPE_CODE: 
+      default:
+           typeString = VALUE_CODE; break;
+    }
+    el.setAttribute (ATTR_TYPE, typeString);
+    switch (currentValue.type) {
+      case RADConnectionDesignValue.TYPE_VALUE: 
+           el.setAttribute (ATTR_VALUE, currentValue.value);
+           break;
+      case RADConnectionDesignValue.TYPE_PROPERTY:
+           el.setAttribute (ATTR_COMPONENT, currentValue.radComponentName);
+           el.setAttribute (ATTR_NAME, currentValue.propertyName);
+           break;
+      case RADConnectionDesignValue.TYPE_METHOD: 
+           el.setAttribute (ATTR_COMPONENT, currentValue.radComponentName);
+           el.setAttribute (ATTR_NAME, currentValue.propertyName);
+           break;
+      case RADConnectionDesignValue.TYPE_CODE: 
+           el.setAttribute (ATTR_CODE, org.openide.util.Utilities.replaceString (currentValue.userCode, "\n", "\\n"));
+           break;
+    }
+
+    return el;
+  }
+
 }
 
 /*
