@@ -192,7 +192,6 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
       <sourcepath>
         <pathelement location="api/doc"/>
         <pathelement location="src"/>
-        <pathelement location="../openidex/src"/>
       </sourcepath>
       <classpath>
         <pathelement location="../core/release/lib/ext/parser.jar"/>
@@ -232,8 +231,6 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
              packages="org.openide.src:org.openide.src.nodes"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/util/doc-files/api.html&quot;&gt;Utility Classes&lt;/a&gt;"
              packages="org.openide.awt:org.openide.util:org.openide.util.enum:org.openide.util.io"/>
-      <group title="Proposed APIs"
-             packages="org.openidex.*"/>
     </javadoc>
     <copy file="api/doc/open-apis.css" tofile="OpenAPIs/open-apis.css"/>
     <replace dir="OpenAPIs" token="@JDK@" value="${jdk-docs-location}">
