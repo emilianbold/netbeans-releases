@@ -1069,12 +1069,16 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         if (id == JspTagTokenContext.COMMENT || 
             id == JspTagTokenContext.ERROR || 
             id == JspTagTokenContext.TEXT ||
-            id == JspMultiTokenContext.ERROR) {
+            id == JspMultiTokenContext.ERROR ||
+            id == JspDirectiveTokenContext.COMMENT || 
+            id == JspDirectiveTokenContext.ERROR || 
+            id == JspDirectiveTokenContext.TEXT
+            ) {
 //System.out.println("uninteresting JspTag token");
             return null;
         }
         
-        if (id == JspTagTokenContext.SYMBOL2) {
+        if (id == JspTagTokenContext.SYMBOL2 || id == JspDirectiveTokenContext.SYMBOL2) {
 //System.out.println("just at symbol");
             if ((getTokenEnd(item) == offset) && isScriptStartToken(item)) {
                 return getScriptingChain(item.getNext(), offset);
@@ -1091,7 +1095,14 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             id == JspTagTokenContext.SYMBOL ||
             id == JspTagTokenContext.ATTRIBUTE ||
             id == JspTagTokenContext.ATTR_VALUE ||
-            id == JspTagTokenContext.EOL) {
+            id == JspTagTokenContext.WHITESPACE ||
+            id == JspTagTokenContext.EOL ||
+            id == JspDirectiveTokenContext.TAG ||
+            id == JspDirectiveTokenContext.SYMBOL ||
+            id == JspDirectiveTokenContext.ATTRIBUTE ||
+            id == JspDirectiveTokenContext.ATTR_VALUE ||
+            id == JspDirectiveTokenContext.WHITESPACE ||
+            id == JspDirectiveTokenContext.EOL) {
             // may be intetesting: tag, directive, 
             // but may also be a comment. Look back for SYMBOL: <, </, <%@ 
             // or COMMENT
@@ -1100,7 +1111,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
 //System.out.println("backtracking, elementStart = " + elementStart);
                 if (elementStart == null)
                     return null;
-                if (elementStart.getTokenID() == JspTagTokenContext.SYMBOL) {
+                if (elementStart.getTokenID() == JspTagTokenContext.SYMBOL
+                        || id == JspDirectiveTokenContext.SYMBOL) {
                     if (elementStart.getImage().equals("<")) {   // NOI18N
                         return getTagOrDirectiveChain(true, elementStart, offset);
                     }
@@ -1111,7 +1123,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                         return getTagOrDirectiveChain(false, elementStart, offset);
                     }
                 }
-                if (elementStart.getTokenID() == JspTagTokenContext.COMMENT) {
+                if (elementStart.getTokenID() == JspTagTokenContext.COMMENT
+                        || id == JspDirectiveTokenContext.COMMENT) {
                     return null;
                 }
                 elementStart = elementStart.getPrevious();
@@ -1155,7 +1168,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         if (item == null)
             return false;
         TokenID id = item.getTokenID();
-        if (id == JspTagTokenContext.SYMBOL2) {
+        if (id == JspTagTokenContext.SYMBOL2
+                || id == JspDirectiveTokenContext.SYMBOL2) {
             String image = item.getImage();
             if (image.equals("<%") ||   // NOI18N
                 image.equals("<%=") ||  // NOI18N
@@ -1171,7 +1185,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         if (item == null)
             return false;
         TokenID id = item.getTokenID();
-        if (id == JspTagTokenContext.SYMBOL2) {
+        if (id == JspTagTokenContext.SYMBOL2
+                || id == JspDirectiveTokenContext.SYMBOL2) {
             String image = item.getImage();
             if (image.equals("%>")) // NOI18N
                 return true;
@@ -1185,7 +1200,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         if (!isTagDirToken(item))
             return false;
         TokenID id = item.getTokenID();
-        if (id == JspTagTokenContext.SYMBOL) {
+        if (id == JspTagTokenContext.SYMBOL
+                || id == JspDirectiveTokenContext.SYMBOL) {
             String image = item.getImage();
             if (image.equals("<") ||    // NOI18N
                 image.equals("</") ||   // NOI18N
@@ -1212,7 +1228,16 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             (id != JspTagTokenContext.SYMBOL) &&
             (id != JspTagTokenContext.ATTRIBUTE) &&
             (id != JspTagTokenContext.ATTR_VALUE) &&
-            (id != JspTagTokenContext.EOL)) {
+            (id != JspTagTokenContext.WHITESPACE) &&
+            (id != JspTagTokenContext.EOL) &&
+            (id != JspDirectiveTokenContext.TEXT) &&
+            (id != JspDirectiveTokenContext.ERROR) &&
+            (id != JspDirectiveTokenContext.TAG) &&
+            (id != JspDirectiveTokenContext.SYMBOL) &&
+            (id != JspDirectiveTokenContext.ATTRIBUTE) &&
+            (id != JspDirectiveTokenContext.ATTR_VALUE) &&
+            (id != JspDirectiveTokenContext.WHITESPACE) &&
+            (id != JspDirectiveTokenContext.EOL )) {
             return false;
         }
         // PENDING - EOL can still be a comment
@@ -1236,6 +1261,15 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             (id == JspTagTokenContext.ATTR_VALUE) ||
             (id == JspTagTokenContext.SYMBOL2) ||
             (id == JspTagTokenContext.EOL) ||
+            (id == JspDirectiveTokenContext.TEXT) ||
+            (id == JspDirectiveTokenContext.ERROR) ||
+            (id == JspDirectiveTokenContext.TAG) ||
+            (id == JspDirectiveTokenContext.SYMBOL) ||
+            (id == JspDirectiveTokenContext.COMMENT) ||
+            (id == JspDirectiveTokenContext.ATTRIBUTE) ||
+            (id == JspDirectiveTokenContext.ATTR_VALUE) ||
+            (id == JspDirectiveTokenContext.SYMBOL2) ||
+            (id == JspDirectiveTokenContext.EOL) ||
             (id == JspMultiTokenContext.ERROR))
             return false;
         return true;
@@ -1258,29 +1292,32 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     
     /** Gets an element representing a tag or directive starting with token item firstToken. */
     private SyntaxElement getTagOrDirectiveChain(boolean tag, TokenItem firstToken, int offset) {
+        //suppose we are in a tag or directive => we do not have to distinguish tokenIDs -
+        //it is sufficient to work with numeric ids (solves directive/tag tokenID problem)
         TokenItem item = firstToken.getNext();
         String name = getWholeWord(item, JspTagTokenContext.TAG);
-        while ((item != null) && (item.getTokenID() == JspTagTokenContext.TAG))
+        while ((item != null) && (item.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID ||
+                 item.getTokenID().getNumericID() == JspTagTokenContext.WHITESPACE_ID ))
             item = item.getNext();
         TreeMap attributes = new TreeMap();
         while (isInnerTagDirToken(item)) {
             // collect the attributes
-            if (item.getTokenID() == JspTagTokenContext.ATTRIBUTE) {
+            if (item.getTokenID().getNumericID() == JspTagTokenContext.ATTRIBUTE_ID) {
                 String attributeName = getWholeWord(item, JspTagTokenContext.ATTRIBUTE);
                 // forward to the next non-ATTRIBUTE token
-                while ((item != null) && (item.getTokenID() == JspTagTokenContext.ATTRIBUTE))
+                while ((item != null) && (item.getTokenID().getNumericID() == JspTagTokenContext.ATTRIBUTE_ID))
                     item = item.getNext();
                 // find the value
                 while ((item != null) && 
-                       (item.getTokenID() == JspTagTokenContext.SYMBOL) &&
+                       (item.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL_ID) &&
                        (isValueBeginning(item.getImage())))
                     item = item.getNext();
                 StringBuffer value = new StringBuffer();
-                while ((item != null) && (item.getTokenID() == JspTagTokenContext.ATTR_VALUE)) {
+                while ((item != null) && (item.getTokenID().getNumericID() == JspTagTokenContext.ATTR_VALUE_ID)) {
                     value.append(item.getImage());
                     item = item.getNext();
                     // request time values
-                    if ((item != null) && (item.getTokenID() == JspTagTokenContext.SYMBOL2)) {
+                    if ((item != null) && (item.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL2_ID)) {
                         // scripting language - something like request time value of a JSP tag
                         while (!isScriptEndToken(item)) {
                             if (item == null)
@@ -1306,7 +1343,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 attributes.put(attributeName, vString);
                 continue;
             }
-            if (item.getTokenID() == JspTagTokenContext.SYMBOL2) {
+            if (item.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL2_ID) {
                 // scripting language - something like request time value of a JSP tag
                 while (!isScriptEndToken(item)) {
                     if (item == null)
@@ -1352,7 +1389,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     
     private String getWholeWord(TokenItem firstToken, TokenID requestedTokenID) {
         StringBuffer sb = new StringBuffer();
-        while ((firstToken != null) && (firstToken.getTokenID() == requestedTokenID)) {
+        while ((firstToken != null) && (firstToken.getTokenID().getNumericID() == requestedTokenID.getNumericID())) {
             sb.append(firstToken.getImage());
             firstToken = firstToken.getNext();
         }
