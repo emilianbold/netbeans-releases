@@ -88,7 +88,7 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, Boolean.FALSE, true);
         putProperty(PROP_TEST_RUNNER, "org.netbeans.modules.junit.JUnitTestRunner", true);
         putProperty(PROP_PROPERTIES, NbBundle.getMessage(JUnitSettings.class, "PROP_properties_default_value"), true);
-        putProperty(PROP_GENERATE_NBJUNIT, Boolean.TRUE, true);
+        putProperty(PROP_GENERATE_NBJUNIT, Boolean.FALSE, true);
         putProperty(PROP_REGENERATE_SUITE_METHOD, Boolean.TRUE, true);
         
     }
@@ -284,11 +284,14 @@ public class JUnitSettings extends SystemOption {
     }
 
     public boolean isGenerateNbJUnit() {
-        return ((Boolean) getProperty(PROP_GENERATE_NBJUNIT)).booleanValue();
+        // this is no longer supported - always return false
+        //return ((Boolean) getProperty(PROP_GENERATE_NBJUNIT)).booleanValue();
+        return false;
     }
 
     public void setGenerateNbJUnit(boolean newVal) {
-        putProperty(PROP_GENERATE_NBJUNIT, newVal ? Boolean.TRUE : Boolean.FALSE, true);
+        // this is no longer supported - do nothing
+        //putProperty(PROP_GENERATE_NBJUNIT, newVal ? Boolean.TRUE : Boolean.FALSE, true);
     }
     
     public boolean isRegenerateSuiteMethod() {

@@ -76,14 +76,18 @@ public class TestCreator extends java.lang.Object {
         srcelTarget.setPackage(srcelSource.getPackage());
         srcelTarget.addImports(srcelSource.getImports());
         srcelTarget.addImport(new Import(Identifier.create(JUNIT_FRAMEWORK_PACKAGE_NAME), Import.PACKAGE));
+        
+        // !-- GENERATE NbJUnit no longer supported
         // if generate NbJUnit - add appropriate import, if not - remove it
+        /*
         Import nbjunitImport = new Import(Identifier.create(NBJUNIT_EXTENSION_PACKAGE_NAME), Import.PACKAGE);
         if (JUnitSettings.getDefault().isGenerateNbJUnit()) {            
             srcelTarget.addImport(nbjunitImport);
         } else {            
             srcelTarget.removeImport(nbjunitImport);
         }
-        
+         */
+        // GENERATE NbJUnit no longer supported --!
         //System.err.println("TestCreator.createTestClass(): target imports:"+arrayToString(srcelTarget.getImports()));
 
         // construct/update test class from the source class
@@ -99,14 +103,18 @@ public class TestCreator extends java.lang.Object {
         
         srcelTarget.setPackage(packageName.length() != 0 ? Identifier.create(packageName) : null);
         srcelTarget.addImport(new Import(Identifier.create(JUNIT_FRAMEWORK_PACKAGE_NAME), Import.PACKAGE));
+
+        // !-- GENERATE NbJUnit no longer supported
         // if generate NbJUnit - add appropriate import, if not - remove it
+        /*
         Import nbjunitImport = new Import(Identifier.create(NBJUNIT_EXTENSION_PACKAGE_NAME), Import.PACKAGE);
         if (JUnitSettings.getDefault().isGenerateNbJUnit()) {            
             srcelTarget.addImport(nbjunitImport);
         } else {            
             srcelTarget.removeImport(nbjunitImport);
         }
-         
+         */
+         // GENERATE NbJUnit no longer supported --!
         // construct/update test class from the source class
         fillSuitClass(listMembers, packageName, classTarget);
     }
@@ -205,12 +213,16 @@ public class TestCreator extends java.lang.Object {
         method.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
         method.setReturn(Type.createClass(Identifier.create("Test")));
         
-        // prepare the body - if we generate nbjunit - we have to generate NbTestSuite otherwise TestSuite
-        if (JUnitSettings.getDefault().isGenerateNbJUnit()) {
+        // !-- GENERATE NbJUnit no longer supported
+        // prepare the body - if we generate nbjunit - we have to generate NbTestSuite otherwise TestSuite        
+        /*if (JUnitSettings.getDefault().isGenerateNbJUnit()) {
             body.append("\nTestSuite suite = new NbTestSuite(");
-        } else {
-            body.append("\nTestSuite suite = new TestSuite(");            
-        }
+        } else {         
+           body.append("\nTestSuite suite = new TestSuite(");             
+        }*/
+        // GENERATE NbJUnit no longer supported --!
+        
+        body.append("\nTestSuite suite = new TestSuite(");
         body.append(classTest.getName().getName());
         body.append(".class);\n");
         
@@ -335,12 +347,18 @@ public class TestCreator extends java.lang.Object {
     static private void fillGeneral(ClassElement classTest) throws SourceException {
         ConstructorElement  constr;
         
+        // !-- GENERATE NbJUnit no longer supported
         // set explicitly super class and modifiers
+        /*
         if (JUnitSettings.getDefault().isGenerateNbJUnit()) {
             classTest.setSuperclass(Identifier.create(NBJUNIT_SUPER_CLASS_NAME));
         } else {
             classTest.setSuperclass(Identifier.create(JUNIT_SUPER_CLASS_NAME));
         }
+        */
+        // GENERATE NbJUnit no longer supported --!
+        
+        classTest.setSuperclass(Identifier.create(JUNIT_SUPER_CLASS_NAME));
         classTest.setModifiers(Modifier.PUBLIC);
 
         // remove default ctor, if exists (shouldn't throw exception)
@@ -478,11 +496,19 @@ public class TestCreator extends java.lang.Object {
         
         body.append("\n//" + SUIT_BLOCK_START + "\n");
         body.append(SUIT_BLOCK_COMMENT);
+        
+        // !-- GENERATE NbJUnit no longer supported
+        /*
         if (JUnitSettings.getDefault().isGenerateNbJUnit()) {
             body.append("\nTestSuite suite = new NbTestSuite(\"" + testName + "\");\n");
         } else {
             body.append("\nTestSuite suite = new TestSuite(\"" + testName + "\");\n");
         }
+         */
+        // GENERATE NbJUnit no longer supported --!
+        
+        body.append("\nTestSuite suite = new TestSuite(\"" + testName + "\");\n");
+        
         li = members.listIterator();
         
         while (li.hasNext()) {
