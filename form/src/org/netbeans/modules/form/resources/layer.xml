@@ -685,6 +685,7 @@ SystemFileSystem
                     <file name="filesystems.wstcref" url="windowmanager/Visual/explorer/filesystems.wstcref" />
                     <file name="project.wstcref" url="windowmanager/Visual/explorer/project.wstcref" />
                     <file name="Javadoc.wstcref" url="windowmanager/Visual/explorer/Javadoc.wstcref" />
+                    <file name="runtime.wstcref" url="windowmanager/Visual/explorer/runtime.wstcref" />
                 </folder>
                 <file name="properties.wsmode" url="windowmanager/Visual/properties.wsmode" />
                 <folder name="properties">
