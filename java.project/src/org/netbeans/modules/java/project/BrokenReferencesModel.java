@@ -16,9 +16,14 @@ package org.netbeans.modules.java.project;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
+
 import java.util.LinkedHashSet;
+import java.util.Map;
+
 import java.util.Set;
 import javax.swing.AbstractListModel;
+
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
@@ -140,11 +145,10 @@ public class BrokenReferencesModel extends AbstractListModel {
 
     private static String[] getReferences(PropertyEvaluator evaluator, String[] ps, boolean abortAfterFirstProblem) {
         Set set = new LinkedHashSet();
+        StringBuffer all = new StringBuffer();
         for (int i=0; i<ps.length; i++) {
             // evaluate given property and tokenize it
             
-            // XXX: there will be API in PropertyUtils for listing of Ant 
-            // prop names in String. Consider using it here.
             String prop = evaluator.getProperty(ps[i]);
             if (prop == null) {
                 continue;
@@ -160,6 +164,7 @@ public class BrokenReferencesModel extends AbstractListModel {
             for (int j=0; j<vals.length; j++) {
                 // we are checking only: project reference, file reference, library reference
                 if (!(vals[j].startsWith("${file.reference.") || vals[j].startsWith("${project.") || vals[j].startsWith("${libs."))) {
+                    all.append(vals[j]);
                     continue;
                 }
                 if (vals[j].startsWith("${project.")) {
@@ -177,6 +182,31 @@ public class BrokenReferencesModel extends AbstractListModel {
                 break;
             }
         }
+        
+        // Check also that all referenced project really exist and are reachable.
+        // If they are not report them as broken reference.
+        // XXX: there will be API in PropertyUtils for listing of Ant 
+        // prop names in String. Consider using it here.
+        Iterator it = evaluator.getProperties().entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry entry = (Map.Entry)it.next();
+            String key = (String)entry.getKey();
+            String value = (String)entry.getValue();
+            if (key.startsWith("project.")) { // NOI18N
+                File f = new File(value);
+                if (f.exists()) {
+                    continue;
+                }
+                // Check that the value is really used by some property.
+                // If it is not then ignore such a project.
+                if (all.indexOf(value) == -1) {
+                    continue;
+                }
+                set.add(key);
+            }
+        }
+        
+        
         return (String[])set.toArray(new String[set.size()]);
     }
 
