@@ -552,6 +552,9 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     * @return the shadow
     */
     protected DataShadow handleCreateShadow (DataFolder f) throws IOException {
+        if (getOriginal() instanceof DataFolder) {
+            DataFolder.testNesting(((DataFolder)getOriginal()), f);
+        }
         return original.handleCreateShadow (f);
     }
 
@@ -655,6 +658,20 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         }, 100);
     }
     
+    protected DataObject handleCopy (DataFolder f) throws IOException {
+        if (getOriginal() instanceof DataFolder) {
+            DataFolder.testNesting(((DataFolder)getOriginal()), f);
+        }
+        return super.handleCopy(f);
+    }
+    
+    protected FileObject handleMove (DataFolder f) throws IOException {
+        if (getOriginal() instanceof DataFolder) {
+            DataFolder.testNesting(((DataFolder)getOriginal()), f);
+        }
+        return super.handleMove(f);
+    }
+
     private static class OrigL implements PropertyChangeListener {
         WeakReference shadow = null;
         public OrigL (DataShadow shadow) {

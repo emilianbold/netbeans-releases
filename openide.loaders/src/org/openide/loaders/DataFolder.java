@@ -524,7 +524,7 @@ implements Serializable, DataObject.Container {
     * @return the new object
     */
     protected DataObject handleCopy (DataFolder f) throws IOException {
-        testNesting(f);
+        testNesting(this, f);
         
         Enumeration en = children ();
 
@@ -550,20 +550,25 @@ implements Serializable, DataObject.Container {
         return newFolder;
     }
 
-    // test whether the "f" is not parent of "this" -> not allowed
-    private void testNesting(DataFolder f) throws IOException {
-        if (f.equals(this)) {
+    /**
+     * Ensure that given folder is not parent of targetFolder. Also
+     * ensure that they are not equal.
+     */
+    static void testNesting(DataFolder folder, DataFolder targetFolder) throws IOException {
+        if (targetFolder.equals(folder)) {
             throw (IOException) ErrorManager.getDefault().annotate(
                 new IOException("Error Copying File or Folder"), //NOI18N
-                ErrorManager.WARNING, null, NbBundle.getMessage(DataFolder.class, "EXC_CannotCopyTheSame", getName()) //NOI18N
+                ErrorManager.WARNING, null, NbBundle.getMessage(DataFolder.class, "EXC_CannotCopyTheSame", folder.getName()) //NOI18N
                 , null, null);
         } else {
-            DataFolder testFolder = f.getFolder();
+            DataFolder testFolder = targetFolder.getFolder();
             while (testFolder != null) {
-                if (testFolder.equals(this)) {
+                if (testFolder.equals(folder)) {
                     throw (IOException) ErrorManager.getDefault().annotate(
-                        new IOException("Error copying file or folder: " + testFolder.getPrimaryFile() + " in " + getPrimaryFile()), //NOI18N
-                        ErrorManager.WARNING, null, NbBundle.getMessage(DataFolder.class, "EXC_CannotCopySubfolder", getName()) //NOI18N
+                        new IOException("Error copying file or folder: " + 
+                        folder.getPrimaryFile() + " cannot be copied to its subfolder " +
+                        targetFolder.getPrimaryFile()), //NOI18N
+                        ErrorManager.WARNING, null, NbBundle.getMessage(DataFolder.class, "EXC_CannotCopySubfolder", folder.getName()) //NOI18N
                         , null, null);
                 }
                 testFolder = testFolder.getFolder();
@@ -791,7 +796,7 @@ implements Serializable, DataObject.Container {
     */
     protected DataShadow handleCreateShadow (DataFolder f) throws IOException {
         // #33871 - prevent creation of recursive folder structure
-        testNesting(f);
+        testNesting(this, f);
         
         String name;
         if (getPrimaryFile ().isRoot ()) {
