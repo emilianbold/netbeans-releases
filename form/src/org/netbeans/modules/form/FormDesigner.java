@@ -145,7 +145,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             if (formModelListener == null)
                 formModelListener = new FormListener();
             formModel.addFormModelListener(formModelListener);
-            formEditorSupport = FormEditorSupport.getSupport(formModel);
+            formEditorSupport = FormEditorSupport.getFormEditor(formModel);
             resetTopDesignComponent(false);
             updateName(formModel.getName());
             handleLayer.setViewOnly(formModel.isReadOnly());
@@ -840,12 +840,12 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     public void componentShowing() {
         super.componentShowing();
-        FormEditorSupport.checkGroupVisibility();
+        FormEditorSupport.checkFormGroupVisibility();
     }
 
     public void componentHidden() {
         super.componentHidden();
-        FormEditorSupport.checkGroupVisibility();
+        FormEditorSupport.checkFormGroupVisibility();
     }
 
     public void componentOpened() {

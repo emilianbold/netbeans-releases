@@ -37,7 +37,7 @@ import org.netbeans.core.api.multiview.*;
 
 import org.netbeans.modules.java.JavaEditor;
 import org.netbeans.modules.form.palette.CPManager;
-import org.openide.text.EditorSupport;
+import org.openide.text.*;
 import org.openide.text.PositionRef;
 
 /**
@@ -481,14 +481,14 @@ public class FormEditorSupport extends JavaEditor
     }
 
     /** @return FormEditorSupport instance for given form */
-    public static FormEditorSupport getSupport(FormModel formModel) {
+    public static FormEditorSupport getFormEditor(FormModel formModel) {
         return (FormEditorSupport) openForms.get(formModel);
     }
 
     // ------------
     // loading
 
-    /** This methods loads the form, reports errors, cretaes the FormDesigner */
+    /** This methods loads the form, reports errors, creates the FormDesigner */
     FormDesigner loadFormDesigner() {
         JFrame mainWin = (JFrame) WindowManager.getDefault().getMainWindow();
 
@@ -982,44 +982,12 @@ public class FormEditorSupport extends JavaEditor
                 if (TopComponent.Registry.PROP_ACTIVATED.equals(
                                                 evt.getPropertyName()))
                 {
-                    checkGroupVisibility();
+                    checkFormGroupVisibility();
                 }
             }
         };
 
         TopComponent.getRegistry().addPropertyChangeListener(topcompsListener);
-    }
-
-    static Boolean groupVisible = null;
-
-    static void checkGroupVisibility() {
-        // active TopComponent changed, check if we should open or
-        // close the form editor group of windows (Inspector, Palette, Properties)
-        WindowManager wm = WindowManager.getDefault();
-        TopComponentGroup group = wm.findTopComponentGroup("form"); // NOI18N
-        if (group == null)
-            return; // group not found (should not happen)
-
-        boolean designerSelected = false;
-        Iterator it = wm.getModes().iterator();
-        while (it.hasNext()) {
-            Mode mode = (Mode) it.next();
-            TopComponent selected = mode.getSelectedTopComponent();
-            MultiViewHandler handler = MultiViews.findMultiViewHandler(selected);
-            if (handler != null
-                && MV_FORM_ID.equals(handler.getSelectedPerspective().preferredID()))
-            {
-                designerSelected = true;
-                break;
-            }
-        }
-
-        if (designerSelected && !Boolean.TRUE.equals(groupVisible))
-            group.open();
-        else if (!designerSelected && !Boolean.FALSE.equals(groupVisible))
-            group.close();
-
-        groupVisible = designerSelected ? Boolean.TRUE : Boolean.FALSE;
     }
 
     private static void detachTopComponentsListener() {
@@ -1068,7 +1036,7 @@ public class FormEditorSupport extends JavaEditor
     }
 
     // -------
-    // multiview
+    // window system & multiview
 
     /** Overriden from JavaEditor. Gets called if java editor is opened first
      * via EditCookie. */
@@ -1091,6 +1059,57 @@ public class FormEditorSupport extends JavaEditor
      */
     void setTopComponent(TopComponent topComp) {
         multiviewTC = (CloneableTopComponent)topComp;
+    }
+
+    public static FormEditorSupport getFormEditor(TopComponent tc) {
+        Object dobj = tc.getLookup().lookup(DataObject.class);
+        return dobj instanceof FormDataObject ?
+               ((FormDataObject)dobj).getFormEditor() : null;
+    }
+
+    private static Boolean groupVisible = null;
+
+    static void checkFormGroupVisibility() {
+        // when active TopComponent changes, check if we should open or close
+        // the form editor group of windows (Inspector, Palette, Properties)
+        WindowManager wm = WindowManager.getDefault();
+        TopComponentGroup group = wm.findTopComponentGroup("form"); // NOI18N
+        if (group == null)
+            return; // group not found (should not happen)
+
+        boolean designerSelected = false;
+        Iterator it = wm.getModes().iterator();
+        while (it.hasNext()) {
+            Mode mode = (Mode) it.next();
+            TopComponent selected = mode.getSelectedTopComponent();
+            if (getSelectedElementType(selected) == FORM_ELEMENT_INDEX) {
+                designerSelected = true;
+                break;
+            }
+        }
+
+        if (designerSelected && !Boolean.TRUE.equals(groupVisible))
+            group.open();
+        else if (!designerSelected && !Boolean.FALSE.equals(groupVisible))
+            group.close();
+
+        groupVisible = designerSelected ? Boolean.TRUE : Boolean.FALSE;
+    }
+
+    /** @return 0 if java editor in form editor multiview is selected
+     *          1 if form designer in form editor multiview is selected
+     *         -1 if the given TopComponent is not form editor multiview
+     */
+    static int getSelectedElementType(TopComponent tc) {
+        MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
+        if (handler != null) {
+            String prefId = handler.getSelectedPerspective().preferredID();
+            if (MV_JAVA_ID.equals(prefId))
+                return JAVA_ELEMENT_INDEX; // 0
+            if (MV_FORM_ID.equals(prefId))
+                return FORM_ELEMENT_INDEX; // 1
+        }
+        return -1;
     }
 
     // --------
@@ -1182,7 +1201,6 @@ public class FormEditorSupport extends JavaEditor
             JavaEditor javaEditor = getJavaEditor();
             if (javaEditor != null) {
                 javaEditor.prepareDocument();
-                
                 return (MultiViewElement) new JavaEditorTopComponent(dataObject);
             }
             return MultiViewFactory.BLANK_ELEMENT;

@@ -84,7 +84,7 @@ public class FormNode extends AbstractNode implements FormCookie {
         if (customizer instanceof Window) {
             // register the customizer window (probably a dialog) to be closed
             // automatically when the form is closed
-            FormEditorSupport fes = FormEditorSupport.getSupport(formModel);
+            FormEditorSupport fes = FormEditorSupport.getFormEditor(formModel);
             if (fes != null) {
                 Window customizerWindow = (Window) customizer;
                 fes.registerFloatingWindow(customizerWindow);
@@ -94,7 +94,7 @@ public class FormNode extends AbstractNode implements FormCookie {
                         if (e.getSource() instanceof Window) {
                             Window window = (Window) e.getSource();
                             FormEditorSupport fes =
-                                FormEditorSupport.getSupport(formModel);
+                                FormEditorSupport.getFormEditor(formModel);
                             if (fes != null)
                                 fes.unregisterFloatingWindow(window);
                             window.removeWindowListener(this);

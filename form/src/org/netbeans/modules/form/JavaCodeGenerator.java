@@ -136,7 +136,7 @@ class JavaCodeGenerator extends CodeGenerator {
     public void initialize(FormModel formModel) {
         if (!initialized) {
             this.formModel = formModel;
-            formEditorSupport = FormEditorSupport.getSupport(formModel);
+            formEditorSupport = FormEditorSupport.getFormEditor(formModel);
 
             if (formEditorSupport.getFormDataObject().getPrimaryFile()
                   .canWrite())
