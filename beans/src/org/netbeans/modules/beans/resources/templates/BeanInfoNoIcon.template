@@ -101,7 +101,7 @@ public class __NAME__ extends SimpleBeanInfo {
      * <P>	Returns -1 if there is no default event.
      */
     public int getDefaultEventIndex() {
-        return defaultPropertyIndex;
+        return defaultEventIndex;
     }
 }
 
