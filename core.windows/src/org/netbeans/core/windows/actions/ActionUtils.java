@@ -16,8 +16,10 @@ package org.netbeans.core.windows.actions;
 
 import java.awt.Container;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.KeyStroke;
 
 import org.openide.util.actions.Presenter;
 import org.openide.windows.TopComponent;
@@ -251,6 +253,11 @@ public abstract class ActionUtils {
         private JCheckBoxMenuItem getMenuItem() {
             if (menuItem == null) {
                 menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME), state);
+                //#45940 - hardwiring the shortcut UI since the actual shortcut processignb is also
+                // hardwired in AbstractTabViewDisplayerUI class.
+                // later this should be probably made customizable?
+                // -> how to get rid of the parameters passed to the action here then?
+                menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, InputEvent.CTRL_DOWN_MASK));
                 menuItem.addActionListener(this);
             }
             return menuItem;
