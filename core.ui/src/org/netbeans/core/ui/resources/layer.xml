@@ -211,9 +211,7 @@ Microsystems, Inc. All Rights Reserved.
 		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
             <!-- Miscellaneous help menu items (URLs) now installed by utilities module. -->
-            <attr name="Separator1.instance/org-netbeans-core-actions-WelcomeAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-actions-WelcomeAction.instance"/>
-            <attr name="org-netbeans-core-actions-WelcomeAction.instance/org-netbeans-core-actions-AboutAction.instance" boolvalue="true" />
+            <attr name="Separator1.instance/org-netbeans-core-actions-AboutAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-AboutAction.instance"/>
         </folder>
               
