@@ -36,7 +36,6 @@ import org.openide.nodes.Node;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
-import org.openide.execution.NbfsURLConnection;
 
 import org.netbeans.api.xml.cookies.*;
 
