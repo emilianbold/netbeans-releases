@@ -953,6 +953,10 @@ public class Controller { //XXX public only for debug access to logging code
 
                 if (tab == null) {
                     tab = createOutputTab(win, io, io.isFocusTaken(), value);
+                    if (!win.isOpened()) {
+                        win.open();
+                        win.requestVisible();
+                    }
                 }
                 if (win.getSelectedTab() != tab) {
                     if (tab.getParent() == null) {
