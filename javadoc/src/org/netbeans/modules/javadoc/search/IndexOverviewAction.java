@@ -149,6 +149,44 @@ public class IndexOverviewAction extends SystemAction implements Presenter.Menu,
                         break;
                     }
                 }
+                if (index == null || index.getName().equals("index")) { // NOI18N
+                    // For single-package doc sets, overview-summary.html is not present,
+                    // and index.html is less suitable (it is framed). Look for a package
+                    // summary.
+                    // [PENDING] Display name is not ideal, e.g. "org.openide.windows (NetBeans Input/Output API)"
+                    // where simply "NetBeans Input/Output API" is preferable... but standard title filter
+                    // regexps are not so powerful (to avoid matching e.g. "Servlets (Main Documentation)").
+                    FileObject packageList = fs.findResource("package-list"); // NOI18N
+                    if (packageList == null) {
+                        packageList = fs.findResource("api/package-list"); // NOI18N
+                    }
+                    if (packageList != null) {
+                        try {
+                            InputStream is = packageList.getInputStream();
+                            try {
+                                BufferedReader r = new BufferedReader(new InputStreamReader(is));
+                                String line = r.readLine();
+                                if (line != null && r.readLine() == null) {
+                                    // Good, exactly one line as expected. A package name.
+                                    String resName = line.replace('.', '/') + "/package-summary.html"; // NOI18N
+                                    FileObject pindex = fs.findResource(resName);
+                                    if (pindex == null) {
+                                        pindex = fs.findResource("api/" + resName); // NOI18N
+                                    }
+                                    if (pindex != null) {
+                                        index = pindex;
+                                    }
+                                    // else fall back to index.html if available
+                                }
+                            } finally {
+                                is.close();
+                            }
+                        } catch (IOException ioe) {
+                                // Oh well, skip this one.
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                        }
+                    }
+                }
                 if (index != null) {
                     // Try to find a title.
                     final String[] title = new String[1];
