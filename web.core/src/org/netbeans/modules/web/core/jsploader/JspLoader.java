@@ -7,40 +7,25 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.core.jsploader;
 
-import java.util.*;
 import java.io.IOException;
-import java.net.URL;
-import java.awt.BorderLayout;
 
-import org.openide.TopManager;
 import org.openide.actions.*;
-import org.openide.awt.HtmlBrowser;
-import org.openide.cookies.ViewCookie;
-import org.openide.loaders.UniFileLoader;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataNode;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.ExtensionList;
 import org.openide.execution.NbClassPath;
-import org.openide.loaders.OpenSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.nodes.Children;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.ExtensionList;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-import org.openide.windows.CloneableTopComponent;
-
-//import org.netbeans.modules.web.core.WebExecSupport;
-import org.netbeans.modules.web.core.QueryStringCookie;
-//import org.netbeans.modules.web.core.execution.Execute2Action;
 
 /**
 * Loader for JSPs.
@@ -52,13 +37,21 @@ public class JspLoader extends UniFileLoader {
     /** serialVersionUID */
     private static final long serialVersionUID = 1549250022027438942L;
 
+    /** Extension for JSP files */
     public static final String JSP_EXTENSION = "jsp"; // NOI18N
+    /** Recommended extension for JSP fragments */
+    public static final String JSPF_EXTENSION = "jspf"; // NOI18N
+    /** Recommended extension for JSP fragments */
+    public static final String JSF_EXTENSION = "jsf"; // NOI18N
+    
     public static final String JSP_MIME_TYPE  = "text/x-jsp"; // NOI18N
 
     protected void initialize () {
         super.initialize();
         ExtensionList ext = new ExtensionList();
         ext.addExtension(JSP_EXTENSION);
+        ext.addExtension(JSPF_EXTENSION);
+        ext.addExtension(JSF_EXTENSION);
         setExtensions(ext);
 
     }
