@@ -122,6 +122,10 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
 
     private JTextArea textComment;
     private JTextArea textValue;
+    private JButton removeButton;
+    private JButton addButton;
+    private JLabel labelComment;
+    private JLabel labelValue;
   
     private DataObject dobj;
     private PropertyChangeListener cookieL;
@@ -211,8 +215,16 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
             selectionChanged();
           }
         });
-
-
+        
+      // property change listener - listens to editing state of the table
+      theTable.addPropertyChangeListener(new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+          if (evt.getPropertyName().equals("tableCellEditor")) {
+            updateEnabled();
+          }
+        }
+      });
+      
       c.fill = GridBagConstraints.BOTH;
       c.weightx = 1.0;
       c.weighty = 1.0;
@@ -220,7 +232,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       gridbag.setConstraints(scrollPane, c);
       add (scrollPane);
       
-      JLabel labelComment = new JLabel(PropertiesSettings.getString("LBL_CommentLabel"));
+      labelComment = new JLabel(PropertiesSettings.getString("LBL_CommentLabel"));
       c.insets = new Insets(3, 3, 3, 3);
       c.fill = GridBagConstraints.NONE;
       c.weightx = 0.0;
@@ -237,7 +249,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       gridbag.setConstraints(scrollPane, c);
       add (scrollPane);
 
-      JLabel labelValue = new JLabel(PropertiesSettings.getString("LBL_ValueLabel"));
+      labelValue = new JLabel(PropertiesSettings.getString("LBL_ValueLabel"));
       c.fill = GridBagConstraints.NONE;
       c.weightx = 0.0;
       c.gridwidth = 1;
@@ -253,7 +265,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       add (scrollPane);
       
       // add property button
-      JButton addButton = new JButton(PropertiesSettings.getString("LBL_AddPropertyButton"));
+      addButton = new JButton(PropertiesSettings.getString("LBL_AddPropertyButton"));
       c.insets = new Insets(0, 0, 0, 0);
       c.weightx = 1;
       c.gridwidth = 2;
@@ -284,7 +296,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       );  
 
       // remove row button
-      JButton removeButton = new JButton(PropertiesSettings.getString("LBL_RemovePropertyButton"));
+      removeButton = new JButton(PropertiesSettings.getString("LBL_RemovePropertyButton"));
       c.insets = new Insets(0, 0, 0, 0);
       c.weightx = 1;
       c.gridwidth = GridBagConstraints.REMAINDER; 
@@ -293,55 +305,92 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       removeButton.addActionListener(
         new ActionListener() {
           public void actionPerformed(ActionEvent evt) {
-            /*NewPropertyDialog dia = new NewPropertyDialog();
-            Dialog d = dia.getDialog();
-            d.setVisible(true);
-            if (dia.getOKPressed ()) {                            
-              if (((PropertiesFileEntry)((MultiDataObject)dobj).getPrimaryEntry()).
-                    getHandler().getStructure().addItem(
-                    dia.getKeyText(), dia.getValueText(), dia.getCommentText()))
-                ;
-              else {
-                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                  java.text.MessageFormat.format(
-                    NbBundle.getBundle(PropertiesLocaleNode.class).getString("MSG_KeyExists"),
-                    new Object[] {dia.getKeyText()}),
-                  NotifyDescriptor.ERROR_MESSAGE);
-                TopManager.getDefault().notify(msg);
-              }  
-            } */
+            PropertiesTableModel.StringPair sp = 
+              (PropertiesTableModel.StringPair)theTable.getModel().getValueAt(rowSelections.getMinSelectionIndex(), 0);
+            NotifyDescriptor.Confirmation msg = new NotifyDescriptor.Confirmation(
+              java.text.MessageFormat.format(
+                NbBundle.getBundle(PropertiesOpen.class).getString("MSG_DeleteKeyQuestion"),
+                new Object[] {sp.getValue()}),
+              NotifyDescriptor.OK_CANCEL_OPTION);
+              if (TopManager.getDefault().notify(msg).equals(NotifyDescriptor.OK_OPTION)) {
+                for (int i=0; i < ((PropertiesDataObject)dobj).getBundleStructure().getEntryCount(); i++) {
+                  PropertiesFileEntry entry = ((PropertiesDataObject)dobj).getBundleStructure().getNthEntry(i);
+                  if (entry != null) {
+                    PropertiesStructure ps = entry.getHandler().getStructure();
+                    if (ps != null) {
+                      ps.deleteItem(sp.getValue());
+                    }
+                  }  
+                }  
+              }
           }
         }
       );  
       
       // enable or disable the fields based on selection
-      selectionChanged();
+      textComment.setEditable(false);
+      textComment.setEnabled(false);
+      textValue.setEditable(false);
+      textValue.setEnabled(false);
+//      selectionChanged();
     }
     
-    private void selectionChanged() {
-System.out.println("Selection - row:  " + rowSelections.getMinSelectionIndex() + " - " + rowSelections.getMaxSelectionIndex());
-System.out.println("Selection - col:  " + columnSelections.getMinSelectionIndex() + " - " + columnSelections.getMaxSelectionIndex());
+    private void selectionChanged() {  
+      // label for the key/value
+      if (columnSelections.isSelectionEmpty() || (columnSelections.getMaxSelectionIndex() > 0))
+        labelValue.setText(NbBundle.getBundle(PropertiesOpen.class).getString("LBL_ValueLabel"));
+      else
+        labelValue.setText(NbBundle.getBundle(PropertiesOpen.class).getString("LBL_KeyLabel"));
+      
+      // remove button
+      if (rowSelections.isSelectionEmpty() || 
+          rowSelections.getMinSelectionIndex()    != rowSelections.getMaxSelectionIndex()) {
+        removeButton.setEnabled(false);
+      }
+      else {
+        removeButton.setEnabled(true);
+      }
+    
+      // fields at the bottom
       if (rowSelections.isSelectionEmpty() || columnSelections.isSelectionEmpty() ||
           rowSelections.getMinSelectionIndex()    != rowSelections.getMaxSelectionIndex() ||
           columnSelections.getMinSelectionIndex() != columnSelections.getMaxSelectionIndex()) {
-        textComment.setText("");
-        textComment.setEnabled(false);
-        textValue.setText("");
-        textValue.setEnabled(false);
+        if (!theTable.isEditing()) {
+          textComment.setText("");
+          textValue.setText("");
+        }  
       }
       else {                         
-        if ((theTable.getColumnModel().getColumnCount() == 1) || (columnSelections.getMinSelectionIndex() > 0)) 
-          textComment.setEnabled(true);
-        else  
-          textComment.setEnabled(false);
-        textValue.setEnabled(true);
-        
-/*        boolean edit = theTable.editCellAt(rowSelections.getMinSelectionIndex(), 
-                                           columnSelections.getMinSelectionIndex());
-        System.out.println("Ed " +edit + " row " + theTable.getEditingRow() + " col " + theTable.getEditingColumn());*/
+        if (!theTable.isEditing()) {
+          PropertiesTableModel.StringPair sp = 
+            (PropertiesTableModel.StringPair)theTable.getModel().getValueAt(rowSelections.getMinSelectionIndex(), 
+            columnSelections.getMinSelectionIndex());
+          textComment.setText(sp.getComment());
+          textValue.setText(sp.getValue());
+/*          boolean edit = theTable.editCellAt(rowSelections.getMinSelectionIndex(), 
+                                             columnSelections.getMinSelectionIndex());*/
+        }
       }    
-    }
+    }                                              
     
+    /** Updates the enabled status of the fields */
+    private void updateEnabled() {
+      // always edit value
+      textValue.setEditable(theTable.isEditing());
+      textValue.setEnabled(theTable.isEditing());
+      // sometimes edit the comment
+      if (theTable.isEditing()) {    
+        PropertiesTableModel.StringPair sp = 
+          (PropertiesTableModel.StringPair)theTable.getCellEditor().getCellEditorValue();
+        textComment.setEditable(sp.isCommentEditable());
+        textComment.setEnabled(sp.isCommentEditable());
+      }
+      else {
+        textComment.setEditable(false);
+        textComment.setEnabled(false);
+      }  
+    }
+
     /** Set the name of this top component. Handles saved/not saved state.
     * Notifies the window manager.
     * @param displayName the new display name

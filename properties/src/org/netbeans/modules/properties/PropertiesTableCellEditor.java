@@ -37,11 +37,6 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
     return editorComponent;
   }
 
-  public boolean isCellEditable(EventObject anEvent) {
-    boolean editable = super.isCellEditable(anEvent);
-System.out.println("editable : " + editable);
-    return editable;
-  }
 
     protected class PropertiesEditorDelegate extends DefaultCellEditor.EditorDelegate {
     
@@ -54,14 +49,8 @@ System.out.println("editable : " + editable);
       }
       
       public void setValue(Object x) {
-System.out.println("set value: " + (x == null ? "null" : x.toString()));
-Thread.currentThread().dumpStack();
         super.setValue(x);
         PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)x;
-        
-        // set editable as they deserve
-        commentComponent.setEditable(sp.isCommentEditable());
-        valueComponent.setEditable(true);
         
         // set values as they deserve
         if (sp != null) {               
@@ -84,6 +73,36 @@ Thread.currentThread().dumpStack();
           getEditorComponent().requestFocus();
         return true;
       }
+      
+      /*
+      public boolean startCellEditing(EventObject anEvent) {
+        System.out.println("start : " + value.toString());
+        if(anEvent == null)
+          getEditorComponent().requestFocus();
+          
+        // set the values for other fields
+        PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)value;
+        
+        // set editable as they deserve
+        commentComponent.setEditable(sp.isCommentEditable());
+        valueComponent.setEditable(true);
+        
+        // set values as they deserve
+        if (sp != null) {               
+System.out.println("branch1 - setting " + sp.getValue() + " / " + sp.getComment());
+          ((JTextField)getEditorComponent()).setText(sp.getValue());
+          commentComponent.setText(sp.getComment());
+        }  
+        else {
+System.out.println("branch2");
+          ((JTextField)getEditorComponent()).setText("");
+          commentComponent.setText("");
+        }  
+System.out.println("value : " + ((JTextField)getEditorComponent()).getText());
+System.out.println("comment : " + commentComponent.getText());
+          
+        return true;
+      } */
 
       public boolean stopCellEditing() {
         return true;

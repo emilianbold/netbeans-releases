@@ -188,7 +188,8 @@ public class PropertiesTableModel extends AbstractTableModel {
       String newValue = ((StringPair)aValue).getValue();
       if ((newValue == null) || (newValue.length() == 0)) {
         // remove from all files
-        for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {
+        return;
+        /*for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {
           PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
           if (entry != null) {
             PropertiesStructure ps = entry.getHandler().getStructure();
@@ -196,7 +197,7 @@ public class PropertiesTableModel extends AbstractTableModel {
               ps.deleteItem(oldValue);
             }
           }  
-        }  
+        }*/
       }
       else {                                                 
         // set in all files
@@ -205,11 +206,17 @@ public class PropertiesTableModel extends AbstractTableModel {
           if (entry != null) {
             PropertiesStructure ps = entry.getHandler().getStructure();
             if (ps != null) {    
-              ps.renameItem(oldValue, newValue);
-              if (i == 0) {
-                Element.ItemElem item = ps.getItem(newValue);
-                if (item != null)
-                  item.setComment(((StringPair)aValue).getComment());
+              if (!oldValue.equals(newValue)) {
+                ps.renameItem(oldValue, newValue);
+                if (i == 0) {
+                  Element.ItemElem item = ps.getItem(newValue);
+                  if (item != null) {
+                    // only set if they differ
+                    if (!item.getComment().equals(((StringPair)aValue).getComment()))
+                      // set it
+                      item.setComment(((StringPair)aValue).getComment());
+                  }                  
+                }                                
               }
             }
           }  
@@ -229,7 +236,8 @@ public class PropertiesTableModel extends AbstractTableModel {
             item.setComment(((StringPair)aValue).getComment());
           }
           else {
-            ps.addItem(key, ((StringPair)aValue).getValue(), ((StringPair)aValue).getComment());
+            if ((((StringPair)aValue).getValue().length() > 0) && (((StringPair)aValue).getComment().length() > 0))
+              ps.addItem(key, ((StringPair)aValue).getValue(), ((StringPair)aValue).getComment());
           }
         }
       }
