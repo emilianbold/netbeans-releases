@@ -123,25 +123,15 @@ public final class ServerRegistry implements java.io.Serializable {
             java.util.logging.Logger.global.log(java.util.logging.Level.FINEST,"Attribute changed event");
         }
         public void fileChanged(FileEvent fe) {
-            //
-            System.out.println("File changed event");
         }
         public void fileFolderCreated(FileEvent fe) {
-            //
-            System.out.println("Folder created event");
         }
         public void fileRenamed(FileRenameEvent fe) {
-            //
-            System.out.println("File renamed event");
         }
         
         public void fileDataCreated(FileEvent fe) {
-            //
-            System.out.println("file created event");
         }
         public void fileDeleted(FileEvent fe) {
-            //
-            System.out.println("file deleted event");
         }
         
     }
