@@ -19,6 +19,15 @@ import javax.swing.ImageIcon;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Utilities;
+import org.openide.util.Mutex;
+
+import java.util.HashSet;
+
+import java.util.Set;
+
+import java.util.Iterator;
+
+import org.netbeans.spi.project.SubprojectProvider;
 
 /**
  * Utility methods to get information about {@link Project}s.
@@ -61,6 +70,84 @@ public class ProjectUtils {
         } else {
             return GenericSources.genericOnly(p);
         }
+    }
+    
+    /**
+     * Check whether a project has, or might have, cycles in its subproject graph.
+     * <p>
+     * If the candidate parameter is null, this simply checks whether the master
+     * project's current directed graph of (transitive) subprojects contains any
+     * cycles. If the candidate is also passed, this checks whether the master
+     * project's subproject graph would contain cycles if the candidate were added
+     * as a (direct) subproject of the master project.
+     * </p>
+     * <p>
+     * All cycles are reported even if they do not contain the master project.
+     * </p>
+     * <p>
+     * If the master project already contains the candidate as a (direct) subproject,
+     * the effect is as if the candidate were null.
+     * </p>
+     * <p>
+     * Projects with no {@link SubprojectProvider} are considered to have no
+     * subprojects, just as if the provider returned an empty set.
+     * </p>
+     * <p>
+     * Acquires read access.
+     * </p>
+     * <p class="nonnormative">
+     * Project types which let the user somehow configure subprojects in the GUI
+     * (perhaps indirectly, e.g. via a classpath) should use this call to check
+     * for possible cycles before adding new subprojects.
+     * </p>
+     * @param master a project to root the subproject graph from
+     * @param candidate a potential direct subproject of the master project, or null
+     * @return true if the master project currently has a cycle somewhere in its
+     *         subproject graph, regardless of the candidate parameter, or if the
+     *         candidate is not null and the master project does not currently have
+     *         a cycle but would have one if the candidate were added as a subproject
+     * @see "#43845"
+     */
+    public static boolean hasSubprojectCycles(final Project master, final Project candidate) {
+        return ((Boolean) ProjectManager.mutex().readAccess(new Mutex.Action() {
+            public Object run() {
+                return Boolean.valueOf(visit(new HashSet(), master, master, candidate));
+            }
+        })).booleanValue();
+    }
+    
+    /**
+     * Do a DFS traversal checking for cycles.
+     * @param encountered projects already encountered in the DFS (added and removed as you go)
+     * @param curr current node to visit
+     * @param master the original master project (for use with candidate param)
+     * @param candidate a candidate added subproject for master, or null
+     */
+    private static boolean visit(Set/*<Project>*/ encountered, Project curr, Project master, Project candidate) {
+        if (!encountered.add(curr)) {
+            return true;
+        }
+        SubprojectProvider spp = (SubprojectProvider) curr.getLookup().lookup(SubprojectProvider.class);
+        if (spp != null) {
+            Iterator/*<Project>*/ children = spp.getSubprojects().iterator();
+            while (children.hasNext()) {
+                Project child = (Project) children.next();
+                if (candidate == child) {
+                    candidate = null;
+                }
+                if (visit(encountered, child, master, candidate)) {
+                    return true;
+                }
+            }
+        }
+        if (candidate != null && curr == master) {
+            if (visit(encountered, candidate, master, candidate)) {
+                return true;
+            }
+        }
+        assert encountered.contains(curr);
+        encountered.remove(curr);
+        return false;
     }
     
     private static final class BasicInformation implements ProjectInformation {

@@ -35,6 +35,7 @@ public interface SubprojectProvider {
      * There may be no direct or indirect cycles in the project dependency graph
      * but it may be a DAG, i.e. two projects may both depend on the same subproject.
      * @return an immutable and unchanging set of {@link Project}s
+     * @see ProjectUtils#hasSubprojectCycles
      */
     Set/*<Project>*/ getSubprojects();
     
