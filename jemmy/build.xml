@@ -105,4 +105,7 @@
     </javac>
   </target>
 
+  <target name="nbm"/>
+  <target name="netbeans"/>
+  <target name="release"/>
 </project>

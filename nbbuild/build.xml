@@ -365,6 +365,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module jellytools..."/>
     <ant dir="../jellytools" target="netbeans"/>
   </target>
+  <target name="all-jemmy" description="Dummy target for module jemmy"/>
   <target name="all-jemmysupport" depends="all-openide,all-diff">
     <echo message="Building module jemmysupport..."/>
     <ant dir="../jemmysupport" target="netbeans"/>
