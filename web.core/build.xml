@@ -25,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="license.file" value="../../nbbuild/bcl-license.txt"/>
   <property name="nbm_alias" value="nb_ide"/>
   <property name="storepass" value="?"/>
+  <property name="webbeans_root" location="src/org/netbeans/modules/web/dd/model"/>
 
   <target name="setup-jdkhome-1">
     <!-- Note: user-configured -Djavahome=... will always override this: -->
@@ -43,7 +44,38 @@ Microsystems, Inc. All Rights Reserved.
     <fail message="No tools.jar found in ${javahome}! Set -Djavahome=... as needed."/>
   </target>
 
-  <target name="compile" depends="setup-jdkhome">
+  <!-- Check if it is neceseary to rebuild beans -->
+  <target name="dd2beans_init">
+        <mkdir dir="${webbeans_root}"/>
+        <uptodate property="dd.generation.uptodate" targetfile="${webbeans_root}/WebApp.java">
+          <srcfiles dir="src/org/netbeans/modules/web/dd/webapp"
+                    includes="webapp.mdd"/>
+          <srcfiles dir="src/org/netbeans/modules/web/core/resources"
+                    includes="web-app_2_3.dtd"/>
+        </uptodate>
+  </target>
+
+   <target name="dd2beansgen" depends="dd2beans_init" unless="dd.generation.uptodate">
+     <antcall target="clean-ddgen-src"/>
+     <echo message="generating code generation input file information" />
+     <java classname="org.netbeans.modules.schema2beans.GenBeans" fork="yes">
+     	<classpath>
+	  <pathelement path="${binroot}/core/release/lib/ext/crimson.jar" />
+          <pathelement path="${binroot}/core/release/lib/ext/xerces.jar" />
+	  <pathelement path="${nb_root}/logger/netbeans/lib/ext/logger.jar" />
+	  <pathelement path="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" />
+	  <fileset dir = "${nb_root}/openide">
+		<include name="netbeans/lib/openide*.jar"/>
+	  </fileset>
+	</classpath>
+	<arg line= "-f ${nb_root}/web/core/src/org/netbeans/modules/web/core/resources/web-app_2_3.dtd" />
+	<arg line= "-mdd src/org/netbeans/modules/web/dd/webapp/webapp.mdd" />
+	<arg line= "-p org.netbeans.modules.web.dd.model" />
+	<arg line= "-r src" />
+     </java>
+  </target>
+
+  <target name="compile" depends="setup-jdkhome,dd2beansgen">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
@@ -54,6 +86,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_root}/java/netbeans/modules/java.jar"/>
         <pathelement location="${nb_root}/jarpackager/netbeans/modules/jarpackager.jar"/>
         <pathelement location="${nb_root}/debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>
+        <pathelement path="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" />
         <fileset dir="${nb_root}/openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
@@ -99,7 +132,7 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 
-  <target name="clean">
+  <target name="clean" depends="clean-ddgen-src">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
@@ -109,6 +142,15 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="web-jsp.nbm"/>
     <delete dir="Info"/>
     <delete dir="netbeans"/>
+  </target>
+
+  <target name="clean-ddgen-src">
+        <mkdir dir="${webbeans_root}"/>
+        <delete>
+            <fileset dir="${webbeans_root}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
   </target>
 
   <!-- This target will only work *inside* the IDE! -->
