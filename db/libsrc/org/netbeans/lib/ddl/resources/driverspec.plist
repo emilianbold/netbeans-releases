@@ -48,10 +48,70 @@
   };  
 
 // ****************************************************
+// InstantDB JDBC Driver
+// ****************************************************
+  "InstantDB JDBC Driver" = {
+    DriverName = "InstantDB JDBC Driver";
+  };  
+  
+// ****************************************************
+// MS SQLServer - Sprinta JDBC driver
+// ****************************************************
+  "Sprinta JDBC driver" = {
+    DriverName = "Sprinta JDBC driver";
+    get_Schema = null;
+  };
+
+// ****************************************************
+// MySQL JDBC-ODBC bridge
+// ****************************************************
+  "JDBC-ODBC Bridge (myodbc.dll)" = {
+    DriverName = "JDBC-ODBC Bridge (myodbc.dll)";
+    get_Schema = null;
+  };
+  
+// ****************************************************
+// MySQL Mark Matthews' Driver
+// ****************************************************
+  "Mark Matthews' MySQL Driver" = {
+    DriverName = "Mark Matthews' MySQL Driver";
+  };
+  
+// ****************************************************
 // Oracle JDBC driver
 // ****************************************************
   "Oracle JDBC driver" = {
     DriverName = "Oracle JDBC driver";
   };
+
+// ****************************************************
+// Oracle JDBC-ODBC Bridge (Oracle)
+// ****************************************************
+  "JDBC-ODBC Bridge (SQORA32.DLL)" = {
+    DriverName = "JDBC-ODBC Bridge (SQORA32.DLL)";
+  };
+
+// ****************************************************
+// Oracle JDBC-ODBC Bridge (Microsoft)
+// ****************************************************
+  "JDBC-ODBC Bridge (msorcl32.dll)" = {
+    DriverName = "JDBC-ODBC Bridge (msorcl32.dll)";
+  };
+  
+// ****************************************************
+// PointBase JDBC driver
+// ****************************************************
+  "PointBase JDBC Driver" = {
+    DriverName = "PointBase JDBC Driver";
+  };
+  
+// ****************************************************
+// Sybase JDBC-ODBC bridge
+// ****************************************************
+  "JDBC-ODBC Bridge (DBODBC6W.DLL)" = {
+    DriverName = "JDBC-ODBC Bridge (DBODBC6W.DLL)";
+    getIndexInfo_Unique = false;
+  };
+  
 
 }
