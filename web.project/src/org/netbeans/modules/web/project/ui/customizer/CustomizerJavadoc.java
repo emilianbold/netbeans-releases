@@ -45,21 +45,21 @@ public class CustomizerJavadoc extends JPanel implements J2SECustomizer.Panel {
     }
     
     
-    public void initValues( J2SEProjectProperties j2seProperties ) {
+    public void initValues( WebProjectProperties j2seProperties ) {
         
         VisualPropertySupport vps = new VisualPropertySupport( j2seProperties );
         
-        vps.register( jCheckBoxPrivate, J2SEProjectProperties.JAVADOC_PRIVATE );
-        vps.register( jCheckBoxTree, J2SEProjectProperties.JAVADOC_NO_TREE );
-        vps.register( jCheckBoxUsages, J2SEProjectProperties.JAVADOC_USE );
-        vps.register( jCheckBoxNavigation, J2SEProjectProperties.JAVADOC_NO_NAVBAR ); 
-        vps.register( jCheckBoxIndex, J2SEProjectProperties.JAVADOC_NO_INDEX ); 
-        vps.register( jCheckBoxSplitIndex, J2SEProjectProperties.JAVADOC_SPLIT_INDEX ); 
-        vps.register( jCheckBoxAuthor, J2SEProjectProperties.JAVADOC_AUTHOR ); 
-        vps.register( jCheckBoxVersion, J2SEProjectProperties.JAVADOC_VERSION );
-        vps.register( jTextFieldWinTitle, J2SEProjectProperties.JAVADOC_WINDOW_TITLE );
-        // vps.register( jTextFieldEncoding, J2SEProjectProperties.JAVADOC_ENCODING ); 
-        vps.register( jCheckBoxPreview, J2SEProjectProperties.JAVADOC_PREVIEW ); 
+        vps.register( jCheckBoxPrivate, WebProjectProperties.JAVADOC_PRIVATE );
+        vps.register( jCheckBoxTree, WebProjectProperties.JAVADOC_NO_TREE );
+        vps.register( jCheckBoxUsages, WebProjectProperties.JAVADOC_USE );
+        vps.register( jCheckBoxNavigation, WebProjectProperties.JAVADOC_NO_NAVBAR ); 
+        vps.register( jCheckBoxIndex, WebProjectProperties.JAVADOC_NO_INDEX ); 
+        vps.register( jCheckBoxSplitIndex, WebProjectProperties.JAVADOC_SPLIT_INDEX ); 
+        vps.register( jCheckBoxAuthor, WebProjectProperties.JAVADOC_AUTHOR ); 
+        vps.register( jCheckBoxVersion, WebProjectProperties.JAVADOC_VERSION );
+        vps.register( jTextFieldWinTitle, WebProjectProperties.JAVADOC_WINDOW_TITLE );
+        // vps.register( jTextFieldEncoding, WebProjectProperties.JAVADOC_ENCODING ); 
+        vps.register( jCheckBoxPreview, WebProjectProperties.JAVADOC_PREVIEW ); 
                 
         reenableSplitIndex( null );
         
@@ -299,10 +299,10 @@ public class CustomizerJavadoc extends JPanel implements J2SECustomizer.Panel {
     
         /*
         if ( src == jTextFieldSrcDir ) {
-            j2seProperties.put( J2SEProjectProperties.SRC_DIR, jTextFieldSrcDir.getText() );
+            j2seProperties.put( WebProjectProperties.SRC_DIR, jTextFieldSrcDir.getText() );
         }
         else if ( src == jTextFieldBuildDir ) {
-            j2seProperties.put( J2SEProjectProperties.BUILD_DIR, jTextFieldBuildDir.getText() );
+            j2seProperties.put( WebProjectProperties.BUILD_DIR, jTextFieldBuildDir.getText() );
         }
         else if ( src == jListClasspath ) {
             
@@ -311,7 +311,7 @@ public class CustomizerJavadoc extends JPanel implements J2SECustomizer.Panel {
             for ( Enumeration e = classpathModel.elements(); e.hasMoreElements(); ) {
                 elements.add( e.nextElement() );
             }
-            j2seProperties.put( J2SEProjectProperties.JAVAC_CLASSPATH, elements );
+            j2seProperties.put( WebProjectProperties.JAVAC_CLASSPATH, elements );
         }
         
         assert true : "CustomizerCompile - Unknown component : " + src; // NOI18N

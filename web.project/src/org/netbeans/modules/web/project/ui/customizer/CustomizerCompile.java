@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
 public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel {
 
     // Helper for storing properties
-    private J2SEProjectProperties j2seProperties;
+    private WebProjectProperties j2seProperties;
     private VisualPropertySupport vps;
 
     /** Creates new form CustomizerCompile */
@@ -59,14 +59,14 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel {
     }
 
 
-    public void initValues( J2SEProjectProperties j2seProperties ) {
+    public void initValues( WebProjectProperties j2seProperties ) {
 
         this.j2seProperties = j2seProperties;
 
         vps = new VisualPropertySupport( j2seProperties );
         
-        vps.register( jCheckBoxDeprecation, J2SEProjectProperties.JAVAC_DEPRECATION );
-        vps.register( jCheckBoxDebugInfo, J2SEProjectProperties.JAVAC_DEBUG );
+        vps.register( jCheckBoxDeprecation, WebProjectProperties.JAVAC_DEPRECATION );
+        vps.register( jCheckBoxDebugInfo, WebProjectProperties.JAVAC_DEBUG );
         
         VisualClasspathSupport vcs = new VisualClasspathSupport(
             jListClasspath,
@@ -77,7 +77,7 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel {
             jButtonRemove,
             jButtonMoveUp,
             jButtonMoveDown );
-        vps.register( vcs, J2SEProjectProperties.JAVAC_CLASSPATH );
+        vps.register( vcs, WebProjectProperties.JAVAC_CLASSPATH );
 
         jButtonEdit.setVisible( false );
 
