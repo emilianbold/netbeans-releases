@@ -90,7 +90,9 @@ public class J2SEProjectGenerator {
                     if (!testFolder.exists()) {
                         testFolder.mkdirs();
                     }
+                    h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
                     testLoc = refHelper.createForeignFileReference(testFolder, JavaProjectConstants.SOURCES_TYPE_JAVA);
+                    props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
                 }                
                 props.put("test.src.dir",testLoc);    //NOI18N
                 h.putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
