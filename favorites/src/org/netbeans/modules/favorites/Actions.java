@@ -338,7 +338,15 @@ public final class Actions extends Object {
             int option = chooser.showOpenDialog( WindowManager.getDefault().getMainWindow() ); // Sow the chooser
             if ( option == JFileChooser.APPROVE_OPTION ) {                    
                 chooserSelection = chooser.getSelectedFile();
-                final File selectedFile = FileUtil.normalizeFile(chooserSelection);
+                File selectedFile = FileUtil.normalizeFile(chooserSelection);
+                //Workaround for JDK bug #5075580 (filed also in IZ as #46882)
+                if (!selectedFile.exists()) {
+                    if ((selectedFile.getParentFile() != null) && selectedFile.getParentFile().exists()) {
+                        if (selectedFile.getName().equals(selectedFile.getParentFile().getName())) {
+                            selectedFile = selectedFile.getParentFile();
+                        }
+                    }
+                }
                 retVal = FileUtil.toFileObject(selectedFile);
                 assert retVal != null;                        
             }
