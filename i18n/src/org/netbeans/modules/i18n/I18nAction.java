@@ -49,12 +49,12 @@ public class I18nAction extends CookieAction {
         if(editorCookie == null) 
             return;
 
-        //!!! #23904 hack
-        if (editorCookie.getClass().getName().endsWith("FormEditorSupport")) {
-            ((EditCookie)editorCookie).edit();
-        } else {            
+//        //!!! #23904 hack
+//        if (editorCookie.getClass().getName().endsWith("FormEditorSupport")) {
+//            ((EditCookie)editorCookie).edit();
+//        } else {            
             editorCookie.open(); 
-        }
+//        }
         
         final DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
         
