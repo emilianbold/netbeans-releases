@@ -238,9 +238,11 @@ public class PropertiesDataNode extends DataNode {
                             String locale = panel.getLocale().toString();
 
                             try {
-                                if(locale.length() == 0)
+                                if(locale.length() == 0) {
                                     // It would mean default locale to create again.
                                     notifyError(locale);
+                                    return;
+                                }
 
                                 final String newName = PropertiesDataLoader.PRB_SEPARATOR_CHAR + locale;
 
