@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
           <pathelement location="${xml/api.dir}/${nb.modules/autoload.dir}/xml-api.jar"/>
           <pathelement location="${xml/core.dir}/${nb.modules/autoload.dir}/xml-core.jar"/>
           <pathelement location="${editor.dir}/${nb.modules.dir}/ext/nb-editor.jar"/>
-          <pathelement location="${editor.dir}/${nb.modules.dir}/editor.jar"/>
+          <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
         </path>
     </target>
 

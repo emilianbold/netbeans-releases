@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
       <pathelement location="${web/jspparser.dir}/${nb.modules.dir}/org-netbeans-modules-web-jspparser.jar"/>
       <pathelement location="${editor.dir}/${nb.modules.dir}/ext/nb-editor.jar"/>
       <pathelement location="${editor.dir}/${nb.modules.dir}/ext/editor-lib.jar"/>
-      <pathelement location="${editor.dir}/${nb.modules.dir}/editor.jar"/>
+      <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
       <pathelement location="${xml/text-edit.dir}/${nb.modules.dir}/xml-text-edit.jar"/>
     </path>
   </target>
