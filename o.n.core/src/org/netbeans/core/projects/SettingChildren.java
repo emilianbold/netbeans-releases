@@ -56,6 +56,10 @@ public final class SettingChildren extends FilterNode.Children {
 
     /** Property allowing display/manipulation of setting status for one specific layer. */
     public static class FileStateProperty extends PropertySupport {
+        static final int ACTION_DEFINE = 1;
+        static final int ACTION_REVERT = 2;
+        static final int ACTION_DELETE = 3;
+        
         private FileObject primaryFile = null;
         private int layer;
 
@@ -107,15 +111,12 @@ public final class SettingChildren extends FilterNode.Children {
 
         public void setValue (Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             FileStateManager fsm = FileStateManager.getDefault ();
-            int os = fsm.getFileState (primaryFile, layer);
-            int ns = ((Integer) val).intValue ();
-            
-            if (os == ns)
-                return;
+            int action = ((Integer) val).intValue ();
             
             try {
-                switch (ns) {
-                    case FileStateManager.FSTATE_DEFINED:
+                switch (action) {
+                    case ACTION_DEFINE:
+                    case ACTION_REVERT:
                         boolean above = false;
                         boolean go = true;
 
@@ -137,16 +138,16 @@ public final class SettingChildren extends FilterNode.Children {
                         }
 
                         if (go)
-                            fsm.define (primaryFile, layer);
+                            fsm.define (primaryFile, layer, action == ACTION_REVERT);
 
                         break;
 
-                    case FileStateManager.FSTATE_UNDEFINED:
+                    case ACTION_DELETE:
                         fsm.delete (primaryFile, layer);
                         break;
 
                     default:
-                        throw new IllegalArgumentException ("Required file state change isn't allowed. NewState=" + ns); // NOI18N
+                        throw new IllegalArgumentException ("Required file state change isn't allowed. Action=" + action); // NOI18N
                 }
             } catch (java.io.IOException e) {
                 TopManager.getDefault ().notifyException (e);

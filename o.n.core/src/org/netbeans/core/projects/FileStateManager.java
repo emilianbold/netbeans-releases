@@ -23,6 +23,8 @@ import java.util.LinkedList;
 import java.util.Iterator;
 import java.lang.ref.WeakReference;
 import java.io.IOException;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /** Scans positions of FileObject-delegates for FileObjects from SystemFileSystem. Each
  *
@@ -54,8 +56,10 @@ final class FileStateManager {
     private static final int LAYERS_COUNT = 3;
     /** Layers of {@link SystemFileSystem}, LAYER_* constants can be used as indexes. */
     private FileSystem layers [] = new FileSystem [LAYERS_COUNT];
-
+    /** List of listeners listening on changes in file state */
     private HashMap listeners = new HashMap (10);
+    /** Listener attached to SessionManager, it refreshes list of layers after the project is switched */
+    private PropertyChangeListener propL = null;
 
     public static synchronized FileStateManager getDefault () {
         if (manager == null) {
@@ -66,20 +70,36 @@ final class FileStateManager {
 
     /** Creates new FileStateManager */
     private FileStateManager () {
-        layers [LAYER_PROJECT] = SessionManager.getDefault ().getLayer (SessionManager.LAYER_PROJECT);
-        layers [LAYER_SESSION] = SessionManager.getDefault ().getLayer (SessionManager.LAYER_SESSION);
-        layers [LAYER_MODULES] = SessionManager.getDefault ().getLayer (SessionManager.LAYER_INSTALL);
+        // set layers
+        getLayers ();
+
+        // listen on changes of layers made through the SessionManager
+        propL = new PropL ();
+        SessionManager.getDefault ().addPropertyChangeListener (
+            WeakListener.propertyChange (propL, SessionManager.getDefault ()));
     }
 
-    public void define (FileObject mfo, int layer) throws IOException {
-        // create file on specified layer if it doesn't exist
+    public void define (FileObject mfo, int layer, boolean revert) throws IOException {
+        // ignore request when file is already defined on layer
+        if (FSTATE_DEFINED == getFileState (mfo, layer))
+            return;
+
+        // find file on specified layer
         FileObject fo = layers [layer].findResource (mfo.getPackageNameExt ('/', '.'));
+        
+        // remove the file if it exists and current definition should be preserved
+        if (fo != null && !revert) {
+            delete (mfo, layer);
+            fo = null;
+        }
+
+        // create file on specified layer if it doesn't exist
         if (fo == null) {
             String parent = mfo.getParent ().getPackageNameExt ('/', '.');
             FileObject fparent = FileUtil.createFolder (layers [layer].getRoot (), parent);
             mfo.copy (fparent, mfo.getName (), mfo.getExt ());
         }
-        
+
         // remove above defined files
         for (int i = 0; i < layer; i++) {
             delete (mfo, i);
@@ -176,6 +196,31 @@ final class FileStateManager {
         }
     }
 
+    private void getLayers () {
+        layers [LAYER_PROJECT] = SessionManager.getDefault ().getLayer (SessionManager.LAYER_PROJECT);
+        layers [LAYER_SESSION] = SessionManager.getDefault ().getLayer (SessionManager.LAYER_SESSION);
+        layers [LAYER_MODULES] = SessionManager.getDefault ().getLayer (SessionManager.LAYER_INSTALL);
+    }
+
+    private class PropL implements PropertyChangeListener {
+        public void propertyChange (PropertyChangeEvent evt) {
+            if (SessionManager.PROP_OPEN.equals (evt.getPropertyName ())) {
+                FileObject mfos [] = null;
+
+                // [PENDING] this should be better synchronized
+                getLayers ();
+                
+                synchronized (info) {
+                    mfos = (FileObject [])info.keySet ().toArray (new FileObject [0]);
+                    info.clear ();
+                }
+                
+                for (int i = 0; i < mfos.length; i++)
+                    fireFileStatusChanged (mfos [i]);
+            }
+        }
+    }
+
     public static interface FileStatusListener {
         public void fileStatusChanged (FileObject mfo);
     }
@@ -258,13 +303,19 @@ final class FileStateManager {
             return null != layers [layer].findResource (mfo.getPackageNameExt ('/', '.'));
         }
         
-        private void attachNotifier (FileObject mfo, int layer) {
+        /**
+         * @return true if attached notifier is the delegate FO
+         */
+        private boolean attachNotifier (FileObject mfo, int layer) {
             String fn = mfo.getPackageNameExt ('/', '.');
             FileObject fo = null;
-            
+            boolean isDelegate = true;
+
             // find new notifier - the FileObject with closest match to getFile ()
             while (fn.length () > 0 && null == (fo = layers [layer].findResource (fn))) {
                 int pos = fn.lastIndexOf ('/');
+                isDelegate = false;
+
                 if (-1 == pos)
                     break;
                 
@@ -284,6 +335,8 @@ final class FileStateManager {
                 fo.addFileChangeListener (weakL [layer]);
                 notifiers [layer] = fo;
             }
+            
+            return isDelegate;
         }
 
         private void detachAllNotifiers () {
@@ -351,7 +404,10 @@ final class FileStateManager {
 
                 if (mfoname.startsWith (created)) {
                     int layer = layerOfFile (fe.getFile ());
-                    attachNotifier (mfo, layer);
+                    if (attachNotifier (mfo, layer)) {
+                        // delegate was created -> rescan
+                        rescan (mfo);
+                    }
                 }
             }
             else
