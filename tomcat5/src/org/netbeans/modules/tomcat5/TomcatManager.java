@@ -470,6 +470,22 @@ public class TomcatManager implements DeploymentManager {
         }
     }
     
+    /** 
+     * Return display name which represents this tomcat manager's server instance 
+     * in IDE.
+     *
+     * @return display name which represents this tomcat manager's server instance 
+     * in IDE, <code>null</code> if display name is not defined, which should not
+     * occur.
+     */
+    public String getDisplayName() {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            return ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+        }
+        return null;
+    }    
+    
     public DeploymentConfiguration createConfiguration (DeployableObject deplObj) 
     throws InvalidModuleException {
         if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
