@@ -34,13 +34,11 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import javax.management.j2ee.Management;
 import org.openide.util.RequestProcessor;
-
 //import org.netbeans.modules.j2ee.deployment.impl.ui.actions.ShowEventWindowsAction;
 
 public class ServerInstance implements Node.Cookie {
     
     private static final String EMPTY_STRING = ""; //NOI18N
-    private String displayName = null;
     private String state = EMPTY_STRING; 
 
     private final String url;
@@ -56,31 +54,53 @@ public class ServerInstance implements Node.Cookie {
     private boolean managerStartedByIde = false;
     private ServerTarget coTarget = null;
     private boolean commandSucceed = false;
+    private InstancePropertiesImpl instanceProperties;
     
     // PENDING how to manage connected/disconnected servers with the same manager?
     // maybe concept of 'default unconnected instance' is broken?
     public ServerInstance(Server server, String url, DeploymentManager manager) {
-        this.server = server; this.url = url; this.manager = manager;
+        this.server = server; 
+        this.url = url; 
+        this.manager = manager;
+        instanceProperties = new InstancePropertiesImpl(url);
     }
     
+    /**
+     * Return this server instance <code>InstanceProperties</code>.
+     * 
+     * @return this server instance <code>InstanceProperties</code>.
+     */
+    public InstancePropertiesImpl getInstanceProperties() {
+        return instanceProperties;
+    }
+    
+    /**
+     * Set a new display name for this server instance.
+     *
+     * @param name new display name.
+     */
     public void setDisplayName(String name) {
-        InstanceProperties props = InstanceProperties.getInstanceProperties(getUrl());
-        if (props != null)
-            props.setProperty(InstanceProperties.DISPLAY_NAME_ATTR, name);
-        displayName = name;
+        instanceProperties.setProperty(InstanceProperties.DISPLAY_NAME_ATTR, name);
     }
+    
+    /**
+     * Return display name which represents this server instance.
+     *
+     * @return display name which represents this server instance.
+     */
     public String getDisplayName() {
-        if (displayName == null) {
-            InstanceProperties props = InstanceProperties.getInstanceProperties(getUrl());
-            if (props != null)
-                displayName = props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-        }
-        if (displayName == null) 
-            displayName = url;
-        return displayName;
+        return instanceProperties.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
     }
+    
+    /**
+     * Return display name which represents this server instance followed by its
+     * state [running/stopped].
+     *
+     * @return display name which represents this server instance followed by its
+     *         state [running/stopped].
+     */
     public String getDisplayNameWithState() {
-        return getDisplayName() + state;
+        return getDisplayName() + " " + state; // NOI18N
     }
     
     public Server getServer() {

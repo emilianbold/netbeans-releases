@@ -27,6 +27,7 @@ import org.openide.loaders.*;
 import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 import org.netbeans.modules.tomcat5.nodes.actions.RefreshWebModulesAction;
 import org.netbeans.modules.tomcat5.nodes.actions.SharedContextLogAction;
@@ -50,6 +51,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     protected static final String DEBUGGER="debugger"; //NOI18N
     protected static final String DEBUGGER_PORT = "debugger_port"; //NOI18N
     protected static final String DEBUGGING_TYPE = "debugging_type"; //NOI18N
+    protected static final String DISPLAY_NAME= "display_name";//NOI18N    
     protected static final String SERVER_PORT= "server_port";//NOI18N
     protected static final String ADMIN_PORT= "admin_port";//NOI18N
     protected static final String MONITOR_ENABLED= "monitor_enabled";//NOI18N
@@ -258,6 +260,8 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     // Create a property sheet:
     protected Sheet createSheet () {
 	Sheet sheet = super.createSheet ();
+        
+        // PROPERTIES
         Sheet.Set ssProp = sheet.get (Sheet.PROPERTIES);       
         if (ssProp == null) {
 	    ssProp = Sheet.createPropertiesSet ();
@@ -265,6 +269,31 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
 	}
         ssProp.setValue("helpID", "org.netbeans.modules.tomcat5.nodes.TomcatInstanceNode.PropertySheet");// NOI18N        
         Node.Property p;
+        
+        // DISPLAY NAME
+        p = new PropertySupport.ReadWrite(
+                   DISPLAY_NAME,
+                   String.class,
+                   NbBundle.getMessage(TomcatInstanceNode.class, "PROP_displayName"),   // NOI18N
+                   NbBundle.getMessage(TomcatInstanceNode.class, "HINT_displayName")   // NOI18N
+               ) {
+                   public Object getValue() {
+                       TomcatManager mng = getTomcatManager();
+                       if (mng != null) {
+                           return mng.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+                       }                       
+                       return getDisplayName();
+                   }
+                   
+                   public void setValue(Object val) {
+                       TomcatManager mng = getTomcatManager();
+                       if (mng != null) {
+                           mng.getInstanceProperties().setProperty(InstanceProperties.DISPLAY_NAME_ATTR, (String)val);
+                       }
+                   }
+               };
+        ssProp.put(p); 
+        // SERVER PORT
         p = new PropertySupport.ReadWrite (
                    SERVER_PORT,
                    Integer.TYPE,
@@ -283,15 +312,15 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                            } else {
                                Integer newPort = (Integer)val;
                                if (setServerPort(newPort)) {
-                                   mng.setServerPort(newPort);
-                                   TomcatInstanceNode.this.setDisplayName(NbBundle.getMessage(TomcatInstanceNode.class, "LBL_TomcatInstanceNode",  // NOI18N
-                                    new Object []{"" + newPort}));
+                                    mng.setServerPort(newPort);
                                }
                            }
                        }
                    }
                };
         ssProp.put(p);  
+        
+        // ADMIN PORT
         p = new PropertySupport.ReadWrite (
                    ADMIN_PORT,
                    Integer.TYPE,
@@ -314,7 +343,9 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                        }
                    }
                };    
-        ssProp.put(p);  
+        ssProp.put(p);
+        
+        // USERNAME
         p = new PropertySupport.ReadWrite (
                    USER_NAME,
                    String.class,
@@ -329,7 +360,9 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                        setUserName((String)val);
                    }
                };    
-        ssProp.put(p);  
+        ssProp.put(p);
+        
+        // PASSWORD
         p = new PropertySupport.ReadWrite (
                    PASSWORD,
                    String.class,
@@ -344,7 +377,9 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                        setPassword((String)val);
                    }
                };    
-        ssProp.put(p);  
+        ssProp.put(p);
+        
+        // TOMCAT HOME
         p = new PropertySupport.ReadOnly(
                    PROPERTY_TOMCAT_HOME,
                    String.class,
@@ -356,6 +391,8 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                    }
                };    
         ssProp.put(p);
+        
+        // TOMCAT BASE
         p = new PropertySupport.ReadOnly(
                    PROPERTY_TOMCAT_BASE,
                    String.class,
@@ -367,6 +404,8 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                    }
                };    
         ssProp.put(p);
+        
+        // MONITOR ENABLED
         p = new PropertySupport.ReadWrite (
         MONITOR_ENABLED,
         Boolean.TYPE,
@@ -391,14 +430,14 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         };
         ssProp.put(p);
         
-        
+        // DEBUGGER
         Sheet.Set ssDebug = new Sheet.Set ();
         ssDebug.setName(DEBUGGER);
         ssDebug.setDisplayName(NbBundle.getMessage (TomcatInstanceNode.class, "PROP_debuggerSetName"));  // NOI18N
         ssDebug.setShortDescription(NbBundle.getMessage (TomcatInstanceNode.class, "HINT_debuggerSetName"));  // NOI18N
-        
         ssDebug.setValue("helpID", "org.netbeans.modules.tomcat5.nodes.TomcatInstanceNode.PropertySheet");// NOI18N
-
+        
+        // DEBUGGER PORT
         p = new PropertySupport.ReadWrite (
                    DEBUGGER_PORT,
                    Integer.TYPE,
@@ -422,6 +461,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                };      
         ssDebug.put(p);
         
+        // CLASSIC
         p = new PropertySupport.ReadWrite (
                    CLASSIC,
                    Boolean.TYPE,
@@ -446,8 +486,9 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                };      
                
         ssDebug.put(p);
-        
+                
         if (org.openide.util.Utilities.isWindows()) {
+            // DEBUGGING TYPE
             p = new PropertySupport.ReadWrite (
                        DEBUGGING_TYPE,
                        String.class,
@@ -473,7 +514,9 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                            return new DebuggingTypeEditor();
                        }
                    };
-            ssDebug.put(p);        
+            ssDebug.put(p);
+            
+            // NAME FOR SHARED MEMORY ACCESS
             p = new PropertySupport.ReadWrite (
                        NAME_FOR_SHARED_MEMORY_ACCESS,
                        String.class,

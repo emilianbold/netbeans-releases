@@ -60,7 +60,10 @@ public class RegistryNodeProvider {
         if (factory != null) {
             Node original = factory.getManagerNode(createLookup(instance));
             if (original != null) {
-                instance.setDisplayName(original.getDisplayName());
+                // if displayName was not explicitly set, use displayName from
+                // the original node
+                if (instance.getDisplayName() == null)
+                    instance.setDisplayName(original.getDisplayName());
                 if (instance.isDefault()) {
                     ServerRegistryNode.getServerRegistryNode().setDisplayNameWithDefaultServer(instance);
                 }

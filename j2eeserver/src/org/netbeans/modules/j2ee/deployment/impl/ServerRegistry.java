@@ -31,7 +31,7 @@ public final class ServerRegistry implements java.io.Serializable {
     
     public static final String DIR_INSTALLED_SERVERS = "/J2EE/InstalledServers"; //NOI18N
     public static final String DIR_JSR88_PLUGINS = "/J2EE/DeploymentPlugins"; //NOI18N
-    public static final String URL_ATTR = "url"; //NOI18N
+    public static final String URL_ATTR = InstanceProperties.URL_ATTR;
     public static final String USERNAME_ATTR = InstanceProperties.USERNAME_ATTR;
     public static final String PASSWORD_ATTR = InstanceProperties.PASSWORD_ATTR;
     public static final String FILE_DEFAULT_INSTANCE = "DefaultInstance.settings"; //NOI18N
@@ -236,8 +236,19 @@ public final class ServerRegistry implements java.io.Serializable {
         }
         return null;
     }
-    
-    public void addInstance(String url, String username, String password) throws InstanceCreationException {
+
+    /**
+     * Add a new server instance in the server registry.
+     *
+     * @param  url URL to access deployment manager.
+     * @param  username username used by the deployment manager.
+     * @param  password password used by the deployment manager.
+     * @param  displayName display name wich represents server instance in IDE.
+     * @throws InstanceCreationException when instance with same url is already 
+     *         registered.
+     */
+    public void addInstance(String url, String username, String password, 
+            String displayName) throws InstanceCreationException {
         // should never have empty url; UI should have prevented this
         if (url == null || url.equals("")) { //NOI18N
             ErrorManager.getDefault().log(NbBundle.getMessage(ServerRegistry.class, "MSG_EmptyUrl"));
@@ -245,10 +256,10 @@ public final class ServerRegistry implements java.io.Serializable {
         }
         
         checkInstanceAlreadyExists(url);
-        if (! addInstanceImpl(url,username,password) ) {
+        if (!addInstanceImpl(url, username, password, displayName)) {
             throw new InstanceCreationException(NbBundle.getMessage(ServerRegistry.class, "MSG_FailedToCreateInstance"));
         }
-    }
+    }    
     
     private synchronized void writeInstanceToFile(String url, String username, String password) throws IOException {
         if (url == null) {
@@ -282,7 +293,19 @@ public final class ServerRegistry implements java.io.Serializable {
         }
     }
     
-    private synchronized boolean addInstanceImpl(String url, String username, String password) {
+    /**
+     * Add a new server instance in the server registry.
+     *
+     * @param  url URL to access deployment manager.
+     * @param  username username used by the deployment manager.
+     * @param  password password used by the deployment manager.
+     * @param  displayName display name wich represents server instance in IDE.
+     *
+     * @return <code>true</code> if the server instance was created successfully,
+     *         <code>false</code> otherwise.
+     */
+    private synchronized boolean addInstanceImpl(String url, String username, 
+            String password, String displayName) {
         if (instancesMap().containsKey(url)) return false;
         for(Iterator i = serversMap().values().iterator(); i.hasNext();) {
             Server server = (Server) i.next();
@@ -295,6 +318,8 @@ public final class ServerRegistry implements java.io.Serializable {
                         instancesMap().put(url,instance);
                         ServerString str = new ServerString(server.getShortName(),url,null);
                         writeInstanceToFile(url,username,password);
+                        if (displayName != null) instance.getInstanceProperties().setProperty(
+                                InstanceProperties.DISPLAY_NAME_ATTR, displayName);
                         fireInstanceListeners(str,true);
                         return true;
                     }
@@ -313,8 +338,9 @@ public final class ServerRegistry implements java.io.Serializable {
         String url = (String) fo.getAttribute(URL_ATTR);
         String username = (String) fo.getAttribute(USERNAME_ATTR);
         String password = (String) fo.getAttribute(PASSWORD_ATTR);
+        String displayName = (String) fo.getAttribute(InstanceProperties.DISPLAY_NAME_ATTR);
         //        System.err.println("Adding instance " + fo);
-        addInstanceImpl(url,username,password);
+        addInstanceImpl(url, username, password, displayName);
     }
     
     public Collection getInstances(InstanceListener il) {

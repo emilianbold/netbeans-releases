@@ -21,10 +21,10 @@
 package org.netbeans.modules.j2ee.deployment.impl;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import java.beans.PropertyChangeEvent;
 
 /**
  *
@@ -36,8 +36,12 @@ public class InstancePropertiesImpl extends InstanceProperties implements Server
     
     /** Creates a new instance of InstancePropertiesImpl */
     public InstancePropertiesImpl(ServerInstance instance) {
-        this.url = instance.getUrl();
-        
+        this(instance.getUrl());
+    }
+
+    /** Creates a new instance of InstancePropertiesImpl */
+    public InstancePropertiesImpl(String url) {
+        this.url = url;
     }
     
     private FileObject getFO() {
@@ -75,7 +79,9 @@ public class InstancePropertiesImpl extends InstanceProperties implements Server
     
     public void setProperty(String propname, String value) throws IllegalStateException {
         try {
+            String oldValue = getProperty(propname);
             getFO().setAttribute(propname, value);
+            firePropertyChange(new PropertyChangeEvent(this, propname, oldValue, value));
         } catch (java.io.IOException ioe) {
             throw (IllegalStateException) org.openide.ErrorManager.getDefault().annotate(
             new IllegalStateException(NbBundle.getMessage(InstancePropertiesImpl.class, "MSG_InstanceNotExists", url)),ioe);

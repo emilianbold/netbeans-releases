@@ -21,24 +21,30 @@ package org.netbeans.modules.j2ee.deployment.impl.ui;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.SetAsDefaultServerAction;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
-import org.openide.util.HelpCtx;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
-import org.openide.util.RequestProcessor;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+
 
 /**
  * A node for an admin instance that is also a target server.
  *
  * @author  nn136682
  */
-public class InstanceTargetXNode extends FilterXNode implements ServerInstance.RefreshListener {
+public class InstanceTargetXNode extends FilterXNode implements ServerInstance.RefreshListener, 
+        PropertyChangeListener {
     private ServerTarget instanceTarget;
     private ServerInstance instance;
+    private InstanceProperties instanceProperties;
     
     public InstanceTargetXNode(Node instanceNode, ServerInstance instance) {
         this(instanceNode, Node.EMPTY, instance);
@@ -48,10 +54,24 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
     public InstanceTargetXNode(Node instanceNode, Node xnode, ServerInstance instance) {
         super(instanceNode, xnode, true, new InstanceTargetChildren(xnode, instance));
         this.instance = instance;
+        instanceProperties = instance.getInstanceProperties();
+        instanceProperties.addPropertyChangeListener(this);
     }
     
     public String getDisplayName() {
         return instance.getDisplayNameWithState();
+    }
+    
+    public String getName() {
+        return instanceProperties.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+    }
+    
+    public void setName(String name) {
+        instanceProperties.setProperty(InstanceProperties.DISPLAY_NAME_ATTR, name);
+    }
+    
+    public boolean canRename() { 
+        return true;
     }
     
     private ServerTarget getServerTarget() {
@@ -75,6 +95,20 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
     private void resetDelegateTargetNode() {
         xnode = null;
     }
+    
+    /**
+     * Handle InstanceProperties changes.
+     *
+     * @param evt A PropertyChangeEvent object describing the event source 
+     *   	and the property that has changed.
+     */
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (InstanceProperties.DISPLAY_NAME_ATTR.equals(evt.getPropertyName()) &&
+            (evt.getNewValue() != null && !evt.getNewValue().equals(evt.getOldValue()))) {
+            setDisplayName(getDisplayName());
+        }
+    }
+    
     public static class InstanceTargetChildren extends Children {
         ServerInstance instance;
         ServerTarget target;
