@@ -54,7 +54,10 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
     private boolean files = true;
     private javax.swing.filechooser.FileFilter fileFilter = null;
     private java.io.File currentDirectory = null;
-
+    
+    private JFileChooser chooser;
+    private PropertyChangeListener pListener;
+    
     /**
      * This method is called by the IDE to pass
      * the environment to the property editor.
@@ -130,43 +133,16 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
      * @return Returns custom editor component.
      */
     public java.awt.Component getCustomEditor() {
-        final JFileChooser chooser = createFileChooser ();
-
-//      call by reflection this:  chooser.setControlButtonsAreShown(false);
-//          - the method is not in JDK1.2
-        try {
-            Class clazz = chooser.getClass();
-            Method m = clazz.getMethod("setControlButtonsAreShown", new Class [] { Boolean.TYPE } ); //NOI18N
-            m.invoke(chooser, new Object[] { Boolean.FALSE });
-        } catch (NoSuchMethodException x) {
-            removeControlButtonsHack(chooser);
-        } catch (InvocationTargetException x) {
-            removeControlButtonsHack(chooser);
-        } catch (IllegalAccessException x) {
-            removeControlButtonsHack(chooser);
-        }
-        
-        chooser.addPropertyChangeListener(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY,
-        new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                File f = chooser.getSelectedFile ();
-                if (f != null) {
-                    if (!files && f.isFile ()) return;
-                    if (!directories && f.isDirectory ()) return;
-                }
-
-                setValue(f);
-            } 
-        });
-        
-        HelpCtx.setHelpIDString (chooser, getHelpCtx ().getHelpID ());
-        return chooser;
+        final JFileChooser ch = createFileChooser ();
+        return ch;
     }
     
     /** 
      */
     private JFileChooser createFileChooser () {
-        final JFileChooser chooser = new JFileChooser();
+        if (chooser == null) {
+            chooser = new JFileChooser();
+        }
         
         // [PENDING] should the value of currentDirectory override previous
         // opened directory?
@@ -200,7 +176,51 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
             break;
         }
 
+        chooser.setControlButtonsAreShown(false);
+
+        chooser.removePropertyChangeListener(getPListener());
+        
+        
+        chooser.addPropertyChangeListener(
+            JFileChooser.SELECTED_FILE_CHANGED_PROPERTY,
+            getPListener()
+        );
+        
+        HelpCtx.setHelpIDString (chooser, getHelpCtx ().getHelpID ());
+
         return chooser;
+    }
+    
+    /** Lazy initialization of PListener. */
+    private PropertyChangeListener getPListener() {
+        if (pListener == null) {
+            pListener = new PListener();
+        }
+        return pListener;
+    }
+    
+    /** Property change listaner attached to the JFileChooser
+     * chooser.
+     */
+    private class PListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent e) {
+            File f = chooser.getSelectedFile ();
+            if (f != null) {
+                if (!files && f.isFile ()) return;
+                if (!directories && f.isDirectory ()) return;
+            }
+            Object oldVal = getValue();
+            
+            if ((oldVal == null) && (f == null)) return;
+            
+            if ((oldVal == null) || (f == null)) {
+                setValue(f);
+                return;
+            }
+            if (!f.equals(oldVal)) {
+                setValue(f);
+            }
+        } 
     }
     
     /** Implements java.beans.PropertyEditor method.
@@ -224,33 +244,6 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
             return "new java.io.File (\"" + // NOI18N
                    Utilities.replaceString (value.getAbsolutePath (), "\\", "\\\\") // NOI18N
                    + "\")"; // NOI18N
-        }
-    }
-    
-    /** This method is usefull only in JDK1.2. It removes the Ok, Cancel
-     * buttons from the JFileChooser.
-     */
-    private static void removeControlButtonsHack(JFileChooser chooser) {
-        List candidate = new ArrayList();
-        candidate.add(chooser);
-        while (!candidate.isEmpty()) {
-            Object o = candidate.get(0);
-            candidate.remove(0);
-            if (o instanceof JButton) {
-                JButton jb = (JButton)o;
-                String text = jb.getText();
-                if ((text != null) && (text.length() > 1)) {
-                    // any button with text set to something reasonable will be removed
-                    jb.getParent().remove(jb);
-                }
-            }
-            if (o instanceof java.awt.Container) {
-                java.awt.Container c = (java.awt.Container)o;
-                Object []children = c.getComponents();
-                for (int i = 0; i < children.length; i++) {
-                    candidate.add(children[i]);
-                }
-            }
         }
     }
     
