@@ -240,10 +240,11 @@ Microsystems, Inc. All Rights Reserved.
             <property name="xtest.build" 
                       value="${xtest.distdir}/${xtest.module}/test"/>
         </ant>
-        <copy file="${xtest.basedir}/${xtest.module}/test/build.xml" 
-              todir="${xtest.distdir}/${xtest.module}/test"/>
         <copy todir="${xtest.distdir}/${xtest.module}/test">
-            <fileset dir="${xtest.basedir}/${xtest.module}/test" includes="cfg-*"/>
+            <fileset dir="${xtest.basedir}/${xtest.module}/test">
+                <include name="build*.xml"/>
+                <include name="cfg-*.xml"/>
+            </fileset>
         </copy>
         <!-- NetBeans IDE specific - include files from nbproject dir to distribution -->
         <copy todir="${xtest.distdir}/${xtest.module}/nbproject" failonerror="false">
