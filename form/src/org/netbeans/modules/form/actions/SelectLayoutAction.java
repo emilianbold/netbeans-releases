@@ -180,44 +180,17 @@ public class SelectLayoutAction extends NodeAction
         }
 
         public void actionPerformed(ActionEvent evt) {
-            if (activatedNodes == null) return;
-            // due to the Swing bug with popup menus, it can be null
+            if (activatedNodes == null)
+                return; // due to the Swing bug with popup menus, it can be null
 
             for (int i = 0; i < activatedNodes.length; i++) {
                 RADVisualContainer container = getContainer(activatedNodes[i]);
-                if (container == null) continue;
+                if (container == null)
+                    continue;
                 
                 // set the selected layout on the activated container
-                LayoutSupportDelegate layoutSupport = null;
-                try {
-                    layoutSupport = paletteItem.createLayoutDelegateInstance();
-                }
-                catch (Exception e) {
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                        e.printStackTrace();
-
-                    TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                        MessageFormat.format(
-                            FormEditor.getFormBundle().getString("FMT_ERR_LayoutInit"),
-                            new Object[] { paletteItem.getItemClass().getName(),
-                                            e.getClass().getName() }),
-                        NotifyDescriptor.ERROR_MESSAGE));
-
-                    return;
-                }
-
-                if (layoutSupport == null) {
-                    TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                        MessageFormat.format(
-                            FormEditor.getFormBundle().getString("FMT_ERR_LayoutNotFound"),
-                            new Object[] { paletteItem.getItemClass().getName() }),
-                        NotifyDescriptor.ERROR_MESSAGE));
-
-                    return;
-                }
-
-                container.getFormModel().setContainerLayout(container,
-                                                            layoutSupport);
+                container.getFormModel().getComponentCreator().createComponent(
+                    paletteItem.getItemClass(), container, null);
             }
         }
     }

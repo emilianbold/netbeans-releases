@@ -58,64 +58,68 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         containerDelegateCodeExpression = null;
     }
 
-    // further initialization for a container restored from XML (or code)
+    // further initialization for a container
     // initialize(...) method must be called first
-    public boolean initializeFromCode() {
+    public boolean initializeLayoutDelegate() {
+        LayoutSupportDelegate delegate = null;
+
         // first try to find a dedicated layout delegate (for a container)
         Class layoutDelegateClass =
-            LayoutSupportRegistry.getLayoutDelegateForContainer(
+            LayoutSupportRegistry.getSupportClassForContainer(
                                       metaContainer.getBeanClass());
 
-        if (layoutDelegateClass == null) {
-            // find a general layout delegate (for given LayoutManager)
-            Iterator it = CodeStructure.getDefinedStatementsIterator(
+        try {
+            if (layoutDelegateClass != null) {
+                delegate = LayoutSupportRegistry.createSupportInstance(
+                                                     layoutDelegateClass);
+            }
+            else {
+                // find a general layout delegate (for given LayoutManager)
+                Iterator it = CodeStructure.getDefinedStatementsIterator(
                                           getContainerDelegateCodeExpression());
-            CodeStatement[] statements =
-                CodeStructure.filterStatements(
+                CodeStatement[] statements =
+                    CodeStructure.filterStatements(
                                 it, AbstractLayoutSupport.getSetLayoutMethod());
 
-            if (statements.length > 0) { // LayoutManager from code
-                CodeExpressionOrigin layoutOrigin =
-                    statements[0].getStatementParameters()[0].getOrigin();
-                layoutDelegateClass =
-                    LayoutSupportRegistry.getLayoutDelegateForLayout(
-                                              layoutOrigin.getType());
+                if (statements.length > 0) { // LayoutManager from code
+                    CodeExpressionOrigin layoutOrigin =
+                        statements[0].getStatementParameters()[0].getOrigin();
+                    delegate = LayoutSupportRegistry.createSupportForLayout(
+                                                       layoutOrigin.getType());
 
-                if (layoutDelegateClass == null) {
-                    // handle special case of null layout
-                    if (layoutOrigin.getType() == LayoutManager.class
-                        && layoutOrigin.getCreationParameters().length == 0
-                        && layoutOrigin.getParentExpression() == null
-                        && "null".equals(layoutOrigin.getJavaCodeString(null, null))) // NOI18N
-                    {
-                        layoutDelegateClass = NullLayoutSupport.class;
+                    if (delegate == null) {
+                        // handle special case of null layout
+                        if (layoutOrigin.getType() == LayoutManager.class
+                            && layoutOrigin.getCreationParameters().length == 0
+                            && layoutOrigin.getParentExpression() == null
+                            && "null".equals(layoutOrigin.getJavaCodeString(null, null))) // NOI18N
+                        {
+                            delegate = new NullLayoutSupport();
+                        }
                     }
                 }
-            }
-            else { // default LayoutManager
-                LayoutManager defaultLM =
-                    getPrimaryContainerDelegate().getLayout();
-                layoutDelegateClass = defaultLM != null ?
-                    LayoutSupportRegistry.getLayoutDelegateForLayout(
-                                              defaultLM.getClass()) :
-                    NullLayoutSupport.class;
+                else { // default LayoutManager
+                    LayoutManager defaultLM =
+                        getPrimaryContainerDelegate().getLayout();
+                    delegate = defaultLM != null ?
+                                 LayoutSupportRegistry.createSupportForLayout(
+                                                           defaultLM.getClass()) :
+                                 new NullLayoutSupport();
+                }
             }
 
-            if (layoutDelegateClass == null)
+            if (delegate == null)
                 return false;
-        }
-
-        try {
-            LayoutSupportDelegate delegate = LayoutSupportRegistry
-                                    .createLayoutDelegate(layoutDelegateClass);
-            setLayoutDelegate(delegate, true);
-            return true;
         }
         catch (Exception ex) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                 ex.printStackTrace();
+            // [some notification ...]
             return false;
         }
+
+        setLayoutDelegate(delegate, true);
+        return true;
     }
 
     // set and initialize new layout delegate
@@ -382,15 +386,6 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         int oldCount = layoutDelegate.getComponentCount();
 
         layoutDelegate.addComponents(compExps, constraints);
-
-//        for (int i=0; i < components.length; i++) {
-//            // store the constraints object in the meta component
-//            LayoutConstraints constr =
-//                layoutDelegate.getConstraints(oldCount + i);
-//            if (constr != null)
-//                components[i].setLayoutConstraints(layoutDelegate.getClass(),
-//                                                   constr);
-//        }
 
         layoutDelegate.addComponentsToContainer(getPrimaryContainer(),
                                                 getPrimaryContainerDelegate(),

@@ -180,27 +180,6 @@ public class PaletteItem implements java.io.Serializable {
         }
     }
 
-    public LayoutSupportDelegate createLayoutDelegateInstance()
-        throws InstantiationException, IllegalAccessException
-    {
-        LayoutSupportDelegate layoutDelegate = null;
-        getBeanClass();
-
-        if (LayoutManager.class.isAssignableFrom(beanClass)) {
-            // LayoutManager -> find LayoutSupportDelegate for it
-            Class layoutDelegateClass = LayoutSupportRegistry
-                        .getLayoutDelegateForLayout(beanClass);
-            if (layoutDelegateClass != null) layoutDelegate =
-                LayoutSupportRegistry.createLayoutDelegate(layoutDelegateClass);
-        }
-        else if (LayoutSupportDelegate.class.isAssignableFrom(beanClass)) {
-            // LayoutSupportDelegate -> use it directly
-            layoutDelegate = (LayoutSupportDelegate) createInstance();
-        }
-
-        return layoutDelegate;
-    }
-
     public Class getItemClass() {
         return getBeanClass();
     }

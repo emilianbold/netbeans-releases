@@ -229,12 +229,6 @@ public class RADComponent implements FormDesignValue {
         this.beanInstance = beanInstance;
     }
 
-    /** Used by TuborgPersistenceManager */
-    void initDeserializedEvents(java.util.Hashtable eventHandlers) {
-        getComponentEvents();
-        eventsList.initEvents(eventHandlers);
-    }
-
     void setNodeReference(RADComponentNode node) {
         this.componentNode = node;
     }

@@ -304,15 +304,13 @@ public class MetaComponentCreator {
             if (!initComponentInstance(newMetaComp, source))
                 return null;
 
-            if (newMetaCont != null) { // the new component is a container
-                // initialize layout support
-                newMetaCont.initLayoutSupport();
-                if (newMetaCont.getLayoutSupport() == null) {
-                    // no LayoutSupportDelegate found for the container,
-                    // create RADVisualComponent only
-                    newMetaCont = null;
-                    newMetaComp = null;
-                }
+            // initialize layout support (if the new component is a container)
+            if (newMetaCont != null
+                && !newMetaCont.getLayoutSupport().initializeLayoutDelegate())
+            {   // no LayoutSupportDelegate found for the container,
+                // create RADVisualComponent only
+                newMetaCont = null;
+                newMetaComp = null;
             }
         }
 
@@ -384,8 +382,6 @@ public class MetaComponentCreator {
         LayoutSupportDelegate layoutDelegate =
                               metacont.getLayoutSupport().getLayoutDelegate();
         if (layoutDelegate != null && layoutDelegate.isDedicated())
-//                && layoutSupport.getLayoutClass() == null
-//                && layoutSupport.getClass() != NullLayoutSupport.class)
             return null; // layout cannot be changed, should be reported!!
 
         Class beanClass = source.getInstanceClass();
@@ -395,27 +391,14 @@ public class MetaComponentCreator {
         try {
             if (LayoutManager.class.isAssignableFrom(beanClass)) {
                 // LayoutManager -> find LayoutSupportDelegate for it
-                Class layoutDelegateClass = LayoutSupportRegistry
-                                    .getLayoutDelegateForLayout(beanClass);
-                if (layoutDelegateClass != null)
-                    layoutDelegate = LayoutSupportRegistry
-                                     .createLayoutDelegate(layoutDelegateClass);
+                layoutDelegate = LayoutSupportRegistry
+                                     .createSupportForLayout(beanClass);
             }
             else if (LayoutSupportDelegate.class.isAssignableFrom(beanClass)) {
                 // LayoutSupportDelegate -> use it directly
-                if (source.getInstanceCookie() != null)
-                    layoutDelegate = (LayoutSupportDelegate)
-                        source.getInstanceCookie().instanceCreate();
-                else layoutDelegate = 
-                        LayoutSupportRegistry.createLayoutDelegate(beanClass);
+                layoutDelegate = LayoutSupportRegistry
+                                     .createSupportInstance(beanClass);
             }
-//            else if (DesignLayout.class.isAssignableFrom(beanClass)) {
-//                // DesignLayout -> convert to LayoutSupportDelegate
-//                DesignLayout dl = (DesignLayout) 
-//                                  CreationFactory.createInstance(source);
-//                layoutSupport =
-//                    Compat31LayoutFactory.createCompatibleLayoutSupport(dl);
-//            }
         }
         catch (Exception e) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -437,7 +420,7 @@ public class MetaComponentCreator {
                     MessageFormat.format(
                         FormEditor.getFormBundle().getString("FMT_ERR_LayoutNotFound"), // NOI8N
                         new Object[] { beanClass.getName() }),
-                    NotifyDescriptor.ERROR_MESSAGE));
+                    NotifyDescriptor.WARNING_MESSAGE));
             return null;
         }
 

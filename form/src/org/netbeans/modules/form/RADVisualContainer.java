@@ -44,20 +44,6 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         layoutSupport.initialize(this, getFormModel().getCodeStructure());
     }
 
-//    public void setInstance(Object beanInstance) {
-//        super.setInstance(beanInstance);
-//        initLayoutSupport(); // [??]
-//    }
-
-    public void initLayoutSupport() {
-        LayoutSupportDelegate layoutDelegate =
-            LayoutSupportRegistry.createLayoutDelegate(
-                                      (Container) getBeanInstance(),
-                                      getContainerDelegate(getBeanInstance()));
-
-        setLayoutSupportDelegate(layoutDelegate);
-    }
-
     public void setLayoutSupportDelegate(LayoutSupportDelegate layoutDelegate) {
         layoutSupport.setLayoutDelegate(layoutDelegate, false);
         setLayoutNodeReference(null);
@@ -73,7 +59,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
     public String getContainerDelegateGetterName() {
         Object value = getBeanInfo().getBeanDescriptor()
-            .getValue("containerDelegate"); // NOI18N
+                                        .getValue("containerDelegate"); // NOI18N
         
         if (value != null && value instanceof String)
             return (String) value;
