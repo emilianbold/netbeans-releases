@@ -141,6 +141,11 @@ public final class LoaderPoolNode extends AbstractNode {
     */
     public static synchronized void add (ManifestSection.LoaderSection s) throws Exception {
         DataLoader l = (DataLoader)s.getInstance ();
+        if (err.isLoggable(ErrorManager.UNKNOWN)) {
+            List before = s.getInstallBefore() == null ? null : Arrays.asList(s.getInstallBefore());
+            List after = s.getInstallAfter() == null ? null : Arrays.asList(s.getInstallAfter());
+            err.log("add: " + l + " repclass: " + l.getRepresentationClass().getName() + " before: " + before + " after: " + after);
+        }
         Iterator it = loaders.iterator ();
         while (it.hasNext ())
             if (it.next ().getClass ().equals (l.getClass ()))
@@ -220,6 +225,16 @@ public final class LoaderPoolNode extends AbstractNode {
                                        }
                                    }
                                }
+                               /* Test for #13880:
+                               if (err.isLoggable(ErrorManager.UNKNOWN)) {
+                                   if ((l1.equals("org.netbeans.modules.web.core.jsploader.ServletDataLoader") && // NOI18N
+                                        l2.equals("org.netbeans.modules.java.JavaDataLoader")) || // NOI18N
+                                       (l2.equals("org.netbeans.modules.web.core.jsploader.ServletDataLoader") && // NOI18N
+                                        l1.equals("org.netbeans.modules.java.JavaDataLoader"))) { // NOI18N
+                                       err.log("Comparator: l1=" + l1 + " l2=" + l2 + " mustbe12=" + mustbe12 + " mustbe21=" + mustbe21);
+                                   }
+                               }
+                               */
                                // Compute resulting order.
                                if (mustbe12) {
                                    if (mustbe21) {
@@ -244,11 +259,17 @@ public final class LoaderPoolNode extends AbstractNode {
                                err.log (ErrorManager.USER, "Probably you wanted " + otherRepn + " which is the loader's representation class."); // NOI18N
                            }
                        };
+        if (err.isLoggable(ErrorManager.UNKNOWN)) {
+            err.log("Before sort: " + loaders);
+        }
         try {
             loaders = Utilities.partialSort (loaders, c, true);
         } catch (Utilities.UnorderableException uue) {
             err.notify (ErrorManager.WARNING, uue);
             // leave order as it was
+        }
+        if (err.isLoggable(ErrorManager.UNKNOWN)) {
+            err.log("After sort: " + loaders);
         }
         update ();
     }
@@ -321,8 +342,15 @@ public final class LoaderPoolNode extends AbstractNode {
     */
     private static synchronized void readPool (ObjectInputStream ois)
     throws IOException, ClassNotFoundException {
+        // #13880: keep any manifest-provided install before/after information,
+        // rather than overwriting the map with a (possibly incomplete or obsolete)
+        // deexternalized mapping.
+        Map oldInstallBefores = installBefores;
+        Map oldInstallAfters = installAfters;
         installBefores = (Map) ois.readObject ();
         installAfters = (Map) ois.readObject ();
+        installBefores.putAll(oldInstallBefores);
+        installAfters.putAll(oldInstallAfters);
 
         HashSet classes = new HashSet ();
         LinkedList l = new LinkedList ();
@@ -336,9 +364,10 @@ public final class LoaderPoolNode extends AbstractNode {
 
             try {
                 DataLoader loader = (DataLoader)obj.get ();
-                err.log ("reading " + loader.getDisplayName ());
+                Class clazz = loader.getClass();
+                err.log ("reading " + loader.getDisplayName () + " [" + clazz.getName() + "]");
                 l.add (loader);
-                classes.add (loader.getClass ());
+                classes.add (clazz);
             } catch (IOException ex) {
                 err.notify (ErrorManager.WARNING, ex);
             } catch (ClassNotFoundException ex) {
@@ -395,6 +424,7 @@ public final class LoaderPoolNode extends AbstractNode {
     /** Notification that the state of pool has changed
     */
     private static synchronized void update () {
+        err.log("update");
         // clear the cache of loaders
         loadersArray = null;
 
@@ -419,6 +449,7 @@ public final class LoaderPoolNode extends AbstractNode {
     */
     public static synchronized boolean remove (DataLoader dl) {
         if (loaders.remove (dl)) {
+            err.log("remove: " + dl);
             installBefores.remove (dl.getClass ().getName ());
             installAfters.remove (dl.getClass ().getName ());
             dl.removePropertyChangeListener (getNbLoaderPool ());
