@@ -174,7 +174,7 @@ public class IdxPropertyPatternPanel extends javax.swing.JPanel
         mainPanel.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)));
         propertyPanel.setLayout(new java.awt.GridBagLayout());
 
-        propertyPanel.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color (149, 142, 130)), "propertyPanel", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11), java.awt.Color.black));
+        propertyPanel.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color(149, 142, 130)), "propertyPanel"));
         nameLabel.setText("nameLabel");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
@@ -273,7 +273,7 @@ public class IdxPropertyPatternPanel extends javax.swing.JPanel
 
         optionsPanel.setLayout(new java.awt.GridBagLayout());
 
-        optionsPanel.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color (149, 142, 130)), "optionsPanel", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11), java.awt.Color.black));
+        optionsPanel.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color(149, 142, 130)), "optionsPanel"));
         fieldCheckBox.setText("fieldCheckBox");
         fieldCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -328,7 +328,7 @@ public class IdxPropertyPatternPanel extends javax.swing.JPanel
 
         nonIndexOptionsPanel.setLayout(new java.awt.GridBagLayout());
 
-        nonIndexOptionsPanel.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color (149, 142, 130)), "nonIndexOptionsPanel", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11), java.awt.Color.black));
+        nonIndexOptionsPanel.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color(149, 142, 130)), "nonIndexOptionsPanel"));
         niGetterCheckBox.setText("niGetterCheckBox");
         niGetterCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -414,28 +414,28 @@ public class IdxPropertyPatternPanel extends javax.swing.JPanel
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel nameLabel;
-    private javax.swing.JCheckBox returnCheckBox;
-    private javax.swing.JComboBox modeComboBox;
     private javax.swing.JCheckBox boundCheckBox;
-    private javax.swing.JLabel modeLabel;
-    private javax.swing.JLabel typeLabel;
-    private javax.swing.JCheckBox supportCheckBox;
-    private javax.swing.JCheckBox niReturnCheckBox;
-    private javax.swing.JCheckBox niGetterCheckBox;
+    private javax.swing.JCheckBox constrainedCheckBox;
     private javax.swing.JCheckBox fieldCheckBox;
-    private javax.swing.JPanel optionsPanel;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel mainPanel;
+    private javax.swing.JComboBox modeComboBox;
+    private javax.swing.JLabel modeLabel;
+    private javax.swing.JLabel nameLabel;
+    private javax.swing.JTextField nameTextField;
+    private javax.swing.JCheckBox niGetterCheckBox;
+    private javax.swing.JCheckBox niReturnCheckBox;
+    private javax.swing.JCheckBox niSetCheckBox;
     private javax.swing.JCheckBox niSetterCheckBox;
     private javax.swing.JPanel nonIndexOptionsPanel;
-    private javax.swing.JCheckBox setCheckBox;
-    private javax.swing.JCheckBox constrainedCheckBox;
-    private javax.swing.JCheckBox niSetCheckBox;
+    private javax.swing.JPanel optionsPanel;
     private javax.swing.JPanel propertyPanel;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel mainPanel;
+    private javax.swing.JCheckBox returnCheckBox;
+    private javax.swing.JCheckBox setCheckBox;
+    private javax.swing.JCheckBox supportCheckBox;
     private javax.swing.JComboBox typeComboBox;
-    private javax.swing.JTextField nameTextField;
+    private javax.swing.JLabel typeLabel;
     // End of variables declaration//GEN-END:variables
 
     class Result  {
