@@ -280,6 +280,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
 
         Object value;
         Object defaultValue;
+        boolean isDefault;
 
         PropertyModel model;
         JCheckBox defaultCheckBox;
@@ -369,8 +370,15 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         }
 
         public void setDefault( boolean isDefault ) {
-            defaultCheckBox.setEnabled( ! isDefault );
-            if( isDefault ) defaultCheckBox.setSelected( false );
+            this.isDefault = isDefault;
+        }
+
+        public void addNotify() {
+            super.addNotify();
+            if (isDefault) {
+                defaultCheckBox.setEnabled(false);
+                defaultCheckBox.setSelected(false);
+            }
         }
 
         private void modelSetValue( Object val ) {
