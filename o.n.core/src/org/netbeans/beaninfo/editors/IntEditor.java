@@ -133,7 +133,26 @@ public class IntEditor extends ExPropertyEditorSupport {
         Integer i = (Integer) getValue();
         String result;
         if (i != null) {
-            result = getStringRep(((Integer) getValue()).intValue());
+            if (keys != null) {
+                int intVal = i.intValue();
+                int idx = -1;
+                for (int j=0; j < values.length; j++) {
+                    if (values[j] == intVal) {
+                        idx = j;
+                        break;
+                    }
+                }
+                if (idx != -1) {
+                    result = keys [((Integer) super.getValue()).intValue()];
+                } else {
+                    throw new IllegalArgumentException(
+                    "This property editor uses a set of keyed values, " +  //NOI18N
+                    "and the current value, " //NOI18N
+                    + i + ", is not specified."); //NOI18N
+                }
+            } else {
+                result = getValue().toString();
+            }
         } else {
             result = NbBundle.getMessage (IntEditor.class, "NULL"); //NOI18N
         }
@@ -148,7 +167,7 @@ public class IntEditor extends ExPropertyEditorSupport {
             setValue(new Integer(Integer.parseInt(s)));
         } catch (NumberFormatException nfe) {
             String msg = NbBundle.getMessage(
-            IntEditor.class, "EXC_ILLEGAL_VALUE_TEXT") + s;
+                IntEditor.class, "EXC_ILLEGAL_VALUE_TEXT") + s; //NOI18N
             RuntimeException iae = new IllegalArgumentException(msg); //NOI18N
             ErrorManager.getDefault().annotate(iae, ErrorManager.USER, msg,
             msg, iae, new java.util.Date());
@@ -166,10 +185,10 @@ public class IntEditor extends ExPropertyEditorSupport {
             if ((idx == -1) || (idx > values.length-1)) {
                 StringBuffer msg = new StringBuffer();
                 msg.append(NbBundle.getMessage(IntEditor.class,
-                "EXC_ILLEGAL_STRING_TEXT_FIRST")); //NOI18N
+                    "EXC_ILLEGAL_STRING_TEXT_FIRST")); //NOI18N
                 msg.append(s);
                 msg.append(NbBundle.getMessage(IntEditor.class,
-                "EXC_ILLEGAL_STRING_TEXT_SECOND"));
+                    "EXC_ILLEGAL_STRING_TEXT_SECOND")); //NOI18N
                 msg.append(arrToStr(keys));
                 String message = msg.toString();
                 RuntimeException iae = new IllegalArgumentException(message);
@@ -177,9 +196,17 @@ public class IntEditor extends ExPropertyEditorSupport {
                 message, message, iae, new java.util.Date());
                 throw iae;
             } else {
-                setValue(new Integer(values[idx]));
+                setValue(new Integer(idx));
             }
         }
+    }
+    
+    public Object getValue () {
+        Integer v = (Integer) super.getValue();
+        if (values != null) {
+            v = new Integer (values[v.intValue()]);
+        }
+        return v;
     }
     
     public String[] getTags() {
