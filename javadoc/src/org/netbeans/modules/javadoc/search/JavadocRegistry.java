@@ -48,10 +48,8 @@ import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
 import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
 
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
-import org.netbeans.modules.javadoc.settings.DocumentationSettings;
 import org.openide.ErrorManager;
 import org.openide.filesystems.URLMapper;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -66,8 +64,8 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
     
     private GlobalPathRegistry regs;    
     private ArrayList listeners;
-    private Set/*<JavadocForBinaryQuery.Result>*/ results = new HashSet ();
-    private Set/*ClassPath*/ classpaths = new HashSet ();
+    private Set/*<JavadocForBinaryQuery.Result>*/ results;
+    private Set/*ClassPath*/ classpaths;
     private FileObject[] roots;
     
     /** Creates a new instance of JavadocRegistry */
@@ -94,11 +92,16 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
         //XXX must be called out of synchronized block to prevent
         // deadlock. throwCache is called under the ProjectManager.mutex
         // write lock and Project's SFBQI requires the ProjectManager.mutex readLock
-        Set s = readRoots();
+        Set/*<ClassPath>*/ _classpaths = new HashSet/*<ClassPath>*/();
+        Set/*<JavadocForBinaryQuery.Result>*/  _results = new HashSet/*<JavadocForBinaryQuery.Result>*/();
+        Set/*<FileObject>*/ s = readRoots(this, _classpaths, _results);
         synchronized (this) {
             if (this.roots == null) {
                 this.roots = new FileObject[ s.size() ];
                 s.toArray( this.roots );
+                this.classpaths = _classpaths;
+                this.results = _results;
+                registerListeners(this, _classpaths, _results);
             }
             return this.roots;
         }
@@ -119,24 +122,25 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
         
     // Private methods ---------------------------------------------------------
     
-    private Set readRoots() {
-        assert this.classpaths.size() == 0 & this.results.size () == 0 : "Illegal state of object!";
+    private static Set/*<FileObject>*/ readRoots(
+            JavadocRegistry jdr,
+            Set/*<ClassPath>*/ classpaths,
+            Set/*<JavadocForBinaryQuery.Result>*/ results) {
+        
         Set roots = new HashSet ();
         List paths = new LinkedList();
-        paths.addAll( this.regs.getPaths( ClassPath.COMPILE ) );        
-        paths.addAll( this.regs.getPaths( ClassPath.BOOT ) );
+        paths.addAll( jdr.regs.getPaths( ClassPath.COMPILE ) );        
+        paths.addAll( jdr.regs.getPaths( ClassPath.BOOT ) );
         for( Iterator it = paths.iterator(); it.hasNext(); ) {
             ClassPath ccp = (ClassPath)it.next();
-            ccp.addPropertyChangeListener(this);
-            this.classpaths.add (ccp);
+            classpaths.add (ccp);
             //System.out.println("CCP " + ccp );
             FileObject ccpRoots[] = ccp.getRoots();
             
             for( int i = 0; i < ccpRoots.length; i++ ) {
                 //System.out.println(" CCPR " + ccpRoots[i]);
                 JavadocForBinaryQuery.Result result = JavadocForBinaryQuery.findJavadoc( URLMapper.findURL(ccpRoots[i], URLMapper.EXTERNAL ) );
-                result.addChangeListener(this);
-                this.results.add (result);
+                results.add (result);
                 URL[] jdRoots = result.getRoots();                    
                 for ( int j = 0; j < jdRoots.length; j++ ) {
                     //System.out.println( "  JDR " + jdRoots[j] );
@@ -151,6 +155,21 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
         }
         //System.out.println("roots=" + roots);
         return roots;
+    }
+    
+    private static void registerListeners(
+            JavadocRegistry jdr,
+            Set/*<ClassPath>*/ classpaths,
+            Set/*<JavadocForBinaryQuery.Result>*/ results) {
+        
+        for (Iterator it = classpaths.iterator(); it.hasNext();) {
+            ClassPath cpath = (ClassPath) it.next();
+            cpath.addPropertyChangeListener(jdr);
+        }
+        for (Iterator it = results.iterator(); it.hasNext();) {
+            JavadocForBinaryQuery.Result result = (JavadocForBinaryQuery.Result) it.next();
+            result.addChangeListener(jdr);
+        }
     }
 
     public void pathsAdded(GlobalPathRegistryEvent event) {
