@@ -27,20 +27,20 @@ import java.util.StringTokenizer;
 import junit.framework.Test;
 import junit.framework.TestResult;
 
+import org.netbeans.performance.bde.TestSpecBuilder;
+import org.netbeans.performance.bde.TestDefinition;
+import org.netbeans.performance.bde.ArgumentSeries;
+import org.netbeans.performance.bde.Interval;
+
 /**
  * A suite for Benchmarks;
  */
 public final class BenchmarkSuite implements Test {
     
-    public static final char LIST_START = '[';
-    public static final char LIST_END = ']';
-    public static final char CLASS_DELIM = ':';
-    public static final char LIST_DELIM = '@';
-    public static final char ITEM_DELIM = ',';
     public static final String TESTS_SPECS = "tests.specs";
     
-    private TestsSpecifications testSpecs;
     private ArrayList benchmarks;
+    private TestsSpecifications testSpecs;
     
     /** New Benchmark suite */
     public BenchmarkSuite(String testSpecs) {
@@ -111,67 +111,15 @@ public final class BenchmarkSuite implements Test {
         public TestsSpecifications(String spec) {
             testsSpecifications = new HashMap();
             try {
-                parse(spec);
-            } catch (ClassNotFoundException e) {
+                List list = TestSpecBuilder.parse(spec);
+                for (Iterator iter = list.iterator(); iter.hasNext(); ) {
+                    TestDefinition testDef = (TestDefinition) iter.next();
+                    Class klass = Class.forName(testDef.getClassName());
+                    testsSpecifications.put(klass, new TestSpecification(testDef));
+                }
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-        
-        /** parses "mypack.MyTest[testSet*, test*Print]@[KEY1=100, KEY2=2],[KEY1=1000, KEY2=2]:hispack.HisTest" */
-        private void parse(String spec) throws ClassNotFoundException {
-            if (spec == null || spec.length() == 0) {
-                return;
-            }
-            spec = cleanWhiteSpaces(spec);
-            int pos = 0;
-            for (;;) {
-                int idx = spec.indexOf(CLASS_DELIM, pos);
-                String testSpec;
-                if (idx < 0) {
-                    testSpec = spec.substring(pos);
-                    parseOneTest(testSpec);
-                    break;
-                } else {            
-                    testSpec = spec.substring(pos, idx);
-                    parseOneTest(testSpec);
-                }
-                pos = idx + 1;
-            }
-        }
-        
-        /** Removes all white spaces */
-        private static String cleanWhiteSpaces(String spec) {
-            StringBuffer buffer = new StringBuffer(spec.length());
-            for (int i = 0; i < spec.length(); i++) {
-                char c = spec.charAt(i);
-                if (Character.isWhitespace(c)) {
-                    continue;
-                } else {
-                    buffer.append(c);
-                }
-            }
-            
-            return buffer.toString();
-        }
-        
-        /** Parses one token of class[methods]@[args] */
-        private void parseOneTest(String spec) throws ClassNotFoundException {
-            int idx = spec.indexOf(LIST_START);
-            String klassName;
-            TestSpecification testSpecification;
-            if (idx >= 0) {
-                if (spec.charAt(idx - 1) == LIST_DELIM) {
-                    idx -= 1;
-                }
-                
-                klassName = spec.substring(0, idx);
-                testSpecification = new TestSpecification(spec.substring(idx));
-            } else {
-                klassName = spec;
-                testSpecification = new TestSpecification();
-            }
-            
-            testsSpecifications.put(Class.forName(klassName), testSpecification);
         }
         
         /** Whether given class should be included */
@@ -215,87 +163,29 @@ public final class BenchmarkSuite implements Test {
     static final class TestSpecification {
         
         private List methodMatchers;
-        private List argLists;
+        private List argSeries;
         
         /** New TestsSpecifications */
-        public TestSpecification(String spec) {
-            init();
-            parse(spec);
+        public TestSpecification(TestDefinition testDef) {
+            setMethodMatchers(testDef.getMethodPatterns());
+            setArgSeries(testDef.getArgumentSeries());
         }
         
-        /** New TestsSpecifications */
-        public TestSpecification() {
-            init();
-        }
-        
-        /** Parses spec String */
-        private void parse(String spec) {
-            int idx = spec.indexOf(LIST_DELIM);
-            parseMethods(spec.substring(0, idx));
-            parseArgs(spec.substring(idx + 1));
-        }
-        
-        /** Parses methods section */
-        private void parseMethods(String methods) {
-            Enumeration iter = listTokens(methods);
-            while (iter.hasMoreElements()) {
-                methodMatchers.add(MethodMatcher.create(iter.nextElement().toString()));
-            }
-        }
-        
-        /** Parses args section */
-        private void parseArgs(String args) {
-            Iterator lists = lists(args);
-            while (lists.hasNext()) {
-                String argList = (String) lists.next();
-                Enumeration iter = listTokens(argList);
-                List pairs = new ArrayList(20);
-                while (iter.hasMoreElements()) {
-                    String pair = iter.nextElement().toString();
-                    int idx = pair.indexOf('=');
-                    String key = pair.substring(0, idx);
-                    Object val = convert(pair.substring(idx + 1));
-                    pairs.add(new Object[] { key, val });
-                }
-
-                argLists.add(pairs);
-            }
-        }
-        
-        /** Parses argLists e.g. [KEY1=2,Key2=2],[KEY1=3,KEY3=5] 
-         * into [KEY1=2,Key2=2] and [KEY1=3,KEY3=5].
-         */
-        private static Iterator lists(String argLists) {
-            List argsLists = new ArrayList(10);
-            int ptr = 0;
-            do {
-                int listEnd = argLists.indexOf(LIST_END, ptr);
-                String token = argLists.substring(ptr, listEnd + 1);
-                argsLists.add(token);
-                ptr = listEnd + 2;
-            } while (ptr < argLists.length());
-            
-            return argsLists.iterator();
-        }
-        
-        /** Convert to Integer iff possible */
-        private static Object convert(String s) {
-            try {
-                return Integer.valueOf(s);
-            } catch (NumberFormatException e) {
-                return s;
-            }
-        }
-        
-        /** @return tokens */
-        private static Enumeration listTokens(String list) {
-            return new StringTokenizer(list.substring(1, list.length() - 1), ",");
-        }
-        
-        /** init */
-        private void init() {
+        /** Creates MethodMetchers */
+        private void setMethodMatchers(Iterator it) {
             methodMatchers = new ArrayList();
-            argLists = new ArrayList();
+            while (it.hasNext()) {
+                String pattern = (String) it.next();
+                methodMatchers.add(MethodMatcher.create(pattern));
+            }
+        }
+        
+        /** Creates a List of ArgumentSeries */
+        private void setArgSeries(Iterator it) {
+            argSeries = new ArrayList();
+            while (it.hasNext()) {
+                argSeries.add(it.next());
+            }
         }
         
         /** Whether given method should be included */
@@ -313,22 +203,61 @@ public final class BenchmarkSuite implements Test {
             
             return false;
         }
-
+        
+        /** Creates arguments for given params */
+        private static void createArgs(Iterator keys, ArgumentSeries as, MapArgBenchmark mab, List mapList) {
+            if (keys.hasNext()) {
+                String key = (String) keys.next();
+                Iterator vals = as.getValues(key);
+                while (vals.hasNext()) {
+                    List localMapList = new ArrayList(11);
+                    Object next = vals.next();
+                    
+                    if (next instanceof Interval) {
+                        Interval interval = (Interval) next;
+                        int i = interval.getStart();
+                        List localMapList2 = new ArrayList(11);
+                        for (; i < interval.getEnd(); i += interval.getStep()) {
+                            createArgsAndPut(keys, as, mab, localMapList2, key, new Integer(i));
+                            localMapList.addAll(localMapList2);
+                            localMapList2.clear();
+                        }
+                        if (i > interval.getEnd()) {
+                            createArgsAndPut(keys, as, mab, localMapList2, key, new Integer(interval.getEnd()));
+                            localMapList.addAll(localMapList2);
+                        }
+                    } else {
+                        createArgsAndPut(keys, as, mab, localMapList, key, next);
+                    }
+                    mapList.addAll(localMapList);
+                }
+            } else {
+                mapList.add(mab.createDefaultMap());
+            }
+        }
+            
+        private static void createArgsAndPut(Iterator keys, ArgumentSeries as, MapArgBenchmark mab, List mapList, Object key, Object val) {
+            createArgs(keys, as, mab, mapList);
+            int size = mapList.size();
+            for (int i = 0; i < size; i++) {
+                Map map = (Map) mapList.get(i);
+                map.put(key, val);
+            }
+        }
+        
         /** Create a Collection of Benchmarks */
         public void setArguments(Benchmark bench) {
             if (bench instanceof MapArgBenchmark) {
                 MapArgBenchmark test = (MapArgBenchmark) bench;
-                Map[] args = new Map[argLists.size()];
-                int argsIdx = 0;
-                for (Iterator aiter = argLists.iterator(); aiter.hasNext(); argsIdx++) {
-                    List pairs = (List) aiter.next();
-                    args[argsIdx] = test.createDefaultMap();
-                    for (Iterator piter = pairs.iterator(); piter.hasNext(); ) {
-                        Object[] entry = (Object[]) piter.next();
-                        args[argsIdx].put(entry[0], entry[1]);
-                    }
+                List args = new ArrayList(20);
+                
+                final int size = argSeries.size();
+                for (int i = 0; i < size; i++) {
+                    ArgumentSeries as = (ArgumentSeries) argSeries.get(i);
+                    createArgs(as.getKeys(), as, test, args);
                 }
-                test.setArgumentArray(args);
+                
+                test.setArgumentArray((Map[]) args.toArray(new Map[args.size()]));
             }
         }
     }

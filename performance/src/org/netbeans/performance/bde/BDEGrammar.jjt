@@ -1,0 +1,166 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+options {
+    MULTI=true;
+    VISITOR=true;
+    NODE_DEFAULT_VOID=true;
+    VISITOR_EXCEPTION="Exception";
+}
+
+PARSER_BEGIN(BDEParser)
+package org.netbeans.performance.bde.generated;
+import org.netbeans.performance.bde.TestSpecBuilder;
+
+public class BDEParser {
+
+    public static TestSpecBuilder parseTestSpec(String spec) throws Exception {
+        BDEParser t = new BDEParser(new java.io.StringReader(spec));
+        return new TestSpecBuilder(t.Start());
+    }
+}
+
+PARSER_END(BDEParser)
+
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| <"//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+| <"/*" (~["*"])* "*" (~["/"] (~["*"])* "*")* "/">
+}
+
+TOKEN : /* LITERALS */
+{
+  < INTEGER_LITERAL:
+        <DECIMAL_LITERAL> (["l","L"])?
+      | <HEX_LITERAL> (["l","L"])?
+      | <OCTAL_LITERAL> (["l","L"])?
+  >
+|
+  < #DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])* >
+|
+  < #HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ >
+|
+  < #OCTAL_LITERAL: "0" (["0"-"7"])* >
+}
+
+TOKEN : /* IDENTIFIERS */
+{
+  < IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>)* >
+|
+  < CLASS_IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>)* ("." (<LETTER>|<DIGIT>)+)* >
+|
+  < #LETTER: ["_","a"-"z","A"-"Z"] >
+|
+  < #DIGIT: ["0"-"9"] >
+|
+  < REG_EXP: (<LETTER>|<DIGIT>|<REGEXP_CHAR>)+ >
+|
+  < #REGEXP_CHAR: ["*"] >
+|
+  //< STRING: (LETTER (<LETTER>|<DIGIT>)+ >
+  < STRING: ["_","0"-"9","a"-"z","A"-"Z"] (["_","0"-"9","a"-"z","A"-"Z"])* >
+}
+
+ASTStart Start() #Start : {}
+{
+  TestDefinitionList()
+  { return jjtThis; }
+}
+
+void TestDefinitionList() #TestDefinitionList : {}
+{
+  TestDefinition() ( ":" TestDefinition())*
+}
+
+void TestDefinition() #TestDefinition : {}
+{
+    ClassName() [ "[" MethodFilterList() "]" ] [ "@" ArgDataList()]
+}
+
+void ClassName() #ClassName :
+{
+    Token t;
+}
+{
+    t=<CLASS_IDENTIFIER>
+    {
+       // jjtThis.setName(t.image);
+    }
+}
+
+void MethodFilterList() #MethodFilterList : {}
+{
+    MethodFilter() ( "," MethodFilter())*
+}
+
+void MethodFilter() #MethodFilter :
+{
+   Token t;
+}
+{
+    t=<REG_EXP>
+    {
+        //jjtThis.setName(t.image);
+    }
+}
+
+void ArgDataList() #ArgDataList: {}
+{
+    "[" ArgDataSeries() "]" ("," "[" ArgDataSeries() "]")*
+}
+
+void ArgDataSeries() #ArgDataSeries : {}
+{
+    ArgData() (";" ArgData())*
+}
+
+void ArgData() #ArgData : {}
+{
+    Id() "=" ValSpecList()
+}
+
+void Id() #Id : {}
+{
+    <IDENTIFIER>
+}
+
+void ValSpecList() #ValSpecList : {}
+{
+    ValSpec() ("," ValSpec())*
+}
+
+void ValSpec() #ValSpec : {}
+{
+   String() | IntegerDef()
+}
+
+void IntegerDef() #IntegerDef : {}
+{
+    Integer() [".." Integer() [":" Integer()]]
+}
+
+void Integer() #Integer : {}
+{
+    <INTEGER_LITERAL>
+}
+
+void String() #String : {}
+{
+    <STRING> | <IDENTIFIER>
+}
+
