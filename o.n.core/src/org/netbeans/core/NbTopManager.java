@@ -50,7 +50,6 @@ import com.netbeans.developer.impl.presenters.MenuContext;
 import com.netbeans.developer.impl.presenters.ShortcutNode;
 import com.netbeans.developer.impl.presenters.ToolbarContext;
 */
-import com.netbeans.developer.impl.execution.CEventDispatchThread;
 import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.util.RequestProcessor;
 import com.netbeans.ide.util.UserCancelException;
