@@ -21,7 +21,7 @@ import java.io.*;
 import java.util.zip.ZipEntry;
 
 /** Create XML files corresponding to the set of known modules
- * without actually running the IDE. Suitable for virgin builds.
+ * without actually running the IDE.
  * @author Jesse Glick
  */
 public class CreateModuleXML extends Task {

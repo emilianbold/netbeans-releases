@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,23 +27,23 @@ public class GetL9eFiles extends Task {
 
   /** The name of file that contains the localizable file 
    * regular expressions.
-   * @default "l10n.list"
+   * <p>Default: <samp>l10n.list</samp>
    */
   protected String listFile = "l10n.list";
 
   /** The grandparent directory of the l10n.list files.
-   * @default ".."
+   * <p>Default: <samp>..</samp>
    */
   protected String baseDir = "..";
   protected File grandParent = null ;
   
   /** The target directory to copy all translatable files to.
-   * @default "src-todo"
+   * <p>Default: <samp>src-todo</samp>
    */
   protected File targetDir = new File( "src-todo") ;
 
   /** List of exclude patterns that override the listFiles.
-   * @default Ja localized files
+   * <p>Default: Ja localized files
    */
   protected String excludes = "**/ja/,**/*_ja.*" ;
 

@@ -27,7 +27,7 @@ import org.xml.sax.*;
  *
  * @author  Petr Kuzel
  */
-public final class XMLUtil extends Object {
+final class XMLUtil extends Object {
 
     public static Document parse (
             InputSource input, 

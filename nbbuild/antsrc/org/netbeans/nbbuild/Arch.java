@@ -13,6 +13,7 @@
 package org.netbeans.nbbuild;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
 import java.util.*;
 
 import org.apache.tools.ant.BuildException;
@@ -224,7 +225,10 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
 
         ElementToString convertor;
         try {
-            convertor = (ElementToString)Class.forName (getClass ().getName () + "$XercesE2S").newInstance ();  
+            Class c = Class.forName (getClass ().getName () + "$XercesE2S");
+            Constructor cc = c.getConstructor(new Class[] {});
+            cc.setAccessible(true);
+            convertor = (ElementToString)cc.newInstance(null);
             convertor.convertElement(null);
         } catch (Throwable ex) {
             log ("Cannot initialize xerces to print out DOM elements. Trying org.w3c.dom.Node.toString() which might work as well");
@@ -341,7 +345,7 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
         public String convertElement (Element e) throws BuildException;
     }
     
-    public static final class XercesE2S implements ElementToString {
+    private static final class XercesE2S implements ElementToString {
         
         public String convertElement(Element n) throws BuildException {
             XMLSerializer ser = new XMLSerializer();

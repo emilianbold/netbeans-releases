@@ -30,7 +30,7 @@ import org.xml.sax.InputSource;
  *
  * @author  akemr
  */
-public class UpdateTracking {
+class UpdateTracking {
     private static final String ELEMENT_MODULE = "module"; // NOI18N
     private static final String ATTR_CODENAME = "codename"; // NOI18N
     private static final String ELEMENT_VERSION = "module_version"; // NOI18N

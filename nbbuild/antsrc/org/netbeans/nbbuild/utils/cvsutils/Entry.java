@@ -50,7 +50,6 @@ public class Entry {
 	}
 
 	/**
-	* @param base - full directory path of file.  This will be used to prepend to the filenames found in order to create a full filename.
 	* @param line - line from the read in file. 
 	* @param separator - separator used in this file.  CVS generated files will use &quot;/&quot; 
 	*/

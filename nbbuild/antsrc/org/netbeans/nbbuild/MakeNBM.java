@@ -585,7 +585,7 @@ public class MakeNBM extends MatchingTask {
    
     // Reflection access from MakeListOfNBM:
     
-    public FileSet getFileSet() {
+    FileSet getFileSet() {
         FileSet fs = fileset;		//makes in apperance to excludes and includes files defined in XML
         fs.setDir (topdir);
 
@@ -596,7 +596,7 @@ public class MakeNBM extends MatchingTask {
         return fs;
     }
 
-    public Attributes getAttributes() throws IOException {
+    Attributes getAttributes() throws IOException {
         if (manifest != null) {
             InputStream is = new FileInputStream(manifest);
             try {

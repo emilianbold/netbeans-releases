@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,6 +23,9 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 /**
+ * Create an update tracking file automatically.
+ * Requires a build script target containing one (and only one)
+ * occurrence of the <code>&lt;makenbm&gt;</code> task.
  * @author  Michal Zlamal
  */
 public class MakeListOfNBM extends Task {
@@ -56,15 +59,19 @@ public class MakeListOfNBM extends Task {
                 
                 nbms[i].maybeConfigure();
                 
-                FileSet fs = null;
+                FileSet fs;
                 try {
-                    fs = (FileSet)nbms[i].getClass().getMethod("getFileSet",null).invoke(nbms[i],null);
+                    Method m = nbms[i].getClass().getDeclaredMethod("getFileSet",null);
+                    m.setAccessible(true);
+                    fs = (FileSet)m.invoke(nbms[i],null);
                 } catch (Exception ex) {
                     throw new BuildException( "Can't get fileset of NBM", ex, location );
                 }
                 Attributes attr;
                 try {
-                    attr = (Attributes)nbms[i].getClass().getMethod("getAttributes",null).invoke(nbms[i],null);
+                    Method m = nbms[i].getClass().getDeclaredMethod("getAttributes",null);
+                    m.setAccessible(true);
+                    attr = (Attributes)m.invoke(nbms[i],null);
                 } catch (Exception ex) {
                     throw new BuildException( "Can't get manifest attributes", ex, location );
                 }

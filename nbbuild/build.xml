@@ -50,6 +50,7 @@ ToDo:
     </javac>
     <jar jarfile="nbantext.jar" basedir="antsrc">
       <exclude name="**/*.java"/>
+      <exclude name="package-list"/>
     </jar>
   </target>
 
@@ -928,8 +929,6 @@ the ${netbeans.dest}/bin/ directory.
           description="Generate Javadoc for Ant extensions.">
     <mkdir dir="www/nbantext-javadoc"/>
     <tstamp/>
-    <!-- XXX if there is org.apache.tools.ant.* docs online, link to them -->
-    <!-- E.g.: http://barracuda.enhydra.org/webdocs/jakarta-ant-1.4/docs/manual/api/ -->
     <javadoc sourcepath="antsrc"
              destdir="www/nbantext-javadoc"
              packagenames="org.netbeans.nbbuild.*"
@@ -945,6 +944,7 @@ the ${netbeans.dest}/bin/ directory.
              bottom="Built on ${TODAY}"
     >
       <classpath refid="bootstrap-cp"/>
+      <link href="http://nagoya.apache.org/gump/javadoc/ant/build/javadocs" offline="true" packagelistloc="antsrc"/>
     </javadoc>
   </target>
 
