@@ -1,8 +1,14 @@
 /*
- * TargetServerTest.java
- * JUnit based test
+ *                 Sun Public License Notice
  *
- * Created on October 14, 2003, 12:36 PM
+ * The contents of thisfile are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.j2ee.deployment.impl;
@@ -12,10 +18,8 @@ import org.netbeans.junit.*;
 import java.util.*;
 import java.io.*;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
-import org.netbeans.modules.j2ee.deployment.execution.ServerExecutor;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import javax.enterprise.deploy.spi.*;
-import org.netbeans.modules.j2ee.deployment.execution.ServerExecutorTest;
 import org.netbeans.tests.j2eeserver.plugin.jsr88.DepManager;
 import org.netbeans.modules.j2ee.deployment.impl.ui.*;
 
@@ -40,15 +44,6 @@ public class TargetServerTest extends NbTestCase {
         return suite;
     }
 
-    ServerExecutorTest.DeployTarget dt;
-    ServerExecutorTest.DeployTarget getSuiteDeployTarget() {
-        if (dt != null)
-            return dt;
-        try {
-        dt = ServerExecutorTest.getDeploymentTarget(getSuiteTargetServer());
-        return dt;
-        } catch (Exception e) { throw new RuntimeException(e); }
-    }
     ServerString server;
     ServerString getSuiteTargetServer() {
         return getTargetServer(null);
@@ -62,7 +57,7 @@ public class TargetServerTest extends NbTestCase {
         if (name != null)
             url += "_"+name;
         try {
-            registry.addInstance(url, "user", "password");
+            registry.addInstance(url, "user", "password", "TestInstance");
         } catch (IOException ioe) { throw new RuntimeException(ioe); }
         
         server = new ServerString(registry.getServerInstance(url).getServerTarget("Target 1"));
@@ -70,6 +65,7 @@ public class TargetServerTest extends NbTestCase {
     }
         
     /** Test of processLastTargetModules method, of class org.netbeans.modules.j2ee.deployment.impl.TargetServer. */
+    /*
     public void testDistributeSuccess() {
         System.out.println("testDistributeSuccess");
         
@@ -94,6 +90,7 @@ public class TargetServerTest extends NbTestCase {
         ServerExecutor.instance().deploy(getSuiteDeployTarget());
         //FIXME: this.assertTrue(dm.hasRedeployed(getSuiteDeployTarget().getTargetModules()[0].toString()));
     }
+    */
     
     /*public void testNoChangesRedeploy() {
         System.out.println("testRedeployFailed");

@@ -1,8 +1,14 @@
 /*
- * ServerRegistryTest.java
- * NetBeans JUnit based test
- *
- * Created on September 22, 2003, 4:19 PM
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.j2ee.deployment.impl;
@@ -10,33 +16,23 @@ package org.netbeans.modules.j2ee.deployment.impl;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.*;
-import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.*;
+import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.api.*;
+import org.netbeans.modules.j2ee.deployment.impl.ui.RegistryNodeProvider;
 import org.openide.filesystems.*;
 import org.openide.*;
-import org.openide.util.Lookup;
 import java.util.*;
 import java.io.*;
 import java.util.logging.*;
-
 /**
  *
  * @author nn136682
  */
-public class ServerRegistryTest extends NbTestCase {
+public class ServerRegistryTest extends ServerRegistryTestBase {
     
-    public ServerRegistryTest(java.lang.String testName) {
+    public ServerRegistryTest(String testName) {
         super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(ServerRegistryTest.class);
-        suite.addTest(new ServerRegistryTest("testPluginLayerFile"));
-        suite.addTest(new ServerRegistryTest("testRemoveDefaultInstance"));
-        return suite;
     }
     
     /** 
@@ -47,9 +43,31 @@ public class ServerRegistryTest extends NbTestCase {
      */
     public void testPluginLayerFile() {
         ServerRegistry registry = ServerRegistry.getInstance();
+        System.out.println ("registry:" + registry);
         Server testPlugin = registry.getServer("Test");
         if (testPlugin == null || ! testPlugin.getShortName().equals("Test"))
             fail("Could not get testPlugin: "+testPlugin);
+        
+        DeploymentFactory factory = testPlugin.getDeploymentFactory();
+        assertNotNull ("No DeploymentFactory for test plugin", factory);
+        
+        RegistryNodeProvider nodeProvider = testPlugin.getNodeProvider();
+        assertNotNull ("No RegistryNodeProvider for test plugin", nodeProvider);
+        
+        OptionalDeploymentManagerFactory optionalFactory = testPlugin.getOptionalFactory();
+        assertNotNull ("No OptionalDeploymentManagerFactory for test plugin", optionalFactory);
+        
+        DeploymentManager manager = testPlugin.getDeploymentManager();
+        assertNotNull ("No DeploymentManager for test plugin", manager);
+        
+        IncrementalDeployment incrementalDepl = optionalFactory.getIncrementalDeployment(manager);
+        assertNotNull ("No IncrementalDeployment for test plugin", incrementalDepl);
+        
+        StartServer start = optionalFactory.getStartServer(manager);
+        assertNotNull ("No StartServer for test plugin", start);
+        
+        DeploymentPlanSplitter splitter = testPlugin.getDeploymentPlanSplitter();
+        assertNotNull ("No DeploymentPlanSplitter for test plugin", splitter);
         
         String url = "fooservice";
         ServerInstance instance = registry.getServerInstance(url);
@@ -66,17 +84,15 @@ public class ServerRegistryTest extends NbTestCase {
         ServerRegistry registry = ServerRegistry.getInstance();
         String url1 = "fooservice:instance1";
         String url2 = "fooservice:instance2";
-        registry.addInstance(url1, "user", "password");
-        registry.addInstance(url2, "user", "password");
+        registry.addInstance(url1, "user", "password", "TestInstance1");
+        registry.addInstance(url2, "user", "password", "TestInstance2");
         ServerInstance instance1 = registry.getServerInstance(url1);
-        registry.setDefaultInstance(new ServerString(instance1.getTargets()[0]));
+        registry.setDefaultInstance(new ServerString(instance1));
         
         ServerInstance defaultInstance = registry.getDefaultInstance().getServerInstance();
         
-        if (defaultInstance == null || ! instance1.equals(defaultInstance)) {
-            System.out.println("testRemoveDefaultInstance: check1 failed!");
-            fail("Default instance retrieved not same as the one used in setDefaultInstance");
-        }
+//        assertNotNull ("no default instance", defaultInstance);
+//        assertEquals("Default instance retrieved not same as the one used in setDefaultInstance", instance1, defaultInstance);
         
         try {
             Thread.sleep(2000);

@@ -1,0 +1,16 @@
+
+
+<netbeans-deployment>
+  <!--name-mapper>org.netbeans.tests.j2eeserver.plugin.ManagementBridge</name-mapper> -->
+  <start-server>org.netbeans.tests.j2eeserver.plugin.ServerLifecycle</start-server>
+  <incremental-deploy>org.netbeans.tests.j2eeserver.plugin.IncrementalDeploySupport</incremental-deploy>
+  <file-deployment-layout>org.netbeans.tests.j2eeserver.plugin.IncrementalDeploySupport</file-deployment-layout>
+  <module-url-resolver>org.netbeans.tests.j2eeserver.plugin.IncrementalDeploySupport</module-url-resolver>
+  <name-mapper>org.netbeans.tests.j2eeserver.plugin.ManagementBridge</name-mapper>
+  <web-context-root>
+    <xpath>/</xpath>
+    <prop-name>securityDomain</prop-name>
+  </web-context-root>
+  
+</netbeans-deployment>
+

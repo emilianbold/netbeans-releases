@@ -1,33 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
-<mconfig name="unit Test Type Config">
+<!--
 
-    <!-- testbag with all tests running in code mode (i.e. in standard JVM)
-         use ant runtests -Dxtest.attribs=stable,code to run this testbag  -->
-	<testbag compiler="default-compiler" executor="ide" name="ide tests" testattribs="ide">
- 		<testset dir="unit/src">
-			<patternset>
-				<include name="**/*.class"/>
-				<exclude name="**/data/**"/>
- 			</patternset>
- 		</testset>
-	</testbag>
+                Sun Public License Notice
 
-    <!-- code excecutor - use this one if you plan to run your tests in standard 
-                          JVM. You can also write your own executor, which will 
-                          then call this one. It is handy when some servers (e.g. rmi registry)
-                          have to be started before tests are run and stopped after
-                          the run. -->
-	<executor antfile="build-unit.xml" name="code" target="runcodetest"/> 
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<mconfig name="ant">
     
-    <!-- ide executor - use this one if you plan to run your tests inside IDE (internally).
-                        Similarly as with code executor, you can create your own to 
-                        prepare some neccessary stuff before running tests. -->
-	<executor antfile="build-unit.xml" name="ide" target="runidetest"/> 
-
-	<compiler antfile="build-unit.xml" default="true" name="default-compiler" target="default-compiler"/>
-
-    <!-- standard results processor - currently there is only one results processor in XTest -->    
-	<resultsprocessor antfile="build.xml" default="true" name="default-results-processor" target="test_report"/> 
-
+    <testbag testattribs="stable" executor="unit-executor" name="j2eeserver">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="**/*Test.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+  <!--  
+    <testbag testattribs="commit" executor="unit-executor" name="j2eeserver">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="**/*Test.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+   --> 
+    <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
+    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
 </mconfig>

@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+
+  <folder name="J2EE">
+  
+    <folder name="DeploymentPlugins">
+        <folder name="Test">
+            <file name="Descriptor" url="nbdep.xml">
+              <attr name="needsFindServerUI" stringvalue="true"/> <!-- default is false -->
+            </file>
+            <file name="Factory.instance">
+                <attr name="instanceClass" 
+                      stringvalue="org.netbeans.tests.j2eeserver.plugin.jsr88.DepFactory"/>
+            </file>
+            <file name="TestRegistryNodeFactory.instance">
+              <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.registry.NodeFactory"/> 
+              <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.RegistryNodeFactory"/>
+            </file>
+            <file name="OptionalFactory.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.ManagerWrapperFactory"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/>
+            </file>
+            <file name="DeploymentPlanSplitter.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.DeploymentPlanSplitterImpl"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter"/>
+            </file>
+            <folder name="DeploymentFileNames">
+              <folder name="WAR">
+                <file name="META-INF\context.xml"/>
+              </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="InstalledServers">
+        <file name="FooServerUrl">
+            <attr name="url" stringvalue="fooservice"/>
+            <attr name="username" stringvalue="Adminuser"/>
+            <attr name="password" stringvalue="Adminpasswd"/> <!-- PENDING encrypt this? -->
+        </file>
+    </folder>
+    
+  </folder>
+
+</filesystem>
