@@ -103,14 +103,17 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             long size = fo.getSize();
             
             try {
-                InputStream is = fo.getInputStream();
                 long read = 0;
-                for (;;) {
-                    int len = is.read (buffer);
-                    if (len == -1) break;
-                    read += len;
+                InputStream is = fo.getInputStream();
+                try {
+                    for (;;) {
+                        int len = is.read (buffer);
+                        if (len == -1) break;
+                        read += len;
+                    }
+                } finally {
+                    is.close ();
                 }
-                is.close ();
                 
                 if (size != -1) {
                     assertEquals ("The amount of data in stream is the same as the length", size, read);
