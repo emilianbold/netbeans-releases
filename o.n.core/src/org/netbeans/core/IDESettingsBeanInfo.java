@@ -54,6 +54,9 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
                                                "getUIMode", "setUIMode"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_SHOW_TOOLTIPS_IN_IDE, IDESettings.class,
                                                "getShowToolTipsInIDE", "setShowToolTipsInIDE"), // NOI18N
+                       new PropertyDescriptor (IDESettings.PROP_IGNORED_FILES, IDESettings.class,
+                                               "getIgnoredFiles", "setIgnoredFiles"), // NOI18N
+                       
                    };
 
             desc[0].setDisplayName (NbBundle.getMessage (Main.class, "PROP_CONFIRM_DELETE"));
@@ -85,6 +88,10 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
             desc[9].setDisplayName (NbBundle.getMessage (Main.class, "PROP_SHOW_TOOLTIPS_IN_IDE"));
             desc[9].setShortDescription (NbBundle.getMessage (Main.class, "HINT_SHOW_TOOLTIPS_IN_IDE"));
+            
+            desc[10].setDisplayName (NbBundle.getMessage (Main.class, "PROP_ignoredFiles"));
+            desc[10].setShortDescription (NbBundle.getMessage (Main.class,"HINT_ignoredFiles"));            
+            
 
             return desc;
         } catch (IntrospectionException ex) {

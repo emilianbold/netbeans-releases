@@ -23,6 +23,8 @@ import java.net.URL;
 import java.net.InetAddress;
 import java.util.Hashtable;
 import java.util.Properties;
+import java.util.regex.PatternSyntaxException;
+import java.util.regex.Pattern;
 
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
@@ -67,6 +69,15 @@ public class IDESettings extends SystemOption {
     /** UI Mode */
     public static final String PROP_UIMODE = "UIMode"; // NOI18N
 
+    /** files that should be ignored 
+     * 
+     * DO NOT CHANGE THIS PROPERTY NAME without checking that
+     * this property name was changed also in GlobalVisibilityQuery
+     * in module org.netbeans.modules.masterfs.
+     *   
+     */
+    public static final String PROP_IGNORED_FILES = "IgnoredFiles"; // NOI18N
+    
     /** proxy host VM property key */
     public static final String KEY_PROXY_HOST = "http.proxyHost"; // NOI18N
     /** proxy port VM property key */
@@ -95,6 +106,11 @@ public class IDESettings extends SystemOption {
     private static String proxyPort = System.getProperty(KEY_PROXY_PORT, "");
     
     private static int uiMode = 2; // MDI default
+    
+    /**
+     * GlobalVisibilityQuery in module org.netbeans.modules.masterfs reads this property (hidden dependency).   
+     */ 
+    private static String ignoredFiles = "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store))$|^\\.[#_]|~$"; //NOI18N    
 
     /** Getter for properties file with proxy properties. Installer provides
      * this file.*/
@@ -333,6 +349,7 @@ public class IDESettings extends SystemOption {
                     // check if it is not set to be hidden
                     FileObject fo = Repository.getDefault ()
                         .getDefaultFileSystem ().findResource ("Services/Browsers");   // NOI18N
+                    
                     DataFolder folder = DataFolder.findFolder (fo);
                     DataObject [] dobjs = folder.getChildren ();
                     for (int i = 0; i<dobjs.length; i++) {
@@ -488,4 +505,20 @@ public class IDESettings extends SystemOption {
         return nonProxy;
     }
 
+    public String getIgnoredFiles() {
+        return ignoredFiles;
+    }
+
+    public void setIgnoredFiles(String ignoredFiles) throws IllegalArgumentException {
+        if (!this.ignoredFiles.equals(ignoredFiles)) {
+            try {
+                String oldIgnoredfiles = this.ignoredFiles;
+                Pattern.compile(ignoredFiles);
+                IDESettings.ignoredFiles = ignoredFiles;
+                firePropertyChange (PROP_IGNORED_FILES, oldIgnoredfiles, ignoredFiles);
+            } catch (PatternSyntaxException e) {
+                throw new IllegalArgumentException(e.getLocalizedMessage());
+            }
+        }
+    }
 }

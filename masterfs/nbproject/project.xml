@@ -27,6 +27,14 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>3.26</specification-version>
                     </run-dependency>
                 </dependency>
+               <dependency>
+                    <code-name-base>org.netbeans.modules.queries</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.masterfs.providers</package>
