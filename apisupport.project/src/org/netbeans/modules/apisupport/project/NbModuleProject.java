@@ -55,16 +55,18 @@ final class NbModuleProject implements Project {
     
     private static final Image NB_PROJECT_ICON = Utilities.loadImage( "org/netbeans/modules/apisupport/project/resources/module.gif" ); // NOI18N
     
-    private static final URL BUILD_XSL = NbModuleProject.class.getResource("resources/build.xsl");
-    private static final URL BUILD_IMPL_XSL = NbModuleProject.class.getResource("resources/build-impl.xsl");
+    private static final String BUILD_XSL = "nbbuild/templates/build.xsl";
+    private static final String BUILD_IMPL_XSL = "nbbuild/templates/build-impl.xsl";
 
     private final AntProjectHelper helper;
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
     private String displayName;
+    private final ModuleList moduleList;
     
     NbModuleProject(AntProjectHelper helper) {
         this.helper = helper;
+        moduleList = new ModuleList(this);
         genFilesHelper = new GeneratedFilesHelper(helper);
         FileBuiltQueryImplementation fileBuilt;
         if (supportsUnitTests()) {
@@ -276,6 +278,28 @@ final class NbModuleProject implements Project {
         return helper.resolveFileObject(moduleJavadoc);
     }
     
+    FileObject getNbroot() {
+        String nbrootRel = evaluate("nbroot"); // NOI18N
+        FileObject nbroot = getHelper().resolveFileObject(nbrootRel);
+        if (nbroot == null) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - cannot find nbroot for " + getName());
+        }
+        return nbroot;
+    }
+    
+    FileObject getNbrootFile(String path) {
+        FileObject nbroot = getNbroot();
+        if (nbroot != null) {
+            return nbroot.getFileObject(path);
+        } else {
+            return null;
+        }
+    }
+    
+    ModuleList getModuleList() {
+        return moduleList;
+    }
+    
     boolean supportsJavadoc() {
         return supportsFeature("javadoc"); // NOI18N
     }
@@ -292,15 +316,25 @@ final class NbModuleProject implements Project {
         return length == 1;
     }
     
+    private void refreshBuildScripts(boolean p) throws IOException {
+        FileObject buildImplXsl = getNbrootFile(BUILD_IMPL_XSL);
+        if (buildImplXsl != null) {
+            genFilesHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                buildImplXsl.getURL(), p);
+        }
+        FileObject buildXsl = getNbrootFile(BUILD_XSL);
+        if (buildXsl != null) {
+            genFilesHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_XML_PATH,
+                buildXsl.getURL(), p);
+        }
+    }
+    
     private final class SavedHook extends ProjectXmlSavedHook {
         
         SavedHook() {}
         
         protected void projectXmlSaved() throws IOException {
-            genFilesHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                BUILD_IMPL_XSL, false);
-            genFilesHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_XML_PATH,
-                BUILD_XSL, false);
+            refreshBuildScripts(false);
         }
         
     }
@@ -311,10 +345,7 @@ final class NbModuleProject implements Project {
         
         protected void projectOpened() {
             try {
-                genFilesHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                    BUILD_IMPL_XSL, true);
-                genFilesHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_XML_PATH,
-                    BUILD_XSL, true);
+                refreshBuildScripts(true);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
