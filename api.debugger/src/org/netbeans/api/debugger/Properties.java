@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
@@ -345,8 +346,11 @@ public abstract class Properties {
         private void load () {
             BufferedReader br = null;
             try {
-                FileObject r = Repository.getDefault ().getDefaultFileSystem ().
-                    findResource ("Services");
+                FileSystem fs = Repository.getDefault ().
+                    getDefaultFileSystem ();
+                FileObject r = fs.findResource ("Services");
+                if (r == null)
+                    r = fs.getRoot ();
                 FileObject fo = r.getFileObject 
                     ("org-netbeans-modules-debugger-Settings", "properties");
                 if (fo == null)
