@@ -187,7 +187,7 @@ public class CreateTestAction extends CookieAction {
 
                 FileObject packageRoot = cp.findOwnerRoot(fo);
                 String resource = cp.getResourceName(fo, '/', false);
-                
+                                               
                 URL testRoot = UnitTestForSourceQuery.findUnitTest(packageRoot);                              
                 if (testRoot == null) {
                     testClassPath = cp;
@@ -212,7 +212,7 @@ public class CreateTestAction extends CookieAction {
                 }
 
                 try {
-                    results.combine(createTests(testClassPath, fo, doTestTempl, doSuiteTempl, null, progress));
+                    results.combine(createTests(nodes[nodeIdx], testClassPath, doTestTempl, doSuiteTempl, null, progress));
                 } catch (CreationError e) {
                     ErrorManager.getDefault().notify(e);
                 }
@@ -341,48 +341,44 @@ public class CreateTestAction extends CookieAction {
         }
     }
     
-    private CreationResults createTests(ClassPath testClassPath, FileObject foSource, 
+    private CreationResults createTests(Node node, ClassPath testClassPath, 
             DataObject doTestT, DataObject doSuiteT, LinkedList parentSuite,
             ProgressIndicator progress) throws CreationError {
 
-                
-        if (foSource.isFolder()) {
-            // create test for all files (not folders) in the folder
-            // don't recurse           
-            FileObject  childs[] = foSource.getChildren();
-            LinkedList  mySuite = new LinkedList();
-            progress.setMessage(getScanningMsg(foSource.getName()), false);
+            FileObject foSource = TestUtil.getFileObjectFromNode(node);                
+            if (foSource.isFolder()) {
+                // create test for all direct subnodes of the folder
+                Node  childs[] = node.getChildren().getNodes();
+                CreationResults results = new CreationResults();                            
 
-            CreationResults results = new CreationResults();
+                LinkedList  mySuite = new LinkedList(); // List<String>
+                progress.setMessage(getScanningMsg(foSource.getName()), false);
 
-            for( int i = 0; i < childs.length; i++) {
+                for (int ch = 0; ch < childs.length;ch++) {
 
-                if (progress.isCanceled()) {
-                    results.setAbborted();
-                    break;
+                    if (progress.isCanceled()) {
+                        results.setAbborted();
+                        break;
+                    }
+
+                    results.combine(createTests(childs[ch], testClassPath, doTestT, doSuiteT, mySuite, progress));                    
+                    if (results.isAbborted())  break;
                 }
 
-                if (childs[i].isFolder() || (childs[i].isData() && !("java".equals(childs[i].getExt())))) {
-                    continue;
+                // if everything went ok, and the option is enabled,
+                // create a suite for the folder . 
+                if (!results.isAbborted() && ((0 < mySuite.size())&(JUnitSettings.getDefault().isGenerateSuiteClasses()))) {
+                    createSuiteTest(testClassPath, DataFolder.findFolder(foSource), (String) null, mySuite, doSuiteT, parentSuite, progress);
                 }
 
-                results.combine(createTests(testClassPath, childs[i], doTestT, doSuiteT, mySuite, progress));
-                if (results.isAbborted()) {
-                    break;
-                }
-
-            }
-            
-            // if everything went ok, and the option is enabled,
-            // create a suite for the folder . 
-            if (!results.isAbborted() && ((0 < mySuite.size())&(JUnitSettings.getDefault().isGenerateSuiteClasses()))) {
-                createSuiteTest(testClassPath, DataFolder.findFolder(foSource), (String) null, mySuite, doSuiteT, parentSuite, progress);
-            }
-
-            return results;
-
+                return results;
         } else {
-            return createSingleTest(testClassPath, foSource, doTestT, doSuiteT, parentSuite, progress, true);
+            // is not folder, create test for the fileObject of the node
+            if (foSource.isData() && !("java".equals(foSource.getExt()))) 
+                return CreationResults.EMPTY;
+            else 
+                return createSingleTest(testClassPath, foSource, doTestT, doSuiteT, parentSuite, progress, true);
+
         }
     }
     
@@ -534,6 +530,7 @@ public class CreateTestAction extends CookieAction {
      * classes (as JavaClasses) for which no test was created.
      */
     public static class CreationResults {
+        public static final CreationResults EMPTY = new CreationResults();
         
         Set created; // Set< createdTest : DataObject >
         Set skipped; // Set< sourceClass : JavaClass >
