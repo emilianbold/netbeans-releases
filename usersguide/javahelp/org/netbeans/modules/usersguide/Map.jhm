@@ -170,7 +170,7 @@
 <mapID target="org.netbeans.modules.refactoring.ui.MoveClassUI" url="refactor/moveClass.html" /> <!--Move Single Class-->
 <mapID target="org.netbeans.modules.refactoring.ui.EncapsulateFieldUI" url="refactor/encapsulateField.html" /> 
 <mapID target="org.netbeans.modules.refactoring.ui.ChangeParametersUI" url="refactor/changeParameters.html" /> <!--Change Method Parameters-->
-<mapID target="org.netbeans.modules.refactoring.ui.RefactoringPanelContainer" url="tbd.html" /> <!--Preview Refactoring window-->
+<mapID target="org.netbeans.modules.refactoring.ui.RefactoringPanelContainer" url="refactor/previewWindow.html" /> <!--Preview Refactoring window-->
 
 <mapID target="xml_nodes"   url="xml/xmlnodes.html" />
 <mapID target="xml_createxml"   url="xml/createxml.html" />
