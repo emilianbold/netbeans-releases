@@ -672,6 +672,9 @@
 <mapID target="ant.wizard.shortcut" url="ant/shortcut.html" />
 <mapID target="ant.wizard.properties" url="ant/ant-props.html" />
 <mapID target="org.apache.tools.ant.module.run.NBInputHandler" url="ant/input_handler.html" />
+<mapID target="org.apache.tools.ant.module.nodes.AntProjectNode.Properties" url="ant/ident.html#projprops" />
+<mapID target="org.apache.tools.ant.module.nodes.AntProjectNode.Execution" url="ant/ident.html#projprops" />
+<mapID target="org.apache.tools.ant.module.nodes.AntTargetNode.Properties" url="ant/ident.html#targetprops" />
 
 <mapID target="org.netbeans.core.services.CompilerTypes" url="compile/options_jump.html" />
 <mapID target="org.netbeans.core.services.ExecutorTypes" url="run/executor_options.html" />
