@@ -24,7 +24,6 @@ import org.openide.nodes.NodeAcceptor;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataFilter;
 import org.openide.explorer.propertysheet.*;
-import org.openide.util.HelpCtx;
 
 /**
  * Property editor for org.openide.loaders.DataObject.
@@ -55,9 +54,7 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
     private static final String PROPERTY_INSET = "inset"; // NOI18N
     /** Name of the custom property that can be passed in PropertyEnv. */
     private static final String PROPERTY_DESCRIPTION = "description"; // NOI18N
-    /** Name of the custom property that can be passed in PropertyEnv. */
-    private static final String PROPERTY_HELPID = "helpID"; // NOI18N
-
+    
     /** This gets lazy initialized in getDataObjectPanel*/
     private DataObjectPanel customEditor;
    
@@ -83,9 +80,6 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
     private Integer insets;
     /** A property stored between calls to atachEnv and getCustomEditor() */
     private String description;
-    /** A property stored between calls to atachEnv and getCustomEditor() */
-    private String helpID;
-
     
     private PropertyChangeSupport supp = new PropertyChangeSupport(this);
     
@@ -140,10 +134,6 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
         newObj = env.getFeatureDescriptor().getValue(PROPERTY_DESCRIPTION);
         if (newObj instanceof String) {
             description = (String)newObj;
-        }
-        newObj = env.getFeatureDescriptor().getValue(PROPERTY_HELPID);
-        if (newObj instanceof String) {
-            helpID = (String)newObj;
         }
         // fix of 19318
         env.getFeatureDescriptor().setValue( "canEditAsText", Boolean.FALSE );
@@ -209,9 +199,6 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
         }
         if (description != null) {
             customEditor.setDescription(description);
-        }
-        if (helpID != null) {
-            HelpCtx.setHelpIDString(customEditor, helpID);
         }
         return customEditor;
     }
