@@ -70,7 +70,7 @@ public class VariablesTableModel implements TableModel, Constants {
                 JPDAWatch w = (JPDAWatch) row;
                 String e = w.getExceptionDescription ();
                 if (e != null)
-                    return ">" + e + "<";
+                    return "<html>&gt;" + e + "&lt;</html>";
                 return w.getValue ();
             } else 
             if (row instanceof Variable)
