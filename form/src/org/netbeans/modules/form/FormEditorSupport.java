@@ -724,8 +724,8 @@ public class FormEditorSupport extends JavaEditor implements EditCookie
     // -----------
     // closing/reloading
 
-    protected void notifyClose() {
-        super.notifyClose();
+    protected void notifyClosed() {
+        super.notifyClosed();
         if (formLoaded)
             closeForm();
     }
