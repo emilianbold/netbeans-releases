@@ -14,7 +14,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="module-harness" default="forbidden">
 
-    <property name="xtest.ide.winsys" value="mdi"/>
     <!-- location for workdir for the harness -->
     <property name="xtest.workdir" location="work"/>
     <!-- location for results from the harness -->
@@ -96,7 +95,9 @@ Microsystems, Inc. All Rights Reserved.
 
         <nbpatternset useid="xtest.pattern">
             <patternset includes="${xtest.includes}" excludes="${xtest.excludes}">
+                <!--
                 <exclude name="**/*Suite.class"/>
+                -->
                 <exclude name="**/*$$*.class"/>
                 <exclude name="**/data/**"/>
                 <exclude name="**/hidden/**"/>
@@ -241,6 +242,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.jvmargs" value=""/>
         <property name="junit.properties.file" value=""/>
         <property name="xtest.reuse.ide" value="false"/>
+        <property name="xtest.ide.winsys" value="mdi"/>
         
         <condition property="xtest.reuse.ide.false">
            <equals arg1="${xtest.reuse.ide}" arg2="false"/>
