@@ -163,6 +163,7 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="jars" depends="libs,compile,13javac-workaround,vers-prep" description="Create JAR files.">
     <mkdir dir="netbeans/lib"/>
+    <filter token="Class-Path" value="Class-Path"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <locjar jarfile="netbeans/lib/openide.jar"
             manifest="manifest-subst.mf"
@@ -192,9 +193,11 @@ Microsystems, Inc. All Rights Reserved.
     <!-- are trying to make their code obsolete! -->
     <mkdir dir="netbeans/lib/patches"/>
     <!-- Use the same manifest to ensure that packages are defined correctly. -->
+    <filter token="Class-Path" value="X-Commented-Out-Class-Path"/>
+    <copy file="manifest.mf" tofile="manifest-compat-subst.mf" filtering="on"/>
     <jar jarfile="netbeans/lib/patches/openide-compat.jar"
          basedir="compatkit-work"
-         manifest="manifest-subst.mf"
+         manifest="manifest-compat-subst.mf"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
   </target>
