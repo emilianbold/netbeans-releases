@@ -24,6 +24,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.JumpList;
+import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.openide.TopManager;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.EditorCookie;
@@ -62,7 +63,7 @@ public class NbEditorUtilities {
     throws BadLocationException {
         int[] idBlk = Utilities.getIdentifierBlock(doc, offset);
         if (idBlk != null) {
-            int[] funBlk = doc.getSyntaxSupport().getFunctionBlock(idBlk);
+            int[] funBlk = ((ExtSyntaxSupport)doc.getSyntaxSupport()).getFunctionBlock(idBlk);
             if (funBlk != null) {
                 return new int[] { idBlk[0], idBlk[1], funBlk[1] };
             }
@@ -154,6 +155,18 @@ public class NbEditorUtilities {
         }
 
         return tm;
+    }
+
+    /** Merge two string arrays into one. */
+    public static String[] mergeStringArrays(String[] a1, String[] a2) {
+        String[] ret = new String[a1.length + a2.length];
+        for (int i = 0; i < a1.length; i++) {
+            ret[i] = a1[i];
+        }
+        for (int i = 0; i < a2.length; i++) {
+            ret[a1.length + i] = a2[i];
+        }
+        return ret;
     }
 
 }
