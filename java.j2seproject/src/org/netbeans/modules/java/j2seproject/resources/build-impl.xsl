@@ -165,49 +165,45 @@ Microsystems, Inc. All Rights Reserved.
         <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
         <mkdir dir="${{dist.jar.dir}}"/>
         <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
-            <xsl:choose>
-                <xsl:when test="/p:project/p:configuration/j2se:data/j2se:use-manifest">
-                    <xsl:attribute name="manifest">${manifest.file}</xsl:attribute>
-                </xsl:when>
-                <xsl:otherwise>
-                    <!-- Just make a simple manifest. -->
-                    <manifest>
-                        <!-- Ideally would be conditional, depending on whether there were a main class. -->
-                        <attribute name="Main-Class" value="${{main.class}}"/>
-                    </manifest>
-                </xsl:otherwise>
-            </xsl:choose>
+            <xsl:if test="/p:project/p:configuration/j2se:data/j2se:use-manifest">
+                <!-- Assume this is a J2SE application. -->
+                <!-- Any Main-Class set in the manifest takes precedence. -->
+                <xsl:attribute name="manifest">${manifest.file}</xsl:attribute>
+                <manifest>
+                    <attribute name="Main-Class" value="${{main.class}}"/>
+                </manifest>
+            </xsl:if>
             <fileset dir="${{build.classes.dir}}"/>
         </jar>
     </target>
 
     <target name="run" depends="init,compile">
         <xsl:choose>
-        <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-        <java fork="true" classname="${{main.class}}" jvm="${{platform.java}}">
-        <xsl:call-template name="run-java-body"/>
-        </java>
-        </xsl:when>
-        <xsl:otherwise>
-        <java fork="true" classname="${{main.class}}">
-        <xsl:call-template name="run-java-body"/>
-        </java>
-        </xsl:otherwise>
+            <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
+                <java fork="true" classname="${{main.class}}" jvm="${{platform.java}}">
+                    <xsl:call-template name="run-java-body"/>
+                </java>
+            </xsl:when>
+            <xsl:otherwise>
+                <java fork="true" classname="${{main.class}}">
+                    <xsl:call-template name="run-java-body"/>
+                </java>
+            </xsl:otherwise>
         </xsl:choose>
     </target>
 
     <target name="do-debug" depends="init">
         <xsl:choose>
-        <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-        <java fork="true" classname="${{main.class}}" jvm="${{platform.java}}">
-        <xsl:call-template name="debug-java-body"/>
-        </java>
-        </xsl:when>
-        <xsl:otherwise>
-        <java fork="true" classname="${{main.class}}">
-        <xsl:call-template name="debug-java-body"/>
-        </java>
-        </xsl:otherwise>
+            <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
+                <java fork="true" classname="${{main.class}}" jvm="${{platform.java}}">
+                    <xsl:call-template name="debug-java-body"/>
+                </java>
+            </xsl:when>
+            <xsl:otherwise>
+                <java fork="true" classname="${{main.class}}">
+                    <xsl:call-template name="debug-java-body"/>
+                </java>
+            </xsl:otherwise>
         </xsl:choose>
     </target>
     
@@ -277,7 +273,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="test-build" depends="init,compile" if="have.tests">
         <mkdir dir="${{build.test.classes.dir}}"/>
-        <javac srcdir="test" destdir="${{build.test.classes.dir}}"
+        <javac srcdir="${{test.src.dir}}" destdir="${{build.test.classes.dir}}"
                debug="true" deprecation="${{javac.deprecation}}"
                source="${{javac.source}}" includeantruntime="false">
             <classpath>
@@ -299,16 +295,16 @@ Microsystems, Inc. All Rights Reserved.
     <target name="test" depends="init,test-build" if="have.tests">
         <mkdir dir="${{build.test.results.dir}}"/>
         <xsl:choose>
-        <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" jvm="${{platform.java}}">
-        <xsl:call-template name="test-junit-body"/>
-        </junit>
-        </xsl:when>
-        <xsl:otherwise>
-        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
-        <xsl:call-template name="test-junit-body"/>
-        </junit>
-        </xsl:otherwise>
+            <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
+                <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" jvm="${{platform.java}}">
+                    <xsl:call-template name="test-junit-body"/>
+                </junit>
+            </xsl:when>
+            <xsl:otherwise>
+                <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
+                    <xsl:call-template name="test-junit-body"/>
+                </junit>
+            </xsl:otherwise>
         </xsl:choose>
         <!-- TBD
         <junitreport todir="${{build.test.results.dir}}">
