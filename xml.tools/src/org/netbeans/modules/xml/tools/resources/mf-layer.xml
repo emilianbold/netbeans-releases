@@ -162,7 +162,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder> <!-- Mount -->
 
     <folder name="Shortcuts">
-        <file name="F6.instance">
+        <file name="A-F6.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.modules.xsl.actions.TransformAction"/>
 	</file>
     </folder> <!-- Shortcuts -->
