@@ -16,6 +16,7 @@ package org.netbeans.modules.debugger.jpda.breakpoints;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Field;
 import com.sun.jdi.Location;
+import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.ClassNotPreparedException;
@@ -185,6 +186,10 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         } catch (AbsentInformationException ex) {
             // we are not able to create breakpoint in this situation. 
             // should we write some message?!?
+        } catch (ObjectCollectedException ex) {
+            // no problem, breakpoint will be created next time the class 
+            // is loaded
+            // should not occurre. see [51034]
         } catch (ClassNotPreparedException ex) {
             // should not occurre. VirtualMachine.allClasses () returns prepared
             // classes only. But...
