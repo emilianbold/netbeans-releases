@@ -357,7 +357,10 @@ public class AddDriverDialog extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
     public String getName() {
-        return nameTextField.getText();
+        if (nameTextField != null)
+            return nameTextField.getText();
+        else
+            return super.getName();
     }
     
     public List getDriverLocation() {
