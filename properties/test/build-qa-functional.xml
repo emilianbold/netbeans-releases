@@ -139,20 +139,20 @@ Microsystems, Inc. All Rights Reserved.
     <target name="jarcompile-classpath" depends="which-classpath" if="jarcode.classpath">
         <echo message="Using jars classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against jars -->
-	<path id="compiletest.classpath">        
-	    <!-- If you need e.g. openide.jar, write this:
+	<path id="compiletest.classpath">
+	    <!-- If you need e.g. openide.jar, write this:-->
 	           <pathelement location="../netbeans/lib/openide.jar"/>
- 	      -->
+	     <!-- -->
 	</path>
     </target>
-        
+
     <target name="srccompile-classpath" depends="which-classpath" if="srccode.classpath">
         <echo message="Using srcs classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against sources -->
-    	<path id="compiletest.classpath">        
-    	    <!-- If you need e.g. openide.jar, write this:
+    	<path id="compiletest.classpath">
+    	    <!-- If you need e.g. openide.jar, write this: -->
 	           <pathelement location="../netbeans/lib/openide.jar"/>
-	         If you need e.g. sources of your tested module, write this:
+	     <!--    If you need e.g. sources of your tested module, write this:
 	           <pathelement location="../src"/>
  	      -->
 	     <!--pathelement location="../src"/-->
@@ -163,9 +163,9 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Using IDE classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against installed IDE -->
     	<path id="compiletest.classpath">
-    	    <!-- If you need e.g. openide.jar, write this:
+    	    <!-- If you need e.g. openide.jar, write this:-->
 	           <pathelement location="${netbeans.home}/lib/openide.jar"/>
-	         If you need e.g. your tested module, write this:
+	         <!--If you need e.g. your tested module, write this:
 	           <pathelement location="${netbeans.home}/modules/somemodule.jar"/>
  	      -->
             <!--pathelement location="${netbeans.home}/modules/i18n.jar"/-->
