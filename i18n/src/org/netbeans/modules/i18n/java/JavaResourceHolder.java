@@ -118,7 +118,7 @@ public class JavaResourceHolder extends ResourceHolder {
             return;
 
         String keyValue     = UtilConvert.charsToUnicodes(UtilConvert.escapeJavaSpecialChars(UtilConvert.escapePropertiesSpecialChars(key.toString())));
-        String valueValue   = value == null ? null : UtilConvert.charsToUnicodes(UtilConvert.escapeJavaSpecialChars(UtilConvert.escapeLineContinuationChar(value.toString())));
+        String valueValue   = value == null ? null : UtilConvert.charsToUnicodes(UtilConvert.escapeJavaSpecialChars(UtilConvert.escapeLineContinuationChar(UtilConvert.escapeOutsideSpaces(value.toString()))));
         String commentValue = comment == null ? null : UtilConvert.charsToUnicodes(comment);
         
         try {
