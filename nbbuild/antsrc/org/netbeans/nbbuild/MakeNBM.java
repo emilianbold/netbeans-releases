@@ -442,7 +442,7 @@ public class MakeNBM extends Task {
                 PrintWriter ps = new PrintWriter(new OutputStreamWriter(infoStream, "UTF-8")); //NOI18N
                 // Begin writing XML.
                 ps.println ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); //NOI18N
-                ps.println("<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Autoupdate Module Info 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-2_0.dtd\">"); //NOI18N
+                ps.println("<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Autoupdate Module Info 2.2//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-2_2.dtd\">"); //NOI18N
                 String codenamebase = attr.getValue ("OpenIDE-Module"); //NOI18N
                 if (codenamebase == null)
                     throw new BuildException ("invalid manifest, does not contain OpenIDE-Module", location);
@@ -469,7 +469,7 @@ public class MakeNBM extends Task {
                     ps.println ("        needsrestart=\"" + xmlEscape(needsrestart) + "\""); //NOI18N
                 if (moduleauthor != null)
                     ps.println ("        moduleauthor=\"" + xmlEscape(moduleauthor) + "\""); //NOI18N
-                if (releasedate == null) {
+                if (releasedate == null || "".equals (releasedate)) {
                     // if date is null, set today
                     releasedate = DATE_FORMAT.format (new Date (System.currentTimeMillis ()));
                 }

@@ -178,7 +178,7 @@ public class MakeUpdateDesc extends MatchingTask {
 		format.setTimeZone (java.util.TimeZone.getTimeZone ("GMT")); //NOI18N
 		String date = format.format (new java.util.Date ());
                 
-                if ( entityincludes.size() > 0 ) {
+            if ( entityincludes.size() > 0 ) {
                     // prepare .ent file
                     String ent_name=desc_name.toString();                
                     int xml_idx = ent_name.indexOf(".xml"); //NOI18N
@@ -189,7 +189,7 @@ public class MakeUpdateDesc extends MatchingTask {
                     }
                     desc_ent = new File(ent_name);               
                     desc_ent.delete();
-                    pw.println ("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_0.dtd\" ["); //NOI18N
+                    pw.println ("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.2//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_2.dtd\" ["); //NOI18N
                     // Would be better to follow order of groups and includes
                     pw.println ("    <!ENTITY entity SYSTEM \"" + xmlEscape(desc_ent.getName()) + "\">"); //NOI18N
                     int inc_num=0;
