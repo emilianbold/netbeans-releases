@@ -63,7 +63,7 @@ class XSDGrammarResolver implements GrammarQuery {
             if (next.getNodeType() == next.ELEMENT_NODE) {
                 org.w3c.dom.Element element = (org.w3c.dom.Element) next;
                 org.w3c.dom.NamedNodeMap atts = element.getAttributes();
-                String eprefix = getPrefix(element.getNodeName());
+                String eprefix = Namespace.getPrefix(element.getNodeName());
                 
                 // process namespaces
                 for (int i = 0; i < atts.getLength(); i++) {
@@ -71,7 +71,7 @@ class XSDGrammarResolver implements GrammarQuery {
                     String name = attribute.getNodeName();
                     if (name.startsWith(Namespace.XMLNS_ATTR)) {
                         String uri = attribute.getNodeValue();
-                        String prefix = getSufix(name);
+                        String prefix = Namespace.getSufix(name);
                         Namespace ns = new Namespace(uri, prefix);
                         if (ret == null) {
                             ret = new XSDGrammarResolver();
@@ -123,26 +123,6 @@ class XSDGrammarResolver implements GrammarQuery {
         defaultNamespace.setSchemaLocation(schema);
     }
     
-    /** @ret xsdf for String of form xsdf:some_name */
-    private static String getPrefix(String name) {
-        int i = name.indexOf(':');
-        if (i >= 0) {
-            return name.substring(0, i);
-        }
-        
-        return null;
-    }
-    
-    /** @ret some_name for String of form xsdf:some_name */
-    private static String getSufix(String name) {
-        int i = name.indexOf(':');
-        if (i >= 0) {
-            return name.substring(i + 1);
-        }
-        
-        return null;
-    }
-
     private void setDocument(FileObject fileObject) {
         this.document = fileObject;
     }
@@ -198,6 +178,10 @@ class XSDGrammarResolver implements GrammarQuery {
         }
         
         // try files
+        if (document == null) {
+            return null;
+        }
+        
         FileObject fo = document.getParent().getFileObject(uri);
 
         if (fo == null) {

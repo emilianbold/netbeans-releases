@@ -81,4 +81,24 @@ class Namespace {
         this.grammar = grammar;
     }
     
+    /** @ret xsdf for String of form xsdf:some_name */
+    public static String getPrefix(String name) {
+        int i = name.indexOf(':');
+        if (i >= 0) {
+            return name.substring(0, i);
+        }
+        
+        return null;
+    }
+    
+    /** @ret some_name for String of form xsdf:some_name */
+    public static String getSufix(String name) {
+        int i = name.indexOf(':');
+        if (i >= 0) {
+            return name.substring(i + 1);
+        }
+        
+        return null;
+    }
+
 }

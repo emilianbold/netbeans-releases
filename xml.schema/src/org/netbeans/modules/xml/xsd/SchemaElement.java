@@ -34,6 +34,9 @@ class SchemaElement extends AbstractResultNode implements Element {
     protected final List subelements;
     
     private String prefix;
+    
+    /** http://www.w3.org/2001/XMLSchema namespace prefix */
+    private String schemaPrefix;
 
     /** Creates empty element */
     protected SchemaElement() {
@@ -41,22 +44,35 @@ class SchemaElement extends AbstractResultNode implements Element {
         this.qname = null;
         this.attributes = null;
         this.subelements = null;
+        this.schemaPrefix = null;
     }
     
     /** Creates a new instance of Element */
-    protected SchemaElement(String namespaceURI, String qname, Attributes attributes) {
+    protected SchemaElement(String namespaceURI, String qname, Attributes attributes, String schemaPrefix) {
         this.namespaceURI = namespaceURI;
         this.qname = qname;
         this.attributes = (attributes == null ? null : new AttributesImpl(attributes));
         this.subelements = new ArrayList();
+        this.schemaPrefix = schemaPrefix;
     }
     
     /** Creates a new SchemaElement */
-    public static final SchemaElement createSchemaElement(String namespaceURI, String qname, Attributes attributes) {
-        if (qname.equalsIgnoreCase(Type.XS_SIMPLE_TYPE) || qname.equalsIgnoreCase(Type.XS_COMPLEX_TYPE)) {
-            return new Type(namespaceURI, qname, attributes);
+    public static final SchemaElement createSchemaElement(String namespaceURI, String qname, Attributes attributes, String schemaPrefix) {
+        String simpleType = null;
+        String complexType = null;
+        
+        if (schemaPrefix == null) {
+           simpleType = Type.XS_SIMPLE_TYPE;
+           complexType = Type.XS_COMPLEX_TYPE;
         } else {
-            return new SchemaElement(namespaceURI, qname, attributes);
+           simpleType = schemaPrefix + ':' + Type.XS_SIMPLE_TYPE;
+           complexType = schemaPrefix + ':' + Type.XS_COMPLEX_TYPE;
+        }
+        
+        if (qname.equalsIgnoreCase(simpleType) || qname.equalsIgnoreCase(complexType)) {
+            return new Type(namespaceURI, qname, attributes, schemaPrefix);
+        } else {
+            return new SchemaElement(namespaceURI, qname, attributes, schemaPrefix);
         }
     }
     
@@ -69,7 +85,8 @@ class SchemaElement extends AbstractResultNode implements Element {
     }
     
     public final boolean isComposite() {
-        return (this instanceof Type) || getQname().equalsIgnoreCase("xs:sequence");
+        String sequenceToken = getSchemaPrefix() == null ? "sequence" : getSchemaPrefix() + ':' + "sequence";
+        return (this instanceof Type) || getQname().equalsIgnoreCase(sequenceToken);
     }
     
     public String toString() {
@@ -127,4 +144,21 @@ class SchemaElement extends AbstractResultNode implements Element {
     public String getPrefix() {
         return prefix;
     }
+    
+    /**
+     * Getter for property schemaPrefix.
+     * @return Value of property schemaPrefix.
+     */
+    public java.lang.String getSchemaPrefix() {
+        return schemaPrefix;
+    }
+    
+    /**
+     * Setter for property schemaPrefix.
+     * @param schemaPrefix New value of property schemaPrefix.
+     */
+    public void setSchemaPrefix(java.lang.String schemaPrefix) {
+        this.schemaPrefix = schemaPrefix;
+    }
+    
 }

@@ -20,8 +20,8 @@ import org.xml.sax.Attributes;
  */
 class Type extends SchemaElement {
     
-    public static final String XS_SIMPLE_TYPE = "xs:simpleType";
-    public static final String XS_COMPLEX_TYPE = "xs:complexType";
+    public static final String XS_SIMPLE_TYPE = "simpleType";
+    public static final String XS_COMPLEX_TYPE = "complexType";
     
     /** Type representing xs:string */
     public static final Type XS_STRING = new Type();
@@ -30,8 +30,8 @@ class Type extends SchemaElement {
     private Type() {
     }
     
-    protected Type(String namespaceURI, String qname, Attributes attributes) {
-        super(namespaceURI, qname, attributes);
+    protected Type(String namespaceURI, String qname, Attributes attributes, String schemaPrefix) {
+        super(namespaceURI, qname, attributes, schemaPrefix);
     }
     
 }

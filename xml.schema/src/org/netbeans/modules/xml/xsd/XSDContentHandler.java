@@ -37,16 +37,26 @@ class XSDContentHandler implements ContentHandler {
     
     private PrintStream ps;
     
+    // namespace processing
+    private boolean resolveNamespaces;
+    private Map /* <String, Namespace> */ uri2Namespace;
+    private Map /* <String, Namespace> */ prefix2Namespace;
+    private Namespace schemaNamespace;
+    private Namespace targetNamespace;
+    
     /** Creates a new instance of XSDContentHandler */
     public XSDContentHandler(PrintStream ps) {
         this.ps = ps;
         this.elements = new HashMap();
         this.types = new HashMap();
         this.elementsStack = new ArrayList();
+        this.resolveNamespaces = true;
+        this.uri2Namespace = new HashMap();
+        this.prefix2Namespace = new HashMap();
     }
 
     public XSDGrammar getGrammar() {
-            return new XSDGrammar(elements, types);
+        return new XSDGrammar(elements, types, targetNamespace, schemaNamespace);
     }
     
     private void println(String s) {
@@ -109,12 +119,47 @@ class XSDContentHandler implements ContentHandler {
     }
     
     public void startDocument() throws org.xml.sax.SAXException {
-        elementsStack.add(SchemaElement.createSchemaElement(null, "TOP_LEVEL", null));
+        elementsStack.add(SchemaElement.createSchemaElement(null, "TOP_LEVEL", null, null));
         // println("START Doc");
     }
     
     public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws org.xml.sax.SAXException {
-        SchemaElement e = SchemaElement.createSchemaElement(namespaceURI, qName, atts);
+        if (resolveNamespaces) {
+            resolveNamespaces = false;
+            
+            for (int i = 0; i < atts.getLength(); i++) {
+                String name = atts.getQName(i);
+                if (name.startsWith(Namespace.XMLNS_ATTR)) {
+                    String uri = atts.getValue(i);
+                    String prefix = Namespace.getSufix(name);
+                    Namespace ns = new Namespace(uri, prefix);
+                    if (prefix != null) {
+                        this.prefix2Namespace.put(prefix, ns);
+                    }
+                    this.uri2Namespace.put(uri, ns);
+                    System.err.println("NAMESPACE ADDED: " + prefix + " uri: " + uri);
+                } else {
+                    System.err.println("ATTR not taken: " + name + " xxx " + atts.getQName(i) + " xxx " + atts.getValue(i));
+                }
+            }
+            
+            // expect qName as xs:schema, xsd:schema and the likes or just schema
+            String myprefix = Namespace.getPrefix(qName);
+            Namespace xs = (Namespace) uri2Namespace.get(Namespace.XSD_SCHEMA_URI);
+            assert xs != null : "Namespace http://www.w3.org/2001/XMLSchema not found";
+            if (myprefix == xs.getPrefix() || myprefix.equals(xs.getPrefix())) {
+                this.schemaNamespace = xs;
+                String uri = atts.getValue("targetNamespace");
+                this.targetNamespace = (Namespace) uri2Namespace.get(uri);
+                assert targetNamespace != null;
+                // OK
+            } else {
+                // ERRORneous schema
+                assert false : "Unknown schema, prefix of schema element does not match http://www.w3.org/2001/XMLSchema namespace";
+            }
+        }
+        
+        SchemaElement e = SchemaElement.createSchemaElement(namespaceURI, qName, atts, schemaNamespace.getPrefix());
         System.err.println("ELEMENTS ADDING: " + atts.getValue("name") + " qname: " + qName);
         SchemaElement parent = (SchemaElement) elementsStack.get(elementsStack.size() - 1);
         if (parent != null && parent.getSAXAttributes() != null) {

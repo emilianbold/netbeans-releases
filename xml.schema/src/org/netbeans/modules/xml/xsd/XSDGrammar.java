@@ -28,7 +28,6 @@ import org.netbeans.modules.xml.spi.dom.AbstractNode;
  * It is produced by {@link XSDParser}.
  * Hints given by this grammar do not guarantee that valid XML document is created.
  *
- * @author  Petr Kuzel
  * @author  Ales Novak
  */
 class XSDGrammar  implements GrammarQuery {
@@ -40,11 +39,16 @@ class XSDGrammar  implements GrammarQuery {
     /** namespace */
     private Namespace namespace;
     
+    private Namespace schemaNamespace;
+    private Namespace targetNamespace;
+
     /** Creates new XSDGrammar */
-    XSDGrammar(Map elements, Map types) {
+    XSDGrammar(Map elements, Map types, Namespace targetNamespace, Namespace schemaNamespace) {
         this.elements = elements;
         this.types = types;
         this.namespace = null;
+        this.schemaNamespace = schemaNamespace;
+        this.targetNamespace = targetNamespace;
     }
 
     /** @return null */
