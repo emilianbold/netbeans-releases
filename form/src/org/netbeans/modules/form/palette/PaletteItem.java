@@ -48,9 +48,9 @@ public class PaletteItem implements java.io.Serializable {
 // Constructors
 
   /** Creates a new PaletteItem */
-  public PaletteItem (InstanceCookie cookie) throws ClassNotFoundException, java.io.IOException {
-    this.beanClass = beanClass;
-    this.instanceCookie = cookie;
+  public PaletteItem (InstanceCookie instanceCookie) throws ClassNotFoundException, java.io.IOException {
+    this.instanceCookie = instanceCookie;
+    this.beanClass = instanceCookie.instanceClass ();
     this.isContainer = java.awt.Container.class.isAssignableFrom (beanClass);
   }
 
@@ -155,6 +155,8 @@ public class PaletteItem implements java.io.Serializable {
 
 /*
  * Log
+ *  8    Gandalf   1.7         6/10/99  Ian Formanek    Fixed usage of 
+ *       InstanceCookie as source for the PaletteItem
  *  7    Gandalf   1.6         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  6    Gandalf   1.5         6/7/99   Ian Formanek    Better support of 
