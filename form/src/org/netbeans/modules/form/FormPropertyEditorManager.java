@@ -72,11 +72,11 @@ final public class FormPropertyEditorManager extends Object {
   }
   
   public static synchronized PropertyEditor[] getAllEditors (Class type, boolean allFromSearchPath) {
-/*    PropertyEditor[] eds = (PropertyEditor[])editorsCache.get (type);
+    Class[] eds = (Class[])editorsCache.get (type);
     if (eds != null) {
-      return eds;
+      return createEditorInstances (eds, type);
     }
-*/
+
     ArrayList editorsList = new ArrayList (5);
 
     String typeName = getTypeName (type);
@@ -88,14 +88,10 @@ final public class FormPropertyEditorManager extends Object {
         if (registered[i][0].equals (typeName)) {
           for (int j = 1; j < registered[i].length; j++) {
             try {
-              editorsList.add (Class.forName (registered[i][j], true, TopManager.getDefault ().systemClassLoader ()).newInstance ());
+              editorsList.add (Class.forName (registered[i][j], true, TopManager.getDefault ().systemClassLoader ()));
             } catch (Exception e) {
               // Silently ignore any errors.
-            } catch (Throwable t) { // [PENDING] should not be necessary
-              if (t instanceof ThreadDeath) {
-                throw (ThreadDeath)t;
-              }
-              // Silently ignore any errors.
+              if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
             }
           }
         }
@@ -106,33 +102,17 @@ final public class FormPropertyEditorManager extends Object {
     Class[] explicite = (Class[]) expliciteEditors.get (typeName);
     if (explicite != null) {
       for (int i = 0; i < explicite.length; i++) {
-        try {
-          editorsList.add (explicite[i].newInstance ());
-        } catch (Exception e) {
-          // Silently ignore any errors.
-        } catch (Throwable t) {
-          if (t instanceof ThreadDeath) {
-            throw (ThreadDeath)t;
-          }
-          t.printStackTrace ();
-          // Silently ignore any errors.
-        }
+        editorsList.add (explicite[i]);
       }
     }
 
     // 3. try adding "Editor" to the class name.
     String editorName = type.getName() + "Editor";
     try {
-      editorsList.add (Class.forName (editorName, true, TopManager.getDefault ().systemClassLoader ()).newInstance ());
+      editorsList.add (Class.forName (editorName, true, TopManager.getDefault ().systemClassLoader ()));
     } catch (Exception e) {
-      // Silently ignore any errors.
-    } catch (Throwable t) {
-      if (t instanceof ThreadDeath) {
-        throw (ThreadDeath)t;
-      }
-      t.printStackTrace ();
-      // Silently ignore any errors.
-    }
+      // Silently ignore any not found editors.
+    } 
 
     // Third try looking for <searchPath>.fooEditor
     String[] searchPath = formSettings.getEditorSearchPath ();
@@ -145,33 +125,41 @@ final public class FormPropertyEditorManager extends Object {
       String name = searchPath[i] + "." + editorName + "Editor";
       try {
         Class editorClass = Class.forName (name, true, TopManager.getDefault ().systemClassLoader ());
-        if (java.beans.PropertyEditor.class.isAssignableFrom (editorClass)) { // ignore classes which do not implement java.beans.PropertyEditor
-          editorsList.add (editorClass.newInstance ());
-          if (!allFromSearchPath) {
-            break; // stop on first found editor if allFromSearchPath is false
-          }
-        } 
-      } catch (Exception e) {
-        // Silently ignore any errors.
-      } catch (Throwable t) {
-        if (t instanceof ThreadDeath) {
-          throw (ThreadDeath)t;
+        editorsList.add (editorClass);
+        if (!allFromSearchPath) {
+          break; // stop on first found editor if allFromSearchPath is false
         }
-        t.printStackTrace ();
-        // Silently ignore any errors.
+      } catch (Exception e) {
+        // Silently ignore any not found editors.
       }
     }
 
     // Fourth add the RADConnectionPropertyEditor as the default editor for all values
-    editorsList.add (new RADConnectionPropertyEditor (type));
+    editorsList.add (RADConnectionPropertyEditor.class);
 
-    PropertyEditor[] eds = new PropertyEditor[editorsList.size ()];
-    editorsList.toArray (eds);
-    
+    Class[] editorsArray = new Class[editorsList.size ()];
+    editorsList.toArray (editorsArray);
     // Cache the list for future reuse
-    //editorsCache.put (type, eds);
-    
-    return eds;
+    editorsCache.put (type, editorsArray);
+
+    return createEditorInstances (editorsArray, type);
+  }
+
+  private static PropertyEditor[] createEditorInstances (Class[] editorClasses, Class propertyType) {
+    ArrayList instancesList = new ArrayList (editorClasses.length);
+    for (int i = 0; i < editorClasses.length; i++) {
+      if (RADConnectionPropertyEditor.class.isAssignableFrom (editorClasses[i])) { // ignore classes which do not implement java.beans.PropertyEditor
+        instancesList.add (new RADConnectionPropertyEditor (propertyType));
+      } else if (java.beans.PropertyEditor.class.isAssignableFrom (editorClasses[i])) { // ignore classes which do not implement java.beans.PropertyEditor
+        try {
+          instancesList.add (editorClasses[i].newInstance ());
+        } catch (Exception e) {
+          // Silently ignore any errors.
+          if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
+        }
+      }
+    }
+    return (PropertyEditor[])instancesList.toArray (new PropertyEditor [instancesList.size ()]);
   }
   
   synchronized static void clearEditorsCache () {
@@ -182,6 +170,7 @@ final public class FormPropertyEditorManager extends Object {
 
 /*
  * Log
+ *  7    Gandalf   1.6         7/23/99  Ian Formanek    Caching editor classes
  *  6    Gandalf   1.5         7/20/99  Ian Formanek    Fixed bug which 
  *       prevented some forms from opening when there was a bad property editor 
  *       in the search path

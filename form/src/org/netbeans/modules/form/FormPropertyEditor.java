@@ -32,6 +32,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   private RADComponent.RADProperty radProperty;
   private PropertyEditor modifiedEditor;
   private Class propertyType;
+  private PropertyEditor[] allEditors;
+  private java.util.HashMap valuesCache = new java.util.HashMap (6);
 
   // -----------------------------------------------------------------------------
   // Constructor
@@ -43,6 +45,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
     this.radProperty = radProperty;
     this.propertyType = propertyType;
     modifiedEditor = radProperty.getCurrentEditor ();
+//    System.out.println ("Modified editor: "+modifiedEditor);
     if (modifiedEditor instanceof FormAwareEditor) {
       ((FormAwareEditor)modifiedEditor).setRADComponent (radComponent);
     }
@@ -62,9 +65,16 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   }
 
   void setModifiedEditor (PropertyEditor editor) {
+    valuesCache.put (modifiedEditor, value);
     modifiedEditor.removePropertyChangeListener (this);
     modifiedEditor = editor;
-    modifiedEditor.setValue (value);
+    value = valuesCache.get (modifiedEditor);
+    if (value == null) {
+      value = radComponent.getDefaultPropertyValue (radProperty); 
+    }
+    if (value != null) { // [PENDING - what to do in the other case !!! ???]
+      modifiedEditor.setValue (value);
+    }
     if (modifiedEditor instanceof FormAwareEditor) {
       ((FormAwareEditor)modifiedEditor).setRADComponent (radComponent);
     }
@@ -222,7 +232,9 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   * @return  True if the propertyEditor can provide a custom editor.
   */
   public boolean supportsCustomEditor() {
-    PropertyEditor[] allEditors = FormPropertyEditorManager.getAllEditors (propertyType, false);
+    if (allEditors == null) {
+      allEditors = FormPropertyEditorManager.getAllEditors (propertyType, false);
+    }
     if (allEditors.length > 1) return true; // we must allow to choose the editor even if none of them supports custom editing
     if (allEditors.length == 1) return allEditors[0].supportsCustomEditor ();
     return false;
@@ -294,6 +306,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
 
 /*
  * Log
+ *  10   Gandalf   1.9         7/23/99  Ian Formanek    Caching editor classes
  *  9    Gandalf   1.8         6/30/99  Ian Formanek    reflecting change in 
  *       enhanced property editors interfaces
  *  8    Gandalf   1.7         6/24/99  Ian Formanek    Improved 
