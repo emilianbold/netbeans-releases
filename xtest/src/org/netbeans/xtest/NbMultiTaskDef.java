@@ -70,11 +70,12 @@ public class NbMultiTaskDef extends Task {
     
     public void execute () throws BuildException {
         ClassLoader loader = null;
-        if (null != System.getProperty("netbeans.user")) {
+
+        if (null != System.getProperty("test.ant.file")) {
             log("Using Netbeans classloader.", Project.MSG_DEBUG);
             loader = TopManager.getDefault().currentClassLoader();
         }
-        
+
         if (loader == null && classpath != null) {
             log("Using Ant classloader.", Project.MSG_DEBUG);
             AntClassLoader al = new AntClassLoader(project, classpath,
