@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.html;
 
-import org.openide.actions.InstantiateAction;
 import org.openide.actions.OpenAction;
 import org.openide.actions.ViewAction;
 import org.openide.filesystems.*;
@@ -36,7 +35,7 @@ public class HtmlDataNode extends org.openide.loaders.DataNode {
     }
 
     /** Get the default action for this node - 
-     *  InstantiateAction for templates, 
+     *  no action for templates, 
      *  ViewAction when data object is mounted on javadoc filesystem,
      *  OpenAction otherwise.
      *
@@ -44,7 +43,7 @@ public class HtmlDataNode extends org.openide.loaders.DataNode {
      */
     public SystemAction getDefaultAction () {
         if (getDataObject ().isTemplate ())
-            return SystemAction.get (InstantiateAction.class);
+            return null;
             
         try {
             if (getDataObject ().getPrimaryFile ().getFileSystem ().getCapability ().capableOf (FileSystemCapability.DOC))

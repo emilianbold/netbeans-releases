@@ -20,7 +20,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
-import org.openide.actions.InstantiateAction;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.*;
 import org.openide.util.actions.SystemAction;
@@ -115,13 +114,11 @@ public class FileEntryNode extends AbstractNode {
     }
 
     /** Gets default action.
-     * A file entry node may have a {@link InstantiateAction default action} if it represents a template.
-     * @return an instantiation action if the underlying entry is a template. Otherwise the abstract node's default action is returned, possibly <code>null</code>.
+     * @return no action if the underlying entry is a template. Otherwise the abstract node's default action is returned, possibly <code>null</code>.
      */
     public SystemAction getDefaultAction () {
         if (entry.isTemplate ()) {
-            // PENDING - EntryInstantiateAction
-            return SystemAction.get (InstantiateAction.class);
+            return null;
         } else {
             return super.getDefaultAction ();
         }
