@@ -242,6 +242,10 @@ final class I18nWizardDescriptor extends WizardDescriptor {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ise.getMessage()));
                         updateState();
                     }
+                    
+                    // focus the current panel
+                    WizardDescriptor.Panel current = panels.current();
+                    current.getComponent().requestFocus();
                 }
             };
             org.openide.util.Mutex.EVENT.writeAccess(performer);
