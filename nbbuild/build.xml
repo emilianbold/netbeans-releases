@@ -93,6 +93,8 @@ ToDo:
 	   set="fixedmodules" 
 	   tovalue="core,openide,core/javahelp,core/compiler,core/execution,core/ui,core/windows"/>
 
+    <!-- We need absolute path to ${netbeans.dest} -->
+    <property name="netbeans.dest.abs" location="${netbeans.dest}"/>
     <!-- Overridable. Note: need not necessarily be a number at all): -->
     <property name="buildnum" value="dev-${buildnumber}"/>
     <!-- Best to leave this alone, though, unless you know what you are doing: -->
@@ -656,7 +658,7 @@ the ${netbeans.dest}/bin/ directory.
     <!-- possibly after filtering for duplicates or something like this. -->
     <!-- Timeout is ten minutes; should be enough for valid start, while preventing -->
     <!-- a deadlock from hanging an automated build: -->
-    <exec os="Windows NT Windows 95 Windows 98 Windows 2000" executable="${netbeans.dest}/bin/runide.exe" failonerror="yes" timeout="600000">
+    <exec os="Windows NT Windows 95 Windows 98 Windows 2000" executable="${netbeans.dest.abs}/bin/runide.exe" failonerror="yes" timeout="600000">
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
       <arg value="-userdir"/>
@@ -683,7 +685,7 @@ the ${netbeans.dest}/bin/ directory.
 
   <target name="tryme" depends="init,maybe-build-nozip"
           description="Try running the IDE interactively (build it first if needed).">
-    <exec os="Windows NT Windows 95 Windows 98 Windows 2000" executable="${netbeans.dest}/bin/runide.exe" failonerror="yes">
+    <exec os="Windows NT Windows 95 Windows 98 Windows 2000" executable="${netbeans.dest.abs}/bin/runide.exe" failonerror="yes">
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
       <arg value="-userdir"/>
