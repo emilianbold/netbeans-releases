@@ -40,6 +40,8 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
     private String statusDesc = "";
     private String j2seInstallDir = "";
     private String tempDir = "";
+    private String defaultSubdir = "";
+    private String origJ2SEInstallDir = "";
     
     private boolean success = false;
     
@@ -71,7 +73,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
         instDirPath = resolveString((String)pservice.getProductBeanProperty(productURL,null,"absoluteInstallLocation")); */
 	j2seInstallDir = (String) System.getProperties().get("j2seInstallDir");
-        
+        origJ2SEInstallDir = j2seInstallDir;
         tempDir = resolveString("$J(temp.dir)");
         logEvent(this, Log.DBG,"Tempdir: " + tempDir);
         
@@ -84,13 +86,19 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         "$L(org.netbeans.installer.Bundle,JDK.shortName))")
 	+ " "
 	+ resolveString("$L(org.netbeans.installer.Bundle,ProgressPanel.waitMessage)") ;
+        
         support.getOperationState().setStatusDescription(statusDesc);
+        
+        defaultSubdir = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.defaultJdkInstallDirectory)");
         
         try {
             init(support);
             installMode = INSTALL;
+            if (!Util.isWindowsOS()) {
+                j2seInstallDir = j2seInstallDir + File.separator + defaultSubdir;
+            }
             
-            String uninstDir  = j2seInstallDir + File.separator + "_uninst";
+            String uninstDir  = origJ2SEInstallDir + File.separator + "_uninst";
 	    if (!Util.isWindowsOS()) {
 		String j2seInstallScript = uninstDir + File.separator 
                 + "j2se-install.template";
@@ -131,7 +139,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             
             String cmdArray[] = new String[paramCount];
             String execPath   = uninstDir + File.separator + execName;
-            String logPath    = j2seInstallDir + File.separator + "install.log";
+            String logPath    = origJ2SEInstallDir + File.separator + "install.log";
             String envP[] = null;
             
 	    // Put the command and arguments together for windows
@@ -171,6 +179,10 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                 }
             }
             
+            //Move JDK up one dir level
+            if (!Util.isWindowsOS()) {
+                moveJ2SEDirContents();
+            }
         } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
             logEvent(this, Log.DBG, ex);
@@ -187,10 +199,10 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         
         try {
             init(support);
-            logEvent(this, Log.DBG,"j2seInstallDir = " + j2seInstallDir);
+            logEvent(this, Log.DBG,"origJ2SEInstallDir = " + origJ2SEInstallDir);
             installMode = UNINSTALL;
             
-            logEvent(this, Log.DBG,"Do nothing here -> " + j2seInstallDir);
+            logEvent(this, Log.DBG,"Do nothing here -> " + origJ2SEInstallDir);
             
         } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
@@ -284,12 +296,12 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
     public boolean accept(File pathname) {
         String path = pathname.getAbsolutePath();
         if (installMode == INSTALL) {
-            if ( path.equals(j2seInstallDir + File.separator + "uninstall.sh")
-            || path.equals(j2seInstallDir + File.separator + "uninstall.bat"))
+            if (path.equals(origJ2SEInstallDir + File.separator + "uninstall.sh")
+            || path.equals(origJ2SEInstallDir + File.separator + "uninstall.bat"))
                 return false;
         }
         else if (installMode == UNINSTALL) {
-            if ( path.equals(j2seInstallDir + File.separator + "uninstall.log"))
+            if (path.equals(origJ2SEInstallDir + File.separator + "uninstall.log"))
                 return false;
         }
         
@@ -321,7 +333,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         RequiredBytesTable req = new RequiredBytesTable();
 	//  String imageDirPath = getProductTree().getInstallLocation(this);
 	// logEvent(this, Log.DBG,"imageDirPath -> " + imageDirPath);
-        req.addBytes(j2seInstallDir, getCheckSum());
+        req.addBytes(origJ2SEInstallDir, getCheckSum());
 	logEvent(this, Log.DBG, "Total size = " + req.getTotalBytes());
         //Thread.dumpStack();
 
@@ -426,11 +438,11 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         
 	String installerName = null;
 	String arch = (String) System.getProperty("os.arch");
+        File installDirFile = new File(origJ2SEInstallDir);
+        logEvent(this, Log.DBG, "createInstallScript installDirFile: " + installDirFile);
+        File [] children = installDirFile.listFiles();
 	if (Util.isLinuxOS()) {
             //Try to locate Linux JDK installer
-            File installDirFile = new File(j2seInstallDir);
-            logEvent(this, Log.DBG, "createInstallScript installDirFile: " + installDirFile);
-            File [] children = installDirFile.listFiles();
             for (int i = 0; i < children.length; i++) {
                 if (children[i].getName().startsWith("jdk-1_5_0") && (children[i].getName().indexOf("linux-i586") != -1) && 
                     children[i].getName().endsWith(".bin")) {
@@ -447,9 +459,6 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
 	} else if (Util.isSunOS()) {
 	    if (arch.startsWith("sparc")) {
                 //Try to locate Solaris Sparc JDK installer
-                File installDirFile = new File(j2seInstallDir);
-                logEvent(this, Log.DBG, "createInstallScript installDirFile: " + installDirFile);
-                File [] children = installDirFile.listFiles();
                 for (int i = 0; i < children.length; i++) {
                     if (children[i].getName().startsWith("jdk-1_5_0") && (children[i].getName().indexOf("solaris-sparc") != -1) && 
                         children[i].getName().endsWith(".sh")) {
@@ -465,9 +474,6 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                 }
 	    } else {
                 //Try to locate Solaris X86 JDK installer
-                File installDirFile = new File(j2seInstallDir);
-                logEvent(this, Log.DBG, "createInstallScript installDirFile: " + installDirFile);
-                File [] children = installDirFile.listFiles();
                 for (int i = 0; i < children.length; i++) {
                     if (children[i].getName().startsWith("jdk-1_5_0") && (children[i].getName().indexOf("solaris-i586") != -1) && 
                         children[i].getName().endsWith(".sh")) {
@@ -487,7 +493,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         String line;
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("J2SE_INSTALL_DIR=")) {
-                line = "J2SE_INSTALL_DIR=" + j2seInstallDir;
+                line = "J2SE_INSTALL_DIR=" + origJ2SEInstallDir;
             }
             else if (line.startsWith("J2SE_NAME=")) {
                 line = "J2SE_NAME=" + installerName;
@@ -528,7 +534,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         String line;
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("J2SE_INSTALL_DIR=")) {
-                line = "J2SE_INSTALL_DIR=" + j2seInstallDir;
+                line = "J2SE_INSTALL_DIR=" + origJ2SEInstallDir;
             }
             else if (line.startsWith("J2SE_VER=")) {
                 line = "J2SE_VER=" + "1.5.0";
@@ -650,6 +656,48 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         return installerName;
     }
     
+    private boolean moveJ2SEDirContents() {
+         try {
+             FileService fileService = (FileService)getService(FileService.NAME);
+             if (fileService == null) {
+                 logEvent(this, Log.DBG, "FileService is null. Cannot move J2SE files");
+                 return false;
+             }
+             if (fileService != null) {
+                 File srcFile = new File(j2seInstallDir);
+                 File[] srcFileList = srcFile.listFiles();
+                 String parent = srcFile.getParent();
+                 logEvent(this, Log.DBG, "Moving files from " + j2seInstallDir +
+                          "\n to  " + parent);
+                 try {
+                     for (int i=0; i < srcFileList.length; i++) {
+                         logEvent(this, Log.DBG, "Rename " +
+                                  srcFileList[i].getAbsolutePath() +
+                                  "  to  " + parent + "/" +
+                                  srcFileList[i].getName());
+                                 srcFileList[i].renameTo(new File(parent +
+                                                          File.separator +
+                                                          srcFileList[i].getName()));
+                     }
+                 } catch (Exception ex) {
+                     logEvent(this, Log.DBG, "Could not rename the J2SE files.");
+                     logEvent(this, Log.DBG, ex);
+                     return false;
+                 }
+                 try {
+                     fileService.deleteDirectory(j2seInstallDir, true, false);
+                 } catch (Exception ex) {
+                     logEvent(this, Log.DBG,
+                              "Could not remove empty J2SDK directory: " + j2seInstallDir);
+                 }
+             }
+         } catch (Exception ex) {
+             logEvent(this, Log.ERROR, "Cannot get FileService for moving J2SE files\nException: " + ex);
+             return false;
+         }
+         return true;
+     }
+
     /** inner class to update the progress pane while installation */
     class ProgressThread extends Thread {
         private boolean loop = true;
@@ -775,8 +823,27 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             }
             String recentFilePath = fileComp.getMostRecentFile(j2seDir).getAbsolutePath();
             logEvent(this, Log.DBG,"StatusDetailThread-> " + recentFilePath + "  MODIFIED!!!");
-            mos.setStatusDetail(getDisplayPath(recentFilePath));
+            String filename = getDisplayPath(recentFilePath);
+            if (Util.isWindowsOS()) {
+                mos.setStatusDetail(filename);
+            } else {
+                mos.setStatusDetail(modifyFilename(filename));
+            }
         }
+        
+        private String modifyFilename(String name) {
+             StringBuffer filename = new StringBuffer(name);
+             int subdirSize = defaultSubdir.length();
+             int nameSize = name.length();
+             for (int i=0; i < nameSize-subdirSize; i++) {
+                 if (defaultSubdir.equals(filename.substring(i,i+subdirSize))) {
+                     name = filename.substring(0, i)
+                          + filename.substring(i+subdirSize+1, nameSize);
+                     break;
+                 }
+             }
+             return name;
+         }
         
         //progress dots (...) after the path if it is being shown since s while
         private String getDisplayPath(String recentFilePath) {

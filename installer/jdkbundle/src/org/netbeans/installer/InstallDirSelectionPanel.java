@@ -391,18 +391,11 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 		    j2seInstallDir = instDirFile.getAbsolutePath();
 		}
 		j2seInstallDirTF.setText(j2seInstallDir);
-
-		// Need to modify the install dir with j2sdk<version> directory name.
-		String modifiedJ2SEInstallDir = j2seInstallDir;
-		if (!Util.isWindowsOS()) {
-		    modifiedJ2SEInstallDir = modifyJ2SEInstallDir(j2seInstallDir);
-		}
 		
 		// If there is a problem with the specified directory, then return false
-		if (!checkInstallDir(modifiedJ2SEInstallDir, J2SE_INSTALL_DIR, j2seMsgStart)) {
+		if (!checkInstallDir(j2seInstallDir, J2SE_INSTALL_DIR, j2seMsgStart)) {
 		    return false;
 		}
-		j2seInstallDir = modifiedJ2SEInstallDir;
 		try {
 		    ProductService service = (ProductService)getService(ProductService.NAME);
 		    service.setProductBeanProperty(productURL, "beanJ2SE", "installLocation", j2seInstallDir);
@@ -428,31 +421,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	}
 	return true;
     }
-
-    /* Change the J2SE install directory so that it is guanteed to end
-     * in "j2sdk<version>". In other words, the last subdirectory must be
-     * the j2sdk string plus the jdk version. This is because the j2se
-     * installer unzips the bits with the above directory name.
-     */
-    private String modifyJ2SEInstallDir(String dir) {
-	StringTokenizer tokenizer = new StringTokenizer(dir, File.separator);
-	String token = null;
-	if (tokenizer.countTokens() == 0) {
-	    token = dir + File.separator + j2seDir;
-	    return token;
-	} else {
-	    while (tokenizer.hasMoreTokens()) {
-		token = tokenizer.nextToken();
-	    }
-	}
-	// If the last token is equal to the j2se dir then you don't
-	// need to modify the j2se install dir.
-	if (token != null && token.equals(j2seDir)) {
-	    return dir;
-	}	
-	return dir + File.separator + j2seDir;
-    }
-
+    
     /* Check the installation directory to see if it has illegal chars,
      * or if it already exits or if it's empty then create it.
      */ 

@@ -17,8 +17,6 @@ fi
 echo "--------------------" >> $LOGFILE
 echo "Installation date: `date`" >> $LOGFILE
 
-cd $J2SE_INSTALL_DIR/..
-
 echo "yes" > $INPUT
 if [ -f $J2SDK ]; then
     /bin/sh $J2SDK < $INPUT > /dev/null
