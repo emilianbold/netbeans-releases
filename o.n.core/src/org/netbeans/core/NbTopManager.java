@@ -354,7 +354,8 @@ public abstract class NbTopManager extends TopManager {
             return new org.openide.util.Lookup[] {
                 tmLookup,
                 getInstanceLookup (),
-                new org.netbeans.core.lookup.FolderLookup ("Services").getLookup () // NOI18N
+                new org.netbeans.core.lookup.FolderLookup ("Services").getLookup (), // NOI18N
+                Services.getDefault().getLookup()
             };
         } else {
             return new org.openide.util.Lookup[] { tmLookup };

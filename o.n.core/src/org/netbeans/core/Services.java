@@ -29,16 +29,23 @@ import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.Lookup.Result;
+import org.openide.util.Lookup.Template;
 
 import org.netbeans.beaninfo.editors.ExecutorEditor;
 import org.netbeans.beaninfo.editors.CompilerTypeEditor;
 import org.netbeans.beaninfo.editors.DebuggerTypeEditor;
 
+import org.netbeans.core.lookup.InstanceLookup;
+
 /** Works with all service types.
 *
 * @author Jaroslav Tulach
 */
-final class Services extends ServiceType.Registry implements Comparator {
+final class Services extends ServiceType.Registry implements LookupListener {
     /** serial */
     static final long serialVersionUID =-7558069607307508327L;
     
@@ -48,24 +55,25 @@ final class Services extends ServiceType.Registry implements Comparator {
     /** instance */
     private static final Services INSTANCE = new Services ();
     
+    /** Lookup containing all current services. */
+    private final InstanceLookup lookup = new InstanceLookup();
+    /** Result containing all current services. */
+    private Lookup.Result allTypes;
+    /** Result containing all services declared in manifest files. */
+    private Lookup.Result allDefaultTypes;
+    
     /** listeners to the services */
     private static PropertyChangeSupport supp = new PropertyChangeSupport (INSTANCE);
 
-    /** list of all manifest sections */
-    private static List sections = new LinkedList ();
-
     /** current list of all services (ServiceType) */
-    static List current = new LinkedList ();
+    private static List current = new LinkedList ();
 
     /** precomputed kinds of Class in sections */
-    static List kinds = new LinkedList ();
+    private static List kinds = new LinkedList ();
     
     /** Mapping between service name and given ServiceType instance. */
     private Map name2Service;
     
-    /** Mapping between Class and instances */
-    private Map klass2Instances;
-
     /** Default instance */
     public static Services getDefault () {
         return INSTANCE;
@@ -74,7 +82,6 @@ final class Services extends ServiceType.Registry implements Comparator {
     public Services() {
         name2Service = new HashMap();
         fillMap(name2Service);
-        klass2Instances = Collections.synchronizedMap(new HashMap());
     }
     
     private static void fillMap(Map map) {
@@ -91,74 +98,54 @@ final class Services extends ServiceType.Registry implements Comparator {
             return CompilerTypeEditor.NO_COMPILER;
         else if (clazz == DebuggerTypeEditor.NoDebugger.class)
             return DebuggerTypeEditor.NO_DEBUGGER;
+        else if (clazz == null)
+            return null;
         else
-            return super.find (clazz);
+            return (ServiceType) Lookup.getDefault().lookup(clazz);
     }
 
     /** Override to specially look up no-op services. */
     public ServiceType find (String name) {
-        Map lookup = name2Service;
+        Map lookupMap = name2Service;
         ServiceType ret;
-        synchronized (lookup) {
-            ret = (ServiceType) lookup.get(name);
+        synchronized (lookupMap) {
+            ret = (ServiceType) lookupMap.get(name);
         }
         
         if (ret == null) {
             ret = super.find(name);
-            synchronized (lookup) {
-                lookup.put(name, ret);
+            synchronized (lookupMap) {
+                lookupMap.put(name, ret);
             }
         }
         
         return ret;
     }
     
-    /** Adds new section.
-    */
-    public static void addService (final ManifestSection.ServiceSection s)
-    throws InstantiationException {
-        synchronized (INSTANCE) {
-            sections.add (s);
-            recomputeKinds ();
-            
-            // adds also default instance of this service
-            current.add (s.getServiceType());
-            servicesChangedNotify();
-            
-            supp.firePropertyChange (PROP_KINDS, null, null);
-            supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
-        }
-
+    /** Register new instance.
+     * @param obj source
+     */
+    public synchronized void register (ServiceType obj) {
+        lookup.add(obj, null);
     }
-
-    /** Removes a section.
-    */
-    public static void removeService (final ManifestSection.ServiceSection s)
-    throws InstantiationException {
-        synchronized (INSTANCE) {
-            sections.remove (s);
-            
-            // removes the default service, if present
-            ServiceType st = s.getServiceType();
-            Iterator it = current.iterator ();
-            boolean one = false;
-            while (it.hasNext ()) {
-                ServiceType type = (ServiceType)it.next ();
-                if (type.getClass () == st.getClass ()) {
-                    it.remove ();
-                    INSTANCE.name2Service.remove(type.getName());
-                    one = true;
-                }
-            }
-            
-            recomputeKinds ();
-            supp.firePropertyChange (PROP_KINDS, null, null);
-            
-            if (one) {
-                servicesChangedNotify();
-                supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
+    
+    /** Unregisters all instances wich class is same like obj.getClass.
+     */
+    public synchronized void unregister (ServiceType obj) {
+        String clazzName = obj.getClass().getName();
+        Iterator it = lookup.lookup(new Lookup.Template(obj.getClass())).allInstances().iterator();
+        Object st;
+        while (it.hasNext()) {
+            st = it.next();
+            if (clazzName.equals(st.getClass().getName())) {
+                lookup.remove (st, null);
             }
         }
+    }
+    
+    /** Lookup containing all current services. */
+    public Lookup getLookup() {
+        return lookup;
     }
     
     /** Adds property change listener (holds it weakly)
@@ -172,51 +159,83 @@ final class Services extends ServiceType.Registry implements Comparator {
     private static void recomputeKinds () {
         List newKinds = new LinkedList();
         
-        InstantiationException mainExc = null;
-
         // construct new service types from the registered sections
-        Iterator it = sections.iterator ();
+        Iterator it = getDefault().getServiceTypes().iterator ();
         while (it.hasNext ()) {
-            ManifestSection.ServiceSection ss = (ManifestSection.ServiceSection)it.next ();
-            try {
-                Class type = ss.getServiceType().getClass ();
-                // finds direct subclass of service type
-                while (type.getSuperclass () != ServiceType.class) {
-                    type = type.getSuperclass();
-                }
-                
-                if (!newKinds.contains (type)) {
-                    newKinds.add (type);
-                }
-            } catch (InstantiationException ex) {
-                  TopManager.getDefault().getErrorManager().copyAnnotation(ex, mainExc);
-                  mainExc = ex;
+            ServiceType st = (ServiceType)it.next ();
+            Class type = st.getClass ();
+            // finds direct subclass of service type
+            while (type.getSuperclass () != ServiceType.class) {
+                type = type.getSuperclass();
+            }
+
+            if (!newKinds.contains (type)) {
+                newKinds.add (type);
             }
         }
         kinds.clear();
         kinds.addAll(newKinds);
-        if (mainExc != null) {
-            // notify to error manager
-            TopManager.getDefault ().getErrorManager ().notify (
-                ErrorManager.INFORMATIONAL, mainExc
-            );
-        }
     }
 
-    // PATCH
-    boolean doinit = true;
+    /** Result containing all services declared in manifest files. */
+    private synchronized Lookup.Result getDefaultTypesResult() {
+        if (allDefaultTypes == null) {
+            allDefaultTypes = Lookup.getDefault().lookup(
+                new Lookup.Template(ManifestSection.ServiceSection.class)
+            );
+        }
+        return allDefaultTypes;
+    }
+    
+    /** Result containing all current services. */
+    private synchronized Lookup.Result getTypesResult() {
+        if (allTypes == null) {
+            allTypes = Lookup.getDefault().lookup(
+                new Lookup.Template(ServiceType.class)
+            );
+            allTypes.addLookupListener(this);
+            
+            resultChanged(null);
+        }
+        return allTypes;
+    }
+    
+    /** A change in lookup occured.
+     * @param ev event describing the change
+     */
+    public void resultChanged(LookupEvent ev) {
+        synchronized (this) {
+            // [Pending] just for ServiceNode before rewriting ServiceNode to use lookup
+            current.clear();
+            current.addAll(allTypes.allInstances());
+            // end
+            name2Service.clear();
+            fillMap(name2Service);
+            recomputeKinds();
+        }
+        supp.firePropertyChange (PROP_KINDS, null, null);
+        supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
+    }
+    
+    /** [Pending] just for ServiceNode before rewriting ServiceNode to use lookup. */
+    List getCurrent() {
+        getTypesResult();
+        return current;
+    }
+    
+    /** [Pending] just for ServiceNode before rewriting ServiceNode to use lookup. */
+    List getKinds() {
+        getTypesResult();
+        return kinds;
+    }
     
     /** Getter for list of all services types.
     * @return list of ServiceType
     */
-    public synchronized java.util.List getServiceTypes () {
-      
-        if (doinit) {
-            setServiceTypes(null);
-        }
-        return new LinkedList (current);
+    public java.util.List getServiceTypes () {
+        return new LinkedList(getTypesResult().allInstances());
     }
-
+    
     /** Setter for list of all services types. This allows to change
     * instaces of the objects but only of the types that are already registered
     * to the system by manifest sections.
@@ -224,44 +243,33 @@ final class Services extends ServiceType.Registry implements Comparator {
     * @param arr list of ServiceTypes 
     */
     public synchronized void setServiceTypes (java.util.List arr) {
-
-        doinit = false;
         if (arr == null) {
-
-            InstantiationException mainExc = null;
-
-            // construct new service types from the registered sections
-            ArrayList temp = new ArrayList (sections);
-            Collections.sort (temp, this);
-
-            arr = new LinkedList ();
-            Iterator it = temp.iterator ();
-            while (it.hasNext ()) {
-                ManifestSection.ServiceSection ss = (ManifestSection.ServiceSection)it.next ();
-                try {
-                    ServiceType type = ss.getServiceType();
-                    arr.add(type);
-                } catch (InstantiationException ex) {
-                      TopManager.getDefault().getErrorManager().copyAnnotation(ex, mainExc);
-                      mainExc = ex;
-                }
-            }
-
-            if (mainExc != null) {
-                // notify to error manager
+            Lookup.Result r = getDefaultTypesResult();
+            lookup.set(convertServiceSections(r.allInstances()), null);
+        } else {
+            lookup.set(arr, null);
+        }
+    }
+    
+    /** Convert list of ManifestSection.ServiceSections to list of ServiceTypes. */
+    private Collection convertServiceSections (Collection col) {
+        if (col == null) return Collections.EMPTY_LIST;
+        
+        Iterator it = col.iterator();
+        ArrayList list = new ArrayList(col.size());
+        ManifestSection.ServiceSection ms;
+        while (it.hasNext()) {
+            ms = (ManifestSection.ServiceSection) it.next();
+            try {
+                list.add(ms.getServiceType());
+            } catch (InstantiationException ex) {
                 TopManager.getDefault ().getErrorManager ().notify (
-                    ErrorManager.WARNING, mainExc
+                  ErrorManager.INFORMATIONAL,
+                  ex
                 );
             }
-            
         }
-        
-        name2Service.clear();
-        fillMap(name2Service);
-        current.clear ();
-        current.addAll (arr);
-        servicesChangedNotify();
-        supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
+        return list;
     }
 
     /** all services */
@@ -275,57 +283,30 @@ final class Services extends ServiceType.Registry implements Comparator {
     *    given class
     */
     public Enumeration services (Class clazz) {
-        if (clazz == null) {
-            return new org.openide.util.enum.EmptyEnumeration();
-        }
-        
-        Reference ref = (Reference) klass2Instances.get(clazz);
-        List types = (List) (ref == null ? null : ref.get());
-        if (types == null) {
-            types = createTypes(clazz);
-            klass2Instances.put(clazz, new SoftReference(types));
-        }
-        
-        return Collections.enumeration(types);
-    }
-    
-    /** Scans through SrviceTypes and returns instances of given Class */
-    private synchronized List createTypes(Class klass) {
-        List ret = new ArrayList(current.size());
-        Iterator it = current.iterator();
-        while (it.hasNext()) {
-            Object next = it.next();
-            if (klass.isInstance(next)) {
-                ret.add(next);
-            }
-        }
-        it = null;
-        return ret;
+        if (clazz == null) new org.openide.util.enum.EmptyEnumeration();
+        Lookup.Result res;
+        res = Lookup.getDefault().lookup(new Lookup.Template(clazz));
+        return Collections.enumeration(res.allInstances());
     }
     
     /** Adds a service type.
     */
     public synchronized void addServiceType (ServiceType t) 
     throws IOException, ClassNotFoundException {
-        if (current.contains (t)) {
+        List current = getServiceTypes();
+        if (current.contains(t)) {
             // if adding already existing service, create its clone
             t = t.createClone ();
         }
         
         uniquifyName (t);
-        
-        current.add (t);
-        servicesChangedNotify();
-        supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
+        lookup.add(t);
     }
 
     /** Removes a service type.
     */
     public synchronized void removeServiceType (ServiceType t) {
-        name2Service.remove(t.getName());
-        current.remove (t);
-        servicesChangedNotify();
-        supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
+        lookup.remove(t);
     }
     
     /** Creates array of new types each for one section.
@@ -340,20 +321,22 @@ final class Services extends ServiceType.Registry implements Comparator {
             Set added = new HashSet ();            
 
             // construct new service types from the registered sections
-            Iterator it = sections.iterator ();
-            while (it.hasNext ()) {
-                ManifestSection.ServiceSection ss = (ManifestSection.ServiceSection)it.next ();
+            Iterator it = getDefault().getDefaultTypesResult().allInstances().iterator();
+            ManifestSection.ServiceSection section;
+            while (it.hasNext()) {
+                section = (ManifestSection.ServiceSection) it.next();
                 try {
-                    Class instanceClass = ss.getServiceType ().getClass ();
+                    ServiceType st = section.getServiceType();
+                    Class instanceClass = st.getClass();
                     if (clazz.isAssignableFrom(instanceClass) && !added.contains(instanceClass)) {
-                      l.add (new NSNT (clazz, ss));
+                      l.add (new NSNT (st));
                       added.add (instanceClass);
                     }
                 } catch (InstantiationException ex) {
-                      TopManager.getDefault ().getErrorManager ().notify (
-                          ErrorManager.INFORMATIONAL,
-                          ex
-                      );
+                    TopManager.getDefault ().getErrorManager ().notify (
+                        ErrorManager.INFORMATIONAL,
+                        ex
+                    );
                 }
             }
             
@@ -361,10 +344,6 @@ final class Services extends ServiceType.Registry implements Comparator {
         }
     }
     
-    private static void servicesChangedNotify() {
-        INSTANCE.klass2Instances.clear();
-    }
-
     /** Write the object down.
     */
     private void writeObject (ObjectOutputStream oos) throws IOException {
@@ -427,34 +406,17 @@ final class Services extends ServiceType.Registry implements Comparator {
         return INSTANCE;
     }
 
-    /** Compares two instances of ManifestSection. The default one should
-    * go first.
-    */        
-    public int compare(Object p1, Object p2) {
-        ManifestSection.ServiceSection s1 = (ManifestSection.ServiceSection)p1;
-        ManifestSection.ServiceSection s2 = (ManifestSection.ServiceSection)p2;
-        
-        if (s1.isDefault()) {
-            if (s2.isDefault ()) {
-                return 0;
-            }
-            return -1;
-        } 
-        return 1;
-    }
     /** Class for New Type of service type.
     */
     private static class NSNT extends NewType {
-        private ManifestSection.ServiceSection ss;
-        private Class clazz;
+        private ServiceType st;
         private String displayName;
         
         
         /** Constructor.
         */
-        public NSNT (Class clazz, ManifestSection.ServiceSection ss) {
-            this.ss = ss;
-            this.clazz = clazz;
+        public NSNT (ServiceType st) {
+            this.st = st;
         }
         
         public String getName () {
@@ -463,7 +425,7 @@ final class Services extends ServiceType.Registry implements Comparator {
             }
             
             try {
-                BeanInfo bi = Introspector.getBeanInfo(ss.getServiceType ().getClass ());
+                BeanInfo bi = Introspector.getBeanInfo(st.getClass ());
                 displayName = Main.getString (
                     "LAB_NewExecutor_Instantiate", 
                     bi.getBeanDescriptor().getDisplayName()
@@ -489,8 +451,6 @@ final class Services extends ServiceType.Registry implements Comparator {
         
         public void create () throws java.io.IOException {
             try {
-                ServiceType st = (ServiceType)ss.getServiceType ().getClass ().newInstance ();
-                // JST: Try this at least for this moment ServiceType st = ss.createServiceType();
                 INSTANCE.addServiceType (st);
             } catch (Exception ex) {
                 IOException newEx = new IOException (ex.getMessage ());
@@ -537,6 +497,9 @@ final class Services extends ServiceType.Registry implements Comparator {
 
 /*
 * $Log$
+* Revision 1.45  2001/05/16 20:16:25  jpokorsky
+* Changed initialization of services. Now it uses Lookup.
+*
 * Revision 1.44  2001/04/20 13:10:53  jtulach
 * Fix of #11600. The changes are fired in synchronized block
 *
