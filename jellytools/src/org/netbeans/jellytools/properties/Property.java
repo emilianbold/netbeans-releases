@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.properties;
@@ -68,15 +68,15 @@ public class Property {
     // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<DEPRECATED
 
     /** Class name of string renderer. */
-    public static final String STRING_RENDERER = "org.openide.explorer.propertysheet.SheetCellRenderer$StringRenderer";  // NOI18N
+    public static final String STRING_RENDERER = "org.openide.explorer.propertysheet.RendererFactory$StringRenderer";  // NOI18N
     /** Class name of check box renderer. */
-    public static final String CHECKBOX_RENDERER = "org.openide.explorer.propertysheet.SheetCellRenderer$CheckboxRenderer";  // NOI18N
+    public static final String CHECKBOX_RENDERER = "org.openide.explorer.propertysheet.RendererFactory$CheckboxRenderer";  // NOI18N
     /** Class name of combo box renderer. */
-    public static final String COMBOBOX_RENDERER = "org.openide.explorer.propertysheet.SheetCellRenderer$ComboboxRenderer";  // NOI18N
+    public static final String COMBOBOX_RENDERER = "org.openide.explorer.propertysheet.RendererFactory$ComboboxRenderer";  // NOI18N
     /** Class name of radio button renderer. */
-    public static final String RADIOBUTTON_RENDERER = "org.openide.explorer.propertysheet.SheetCellRenderer$RadioButtonRenderer";  // NOI18N
+    public static final String RADIOBUTTON_RENDERER = "org.openide.explorer.propertysheet.RendererFactory$RadioButtonRenderer";  // NOI18N
     /** Class name of set renderer. */
-    public static final String SET_RENDERER = "org.openide.explorer.propertysheet.SheetCellRenderer$SetRenderer";  // NOI18N
+    public static final String SET_RENDERER = "org.openide.explorer.propertysheet.RendererFactory$SetRenderer";  // NOI18N
     
     /** Instance of Node.Property. */
     protected Node.Property property;
@@ -172,7 +172,7 @@ public class Property {
     /** Waits for index-th property in specified property sheet.
      * @param propSheetOper PropertySheetOperator where to find property.
      * @param index index (row number) of property inside property sheet
-     *              (starts at 0). If there categories shown in property sheet,
+     *              (starts at 0). If there are categories shown in property sheet,
      *              rows occupied by their names must by added to index.
      */
     private Node.Property waitProperty(final PropertySheetOperator propSheetOper, final int index) {
@@ -180,6 +180,11 @@ public class Property {
             Waiter waiter = new Waiter(new Waitable() {
                 public Object actionProduced(Object param) {
                     JTableOperator table = propSheetOper.tblSheet();
+                    if(table.getRowCount() <= index) {
+                        // If table is empty or index out of bounds, 
+                        // it returns null to wait until table is populated by values
+                        return null;
+                    }
                     Object property = table.getValueAt(index, 1);
                     if(property instanceof Node.Property) {
                         return (Node.Property)property;
