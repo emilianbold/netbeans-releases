@@ -101,6 +101,7 @@ public class BeansTemplates extends JellyTestCase {
         eo.select(1,5);
         new EventTool().waitNoEvent(500);
         new DeleteAction().perform();
+        new EventTool().waitNoEvent(500);
         ref(eo.getText());
         compareReferenceFiles();
     }
@@ -194,6 +195,7 @@ public class BeansTemplates extends JellyTestCase {
         eo.select(1,10);
         new EventTool().waitNoEvent(500);
         new DeleteAction().performAPI(eo);
+        new EventTool().waitNoEvent(500);
         ref(eo.getText());
         compareReferenceFiles();
     }
@@ -230,6 +232,7 @@ public class BeansTemplates extends JellyTestCase {
         eo.select(4,7);
         new EventTool().waitNoEvent(500);
         new DeleteAction().performAPI(eo);
+        new EventTool().waitNoEvent(500);
         ref(eo.getText());
         compareReferenceFiles();
     }
