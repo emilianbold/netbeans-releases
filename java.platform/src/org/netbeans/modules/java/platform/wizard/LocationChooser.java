@@ -224,7 +224,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
         }
         
         public HelpCtx getHelp() {
-            return HelpCtx.DEFAULT_HELP;
+            return new HelpCtx (LocationChooser.class);
         }
         
         public boolean isValid() {

@@ -393,7 +393,7 @@ public class DetectPanel extends javax.swing.JPanel {
         }
 
         public HelpCtx getHelp() {
-            return HelpCtx.DEFAULT_HELP;
+            return new HelpCtx (DetectPanel.class);
         }
 
         public boolean isValid() {
