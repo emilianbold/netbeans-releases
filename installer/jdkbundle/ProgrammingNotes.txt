@@ -5,8 +5,8 @@ Prerequisites
  - JDK 1.4.2 (not JDK 1.5 which uses an incompatible classfile format)
  - external unzip utility on $PATH
  - Unix
- - bundled JVM for IS (all four supported platforms are necessary - Win,
-   Linux, Solaris-sparc are available at IS web, Solaris-x86 must be created)
+ - bundled JVM for InstallShield (all four supported platforms are necessary - Win,
+   Linux, Solaris-sparc are available at InstallShield web, Solaris-x86 must be created)
    I can provide all 4 bundled JVM. JVM from IS are JRE 1.4.2, Solaris-x86
    is JRE 1.4.2_05). Location of bundled JVMs is given by alias bundled.jvm.
    Names of used JVMs:
@@ -14,7 +14,7 @@ Prerequisites
       Linux-Sun-1.4.2.bin
       Solaris-Sun-1.4.2.bin
       sunjre142_05-solaris-x86-installer.bin
- - installers of JDK 1.5.0 for all 4 supported platforms
+ - installers of JDK 1.5.0_01 for all 4 supported platforms
 
 To build from command line run ant as usual with
 
@@ -23,6 +23,7 @@ To build from command line run ant as usual with
  -Dinstaller.basename=NetBeans-jdkbundle-20040622
  -Djdk.installer=/mnt/local/jdk.dir.linux/jdk-1_5_0-beta3-bin-b61-linux-i586-02_aug_2004.bin
  -Dbundled.jvm=/mnt/local/jvms/Linux-Sun-1.4.2.bin
+ -Dstorage.builder=../../java/storagebuilder/dist/storagebuilder.jar
 
 As there is different command line option for every platform it must be run
 separately for every platform.

@@ -376,6 +376,11 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	    service.setRetainedProductBeanProperty(productURL, "beanNB", "installLocation", nbInstallDir);
             service.setRetainedProductBeanProperty(productURL, null, "installLocation", nbInstallDir);
             service.setRetainedProductBeanProperty(productURL, null, "absoluteInstallLocation", nbInstallDir);
+            //Set install location for Storage Builder
+            String sbDestination = nbInstallDir + File.separator + "_uninst" + File.separator + "storagebuilder"; 
+            logEvent(this, Log.DBG, "Storage Builder Destination: " + sbDestination);
+            service.setRetainedProductBeanProperty(productURL,
+            "storageBuilder", "installLocation", sbDestination);
 	} catch (ServiceException e) {
 	    logEvent(this, Log.ERROR, e);
 	}
@@ -425,8 +430,8 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             } catch (ServiceException e) {
                 logEvent(this, Log.ERROR, e);
             }
-            System.getProperties().put("jdkHome", j2seInstallDir);
-            System.getProperties().put("j2seInstallDir", j2seInstallDir);
+            Util.setJdkHome(j2seInstallDir);
+            Util.setJ2SEInstallDir(j2seInstallDir);
             logEvent(this, Log.DBG, "User specified j2seInstallDir: " + j2seInstallDir);
 
             // Last thing to do is create the J2SE directory unless the

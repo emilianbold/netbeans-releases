@@ -901,10 +901,12 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             logEvent(this, Log.DBG,"Finishing");;
             if(!mos.isCanceled()) {
                 mos.setStatusDescription("");
-                for (; percentageCompleted <= 100; percentageCompleted++) {
+                //As this action is not the last one (there is now StorageBuilder after)
+                //it is not necessary to increment percentage completed.
+                /*for (; percentageCompleted <= 100; percentageCompleted++) {
                     logEvent(this, Log.DBG,"percentageCompleted = " + percentageCompleted + " updateCounter " + mos.getUpdateCounter());
                     mos.updatePercentComplete(ESTIMATED_TIME, 1L, 100L);
-                }
+                }*/
             }
             else {
                 String statusDesc = resolveString("$L(org.netbeans.installer.Bundle, ProgressPanel.installationCancelled)");

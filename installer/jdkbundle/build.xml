@@ -63,6 +63,8 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-linux" depends="init, compile">
     <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
+    <copy file="../lib/scripts/run-storage-builder-unix.template"
+          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="linux.xml" />
       <arg value="-build" />
@@ -73,21 +75,28 @@ Microsystems, Inc. All Rights Reserved.
       <arg value="-alias"/>
       <arg value="jdk.installer=${jdk.installer}"/>
       <arg value="-alias"/>
-      <arg value="scripts.dir=build/scripts"/>
+      <arg value="jdk.scripts.dir=build/scripts"/>
       <arg value="-alias"/>
       <arg value="bundled.jvm=${bundled.jvm}"/>
+      <arg value="-alias"/>
+      <arg value="storage.builder=${storage.builder}"/>
+      <arg value="-alias"/>
+      <arg value="sb.scripts.dir=build/storagebuilder"/>
       <classpath>
         <pathelement path="build/classes" />      
         <path refid="ismp.cp"/>
       </classpath>
     </java>
     <delete dir="build/scripts"/>
+    <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
   </target>
 
   <target name="build-solaris-sparc" depends="init, compile">
     <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
+    <copy file="../lib/scripts/run-storage-builder-unix.template"
+          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="solaris-sparc.xml" />
       <arg value="-build" />
@@ -98,21 +107,28 @@ Microsystems, Inc. All Rights Reserved.
       <arg value="-alias"/>
       <arg value="jdk.installer=${jdk.installer}"/>
       <arg value="-alias"/>
-      <arg value="scripts.dir=build/scripts"/>
+      <arg value="jdk.scripts.dir=build/scripts"/>
       <arg value="-alias"/>
       <arg value="bundled.jvm=${bundled.jvm}"/>
+      <arg value="-alias"/>
+      <arg value="storage.builder=${storage.builder}"/>
+      <arg value="-alias"/>
+      <arg value="sb.scripts.dir=build/storagebuilder"/>
       <classpath>
         <pathelement path="build/classes" />
         <path refid="ismp.cp"/>
       </classpath>
     </java>
     <delete dir="build/scripts"/>
+    <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
   </target>
 
   <target name="build-solaris-x86" depends="init, compile">
     <copy file="scripts/j2se-install.template" tofile="build/scripts/_uninst/j2se-install.template"/>
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
+    <copy file="../lib/scripts/run-storage-builder-unix.template"
+          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="solaris-x86.xml" />
       <arg value="-build" />
@@ -123,22 +139,29 @@ Microsystems, Inc. All Rights Reserved.
       <arg value="-alias"/>
       <arg value="jdk.installer=${jdk.installer}"/>
       <arg value="-alias"/>
-      <arg value="scripts.dir=build/scripts"/>
+      <arg value="jdk.scripts.dir=build/scripts"/>
       <arg value="-alias"/>
       <arg value="bundled.jvm=${bundled.jvm}"/>
+      <arg value="-alias"/>
+      <arg value="storage.builder=${storage.builder}"/>
+      <arg value="-alias"/>
+      <arg value="sb.scripts.dir=build/storagebuilder"/>
       <classpath>
         <pathelement path="build/classes" />
         <path refid="ismp.cp"/>
       </classpath>
     </java>
     <delete dir="build/scripts"/>
+    <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
   </target>
 
   <target name="build-windows" depends="init, compile">
     <copy file="scripts/custom-install-jdk.template" tofile="build/scripts/_uninst/custom-install-jdk.template"/>
     <copy file="scripts/custom-install-jre.template" tofile="build/scripts/_uninst/custom-install-jre.template"/>
-     <java classname="com.installshield.isje.ISJE" fork="true">
+    <copy file="../lib/scripts/run-storage-builder-windows.template"
+          tofile="build/storagebuilder/run-storage-builder-windows.template"/>
+    <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="windows.xml" />
       <arg value="-build" />
       <arg value="-alias"/>
@@ -148,15 +171,20 @@ Microsystems, Inc. All Rights Reserved.
       <arg value="-alias"/>
       <arg value="jdk.installer=${jdk.installer}"/>
       <arg value="-alias"/>
-      <arg value="scripts.dir=build/scripts"/>
+      <arg value="jdk.scripts.dir=build/scripts"/>
       <arg value="-alias"/>
       <arg value="bundled.jvm=${bundled.jvm}"/>
+      <arg value="-alias"/>
+      <arg value="storage.builder=${storage.builder}"/>
+      <arg value="-alias"/>
+      <arg value="sb.scripts.dir=build/storagebuilder"/>
       <classpath>
         <pathelement path="build/classes" />
         <path refid="ismp.cp"/>
       </classpath>
     </java>
     <delete dir="build/scripts"/>
+    <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
   </target>
  
