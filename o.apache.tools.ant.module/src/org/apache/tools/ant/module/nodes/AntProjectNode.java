@@ -191,14 +191,17 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         public Object getValue () {
             Element el = getElement ();
             if (el == null) { // #9675
-                return new File ("."); // NOI18N
+                return null;
             }
-            return new File (getElement ().getAttribute ("basedir")); // NOI18N
+            String bd = el.getAttribute("basedir"); // NOI18N
+            if (bd.equals("")) return null; // NOI18N
+            if (bd.equals(".")) bd = ""; // NOI18N
+            return new File(bd);
         }
         public void setValue (Object o) throws IllegalArgumentException, InvocationTargetException {
             Element el = getElement ();
             if (el == null) return;
-            if (o == null || o.toString ().equals ("")) { // NOI18N
+            if (o == null) {
                 try {
                     el.removeAttribute ("basedir"); // NOI18N
                 } catch (DOMException dome) {
@@ -208,7 +211,9 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
             }
             if (! (o instanceof File)) throw new IllegalArgumentException ();
             try {
-                el.setAttribute ("basedir", ((File) o).getPath ()); // NOI18N
+                String path = ((File)o).getPath();
+                if (path.equals("")) path = "."; // NOI18N
+                el.setAttribute("basedir", path); // NOI18N
             } catch (DOMException dome) {
                 throw new InvocationTargetException (dome);
             }
@@ -221,6 +226,20 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         }
         public void restoreDefaultValue () throws InvocationTargetException {
             setValue (null);
+        }
+        public PropertyEditor getPropertyEditor() {
+            // Before using File editor, set up the base directory...
+            AntProjectCookie cookie = (AntProjectCookie)getCookie(AntProjectCookie.class);
+            if (cookie != null) {
+                Element root = cookie.getProjectElement();
+                File buildscript = cookie.getFile();
+                if (root != null && buildscript != null) {
+                    AntModule.err.log("ProjectBasedirProperty: setting baseDir=" + buildscript.getParentFile());
+                    // Controls which directory relative paths are relative to:
+                    ProjectBasedirProperty.this.setValue("baseDir", buildscript.getParentFile()); // NOI18N
+                }
+            }
+            return super.getPropertyEditor();
         }
     }
 

@@ -7,13 +7,11 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.beaninfo.editors;
-
 
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
@@ -21,22 +19,22 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import javax.swing.JFileChooser;
 
+import org.openide.ErrorManager;
+import org.openide.TopManager;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-
 /**
  * PropertyEditor for <code>java.io.File</code>.
  *
- * @author  Jaroslav Tulach, David Strupl
+ * @author Jaroslav Tulach, David Strupl, Peter Zavadsky, Jesse Glick
  */
-public class FileEditor extends PropertyEditorSupport implements ExPropertyEditor {
+public class FileEditor extends PropertyEditorSupport implements ExPropertyEditor, PropertyChangeListener {
     
     /** Env passed in the attachEnv method.*/
     private PropertyEnv env;
@@ -73,10 +71,12 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
     /** Caches last used directory. */
     private static File lastCurrentDir;
     
-    /** File chooser. */
+    /** Cached chooser.
+     * If you don't cache it, MountIterator in core flickers and behaves weirdly,
+     * because apparently PropertyPanel will call getCustomEditor repeatedly and
+     * refresh the display each time.
+     */
     private JFileChooser chooser;
-    /** Property change listener. */
-    private PropertyChangeListener pListener;
     
     /**
      * This method is called by the IDE to pass
@@ -89,56 +89,49 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         Object dirs = env.getFeatureDescriptor().getValue(PROPERTY_SHOW_DIRECTORIES);
         if (dirs instanceof Boolean) {
             directories = ((Boolean)dirs).booleanValue();
-        }
+        } // XXX else if != null, warn
         Object fil = env.getFeatureDescriptor().getValue(PROPERTY_SHOW_FILES);
         if (fil instanceof Boolean) {
             files = ((Boolean)fil).booleanValue();
-        }
+        } // XXX else if != null, warn
         
         Object filter = env.getFeatureDescriptor().getValue(PROPERTY_FILTER);
         if (filter instanceof FilenameFilter) {
             fileFilter = new DelegatingFilenameFilter((FilenameFilter)filter);
-        }
-        
-        if (filter instanceof javax.swing.filechooser.FileFilter) {
+        } else if (filter instanceof javax.swing.filechooser.FileFilter) {
             fileFilter = (javax.swing.filechooser.FileFilter)filter;
-        }
-
-        if (filter instanceof java.io.FileFilter) {
+        } else if (filter instanceof java.io.FileFilter) {
             fileFilter = new DelegatingFileFilter((java.io.FileFilter)filter);
-        }
+        } // XXX else if != null, warn
 
         Object curDir = env.getFeatureDescriptor().getValue(PROPERTY_CURRENT_DIR);
         if (curDir instanceof File) {
             currentDirectory = (File)curDir;
-        }
+            if(! currentDirectory.isDirectory()) {
+                TopManager.getDefault().getErrorManager().log(ErrorManager.WARNING, "java.io.File will not accept currentDir=" + baseDirectory); // NOI18N
+                currentDirectory = null;
+            }
+        } // XXX else if != null, warn
 
         Object baseDir = env.getFeatureDescriptor().getValue(PROPERTY_BASE_DIR);
         if(baseDir instanceof File) {
             baseDirectory = (File)baseDir;
             // As baseDir accept only directories in their absolute form.
             if(!baseDirectory.isDirectory() || !baseDirectory.isAbsolute()) {
+                TopManager.getDefault().getErrorManager().log(ErrorManager.WARNING, "java.io.File will not accept baseDir=" + baseDirectory); // NOI18N
                 baseDirectory = null;
             }
-        }
+        } // XXX else if != null, warn
         
         if (files) {
             mode = directories ? JFileChooser.FILES_AND_DIRECTORIES : 
                 JFileChooser.FILES_ONLY;
         } else {
             mode = directories ? JFileChooser.DIRECTORIES_ONLY :
-                JFileChooser.FILES_AND_DIRECTORIES; // both false, what now?
+                JFileChooser.FILES_AND_DIRECTORIES; // both false, what now? XXX warn
         }
     }
 
-    /** Sets value. */
-    public void setValue(Object value) {
-        super.setValue(value);
-        if ((value instanceof File) && (chooser != null)) {
-            lastCurrentDir = ((File)value).getParentFile();
-        }
-    }
-    
     /** Returns human readable form of the edited value.
      * @return string reprezentation
      */
@@ -147,21 +140,9 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         if (file == null) {
             return ""; // NOI18N
         }
-
-        String path = null;
-        
-        if(baseDirectory != null) {
-            if(file.isAbsolute()) {
-                path = getChildRelativePath(baseDirectory, file);
-            }
-
-            if(path == null) {
-                path = file.getPath();
-            }
-        } else {
-            path = file.getAbsolutePath();
-        }
-        
+        String path = file.getPath();
+        // Dot is more friendly to people though Java itself would prefer blank:
+        if (path.equals("")) path = "."; // NOI18N
         return path;
     }
     
@@ -174,45 +155,39 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         if (str == null) {
             throw new IllegalArgumentException("null"); // NOI18N
         }
-
-        File f = new File(str);
-        
-        if(f != null)  {
-            setValue(f);
+        if (str.equals("")) { // NOI18N
+            setValue(null);
+            return;
         }
+        // See getAsText.
+        if (str.equals(".")) str = ""; // NOI18N
+        setValue(new File(str));
     }
-    
+
     /** Custon editor.
      * @return Returns custom editor component.
      */
     public Component getCustomEditor() {
-        final JFileChooser ch = createFileChooser ();
-        return ch;
-    }
-    
-    /** Creates file chooser. */
-    private JFileChooser createFileChooser () {
+        boolean nue = false;
         if (chooser == null) {
+            nue = true;
             chooser = new JFileChooser();
         }
         
         File originalFile = (File)getValue ();
-        chooser.setFileSelectionMode(mode);
-        if ((originalFile != null) && (originalFile.isAbsolute())){
-            if (originalFile.getParent () != null) {
-                chooser.setCurrentDirectory (new File (originalFile.getParent ()));
-            }
-            chooser.setSelectedFile (originalFile);
-        } else {
-            if (lastCurrentDir != null) {
-                chooser.setCurrentDirectory(lastCurrentDir);
-            }
+        if (originalFile != null && ! originalFile.isAbsolute() && baseDirectory != null) {
+            originalFile = new File(baseDirectory, originalFile.getPath());
         }
-        
-        if ((currentDirectory != null) && (currentDirectory.isDirectory())) {
+        if (currentDirectory != null) {
             chooser.setCurrentDirectory (currentDirectory);
+        } else if (originalFile != null && originalFile.getParentFile() != null) {
+            chooser.setCurrentDirectory (originalFile.getParentFile());
+            chooser.setSelectedFile (originalFile);
+        } else if (lastCurrentDir != null) {
+            chooser.setCurrentDirectory(lastCurrentDir);
         }
         
+        chooser.setFileSelectionMode(mode);
         if (fileFilter != null) {
             chooser.setFileFilter(fileFilter);
         }
@@ -231,32 +206,22 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
 
         chooser.setControlButtonsAreShown(false);
 
-        chooser.removePropertyChangeListener(getPListener());
-        
-        
-        chooser.addPropertyChangeListener(
-            JFileChooser.SELECTED_FILE_CHANGED_PROPERTY,
-            getPListener()
-        );
+        if (nue) {
+            chooser.addPropertyChangeListener(
+                JFileChooser.SELECTED_FILE_CHANGED_PROPERTY,
+                this
+            );
+        }
         
         HelpCtx.setHelpIDString (chooser, getHelpCtx ().getHelpID ());
 
         return chooser;
     }
     
-    /** Lazy initialization of PListener. */
-    private PropertyChangeListener getPListener() {
-        if (pListener == null) {
-            pListener = new PListener();
-        }
-        return pListener;
-    }
-
     /** Implements PropertyEditor method.
      * @return Returns true.
      */
     public boolean supportsCustomEditor() {
-        // [PENDING] see org.openide.propertysheet.editors.FileEditor
         return true;
     }
     
@@ -270,18 +235,31 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         } else {
             // [PENDING] not a full escape of filenames, but enough to at least
             // handle normal Windows backslashes
-            if(baseDirectory != null && !value.isAbsolute()) {
-                return "new java.io.File (\"" // NOI18N
-                    + Utilities.replaceString(baseDirectory.getAbsolutePath(), "\\", "\\\\") // NOI18N
-                    + " ," // NOI18N
-                    + Utilities.replaceString(value.getPath(), "\\", "\\\\") // NOI18N
-                    + "\")"; // NOI18N
+            if (baseDirectory != null && !value.isAbsolute()) {
+                return "new java.io.File(" // NOI18N
+                    + stringify(baseDirectory.getPath())
+                    + ", " // NOI18N
+                    + stringify(value.getPath())
+                    + ")"; // NOI18N
+            } else {
+                return "new java.io.File(" // NOI18N
+                    + stringify(value.getAbsolutePath())
+                    + ")"; // NOI18N
             }
-            
-            return "new java.io.File (\"" // NOI18N
-                + Utilities.replaceString (value.getAbsolutePath(), "\\", "\\\\") // NOI18N
-                + "\")"; // NOI18N
         }
+    }
+    private static String stringify(String in) {
+        StringBuffer buf = new StringBuffer(in.length() * 2 + 2);
+        buf.append('"'); // NOI18N
+        for (int i = 0; i < in.length(); i++) {
+            char c = in.charAt(i);
+            if (c == '\\' || c == '"') { // NOI18N
+                buf.append('\\'); // NOI18N
+            }
+            buf.append(c);
+        }
+        buf.append('"'); // NOI18N
+        return buf.toString();
     }
 
     /** Gets help context. */
@@ -301,44 +279,47 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
      * @return relative path or <code>null</code> can't be resolved 
      * or if the <code>file</code> is not under <code>baseDir</code> tree */
     private static String getChildRelativePath(File baseDir, File file) {
-        File parent = file.getParentFile();
-        
-        while(parent != null) {
-            if(parent.equals(baseDir)) {
-                return file.getPath().substring(parent.getPath().length());
-            }
-            
-            parent = parent.getParentFile();
+        // Handle hypothetical weird situations where file is in baseDir
+        // but the prefixes do not match. E.g.:
+        // file=\foo\bar.txt (assumed to be on C:) baseDir=c:\foo
+        if (file.equals(baseDir)) {
+            // The empty pathname, not ".", is correct here I think...
+            // Try making new File(new File("/tmp", x)) for x in {".", ""}
+            return ""; // NOI18N
         }
-
+        StringBuffer buf = new StringBuffer(file.getPath().length());
+        buf.append(file.getName());
+        for (File parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {
+            if (parent.equals(baseDir)) {
+                return buf.toString();
+            }
+            buf.insert(0, File.separatorChar);
+            buf.insert(0, parent.getName());
+        }
         return null;
     }
     
     /** Property change listaner attached to the JFileChooser chooser. */
-    private class PListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent e) {
-            File f = chooser.getSelectedFile ();
-            if (f == null) {
-                return;
+    public void propertyChange(PropertyChangeEvent e) {
+        JFileChooser chooser = (JFileChooser)e.getSource();
+        File f = (File)chooser.getSelectedFile();
+        if (f == null) {
+            return;
+        }
+
+        if (!files && f.isFile ()) return;
+        if (!directories && f.isDirectory ()) return;
+
+        if (baseDirectory != null) {
+            String rel = getChildRelativePath(baseDirectory, f);
+            if (rel != null) {
+                f = new File(rel);
             }
-            
-            if (f != null) {
-                if (!files && f.isFile ()) return;
-                if (!directories && f.isDirectory ()) return;
-            }
-            Object oldVal = getValue();
-            
-            if ((oldVal == null) && (f == null)) return;
-            
-            if ((oldVal == null) || (f == null)) {
-                setValue(f);
-                return;
-            }
-            if (!f.equals(oldVal)) {
-                setValue(f);
-            }
-        } 
-    } // End of class PListener.
+        }
+        setValue(f);
+        
+        lastCurrentDir = chooser.getCurrentDirectory();
+    }
     
     
     /** Wraps java.io.FileFilter to javax.swing.filechooser.FileFilter. */
