@@ -34,7 +34,7 @@ public abstract class AbstractTreeCustomizer extends JPanel implements Customize
     private static final long serialVersionUID =7141277140374364170L;    
     
     /** */
-    private static final String TEXT_DEFAULT = "<DEFAULT>"; // NOI18N
+    private static final String TEXT_DEFAULT = Util.getString ("TEXT_DEFAULT"); // NOI18N
     
     /** */
     public static final String MIME_XML = "text/xml"; // NOI18N
