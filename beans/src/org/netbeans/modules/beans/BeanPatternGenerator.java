@@ -434,6 +434,7 @@ class BeanPatternGenerator extends Object {
       field.setName( Identifier.create( fieldName ) );
       field.setType( Type.createClass( fieldTypeId ) );
       field.setModifiers( Modifier.PRIVATE );
+      field.setInitValue( " null" );
       String comment = MessageFormat.format( bundle.getString( "COMMENT_EventListenerList" ),
                                              new Object[] { type.getClassName().getName() } );                                          
       field.getJavaDoc().setRawText( comment );
@@ -503,6 +504,9 @@ class BeanPatternGenerator extends Object {
       body.append( TAB + fieldName ).append( ".add (listener);\n" );
     }
     else if ( implementation == 2 ) {
+      body.append( TAB + "if (" ).append( listenerList ).append( " == null ) {\n" );
+      body.append( TABx2 ).append( listenerList ).append( " = new javax.swing.event.EventListenerList();\n" );
+      body.append( TAB ).append( "}\n" );
       body.append( TAB + listenerList ).append( ".add (" );
       body.append( type.toString()).append( ".class, listener);\n" );
     }
@@ -838,6 +842,8 @@ class BeanPatternGenerator extends Object {
 }
 /* 
  * Log
+ *  6    Gandalf   1.5         11/10/99 Petr Hrebejk    Generation of new 
+ *       EventListenerList added to MultiCast event sources
  *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  4    Gandalf   1.3         10/6/99  Petr Hrebejk    Formating fix
