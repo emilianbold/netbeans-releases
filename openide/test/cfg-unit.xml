@@ -39,6 +39,8 @@ Microsystems, Inc. All Rights Reserved.
 		<exclude name="org/openide/loaders/DataFolderTest.class"/> <!-- failing in cont. test -->
                 <!-- following was disabled because of issue #20179 -->
                 <exclude name="org/openide/loaders/DataFolderMoveTest.class"/>
+		<!-- following was disabled because of issue #25032 -->
+		<exclude name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectInvalidatedAfterRootChange"/>
                 <!-- x -->
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart1"/>
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart5"/>
