@@ -1,0 +1,37 @@
+rem echo off
+
+if "%3"=="" goto usage
+
+SET LOGFILE=%1
+SET INSTDIR=%2
+SET DRIVE=%3
+SET UNINSTDIR=%4
+SET INSTALLER_NAME=replace by installer file name
+SET TMP=
+SET TEMP=
+
+%DRIVE%
+cd %UNINSTDIR%
+
+rem date >> %LOGFILE%
+echo "Installing JDK..." >> %LOGFILE%
+
+if not exist ..\%INSTALLER_NAME% goto nosetup
+
+start /w ..\%INSTALLER_NAME% /s /v"/qn INSTALLDIR=\%INSTDIR%"
+
+del ..\%INSTALLER_NAME%
+
+echo "Finished Installing JDK..." >> %LOGFILE%
+rem date  >> %LOGFILE%
+
+goto end
+
+:usage
+	echo "Usage: %0 <logfile path> <installdir> <drive> <scriptlocation>"
+	goto end
+:nosetup
+      	echo "ERROR: jdk installer not found" >> %LOGFILE%
+      	goto end
+
+:end

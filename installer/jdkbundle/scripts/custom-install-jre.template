@@ -1,0 +1,34 @@
+rem echo off
+
+if "%3"=="" goto usage
+
+SET LOGFILE=%1
+SET DRIVE=%2
+SET UNINSTDIR=%3
+SET JRE_MSI_PROJECT=replace by JRE MSI project
+SET TMP=
+SET TEMP=
+
+%DRIVE%
+cd %UNINSTDIR%
+
+rem date >> %LOGFILE%
+echo "Installing JRE..." >> %LOGFILE%
+
+if not exist %JRE_MSI_PROJECT% goto nosetup
+
+start /w msiexec.exe /qn /i %JRE_MSI_PROJECT% IEXPLORER=1 MOZILLA=1 
+
+echo "Finished Installing JRE..." >> %LOGFILE%
+rem date  >> %LOGFILE%
+
+goto end
+
+:usage
+	echo "Usage: %0 <logfile path> <drive> <scriptlocation>"
+	goto end
+:nosetup
+      	echo "ERROR: jre installer not found" >> %LOGFILE%
+      	goto end
+
+:end
