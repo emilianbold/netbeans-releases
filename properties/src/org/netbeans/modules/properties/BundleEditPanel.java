@@ -33,7 +33,7 @@ import javax.swing.table.*;
 
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -366,7 +366,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         NotifyDescriptor.OK_CANCEL_OPTION
         );
         
-        if (TopManager.getDefault().notify(msg).equals(NotifyDescriptor.OK_OPTION)) {
+        if (DialogDisplayer.getDefault().notify(msg).equals(NotifyDescriptor.OK_OPTION)) {
             try {
                 // Starts "atomic" acion for special undo redo manager of open support.
                 obj.getOpenSupport().atomicUndoRedoFlag = new Object();
@@ -436,7 +436,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                                 }
                                 ),
                                 NotifyDescriptor.ERROR_MESSAGE);
-                                TopManager.getDefault().notify(msg);
+                                DialogDisplayer.getDefault().notify(msg);
                             } else {
                                 keyAdded = true;
                             }
@@ -492,7 +492,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         }
         );
         
-        dialog[0] = TopManager.getDefault().createDialog(dd);
+        dialog[0] = DialogDisplayer.getDefault().createDialog(dd);
         dialog[0].show();
     }//GEN-LAST:event_addButtonActionPerformed
     

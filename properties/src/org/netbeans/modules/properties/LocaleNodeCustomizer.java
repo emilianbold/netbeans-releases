@@ -34,7 +34,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.openide.DialogDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -323,7 +323,7 @@ public class LocaleNodeCustomizer extends JPanel {
                 }
             }
         );
-        dialog[0] = TopManager.getDefault().createDialog(dd);
+        dialog[0] = DialogDisplayer.getDefault().createDialog(dd);
         dialog[0].show();
     }//GEN-LAST:event_changeNameButtonActionPerformed
 

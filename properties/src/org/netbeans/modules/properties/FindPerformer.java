@@ -32,9 +32,9 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.SystemAction;
-import org.openide.TopManager;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListener;
@@ -259,7 +259,7 @@ public class FindPerformer implements ActionPerformer, PropertyChangeListener {
             null // listener
         );
 
-        dialog[0] = (javax.swing.JDialog)TopManager.getDefault().createDialog(dd);
+        dialog[0] = (javax.swing.JDialog)DialogDisplayer.getDefault().createDialog(dd);
 
         // Static reference to the dialog.
         findDialog = dialog[0];

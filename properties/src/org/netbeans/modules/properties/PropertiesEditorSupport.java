@@ -51,7 +51,6 @@ import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;

@@ -31,7 +31,7 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
@@ -218,7 +218,7 @@ public final class PropertiesLocaleNode extends FileEntryNode implements CookieS
                                                 }
                                             ),
                                             NotifyDescriptor.ERROR_MESSAGE);
-                                        TopManager.getDefault().notify(msg);
+                                        DialogDisplayer.getDefault().notify(msg);
                                     }
 
                                 // Cancel pressed
@@ -230,7 +230,7 @@ public final class PropertiesLocaleNode extends FileEntryNode implements CookieS
                         }
                     );
 
-                    dialog[0] = TopManager.getDefault().createDialog(dd);
+                    dialog[0] = DialogDisplayer.getDefault().createDialog(dd);
                     dialog[0].show();
 
                 }

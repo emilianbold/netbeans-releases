@@ -22,7 +22,7 @@ import java.util.ResourceBundle;
 import org.openide.actions.RenameAction;
 import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 
@@ -59,7 +59,7 @@ public class LangRenameAction extends RenameAction {
             NbBundle.getBundle("org.openide.actions.Bundle").getString("CTL_RenameTitle"));
         
         dlg.setInputText(lang);
-        if (NotifyDescriptor.OK_OPTION.equals(TopManager.getDefault().notify(dlg))) {
+        if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dlg))) {
             try {
                 pln.setName(Util.assembleName (pln.getFileEntry().getDataObject().getPrimaryFile().getName(), dlg.getInputText()));
             }
@@ -71,7 +71,7 @@ public class LangRenameAction extends RenameAction {
                         new Object[] {n.getName()}),
                     NotifyDescriptor.ERROR_MESSAGE);
                         
-                TopManager.getDefault().notify(msg);
+                DialogDisplayer.getDefault().notify(msg);
             }
         }
     }

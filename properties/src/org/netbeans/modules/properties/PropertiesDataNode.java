@@ -41,7 +41,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
@@ -140,7 +140,7 @@ public class PropertiesDataNode extends DataNode {
             MessageFormat.format(
                 NbBundle.getBundle(PropertiesDataNode.class).getString("MSG_LangExists"),
                     new Object[] {locale}), NotifyDescriptor.ERROR_MESSAGE);
-            TopManager.getDefault().notify(msg);
+            DialogDisplayer.getDefault().notify(msg);
     }
     
     
@@ -319,7 +319,7 @@ public class PropertiesDataNode extends DataNode {
                 }
             );
             
-            dialog[0] = TopManager.getDefault().createDialog(dialogDescriptor);
+            dialog[0] = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
             dialog[0].show();
         }
 

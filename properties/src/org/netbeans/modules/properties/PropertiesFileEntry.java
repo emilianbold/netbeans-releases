@@ -36,7 +36,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
@@ -206,7 +206,7 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
             NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
                 NbBundle.getBundle(PropertiesDataLoader.class).getString("MSG_AttemptToRenamePrimaryFile"),
                 NotifyDescriptor.ERROR_MESSAGE);
-            TopManager.getDefault().notify(msg);
+            DialogDisplayer.getDefault().notify(msg);
             return getFile();
         }
 
@@ -242,7 +242,7 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
                                      NotifyDescriptor.QUESTION_MESSAGE,
                                      new Object[] { concatOpt, leaveAloneOpt, overwriteOpt },
                                      concatOpt); // [PENDING] default option does not seem to work--so make it 1st
-            Object result = TopManager.getDefault ().notify (desc);
+            Object result = DialogDisplayer.getDefault ().notify (desc);
             if (leaveAloneOpt.equals (result) ||
                     NotifyDescriptor.CLOSED_OPTION.equals (result)) {
                 return existing;

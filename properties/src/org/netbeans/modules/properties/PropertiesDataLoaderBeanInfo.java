@@ -23,7 +23,6 @@ import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 import org.openide.ErrorManager;
 
-import org.openide.TopManager;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -61,7 +60,7 @@ public final class PropertiesDataLoaderBeanInfo extends SimpleBeanInfo {
 
             return new PropertyDescriptor[] {p2};
         } catch(IntrospectionException ie) {
-            TopManager.getDefault().getErrorManager().notify(ie);
+            ErrorManager.getDefault().notify(ie);
             
             return null;
         }

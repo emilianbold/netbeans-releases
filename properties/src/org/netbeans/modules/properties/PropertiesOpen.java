@@ -46,8 +46,9 @@ import org.openide.loaders.FileEntry;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.OpenSupport;
 import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.TopManager;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.*;
@@ -101,7 +102,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
             MessageFormat format = new MessageFormat(NbBundle.getBundle(PropertiesOpen.class).getString("MSG_SaveFile"));
             String msg = format.format(new Object[] { propDataObject.getName()});
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_CANCEL_OPTION);
-            Object ret = TopManager.getDefault().notify(nd);
+            Object ret = DialogDisplayer.getDefault().notify(nd);
 
 
             if (NotifyDescriptor.YES_OPTION.equals(ret)) {
@@ -110,7 +111,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
                     propDataObject.updateModificationStatus();
                 }
                 catch (IOException e) {
-                    TopManager.getDefault().notifyException(e);
+                    ErrorManager.getDefault().notify(e);
                     return false;
                 }
             }

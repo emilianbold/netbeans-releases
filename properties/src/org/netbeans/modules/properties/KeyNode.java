@@ -31,7 +31,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -164,7 +164,7 @@ public class KeyNode extends AbstractNode implements PropertyChangeListener {
                 NbBundle.getBundle(KeyNode.class).getString("MSG_CannotRenameKey"),
                 NotifyDescriptor.ERROR_MESSAGE
             );
-            TopManager.getDefault().notify(msg);
+            DialogDisplayer.getDefault().notify(msg);
             return;
         }
         
