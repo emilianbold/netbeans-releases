@@ -52,7 +52,7 @@ public class clear_Frame extends java.awt.Frame {
 
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
-                clear_Frame.this.exitForm(evt);
+                exitForm(evt);
             }
         });
 
@@ -105,18 +105,18 @@ public class clear_Frame extends java.awt.Frame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private java.awt.Button button1;
-    private java.awt.MenuBar menuBar1;
-    private java.awt.Label label1;
-    private java.awt.ScrollPane scrollPane1;
-    private java.awt.Menu menu1;
+    private java.awt.Canvas canvas1;
+    private java.awt.Checkbox checkbox1;
     private java.awt.Choice choice1;
+    private java.awt.Label label1;
+    private java.awt.List list1;
+    private java.awt.Menu menu1;
+    private java.awt.MenuBar menuBar1;
     private java.awt.Panel panel1;
     private java.awt.PopupMenu popupMenu1;
-    private java.awt.Canvas canvas1;
-    private java.awt.TextArea textArea1;
-    private java.awt.List list1;
-    private java.awt.Checkbox checkbox1;
+    private java.awt.ScrollPane scrollPane1;
     private java.awt.Scrollbar scrollbar1;
+    private java.awt.TextArea textArea1;
     private java.awt.TextField textField1;
     // End of variables declaration//GEN-END:variables
 
