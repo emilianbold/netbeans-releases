@@ -11,16 +11,20 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.core.lookup;
 
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.util.*;
+
+import java.util.Collection;
+
+import junit.framework.TestSuite;
+
 import org.netbeans.performance.Benchmark;
 
-import java.lang.ref.WeakReference;
-import java.util.*;
-import junit.framework.*;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+
 
 public class NbLookupBenchmark extends Benchmark {
     /** how many times objects in INSTANCES should be added in */
@@ -37,8 +41,8 @@ public class NbLookupBenchmark extends Benchmark {
         junit.textui.TestRunner.run(new TestSuite (NbLookupBenchmark.class));
     }
     
-    /** instance of lookup */
-    private InstanceLookup lookup;
+    /** Lookup which simulates instance lookup. */
+    private AbstractLookup lookup;
 
     /** instances that we register */
     private static Object[] INSTANCES = new Object[] {
@@ -56,14 +60,16 @@ public class NbLookupBenchmark extends Benchmark {
         boolean reverse = cnt < 0;
         if (reverse) cnt = -cnt;
         
-        lookup = new InstanceLookup ();
+        InstanceContent iContent = new InstanceContent();
+        
+        lookup = new AbstractLookup(iContent);
         
         while (cnt-- > 0) {
             for (int i = 0; i < INSTANCES.length; i++) {
                 if (reverse) {
-                    lookup.add (INSTANCES[INSTANCES.length - i - 1]);
+                    iContent.add (INSTANCES[INSTANCES.length - i - 1]);
                 } else {
-                    lookup.add (INSTANCES[i]);
+                    iContent.add (INSTANCES[i]);
                 }
             }
         }
