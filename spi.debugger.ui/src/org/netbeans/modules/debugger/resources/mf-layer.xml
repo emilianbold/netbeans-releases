@@ -39,6 +39,18 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-debugger-support-actions-FixAction.instance" />
             <file name="org-netbeans-modules-debugger-support-actions-PopTopmostFrameAction.instance" />
         </folder>
+        <folder name="Window">
+            <folder name="Debug">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle" />
+                <file name="org-netbeans-modules-debugger-support-actions-LocalVariablesAction.instance" />
+                <file name="org-netbeans-modules-debugger-support-actions-WatchesAction.instance" />
+                <file name="org-netbeans-modules-debugger-support-actions-CallStackAction.instance" />
+                <file name="org-netbeans-modules-debugger-support-actions-ClassesAction.instance" />
+                <file name="org-netbeans-modules-debugger-support-actions-BreakpointsAction.instance" />
+                <file name="org-netbeans-modules-debugger-support-actions-SessionsAction.instance" />
+                <file name="org-netbeans-modules-debugger-support-actions-ThreadsAction.instance" />
+            </folder>
+        </folder>
     </folder>
 
     <folder name="Menu">
@@ -48,21 +60,33 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Debug">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle" />
-                <!--<file name="org-netbeans-modules-debugger-support-actions-DebuggerConsoleAction.instance" />
-                <attr name="org-netbeans-modules-debugger-support-actions-DebuggerConsoleAction.instance/org-netbeans-modules-debugger-support-actions-LocalVariablesAction.instance" boolvalue="true" />-->
-                <file name="org-netbeans-modules-debugger-support-actions-LocalVariablesAction.instance" />
-                <attr name="org-netbeans-modules-debugger-support-actions-LocalVariablesAction.instance/org-netbeans-modules-debugger-support-actions-WatchesAction.instance" boolvalue="true" />
-                <file name="org-netbeans-modules-debugger-support-actions-WatchesAction.instance" />
-                <attr name="org-netbeans-modules-debugger-support-actions-WatchesAction.instance/org-netbeans-modules-debugger-support-actions-CallStackAction.instance" boolvalue="true" />
-                <file name="org-netbeans-modules-debugger-support-actions-CallStackAction.instance" />
-                <attr name="org-netbeans-modules-debugger-support-actions-CallStackAction.instance/org-netbeans-modules-debugger-support-actions-ClassesAction.instance" boolvalue="true" />
-                <file name="org-netbeans-modules-debugger-support-actions-ClassesAction.instance" />
-                <attr name="org-netbeans-modules-debugger-support-actions-ClassesAction.instance/org-netbeans-modules-debugger-support-actions-BreakpointsAction.instance" boolvalue="true" />
-                <file name="org-netbeans-modules-debugger-support-actions-BreakpointsAction.instance" />
-                <attr name="org-netbeans-modules-debugger-support-actions-BreakpointsAction.instance/org-netbeans-modules-debugger-support-actions-SessionsAction.instance" boolvalue="true" />
-                <file name="org-netbeans-modules-debugger-support-actions-SessionsAction.instance" />
-                <attr name="org-netbeans-modules-debugger-support-actions-SessionsAction.instance/org-netbeans-modules-debugger-support-actions-ThreadsAction.instance" boolvalue="true" />
-                <file name="org-netbeans-modules-debugger-support-actions-ThreadsAction.instance" />
+                <file name="LocalVariablesAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-LocalVariablesAction.instance"/>
+                </file>
+                <attr name="LocalVariablesAction.shadow/WatchesAction.shadow" boolvalue="true" />
+                <file name="WatchesAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-WatchesAction.instance"/>
+                </file>
+                <attr name="WatchesAction.shadow/CallStackAction.shadow" boolvalue="true" />
+                <file name="CallStackAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-CallStackAction.instance"/>
+                </file>
+                <attr name="CallStackAction.shadow/ClassesAction.shadow" boolvalue="true" />
+                <file name="ClassesAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-ClassesAction.instance"/>
+                </file>
+                <attr name="ClassesAction.shadow/BreakpointsAction.shadow" boolvalue="true" />
+                <file name="BreakpointsAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-BreakpointsAction.instance"/>
+                </file>
+                <attr name="BreakpointsAction.shadow/SessionsAction.shadow" boolvalue="true" />
+                <file name="SessionsAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-SessionsAction.instance"/>
+                </file>
+                <attr name="SessionsAction.shadow/ThreadsAction.shadow" boolvalue="true" />
+                <file name="ThreadsAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-ThreadsAction.instance"/>
+                </file>
             </folder>
             <attr name="Debug/Separator3.instance" boolvalue="true" />
         </folder>
@@ -249,25 +273,25 @@ Microsystems, Inc. All Rights Reserved.
 	</file>
         
         <file name="CS-3.shadow">
-	    <attr name="originalFile" stringvalue="Menu/Window/Debug/org-netbeans-modules-debugger-support-actions-LocalVariablesAction.instance"/>
+	    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-LocalVariablesAction.instance"/>
 	</file>
         <file name="CS-4.shadow">
-	    <attr name="originalFile" stringvalue="Menu/Window/Debug/org-netbeans-modules-debugger-support-actions-WatchesAction.instance"/>
+	    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-WatchesAction.instance"/>
 	</file>
         <file name="CS-5.shadow">
-	    <attr name="originalFile" stringvalue="Menu/Window/Debug/org-netbeans-modules-debugger-support-actions-CallStackAction.instance"/>
+	    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-CallStackAction.instance"/>
 	</file>
         <file name="CS-6.shadow">
-	    <attr name="originalFile" stringvalue="Menu/Window/Debug/org-netbeans-modules-debugger-support-actions-ClassesAction.instance"/>
+	    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-ClassesAction.instance"/>
 	</file>
         <file name="CS-7.shadow">
-	    <attr name="originalFile" stringvalue="Menu/Window/Debug/org-netbeans-modules-debugger-support-actions-BreakpointsAction.instance"/>
+	    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-BreakpointsAction.instance"/>
 	</file>
         <file name="CS-8.shadow">
-	    <attr name="originalFile" stringvalue="Menu/Window/Debug/org-netbeans-modules-debugger-support-actions-SessionsAction.instance"/>
+	    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-SessionsAction.instance"/>
 	</file>
         <file name="CS-9.shadow">
-	    <attr name="originalFile" stringvalue="Menu/Window/Debug/org-netbeans-modules-debugger-support-actions-ThreadsAction.instance"/>
+	    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-ThreadsAction.instance"/>
 	</file>
     </folder>
 

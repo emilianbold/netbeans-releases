@@ -65,6 +65,13 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-form-actions-EditContainerAction.instance" />
             <file name="org-netbeans-modules-form-actions-EditFormAction.instance" />
         </folder>
+        <folder name="Window">
+            <folder name="Form">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+                <file name="org-netbeans-modules-form-actions-PaletteAction.instance" />
+                <file name="org-netbeans-modules-form-actions-InspectorAction.instance" />
+            </folder>
+        </folder>
     </folder>
 
     <folder name="Menu">
@@ -73,9 +80,13 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Form">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-                <file name="org-netbeans-modules-form-actions-PaletteAction.instance" />
-                <file name="org-netbeans-modules-form-actions-InspectorAction.instance" />
-                <attr name="org-netbeans-modules-form-actions-PaletteAction.instance/org-netbeans-modules-form-actions-InspectorAction.instance" boolvalue="true" />
+                <file name="PaletteAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Form/org-netbeans-modules-form-actions-PaletteAction.instance"/>
+                </file>
+                <attr name="PaletteAction.shadow/InspectorAction.shadow" boolvalue="true" />
+                <file name="InspectorAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Form/org-netbeans-modules-form-actions-InspectorAction.instance"/>
+                </file>
             </folder>
             <attr name="Form/Debugger" boolvalue="true" />
         </folder>
@@ -718,10 +729,10 @@ Microsystems, Inc. All Rights Reserved.
         </file>
         
         <file name="CS-1.shadow">
-            <attr name="originalFile" stringvalue="Menu/Window/Form/org-netbeans-modules-form-actions-PaletteAction.instance"/>
+            <attr name="originalFile" stringvalue="Actions/Window/Form/org-netbeans-modules-form-actions-PaletteAction.instance"/>
         </file>
         <file name="CS-2.shadow">
-            <attr name="originalFile" stringvalue="Menu/Window/Form/org-netbeans-modules-form-actions-InspectorAction.instance"/>
+            <attr name="originalFile" stringvalue="Actions/Window/Form/org-netbeans-modules-form-actions-InspectorAction.instance"/>
         </file>
     </folder>
 
