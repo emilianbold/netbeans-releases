@@ -36,7 +36,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.execution.NbClassPath;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.web.jsps.parserapi.*;
 import org.netbeans.modules.j2ee.server.web.WebServerInstance;
 import org.netbeans.modules.j2ee.server.datamodel.WebStandardData;
 import org.netbeans.modules.j2ee.server.ServerInstance;
@@ -53,8 +52,6 @@ import org.openide.filesystems.FileUtil;
 * @author Petr Jiricka
 */
 public class JspCompileUtil {
-    
-    private static JspParserFactory parserFactory;
     
     private static final Object repositoryJobLock = new Object();
 
