@@ -28,6 +28,7 @@ import javax.swing.event.*;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.colorchooser.ColorSelectionModel;
 
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /** A property editor for Color class.
@@ -334,6 +335,7 @@ public final class ColorEditor implements PropertyEditor {
       add (chooser, BorderLayout.CENTER);
       chooser.setColor ((Color)editor.getValue ());
       selectionModel.addChangeListener (this);
+      HelpCtx.setHelpIDString (this, NbColorChooser.class.getName ());
     }
 
     public void removeNotify () {
@@ -537,6 +539,7 @@ public final class ColorEditor implements PropertyEditor {
 
 /*
  * Log
+ *  13   Gandalf   1.12        7/8/99   Jesse Glick     Context help.
  *  12   Gandalf   1.11        6/28/99  Ian Formanek    throws 
  *       IllegalArgumentException if not passed Color instance in setValue
  *  11   Gandalf   1.10        6/27/99  Ian Formanek    Ignores non-Color values

@@ -33,6 +33,7 @@ import org.openide.explorer.view.ListView;
 import org.openide.explorer.*;
 import org.openide.nodes.*;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import com.netbeans.developerx.loaders.form.formeditor.border.*;
@@ -181,6 +182,8 @@ public final class BorderEditor extends PropertyEditorSupport {
       split.add(sheetView, SplittedPanel.ADD_BOTTOM);
 
       add(BorderLayout.CENTER, split);
+
+      HelpCtx.setHelpIDString (this, BorderPanel.class.getName ());
     }
 
     public Dimension getPreferredSize () {
@@ -375,6 +378,7 @@ public final class BorderEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  6    Gandalf   1.5         7/8/99   Jesse Glick     Context help.
  *  5    Gandalf   1.4         6/11/99  Jaroslav Tulach System.out commented
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----

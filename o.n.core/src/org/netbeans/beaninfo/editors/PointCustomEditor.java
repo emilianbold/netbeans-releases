@@ -17,6 +17,7 @@ import java.awt.Point;
 import java.util.ResourceBundle;
 
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -48,6 +49,8 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
 
     xLabel.setText (bundle.getString ("CTL_X"));
     yLabel.setText (bundle.getString ("CTL_Y"));
+
+    HelpCtx.setHelpIDString (this, PointCustomEditor.class.getName ());
   }
 
   public java.awt.Dimension getPreferredSize () {
@@ -152,6 +155,7 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
 
 /*
  * Log
+ *  7    Gandalf   1.6         7/8/99   Jesse Glick     Context help.
  *  6    Gandalf   1.5         6/30/99  Ian Formanek    Reflecting changes in 
  *       editors packages and enhanced property editor interfaces
  *  5    Gandalf   1.4         6/8/99   Ian Formanek    ---- Package Change To 

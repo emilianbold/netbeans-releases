@@ -14,6 +14,7 @@
 package com.netbeans.developer.editors;
 
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
+import org.openide.util.HelpCtx;
 import java.io.*;
 import java.util.Properties;
 import javax.swing.*;
@@ -40,6 +41,7 @@ public class PropertiesCustomEditor extends javax.swing.JPanel implements Enhanc
     }
     textArea.setText (baos.toString ());
     setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(8, 8, 8, 8)));
+    HelpCtx.setHelpIDString (this, PropertiesCustomEditor.class.getName ());
   }
 
   /**
@@ -87,6 +89,7 @@ public class PropertiesCustomEditor extends javax.swing.JPanel implements Enhanc
 
 /*
  * Log
+ *  4    Gandalf   1.3         7/8/99   Jesse Glick     Context help.
  *  3    Gandalf   1.2         6/30/99  Ian Formanek    Reflecting changes in 
  *       editors packages and enhanced property editor interfaces
  *  2    Gandalf   1.1         6/8/99   Ian Formanek    ---- Package Change To 

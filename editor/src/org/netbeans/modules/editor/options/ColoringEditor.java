@@ -41,6 +41,8 @@ import javax.swing.JColorChooser;
 import com.netbeans.developer.editors.ColorEditor;
 import com.netbeans.editor.Coloring;
 
+import org.openide.util.HelpCtx;
+
 /**
 * Settings for editor
 *
@@ -216,6 +218,8 @@ public class ColoringEditor extends PropertyEditorSupport {
 
       updateValue();
       add(pEast, BorderLayout.EAST);
+
+      HelpCtx.setHelpIDString (this, ColoringComponent.class.getName ());
     }
 
     class ChooserPanel extends JPanel {
@@ -317,6 +321,7 @@ public class ColoringEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  3    Gandalf   1.2         7/8/99   Jesse Glick     Context help.
  *  2    Gandalf   1.1         7/3/99   Ian Formanek    Changed package 
  *       statement to make it compilable
  *  1    Gandalf   1.0         6/30/99  Ales Novak      

@@ -13,6 +13,7 @@
 
 package com.netbeans.developer.editors;
 
+import org.openide.util.HelpCtx;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import java.util.Vector;
 import javax.swing.*;
@@ -34,6 +35,7 @@ public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCu
     initComponents ();
     textArea.setText (s);
     setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(8, 8, 8, 8)));
+    HelpCtx.setHelpIDString (this, StringCustomEditor.class.getName ());
   }
 
   /**
@@ -75,6 +77,7 @@ public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCu
 
 /*
  * Log
+ *  6    Gandalf   1.5         7/8/99   Jesse Glick     Context help.
  *  5    Gandalf   1.4         6/30/99  Ian Formanek    Reflecting changes in 
  *       editors packages and enhanced property editor interfaces
  *  4    Gandalf   1.3         6/8/99   Ian Formanek    ---- Package Change To 

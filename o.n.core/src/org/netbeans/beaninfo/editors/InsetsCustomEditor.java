@@ -16,6 +16,7 @@ package com.netbeans.developer.editors;
 import java.awt.Insets;
 import java.util.ResourceBundle;
 
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
@@ -51,6 +52,8 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCu
     leftLabel.setText (bundle.getString ("CTL_Left"));
     bottomLabel.setText (bundle.getString ("CTL_Bottom"));
     rightLabel.setText (bundle.getString ("CTL_Right"));
+
+    HelpCtx.setHelpIDString (this, InsetsCustomEditor.class.getName ());
   }
 
   public java.awt.Dimension getPreferredSize () {
@@ -207,6 +210,7 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCu
 
 /*
  * Log
+ *  7    Gandalf   1.6         7/8/99   Jesse Glick     Context help.
  *  6    Gandalf   1.5         6/30/99  Ian Formanek    Reflecting changes in 
  *       editors packages and enhanced property editor interfaces
  *  5    Gandalf   1.4         6/8/99   Ian Formanek    ---- Package Change To 

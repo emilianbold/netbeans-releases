@@ -27,7 +27,7 @@ import javax.swing.event.*;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.colorchooser.ColorSelectionModel;
 
-//import com.netbeans.developer.util.QuickSorter;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /** A property editor for Color class.
@@ -332,6 +332,7 @@ public final class ColorEditor implements PropertyEditor {
       add (chooser, BorderLayout.CENTER);
       chooser.setColor ((Color)editor.getValue ());
       selectionModel.addChangeListener (this);
+      HelpCtx.setHelpIDString (this, NbColorChooser.class.getName ());
     }
 
     public void removeNotify () {
@@ -535,6 +536,7 @@ public final class ColorEditor implements PropertyEditor {
 
 /*
  * Log
+ *  3    Gandalf   1.2         7/8/99   Jesse Glick     Context help.
  *  2    Gandalf   1.1         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  1    Gandalf   1.0         5/16/99  Ian Formanek    

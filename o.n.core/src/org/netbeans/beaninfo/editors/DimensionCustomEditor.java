@@ -17,6 +17,7 @@ import java.awt.Dimension;
 import java.util.ResourceBundle;
 
 import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
 /**
@@ -48,6 +49,7 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Enhance
 
     widthField.setText (""+dimension.width);
     heightField.setText (""+dimension.height);
+    HelpCtx.setHelpIDString (this, DimensionCustomEditor.class.getName ());
   }
 
   public java.awt.Dimension getPreferredSize () {
@@ -156,6 +158,7 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Enhance
 
 /*
  * Log
+ *  7    Gandalf   1.6         7/8/99   Jesse Glick     Context help.
  *  6    Gandalf   1.5         6/30/99  Ian Formanek    Reflecting changes in 
  *       editors packages and enhanced property editor interfaces
  *  5    Gandalf   1.4         6/8/99   Ian Formanek    ---- Package Change To 

@@ -20,6 +20,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
+import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
 /** The ParametersPicker is a panel which allows to enter a method parameter data.
@@ -61,6 +62,8 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
     updateParameterTypes ();
     currentFilledState = isFilled ();
+
+    HelpCtx.setHelpIDString (this, ParametersPicker.class.getName ());
   }
 
   public void setPropertyValue (RADConnectionPropertyEditor.RADConnectionDesignValue value) {
@@ -447,6 +450,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
 /*
  * Log
+ *  9    Gandalf   1.8         7/8/99   Jesse Glick     Context help.
  *  8    Gandalf   1.7         6/30/99  Ian Formanek    reflecting change in 
  *       enhanced property editors interfaces
  *  7    Gandalf   1.6         6/27/99  Ian Formanek    Can be used in 

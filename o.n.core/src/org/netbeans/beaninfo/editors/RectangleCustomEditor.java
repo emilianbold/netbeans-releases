@@ -16,6 +16,7 @@ package com.netbeans.developer.editors;
 import java.awt.Rectangle;
 import java.util.ResourceBundle;
 
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
@@ -51,7 +52,7 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
     yLabel.setText (bundle.getString ("CTL_Y"));
     widthLabel.setText (bundle.getString ("CTL_Width"));
     heightLabel.setText (bundle.getString ("CTL_Height"));
-
+    HelpCtx.setHelpIDString (this, RectangleCustomEditor.class.getName ());
   }
 
   public java.awt.Dimension getPreferredSize () {
@@ -208,6 +209,7 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
 
 /*
  * Log
+ *  7    Gandalf   1.6         7/8/99   Jesse Glick     Context help.
  *  6    Gandalf   1.5         6/30/99  Ian Formanek    Reflecting changes in 
  *       editors packages and enhanced property editor interfaces
  *  5    Gandalf   1.4         6/8/99   Ian Formanek    ---- Package Change To 

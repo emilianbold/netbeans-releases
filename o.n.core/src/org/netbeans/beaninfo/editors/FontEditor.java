@@ -25,6 +25,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -278,6 +279,8 @@ public class FontEditor implements PropertyEditor {
       p.add ("Center", pp);
       la.setConstraints (p, c);
       add (p);
+
+      HelpCtx.setHelpIDString (this, FontPanel.class.getName ());
     }
 
      public Dimension getPreferredSize () {
@@ -308,6 +311,7 @@ public class FontEditor implements PropertyEditor {
 
 /*
  * Log
+ *  4    Gandalf   1.3         7/8/99   Jesse Glick     Context help.
  *  3    Gandalf   1.2         6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  2    Gandalf   1.1         3/4/99   Jan Jancura     bundle moved
