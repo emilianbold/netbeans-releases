@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
     <property name="apache-license.file" location="${nbroot}/nbbuild/external/apache-license.txt"/>
-    <property name="homepage.base" value="netbeans.org"/>
+    <property name="homepage.base" value="libs.netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
     <property name="nbm_alias" value="nb_ide"/>
 
