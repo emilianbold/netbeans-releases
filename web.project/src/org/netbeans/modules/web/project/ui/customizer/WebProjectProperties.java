@@ -442,15 +442,9 @@ public class WebProjectProperties {
         
         projectProperties.setProperty( WAR_CONTENT_ADDITIONAL, war_includes );
         
-        //Handle platform selection
+        //Handle platform selection and javac.source javac.target properties
         SpecificationVersion sourceLevel = (SpecificationVersion) JAVAC_SOURCE_MODEL.getSelectedItem();
         PlatformUiSupport.storePlatform (projectProperties, updateHelper, (String) PLATFORM_MODEL.getSelectedItem(), sourceLevel);
-
-        //Save javac.source
-        if (sourceLevel!=null) {
-            //Not broken platform
-            projectProperties.setProperty(JAVAC_SOURCE, sourceLevel.toString());
-        }
 
         // Handle other special cases
         if ( NO_DEPENDENCIES_MODEL.isSelected() ) { // NOI18N

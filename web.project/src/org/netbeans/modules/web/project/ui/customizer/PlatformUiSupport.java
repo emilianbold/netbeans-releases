@@ -12,8 +12,6 @@
  */
 
 package org.netbeans.modules.web.project.ui.customizer;
-
-import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
@@ -24,11 +22,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -52,6 +46,7 @@ import org.w3c.dom.NodeList;
 public class PlatformUiSupport {
     
     private static final String DEFAULT_JAVAC_TARGET = "${default.javac.target}";  //NOI18N
+    private static final String DEFAULT_JAVAC_SOURCE = "${default.javac.source}";  //NOI18N
     
     
     private PlatformUiSupport() {
@@ -69,7 +64,7 @@ public class PlatformUiSupport {
     }
        
     /**
-     * Stores active platform into project's metadata
+     * Stores active platform, javac.source and javac.target into the project's metadata
      * @param props project's shared properties
      * @param helper to read/update project.xml
      * @param platformDisplayName the patform's display name
@@ -91,8 +86,24 @@ public class PlatformUiSupport {
                     root.removeChild(explicitPlatformNodes.item(0));
                     changed = true;
                 }
-                if (!DEFAULT_JAVAC_TARGET.equals(props.getProperty(WebProjectProperties.JAVAC_TARGET))) {
-                    props.setProperty (WebProjectProperties.JAVAC_TARGET, DEFAULT_JAVAC_TARGET);
+                SpecificationVersion platformVersion = platform.getSpecification().getVersion();
+                String newTargetValue;
+                String newSourceValue;
+                if (sourceLevel == null || sourceLevel.equals (platformVersion)){
+                    //Try to keep the DEFAULT_JAVAC_TARGET and DEFAULT_JAVAC_TARGET if possible
+                    newTargetValue = DEFAULT_JAVAC_TARGET;
+                    newSourceValue = DEFAULT_JAVAC_SOURCE;
+                }
+                else {
+                    newTargetValue = newSourceValue = sourceLevel.toString();
+                }
+                String oldTargetValue = props.getProperty (WebProjectProperties.JAVAC_TARGET);
+                String oldSourceValue = props.getProperty (WebProjectProperties.JAVAC_SOURCE);
+                if (!newTargetValue.equals (oldTargetValue)) {
+                    props.setProperty (WebProjectProperties.JAVAC_TARGET, newTargetValue);
+                }
+                if (!newSourceValue.equals (oldSourceValue)) {
+                    props.setProperty (WebProjectProperties.JAVAC_SOURCE, newSourceValue);
                 }
             }
             else {
@@ -126,6 +137,9 @@ public class PlatformUiSupport {
                     sourceLevel = platform.getSpecification().getVersion();
                 }
                 String javacSource = sourceLevel.toString();
+                if (!javacSource.equals(props.getProperty(WebProjectProperties.JAVAC_SOURCE))) {                    
+                    props.setProperty (WebProjectProperties.JAVAC_SOURCE, javacSource);
+                }
                 if (!javacSource.equals(props.getProperty(WebProjectProperties.JAVAC_TARGET))) {                    
                     props.setProperty (WebProjectProperties.JAVAC_TARGET, javacSource);
                 }
