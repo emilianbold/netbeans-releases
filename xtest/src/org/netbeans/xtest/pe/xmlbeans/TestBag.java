@@ -41,6 +41,8 @@ public class TestBag extends XMLBean {
     public long     xmlat_testsPass;
     public long     xmlat_testsFail;
     public long     xmlat_testsError;
+
+    public boolean  xmlat_ideUserDir = false;
     
     public String   xmlat_bagID;
     

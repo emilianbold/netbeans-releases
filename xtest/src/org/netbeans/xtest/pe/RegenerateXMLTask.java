@@ -197,7 +197,9 @@ public class RegenerateXMLTask extends Task{
             }
         }
         
-        debugInfo("regenerateTestBag(): regenerating testbag.xml");
+        debugInfo("regenerateTestBag(): regenerating testbag.xml");       
+        
+        
         UnitTestSuite[] testSuites = ResultsUtils.getUnitTestSuites(new File(testBagResultDir,PEConstants.TESTSUITES_SUBDIR)); 
         UnitTestSuite[] failingTestSuites = new UnitTestSuite[testSuites.length];
         // clean old values
@@ -223,6 +225,16 @@ public class RegenerateXMLTask extends Task{
         }
         // assign id to this testbag
         testBag.xmlat_bagID = testBagRoot.getName();
+        
+        // check if there is IDE user directory
+        File ideUserDir = new File(testBagRoot,PEConstants.IDE_USERDIR_LOCATION);
+        if (ideUserDir.isDirectory()) {
+            testBag.xmlat_ideUserDir = true;
+        } else {
+            testBag.xmlat_ideUserDir = false;
+        }
+        
+        
         //
         // now serialize new regenerated testbag (only if not producing big report !!!)
         if (!produceBigReportOnly) {                                
