@@ -305,6 +305,11 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
 		while (it.hasNext()) {
 			Object addkey = it.next();
 			Object addobj = additional.get(addkey);
+      
+      //SQL92 types will be not added into databese type list
+      if (addkey.equals("TypeMap"))
+        continue;
+      
 			if (base.containsKey(addkey)) {
 				Object baseobj = base.get(addkey);
 				if (deep && (baseobj instanceof HashMap) && (addobj instanceof HashMap)) {
@@ -328,6 +333,8 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
 
 /*
 * <<Log>>
+*  12   Gandalf   1.11        1/12/00  Radko Najman    deepUnion() method is not
+*       called for TypeMap key
 *  11   Gandalf   1.10        12/15/99 Radko Najman    driverspec.plist
 *  10   Gandalf   1.9         11/1/99  Radko Najman    getDatabaseProductName().trim()
 *       
