@@ -440,11 +440,14 @@ final class Services extends ServiceType.Registry {
     /** the section */
     private ManifestSection.ServiceSection section;
     /** all copied executors */
-    private TreeSet all;
+    private SortedSet all;
+    /** current default, or null */
+    private ServiceType def;
   
     public InstanceLevel () {
       setBefore (true);
       all = new TreeSet (this);
+      def = null;
     }
     
     /** How to create new node for a ServiceType
@@ -473,8 +476,6 @@ final class Services extends ServiceType.Registry {
 
 //System.out.println("Into: " + this + " adding: " +s.getName ());
 
-      ServiceType update = all.isEmpty () ? null : (ServiceType)all.first ();
-      
       try {
         add (s);
       } catch (Exception ex) {
@@ -482,8 +483,8 @@ final class Services extends ServiceType.Registry {
         return;
       }
       
-      if (section.isDefault () && update != null) {
-        refreshKey (update);
+      if (section.isDefault () && def != null) {
+        refreshKey (def);
       }
     }
 
@@ -495,11 +496,11 @@ final class Services extends ServiceType.Registry {
       
       destroy (s);
       
-      if (all.isEmpty ()) {
+      if (def == null) {
         return true;
       }
       
-      refreshKey (all.first ());
+      refreshKey (def);
       return false;
     }
     
@@ -517,12 +518,36 @@ final class Services extends ServiceType.Registry {
     //
     
     /** Creates new instance.
+    * @param proto if true, try to use prototype
     */
-    public void create () throws Exception {
-      ServiceType type = section.createServiceType ();
-      add (type);
+    void create (boolean proto) throws Exception {
+      ServiceType type = (! proto || def == null) ? section.createServiceType () : def;
+      add (uniquify (type));
+    }
+    
+    /** Test whether the services repository contains the supplied name. */
+    private static boolean containsName (String name) {
+      Enumeration e = INSTANCE.services ();
+      while (e.hasMoreElements ()) {
+        ServiceType s = (ServiceType) e.nextElement ();
+        if (s.getName ().equals (name)) return true;
+      }
+      return false;
     }
 
+    /** If this service type will have a unique name, return it; else create a copy with a new unique name. */
+    static ServiceType uniquify (ServiceType type) throws IOException, ClassNotFoundException {
+      if (containsName (type.getName ())) {
+        type = (ServiceType) new NbMarshalledObject (type).get ();
+        String name = type.getName ();
+        int suffix = 2;
+        String newname;
+        while (containsName (newname = Main.getString ("LBL_ServiceType_Duplicate", name, String.valueOf (suffix)))) suffix++;
+        type.setName (newname);
+      }
+      return type;
+    }
+    
     /** Adds new instance or copy of the instance.
     */
     public void add (ServiceType s) throws Exception {
@@ -531,6 +556,7 @@ final class Services extends ServiceType.Registry {
         s = (ServiceType)m.get ();
       }
       all.add (s);
+      def = (ServiceType) all.first ();
       setKeys (all);
       
       firePropertyChange ();
@@ -539,6 +565,7 @@ final class Services extends ServiceType.Registry {
     /** Destroys the service */
     public void destroy (ServiceType s) {
       all.remove (s);
+      def = all.isEmpty () ? null : (ServiceType) all.first ();
       setKeys (all);
       
       firePropertyChange ();
@@ -572,6 +599,7 @@ final class Services extends ServiceType.Registry {
       if (!ll.isEmpty ()) {
         // update current state
         all = ll;
+        def = (ServiceType) all.first ();
         setKeys (ll);
       }
       
@@ -583,28 +611,27 @@ final class Services extends ServiceType.Registry {
       ServiceType s1 = (ServiceType)o1;
       ServiceType s2 = (ServiceType)o2;
 
-      ServiceType def;
-      try {
-        def = section.getServiceType ();
-      } catch (InstantiationException ex) {
-        def = null;
-      }
-      
       if (s1 == def) {
-        return 1;
-      }
-      
-      if (s2 == def) {
         return -1;
       }
       
-      return System.identityHashCode (s1) - System.identityHashCode (s2);
+      if (s2 == def) {
+        return 1;
+      }
+      
+      int byName = s1.getName ().compareTo (s2.getName ());
+      if (byName != 0)
+        return byName;
+      else
+        return System.identityHashCode (s1) - System.identityHashCode (s2);
     }
   }
 }
 
 /*
 * Log
+*  5    Gandalf   1.4         10/1/99  Jesse Glick     Cleanup of service type 
+*       name presentation.
 *  4    Gandalf   1.3         9/21/99  Jaroslav Tulach Updates the list of 
 *       services when reorder is performed.
 *  3    Gandalf   1.2         9/19/99  Jaroslav Tulach Read/write external 

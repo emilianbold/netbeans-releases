@@ -171,6 +171,31 @@ public class ServiceTypePanel extends ExplorerPanel {
     public ServiceType getServiceType () {
       return (ServiceType)getBean ();
     }
+    
+    // Prevent folks from changing the name here!
+    public Node.PropertySet[] getPropertySets () {
+      final Node.PropertySet[] sets = super.getPropertySets ();
+      Node.PropertySet[] nue = new Node.PropertySet[sets.length];
+      for (int i = 0; i < sets.length; i++) {
+        final int ii = i;
+        nue[i] = new Node.PropertySet () {
+          {
+            setName (sets[ii].getName ());
+            setDisplayName (sets[ii].getDisplayName ());
+            setShortDescription (sets[ii].getShortDescription ());
+          }
+          public Node.Property[] getProperties () {
+            Node.Property[] props = sets[ii].getProperties ();
+            List nueprops = new ArrayList ();
+            for (int j = 0; j < props.length; j++)
+              if (! props[j].getName ().equals ("name"))
+                nueprops.add (props[j]);
+            return (Node.Property[]) nueprops.toArray (new Node.Property[nueprops.size ()]);
+          }
+        };
+      }
+      return nue;
+    }
       
   }
   
