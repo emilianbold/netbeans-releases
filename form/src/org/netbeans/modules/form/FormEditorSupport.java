@@ -182,7 +182,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       Object result = TopManager.getDefault().notify(
         new NotifyDescriptor.Confirmation("The form is saved in an older format. Do you want to convert the form to the new XML persistence format?\nNote: If you answer No, some new features of the form editor will not be available",
                                           NotifyDescriptor.YES_NO_OPTION,
-                                          NotifyDescriptor.WARNING_MESSAGE)
+                                          NotifyDescriptor.QUESTION_MESSAGE)
         );
       if (NotifyDescriptor.YES_OPTION.equals(result)) {
         saveManager = new GandalfPersistenceManager ();
@@ -261,6 +261,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  22   Gandalf   1.21        7/11/99  Ian Formanek    
  *  21   Gandalf   1.20        7/11/99  Ian Formanek    Better work with 
  *       persistence managers, supportsAdvancedFeatures added
  *  20   Gandalf   1.19        7/3/99   Ian Formanek    Fires formToBeSaved 
