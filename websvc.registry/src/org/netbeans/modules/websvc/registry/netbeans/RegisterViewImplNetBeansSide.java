@@ -54,7 +54,7 @@ public class RegisterViewImplNetBeansSide implements WebServicesRegistryView {
 		if(delegate != null) {
 			return delegate.getWebServiceNodes( wsdlFile);
 		}
-		return new Node[0];
+		return null;
     }
     
     public boolean isServiceRegistered(String serviceName) {
