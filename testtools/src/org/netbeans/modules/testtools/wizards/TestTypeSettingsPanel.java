@@ -24,6 +24,7 @@ import org.openide.util.HelpCtx;
 import javax.swing.event.ChangeListener;
 import org.openide.loaders.TemplateWizard;
 import java.awt.CardLayout;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -122,7 +123,7 @@ public class TestTypeSettingsPanel extends javax.swing.JPanel implements WizardD
 
         add(panel, "ok");
 
-        stopLabel.setText("Test Workspace already contains Test Type of this name.");
+        stopLabel.setText("Test Type with this name already exists or has invalid name.");
         stopLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         add(stopLabel, "stop");
 
@@ -145,14 +146,15 @@ public class TestTypeSettingsPanel extends javax.swing.JPanel implements WizardD
         try {
             if (set.startFromType) {
                 name=wizard.getTargetName();
+                stop=(name!=null) && (!Utilities.isJavaIdentifier(name));
                 if (name==null)
                     name=wizard.getTemplate().getPrimaryFile().getName();
-                stop=WizardIterator.detectTestType(wizard.getTargetFolder(), name);
+                stop=stop||WizardIterator.detectTestType(wizard.getTargetFolder(), name);
             } else {
                 name=set.typeName;
+                stop=(name!=null) && (!Utilities.isJavaIdentifier(name));
                 if (name==null)
                     name=set.typeTemplate.getPrimaryFile().getName();
-                stop=false;
             }
         } catch (Exception e) {}
         if (stop)

@@ -159,7 +159,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         clel.removeMethods(getTemplateMethods(source));
 
         // adding and renaming new methods, creating golden files if needed
-        for (int i=0; i<methods.length; i++) {
+        for (int i=0; methods!=null && i<methods.length; i++) {
             CaseElement cel=methods[i];
             clel.addMethod(cel.getTemplate());
             clel.getMethod(cel.getTemplate().getName(), null).setName(Identifier.create(cel.getName()));
@@ -189,10 +189,13 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         FileObject fo2=fo.getFileObject("data");
         if ((fo2==null)||(!fo2.isFolder()))
             fo2=fo.createFolder("data");
-        fo=fo2.getFileObject(source.getName());
+        fo=fo2.getFileObject("goldenfiles");
         if ((fo==null)||(!fo.isFolder()))
-            fo=fo2.createFolder(source.getName());
-        fo.createData(name,"pass");
+            fo=fo2.createFolder("goldenfiles");
+        fo2=fo.getFileObject(source.getName());
+        if ((fo2==null)||(!fo2.isFolder()))
+            fo2=fo.createFolder(source.getName());
+        fo2.createData(name,"pass");
     }
     
     protected static boolean detectBuildScript(DataFolder folder) {
@@ -226,6 +229,8 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
     }
     
     protected static Set instantiateTestSuite(WizardSettings set) throws IOException {
+        if (set.suiteName!=null && !Utilities.isJavaIdentifier(set.suiteName))
+            throw new IOException("Selected Test Suite name is not valid identifier.");
         try {
             set.suite=(JavaDataObject)set.suiteTemplate.createFromTemplate(set.suiteTarget, set.suiteName);
         } catch (IOException ioe) {
@@ -247,6 +252,8 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
     }
 
     protected static Set instantiateTestType(WizardSettings set) throws IOException {
+        if (set.typeName!=null && !Utilities.isJavaIdentifier(set.typeName))
+            throw new IOException("Selected Test Type name is not valid identifier.");
         HashSet res=new HashSet();
         DataObject dob=null;
         try {
@@ -290,6 +297,8 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
     }
     
     protected static Set instantiateTestWorkspace(WizardSettings set) throws IOException {
+        if (set.workspaceName!=null && !Utilities.isJavaIdentifier(set.workspaceName))
+            throw new IOException("Selected Test Workspace name is not valid identifier.");
         HashSet res=new HashSet();
         
         set.typeTarget=DataFolder.create(set.workspaceTarget,"test");

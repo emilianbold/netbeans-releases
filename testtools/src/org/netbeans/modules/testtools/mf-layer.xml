@@ -90,6 +90,8 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestWorkspaceWizardIterator.singleton"/>
         <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/testtools/templates/workspace.html"/>
+        <attr name="NetBeansAttrCompiler" methodvalue="org.netbeans.modules.testtools.XTestCompilerType.getCompiler"/>
+        <attr name="NetBeansAttrExecutor" methodvalue="org.netbeans.modules.testtools.XTestExecutor.getExecutor"/>
       </file>
       <file name="unit__build-.xml" url="templates/unit__build-.xml.template"/>
       <file name="unit__cfg-.xml" url="templates/unit__cfg-.xml.template"/>
@@ -136,7 +138,6 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
       <folder name="CompilerType">
           <file name="org-netbeans-modules-testtools-XTestCompiler.settings">
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
-              <attr name="SystemFileSystem.layer" stringvalue="project"/>
               <attr name="template" boolvalue="true"/>
               <![CDATA[
                   <?xml version="1.0"?>
@@ -154,7 +155,6 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
       <folder name="Executor">
           <file name="org-netbeans-modules-testtools-XTestExecutor.settings">
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
-              <attr name="SystemFileSystem.layer" stringvalue="project"/>
               <attr name="template" boolvalue="true"/>
               <![CDATA[
                   <?xml version="1.0"?>
@@ -176,7 +176,6 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
     <folder name="CompilerType">
         <file name="org-netbeans-modules-testtools-XTestCompiler.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
             <![CDATA[
                 <?xml version="1.0"?>
                 <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
@@ -193,7 +192,6 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
     <folder name="Executor">
         <file name="org-netbeans-modules-testtools-XTestExecutor.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
             <![CDATA[
                 <?xml version="1.0"?>
                 <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">

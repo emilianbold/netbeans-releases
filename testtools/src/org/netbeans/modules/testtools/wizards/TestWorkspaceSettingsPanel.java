@@ -314,7 +314,7 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
 
         add(panel, "ok");
 
-        stopLabel.setText("Test Workspace already exists in selected package.");
+        stopLabel.setText("Test Workspace exists in selected package or has invalid name.");
         stopLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         add(stopLabel, "stop");
 
@@ -411,18 +411,19 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
     }
     
     public void readSettings(Object obj) {
+        WizardSettings set=WizardSettings.get(obj);
         wizard=(TemplateWizard)obj;
         DataFolder df=null;
         stop=true;
         try {
             df=wizard.getTargetFolder();
-            stop=WizardIterator.detectBuildScript(df);
+            stop=(wizard.getTargetName()!=null && !Utilities.isJavaIdentifier(wizard.getTargetName())) 
+            || WizardIterator.detectBuildScript(df);
         } catch (Exception e) {}
         if (stop)
             ((CardLayout)getLayout()).show(this, "stop");
         else {
             ((CardLayout)getLayout()).show(this, "ok");
-            WizardSettings set=WizardSettings.get(obj);
             if (set.workspaceLevel<0)
                 levelCombo.setSelectedIndex(WizardIterator.detectWorkspaceLevel(df));
             if (set.defaultType!=null) 

@@ -88,7 +88,7 @@
     </Container>
     <Component class="javax.swing.JLabel" name="stopLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Test Workspace already contains Test Type of this name."/>
+        <Property name="text" type="java.lang.String" value="Test Type with this name already exists or has invalid name."/>
         <Property name="horizontalAlignment" type="int" value="0"/>
       </Properties>
       <Constraints>

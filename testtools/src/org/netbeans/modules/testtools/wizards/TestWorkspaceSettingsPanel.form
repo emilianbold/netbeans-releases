@@ -241,7 +241,7 @@
     </Container>
     <Component class="javax.swing.JLabel" name="stopLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Test Workspace already exists in selected package."/>
+        <Property name="text" type="java.lang.String" value="Test Workspace exists in selected package or has invalid name."/>
         <Property name="horizontalAlignment" type="int" value="0"/>
       </Properties>
       <Constraints>

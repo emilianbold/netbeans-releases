@@ -34,6 +34,7 @@ import java.util.Properties;
 import java.io.File;
 import org.netbeans.modules.testtools.wizards.WizardIterator;
 import org.openide.TopManager;
+import org.openide.ServiceType;
 
 /**
  *
@@ -58,7 +59,7 @@ public class XTestCompilerType extends CompilerType {
     
     /** Holds value of property testType. */
     private String testType="";
-
+    
     public XTestCompilerType() {
         String home=System.getProperty("netbeans.home");
         if (!new File(home+File.separator+"xtest-distribution").exists()) 
@@ -66,6 +67,10 @@ public class XTestCompilerType extends CompilerType {
         xtestHome=new File(home+File.separator+"xtest-distribution");
         jemmyHome=new File(home+File.separator+"lib"+File.separator+"ext");
         jellyHome=new File(home+File.separator+"lib"+File.separator+"ext");
+    }
+    
+    public static ServiceType.Handle getCompiler() {
+        return new ServiceType.Handle(new XTestCompilerType());
     }
     
     public HelpCtx getHelpCtx () {

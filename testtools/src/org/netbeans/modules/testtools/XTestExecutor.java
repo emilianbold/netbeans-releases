@@ -37,9 +37,9 @@ import java.util.Properties;
 import java.io.File;
 import org.netbeans.modules.testtools.wizards.WizardIterator;
 import org.openide.TopManager;
-import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
-import org.openide.cookies.ViewCookie;
+import org.openide.ErrorManager;
+import org.openide.ServiceType;
 
 /**
  *
@@ -77,6 +77,10 @@ public class XTestExecutor extends Executor {
         jellyHome=new File(home+File.separator+"lib"+File.separator+"ext");
     }
     
+    public static ServiceType.Handle getExecutor() {
+        return new ServiceType.Handle(new XTestExecutor());
+    }
+    
     public ExecutorTask execute(ExecInfo info) throws IOException {
         throw new IOException("Not yet implemented.");
     }
@@ -97,20 +101,21 @@ public class XTestExecutor extends Executor {
     }
     
     private ExecutorTask showResults(final ExecutorTask task, final DataObject obj) {
-        RequestProcessor.postRequest(new Runnable() {
+        Thread t=new Thread(new Runnable() {
             public void run() {
                 if (task.result()==0) {
                     try {
                         FileObject fo=obj.getFolder().getPrimaryFile();
                         fo=fo.getFileObject("results");
-                        fo.getFileObject("index", "html");
-                        DataObject dob=DataObject.find(fo);
-                        ViewCookie view=(ViewCookie)dob.getCookie(ViewCookie.class);
-                        view.view();
+                        fo=fo.getFileObject("index", "html");
+                        TopManager.getDefault().showUrl(fo.getURL());
                     } catch (Exception e) {}
                 }
             }
         });
+        t.setDaemon(true);
+        t.setPriority(Thread.MIN_PRIORITY);
+        t.start();
         return task;
     }
     
