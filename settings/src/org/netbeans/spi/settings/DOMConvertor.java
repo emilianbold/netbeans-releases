@@ -15,6 +15,7 @@ package org.netbeans.spi.settings;
 
 import java.io.IOException;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -176,7 +177,7 @@ public abstract class DOMConvertor extends Convertor {
             if (n.getNodeType() != org.w3c.dom.Node.CDATA_SECTION_NODE || content == null) {
                 throw new IOException("Expected CDATA block: " + n);
             }
-            obj = readFromString(c, content);
+            obj = readFromString(c, content, findContext(element.getOwnerDocument()));
         } else if (c instanceof DOMConvertor) {
             DOMConvertor dc = (DOMConvertor) c;
             obj = dc.readElement(element);
@@ -230,7 +231,7 @@ public abstract class DOMConvertor extends Convertor {
             // plain convertor -> wrap content to CDATA block
             el = doc.createElement(ELM_DELEGATE);
             el.setAttribute(ATTR_PUBLIC_ID, res.getPublicID(clazz));
-            el.appendChild(doc.createCDATASection(writeToString(c, obj)));
+            el.appendChild(doc.createCDATASection(writeToString(c, obj, findContext(doc))));
         }
         
         // bind cached object with original element
@@ -262,16 +263,28 @@ public abstract class DOMConvertor extends Convertor {
     }
     
     /** write an object obj to String using Convertor.write() */
-    private static String writeToString(Convertor c, Object obj) throws IOException {
+    private static String writeToString(Convertor c, Object obj, Lookup ctx) throws IOException {
         java.io.Writer w = new java.io.CharArrayWriter(1024);
+        
+        FileObject fo = (FileObject) ctx.lookup(FileObject.class);
+        if (fo != null) {
+            w = org.netbeans.modules.settings.ContextProvider.createWriterContextProvider(w, fo);
+        }
+        
         c.write(w, obj);
         w.close();
         return w.toString();
     }
     
     /** read an object from String using Convertor.read() */
-    private static Object readFromString(Convertor c, String s) throws IOException, ClassNotFoundException {
+    private static Object readFromString(Convertor c, String s, Lookup ctx) throws IOException, ClassNotFoundException {
         java.io.Reader r = new java.io.StringReader(s);
+        
+        FileObject fo = (FileObject) ctx.lookup(FileObject.class);
+        if (fo != null) {
+            r = org.netbeans.modules.settings.ContextProvider.createReaderContextProvider(r, fo);
+        }
+        
         return c.read(r);
     }
     
