@@ -40,4 +40,9 @@ public class MapArgBenchmark extends Benchmark {
     protected Map createDefaultMap() {
         return new HashMap();
     }
+    
+    /** Sets argument of this MapArgBenchmark to mab */
+    protected final void passArgumentTo(MapArgBenchmark mab) {
+        mab.setArgument(getArgument());
+    }
 }

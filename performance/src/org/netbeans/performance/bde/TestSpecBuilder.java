@@ -67,16 +67,20 @@ public final class TestSpecBuilder implements BDEParserVisitor {
         
         if (count > 1) {
             n = node.jjtGetChild(1);
-            List mthFilters = (List) n.jjtAccept(this, null);
+            List aList = (List) n.jjtAccept(this, null);
             if (count > 2) {
                 n = node.jjtGetChild(2);
                 List args = (List) n.jjtAccept(this, null);
-                list.add(new TestDefinition(className, mthFilters, args));
+                list.add(new TestDefinition(className, aList, args));
             } else {
-                list.add(new TestDefinition(className, mthFilters));
+                if (n instanceof ASTMethodFilterList) {
+                    list.add(new TestDefinition(className, aList, null));
+                } else {
+                    list.add(new TestDefinition(className, null, aList));
+                }
             }
         } else {
-            list.add(new TestDefinition(className));
+            list.add(new TestDefinition(className, null, null));
         }
         
         return list;

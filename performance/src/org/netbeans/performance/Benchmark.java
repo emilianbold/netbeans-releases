@@ -269,7 +269,7 @@ public class Benchmark extends Assert implements Test {
         iterations = count; 
     }
 
-    private void setArgument( Object arg ) {
+    void setArgument( Object arg ) {
         argument = arg;
     }
     
