@@ -168,20 +168,17 @@
 <mapID target="refactor.findMethod" url="refactor/findMethod.html" />
 <mapID target="refactor.findField" url="refactor/findField.html" />
 <mapID target="refactor.renameClass" url="refactor/renameClass.html" />
-<mapID target="refactor.renameMethod" url="refactor/renameMethod.html" />
 <mapID target="refactor.renameField" url="refactor/renameField.html" />
 <mapID target="refactor.moveClass" url="refactor/moveClass.html" />
 <mapID target="refactor.encapsulateField" url="refactor/encapsulateField.html" />
 
-<!--TODO Check these refactoring IDs to make sure  they work-->
-<mapID target="org.netbeans.api.refactoring.ui.ParametersPanelFindClass" url="refactor/findClass.html" />
-<mapID target="org.netbeans.api.refactoring.ui.ParametersPanelFindMethod" url="refactor/findMethod.html" />
-<mapID target="org.netbeans.api.refactoring.ui.ParametersPanelFindField" url="refactor/findField.html" />
-<mapID target="org.netbeans.api.refactoring.ui.ParametersPanelRenameClass" url="refactor/renameClass.html" />
-<mapID target="org.netbeans.api.refactoring.ui.ParametersPanelRenameMethod" url="refactor/renameMethod.html" />
-<mapID target="org.netbeans.api.refactoring.ui.ParametersPanelRenameField" url="refactor/renameField.html" />
-<mapID target="org.netbeans.api.refactoring.ui.ParametersPanelMoveClass" url="refactor/moveClass.html" />
-<mapID target="org.netbeans.api.refactoring.ui.ParametersPanelEncapsulateField" url="refactor/encapsulateField.html" />
+<mapID target="org.netbeans.modules.refactoring.ui.WhereUsedQueryUI" url="refactor/findClass.html" /> <!--Find Usages-->
+<mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI" url="refactor/renameClass.html" />  <!--Rename-->
+<mapID target="org.netbeans.modules.refactoring.ui.MoveClassesUI" url="refactor/moveClass.html" />  <!--Move Multiple Classes-->
+<mapID target="org.netbeans.modules.refactoring.ui.MoveClassUI" url="refactor/moveClass.html" /> <!--Move Single Class-->
+<mapID target="org.netbeans.modules.refactoring.ui.EncapsulateFieldUI" url="refactor/encapsulateField.html" /> 
+<mapID target="org.netbeans.modules.refactoring.ui.ChangeParametersUI" url="pending.html" /> <!--Change Method Parameters-->
+<mapID target="org.netbeans.modules.refactoring.ui.RefactoringPanelContainer" url="pending.html" /> <!--Preview Refactoring window-->
 
 <mapID target="xml_nodes"   url="xml/xmlnodes.html" />
 <mapID target="xml_createxml"   url="xml/createxml.html" />
