@@ -332,8 +332,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     super.writeExternal(out);
     out.writeObject(new Boolean(sheetVisible));
     out.writeObject(new Boolean(split.getPanesSwapped()));
-    out.writeObject(new Integer(split.getSplitType()));
     out.writeObject(new Integer(split.getSplitPosition()));
+    out.writeObject(new Integer(split.getSplitType()));
   }
   
   
@@ -345,16 +345,13 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     super.readExternal(in);
     sheetVisible = ((Boolean)in.readObject()).booleanValue();
     boolean swapped = ((Boolean)in.readObject()).booleanValue();
-    split.setSplitType(((Integer)in.readObject()).intValue());
     split.setSplitPosition(((Integer)in.readObject()).intValue());
+    split.setSplitType(((Integer)in.readObject()).intValue());
     if (sheetVisible) {
-      if (swapped) {
-        split.setKeepFirstSame(true);
-        split.add(getSheetPanel(), SplittedPanel.ADD_LEFT);
-      } else {
-        split.setKeepSecondSame(true);
-        split.add(getSheetPanel(), SplittedPanel.ADD_RIGHT);
-      }
+      //split.setKeepFirstSame(true);
+      split.add(getSheetPanel(), SplittedPanel.ADD_RIGHT);
+      if (swapped)
+        split.swapPanes();
     }
     // toggle button (do without listening)
     sheetSwitcher.removeItemListener (this);
@@ -401,6 +398,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  11   Gandalf   1.10        5/15/99  David Simonek   switchable sheet 
+*       serialized properly.....finally
 *  10   Gandalf   1.9         5/14/99  David Simonek   serialization of 
 *       switchable sheet state
 *  9    Gandalf   1.8         5/11/99  David Simonek   changes to made window 
