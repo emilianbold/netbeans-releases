@@ -52,17 +52,21 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
 import org.openide.NotifyDescriptor;
+import org.openide.DialogDescriptor;
 import org.openide.TopManager;
 
  
 /** Support for opening properties files (OpenCookie) in visual editor */
-public class PropertiesOpen extends OpenSupport implements OpenCookie {
+public class PropertiesOpen extends OpenSupport implements ModalOpenCookie {
                   
   /** Main properties dataobject */                                 
   PropertiesDataObject obj;
   PropertyChangeListener modifL;
   
   private PropertiesTableModel tableModel = null;
+//  private CloneableTopComponent modalTopComponent;
+  private Dialog dialog;
+
 
   /** Constructor */
   public PropertiesOpen(PropertiesFileEntry fe) {
@@ -116,7 +120,58 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       entry.getHandler().reparseNowBlocking();
     }  
   }
+                                          
+                                          
+  public void openModal() {
+    try {
+      /*MessageFormat mf = new MessageFormat(DataObject.getString("CTL_ObjectOpen"));
+      DataObject obj = entry.getDataObject();
+      
+      TopManager.getDefault().setStatusText(mf.format (
+        new Object[] {
+          obj.getName(),
+          obj.getPrimaryFile().toString()
+        }
+      ));*/
+      synchronized (allEditors) {
+//        modalTopComponent = createCloneableTopComponent ();
+        
+        // open the dialog                                         
+        JPanel mainPanel = new BundleEditPanel(obj, ((PropertiesDataObject)obj).getOpenSupport().getTableModel());
+        final DialogDescriptor dd = new DialogDescriptor(mainPanel, obj.getName());
+        dd.setButtonListener(new ActionListener() {
+          public void actionPerformed(ActionEvent event) {           
+System.out.println("closing ...");          
+            boolean closeIt;
+            if (!hasOpenComponent())
+              closeIt = closeLast();
+            else
+              closeIt = true;
+            dialog.setVisible(false);
+            dialog.dispose();
+          }
 
+    protected boolean closeLast () {
+      if (!((PropertiesDataObject)obj).getOpenSupport().canClose ()) {
+        // if we cannot close the last window
+        return false;
+      }
+      ((PropertiesDataObject)obj).getOpenSupport().closeDocuments();
+      
+      return true;
+    }
+        });
+        dd.setOptionType(DialogDescriptor.DEFAULT_OPTION);
+        dd.setOptions(new Object[] {NbBundle.getBundle(PropertiesOpen.class).getString("CTL_CLOSE_BUTTON_LABEL")});
+        dd.setModal(true);
+        dialog = TopManager.getDefault().createDialog(dd);
+        dialog.show();
+      }
+    } finally {
+//      TopManager.getDefault ().setStatusText (DataObject.getString ("CTL_ObjectOpened"));
+    }     
+  }
+  
   /** Should test whether all data is saved, and if not, prompt the user
   * to save.
   *
@@ -174,7 +229,8 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       if ((entryIndex != -1) && (rowIndex != -1)) {
         // PENDING
       }  
-    }
+    }                 
+    
   }
 
   public static class PropertiesCloneableTopComponent extends CloneableTopComponent {                                
