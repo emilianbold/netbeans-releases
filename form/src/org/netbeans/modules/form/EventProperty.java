@@ -16,15 +16,13 @@ package org.netbeans.modules.form;
 import java.util.*;
 import java.beans.*;
 import java.awt.event.*;
-import java.lang.reflect.Method;
 
 import org.openide.*;
 import org.openide.nodes.*;
-import org.openide.explorer.propertysheet.editors.*;
 import org.openide.util.Utilities;
 
 /** 
- * Property implementation class for events of metacomponents (RADComponent).
+ * Property implementation class for events of metacomponents.
  * (Events are treated as properties on Events tab of Component Inspector.)
  *
  * @author Tomas Pavek
@@ -33,6 +31,9 @@ import org.openide.util.Utilities;
 class EventProperty extends PropertySupport.ReadWrite {
 
     private static String NO_EVENT;
+
+    private static boolean somethingChanged; // flag for "postSetAction" relevance
+    private static boolean invalidValueTried; // flag for "postSetAction" relevance
 
     private Event event;
 
@@ -53,14 +54,10 @@ class EventProperty extends PropertySupport.ReadWrite {
     }
 
     private FormEvents getFormEvents() {
-        return getComponent().getFormModel().getFormEvents();
+        return event.getComponent().getFormModel().getFormEvents();
     }
 
-    private RADComponent getComponent() {
-        return event.getComponent();
-    }
-
-    private Method getListenerMethod() {
+    private java.lang.reflect.Method getListenerMethod() {
         return event.getListenerMethod();
     }
 
@@ -71,7 +68,7 @@ class EventProperty extends PropertySupport.ReadWrite {
     // -------
 
     /** Getter for the value of the property. It returns name of the last
-     * selected event handler (for property sheet), not the event.
+     * selected event handler (for property sheet), not the Event object.
      * @return String name of the selected event handler attached to the event
      */
     public Object getValue() {
@@ -139,6 +136,8 @@ class EventProperty extends PropertySupport.ReadWrite {
         else throw new IllegalArgumentException();
 
         if (change != null) {
+            somethingChanged = true; // something was changed
+
             FormEvents formEvents = getFormEvents();
 
             if (change.hasRemoved()) // some handlers to remove
@@ -149,9 +148,6 @@ class EventProperty extends PropertySupport.ReadWrite {
                 for (int i=0; i < change.getRenamedOldNames().size(); i++) {
                     String oldName = (String)change.getRenamedOldNames().get(i);
                     String newName = (String)change.getRenamedNewNames().get(i);
-
-                    if (!Utilities.isJavaIdentifier(newName))
-                        continue; // invalid name (checked by EventCustomEditor)
 
                     try {
                         formEvents.renameEventHandler(oldName, newName);
@@ -180,20 +176,8 @@ class EventProperty extends PropertySupport.ReadWrite {
 
             if (change.hasAdded()) // some handlers to add
                 for (Iterator it=change.getAdded().iterator(); it.hasNext(); ) {
-                    String handlerName = (String) it.next();
-
-                    if (!Utilities.isJavaIdentifier(handlerName)) { // invalid name
-                        DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(
-                                FormUtils.getFormattedBundleString(
-                                    "FMT_MSG_InvalidJavaIdentifier", // NOI18N
-                                    new Object [] {handlerName} ),
-                                NotifyDescriptor.ERROR_MESSAGE));
-                        continue;
-                    }
-
                     try {
-                        formEvents.attachEvent(event, handlerName, null);
+                        formEvents.attachEvent(event, (String) it.next(), null);
                     }
                     catch (IllegalArgumentException ex) { // name already used
                         ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
@@ -204,10 +188,37 @@ class EventProperty extends PropertySupport.ReadWrite {
 
         selectedEventHandler = newSelectedHandler;
 
-        RADComponentNode node = getComponent().getNodeReference();
+        RADComponentNode node = event.getComponent().getNodeReference();
         if (node != null)
             node.firePropertyChangeHelper(getName(), null, null);
     }
+
+    public Object getValue(String key) {
+        if ("canEditAsText".equals(key)) // NOI18N
+            return Boolean.TRUE;
+
+        if ("initialEditValue".equals(key)) { // NOI18N
+            somethingChanged = false; // entering edit mode
+            invalidValueTried = false;
+            return selectedEventHandler != null ? null :
+                getFormEvents().findFreeHandlerName(event, event.getComponent());
+        }
+
+        if ("postSetAction".equals(key)) // NOI18N
+            return new javax.swing.AbstractAction() {
+                public void actionPerformed(ActionEvent ev) {
+                    // if Enter was pressed without echange or existing handler
+                    // chosen, switch to editor
+                    if (!somethingChanged && !invalidValueTried)
+                        getFormEvents().attachEvent(event,
+                                                    selectedEventHandler,
+                                                    null);
+                }
+            };
+
+        return super.getValue(key);
+    }
+
 
 //    public String getDisplayName() {
 //        String displayName = super.getDisplayName();
@@ -221,7 +232,7 @@ class EventProperty extends PropertySupport.ReadWrite {
     }
 
     private boolean isReadOnly() {
-        return getComponent().isReadOnly();
+        return event.getComponent().isReadOnly();
     }
 
     /** Returns property editor for this property.
@@ -273,16 +284,7 @@ class EventProperty extends PropertySupport.ReadWrite {
 
     // --------
 
-    /** Property editor class for EventProperty. It provides in-place editor
-     * and custom editor for adding/removing/renaming event handlers.
-     */
-    private class EventEditor extends PropertyEditorSupport
-                              implements EnhancedPropertyEditor
-    {
-        ActionListener comboSelectListener = null;
-        FocusListener comboEditFocusListener = null;
-
-        EventComboBox eventCombo;
+    private class EventEditor extends PropertyEditorSupport {
 
         public String getAsText() {
             if (this.getValue() == null) {
@@ -290,135 +292,35 @@ class EventProperty extends PropertySupport.ReadWrite {
                     NO_EVENT = FormUtils.getBundleString("CTL_NoEvent"); // NOI18N
                 return NO_EVENT;
             }
-            else return this.getValue().toString();
+            return this.getValue().toString();
         }
 
-        public void setAsText(String selected) {
-            this.setValue(selected);
+        public void setAsText(String txt) {
+            if (!"".equals(txt) && !Utilities.isJavaIdentifier(txt)) { // NOI18N
+                // invalid handler name entered
+                invalidValueTried = true;
+                IllegalArgumentException iae = new IllegalArgumentException();
+                String annotation = FormUtils.getFormattedBundleString(
+                                        "FMT_MSG_InvalidJavaIdentifier", // NOI18N
+                                        new Object [] { txt } );
+                ErrorManager.getDefault().annotate(
+                    iae, ErrorManager.ERROR, "Not a java identifier", // NOI18N
+                    annotation, null, null);
+                throw iae;
+            }
+            invalidValueTried = false;
+            this.setValue(txt);
         }
 
-        public boolean supportsEditingTaggedValues() {
-            return false;
-        }
-
-        /**
-         * @return custom property editor to be shown inside
-         * the property sheet.
-         */
-        public java.awt.Component getInPlaceCustomEditor() {
-            eventCombo = new EventComboBox();
-            eventCombo.setEditable(!isReadOnly());
-
+        public String[] getTags() {
             String[] handlers = getEventHandlers();
-            if (handlers.length == 0) {
-                String newName = getFormEvents().findFreeHandlerName(
-                                                   getEvent(), getComponent());
-                eventCombo.getEditor().setItem(newName);
-            }
-            else {
-                for (int i=0; i < handlers.length; i++)
-                    eventCombo.addItem(handlers[i]);
-                if (selectedEventHandler != null)
-                    eventCombo.setSelectedItem(selectedEventHandler);
-            }
-
-            // listening to combobox selection change
-            // (we remember the listener in a field so we can remove it)
-            if (comboSelectListener == null)
-                comboSelectListener = new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        int i;
-                        if (!event.hasEventHandlers()
-                              || (i = eventCombo.getSelectedIndex()) < 0)
-                            return;
-
-                        eventCombo.getEditor().getEditorComponent()
-                            .removeFocusListener(comboEditFocusListener);
-
-                        String selected = (String) eventCombo.getItemAt(i);
-                        EventEditor.this.setValue(selected);
-
-                        // redundant operation - just switches to the editor
-                        getFormEvents().attachEvent(getEvent(),
-                                                    selected,
-                                                    null);
-                    }
-                };
-            eventCombo.addActionListener(comboSelectListener);
-
-            if (isReadOnly())
-                return eventCombo;
-
-            // listening to combobox's editor focus lost
-            // (we remember the listener in a field so we can remove it
-            if (comboEditFocusListener == null)
-                comboEditFocusListener = new FocusAdapter() {
-                    public void focusLost(FocusEvent evt) {
-                        eventCombo.removeActionListener(comboSelectListener);
-                        EventEditor.this.setValue(selectedEventHandler);
-                    }
-                    public void focusGained(FocusEvent evt) {
-                        eventCombo.getEditor().selectAll();
-                    }
-                };
-            eventCombo.getEditor().getEditorComponent().addFocusListener(
-                                                   comboEditFocusListener);
-
-            // listening to Esc key pressed in combobox's editor
-            eventCombo.getEditor().getEditorComponent()
-                                       .addKeyListener(new KeyAdapter() {
-                public void keyPressed(KeyEvent e) {
-                    if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                        eventCombo.removeActionListener(comboSelectListener);
-                        eventCombo.getEditor().getEditorComponent()
-                            .removeFocusListener(comboEditFocusListener);
-
-                        EventEditor.this.setValue(selectedEventHandler);
-                    }
-                    else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                        eventCombo.removeActionListener(comboSelectListener);
-                        eventCombo.getEditor().getEditorComponent()
-                            .removeFocusListener(comboEditFocusListener);
-
-                        String selected = (String) eventCombo.getEditor().getItem();
-                        EventEditor.this.setValue(selected);
-
-                        if (selected == null || "".equals(selected)) { // NOI18N
-                            if (selectedEventHandler != null)
-                                EventEditor.this.setValue(selectedEventHandler);
-                        }
-                        else if (selectedEventHandler != null)
-                            // redundant operation - just switches to the editor
-                            getFormEvents().attachEvent(getEvent(),
-                                                        selectedEventHandler,
-                                                        null);
-                    }
-                }
-            });
-
-            javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    eventCombo.getEditor().getEditorComponent().requestFocus();
-                }
-            });
-
-            return eventCombo;
-        }
-
-        /** @return true if this PropertyEditor provides a enhanced in-place
-         * custom property editor, false otherwise
-         */
-        public boolean hasInPlaceCustomEditor() {
-            return !isReadOnly() || event.hasEventHandlers();
+            return handlers.length > 1 ? handlers : null;
         }
 
         public boolean supportsCustomEditor() {
             return true;
         }
 
-        /** @return the custom property editor (a standalone panel) for
-         * editing event handlers attached to the event.
-         */
         public java.awt.Component getCustomEditor() {
             if (isReadOnly())
                 return null;
@@ -439,29 +341,6 @@ class EventProperty extends PropertySupport.ReadWrite {
                 });
 
             return DialogDisplayer.getDefault().createDialog(dd);
-        }
-    }
-
-    // --------
-
-    private static class EventComboBox extends javax.swing.JComboBox {
-        public void addKeyListener(KeyListener l) {
-            super.addKeyListener(l);
-            getEditor().getEditorComponent().addKeyListener(l);
-        }
-        public void removeKeyListener(KeyListener l) {
-            super.removeKeyListener(l);
-            getEditor().getEditorComponent().removeKeyListener(l);
-        }
-        public void addFocusListener(FocusListener l) {
-            super.addFocusListener(l);
-            if (getEditor() != null)
-                getEditor().getEditorComponent().addFocusListener(l);
-        }
-        public void removeFocusListener(FocusListener l) {
-            super.removeFocusListener(l);
-            if (getEditor() != null)
-                getEditor().getEditorComponent().removeFocusListener(l);
         }
     }
 }
