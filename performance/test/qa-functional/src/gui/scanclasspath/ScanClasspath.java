@@ -93,7 +93,10 @@ public class ScanClasspath extends org.netbeans.performance.test.utilities.Perfo
             
             // report only if we want to report it
             if(reportCPR.contains((Object)psd.getName())){
-                reportPerformance("Scanning " + psd.getName(), psd.getValue(), "ms", 1);
+                if(psd.getValue() > 0)
+                    reportPerformance("Scanning " + psd.getName(), psd.getValue(), "ms", 1);
+                else
+                    fail("Measured value ["+psd.getValue()+"] is not > 0 !");
             }
         }
     }
