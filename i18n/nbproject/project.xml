@@ -75,6 +75,28 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
+
+                <!-- Project module set dependency -->
+                <dependency>
+                    <code-name-base>org.netbeans.modules.projectapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+
+                <dependency>
+                    <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+
             </module-dependencies>
             <public-packages>
                 <!-- XXX unfortunately necessary to make i18n/form happy -->

@@ -20,6 +20,8 @@ import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.properties.PropertiesDataObject;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ui.support.LogicalViews;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -134,7 +136,7 @@ final class Util {
     }
 
     /** Prepare node structure showing sources */
-    static Node sourcesView(DataFilter filter) {
+    static Node sourcesView(Project prj, DataFilter filter) {
 //       Following code is a bit too CPU intensive (memory probably as well)
 //       for working with  MasterFS
 //
@@ -147,42 +149,49 @@ final class Util {
 //
 //        Node repositoryNode = RepositoryNodeFactory.getDefault().repository(dataFilter);
 
-        // Thus changing to work with GlobalPathRegistry
-        Set paths = GlobalPathRegistry.getDefault().getPaths( ClassPath.SOURCE );
-        List roots = new ArrayList();
-        for ( Iterator it = paths.iterator(); it.hasNext(); ) {
-            ClassPath cp = (ClassPath)it.next();
-            roots.addAll( Arrays.asList( cp.getRoots() ) );
+
+        if (prj != null) {
+            Node node = LogicalViews.physicalView(prj).createLogicalView();
+            return node;
+        } else {
+            // Thus changing to work with GlobalPathRegistry
+            Set paths = GlobalPathRegistry.getDefault().getPaths( ClassPath.SOURCE );
+            List roots = new ArrayList();
+            for ( Iterator it = paths.iterator(); it.hasNext(); ) {
+                ClassPath cp = (ClassPath)it.next();
+                roots.addAll( Arrays.asList( cp.getRoots() ) );
+            }
+
+
+            // XXX This is a bit dirty and should be rewritten to Children.Keys
+            // XXX The subnodes deserve better names than src and test
+            List nodes = new ArrayList();
+            Set names = new HashSet();
+            for( Iterator it = roots.iterator(); it.hasNext(); ) {
+                FileObject fo = (FileObject)it.next();
+                if ( names.contains( fo.getPath()) ) {
+                    continue;
+                }
+                names.add( fo.getPath () );
+                try {
+                    nodes.add( new FilterNode(DataObject.find( fo ).getNodeDelegate()) );
+                }
+                catch( DataObjectNotFoundException e ) {
+                    // Ignore
+                }
+            }
+
+            Children ch = new Children.Array();
+            Node[] nodesArray = new Node[ nodes.size() ];
+            nodes.toArray( nodesArray );
+            ch.add( nodesArray );
+
+            Node repositoryNode = new AbstractNode( ch );
+            repositoryNode.setName( NbBundle.getMessage( SourceWizardPanel.class, "LBL_Sources" ) );
+            // XXX Needs some icon.
+
+            return repositoryNode;
         }
-
-        // XXX This is a bit dirty and should be rewritten to Children.Keys
-        // XXX The subnodes deserve better names than src and test
-        List nodes = new ArrayList();
-        Set names = new HashSet();
-        for( Iterator it = roots.iterator(); it.hasNext(); ) {
-            FileObject fo = (FileObject)it.next();
-            if ( names.contains( fo.getPath()) ) {
-                continue;
-            }
-            names.add( fo.getPath () );
-            try {
-                nodes.add( new FilterNode(DataObject.find( fo ).getNodeDelegate()) );
-            }
-            catch( DataObjectNotFoundException e ) {
-                // Ignore
-            }
-        }
-
-        Children ch = new Children.Array();
-        Node[] nodesArray = new Node[ nodes.size() ];
-        nodes.toArray( nodesArray );
-        ch.add( nodesArray );
-
-        Node repositoryNode = new AbstractNode( ch );
-        repositoryNode.setName( NbBundle.getMessage( SourceWizardPanel.class, "LBL_Sources" ) );
-        // XXX Needs some icon.
-
-        return repositoryNode;
     }
 
     /**

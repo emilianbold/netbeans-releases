@@ -35,6 +35,8 @@ import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.FileOwnerQuery;
 
 import org.netbeans.modules.i18n.FactoryRegistry;
 import org.netbeans.modules.i18n.HardCodedString;
@@ -56,6 +58,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
 import org.openide.util.Lookup;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -288,7 +291,18 @@ final class ResourceWizardPanel extends JPanel {
             }
         };
 
-        Node repositoryNode = Util.sourcesView(dataFilter);
+        // take actual project from first data object
+
+        Project prj = null;
+        Iterator it = sourceMap.keySet().iterator();
+        if (it.hasNext()) {
+            DataObject dobj = (DataObject) it.next();
+            FileObject fo = dobj.getPrimaryFile();
+            prj = FileOwnerQuery.getOwner(fo);
+        }
+
+
+        Node repositoryNode = Util.sourcesView(prj, dataFilter);
 
         // Selects sources data object.
         try {

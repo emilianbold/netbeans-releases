@@ -35,6 +35,8 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.FileOwnerQuery;
 
 import org.netbeans.modules.i18n.FactoryRegistry;
 import org.netbeans.modules.i18n.I18nUtil;
@@ -243,12 +245,23 @@ final class SourceWizardPanel extends JPanel {
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
 
+        // take actual project from first data object
+
+        Project prj = null;
+        Iterator it = sourceMap.keySet().iterator();
+        if (it.hasNext()) {
+            DataObject dobj = (DataObject) it.next();
+            FileObject fo = dobj.getPrimaryFile();
+            prj = FileOwnerQuery.getOwner(fo);
+        }
+
+
         // Selects source data objects which could be i18n-ized.
         try {
             Node[] selectedNodes= NodeOperation.getDefault().select(
                 Util.getString("LBL_SelectSources"),
                 Util.getString("LBL_Filesystems"),
-                Util.sourcesView(null),
+                Util.sourcesView(prj, null),
                 new NodeAcceptor() {
                     public boolean acceptNodes(Node[] nodes) {
                         if(nodes == null || nodes.length == 0) {
@@ -282,7 +295,7 @@ final class SourceWizardPanel extends JPanel {
 
                 if (dataObject instanceof DataFolder) {
                     // recursively add folder content
-                    Iterator it = I18nUtil.getAcceptedDataObjects((DataFolder)dataObject).iterator();
+                    it = I18nUtil.getAcceptedDataObjects((DataFolder)dataObject).iterator();
                     while (it.hasNext()) {
                         Util.addSource(sourceMap, (DataObject)it.next());
                     }
