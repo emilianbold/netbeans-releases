@@ -95,7 +95,6 @@ public final class WindowsLFCustoms extends LFCustoms {
                     new Color(152, 177, 208),
                     "InternalFrame.activeTitleBackground"),
 
-            
         }; //NOI18N
 
         return result;
@@ -141,10 +140,35 @@ public final class WindowsLFCustoms extends LFCustoms {
                new GuaranteedValue("Button.dashedRectGapWidth", new Integer(10)),
                
             "Button.dashedRectGapHeight",
-               new GuaranteedValue("Button.dashedRectGapHeight", new Integer(8))
+               new GuaranteedValue("Button.dashedRectGapHeight", new Integer(8)),
+                     
+            "Tree.expandedIcon", new ExpandedIcon(),
+            "Tree.collapsedIcon", new CollapsedIcon()
         };
     }
-    
+
+    private static class ExpandedIcon implements javax.swing.Icon {
+        protected static final int HALF_SIZE = 4;
+        protected static final int SIZE = 9;
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            g.setColor(Color.WHITE);
+            g.fillRect(x, y, SIZE-1, SIZE-1);
+            g.setColor(Color.GRAY);
+            g.drawRect(x, y, SIZE-1, SIZE-1);
+            g.setColor(Color.BLACK);
+            g.drawLine(x + 2, y + HALF_SIZE, x + (SIZE - 3), y + HALF_SIZE);
+        }
+        public int getIconWidth() { return SIZE; }
+        public int getIconHeight() { return SIZE; }
+    }
+
+    private final static class CollapsedIcon extends ExpandedIcon {
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            super.paintIcon(c, g, x, y);
+            g.drawLine(x + HALF_SIZE, y + 2, x + HALF_SIZE, y + (SIZE - 3));
+        }
+    }
+
     protected Object[] additionalKeys() {
         Object[] kv = new WinClassicPropertySheetColorings().createKeysAndValues();
         Object[] result = new Object[kv.length / 2];
