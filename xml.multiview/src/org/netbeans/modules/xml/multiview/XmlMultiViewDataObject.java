@@ -75,7 +75,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         getCookieSet().add(XmlMultiViewEditorSupport.class, this);
         documentUpdated();
     }
-    
+
     public org.openide.nodes.Node.Cookie createCookie(Class clazz) {
         if (clazz.isAssignableFrom(XmlMultiViewEditorSupport.class)) {
             return createEditorSupport();
@@ -83,7 +83,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             return null;
         }
     }
-    
+
     /** Gets editor support for this data object. */
     private synchronized XmlMultiViewEditorSupport createEditorSupport() {
         if(editor == null) {
@@ -98,7 +98,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         }
         return editor;
     }
-    
+
     protected XmlMultiViewEditorSupport getEditorSupport() {
         return (XmlMultiViewEditorSupport)getCookie(XmlMultiViewEditorSupport.class);
     }
@@ -311,11 +311,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     /** provides renaming of super top component */
     protected FileObject handleRename(String name) throws IOException {
         FileObject retValue = super.handleRename(name);
-        org.openide.windows.TopComponent mvtc = getEditorSupport().getMVTC();
-        if (mvtc!=null) {
-            mvtc.setDisplayName(getDisplayName());
-            mvtc.setToolTipText(getPrimaryFile().getPath());
-        }
+        getEditorSupport().updateDisplayName();
         return retValue;
     }
 
@@ -328,6 +324,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
      */
     public void setModified(boolean modif) {
         super.setModified(modif);
+        getEditorSupport().updateDisplayName();
         if (modif) {
             // Add save cookie
             if (getCookie(SaveCookie.class) == null) {
@@ -404,7 +401,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 return true;
             }
         }
-        getSynchronizeModelTask().schedule(PARSING_INIT_DELAY);
+        getSynchronizeModelTask().run();
         waitForSync();
         return !isModified();
     }
@@ -435,7 +432,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         activeMVElement = element;
     }
     /** Opens the specific view
-     * @param multi-view index
+     * @param index multi-view index
      */
     public void openView(int index) {
         getEditorSupport().openView(index);

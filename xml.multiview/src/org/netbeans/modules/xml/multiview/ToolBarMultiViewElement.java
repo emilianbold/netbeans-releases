@@ -14,17 +14,12 @@
 package org.netbeans.modules.xml.multiview;
 
 import org.netbeans.core.spi.multiview.*;
-import org.openide.windows.TopComponent;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
-import org.openide.loaders.DataObject;
 
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 
 /**
@@ -37,8 +32,7 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     MultiViewElementCallback observer;
     private ToolBarDesignEditor editor;
     private XmlMultiViewDataObject dObj;
-    private PropertyChangeListener listener;
-    
+
     public ToolBarMultiViewElement(XmlMultiViewDataObject dObj, ToolBarDesignEditor editor) {
         this(dObj);
         this.editor = editor;
@@ -46,18 +40,6 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     
     public ToolBarMultiViewElement(final XmlMultiViewDataObject dObj) {
         this.dObj=dObj;
-        listener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (DataObject.PROP_MODIFIED.equals(evt.getPropertyName()) && editor != null) {
-                    Utils.runInAwtDispatchThread(new Runnable() {
-                        public void run() {
-                            observer.getTopComponent().setDisplayName(dObj.getEditorSupport().messageName());
-                        }
-                    });
-                }
-            }
-        };
-        dObj.addPropertyChangeListener(WeakListeners.propertyChange(listener, dObj));
     }
 
     protected void setVisualEditor(ToolBarDesignEditor editor) {
@@ -124,14 +106,12 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
         observer=callback;
         if (dObj!=null) {
             dObj.setActiveMultiViewElement(this);
-            TopComponent tc = callback.getTopComponent();
-            if (tc.getDisplayName()==null) {
-                tc.setDisplayName(dObj.getEditorSupport().messageName());
-                tc.setToolTipText(dObj.getPrimaryFile().getPath());
-            }
             XmlMultiViewEditorSupport support = dObj.getEditorSupport();
-            if (support!=null && support.getMVTC()==null) {
-                support.setMVTC(callback.getTopComponent());
+            if (support!=null) {
+                if (support.getMVTC()==null) {
+                    support.setMVTC(callback.getTopComponent());
+                }
+                support.updateDisplayName();
             }
         }
     }

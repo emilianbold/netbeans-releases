@@ -16,7 +16,6 @@ package org.netbeans.modules.xml.multiview;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
-import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.awt.UndoRedo;
 import org.openide.windows.TopComponent;
 
@@ -31,7 +30,6 @@ public class XmlMultiViewElement implements MultiViewElement, java.io.Serializab
     
     private TopComponent xmlTopComp;
     private XmlMultiViewDataObject dObj;
-    private transient MultiViewElementCallback observer;
     private transient UndoRedo undoRedo;
     private transient javax.swing.JComponent toolbar;
     
@@ -85,7 +83,7 @@ public class XmlMultiViewElement implements MultiViewElement, java.io.Serializab
 
     public javax.swing.JComponent getToolbarRepresentation() {
             if (toolbar == null) {
-                XmlMultiViewEditorSupport support = (XmlMultiViewEditorSupport)dObj.getCookie (XmlMultiViewEditorSupport.class);
+                XmlMultiViewEditorSupport support = dObj.getEditorSupport(); ;
                 javax.swing.JEditorPane pane = support.getOpenedPanes()[0];
                 if (pane != null) {
                     javax.swing.text.Document doc = pane.getDocument();
@@ -110,19 +108,14 @@ public class XmlMultiViewElement implements MultiViewElement, java.io.Serializab
     }
 
     public void setMultiViewCallback(MultiViewElementCallback callback) {
-        observer=callback;
         if (dObj!=null) {
-            TopComponent tc = callback.getTopComponent();
-            if (tc.getDisplayName()==null) {
-                tc.setDisplayName(dObj.getDisplayName());
-                tc.setToolTipText(dObj.getPrimaryFile().getPath());
-            }
-            
             XmlMultiViewEditorSupport support = dObj.getEditorSupport();
             if (support!=null) {
                 if (undoRedo==null) undoRedo = support.getUndoRedo0();
-                if (support.getMVTC()==null)
+                if (support.getMVTC() == null) {
                     support.setMVTC(callback.getTopComponent());
+                }
+                support.updateDisplayName();
             }
         }
     }

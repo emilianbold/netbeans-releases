@@ -15,18 +15,30 @@ package org.netbeans.modules.xml.multiview;
 
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
-import org.netbeans.core.spi.multiview.*;
+import org.netbeans.core.spi.multiview.CloseOperationHandler;
+import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.core.spi.multiview.MultiViewDescription;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
-import org.openide.cookies.*;
+import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.cookies.PrintCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
-import org.openide.windows.*;
-
-import org.openide.NotifyDescriptor;
+import org.openide.windows.CloneableOpenSupport;
+import org.openide.windows.CloneableTopComponent;
+import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 import javax.swing.text.StyledDocument;
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * XmlMultiviewEditorSupport.java
@@ -34,15 +46,19 @@ import java.io.IOException;
  * Created on October 5, 2004, 10:46 AM
  * @author  mkuchtiak
  */
-public class XmlMultiViewEditorSupport extends DataEditorSupport 
-    implements EditCookie, OpenCookie, EditorCookie.Observable, PrintCookie {
-        
+public class XmlMultiViewEditorSupport extends DataEditorSupport implements Serializable, EditCookie, OpenCookie,
+        EditorCookie.Observable, PrintCookie {
+
     private XmlMultiViewDataObject dObj;
     private XmlDocumentListener xmlDocListener;
     private int xmlMultiViewIndex;
     private TopComponent mvtc, xmlTC;
     private int lastOpenView=0;
     private StyledDocument document;
+
+    public XmlMultiViewEditorSupport() {
+        super(null, null);
+    }
 
     /** Creates a new instance of XmlMultiviewEditorSupport */
     public XmlMultiViewEditorSupport(XmlMultiViewDataObject dObj) {
@@ -61,8 +77,8 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
     
     protected CloneableTopComponent createCloneableTopComponent() {
         MultiViewDescription[] customDesc = dObj.getMultiViewDesc();
-        xmlTC = super.createCloneableTopComponent();
-        MultiViewDescription xmlDesc = new XmlMultiViewEditorSupport.XmlViewDesc (xmlTC, dObj);
+        getXmlTopComponent();
+        MultiViewDescription xmlDesc = new XmlViewDesc (xmlTC, dObj);
         MultiViewDescription[] descs = new MultiViewDescription[customDesc.length+1];
         for (int i=0;i<customDesc.length;i++) descs[i]=customDesc[i];
         descs[customDesc.length]=xmlDesc;
@@ -121,7 +137,22 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         if (mvtc!=null) return MultiViews.findMultiViewHandler(mvtc).getSelectedPerspective();
         return null;
     }
-    
+
+    public void updateDisplayName() {
+        if (mvtc != null) {
+            Utils.runInAwtDispatchThread(new Runnable() {
+                public void run() {
+                    String displayName = messageName();
+                    if (!displayName.equals(mvtc.getDisplayName())) {
+                        mvtc.setDisplayName(displayName);
+                        getXmlTopComponent().setDisplayName(displayName);
+                    }
+                    mvtc.setToolTipText(dObj.getPrimaryFile().getPath());
+                }
+            });
+        }
+    }
+
     /** A description of the binding between the editor support and the object.
      * Note this may be serialized as part of the window system and so
      * should be static, and use the transient modifier where needed.
@@ -160,16 +191,16 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
          * @return the editor support
          */
         public CloneableOpenSupport findCloneableOpenSupport () {
-            return (XmlMultiViewEditorSupport) getDataObject ().getCookie (XmlMultiViewEditorSupport.class);
+            return ((XmlMultiViewDataObject)getDataObject()).getEditorSupport();
         }
     }
     
     private static class XmlViewDesc implements MultiViewDescription, java.io.Serializable  {
-        
+
         private static final long serialVersionUID = 8085725367398466167L;
         TopComponent tc;
         XmlMultiViewDataObject dObj;
-        
+
         XmlViewDesc() {
         }
         
@@ -185,15 +216,15 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         public String getDisplayName() {
             return org.openide.util.NbBundle.getMessage(XmlMultiViewEditorSupport.class,"LBL_XML_TAB");
         }
-        
+
         public org.openide.util.HelpCtx getHelpCtx() {
             return dObj.getHelpCtx();
         }
-        
+
         public java.awt.Image getIcon() {
             return dObj.getXmlViewIcon();
         }
-        
+
         public int getPersistenceType() {
             return TopComponent.PERSISTENCE_ONLY_OPENED;
         }
@@ -203,7 +234,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         }
     }
     
-    TopComponent getMVTC() {
+    public TopComponent getMVTC() {
         return mvtc;
     }
     
@@ -211,8 +242,14 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         this.mvtc=mvtc;
     }
     
+    void setXmlTC(TopComponent xmlTC) {
+        this.xmlTC = xmlTC;
+    }
+
     TopComponent getXmlTopComponent() {
-        if (xmlTC==null) xmlTC=super.createCloneableTopComponent();
+        if (xmlTC == null) {
+            xmlTC = new XmlCloneableEditor(this);
+        }
         return xmlTC;
     }
 
@@ -330,5 +367,36 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
     // Accessibility for ToolBarMultiViewElement:  
     protected String messageName() {
         return super.messageName();
+    }
+
+    private static class XmlCloneableEditor extends CloneableEditor {
+        private XmlMultiViewEditorSupport editorSupport;
+        private String displayName;
+
+        public XmlCloneableEditor() {
+            super();
+        }
+
+        public XmlCloneableEditor(XmlMultiViewEditorSupport editorSupport) {
+            super(editorSupport);
+            this.editorSupport = editorSupport;
+        }
+
+        public void setDisplayName(String displayName) {
+            if (editorSupport != null) {
+                this.displayName = editorSupport.messageName();
+                editorSupport.updateDisplayName();
+            } else {
+                this.displayName = displayName;
+            }
+        }
+
+        public String getDisplayName() {
+            if (editorSupport != null) {
+                displayName = editorSupport.messageName();
+            }
+            return displayName;
+        }
+
     }
 }
