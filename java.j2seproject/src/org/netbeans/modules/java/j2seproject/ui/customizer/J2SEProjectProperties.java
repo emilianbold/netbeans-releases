@@ -43,6 +43,8 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
+
 import org.openide.util.MutexException;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -307,7 +309,7 @@ public class J2SEProjectProperties {
                         if ( JAVA_PLATFORM.equals( pd.name) && newValueEncoded != null ) {
                             defaultPlatform = Boolean.valueOf(pi.getNewValueEncoded().equals(
                                     JavaPlatformManager.getDefault().getDefaultPlatform().getProperties().get("platform.ant.name")));
-                             setPlatform(defaultPlatform.booleanValue());
+                             setPlatform(defaultPlatform.booleanValue(), pi.getNewValueEncoded());
                         }
                     }
                     
@@ -390,21 +392,29 @@ public class J2SEProjectProperties {
         }
     }
     
-    private void setPlatform( boolean isDefault ) {
-        
+    private final SpecificationVersion JDKSpec13 = new SpecificationVersion("1.3"); // NOI18N
+    
+    private void setPlatform(boolean isDefault, String platformAntID) {
         Element pcd = antProjectHelper.getPrimaryConfigurationData( true );
-
-        NodeList sps = pcd.getElementsByTagName( "explicit-platform" );
-        
-        if ( isDefault && sps.getLength() > 0 ) {
-            pcd.removeChild( sps.item( 0 ) );
+        NodeList sps = pcd.getElementsByTagName( "explicit-platform" ); // NOI18N
+        if (isDefault && sps.getLength() > 0) {
+            pcd.removeChild(sps.item(0));
+        } else if (!isDefault) {
+            Element el;
+            if (sps.getLength() == 0) {
+                el = pcd.getOwnerDocument().createElement("explicit-platform"); // NOI18N
+                pcd.appendChild(el);
+            } else {
+                el = (Element)sps.item(0);
+            }
+            boolean explicitSource = true;
+            JavaPlatform platform = findPlatform(platformAntID);
+            if ((platform != null && platform.getSpecification().getVersion().compareTo(JDKSpec13) <= 0) || platform == null) {
+                explicitSource = false;
+            }
+            el.setAttribute("explicit-source-supported", explicitSource ? "true" : "false"); // NOI18N
         }
-        else if ( !isDefault && sps.getLength() == 0 ) {
-            pcd.appendChild( pcd.getOwnerDocument().createElement( "explicit-platform" ) );
-        }
-         
-        antProjectHelper.putPrimaryConfigurationData( pcd, true );
-        
+        antProjectHelper.putPrimaryConfigurationData(pcd, true);
     }
     
     /** Finds out what are new and removed project dependencies and 
@@ -760,16 +770,24 @@ public class J2SEProjectProperties {
         }
         
     }
+
+    private static JavaPlatform findPlatform(String platformAntID) {
+        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();            
+        for(int i = 0; i < platforms.length; i++) {
+            String normalizedName = (String)platforms[i].getProperties().get("platform.ant.name"); // NOI18N
+            if (normalizedName != null && normalizedName.equals(platformAntID)) {
+                return platforms[i];
+            }
+        }
+        return null;
+    }
     
     private static class PlatformParser extends PropertyParser {
         
         public Object decode(String raw, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
-            JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();            
-            for( int i = 0; i < platforms.length; i++ ) {
-                String normalizedName = (String)platforms[i].getProperties().get("platform.ant.name");
-                if ( normalizedName != null && normalizedName.equals( raw ) ) {
-                    return platforms[i].getDisplayName();
-                }
+            JavaPlatform platform = findPlatform(raw);
+            if (platform != null) {
+                return platform.getDisplayName();
             }
             // if platform does not exist then return raw reference.
             return raw;

@@ -26,7 +26,13 @@ Microsystems, Inc. All Rights Reserved.
                         </xsd:restriction>
                     </xsd:simpleType>
                 </xsd:element>
-                <xsd:element name="explicit-platform" minOccurs="0"/>
+                <xsd:element name="explicit-platform" minOccurs="0">
+                    <xsd:complexType>
+                        <!-- TODO: Exist something like xsd:boolean or should 
+                             I enumerate true and false here as only allowed values. -->
+                        <xsd:attribute name="explicit-source-supported" type="xsd:NMTOKEN" use="required"/>
+                    </xsd:complexType>
+                </xsd:element>
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>
