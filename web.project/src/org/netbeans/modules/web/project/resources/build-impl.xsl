@@ -188,10 +188,13 @@ Microsystems, Inc. All Rights Reserved.
         <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}">
 <!--        <xsl:call-template name="debug-java-body"/>-->
         </nbdeploy>
-        <nbjpdaconnect host="${{jpda.host}}" port="${{jpda.port}}">
+        <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
             <classpath>
                 <path path="${{debug.classpath}}"/>
             </classpath>
+            <sourcepath>
+                <path path="${{web.docbase.dir}}"/>
+            </sourcepath>
             <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
             <bootclasspath>
                 <path path="${{platform.bootcp}}"/>
