@@ -112,36 +112,27 @@ public final class TransformableSupport implements TransformableCookie {
             }
 
             TransformerException transExcept = null;
-            CookieObserver.Message message = null;
-
-            if ( notifier != null ) {
-                Throwable unwrappedExc = unwrapException (exc);
-                message = new CookieObserver.Message
-                    (unwrappedExc.getLocalizedMessage(),
-                     CookieObserver.Message.FATAL_ERROR_LEVEL);
-            }
-
+            Object detail = null;
+            
             if ( exc instanceof TransformerException ) {
-                transExcept = (TransformerException)exc;
-
-                if ( message != null ) {
-                    message.addDetail (new DefaultXMLProcessorDetail (transExcept));
-                }
+                transExcept = (TransformerException)exc;                
+                detail = new DefaultXMLProcessorDetail (transExcept);
+                
             } else if ( exc instanceof SAXParseException ) {
                 transExcept = new TransformerException (exc);
-
-                if ( message != null ) {
-                    message.addDetail (new DefaultXMLProcessorDetail ((SAXParseException)exc));
-                }
+                detail = new DefaultXMLProcessorDetail ((SAXParseException)exc);
+                
             } else {
                 transExcept = new TransformerException (exc);
-
-                if ( message != null ) {
-                    message.addDetail (new DefaultXMLProcessorDetail (transExcept));
-                }
+                detail = new DefaultXMLProcessorDetail (transExcept);
             }
 
-            if (notifier != null) {
+            if ( notifier != null ) {            
+                CookieMessage message = new CookieMessage(
+                    unwrapException(exc).getLocalizedMessage(), 
+                    CookieMessage.FATAL_ERROR_LEVEL,
+                    detail
+                );                
                 notifier.receive (message);
             }
             
@@ -248,15 +239,16 @@ public final class TransformableSupport implements TransformableCookie {
         }
         
         public void error (TransformerException tex) throws TransformerException {
-            report (CookieObserver.Message.ERROR_LEVEL, tex);
+            report (CookieMessage.ERROR_LEVEL, tex);
         }
         
         public void fatalError (TransformerException tex) throws TransformerException {
-            report (CookieObserver.Message.FATAL_ERROR_LEVEL, tex);
+            report (CookieMessage.FATAL_ERROR_LEVEL, tex);
         }
         
+
         public void warning (TransformerException tex) throws TransformerException {
-            report (CookieObserver.Message.WARNING_LEVEL, tex);
+            report (CookieMessage.WARNING_LEVEL, tex);
         }
 
         private void report (int level, TransformerException tex) throws TransformerException {
@@ -269,8 +261,12 @@ public final class TransformableSupport implements TransformableCookie {
             }
 
             Throwable unwrappedExc = unwrapException (tex);
-            CookieObserver.Message message = new CookieObserver.Message (unwrappedExc.getLocalizedMessage(), level);
-            message.addDetail (new DefaultXMLProcessorDetail (tex));
+            CookieMessage message = new CookieMessage (
+                unwrappedExc.getLocalizedMessage(), 
+                level,
+                new DefaultXMLProcessorDetail (tex)
+            );
+
             peer.receive (message);
         }
         

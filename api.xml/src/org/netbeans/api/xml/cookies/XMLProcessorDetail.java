@@ -17,7 +17,7 @@ package org.netbeans.api.xml.cookies;
 import org.xml.sax.*;
 
 /**
- * It is structured XML processor {@link CookieObserver.Message} detail.
+ * It is structured XML processor {@link CookieMessage} detail.
  * Its specification is based on {@link SAXParseException}, but can be
  * explicitly overwriten here.
  *
