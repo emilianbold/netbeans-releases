@@ -15,8 +15,11 @@ package threaddemo.views;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Action;
 import org.netbeans.spi.looks.Look;
+import org.openide.actions.DeleteAction;
 import org.openide.util.Lookup;
+import org.openide.util.actions.SystemAction;
 import org.w3c.dom.*;
 import org.w3c.dom.events.*;
 
@@ -39,18 +42,23 @@ public class ElementLook extends Look implements EventListener {
     protected void attachTo(Object o) {
         assert o instanceof Element;
         EventTarget et = (EventTarget)o;
-        et.addEventListener("DOMNodeInserted", this, false);
+        // Node{Inserted,Removed} is fired *before* the change. This is better;
+        // fired *after* it has taken effect.
+        et.addEventListener("DOMSubtreeModified", this, false);
     }
     
     protected void detachFrom(Object o) {
         EventTarget et = (EventTarget)o;
-        et.removeEventListener("DOMNodeRemoved", this, false);
+        et.removeEventListener("DOMSubtreeModified", this, false);
     }
     
     public void handleEvent(Event evt) {
-        Node parent = ((MutationEvent)evt).getRelatedNode();
-        if (parent instanceof Element) {
+        try {
+            Element parent = (Element)evt.getCurrentTarget();
+            System.err.println("ElementLook: event on " + parent.getTagName() + ": " + evt + "; co=" + getChildObjects(parent, null));//XXX
             fireChange(parent, Look.GET_CHILD_OBJECTS);
+        } catch (RuntimeException e) {
+            e.printStackTrace();
         }
     }
     
@@ -73,6 +81,7 @@ public class ElementLook extends Look implements EventListener {
     }
     
     public List getChildObjects(Object o, Lookup env) {
+        //System.err.println("ElementLook: gCO on " + ((Element)o).getTagName());
         NodeList nl = ((Element)o).getChildNodes();
         List l = new ArrayList(Math.max(nl.getLength(), 1));
         for (int i = 0; i < nl.getLength(); i++) {
@@ -96,6 +105,12 @@ public class ElementLook extends Look implements EventListener {
     public void destroy(Object o, Lookup env) {
         Element e = (Element)o;
         e.getParentNode().removeChild(e);
+    }
+    
+    public Action[] getActions(Object o, Lookup env) {
+        return new Action[] {
+            SystemAction.get(DeleteAction.class),
+        };
     }
     
 }
