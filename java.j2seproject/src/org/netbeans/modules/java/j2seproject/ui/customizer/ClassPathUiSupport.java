@@ -173,7 +173,7 @@ public class ClassPathUiSupport {
     
     public static int[] addLibraries( DefaultListModel listModel, int[] indices, Library[] libraries, Set/*<Library>*/ alreadyIncludedLibs ) {
         
-        int lastIndex = indices == null || indices.length == 0 ? -1 : indices[indices.length - 1];
+        int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
         for (int i = 0, j=1; i < libraries.length; i++) {
             if (!alreadyIncludedLibs.contains(libraries[i])) {
                 listModel.add( lastIndex + j++, ClassPathSupport.Item.create( libraries[i], null ) );
@@ -194,7 +194,7 @@ public class ClassPathUiSupport {
 
     public static int[] addJarFiles( DefaultListModel listModel, int[] indices, File files[] ) {
         
-        int lastIndex = indices == null || indices.length == 0 ? -1 : indices[indices.length - 1];
+        int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
         int[] indexes = new int[files.length];
         for( int i = 0; i < files.length; i++ ) {
             int current = lastIndex + 1 + i;
@@ -213,7 +213,7 @@ public class ClassPathUiSupport {
     
     public static int[] addArtifacts( DefaultListModel listModel, int[] indices, AntArtifactChooser.ArtifactItem artifactItems[] ) {
         
-        int lastIndex = indices == null || indices.length == 0 ? -1 : indices[indices.length - 1];
+        int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
         int[] indexes = new int[artifactItems.length];
         for( int i = 0; i < artifactItems.length; i++ ) {
             int current = lastIndex + 1 + i;
