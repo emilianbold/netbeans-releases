@@ -173,7 +173,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="nbm" depends="netbeans">
-    <!-- PENDING
+    <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
     <makenbm file="openide.nbm"
              topdir="."
              module="netbeans/lib/openide.jar"
@@ -182,7 +182,6 @@ Microsystems, Inc. All Rights Reserved.
       <license file="${license.file}"/>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
-    -->
   </target>
 
   <!-- Define the sets of files for various libraries -->
