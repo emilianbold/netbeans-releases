@@ -25,19 +25,26 @@ import java.beans.PropertyEditorSupport;
 import java.io.File;
 import java.io.FilenameFilter;
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JScrollBar;
 import javax.swing.KeyStroke;
+import javax.swing.UIManager;
 
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.modules.Dependency;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * PropertyEditor for <code>java.io.File</code>.
@@ -503,6 +510,66 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         chooser.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
             KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "close");
         chooser.getActionMap().put("close", close);
+        if (needAppleHack()) {
+            appleHackChooser(chooser);
+        }
+    }
+
+    /** Apple's JDK 1.4.2_03 JFileChooserUI simply ignores 
+     * JFileChooser.setControlButtonsAreShown().  The result is extremely 
+     * confusing to a novice user - the mount wizard presents two sets of 
+     * buttons, including a glowing blue Open button which does nothing.
+     * This hack is only enabled for 1.4.2_03 (the only 1.4 impl available on
+     * osx).  A bug has been filed with apple's bug reporter.  */
+    private static void appleHackChooser (JFileChooser jfc) {
+        jfc.addPropertyChangeListener (new ButtonHider());
+    }
+    
+    private static class ButtonHider implements PropertyChangeListener {
+        public void propertyChange (PropertyChangeEvent pce) {
+            if (JFileChooser.CONTROL_BUTTONS_ARE_SHOWN_CHANGED_PROPERTY.equals(pce.getPropertyName())) {
+                JFileChooser jfc = (JFileChooser) pce.getSource();
+                try {
+                    hideShowButtons(jfc, Boolean.TRUE.equals(pce.getNewValue()));
+                } catch (Exception e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }
+        }
+        
+        private void hideShowButtons (Container cont, boolean val) {
+            if (cont instanceof JComboBox || cont instanceof JScrollBar) {
+                return;
+            }
+            Component[] c = cont.getComponents();
+            for (int i=0; i < c.length; i++) {
+                if (c[i] instanceof Container) {
+                    hideShowButtons ((Container) c[i], val);
+                }
+                if (c[i] instanceof AbstractButton) {
+                    c[i].setVisible(val);
+                }
+            }
+        }
+    }
+    
+    private static Boolean applehack = null;
+    private static boolean needAppleHack() {
+        if (applehack == null) {
+            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                if ("1.4.2_03".equals(Dependency.JAVA_IMPL)) {
+                    applehack = ("Aqua".equals(
+                        UIManager.getLookAndFeel().getID()) || 
+                        Boolean.getBoolean("netbeans.apple.filechooserhack")) ?
+                        Boolean.TRUE : Boolean.FALSE; //NOI18N
+                } else {
+                    applehack = Boolean.FALSE;
+                }
+            } else {
+                applehack = Boolean.FALSE;
+            }
+        }
+        return applehack.booleanValue();
     }
     
     /** Wraps java.io.FileFilter to javax.swing.filechooser.FileFilter. */
