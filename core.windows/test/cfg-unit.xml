@@ -49,6 +49,7 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <include name="org/netbeans/core/windows/persistence/*.class"/>
                 <include name="org/netbeans/core/windows/*.class"/>
+                <include name="org/netbeans/core/windows/services/*.class"/>
             </patternset>
         </testset>
     </testbag>
