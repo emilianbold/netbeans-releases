@@ -18,9 +18,11 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -39,6 +41,8 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
     private final FreeformProject project;
     private PropertyEvaluator delegate;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    /** Not used for anything, just held strongly so they are not collected prematurely. */
+    private final Set/*<PropertyEvaluator>*/ intermediateEvaluators = new HashSet();
     
     public FreeformEvaluator(FreeformProject project) throws IOException {
         this.project = project;
@@ -58,6 +62,13 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
     }
     
     private PropertyEvaluator initEval() throws IOException {
+        // Stop listening to old intermediate evaluators.
+        Iterator ieIt = intermediateEvaluators.iterator();
+        while (ieIt.hasNext()) {
+            PropertyEvaluator intermediate = (PropertyEvaluator) ieIt.next();
+            intermediate.removePropertyChangeListener(this);
+            ieIt.remove();
+        }
         PropertyProvider preprovider = project.helper().getStockPropertyPreprovider();
         List/*<PropertyProvider>*/ defs = new ArrayList();
         Element genldata = project.helper().getPrimaryConfigurationData(true);
@@ -76,8 +87,13 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
                 } else {
                     assert e.getLocalName().equals("property-file") : e;
                     String fname = Util.findText(e);
-                    if (fname.indexOf("${") != -1) {
-                        throw new IOException("XXX not yet implemented");
+                    if (fname.indexOf("${") != -1) { // NOI18N
+                        // Tricky (#48230): need to listen to changes in the location of the file as well as its contents.
+                        PropertyEvaluator intermediate = PropertyUtils.sequentialPropertyEvaluator(preprovider, (PropertyProvider[]) defs.toArray(new PropertyProvider[defs.size()]));
+                        fname = intermediate.evaluate(fname);
+                        // Listen to changes in it, too.
+                        intermediate.addPropertyChangeListener(this);
+                        intermediateEvaluators.add(intermediate);
                     }
                     defs.add(PropertyUtils.propertiesFilePropertyProvider(project.helper().resolveFile(fname)));
                 }
@@ -121,6 +137,10 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
     }
     
     public void configurationXmlChanged(AntProjectEvent ev) {
+        fireAnyChange();
+    }
+    
+    private void fireAnyChange() {
         try {
             init();
         } catch (IOException ex) {
@@ -137,8 +157,16 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
     }
     
     public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-        // If a properties file changes on disk, we refire that.
-        fireChange(propertyChangeEvent.getPropertyName());
+        Object source = propertyChangeEvent.getSource();
+        assert source instanceof PropertyEvaluator : source;
+        if (intermediateEvaluators.contains(source)) {
+            // A <property-file> may have changed location. Generally need to rebuild the list of definers.
+            fireAnyChange();
+        } else {
+            // If a properties file changes on disk, we refire that from the delegate.
+            assert source == delegate : "Got change from " + source + " rather than current delegate " + delegate;
+            fireChange(propertyChangeEvent.getPropertyName());
+        }
     }
     
 }
