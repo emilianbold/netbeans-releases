@@ -28,6 +28,7 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
 
+import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -37,6 +38,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.NbBundle;
 import org.openide.windows.CloneableOpenSupport;
 
 
@@ -144,7 +146,15 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
                 return;
             } catch (UnsupportedEncodingException ex) {
                 // ok unsupported encoding, lets go on
+            } catch (Exception ex) {
+            	// annotate and try default read method
+            	ErrorManager.getDefault ().annotate (
+            	    ex, NbBundle.getMessage(HtmlEditorSupport.class, "MSG_errorInReadingWithEnc", 
+                    getDataObject().getPrimaryFile().getPath(),txt)
+            	);
+            	ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
             }
+            	
         }
         
         // no or bad encoding, just read the stream

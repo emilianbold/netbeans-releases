@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- says how to create classpath for code tests -->
     <!-- can have values src, jar, ide               -->
-    <property name="xtest.source.location" value="src"/>
+    <property name="xtest.source.location" value="jar"/>
     
     <property name="xtest.home" location="../../xtest"/>
 
@@ -211,7 +211,10 @@ Microsystems, Inc. All Rights Reserved.
 	<path id="codetest.classpath">
 	        <pathelement location="../netbeans/modules/html.jar"/>
 	        <pathelement location="../../openide/netbeans/lib/openide.jar"/>
-	        <pathelement location="../../core/netbeans/lib/core.jar"/>
+                <fileset dir="../../core/netbeans/lib">
+	            <include name="core.jar"/>
+                    <include name="ext/*.jar"/>
+                </fileset>
     	</path>
     </target>
         
@@ -221,8 +224,10 @@ Microsystems, Inc. All Rights Reserved.
     	<path id="codetest.classpath">
 	        <pathelement location="../src"/>
 	        <pathelement location="../../openide/netbeans/lib/openide.jar"/>
-	        <pathelement location="../../core/netbeans/lib/core.jar"/>
-	        <pathelement location="../netbeans/modules/html.jar"/>
+                <fileset dir="../../core/netbeans/lib">
+	            <include name="core.jar"/>
+                    <include name="ext/*.jar"/>
+                </fileset>
     	</path>
     </target>
     
@@ -232,7 +237,10 @@ Microsystems, Inc. All Rights Reserved.
     	<path id="codetest.classpath">
 	        <pathelement location="${netbeans.home}/modules/html.jar"/>
         	<pathelement location="${netbeans.home}/lib/openide.jar"/>        
-	        <pathelement location="${netbeans.home}/lib/core.jar"/>
+                <fileset dir="../../core/netbeans/lib">
+	            <include name="core.jar"/>
+                    <include name="ext/*.jar"/>
+                </fileset>
     	</path>
     </target>
     

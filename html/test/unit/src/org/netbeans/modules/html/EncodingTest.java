@@ -15,7 +15,6 @@ package org.netbeans.modules.html;
 
 import junit.framework.*;
 import junit.textui.TestRunner;
-import org.openide.TopManager;
 import org.openide.filesystems.*;
 import org.openide.nodes.Node;
 import org.openide.loaders.DataObject;
@@ -32,6 +31,7 @@ import javax.swing.text.Document;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.util.Lookup;
 
 /** Test Plain top manager. Must be run externally.
  * @author Jaroslav Tulach
@@ -52,6 +52,9 @@ public class EncodingTest extends NbTestCase {
     
     /**/
     protected void setUp() throws Exception {
+        Lookup.getDefault().lookup(org.openide.modules.ModuleInfo.class);
+        // log (org.openide.loaders.DataLoader.getLoader(HtmlLoader.class).toString());
+        
         File f = File.createTempFile (name (), "");
         f.delete ();
         f.mkdirs ();
@@ -71,36 +74,46 @@ public class EncodingTest extends NbTestCase {
     /** Loads an empty file.
      */
     public void testLoadEmptyFile () throws Exception {
-        checkEncoding (null, "empty.html");
+        checkEncoding (null, "empty.html", true);
     }
     
     /** Loades a file that does not specify an encoding.
      */
     public void testLoadOfNoEncoding () throws Exception {
-        checkEncoding (null, "sample.html");
+        checkEncoding (null, "sample.html", true);
+    }
+    
+    /** Loades a file that does not specify an encoding.
+     */
+    public void testLoadOfWrongEncoding () throws Exception {
+        checkEncoding (null, "wrongencoding.html", false);
     }
     
     /** Test load of UTF-8 encoding.
      */
     public void testEncodingUTF8 () throws Exception {
-        checkEncoding ("UTF-8", "UTF8.html");
+        checkEncoding ("UTF-8", "UTF8.html", true);
     }
     /** Test load of UTF-8 encoding specified in ' ' instead of " "
      */
     public void testEncodingApostrof () throws Exception {
-        checkEncoding ("UTF-8", "apostrof.html");
+        checkEncoding ("UTF-8", "apostrof.html", true);
     }
     
     /** Test load of UTF-8 encoding specified in ' ' instead of " "
      * with a text that is followed with "
      */
     public void testEncodingApostrofWithQuote () throws Exception {
-        checkEncoding ("UTF-8", "apostrofwithoutquote.html");
+        checkEncoding ("UTF-8", "apostrofwithoutquote.html", true);
     }
     
-    private void checkEncoding (String enc, String res) throws Exception {    
+    /** @param enc expected encoding
+     *  @param res resource path
+     *  @param withCmp should also document content be compared?
+     */
+    private void checkEncoding (String enc, String res, boolean withCmp) throws Exception {    
         InputStream is = getClass ().getResourceAsStream (res);
-        assertNotNull ("sample.html should exist", is);
+        assertNotNull (res+" should exist", is);
         
         FileObject data = FileUtil.createData (fs.getRoot (), res);
         FileLock lock = data.lock();
@@ -132,7 +145,10 @@ public class EncodingTest extends NbTestCase {
         } else {
             r = new InputStreamReader (getClass ().getResourceAsStream (res), enc);
         }
-            
+           
+        if (!withCmp)
+            return;
+        
         compareDoc (r, doc);
         r.close ();
         
