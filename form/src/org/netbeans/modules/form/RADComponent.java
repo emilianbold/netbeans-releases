@@ -301,6 +301,16 @@ public class RADComponent implements FormDesignValue {
                 if (value == FormDesignValue.IGNORED_VALUE)
                     continue; // ignore this value, as it is not a real value
 
+                // HOTFIX: memory leak workaround
+                if (value instanceof javax.swing.DefaultComboBoxModel) {
+                    try {
+                        value = FormUtils.cloneBeanInstance(value, null);
+                    }
+                    catch (CloneNotSupportedException ex) {
+                        continue;
+                    }
+                }
+
                 Method writeMethod = prop.getPropertyDescriptor().getWriteMethod();
                 if (writeMethod != null)
                     writeMethod.invoke(bean, new Object[] { value });
