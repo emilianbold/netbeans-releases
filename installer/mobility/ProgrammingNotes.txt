@@ -1,0 +1,19 @@
+Prerequisites
+   
+ - InstallShield MultiPlatform 5 (SP3)
+ - Apache Ant 1.6.1
+ - JDK 1.4.2 (not JDK 1.5 which uses an incompatible classfile format)
+ - external unzip utility on $PATH
+ - Unix
+
+To build from command line run ant as usual with
+
+ -Dismp.home=<home dir of ISMP5>
+ -Dcluster.dir=/path/to/mobility
+ -Dinstaller.basename=NetBeansMobility-dev-20040701
+
+The installers will be generated and placed in the dist/ subdir
+
+In case the ${cluster.dir} is platform specific, one can supply the Windows
+version and Unix version separately and run the targets build-win32 and
+build-unix in turn.
