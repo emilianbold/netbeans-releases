@@ -279,8 +279,11 @@ Microsystems, Inc. All Rights Reserved.
 	</file>
 
         <file name="FIND.instance">
+            <!-- #32733 - Find shortcut should be CTRL-F unless kbd has a Find key -->
+            <attr name="hidden" methodvalue="org.netbeans.core.ui.MenuWarmUpTask.isNotSolaris"/> 
 	    <attr name="instanceClass" stringvalue="org.openide.actions.FindAction"/>
 	</file>
+        
     
         <file name="C-S.instance">
 	    <attr name="instanceClass" stringvalue="org.openide.actions.SaveAction"/>
