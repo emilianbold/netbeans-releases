@@ -68,7 +68,7 @@ final class ShortcutsFolder extends FolderInstance {
     
 
     /** Creates new ShortcutsFolder */
-    public ShortcutsFolder(DataFolder f) {
+    private ShortcutsFolder(DataFolder f) {
         super(f);
         recreate();
     }
@@ -399,7 +399,12 @@ final class ShortcutsFolder extends FolderInstance {
             shortcutsFolder.recreate();
         }
     }
-        
+
+    public static void waitShortcutsFinished () {
+        if (shortcutsFolder != null) {
+            shortcutsFolder.waitFinished ();
+        }
+    }
     
     /** Applies changes described by a sequence of ChangeRequests 
      * to the shortcuts folder.

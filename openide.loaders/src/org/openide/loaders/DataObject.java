@@ -563,6 +563,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
             throw iae;
         }
         String oldName;
+        String newName;
         final FileObject[] files = new FileObject[2]; // [old, new]
         
         synchronized ( synchObject() ) {
@@ -580,9 +581,11 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
                             item.changePrimaryFile (files[1]);
                     }
                 });
+             newName = getName ();
         }
         if (files[0] != files[1])
             firePropertyChange (PROP_PRIMARY_FILE, files[0], getPrimaryFile ());
+        firePropertyChange (PROP_NAME, oldName, newName);
         
         fireOperationEvent (new OperationEvent.Rename (this, oldName), OperationEvent.RENAME);
     }

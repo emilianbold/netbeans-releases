@@ -625,7 +625,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
                 if (toRemove.remove (fo)) {
                     // if the fo is in the map than try to find its cookie
                     prevCookie = (HoldInstance)map.get (fo);
-                    if (prevCookie != null && prevCookie.cookie == null) {
+                    if (prevCookie != null && (prevCookie.cookie == null || !prevCookie.cookie.equals (cookie))) {
                         prevCookie = null;
                     }
                 }
