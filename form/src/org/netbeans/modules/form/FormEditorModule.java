@@ -21,9 +21,6 @@ import com.netbeans.ide.loaders.DataFolder;
 import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.modules.ModuleInstall;
 
-// [PENDING]
-import com.netbeans.developer.impl.IDESettings;
-
 /**
 * Module installation class for Form Editor
 *
@@ -43,18 +40,13 @@ public class FormEditorModule implements ModuleInstall {
 //    System.out.println("FormEditorModule: installed");
 
   // -----------------------------------------------------------------------------
-  // 1. add bean infos
-    addBeanInfos ();
-    
-  // -----------------------------------------------------------------------------
-  // 2. create Component Palette under system
+  // 1. create Component Palette under system
     createComponentPalette ();
   }
 
   /** Module installed again. */
   public void restored () {
 //    System.out.println("FormEditorModule: restored");
-    addBeanInfos ();
   }
 
   /** Module was uninstalled. */
@@ -70,16 +62,6 @@ public class FormEditorModule implements ModuleInstall {
 // -----------------------------------------------------------------------------
 // Private methods
   
-  private void addBeanInfos () {
-    // [PENDING] IAN - Highly temporary solution
-    IDESettings is = new IDESettings ();
-    String[] bisp = is.getBeanInfoSearchPath ();
-    String[] bisp2 = new String[bisp.length+1];
-    System.arraycopy (bisp2, 0, bisp, 0, bisp.length);
-    bisp2 [bisp2.length-1] = "com.netbeans.developer.modules.beaninfo.awt";
-    is.setBeanInfoSearchPath (bisp2);
-  }
-
   private void createComponentPalette () {
     FileObject root = TopManager.getDefault ().getRepository ().getDefaultFileSystem ().getRoot ();
     FileObject paletteFolder;
@@ -290,6 +272,7 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  10   Gandalf   1.9         4/8/99   Ian Formanek    Removed BeanInfo init
  *  9    Gandalf   1.8         4/5/99   Ian Formanek    
  *  8    Gandalf   1.7         3/31/99  Ian Formanek    
  *  7    Gandalf   1.6         3/31/99  Ian Formanek    Fixed bug 1410 - Many 
