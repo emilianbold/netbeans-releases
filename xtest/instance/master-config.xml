@@ -51,6 +51,8 @@ Microsystems, Inc. All Rights Reserved.
         <!-- J2EE team -->
         <module name="j2eeserver" testtypes="unit" attributes="stable"/>
         <module name="web/webapi" testtypes="unit" attributes="stable"/>
+        <module name="j2ee/refactoring" testtypes="unit" attributes="stable"/>
+
         <!-- removed (not runnable): html, schema2beans -->
         <!-- hangs: core/execution -->
         <!-- does not run: core/multiview -->
