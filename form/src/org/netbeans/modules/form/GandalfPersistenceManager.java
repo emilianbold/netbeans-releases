@@ -1292,16 +1292,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (radComponent != null) prop = radComponent.getPropertyByName(nameNode.getNodeValue());
 
         if (typeNode == null) {
-            if ((preCodeNode == null) ||(postCodeNode == null)) {
-                throw new IOException(); // [PENDING - explanation of problem]
-            } else {
-                if (preCodeNode != null) {
-                    prop.setPreCode(preCodeNode.getNodeValue());
-                }
-                if (postCodeNode != null) {
-                    prop.setPostCode(postCodeNode.getNodeValue());
-                }
+//            if ((preCodeNode == null) ||(postCodeNode == null)) {
+//                throw new IOException(); // [PENDING - explanation of problem]
+//            } else {
+            if (preCodeNode != null) {
+                prop.setPreCode(preCodeNode.getNodeValue());
             }
+            if (postCodeNode != null) {
+                prop.setPostCode(postCodeNode.getNodeValue());
+            }
+//            }
             return NO_VALUE; // value is not stored for this property, just the pre/post code
         }
 
