@@ -64,8 +64,8 @@ final class NbModuleProject implements Project {
             new Actions(this, helper),
             new ClassPathProviderImpl(this),
             new SourceForBinaryImpl(this),
+            new LogicalView(this),
             // XXX need, in rough descending order of importance:
-            // LogicalViewProvider
             // SubprojectProvider - special impl
             // AntArtifactProvider - should it run netbeans target, or all-foo/bar?
             // CustomizerProvider - ???
