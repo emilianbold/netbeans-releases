@@ -53,6 +53,9 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
         
         String [] args = org.openide.util.Utilities.parseParameters(p.getArguments());
         if (args.length > 1) {
+            if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {        
+                ExtWebBrowser.getEM().log("Old arguments: " + p.getArguments());    // NOI18N
+            }
             StringBuffer newArgs = new StringBuffer ();
             boolean found = false;
             for (int i=0; i<args.length-1; i++) {
@@ -70,6 +73,10 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             }
             if (found) {
                 newP = new NbProcessDescriptor (p.getProcessName(), newArgs.toString(), p.getInfo());
+            }
+            if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {        
+                ExtWebBrowser.getEM().log("ProcessName: " + p.getProcessName());    // NOI18N
+                ExtWebBrowser.getEM().log("New arguments: " + newArgs.toString());    // NOI18N
             }
         }
         return newP;
