@@ -491,6 +491,7 @@
 <mapID target="vcs.toolbar" url="vcs-nb/vcs_toolbar.html" />
 <mapID target="vcs.annotate" url="vcs-nb/vcs_annotate.html" />
 <mapID target="vcs.diffs" url="vcs-nb/vcs_diffs.html" />
+<mapID target="vcs.patch" url="vcs-nb/vcs_patch.html" />
 <mapID target="vcs.cygwin" url="vcs-nb/vcs_cygwin.html" />
 <mapID target="vcs.globalsettings" url="vcs-nb/vcs_globalsettings.html" />
 <mapID target="vcs.refresh" url="vcs-nb/vcs_refresh.html" />

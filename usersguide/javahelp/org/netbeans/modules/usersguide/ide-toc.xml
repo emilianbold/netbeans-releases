@@ -523,6 +523,7 @@
   <tocitem text="The Versioning Explorer" target="vcs.revexplorer" />
   <tocitem text="Using the Versioning Toolbar" target="vcs.toolbar" />
   <tocitem text="Comparing File Revisions Visually" target="vcs.diffs" />
+  <tocitem text="Creating and Applying a Patch" target="vcs.patch" />
   <tocitem text="Refreshing VCS File Statuses" target="vcs.refresh" />
   <tocitem text="Version Control Status" target="vcs.status" />
   <tocitem text="Searching for a File by VCS Status" target="search.status" />
