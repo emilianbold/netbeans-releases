@@ -210,8 +210,6 @@ public class UpdateHelper {
         this.helper.putPrimaryConfigurationData(getUpdatedSharedConfigurationData(),true);
         this.cfg.removeConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/1",true); //NOI18N
         ProjectManager.getDefault().saveProject (this.project);
-        this.genFileHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_IMPL_XML_PATH, UpdateHelper.class.getResource("resources/build-impl.xsl"),
-            true);
         synchronized(this) {
             this.isCurrent = Boolean.TRUE;
         }

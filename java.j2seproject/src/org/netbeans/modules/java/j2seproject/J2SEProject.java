@@ -304,11 +304,11 @@ public final class J2SEProject implements Project, AntProjectListener {
                         GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                         J2SEProject.class.getResource("resources/build-impl.xsl"),
                         true);
-                }
-                genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_XML_PATH,
-                    J2SEProject.class.getResource("resources/build.xsl"),
-                    true);
+                    genFilesHelper.refreshBuildScript(
+                        GeneratedFilesHelper.BUILD_XML_PATH,
+                        J2SEProject.class.getResource("resources/build.xsl"),
+                        true);
+                }                
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
