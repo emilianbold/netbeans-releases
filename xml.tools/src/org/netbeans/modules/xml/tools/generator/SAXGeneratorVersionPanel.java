@@ -48,7 +48,6 @@ public class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel implemen
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(480, 350));
-        setName(Util.getString ("SAXGeneratorVersionPanel.Form.name"));
         jaxpLabel.setText(Util.getString ("SAXGeneratorVersionPanel.jaxpLabel.text"));
         jaxpLabel.setLabelFor(jaxpVersionComboBox);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -117,6 +116,7 @@ public class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel implemen
         jaxpVersionComboBox.setModel(cbModel);
         cbModel.setSelectedItem(items[model.getJAXPversion() - 1]);
         
+        initAccessibility();
     }
     
     protected void updateView() {
@@ -134,4 +134,16 @@ public class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel implemen
     private javax.swing.JComboBox versionComboBox;
     // End of variables declaration//GEN-END:variables
 
+    /** Initialize accesibility
+     */
+    public void initAccessibility(){
+
+        propagateSAXCheckBox.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_propagateSAXCheckBox"));
+        propagateSAXCheckBox.getAccessibleContext().setAccessibleName(Util.getString("ACSN_propagateSAXCheckBox"));
+        
+        jaxpVersionComboBox.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_jaxpVersionComboBox"));
+        propagateSAXCheckBox.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_propagateSAXCheckBox"));
+        
+        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_SAXGeneratorVersionPanel"));
+    }    
 }

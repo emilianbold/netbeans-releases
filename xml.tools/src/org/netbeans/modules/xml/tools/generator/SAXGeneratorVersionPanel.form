@@ -6,7 +6,7 @@
       <Dimension value="[480, 350]"/>
     </Property>
     <Property name="name" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorVersionPanel.Form.name" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+      <ResourceString bundle="" key="SAXGeneratorVersionPanel.Form.name" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
     </Property>
   </Properties>
   <SyntheticProperties>
@@ -21,7 +21,7 @@
           <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorVersionPanel.jaxpLabel.text" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
         </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="jaxpVersionComboBox" type="code"/>
+          <Connection component="jaxpVersionComboBox" type="bean"/>
         </Property>
       </Properties>
       <Constraints>
@@ -43,7 +43,7 @@
           <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorCustomizer.versionLabel.text" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
         </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="versionComboBox" type="code"/>
+          <Connection component="versionComboBox" type="bean"/>
         </Property>
       </Properties>
       <Constraints>

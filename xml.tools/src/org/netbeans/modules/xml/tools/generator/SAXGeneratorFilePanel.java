@@ -72,11 +72,11 @@ public class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel implements 
         saveCheckBox = new javax.swing.JCheckBox();
         saveLabel = new javax.swing.JLabel();
         saveTextField = new org.netbeans.modules.xml.tools.generator.ValidatingTextField();
+        fillPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(480, 350));
-        setName(Util.getString ("SAXGeneratorFilePanel.Form.name"));
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentHidden(java.awt.event.ComponentEvent evt) {
                 formComponentHidden(evt);
@@ -117,9 +117,8 @@ public class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel implements 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.weightx = 1.0;
         add(handlerImplTextField, gridBagConstraints);
 
         stubLabel.setText(Util.getString ("SAXGeneratorCustomizer.stubLabel.text"));
@@ -159,44 +158,48 @@ public class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel implements 
         parsletImplLabel.setLabelFor(parsletImplTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(parsletImplLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.weightx = 1.0;
         add(parsletImplTextField, gridBagConstraints);
 
         saveCheckBox.setText(Util.getString("PROP_save_it"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(saveCheckBox, gridBagConstraints);
 
         saveLabel.setText(Util.getString("PROP_bindings_label"));
+        saveLabel.setLabelFor(saveTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(saveLabel, gridBagConstraints);
 
         saveTextField.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.weightx = 1.0;
         add(saveTextField, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(fillPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
         
@@ -243,6 +246,8 @@ public class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel implements 
         parsletImplTextField.setValidator(NAME_VALIDATOR);
         
         saveCheckBox.setSelected(model.getBindings() != null);
+        
+        initAccessibility();
     }
   
     protected void updateView() {
@@ -293,6 +298,23 @@ public class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel implements 
     private javax.swing.JLabel parsletLabel;
     private org.netbeans.modules.xml.tools.generator.ValidatingTextField handlerImplTextField;
     private javax.swing.JLabel handlerImplLabel;
+    private javax.swing.JPanel fillPanel;
     // End of variables declaration//GEN-END:variables
 
+    /** Initialize accesibility
+     */
+    public void initAccessibility(){
+
+        interfaceTextField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_interfaceTextField"));        
+        handlerImplTextField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_handlerImplTextField"));
+        stubTextField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_stubTextField"));
+        parsletTextField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_parsletTextField"));
+        parsletImplTextField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_parsletImplTextField"));
+        saveTextField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_saveTextField"));
+        
+        saveCheckBox.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_saveCheckBox"));
+        saveCheckBox.getAccessibleContext().setAccessibleName(Util.getString("ACSN_saveCheckBox"));
+        
+        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_SAXGeneratorFilePanel"));
+    }    
 }

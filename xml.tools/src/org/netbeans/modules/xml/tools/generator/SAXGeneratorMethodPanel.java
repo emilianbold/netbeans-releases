@@ -106,6 +106,7 @@ public class SAXGeneratorMethodPanel extends SAXGeneratorAbstractPanel {
         table.setModel(tableModel);        
         tableScrollPane.setViewportView(table);  //install it
 
+        initAccessibility();
     }
     
     protected void updateView() {
@@ -229,4 +230,10 @@ public class SAXGeneratorMethodPanel extends SAXGeneratorAbstractPanel {
     private javax.swing.JScrollPane tableScrollPane;
     // End of variables declaration//GEN-END:variables
 
+    /** Initialize accesibility
+     */
+    public void initAccessibility(){
+
+        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_SAXGeneratorMethodPanel"));
+    }    
 }
