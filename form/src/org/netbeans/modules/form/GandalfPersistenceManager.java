@@ -13,8 +13,7 @@
 
 package org.netbeans.modules.form;
 
-import java.beans.PropertyDescriptor;
-import java.beans.PropertyEditor;
+import java.beans.*;
 import java.io.*;
 import java.util.*;
 
@@ -86,6 +85,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
         org.openide.xml.XMLUtil.createDocument("topDocument",null,null,null); // NOI18N
 
     private Map containerDependentProperties;
+
+    private FileObject formFile;
+
 
     /** A method which allows the persistence manager to provide infotrmation
      * on whether is is capable to store info about advanced features provided
@@ -223,7 +225,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * @exception IOException if any problem occured when loading the form
      */
     public FormModel loadForm(FormDataObject formObject) throws IOException {
-        FileObject formFile = formObject.getFormEntry().getFile();
+        formFile = formObject.getFormEntry().getFile();
         org.w3c.dom.Document doc;
         org.w3c.dom.Element mainElement;
         String encoding;
@@ -336,11 +338,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                   RADComponent comp,
                                   ComponentContainer parentContainer) {
         try {
+            Class compClass = null;
             if (!(comp instanceof FormContainer)) {
                 comp.initialize(formModel2);
                 String className = findAttribute(node, ATTR_COMPONENT_CLASS);
                 String compName = findAttribute(node, ATTR_COMPONENT_NAME);
-                Class compClass = null;
                 try {
                     compClass = PersistenceObjectRegistry.loadClass(className);
                 } catch (Exception e) {
@@ -360,39 +362,69 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 comp.setName(compName);
             }
 
-
             org.w3c.dom.NodeList childNodes = node.getChildNodes();
+            if (childNodes == null)
+                return true;
 
-            if (childNodes != null) {
-                for (int i = 0; i < childNodes.getLength(); i++) {
-                    org.w3c.dom.Node componentNode = childNodes.item(i);
-                    if (componentNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
+            for (int i = 0; i < childNodes.getLength(); i++) {
+                org.w3c.dom.Node componentNode = childNodes.item(i);
+                if (componentNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
 
-                    if (XML_PROPERTIES.equals(componentNode.getNodeName())) {
-                        loadProperties(componentNode, comp);
-                    } else if (XML_EVENTS.equals(componentNode.getNodeName())) {
-                        Collection events = loadEvents(componentNode);
-                        if (events != null) {
-                            comp.getEventHandlers().initEvents(events);
+                if (XML_PROPERTIES.equals(componentNode.getNodeName())) {
+                    loadProperties(componentNode, comp);
+                }
+                else if (XML_EVENTS.equals(componentNode.getNodeName())) {
+                    Collection events = loadEvents(componentNode);
+                    if (events != null) {
+                        comp.getEventHandlers().initEvents(events);
+                    }
+                }
+                else if (XML_AUX_VALUES.equals(componentNode.getNodeName())) {
+                    HashMap auxValues = loadAuxValues(componentNode);
+                    if (auxValues != null) {
+                        for (Iterator it = auxValues.keySet().iterator(); it.hasNext();) {
+                            String auxName =(String)it.next();
+                            comp.setAuxValue(auxName, auxValues.get(auxName));
                         }
 
-                    } else if (XML_AUX_VALUES.equals(componentNode.getNodeName())) {
-                        HashMap auxValues = loadAuxValues(componentNode);
-                        if (auxValues != null) {
-                            for (Iterator it = auxValues.keySet().iterator(); it.hasNext();) {
-                                String auxName =(String)it.next();
-                                comp.setAuxValue(auxName, auxValues.get(auxName));
+                        // if the component is serialized, deserialize it
+                        if (JavaCodeGenerator.VALUE_SERIALIZE.equals(
+                                auxValues.get(JavaCodeGenerator.AUX_CODE_GENERATION)))
+                        {
+                            try {
+                                String serFile = (String) auxValues.get(
+                                                 JavaCodeGenerator.AUX_SERIALIZE_TO);
+                                if (serFile == null)
+                                    serFile = formFile.getName() + "_" + comp.getName(); // NOI18N
+
+                                String serName = formFile.getParent().getPackageName('.');
+                                if (!"".equals(serName)) // NOI18N
+                                    serName += "."; // NOI18N
+                                serName += serFile;
+
+                                Object instance = Beans.instantiate(
+                                    TopManager.getDefault().currentClassLoader(),
+                                    serName);
+
+                                comp.setInstance(instance);
+                            }
+                            catch (Exception ex) { // ignore
+                                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                                    ex.printStackTrace();
                             }
                         }
-                    } else if (XML_SYNTHETIC_PROPERTIES.equals(componentNode.getNodeName())) {
-                        loadSyntheticProperties(componentNode, comp);
                     }
+                }
+                else if (XML_SYNTHETIC_PROPERTIES.equals(componentNode.getNodeName())) {
+                    loadSyntheticProperties(componentNode, comp);
                 }
             }
 
             return true;
-        } catch (Exception e) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
+        }
+        catch (Exception e) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                e.printStackTrace();
             return false; // [PENDING - undo already processed init?]
         }
     }
@@ -1055,19 +1087,25 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     private void saveComponent(RADComponent component, StringBuffer buf, String indent) {
         // 1. Properties
-        boolean doSaveProps = false;
-        RADProperty[] props = component.getAllBeanProperties();
-        for (int i = 0; i < props.length; i++) {
-            if (props[i].isChanged() ||(props[i].getPreCode() != null) ||(props[i].getPostCode() != null)) {
-                doSaveProps = true;
-                break;
+        if (!JavaCodeGenerator.VALUE_SERIALIZE.equals(
+                component.getAuxValue(JavaCodeGenerator.AUX_CODE_GENERATION))) {
+            // save properties only if the component is not to be serialized
+            boolean doSaveProps = false;
+            RADProperty[] props = component.getAllBeanProperties();
+            for (int i = 0; i < props.length; i++) {
+                if (props[i].isChanged()
+                        || props[i].getPreCode() != null
+                        || props[i].getPostCode() != null) {
+                    doSaveProps = true;
+                    break;
+                }
             }
-        }
 
-        if (doSaveProps) {
-            buf.append(indent); addElementOpen(buf, XML_PROPERTIES);
-            saveProperties(component, buf, indent + ONE_INDENT);
-            buf.append(indent); addElementClose(buf, XML_PROPERTIES);
+            if (doSaveProps) {
+                buf.append(indent); addElementOpen(buf, XML_PROPERTIES);
+                saveProperties(component, buf, indent + ONE_INDENT);
+                buf.append(indent); addElementClose(buf, XML_PROPERTIES);
+            }
         }
 
         // 1.a synthetic properties - only for RADVisualFormContainer
