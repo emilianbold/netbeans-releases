@@ -138,6 +138,9 @@ public class BrokenReferencesModel extends AbstractListModel {
         Set set = new LinkedHashSet();
         for (int i=0; i<ps.length; i++) {
             // evaluate given property and tokenize it
+            
+            // XXX: there will be API in PropertyUtils for listing of Ant 
+            // prop names in String. Consider using it here.
             String[] vals = PropertyUtils.tokenizePath(evaluator.getProperty(ps[i]));
             
             // XXX: perhaps I could check here also that correctly resolved
@@ -175,6 +178,7 @@ public class BrokenReferencesModel extends AbstractListModel {
         }
         JavaPlatform plats[] = JavaPlatformManager.getDefault().getInstalledPlatforms();
         for (int i=0; i<plats.length; i++) {
+            // XXX: this should be defined as PROPERTY somewhere
             if (platform.equals(plats[i].getProperties().get("platform.ant.name"))) { // NOI18N
                 return true;
             }
