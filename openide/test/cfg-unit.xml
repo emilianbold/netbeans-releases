@@ -97,8 +97,11 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- following test was excluded because of issue #22629 
                 <include name="org/openide/explorer/FindHelpTest.class"/>
                 -->                
-                <include name="org/openide/explorer/propertysheet/PropertyPanelTest.class"/>
-                <include name="org/openide/explorer/propertysheet/FindHelpTest.class/testFindHelpOnPropertySheetTab"/>
+                
+                <include name="org/openide/explorer/propertysheet/*"/>
+                <exclude name="org/openide/explorer/propertysheet/DefaultPropertyModelTest.class"/>
+                <exclude name="org/openide/explorer/propertysheet/PropertySheetTest.class"/>
+                
                 <include name="org/openide/compiler/*Test.class"/>
                 
                 <!-- run text package tests -->
@@ -113,9 +116,8 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="ide" name="testbag_2" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/openide/explorer/propertysheet/*.class"/>
-		<exclude name="org/openide/explorer/propertysheet/PropertyPanelTest.class"/>
-                <exclude name="org/openide/explorer/propertysheet/FindHelpTest.class"/>
+                <include name="org/openide/explorer/propertysheet/DefaultPropertyModelTest.class"/>
+                <include name="org/openide/explorer/propertysheet/PropertySheetTest.class"/>
                 <include name="org/openide/explorer/view/*.class"/>
 		<!-- the ListViews excluded because of issue #29423 -->
                 <exclude name="org/openide/explorer/view/ListViewTest.class"/>
