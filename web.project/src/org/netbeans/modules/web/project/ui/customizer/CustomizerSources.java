@@ -435,16 +435,22 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
-        File webPages = new File(jTextFieldWebPages.getText());
+        File fileName = new File(jTextFieldWebPages.getText());
+        File webPages = fileName.isAbsolute() ? fileName : new File(projectFld, fileName.getPath());
         if (webPages.exists()) {
-            chooser.setSelectedFile(webPages.isAbsolute() ? webPages :
-                new File(projectFld, webPages.getPath()));
+            chooser.setSelectedFile(webPages);
         } else {
             chooser.setSelectedFile(projectFld);
         }
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-            File webPagesDir = FileUtil.normalizeFile(chooser.getSelectedFile());
-            jTextFieldWebPages.setText(webPagesDir.getAbsolutePath());
+            File selected = FileUtil.normalizeFile(chooser.getSelectedFile());
+            String newWebPages;
+            if (CollocationQuery.areCollocated(projectFld, selected)) {
+                newWebPages = PropertyUtils.relativizeFile(projectFld, selected);
+            } else {
+                newWebPages = selected.getPath();
+            }
+            jTextFieldWebPages.setText(newWebPages);
         }
     }//GEN-LAST:event_jButtonBrowseActionPerformed
     
