@@ -20,15 +20,16 @@ Microsystems, Inc. All Rights Reserved.
    <folder name="Menu">
     
     <folder name="Debug">
-
       <file name="org-netbeans-modules-web-monitor.instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.monitor.client.MonitorAction"/>
       </file>
     </folder>
 
     <folder name="View">
-      <file name="HTTP Monitor.instance">
+        <attr name="org-netbeans-modules-form-actions-FormEditorAction.instance/org-netbeans-modules-web-monitor.instance" boolvalue="true" />
+        <file name="org-netbeans-modules-web-monitor.instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.monitor.client.MonitorAction"/>
+         <attr name="org-netbeans-modules-web-monitor.instance/Separator2.instance" boolvalue="true" />
       </file>
    </folder>
 
