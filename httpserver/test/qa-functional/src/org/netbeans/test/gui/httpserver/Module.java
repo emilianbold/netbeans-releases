@@ -1610,6 +1610,12 @@ public class Module extends JellyTestCase {
 		throw new AssertionFailedErrorException("No 'Hosts with Granted Access' dialog appears",ex);
 	}
 
+        pw.pushKey(java.awt.event.KeyEvent.VK_ALT);
+        pw.pushKey(java.awt.event.KeyEvent.VK_N);
+        pw.releaseKey(java.awt.event.KeyEvent.VK_N);
+        pw.releaseKey(java.awt.event.KeyEvent.VK_ALT);
+        
+        /*
 	try {
 		Robot rb=new java.awt.Robot();
 		rb.keyPress(java.awt.event.KeyEvent.VK_ALT);
@@ -1619,6 +1625,7 @@ public class Module extends JellyTestCase {
 	} catch (Exception AWTException) {
 		System.out.println("AWTException in test_4_9_1");	// NOI18N
 	}
+        */
 
 	dop.ok();
 	value=tf.getValue();
@@ -1650,6 +1657,12 @@ public class Module extends JellyTestCase {
 		throw new AssertionFailedErrorException("No 'Hosts with Granted Access' dialog appears",ex);
 	}
 
+        pw.pushKey(java.awt.event.KeyEvent.VK_ALT);
+        pw.pushKey(java.awt.event.KeyEvent.VK_S);
+        pw.releaseKey(java.awt.event.KeyEvent.VK_S);
+        pw.releaseKey(java.awt.event.KeyEvent.VK_ALT);
+
+        /*
 	try {
 		Robot rb=new java.awt.Robot();
 		rb.keyPress(java.awt.event.KeyEvent.VK_ALT);
@@ -1659,6 +1672,7 @@ public class Module extends JellyTestCase {
 	} catch (Exception AWTException) {
 		System.out.println("AWTException in test_4_9_2");	// NOI18N
 	}
+        */
 
 	dop.ok();
 	value=tf.getValue();
@@ -1690,7 +1704,23 @@ public class Module extends JellyTestCase {
 		throw new AssertionFailedErrorException("No 'Hosts with Granted Access' dialog appears",ex);
 	}
 
-	try {
+
+        pw.pushKey(java.awt.event.KeyEvent.VK_ALT);
+        pw.pushKey(java.awt.event.KeyEvent.VK_G);
+        pw.releaseKey(java.awt.event.KeyEvent.VK_G);
+        pw.releaseKey(java.awt.event.KeyEvent.VK_ALT);
+
+        pw.pushKey(java.awt.event.KeyEvent.VK_T);
+        pw.releaseKey(java.awt.event.KeyEvent.VK_T);
+        pw.pushKey(java.awt.event.KeyEvent.VK_E);
+        pw.releaseKey(java.awt.event.KeyEvent.VK_E);
+        pw.pushKey(java.awt.event.KeyEvent.VK_S);
+        pw.releaseKey(java.awt.event.KeyEvent.VK_S);
+        pw.pushKey(java.awt.event.KeyEvent.VK_T);
+        pw.releaseKey(java.awt.event.KeyEvent.VK_T);
+                
+        /*
+        try {
 		Robot rb=new java.awt.Robot();
 		rb.keyPress(java.awt.event.KeyEvent.VK_ALT);
 		rb.keyPress(java.awt.event.KeyEvent.VK_G);
@@ -1708,6 +1738,7 @@ public class Module extends JellyTestCase {
 	} catch (Exception AWTException) {
 		System.out.println("AWTException in test_4_9_3");	// NOI18N
 	}
+        */
 
 	dop.ok();
 	value=tf.getValue();
