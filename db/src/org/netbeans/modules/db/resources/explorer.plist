@@ -266,7 +266,7 @@
 		actions = (
 			{
 				name = "Create Table";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddTableAction;
+				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateTableAction;
 			},
 			delimiter,
 			{
@@ -297,7 +297,7 @@
 		actions = (
 			{
 				name = "Create Table";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddTableAction;
+				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateTableAction;
 			},
 			{
 				name = "Drop table";
@@ -373,7 +373,7 @@
 		actions = (
 			{
 				name = "Create Table";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddTableAction;
+				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateTableAction;
 			},
 			{
 				name = "Create index";
@@ -465,7 +465,7 @@
 			},
 			{
 				name = "Create Table";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddTableAction;
+				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateTableAction;
 			},
 			delimiter,
 			{
@@ -543,7 +543,7 @@
 			},
 			{
 				name = "Create Table";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddTableAction;
+				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateTableAction;
 			},
 			{
 				name = "Delete foreign key";

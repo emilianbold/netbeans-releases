@@ -24,7 +24,9 @@ public class CreateTableAction extends DatabaseAction
 {
 	public void performAction (Node[] activatedNodes) 
 	{
-		Node node = activatedNodes[0];
+		Node node;
+		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+		else return;
 		try {
 		} catch(Exception e) {
 			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to create table "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));

@@ -27,7 +27,9 @@ public class AddDriverAction extends DatabaseAction
 {
 	public void performAction(Node[] activatedNodes) 
 	{
-		Node node = activatedNodes[0];
+		Node node;
+		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+		else return;
 		try {
 			DriverOperations nfo = (DriverOperations)findInfo((DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class));
 			AddDriverDialog dlg = new AddDriverDialog();

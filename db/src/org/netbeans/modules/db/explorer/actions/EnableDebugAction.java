@@ -24,14 +24,18 @@ public class EnableDebugAction extends DatabaseAction
 {
 	protected boolean enable(Node[] activatedNodes)
 	{
-		Node node = activatedNodes[0];
+		Node node;
+		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+		else return false;
 		DatabaseNodeInfo nfo = findInfo((DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class));
 		return !nfo.isDebugMode();
 	}
 
 	public void performAction (Node[] activatedNodes) 
 	{
-		Node node = activatedNodes[0];
+		Node node;
+		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+		else return;
 		DatabaseNodeInfo nfo = findInfo((DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class));
 		nfo.setDebugMode(true);
 		DriverManager.setLogStream(System.out);

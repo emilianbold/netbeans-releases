@@ -24,7 +24,9 @@ public class CreateViewAction extends DatabaseAction
 {
 	public void performAction (Node[] activatedNodes) 
 	{
-		Node node = activatedNodes[0];
+		Node node;
+		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+		else return;
 		try {
 
 			// here

@@ -27,7 +27,9 @@ public class DropViewAction extends DatabaseAction
 {
 	public void performAction(Node[] activatedNodes) 
 	{
-		Node node = activatedNodes[0];
+		Node node;
+		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+		else return;
 		ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
 		try {			
 		} catch(Exception e) {

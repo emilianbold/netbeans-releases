@@ -24,7 +24,9 @@ public class DisconnectAction extends DatabaseAction
 {
 	protected boolean enable(Node[] activatedNodes)
 	{
-		Node node = activatedNodes[0];
+		Node node;
+		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+		else return false;
 		ConnectionOperations nfo = (ConnectionOperations)findInfo((DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class));
 		Connection connection = (Connection)((DatabaseNodeInfo)nfo).getConnection();
 		return (connection != null);
@@ -32,7 +34,9 @@ public class DisconnectAction extends DatabaseAction
 
 	public void performAction (Node[] activatedNodes) 
 	{
-		Node node = activatedNodes[0];
+		Node node;
+		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+		else return;
 		try {
 			ConnectionNodeInfo nfo = (ConnectionNodeInfo)findInfo((DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class));
 			nfo.disconnect();
