@@ -92,12 +92,14 @@ Microsystems, Inc. All Rights Reserved.
      <echo message="ide installto = ${ide.installto}"/>
      <buildinfo srcfile="${ide.home}/build_info" buildInfoNumberProperty="xtest.ide.build.name" />
      <echo message="Testing build ${xtest.ide.build.name}"/>
-     <property name="xtest.tested.project" value="Unknown"/>
-     <property name="xtest.testing.group" value="Unknown"/>
-     <property name="xtest.tested.type" value="Unknown"/>
+     <property name="xtest.machine" value="unknown"/>
+     <property name="xtest.tested.project" value="unknown"/>
+     <property name="xtest.testing.group" value="unknown"/>
+     <property name="xtest.tested.type" value="unknown"/>
      <reportinfo  outFile="${xtest.results}/xmlresults/testreport.xml"
             project="${xtest.tested.project}" build="${xtest.ide.build.name}"
-            testingGroup="${xtest.testing.group}" testedType="${xtest.tested.type}" />
+            testingGroup="${xtest.testing.group}" testedType="${xtest.tested.type}"
+            host="${xtest.machine}" />
      
      
      <for list="${xtest.instance.list}" delimiters="," property="xtest.instancecfg">
