@@ -12,3 +12,7 @@ OpenIDE-Module-Class: Option
 Name: com/netbeans/developer/modules/javadoc/GenerateDocAction.class
 OpenIDE-Module-Class: Action
 
+Name: com/netbeans/developer/modules/javadoc/comments/AutoCommentAction.class
+OpenIDE-Module-Class: Action
+
+
