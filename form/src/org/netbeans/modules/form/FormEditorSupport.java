@@ -750,6 +750,7 @@ public class FormEditorSupport extends JavaEditor
         super.notifyClosed(); // close java editor
         if (formLoaded)
             closeForm();
+        elementToOpen = JAVA_ELEMENT_INDEX;
     }
 
     private void multiViewClosed(CloneableTopComponent mvtc) {
