@@ -39,15 +39,16 @@ public class Patch extends Reader {
     private static final int NORMAL_DIFF = 1;
     
     private Difference[] diffs;
-    private BufferedReader source;
+    private PushbackReader source;
     private int currDiff = 0;
     private int line = 1;
+    private String newLine = null; // String, that is used to separate lines
     private StringBuffer buff = new StringBuffer();
     
     /** Creates a new instance of Patch */
     private Patch(Difference[] diffs, Reader source) {
         this.diffs = diffs;
-        this.source = new BufferedReader(source);
+        this.source = new PushbackReader(new BufferedReader(source), 1);
     }
     
     /**
@@ -123,28 +124,99 @@ public class Patch extends Reader {
                  (Difference.ADD != diffs[currDiff].getType() &&
                   line == diffs[currDiff].getFirstStart()))) {
                 if (compareText(source, diffs[currDiff].getFirstText())) {
-                    buff.append(diffs[currDiff].getSecondText());
+                    String text = convertNewLines(diffs[currDiff].getSecondText(), newLine);
+                    buff.append(text);
                     currDiff++;
                 } else {
                     throw new IOException("Patch not applicable.");
                 }
             }
-            String lineStr = source.readLine();
+            StringBuffer newLineBuffer = null;
+            if (newLine == null) {
+                newLineBuffer = new StringBuffer();
+            }
+            String lineStr = readLine(source, newLineBuffer);
+            if (newLineBuffer != null) newLine = newLineBuffer.toString();
             if (lineStr == null) break;
             buff.append(lineStr);
-            buff.append('\n');
+            buff.append(newLine);
         }
     }
     
-    private boolean compareText(BufferedReader source, String text) throws IOException {
+    /** Reads a line and returns the char sequence for newline */
+    private static String readLine(PushbackReader r, StringBuffer nl) throws IOException {
+        StringBuffer line = new StringBuffer();
+        char c = (char) r.read();
+        while (c != '\n' && c != '\r') {
+            line.append(c);
+            c = (char) r.read();
+        }
+        if (nl != null) {
+            nl.append(c);
+        }
+        if (c == '\r') {
+            try {
+                c = (char) r.read();
+                if (c != '\n') r.unread(c);
+                else if (nl != null) nl.append(c);
+            } catch (IOException ioex) {}
+        }
+        return line.toString();
+    }
+    
+    private static String convertNewLines(String text, String newLine) {
+        if (newLine == null) return text;
+        StringBuffer newText = new StringBuffer();
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == '\n') newText.append(newLine);
+            else if (c == '\r') {
+                if ((i + 1) < text.length() && text.charAt(i + 1) == '\n') {
+                    i++;
+                    newText.append(newLine);
+                }
+            } else newText.append(c);
+        }
+        return newText.toString();
+    }
+    
+    private boolean compareText(PushbackReader source, String text) throws IOException {
         if (text == null || text.length() == 0) return true;
+        text = adjustTextNL(text);
         char[] chars = new char[text.length()];
-        source.read(chars);
+        int pos = 0;
+        int n;
+        String readStr = "";
+        do {
+            n = source.read(chars, 0, chars.length - pos);
+            if (n > 0) {
+                pos += n;
+                readStr = readStr + new String(chars, 0, n);
+            }
+            if (readStr.endsWith("\r")) {
+                try {
+                    char c = (char) source.read();
+                    if (c != '\n') source.unread(c);
+                } catch (IOException ioex) {}
+            }
+            readStr = adjustTextNL(readStr);
+            pos = readStr.length();
+        } while (n > 0 && pos < chars.length);
         line += numChars('\n', chars);
-        String readStr = new String(chars);
         //System.out.println("Comparing text of the diff:\n'"+text+"'\nWith the read text:\n'"+readStr+"'\n");
         //System.out.println("  EQUALS = "+readStr.equals(text));
         return readStr.equals(text);
+    }
+    
+    /**
+     * When comparing the two texts, it's important to ignore different line endings.
+     * This method assures, that only '\n' is used as the line ending.
+     */
+    private String adjustTextNL(String text) {
+        text = org.openide.util.Utilities.replaceString(text, "\r\n", "\n");
+        text = org.openide.util.Utilities.replaceString(text, "\n\r", "\n");
+        text = org.openide.util.Utilities.replaceString(text, "\r", "\n");
+        return text;
     }
     
     private static int numChars(char c, char[] chars) {
