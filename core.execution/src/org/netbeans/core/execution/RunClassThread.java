@@ -130,6 +130,8 @@ final class RunClassThread extends Thread implements IOThreadIfc {
             try {
                 result = def.result();
             } catch (ThreadDeath err) { // terminated while executing
+            } catch (IllegalMonitorStateException e) {
+                // killed while leaving synchronized section, ignore
             }
             task.result = result;
 
