@@ -725,7 +725,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
     
     private List disableAllBreakpoints () {
         List l = new ArrayList ();
-        EventRequestManager erm = getVirtualMachine ().eventRequestManager ();
+        VirtualMachine vm = getVirtualMachine ();
+        if (vm == null) return l;
+        EventRequestManager erm = vm.eventRequestManager ();
         l.addAll (erm.accessWatchpointRequests ());
         l.addAll (erm.breakpointRequests ());
         l.addAll (erm.classPrepareRequests ());
