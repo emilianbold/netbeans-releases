@@ -168,52 +168,48 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
      * @return Returns custom editor component.
      */
     public Component getCustomEditor() {
-        boolean nue = false;
         if (chooser == null) {
-            nue = true;
             chooser = new JFileChooser();
-        }
         
-        File originalFile = (File)getValue ();
-        if (originalFile != null && ! originalFile.isAbsolute() && baseDirectory != null) {
-            originalFile = new File(baseDirectory, originalFile.getPath());
-        }
-        if (currentDirectory != null) {
-            chooser.setCurrentDirectory (currentDirectory);
-        } else if (originalFile != null && originalFile.getParentFile() != null) {
-            chooser.setCurrentDirectory (originalFile.getParentFile());
-            chooser.setSelectedFile (originalFile);
-        } else if (lastCurrentDir != null) {
-            chooser.setCurrentDirectory(lastCurrentDir);
-        }
-        
-        chooser.setFileSelectionMode(mode);
-        if (fileFilter != null) {
-            chooser.setFileFilter(fileFilter);
-        }
-        
-        switch (mode) {
-            case JFileChooser.FILES_AND_DIRECTORIES:
-                chooser.setDialogTitle (getString ("CTL_DialogTitleFilesAndDirs"));
-                break;
-            case JFileChooser.FILES_ONLY:
-                chooser.setDialogTitle (getString ("CTL_DialogTitleFiles"));
-                break;
-            case JFileChooser.DIRECTORIES_ONLY:
-                chooser.setDialogTitle (getString ("CTL_DialogTitleDirs"));
-                break;
-        }
+            File originalFile = (File)getValue ();
+            if (originalFile != null && ! originalFile.isAbsolute() && baseDirectory != null) {
+                originalFile = new File(baseDirectory, originalFile.getPath());
+            }
+            if (currentDirectory != null) {
+                chooser.setCurrentDirectory (currentDirectory);
+            } else if (originalFile != null && originalFile.getParentFile() != null) {
+                chooser.setCurrentDirectory (originalFile.getParentFile());
+                chooser.setSelectedFile (originalFile);
+            } else if (lastCurrentDir != null) {
+                chooser.setCurrentDirectory(lastCurrentDir);
+            }
 
-        chooser.setControlButtonsAreShown(false);
+            chooser.setFileSelectionMode(mode);
+            if (fileFilter != null) {
+                chooser.setFileFilter(fileFilter);
+            }
 
-        if (nue) {
+            switch (mode) {
+                case JFileChooser.FILES_AND_DIRECTORIES:
+                    chooser.setDialogTitle (getString ("CTL_DialogTitleFilesAndDirs"));
+                    break;
+                case JFileChooser.FILES_ONLY:
+                    chooser.setDialogTitle (getString ("CTL_DialogTitleFiles"));
+                    break;
+                case JFileChooser.DIRECTORIES_ONLY:
+                    chooser.setDialogTitle (getString ("CTL_DialogTitleDirs"));
+                    break;
+            }
+
+            chooser.setControlButtonsAreShown(false);
+
             chooser.addPropertyChangeListener(
                 JFileChooser.SELECTED_FILE_CHANGED_PROPERTY,
                 this
             );
+            
+            HelpCtx.setHelpIDString (chooser, getHelpCtx ().getHelpID ());
         }
-        
-        HelpCtx.setHelpIDString (chooser, getHelpCtx ().getHelpID ());
 
         return chooser;
     }
