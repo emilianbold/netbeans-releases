@@ -156,6 +156,8 @@ public final class LoaderPoolNode extends AbstractNode {
     if (sections == null) {
       add (s.getLoader (), s.getInstallBefore (), s.getInstallAfter ());
     } else {
+      // tries to create the instance
+      s.getLoader ();
       sections.add (s);
     }
   }
@@ -569,6 +571,7 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  16   Gandalf   1.15        4/15/99  Martin Ryzl     add fixed
 *  15   Gandalf   1.14        4/7/99   Ian Formanek    Rename 
 *       Section->ManifestSection
 *  14   Gandalf   1.13        3/30/99  Jaroslav Tulach Form loader before Java 
