@@ -77,10 +77,9 @@
     <tocitem text="Adding an Existing File to a Project" target="project.adding-existing" />
     <tocitem text="Adding a New File to a Project" target="project.adding-new" />
     <tocitem text="Compiling, Running, and Debugging a Project" target="project.comp-run-debug" />
-    <tocitem text="Deleting a File in a Project" target="project.delete-file" />
+    <tocitem text="Removing a File from the Project Window" target="project.delete-file" />
     <tocitem text="Switching to a Different Project" target="project.switching" />
     <tocitem text="Deleting a Project" target="project.deleting" />  
-    <tocitem text="Configuring a Project" target="project.settings"/>
   </tocitem>
 
   <tocitem text="Editing Source Files" >
@@ -483,19 +482,18 @@
 
   <tocitem text="Working With Javadoc Documentation">
     <tocitem text="About" target="javadoc.jump"/>
-    <tocitem text="The Javadoc Environment" target="javadoc.windows.all"/>
-    <tocitem text="Showing Javadoc Documentation" target="javadoc.source_editor"/>
-    <tocitem text="Viewing Code Documentation" target="javadoc.indices"/>
+    <tocitem text="Adding a Javadoc Library to a Project" target="javadoc.search.path" />
+    <tocitem text="Viewing Javadoc Documentation" target="javadoc.source_editor"/>
+    <tocitem text="Browsing a Javadoc Library" target="javadoc.indices"/>
     <tocitem text="Searching Javadoc Documentation" target="javadoc.search"/>
     <tocitem text="Generating Javadoc Documentation" target="javadoc.generate"/>
-    <tocitem text="Checking Code for Javadoc Comments" target="javadoc.accuracy"/>
-    <tocitem text="Mounting a Javadoc Filesystem" target="javadoc.search.path" />
-    <tocitem text="Removing a Javadoc Filesystem" target="javadoc.filesystem.unmount"/>
+    <tocitem text="Entering Javadoc Comments in Source Code" target="javadoc.accuracy"/>
+    <tocitem text="Removing a Javadoc Library from a Project" target="javadoc.filesystem.unmount"/>
     <tocitem text="Setting Javadoc Options" >
       <tocitem text="Turning Off Exact Case Matching for Javadoc Searches" target="javadoc.case.sensitive"/>
       <tocitem text="Specifying an Output Directory for Javadoc Files" target="javadoc.output"/>
       <tocitem text="Specifying a Style Sheet for Javadoc Documentation" target="javadoc.stylesheet"/>
-      <tocitem text="Modifying Doclet Properties" target="javadoc.doclet"/>
+      <tocitem text="Configuring Doclet Properties" target="javadoc.doclet"/>
       <tocitem text="Specifying the Default Javadoc Search Engine" target="javadoc.searchengine"/>
       <tocitem text="Configuring the Javadoc Executor" target="javadoc.externaljavadoc">
       </tocitem>

@@ -35,7 +35,6 @@
 <mapID target="project.creating" url="project/project_creating.html" />
 <mapID target="project.delete-file" url="project/project_delete-file.html" />
 <mapID target="project.importing" url="project/project_importing.html" />
-<mapID target="project.settings" url="project/project_settings.html" />
 <mapID target="project.switching" url="project/project_switching.html" />
 <mapID target="project.deleting" url="project/project_deleting.html" />
 
@@ -500,7 +499,6 @@
 <mapID target="javadoc.generate" url="javadoc/generate.html" />
 <mapID target="javadoc.search.path" url="javadoc/search_path.html" />
 <mapID target="javadoc.filesystem.unmount" url="javadoc/filesystems_removing.html" />
-<mapID target="javadoc.settings.jump" url="javadoc/settings_jump.html" />
 <mapID target="javadoc.case.sensitive" url="javadoc/case_sensitive.html" />
 <mapID target="javadoc.output" url="javadoc/output.html" />
 <mapID target="javadoc.stylesheet" url="javadoc/stylesheet.html" />
@@ -511,7 +509,6 @@
 <mapID target="javadoc.search.window" url="javadoc/search_window.html" />
 <mapID target="javadoc.auto.comment" url="javadoc/auto_comment_window.html" />
 <mapID target="javadoc.doc.window" url="javadoc/doc_comment_window.html" />
-<mapID target="javadoc.windows.all" url="javadoc/javadoc_windows.html" />
 <mapID target="javadoc.manager.window" url="javadoc/manager.html" />
 
 <mapID target="jarpackager" url="jarpackager/jarpackager.html" />
@@ -907,7 +904,7 @@
   <mapID target="org.openide.src.nodes.DefaultFactory$ElementCategoryNode" url="pending.html" /> 
 
    <mapID target="org.netbeans.core.actions.SetupWizardAction" url="configure/setup.html" />
-   <mapID target="org.netbeans.core.actions.SettingsAction" url="project/project_settings.html" />
+   <mapID target="org.netbeans.core.actions.SettingsAction" url="pending.html" />
 
    <mapID target="org.netbeans.beaninfo.editors.BeanEditor" url="pending.html" />
 
@@ -1018,7 +1015,7 @@
    <mapID target="org.netbeans.core.output.OutputTab" url="pending.html" />
    <mapID target="org.netbeans.core.actions.NextOutJumpAction" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.PreviousOutJumpAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.projects.settings.SettingsAction" url="project/project_settings.html" />
+   <mapID target="org.netbeans.modules.projects.settings.SettingsAction" url="pending.html" />
    <mapID target="org.netbeans.modules.projects.MainClassHelper" url="run/mainclass.html" />
    <mapID target="org.netbeans.modules.projects.setting.ProjectOption.mainClass" url="run/mainclass.html" />
    
