@@ -52,15 +52,13 @@ public class TemplatesPanel implements WizardDescriptor.Panel, TemplatesPanelGUI
                 NbBundle.getBundle (TemplatesPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
                 NbBundle.getBundle (TemplatesPanel.class).getString ("LBL_TemplatesPanel_Dots")}); // NOI18N
         FileObject templatesFolder = (FileObject) wd.getProperty (TemplatesPanelGUI.TEMPLATES_FOLDER);
-        if (templatesFolder != null && templatesFolder.isFolder()) {
+        if (templatesFolder != null && templatesFolder.isFolder() && wd.getTemplate() == null) {
             TemplatesPanelGUI gui = (TemplatesPanelGUI)this.getComponent();
             gui.setTemplatesFolder (templatesFolder);
-            if (wd.getTemplate() == null) {
-                String selectedCategory = OpenProjectListSettings.getInstance().getLastSelectedProjectCategory ();
-                gui.setSelectedCategoryByName(selectedCategory);
-                String selectedTemplate = OpenProjectListSettings.getInstance().getLastSelectedProjectType ();
-                gui.setSelectedTemplateByName(selectedTemplate);
-            }
+            String selectedCategory = OpenProjectListSettings.getInstance().getLastSelectedProjectCategory ();
+            gui.setSelectedCategoryByName(selectedCategory);
+            String selectedTemplate = OpenProjectListSettings.getInstance().getLastSelectedProjectType ();
+            gui.setSelectedTemplateByName(selectedTemplate);
         }
         // bugfix #44792: project wizard title always changes
         ((WizardDescriptor)settings).putProperty ("NewProjectWizard_Title", null); // NOI18N
