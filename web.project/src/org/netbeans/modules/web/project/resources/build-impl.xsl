@@ -157,10 +157,7 @@ is divided into following sections:
                         <xsl:attribute name="name">value</xsl:attribute>
                     </attribute>
                     <sequential>
-                        <property>
-                            <xsl:attribute name="name">@{name}</xsl:attribute>
-                            <xsl:attribute name="value">${@{value}}</xsl:attribute>
-                        </property>
+                        <property name="@{{name}}" value="${{@{{value}}}}"/>
                     </sequential>
                   </macrodef>
             </target>
@@ -806,10 +803,7 @@ to simulate
                     </xsl:choose>
                 </xsl:variable>
                 <xsl:variable name="script" select="projdeps:script"/>
-                <ant target="{$subtarget}" inheritall="false">
-                    <!-- XXX #43624: cannot use inline attr on JDK 1.5 -->
-                    <xsl:attribute name="antfile">${project.<xsl:value-of select="$subproj"/>}/<xsl:value-of select="$script"/></xsl:attribute>
-                </ant>
+                <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}"/>
             </xsl:for-each>
         </target>
     </xsl:template>
