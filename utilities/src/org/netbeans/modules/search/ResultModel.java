@@ -20,6 +20,7 @@ import java.util.*;
 
 import org.openide.ErrorManager;
 import org.openidex.search.SearchGroup;
+import org.openidex.search.SearchType;
 
 
 /**
@@ -131,6 +132,16 @@ public final class ResultModel {
     /** Gets all search types, all enabled not only customized ones. */
     List getEnabledSearchTypes() {
         return searchTypeList;
+    }
+    
+    /**
+     * Returns search types that were used during the search.
+     *
+     * @return  array of <code>SearchType</code>s that each tested object was
+     *          tested for compliance
+     */
+    SearchType[] getQueriedSearchTypes() {
+        return searchGroup.getSearchTypes();
     }
 
     /**
