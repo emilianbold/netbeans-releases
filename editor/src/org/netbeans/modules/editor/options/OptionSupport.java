@@ -20,6 +20,7 @@ import java.util.HashMap;
 
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.Coloring;
+import org.netbeans.modules.editor.NbEditorUtilities;
 
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
@@ -122,14 +123,7 @@ public class OptionSupport extends SystemOption {
     }
 
     public static String[] mergeStringArrays(String[] a1, String[] a2) {
-        String[] ret = new String[a1.length + a2.length];
-        for (int i = 0; i < a1.length; i++) {
-            ret[i] = a1[i];
-        }
-        for (int i = 0; i < a2.length; i++) {
-            ret[a1.length + i] = a2[i];
-        }
-        return ret;
+        return NbEditorUtilities.mergeStringArrays(a1, a2);
     }
 
     public boolean isGlobal() {
