@@ -27,15 +27,15 @@ import org.openide.explorer.view.Visualizer;
 
 /** Ancestor class for all nodes.<p>
  * Nodes should help to easier testing of JTree's.
- * The most frequent usage in IDE is in the Explorer Window but nodes can be 
+ * The most frequent usage in IDE is in file views but nodes can be 
  * used in any component which includes a JTree instance.
  * Nodes are also used as parameters for action's performing.
  * <p>
  * Example:<p>
  * <pre>
- *  Node node = new Node(ProjectsTabOperator.invoke().getProjectRootNode(), "jellytools/src|org|netbeans|jellytools");
- *  System.out.println(node.getText());
- *  new NewTemplateAction().performAPI(node);
+ *     Node node = new Node(new SourcePackagesNode("My Project"), "org.netbeans.jellytools.nodes|Node.java");
+ *     System.out.println(node.getText());
+ *     new OpenAction().performAPI(node);
  * </pre> 
  */
 public class Node {
