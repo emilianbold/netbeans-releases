@@ -15,12 +15,19 @@ package org.netbeans.core.modules;
 
 import java.io.*;
 import java.lang.reflect.Method;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.zip.*;
 import java.util.jar.*;
 
 import org.netbeans.performance.Benchmark;
 import org.openide.TopManager;
+
+// initial run (04-sep-02) with empty dummy modules under JDK 1.4.1rc:
+// 0 -    0.92Mb, 2.75s
+// 10 -   1.44Mb, 3.36s
+// 100 -  1.71Mb, 4.5s
+// 1000 - 7.21Mb, 9-12s
 
 /**
  * Benchmark measuring initialization of the module system.
@@ -37,31 +44,45 @@ public class ModuleInitTest extends Benchmark {
     }
     
     public ModuleInitTest(String name) {
-        super(name, new Integer[] {new Integer(10), new Integer(100), new Integer(1000)});
+        super(name, new Integer[] {new Integer(0), new Integer(10), new Integer(100), new Integer(1000)});
     }
     
-    protected File dir;
+    private File topdir = new File(new File(System.getProperty("java.io.tmpdir")), "ModuleInitTest");
+    private File homedir = new File(topdir, "home");
+    private File skeldir = new File(topdir, "skeluser");
+    private File userdir = new File(topdir, "user");
+    private int lastSize = -1;
     
     protected void setUp() throws Exception {
         int size = ((Integer)getArgument()).intValue();
-        File tmp = File.createTempFile(getName(), ".tmp");
-        tmp.deleteOnExit();
-        dir = new File(tmp.getParentFile(), tmp.getName().substring(0, tmp.getName().length() - 4));
-        dir.mkdirs();
-        //System.out.println("Working dir: " + dir);
-        File mods = new File(new File(dir, "home"), "modules");
-        File amods = new File(mods, "autoload");
-        amods.mkdirs();
-        File emods = new File(mods, "eager");
-        emods.mkdirs();
-        createModules(size, mods, amods, emods);
-        new File(new File(dir, "home"), "system").mkdirs();
-        // Priming run to create system/Modules directory:
-        runNB(dir, false);
+        if (size != lastSize) {
+            if (homedir.exists()) {
+                deleteRec(homedir);
+            }
+            File mods = new File(homedir, "modules");
+            File amods = new File(mods, "autoload");
+            amods.mkdirs();
+            File emods = new File(mods, "eager");
+            emods.mkdirs();
+            createModules(size, mods, amods, emods);
+            new File(homedir, "system").mkdirs();
+            // Priming run to create system/Modules directory:
+            if (skeldir.exists()) {
+                deleteRec(skeldir);
+            }
+            runNB(homedir, skeldir, false);
+            lastSize = size;
+        }
+        // On every run, copy the primed skeleton user dir to the real location,
+        // then start NB with the copied user dir.
+        if (userdir.exists()) {
+            deleteRec(userdir);
+        }
+        copyRec(skeldir, userdir);
     }
     protected void tearDown() throws Exception {
-        deleteRec(dir);
     }
+    
     private static void deleteRec(File x) throws IOException {
         File[] kids = x.listFiles();
         if (kids != null) {
@@ -71,9 +92,42 @@ public class ModuleInitTest extends Benchmark {
         }
         if (!x.delete()) throw new IOException("Could not delete: " + x);
     }
+    private static void copyStream(InputStream is, OutputStream os) throws IOException {
+        try {
+            byte[] b = new byte[4096];
+            int i;
+            while ((i = is.read(b)) != -1) {
+                os.write(b, 0, i);
+            }
+        } finally {
+            is.close();
+        }
+    }
+    private static void copyRec(File x, File y) throws IOException {
+        if (x.isDirectory()) {
+            if (!y.mkdirs()) throw new IOException("Could not mkdir: " + y);
+            String[] kids = x.list();
+            if (kids == null) throw new IOException("Could not list: " + x);
+            for (int i = 0; i < kids.length; i++) {
+                copyRec(new File(x, kids[i]), new File(y, kids[i]));
+            }
+        } else {
+            y.getParentFile().mkdirs();
+            OutputStream os = new FileOutputStream(y);
+            try {
+                copyStream(new FileInputStream(x), os);
+            } finally {
+                os.close();
+            }
+        }
+    }
     
     private void createModules(int size, File mods, File amods, File emods) throws IOException {
         // XXX be more sophisticated - this only creates dummy modules
+        // 1. Add inter-module dependencies of varying depths
+        // 2. Make some modules eager, some autoload, a few disabled
+        // 3. Create layers - some overlap, some fresh files, some fresh top-level dirs, some empty, some w/ contents
+        // 4. Add random contents to JARs so they are bigger
         for (int i = 0; i < size; i++) {
             String num = Integer.toString(i);
             while (num.length() < 4) num = "0" + num;
@@ -97,21 +151,21 @@ public class ModuleInitTest extends Benchmark {
     public void testInitModuleSystem() throws Exception {
         int count = getIterationCount();
         for (int i = 0; i < count; i++) {
-            runNB(dir, true);
+            runNB(homedir, userdir, true);
         }
     }
     
     private String cp = refinecp(System.getProperty("java.class.path"));
     //System.err.println("Classpath: " + cp);
     
-    private void runNB(File dir, boolean log) throws IOException {
+    private void runNB(File homedir, File userdir, boolean log) throws IOException {
         String[] cmd = {
             "java",
             "-Dorg.openide.TopManager=org.netbeans.core.NonGuiMain",
             "-Dnetbeans.security.nocheck=true",
-            "-Dnetbeans.home=" + new File(dir, "home").getAbsolutePath(),
-            "-Dnetbeans.user=" + new File(dir, "user").getAbsolutePath(),
-            "-Dmodules.dir=" + new File(new File(dir, "home"), "modules").getAbsolutePath(),
+            "-Dnetbeans.home=" + homedir.getAbsolutePath(),
+            "-Dnetbeans.user=" + userdir.getAbsolutePath(),
+            //"-Dmodules.dir=" + new File(homedir, "modules").getAbsolutePath(),
             //log ? "-Dorg.netbeans.log.startup=print" : "-Dignore=me",
             "-Dnetbeans.suppress.sysprop.warning=true",
             "-Dlog=" + log,
@@ -163,11 +217,7 @@ public class ModuleInitTest extends Benchmark {
         }
         public void run() {
             try {
-                byte[] b = new byte[4096];
-                int i;
-                while ((i = is.read(b)) != -1) {
-                    ps.write(b, 0, i);
-                }
+                copyStream(is, ps);
             } catch (IOException ioe) {
                 ioe.printStackTrace();
             }
@@ -179,67 +229,10 @@ public class ModuleInitTest extends Benchmark {
             TopManager.getDefault();
             Runtime r = Runtime.getRuntime();
             if (Boolean.getBoolean("log")) {
-                System.out.println("Used memory: " + (r.totalMemory() - r.freeMemory()));
+                double megs = (r.totalMemory() - r.freeMemory()) / 1024.0 / 1024.0;
+                System.out.println("Used memory: " + new DecimalFormat("0.00 Mb").format(megs));
             }
         }
     }
-    
-    // Running NB >1 time in-VM does not work: cannot reset SecurityManager,
-    // nor URLStreamHandlerFactory! Must spawn new VM.
-            /*
-            ClassLoader l = new ReloadNbLoader();
-            Class c = Class.forName("org.openide.TopManager", true, l);
-            Method m = c.getMethod("getDefault", new Class[] {});
-            m.invoke(null, new Object[] {});
-             */
-    /*
-    private static final class ReloadNbLoader extends ClassLoader {
-        protected Class loadClass(String n, boolean r) throws ClassNotFoundException {
-            Class c = findLoadedClass(n);
-            if (c == null) {
-                if (n.startsWith("org.netbeans.") || n.startsWith("org.openide.")) {
-                    if (n.equals("org.openide.TopManager")) {
-                        System.out.println("loading TopManager...");
-                    }
-                    c = findClass(n);
-                } else {
-                    c = getParent().loadClass(n);
-                }
-            }
-            if (r) resolveClass(c);
-            return c;
-        }
-        protected Class findClass(String n) throws ClassNotFoundException {
-            InputStream is = getResourceAsStream(n.replace('.', '/') + ".class");
-            if (is == null) {
-                throw new ClassNotFoundException(n);
-            }
-            try {
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(100000);
-                    byte[] buf = new byte[4096];
-                    int i;
-                    while ((i = is.read(buf)) != -1) {
-                        baos.write(buf, 0, i);
-                    }
-                    byte[] data = baos.toByteArray();
-                    // XXX protection domain?
-                    i = n.lastIndexOf('.');
-                    if (i != -1) {
-                        String p = n.substring(0, i);
-                        if (getPackage(p) == null) {
-                            definePackage(p, null, null, null, null, null, null, null);
-                        }
-                    }
-                    return defineClass(n, data, 0, data.length);
-                } finally {
-                    is.close();
-                }
-            } catch (IOException ioe) {
-                throw new ClassNotFoundException(n, ioe);
-            }
-        }
-    }
-     */
     
 }
