@@ -63,7 +63,7 @@ import org.openidex.search.SimpleSearchInfo;
  * Display of Java sources in a package structure rather than folder structure.
  * @author Adam Sotona, Jesse Glick, Petr Hrebejk
  */
-final class PackageViewChildren extends Children.Keys/*<String>*/ implements FileChangeListener {
+final class PackageViewChildren extends Children.Keys/*<String>*/ implements FileChangeListener, ChangeListener {
     
     private static final String NODE_NOT_CREATED = "NNC"; // NOI18N
     
@@ -105,10 +105,12 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         catch ( FileStateInvalidException e ) {
             ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
         }
+        VisibilityQuery.getDefault().addChangeListener( this );
     }
 
     protected void removeNotify() {
         // System.out.println("REMOVE NOTIFY" + root + " : " + this );        
+        VisibilityQuery.getDefault().removeChangeListener( this );
         try {
             root.getFileSystem().removeFileChangeListener( this );
         }
@@ -336,8 +338,15 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 refreshKeys();
             }
         }
+        
     }
-    
+
+    // Implementation of ChangeListener ------------------------------------
+        
+    public void stateChanged( ChangeEvent e ) {
+        computeKeys();
+        refreshKeys();
+    }
     
 
     /*
