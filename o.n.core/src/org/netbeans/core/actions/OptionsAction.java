@@ -351,6 +351,9 @@ public class OptionsAction extends CallableSystemAction {
                     new SettingChildren (TopManager.getDefault().getPlaces().nodes().session())
                 );
             }
+            public HelpCtx getHelpCtx () {
+                return new HelpCtx (OptionsFilterNode.class);
+            }
             
             public Node.Handle getHandle () {
                 return new H ();
