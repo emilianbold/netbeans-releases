@@ -15,9 +15,13 @@ package org.netbeans.modules.project.ui.actions;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.NoMainProjectWarning;
@@ -26,6 +30,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.MouseUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -121,14 +126,29 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
     
    private boolean showNoMainProjectWarning (Project[] projects, String action) {
         boolean canceled;
+        final JButton okButton = new JButton (NbBundle.getMessage (NoMainProjectWarning.class, "LBL_NoMainClassWarning_ChooseMainProject_OK")); // NOI18N        
         
         // no main project set => warning
-        NoMainProjectWarning panel = new NoMainProjectWarning (projects);
+        final NoMainProjectWarning panel = new NoMainProjectWarning (projects);
 
         Object[] options = new Object[] {
-            NbBundle.getMessage (NoMainProjectWarning.class, "LBL_NoMainClassWarning_ChooseMainProject_OK"), // NOI18N
+            okButton,
             DialogDescriptor.CANCEL_OPTION
         };
+        
+        panel.addChangeListener (new ChangeListener () {
+           public void stateChanged (ChangeEvent e) {
+               if (e.getSource () instanceof MouseEvent && MouseUtils.isDoubleClick (((MouseEvent)e.getSource ()))) {
+                   // click button and the finish dialog with selected class
+                   okButton.doClick ();
+               } else {
+                   okButton.setEnabled (panel.getSelectedProject () != null);
+               }
+           }
+        });
+        
+        okButton.setEnabled (false);
+        
         DialogDescriptor desc = new DialogDescriptor (panel,
                 action == null ? NbBundle.getMessage (NoMainProjectWarning.class, "CTL_NoMainProjectWarning_Title") : action, // NOI18N
             true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);

@@ -14,9 +14,16 @@
 package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.openide.awt.MouseUtils;
 
 /** Show a warning that no main project is set and allows choose it.
  *
@@ -24,14 +31,39 @@ import org.netbeans.api.project.ProjectUtils;
  */
 public class NoMainProjectWarning extends JPanel {
     
+    private ChangeListener changeListener;
+    
     /** Creates new form NoMainProjectWarning */
     public NoMainProjectWarning (Project[] projects) {
         initComponents();
         // add MainClassChooser
-        jList1.setPrototypeCellValue("01234567890123456789012340123456789");      //NOI18N
+        //jList1.setPrototypeCellValue("01234567890123456789012340123456789");      //NOI18N
         jList1.setModel(new ProjectsListModel (projects));
         jList1.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         jList1.setCellRenderer(new ProjectsRenderer ());
+        jList1.addListSelectionListener (new ListSelectionListener () {
+            public void valueChanged (ListSelectionEvent evt) {
+                if (changeListener != null) {
+                    changeListener.stateChanged (new ChangeEvent (evt));
+                }
+            }
+        });
+        // support for double click to finish dialog with selected class
+        jList1.addMouseListener (new MouseListener () {
+            public void mouseClicked (MouseEvent e) {
+                if (MouseUtils.isDoubleClick (e)) {
+                    if (getSelectedProject () != null) {
+                        if (changeListener != null) {
+                            changeListener.stateChanged (new ChangeEvent (e));
+                        }
+                    }
+                }
+            }
+            public void mousePressed (MouseEvent e) {}
+            public void mouseReleased (MouseEvent e) {}
+            public void mouseEntered (MouseEvent e) {}
+            public void mouseExited (MouseEvent e) {}
+        });
     }
     
     /** Returns the selected project or null if no project is selected.
@@ -110,6 +142,14 @@ public class NoMainProjectWarning extends JPanel {
     // End of variables declaration//GEN-END:variables
 
 
+    public void addChangeListener (ChangeListener l) {
+        changeListener = l;
+    }
+    
+    public void removeChangeListener (ChangeListener l) {
+        changeListener = null;
+    }
+    
     private static final class ProjectsListModel extends AbstractListModel {
         
         private Project[] openProjects;
