@@ -371,6 +371,8 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
         CellRendererPane pane = new CellRendererPane();
         pane.add (jrb);
         jrb.setBounds (0, 0, 80, 20);
+        jrb.setBackground(null);
+        jrb.setOpaque(false);
         
         jrb.getModel().setRollover(false);
         jrb.setRolloverEnabled(false);
