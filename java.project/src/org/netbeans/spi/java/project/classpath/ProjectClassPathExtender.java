@@ -27,7 +27,7 @@ import org.netbeans.api.project.ant.AntArtifact;
  * Project can provide this interface in its lookup to
  * allow clients to extend its compilation classpath
  * by new classpath element (jar, folder, dependent project, library).
- * @since @since org.netbeans.modules.java.project/1 1.3 
+ * @since org.netbeans.modules.java.project/1 1.3 
  */
 public interface ProjectClassPathExtender {
 
