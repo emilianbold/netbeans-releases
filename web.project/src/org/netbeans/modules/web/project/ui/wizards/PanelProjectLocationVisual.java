@@ -280,10 +280,10 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     public static String getProjectName(WizardDescriptor wizardDescriptor, File projectLocation) {
         String projectName = (String) wizardDescriptor.getProperty(WizardProperties.NAME);
         if (projectName == null || projectName.equals("")) {   //NOI18N
-            int index = FoldersListSettings.getDefault().getNewProjectCount() + 1;
+            int index = FoldersListSettings.getDefault().getNewProjectCount();
             String formater = getBundleResource("LBL_NPW1_DefaultProjectName"); //NOI18N
             do {
-                projectName = MessageFormat.format(formater, new Object[]{new Integer(index++)});
+                projectName = MessageFormat.format(formater, new Object[]{new Integer(++index)});
             } while (new File(projectLocation, projectName).exists());
             wizardDescriptor.putProperty(NewWebProjectWizardIterator.PROP_NAME_INDEX, new Integer(index));
         }
