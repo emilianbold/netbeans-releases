@@ -93,8 +93,23 @@ public class ConnectAction extends DatabaseAction {
 //                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
 
+        final DatabaseConnection dbcon = (DatabaseConnection) nfo.getDatabaseConnection();
+        
+        final ExceptionListener excListener = new ExceptionListener() {
+            public void exceptionOccurred(Exception exc) {
+                if (exc instanceof ClassNotFoundException) {
+                    String message = MessageFormat.format(bundle.getString("EXC_ClassNotFound"), new String[] {exc.getMessage()}); //NOI18N
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                } else {
+                    String message = MessageFormat.format(bundle.getString("ERR_UnableToConnect"), new String[] {exc.getMessage()}); //NOI18N
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                }
+            }
+        };
+        
+        dbcon.addExceptionListener(excListener);
+        
         if (user == null || pwd == null || !remember) {
-            final DatabaseConnection dbcon = (DatabaseConnection) nfo.getDatabaseConnection();
             final ConnectPanel basePanel = new ConnectPanel(dbcon);
             final SchemaPanel schemaPanel = new SchemaPanel(dbcon);
 
@@ -110,7 +125,6 @@ public class ConnectAction extends DatabaseAction {
                         } catch (SQLException exc) {
                             //unable to close the connection
                         }
-
                     }
                 }
             };
@@ -149,20 +163,7 @@ public class ConnectAction extends DatabaseAction {
                 }
             };
 
-            final ExceptionListener excListener = new ExceptionListener() {
-                public void exceptionOccurred(Exception exc) {
-                    if (exc instanceof ClassNotFoundException) {
-                        String message = MessageFormat.format(bundle.getString("EXC_ClassNotFound"), new String[] {exc.getMessage()}); //NOI18N
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-                    } else {
-                        String message = MessageFormat.format(bundle.getString("ERR_UnableToConnect"), new String[] {exc.getMessage()}); //NOI18N
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-                    }
-                }
-            };
-
             dbcon.addPropertyChangeListener(connectionListener);
-            dbcon.addExceptionListener(excListener);
 
             ActionListener actionListener = new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
@@ -217,7 +218,29 @@ public class ConnectAction extends DatabaseAction {
             dlg.setVisible(true);
         } else // without dialog
             try {
-                nfo.connect();
+                final PropertyChangeListener connectionListener = new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent event) {
+                        if (event.getPropertyName().equals("connected")) { //NOI18N
+                            try {
+                                nfo.finishConnect(null, dbcon, dbcon.getConnection());
+                            } catch (DatabaseException exc) {
+                                String message = MessageFormat.format(bundle.getString("ERR_UnableToInitializeConnection"), new String[] {exc.getMessage()}); //NOI18N
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                                return;
+                            }
+
+                            if(dlg != null) {
+                                dlg.close();
+//                                removeListeners(cinfo);
+                            }
+                        }
+                    }
+                };
+
+
+                dbcon.addPropertyChangeListener(connectionListener);
+                
+                dbcon.connect();
             } catch (Exception exc) {
                 String message = MessageFormat.format(bundle.getString("ERR_UnableToConnect"), new String[] {exc.getMessage()}); // NOI18N
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
