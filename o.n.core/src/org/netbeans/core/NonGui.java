@@ -39,6 +39,7 @@ import org.openide.explorer.*;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.SharedClassObject;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserCancelException;
 import org.openide.util.actions.ActionPerformer;
@@ -50,6 +51,7 @@ import org.netbeans.core.actions.*;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.projects.ModuleLayeredFileSystem;
 import org.netbeans.core.perftool.StartLog;
+import org.netbeans.core.execution.ExecutionSettings;
 
 /** This class is a TopManager for Corona environment.
 *
@@ -484,6 +486,9 @@ public class NonGui extends NbTopManager implements Runnable {
         } catch (IOException e) {
             getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
         }
+        // load neccessary SystemOptions
+        SharedClassObject.findObject (ExecutionSettings.class, true);
+        
         StartLog.logProgress ("Project opened"); // NOI18N
 
         LoaderPoolNode.installationFinished ();
