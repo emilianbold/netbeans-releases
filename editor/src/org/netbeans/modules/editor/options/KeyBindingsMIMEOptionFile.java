@@ -13,9 +13,13 @@
 
 package org.netbeans.modules.editor.options;
 
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -168,18 +172,14 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
         for( Iterator i = properties.keySet().iterator(); i.hasNext(); ) {
             String key = (String)i.next();
             // Process deleted properties
+            
             if (properties.get(key) instanceof String){
-                // if deleted property is in default set, mark it as deleted
-                if (defaultKeybs.containsKey(key)){
-                    Element keybElem = doc.createElement(TAG_BIND);
-                    keybElem.setAttribute(ATTR_KEY, key);
-                    keybElem.setAttribute(ATTR_REMOVE, Boolean.TRUE.toString());
-                    rootElem.appendChild(keybElem);
-                }else{
-                    // put removed keybindings to deleted Map
-                    removed.add(key);
+                String realKey = tryRemoveKeyFromMap(doc, properties, key, defaultKeybs, rootElem);
+                if (realKey != null) {
+                    removed.add(realKey);
+                    key = realKey;
                 }
-                
+            
                 // if property is not in default set, it will not be written and will be deleted
                 continue;
             }
@@ -192,8 +192,22 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
                 boolean save = true;
                 if (defaultKeybs.get(key) instanceof MultiKeyBinding){
                     String defActionName = ((MultiKeyBinding)defaultKeybs.get(key)).actionName;
+                    
+                    boolean hasKey = defaultKeybs.containsKey(key);
+                    //Also look for permutations, i.e. CA-F5 may be DA-F5, AD-F5 or AC-F5
+                    if (!hasKey) {
+                        String[] s = getPermutations (key);
+                        for (int j=0; j < s.length && !hasKey; j++) {
+                            hasKey |= defaultKeybs.containsKey(s[j]);
+                            if (hasKey) {
+                                key = s[j];
+                                break;
+                            }
+                        }
+                    }
+                    
                     // if property is in default set and the action names are the same we don't have to write it
-                    if (defaultKeybs.containsKey(key) && curActionName.equals(defActionName)) save = false;
+                    if (hasKey && curActionName.equals(defActionName)) save = false;
                 }
                 
                 if (save){
@@ -215,4 +229,135 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
         saveSettings(doc);
     }
     
+    private static String tryRemoveKeyFromMap (Document doc, Map props, String key, Map defaultKeybs, Element root) {
+        // if deleted property is in default set, mark it as deleted
+        if (defaultKeybs.containsKey(key)){
+            removeKeyFromMap (doc, props, key, root);
+            return key;
+        } else {
+            String[] s = getPermutations(key);
+            for (int i=0; i < s.length; i++) {
+                if (defaultKeybs.containsKey(s[i])){
+                    removeKeyFromMap (doc, props, key, root);
+                    return s[i];
+                }
+            }
+        }
+        return null;
+    }
+    
+    private static void removeKeyFromMap(Document doc, Map props, String key, Element root) {
+        Element keybElem = doc.createElement(TAG_BIND);
+        keybElem.setAttribute(ATTR_KEY, key);
+        keybElem.setAttribute(ATTR_REMOVE, Boolean.TRUE.toString());
+        root.appendChild(keybElem);        
+    }
+    
+    /**
+     * There is no required ordering of key modifiers (C, M, S, A), and the
+     * D (default) wildcard character can map to either C or M depending on 
+     * the platform.  So when we need to delete a keybinding, the editor has
+     * given us one possible ordering, but not necessarily the correct one; it
+     * has also given us a hard keybinding, but the key may really be bound to
+     * D.  So, for "MAS-F5" (meta-alt-shift F5) on the pc, we need to check
+     * MSA-F5, SMA-F5, SAM-F5, AMS-F5, ASM-F5; on the mac, we also need to check
+     * the same permutations of DAS-F5, since it may be registered with the 
+     * wildcard character.
+     * <p>
+     * Finally, for each permutation, it is legal to separate characters with
+     * dashes - so for each permutation, we must also check for a hyphenated
+     * variant - i.e. for MAS-F5, we must check M-A-S-F5.  Note that mixed
+     * hyphenation (M-AS-F5) is not supported.  It either is or it isn't.
+     *
+     */
+    static String[] getPermutations (String name) {
+        //IMPORTANT: THIS IS A COPY OF THE SAME CODE IN org.netbeans.core.ShortcutsFolder.
+        //ANY CHANGES MADE HERE SHOULD ALSO BE MADE THERE!
+        String key = KeyEvent.META_MASK == Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() ?
+            "M" : "C"; //NOI18N
+            
+        int pos = name.lastIndexOf ("-"); //NOI18N
+        String keyPart = name.substring (pos);
+        String modsPart = org.openide.util.Utilities.replaceString (name.substring (0, pos), "-", "");
+        if (modsPart.length() > 1) {
+            Collection perms = new HashSet(modsPart.length() * modsPart.length());
+            int idx = name.indexOf(key);
+            if (idx != -1) {
+                //First, try with the wildcard key.  Remove all hyphens - we'll
+                //put them back later
+                StringBuffer sb = new StringBuffer(modsPart);
+                sb.replace(idx, idx+1, "D");
+                perms.add (sb.toString() + keyPart);
+                getAllPossibleOrderings (sb.toString(), keyPart, perms);
+                createHyphenatedPermutation(sb.toString().toCharArray(), perms, keyPart);
+            } else {
+                idx = name.indexOf ("D"); //NOI18N
+                if (idx != -1) {
+                    StringBuffer sb = new StringBuffer(modsPart);
+                    sb.replace(idx, idx+1, key);
+                    perms.add (sb.toString() + keyPart);
+                    getAllPossibleOrderings (sb.toString(), keyPart, perms);
+                    createHyphenatedPermutation(sb.toString().toCharArray(), perms, keyPart);
+                }
+            }
+            getAllPossibleOrderings (modsPart, keyPart, perms);
+            createHyphenatedPermutation(modsPart.toCharArray(), perms, keyPart);
+            return (String[]) perms.toArray(new String[perms.size()]);
+        } else {
+            return key.equals (modsPart) ?
+                new String[] {"D" + keyPart} : new String[0];
+        }
+    }
+    
+    /**
+     * Retrieves all the possible orders for the passed in string, and puts them
+     * in the passed collection, appending <code>toAppend</code> to each.
+     */
+    static void getAllPossibleOrderings (String s, String toAppend, final Collection store) {
+        //IMPORTANT: THIS IS A COPY OF THE SAME CODE IN org.netbeans.core.ShortcutsFolder.
+        //ANY CHANGES MADE HERE SHOULD ALSO BE MADE THERE!
+        char[] c = s.toCharArray();
+        mutate (c, store, 0, toAppend);
+        String[] result = (String[]) store.toArray(new String[store.size()]);
+    }   
+    
+    /**
+     * Recursively generates all possible orderings of the passed char array
+     */
+    private static void mutate(char[] c, Collection l, int n, String toAppend) {
+        //IMPORTANT: THIS IS A COPY OF THE SAME CODE IN org.netbeans.core.ShortcutsFolder.
+        //ANY CHANGES MADE HERE SHOULD ALSO BE MADE THERE!
+        if (n == c.length) {
+            l.add (new String(c) + toAppend);
+            createHyphenatedPermutation(c, l, toAppend);
+            return;
+        }
+        //XXX could be optimized to eliminate duplicates
+        for (int i=0; i < c.length; i++) {
+            char x = c[i];
+            c[i] = c[n];
+            c[n] = x;
+            if (n < c.length) { 
+                mutate (c, l, n+1, toAppend);
+            } 
+        }
+    } 
+    
+    /**
+     * Inserts "-" characters between each character in the char array and
+     * adds the result + toAppend to the collection.
+     */
+    static void createHyphenatedPermutation (char[] c, Collection l, String toAppend) {
+        //IMPORTANT: THIS IS A COPY OF THE SAME CODE IN org.netbeans.core.ShortcutsFolder.
+        //ANY CHANGES MADE HERE SHOULD ALSO BE MADE THERE!
+        if (c.length == 1) {
+            return;
+        }
+        StringBuffer sb = new StringBuffer (new String(c));
+        for (int i=c.length-1; i >= 1; i-=1) {
+            sb.insert (i, '-');
+        }
+        sb.append (toAppend);
+        l.add (sb.toString());
+    }    
 }

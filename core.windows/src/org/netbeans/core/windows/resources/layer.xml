@@ -136,8 +136,8 @@ Microsystems, Inc. All Rights Reserved.
         <file name="A-RIGHT.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance"/>
 	</file>
-
-        <file name="C-F4.shadow">
+        
+        <file name="D-F4.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
 	</file>
         
@@ -149,13 +149,13 @@ Microsystems, Inc. All Rights Reserved.
         </file>
         <!-- #41477: For KDE on unixes, C-TAB is occupied by OS, so we also register C-BAKC_QUOTE as recent view list action shortcut.
                      For other OS's, C-TAB is the only default !-->
-        <file name="C-BACK_QUOTE.shadow">
+        <file name="D-BACK_QUOTE.shadow">
             <attr name="originalFile" methodvalue="org.netbeans.core.windows.actions.RecentViewListAction.getStringRep4Unixes"/>
         </file>
-        <file name="C-0.shadow">
+        <file name="D-0.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
         </file>
-        <file name="CS-F4.shadow">
+        <file name="D-S-F4.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance"/>
         </file>
         <file name="S-F4.shadow">

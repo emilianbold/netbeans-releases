@@ -503,31 +503,31 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Shortcuts">
     
-        <file name="CS-N.shadow">
+        <file name="DS-N.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewProject.instance"/>
 	</file>
         
-        <file name="C-N.shadow">
+        <file name="D-N.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile.instance"/>
 	</file>
         
-        <file name="CS-O.shadow">
+        <file name="DS-O.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance"/>
 	</file>
     
-        <file name="C-1.shadow">
+        <file name="D-1.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-logical-tab-action.instance"/>
         </file>
 
-        <file name="C-2.shadow">
+        <file name="D-2.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-physical-tab-action.instance"/>
 	</file>
 
-        <file name="CS-1.shadow">
+        <file name="DS-1.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SelectInProjects.instance"/>
 	</file>
         
-        <file name="CS-2.shadow">
+        <file name="DS-2.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SelectInFiles.instance"/>
 	</file>
         
@@ -551,15 +551,15 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
 	</file>
         
-        <file name="CS-F5.shadow">
+        <file name="DS-F5.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugSingle.instance"/>
 	</file>
         
-        <file name="C-F6.shadow">
+        <file name="D-F6.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestSingle.instance"/>
 	</file>
         
-        <file name="CS-F6.shadow">
+        <file name="DS-F6.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugTestSingle.instance"/>
 	</file>
         

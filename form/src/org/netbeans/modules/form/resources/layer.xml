@@ -460,7 +460,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Shortcuts">
-        <file name="C-R.instance">
+        <file name="D-R.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.form.actions.ReloadAction"/>
         </file>
         

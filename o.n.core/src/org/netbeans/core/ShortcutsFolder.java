@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.util.Collection;
+import java.util.List;
 import javax.swing.text.Keymap;
 import javax.swing.*;
 
@@ -68,8 +70,8 @@ final class ShortcutsFolder extends FolderInstance {
     private static final String KEY_ORIGINAL_FILE_PATH = "originalFilePath"; // NOI18N
     
 
-    /** Creates new ShortcutsFolder */
-    private ShortcutsFolder(DataFolder f) {
+    /** Creates new ShortcutsFolder - package private for unit tests only */
+    ShortcutsFolder(DataFolder f) {
         super(f);
         recreate();
     }
@@ -444,7 +446,19 @@ final class ShortcutsFolder extends FolderInstance {
                             }
                         }
                     } else {
-                        InstanceDataObject.remove(f, r.instanceName(), r.instanceClass());
+                        String instanceName = r.instanceName();
+                        if (!InstanceDataObject.remove(f, instanceName, r.instanceClass())) {
+                            //We may be deleting a wildcard keystroke, and/or the
+                            //order defined in the layer may not be the same as
+                            //what we were fed by the shortcuts editor, so search
+                            //all the possible variants
+                            String[] permutations = getPermutations(instanceName);
+                            for (int i=0; i < permutations.length; i++) {
+                                if (InstanceDataObject.remove(f, permutations[i], r.instanceClass())) {
+                                    break;
+                                }
+                            }
+                        } 
                     }
                 } else { // It is '.shadow' file
                     FileObject root = f.getPrimaryFile();
@@ -459,6 +473,18 @@ final class ShortcutsFolder extends FolderInstance {
                         if(foRemove != null) {
                             foRemove.delete();
                         }
+                        String[] permutations = getPermutations(r.instanceName());
+                        //We may be deleting a wildcard keystroke, and/or the
+                        //order defined in the layer may not be the same as
+                        //what we were fed by the shortcuts editor, so search
+                        //all the possible variants
+                        for (int i=0; i < permutations.length; i++) {
+                            foRemove = root.getFileObject(permutations[i], "shadow");
+                            if (foRemove != null) {
+                                foRemove.delete();
+                                break;
+                            }
+                        }
                     }
                 }
             } catch (ClassNotFoundException ex) {
@@ -468,6 +494,119 @@ final class ShortcutsFolder extends FolderInstance {
             }
         }
     }
+    
+    /**
+     * There is no required ordering of key modifiers (C, M, S, A), and the
+     * D (default) wildcard character can map to either C or M depending on 
+     * the platform.  So when we need to delete a keybinding, the editor has
+     * given us one possible ordering, but not necessarily the correct one; it
+     * has also given us a hard keybinding, but the key may really be bound to
+     * D.  So, for "MAS-F5" (meta-alt-shift F5) on the pc, we need to check
+     * MSA-F5, SMA-F5, SAM-F5, AMS-F5, ASM-F5; on the mac, we also need to check
+     * the same permutations of DAS-F5, since it may be registered with the 
+     * wildcard character.
+     * <p>
+     * Finally, for each permutation, it is legal to separate characters with
+     * dashes - so for each permutation, we must also check for a hyphenated
+     * variant - i.e. for MAS-F5, we must check M-A-S-F5.  Note that mixed
+     * hyphenation (M-AS-F5) is not supported.  It either is or it isn't.
+     *
+     */
+    static String[] getPermutations (String name) {
+        //IMPORTANT: THERE IS A COPY OF THE SAME CODE IN 
+        //org.netbeans.modules.editor.options.KeyBindingsMIMEOptionFile
+        //ANY CHANGES MADE HERE SHOULD ALSO BE MADE THERE!
+        String key = KeyEvent.META_MASK == Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() ?
+            "M" : "C"; //NOI18N
+            
+        int pos = name.lastIndexOf ("-"); //NOI18N
+        String keyPart = name.substring (pos);
+        String modsPart = Utilities.replaceString (name.substring (0, pos), "-", "");
+        if (modsPart.length() > 1) {
+            Collection perms = new HashSet(modsPart.length() * modsPart.length());
+            int idx = name.indexOf(key);
+            if (idx != -1) {
+                //First, try with the wildcard key.  Remove all hyphens - we'll
+                //put them back later
+                StringBuffer sb = new StringBuffer(modsPart);
+                sb.replace(idx, idx+1, "D");
+                perms.add (sb.toString() + keyPart);
+                getAllPossibleOrderings (sb.toString(), keyPart, perms);
+                createHyphenatedPermutation(sb.toString().toCharArray(), perms, keyPart);
+            } else {
+                idx = name.indexOf ("D"); //NOI18N
+                if (idx != -1) {
+                    StringBuffer sb = new StringBuffer(modsPart);
+                    sb.replace(idx, idx+1, key);
+                    perms.add (sb.toString() + keyPart);
+                    getAllPossibleOrderings (sb.toString(), keyPart, perms);
+                    createHyphenatedPermutation(sb.toString().toCharArray(), perms, keyPart);
+                }
+            }
+            getAllPossibleOrderings (modsPart, keyPart, perms);
+            createHyphenatedPermutation(modsPart.toCharArray(), perms, keyPart);
+            return (String[]) perms.toArray(new String[perms.size()]);
+        } else {
+            return key.equals (modsPart) ?
+                new String[] {"D" + keyPart} : new String[0];
+        }
+    }
+    
+    /**
+     * Retrieves all the possible orders for the passed in string, and puts them
+     * in the passed collection, appending <code>toAppend</code> to each.
+     */
+    static void getAllPossibleOrderings (String s, String toAppend, final Collection store) {
+        //IMPORTANT: THERE IS A COPY OF THE SAME CODE IN 
+        //org.netbeans.modules.editor.options.KeyBindingsMIMEOptionFile
+        //ANY CHANGES MADE HERE SHOULD ALSO BE MADE THERE!
+        char[] c = s.toCharArray();
+        mutate (c, store, 0, toAppend);
+        String[] result = (String[]) store.toArray(new String[store.size()]);
+    }   
+    
+    /**
+     * Recursively generates all possible orderings of the passed char array
+     */
+    private static void mutate(char[] c, Collection l, int n, String toAppend) {
+        //IMPORTANT: THERE IS A COPY OF THE SAME CODE IN 
+        //org.netbeans.modules.editor.options.KeyBindingsMIMEOptionFile
+        //ANY CHANGES MADE HERE SHOULD ALSO BE MADE THERE!
+        if (n == c.length) {
+            l.add (new String(c) + toAppend);
+            createHyphenatedPermutation(c, l, toAppend);
+            return;
+        }
+        //XXX could be optimized to eliminate duplicates
+        for (int i=0; i < c.length; i++) {
+            char x = c[i];
+            c[i] = c[n];
+            c[n] = x;
+            if (n < c.length) { 
+                mutate (c, l, n+1, toAppend);
+            } 
+        }
+    }
+    
+    /**
+     * Inserts "-" characters between each character in the char array and
+     * adds the result + toAppend to the collection.
+     */
+    static void createHyphenatedPermutation (char[] c, Collection l, String toAppend) {
+        //IMPORTANT: THERE IS A COPY OF THE SAME CODE IN 
+        //org.netbeans.modules.editor.options.KeyBindingsMIMEOptionFile
+        //ANY CHANGES MADE HERE SHOULD ALSO BE MADE THERE!
+        if (c.length == 1) {
+            return;
+        }
+        StringBuffer sb = new StringBuffer (new String(c));
+        for (int i=c.length-1; i >= 1; i-=1) {
+            sb.insert (i, '-');
+        }
+        sb.append (toAppend);
+        l.add (sb.toString());
+    }
+        
 
     private static DataObject findForAction (DataFolder actionsFolder, Action a) {
         if (actionsFolder == null) {

@@ -182,10 +182,10 @@ Microsystems, Inc. All Rights Reserved.
     </folder> <!-- Menu -->
 
     <folder name="Shortcuts">
-        <file name="C-O.instance">
+        <file name="D-O.instance">
     	    <attr name="instanceClass" stringvalue="org.netbeans.modules.openfile.OpenFileAction"/>
 	</file>
-        <file name="CS-0.shadow">
+        <file name="DS-0.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-search-ResultViewOpenAction.instance"/>
         </file>
     </folder> <!-- Shortcuts -->

@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
   </folder>
 
     <folder name="Shortcuts">
-        <file name="C-7.instance">
+        <file name="D-7.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.web.monitor.client.MonitorAction" />
         </file>
     </folder>

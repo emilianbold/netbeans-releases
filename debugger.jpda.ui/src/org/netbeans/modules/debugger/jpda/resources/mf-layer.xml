@@ -187,13 +187,13 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Shortcuts">
-        <file name="CS-F8.shadow">
+        <file name="DS-F8.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance"/>
         </file>
-        <file name="CS-F7.shadow">
+        <file name="DS-F7.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
         </file>
-        <file name="C-F8.shadow">
+        <file name="D-F8.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
         </file>
         <file name="F4.shadow">
@@ -208,16 +208,16 @@ Microsystems, Inc. All Rights Reserved.
         <file name="F8.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
         </file>
-        <file name="C-F5.shadow">
+        <file name="D-F5.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
         </file>
         <file name="S-F5.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
         </file>
-        <file name="CA-UP.shadow">
+        <file name="DA-UP.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-MakeCalleeCurrentAction.instance"/>
         </file>
-        <file name="CA-DOWN.shadow">
+        <file name="DA-DOWN.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-MakeCallerCurrentAction.instance"/>
         </file>
         <file name="SA-4.shadow">
