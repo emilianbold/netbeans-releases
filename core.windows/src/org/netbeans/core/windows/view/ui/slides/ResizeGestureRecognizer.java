@@ -35,6 +35,7 @@ import org.netbeans.core.windows.Constants;
 public class ResizeGestureRecognizer implements AWTEventListener {
     
 
+
      void attachResizeRecognizer(String side, Component component) {
          update(side, component);
          Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_MOTION_EVENT_MASK | AWTEvent.MOUSE_EVENT_MASK);
@@ -45,7 +46,7 @@ public class ResizeGestureRecognizer implements AWTEventListener {
      }
      
     
-    private static final int RESIZE_BUFFER = 5;
+    static final int RESIZE_BUFFER = 8;
     private boolean isResizing = false;
     private Component comp;
     private String side;
@@ -178,6 +179,10 @@ public class ResizeGestureRecognizer implements AWTEventListener {
         }
     }
     
+    public boolean isDragging() {
+        return state == STATE_DRAGGING;
+    }
+    
     private void resetState() {
         state = STATE_NOOP;
         JRootPane pane = SwingUtilities.getRootPane(comp);
@@ -210,3 +215,4 @@ public class ResizeGestureRecognizer implements AWTEventListener {
         
     }
 }
+

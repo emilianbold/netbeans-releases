@@ -32,6 +32,7 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import org.netbeans.swing.tabcontrol.SlideBarDataModel;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
@@ -50,9 +51,11 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
     
     /** Listsner to timer notifications */
     private AutoSlideTrigger autoSlideTrigger = new AutoSlideTrigger();
+    private ResizeGestureRecognizer resizer;
 
-    SlideGestureRecognizer(SlideBar slideBar) {
+    SlideGestureRecognizer(SlideBar slideBar, ResizeGestureRecognizer resize) {
         this.slideBar = slideBar;
+        resizer = resize;
     }
 
     /** Attaches given button to this recognizer, it means starts listening
@@ -250,6 +253,10 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
         
         /** @return true when conditions for auto slide OUT were met, false otherwise */
         private boolean isSlideOutGesture(MouseEvent evt) {
+            if (resizer.isDragging()) {
+                activeArea = null;
+                return false;
+            }
             if (activeArea == null) {
                 activeArea = computeActiveArea();
                 // comps are not yet ready, so do nothing
@@ -274,16 +281,32 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
             }
             
             Point slideBarLoc = slideBar.getLocationOnScreen();
-            Rectangle activeArea = new Rectangle(slideBarLoc.x - 1, slideBarLoc.y - 1,
+            Rectangle actArea = new Rectangle(slideBarLoc.x - 1, slideBarLoc.y - 1,
                                     slideBar.getWidth() - 1, slideBar.getHeight() - 1);
             
             Point slidedCompLoc = slidedComp.getLocationOnScreen();
-
-            activeArea = SwingUtilities.computeUnion(
-                slidedCompLoc.x, slidedCompLoc.y, slidedComp.getWidth(),
-                slidedComp.getHeight(), activeArea);
             
-            return activeArea;
+            int slidex = slidedCompLoc.x;
+            int slidey = slidedCompLoc.y;
+            int slideh = slidedComp.getHeight();
+            int slidew = slidedComp.getWidth();
+            int orientation = slideBar.getModel().getOrientation();
+            if (orientation == SlideBarDataModel.WEST) {
+                slidew = slidew + ResizeGestureRecognizer.RESIZE_BUFFER;
+            }
+            if (orientation == SlideBarDataModel.EAST) {
+                slidew = slidew + ResizeGestureRecognizer.RESIZE_BUFFER;
+                slidex = slidex - ResizeGestureRecognizer.RESIZE_BUFFER;
+            }
+            if (orientation == SlideBarDataModel.SOUTH) {
+                slideh = slideh + ResizeGestureRecognizer.RESIZE_BUFFER;
+                slidey = slidey - ResizeGestureRecognizer.RESIZE_BUFFER;
+            }
+            actArea = SwingUtilities.computeUnion(
+                slidex, slidey, slidew,
+                slideh, actArea);
+            
+            return actArea;
         }
         
         

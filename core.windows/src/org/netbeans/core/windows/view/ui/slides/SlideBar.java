@@ -106,8 +106,8 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         this.tabbed = tabbed;                
         this.dataModel = dataModel;
         this.selModel = selModel;
-        gestureRecognizer = new SlideGestureRecognizer(this);
         commandMgr = new CommandManager(this);
+        gestureRecognizer = new SlideGestureRecognizer(this, commandMgr.getResizer());
         buttons = new ArrayList(5);
         
         setBorder(computeBorder(dataModel.getOrientation()));
@@ -116,7 +116,6 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         dataModel.addComplexListDataListener(this);
         selModel.addChangeListener(this);
     }
-    
     
     public SlideBarDataModel getModel() {
         return dataModel;

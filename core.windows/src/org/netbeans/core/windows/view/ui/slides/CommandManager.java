@@ -57,6 +57,10 @@ final class CommandManager implements ActionListener {
         recog = new ResizeGestureRecognizer(this);
     }
    
+    ResizeGestureRecognizer getResizer() {
+        return recog;
+    }
+    
     public void slideResize(int delta) {
         if (!isCompSlided()) {
             return;
