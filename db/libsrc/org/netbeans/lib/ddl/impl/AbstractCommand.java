@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -26,12 +26,8 @@ import org.openide.windows.OutputWriter;
 /**
 * Basic implementation of DDLCommand. This class can be used for really simple
 * commands with format and without arguments. Heavilly subclassed.
-*
-* @author Slavek Psenicka
 */
-public class AbstractCommand
-            implements Serializable, DDLCommand
-{
+public class AbstractCommand implements Serializable, DDLCommand {
     /** Command owner */
     private DatabaseSpecification spec;
 
@@ -48,8 +44,11 @@ public class AbstractCommand
     private Map addprops;
 
     private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
-    
+
     static final long serialVersionUID =-560515030304320086L;
+
+    private String quoteStr;
+
     /** Returns specification (DatabaseSpecification) for this command */
     public DatabaseSpecification getSpecification()
     {
@@ -57,7 +56,7 @@ public class AbstractCommand
     }
 
     /**
-    * Sets specification (DatabaseSpecification) for this command. This method is usually called 
+    * Sets specification (DatabaseSpecification) for this command. This method is usually called
     * in relevant createXXX method.
     * @param specification New specification object.
     */
@@ -95,7 +94,7 @@ public class AbstractCommand
         if (owner != null)
             if (owner.trim().equals(""))
                 setObjectOwner(null);
-        
+
         return owner;
     }
 
@@ -121,8 +120,8 @@ public class AbstractCommand
 
     /**
     * Returns properties and it's values supported by this object.
-    * object.name	Name of the object; use setObjectName() 
-    * object.owner	Name of the object; use setObjectOwner() 
+    * object.name	Name of the object; use setObjectName()
+    * object.owner	Name of the object; use setObjectOwner()
     * Throws DDLException if object name is not specified.
     */
     public Map getCommandProperties() throws DDLException {
@@ -131,11 +130,11 @@ public class AbstractCommand
             args.putAll(addprops);
         String oname = getObjectName();
         if (oname != null)
-            args.put("object.name", getObjectName()); // NOI18N
+            args.put("object.name", quote(getObjectName())); // NOI18N
         else
             throw new DDLException(bundle.getString("EXC_Unknown")); // NOI18N
-        args.put("object.owner", getObjectOwner()); // NOI18N
-        
+        args.put("object.owner", quote(getObjectOwner())); // NOI18N
+
         return args;
     }
 
@@ -157,7 +156,7 @@ public class AbstractCommand
         } catch (Exception e) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                 e.printStackTrace();
-            
+
             executionWithException = true;
             TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
             return;
@@ -196,22 +195,22 @@ public class AbstractCommand
         } catch (Exception e) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                 e.printStackTrace();
-            
+
             executionWithException = true;
             if (opened && fcon != null)
                 spec.closeJDBCConnection();
-            
+
 //            TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("EXC_UnableToExecute")+"\n" + fcmd + "\n" + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
             throw new DDLException(bundle.getString("EXC_UnableToExecute")+"\n" + fcmd + "\n" + e.getMessage()); // NOI18N
         }
-        
+
         if (opened)
             spec.closeJDBCConnection();
     }
 
     /**
-    * Returns full string representation of command. This string needs no 
-    * formatting and could be used directly as argument of executeUpdate() 
+    * Returns full string representation of command. This string needs no
+    * formatting and could be used directly as argument of executeUpdate()
     * command. Throws DDLException if format is not specified or CommandFormatter
     * can't format it (it uses MapFormat to process entire lines and can solve []
     * enclosed expressions as optional.
@@ -225,7 +224,7 @@ public class AbstractCommand
             Map props = getCommandProperties();
             return CommandFormatter.format(format, props);
         } catch (Exception e) {
-            //			e.printStackTrace();
+//            e.printStackTrace();
             throw new DDLException(e.getMessage());
         }
     }
@@ -233,6 +232,30 @@ public class AbstractCommand
     /** information about appearance some exception in the last execute a bunch of commands */
     public boolean wasException() {
         return executionWithException;
+    }
+
+    private String getQuoteString() {
+        try {
+            quoteStr = getSpecification().getJDBCConnection().getMetaData().getIdentifierQuoteString();
+        } catch (SQLException exc) {
+            //PENDING
+        }
+        if (quoteStr == null)
+            quoteStr = ""; //NOI18N
+        else
+            quoteStr.trim();
+
+        return quoteStr;
+    }
+
+    protected String quote(String name) {
+        if (name == null || name.equals(""))
+            return name;
+
+        if (quoteStr == null)
+            quoteStr = getQuoteString();
+
+        return quoteStr + name + quoteStr;
     }
 
     /** Reads object from stream */

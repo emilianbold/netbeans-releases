@@ -24,12 +24,9 @@ import org.netbeans.lib.ddl.impl.*;
 * Interface of database action command. Instances should remember connection 
 * information of DatabaseSpecification and use it in execute() method. This is a base interface
 * used heavily for sub-interfacing (it is not subclassing :)
-*
-* @author Slavek Psenicka
 */
 
-public class CreateTrigger extends AbstractCommand implements CreateTriggerCommand
-{
+public class CreateTrigger extends AbstractCommand implements CreateTriggerCommand {
     public static final int BEFORE = 1;
     public static final int AFTER = 2;
 
@@ -188,9 +185,7 @@ public class CreateTrigger extends AbstractCommand implements CreateTriggerComma
         if (te != null) events.add(te);
     }
 
-    public Map getCommandProperties()
-    throws DDLException
-    {
+    public Map getCommandProperties() throws DDLException {
         Map props = (Map)getSpecification().getProperties();
         String evs = "", argdelim = (String)props.get("TriggerEventListDelimiter"); // NOI18N
         Map cmdprops = super.getCommandProperties();
@@ -205,21 +200,11 @@ public class CreateTrigger extends AbstractCommand implements CreateTriggerComma
         cmdprops.put("trigger.events", evs); // NOI18N
         cmdprops.put("trigger.condition", cond); // NOI18N
         cmdprops.put("trigger.timing", getTimingName(timing)); // NOI18N
-        cmdprops.put("table.name", table); // NOI18N
+        cmdprops.put("table.name", quote(table)); // NOI18N
         cmdprops.put("trigger.body", body); // NOI18N
-        if (eachrow) cmdprops.put("each.row", ""); // NOI18N
+        if (eachrow)
+            cmdprops.put("each.row", ""); // NOI18N
+        
         return cmdprops;
     }
 }
-
-/*
-* <<Log>>
-*  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  4    Gandalf   1.3         9/10/99  Slavek Psenicka 
-*  3    Gandalf   1.2         8/17/99  Ian Formanek    Generated serial version 
-*       UID
-*  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
-*  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
-* $
-*/

@@ -21,12 +21,9 @@ import org.netbeans.lib.ddl.impl.*;
 * Interface of database action command. Instances should remember connection 
 * information of DatabaseSpecification and use it in execute() method. This is a base interface
 * used heavily for sub-interfacing (it is not subclassing :)
-*
-* @author Slavek Psenicka
 */
 
-public class CreateIndex extends ColumnListCommand
-{
+public class CreateIndex extends ColumnListCommand {
     /** Index name */
     private String tablename;
     
@@ -60,25 +57,11 @@ public class CreateIndex extends ColumnListCommand
         return specifyColumn(TableColumn.COLUMN, name, Specification.CREATE_INDEX);
     }
 
-    public Map getCommandProperties()
-    throws DDLException
-    {
+    public Map getCommandProperties() throws DDLException {
         Map args = super.getCommandProperties();
-        args.put("index.name", tablename); // NOI18N
+        args.put("index.name", quote(tablename)); // NOI18N
         args.put("index.unique", unique); // NOI18N
+        
         return args;
     }
 }
-
-/*
-* <<Log>>
-*  6    Gandalf   1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  5    Gandalf   1.4         9/10/99  Slavek Psenicka 
-*  4    Gandalf   1.3         8/17/99  Ian Formanek    Generated serial version 
-*       UID
-*  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
-*  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
-*  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
-* $
-*/

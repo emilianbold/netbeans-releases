@@ -25,12 +25,8 @@ import java.io.Serializable;
 * Default implementation of database column. It handles name, column name, it's 
 * format and type. If used, column can handle referenced table and column.
 * User can add custom properties into format.
-*
-* @author Slavek Psenicka
 */
-public class AbstractTableColumn
-            implements Serializable
-{
+public class AbstractTableColumn implements Serializable {
     /** Name and column name. */
     private String name, cname, format;
 
@@ -151,13 +147,14 @@ public class AbstractTableColumn
         String cname = getColumnName();
 
         if (addprops != null) args.putAll(addprops);
-        if (oname != null) args.put("object.name", oname); // NOI18N
+        if (oname != null) args.put("object.name", cmd.quote(oname)); // NOI18N
         else throw new DDLException(bundle.getString("EXC_Unknown")); // NOI18N
-        if (cname != null) args.put("column.name", cname); // NOI18N
+        if (cname != null) args.put("column.name", cmd.quote(cname)); // NOI18N
         else throw new DDLException(bundle.getString("EXC_Unknown")); // NOI18N
 
-        if (reftab != null) args.put("fkobject.name", reftab); // NOI18N
-        if (refcol != null) args.put("fkcolumn.name", refcol); // NOI18N
+        if (reftab != null) args.put("fkobject.name", cmd.quote(reftab)); // NOI18N
+        if (refcol != null) args.put("fkcolumn.name", cmd.quote(refcol)); // NOI18N
+        
         return args;
     }
 
@@ -206,15 +203,3 @@ public class AbstractTableColumn
         out.writeObject(refcol);
     }
 }
-
-/*
-* <<Log>>
-*  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  4    Gandalf   1.3         8/17/99  Ian Formanek    Generated serial version 
-*       UID
-*  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
-*  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
-*  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
-* $
-*/

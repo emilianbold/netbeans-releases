@@ -22,11 +22,8 @@ import org.netbeans.lib.ddl.util.*;
 
 /**
 * Argument of procedure. Encapsulates name, type (in/out) and datatype.
-*
-* @author Slavek Psenicka
 */
-public class ProcedureArgument implements Argument
-{
+public class ProcedureArgument implements Argument {
     /** Argument name */
     private String name;
 
@@ -133,14 +130,12 @@ public class ProcedureArgument implements Argument
     * argument.datatype	Datatype of argument
     * Throws DDLException if object name is not specified.
     */
-    public Map getColumnProperties(AbstractCommand cmd)
-    throws DDLException
-    {
+    public Map getColumnProperties(AbstractCommand cmd) throws DDLException {
         HashMap args = new HashMap();
         DatabaseSpecification spec = cmd.getSpecification();
         Map typemap = (Map)spec.getProperties().get("ProcedureArgumentMap"); // NOI18N
         String typename = (String)typemap.get(getArgumentTypeName(type));
-        args.put("argument.name", name); // NOI18N
+        args.put("argument.name", cmd.quote(name)); // NOI18N
         args.put("argument.type", typename); // NOI18N
         args.put("argument.datatype", spec.getType(dtype)); // NOI18N
         return args;
@@ -162,13 +157,3 @@ public class ProcedureArgument implements Argument
         }
     }
 }
-
-/*
-* <<Log>>
-*  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  3    Gandalf   1.2         9/10/99  Slavek Psenicka 
-*  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
-*  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
-* $
-*/

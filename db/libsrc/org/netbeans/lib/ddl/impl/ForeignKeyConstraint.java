@@ -20,11 +20,8 @@ import org.netbeans.lib.ddl.*;
 
 /**
 * Implementation of ForeignKey constraint. 
-*
-* @author Slavek Psenicka
 */
-public class ForeignKeyConstraint extends AbstractTableColumn implements ForeignKeyConstraintDescriptor
-{
+public class ForeignKeyConstraint extends AbstractTableColumn implements ForeignKeyConstraintDescriptor {
     /** Refernced table */
     String tname;
 
@@ -63,23 +60,11 @@ public class ForeignKeyConstraint extends AbstractTableColumn implements Foreign
     * fkobject.name	Specification of foreign table 
     * fkcolumn.name	Specification of foreign column 
     */
-    public Map getColumnProperties(AbstractCommand cmd)
-    throws DDLException
-    {
+    public Map getColumnProperties(AbstractCommand cmd) throws DDLException {
         Map args = super.getColumnProperties(cmd);
-        args.put("fkobject.name", tname); // NOI18N
-        args.put("fkcolumn.name", cname); // NOI18N
+        args.put("fkobject.name", cmd.quote(tname)); // NOI18N
+        args.put("fkcolumn.name", cmd.quote(cname)); // NOI18N
+        
         return args;
     }
 }
-
-/*
-* <<Log>>
-*  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  3    Gandalf   1.2         8/17/99  Ian Formanek    Generated serial version 
-*       UID
-*  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
-*  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
-* $
-*/

@@ -24,11 +24,8 @@ import org.netbeans.lib.ddl.util.*;
 * Describes trigger. Encapsulates name, timing (when it fires; when user INSERTs of 
 * some data, after UPDATE or DELETE). In trigger descriptor this values should be 
 * combined together. 
-*
-* @author Slavek Psenicka
 */
-public class TriggerEvent
-{
+public class TriggerEvent {
     public static final int INSERT = 1;
     public static final int UPDATE = 2;
     public static final int DELETE = 3;
@@ -98,12 +95,11 @@ public class TriggerEvent
     * event.column	Name of column 
     * Throws DDLException if object name is not specified.
     */
-    public Map getColumnProperties(AbstractCommand cmd)
-    throws DDLException
-    {
+    public Map getColumnProperties(AbstractCommand cmd) throws DDLException {
         HashMap args = new HashMap();
-        args.put("event.name", name); // NOI18N
+        args.put("event.name", cmd.quote(name)); // NOI18N
         args.put("event.column", col); // NOI18N
+        
         return args;
     }
 
@@ -123,12 +119,3 @@ public class TriggerEvent
         }
     }
 }
-
-/*
-* <<Log>>
-*  3    Gandalf   1.2         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
-*  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
-* $
-*/
