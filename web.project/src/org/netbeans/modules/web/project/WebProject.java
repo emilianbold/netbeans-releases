@@ -394,7 +394,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             if (vcpi.getType () != VisualClassPathItem.TYPE_JAR) {
                 continue;
             }
-            FileObject fo = FileUtil.toFileObject (new File(helper.getStandardPropertyEvaluator ().evaluate (vcpi.getEvaluated ())));
+            FileObject fo = helper.resolveFileObject(helper.getStandardPropertyEvaluator ().evaluate (vcpi.getEvaluated ()));
             if (lib.equals (fo)) {
                 needsAdding = false;
                 break;
@@ -418,9 +418,9 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
                 //Check libraries and add them to classpath automatically
                 String libFolderName = helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.LIBRARIES_DIR);
                 WebProjectProperties wpp = new WebProjectProperties (WebProject.this, helper, refHelper);
-                if (libFolderName != null && new File (libFolderName).isDirectory ()) {
+                if (libFolderName != null && helper.resolveFile (libFolderName).isDirectory ()) {
                     List cpItems = (List) wpp.get (WebProjectProperties.JAVAC_CLASSPATH);
-                    FileObject libFolder = FileUtil.toFileObject (new File (libFolderName));
+                    FileObject libFolder = helper.resolveFileObject(libFolderName);
                     FileObject libs [] = libFolder.getChildren ();
                     boolean anyChanged = false;
                     for (int i = 0; i < libs.length; i++) {
