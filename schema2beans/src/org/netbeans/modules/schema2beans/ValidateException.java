@@ -46,6 +46,7 @@ public class ValidateException extends Exception {
         public static final FailureType NULL_VALUE = new FailureType("NULL_VALUE");
         public static final FailureType DATA_RESTRICTION = new FailureType("DATA_RESTRICTION");
         public static final FailureType ENUM_RESTRICTION = new FailureType("ENUM_RESTRICTION");
+        public static final FailureType ALL_RESTRICTIONS = new FailureType("ALL_RESTRICTIONS");
         public static final FailureType MUTUALLY_EXCLUSIVE = new FailureType("MUTUALLY_EXCLUSIVE");
     }
     
