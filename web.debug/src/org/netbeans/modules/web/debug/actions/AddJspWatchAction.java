@@ -109,8 +109,8 @@ public class AddJspWatchAction extends CallableSystemAction {
         );
 
 
-        String t = Utils.getELIdentifier();
-        Utils.getEM().log("Watch: ELIdentifier = " + t);
+        String t = null;//Utils.getELIdentifier();
+//        Utils.getEM().log("Watch: ELIdentifier = " + t);
         
         boolean isScriptlet = Utils.isScriptlet();
         Utils.getEM().log("Watch: isScriptlet: " + isScriptlet);
@@ -135,7 +135,7 @@ public class AddJspWatchAction extends CallableSystemAction {
         );
         dd.setHelpCtx (new HelpCtx ("debug.add.watch"));
         Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
-        dialog.show ();
+        dialog.setVisible(true);
         dialog.dispose ();
 
         if (dd.getValue() != org.openide.DialogDescriptor.OK_OPTION) return;
