@@ -2077,11 +2077,13 @@ public abstract class BaseBean implements Cloneable, Bean {
             }
         }
         // And attributes
-        String[] attributeNames = beanProp().getAttributeNames();
-        for (int attrNum = 0; attrNum < attributeNames.length; ++attrNum) {
-            String attrName = attributeNames[attrNum];
-            String attrValue = getAttributeValue(attrName);
-            result = 37*result + (attrValue == null ? 0 : attrValue.hashCode());
+        if (beanProp() != null) {
+            String[] attributeNames = beanProp().getAttributeNames();
+            for (int attrNum = 0; attrNum < attributeNames.length; ++attrNum) {
+                String attrName = attributeNames[attrNum];
+                String attrValue = getAttributeValue(attrName);
+                result = 37*result + (attrValue == null ? 0 : attrValue.hashCode());
+            }
         }
         return result;
     }
