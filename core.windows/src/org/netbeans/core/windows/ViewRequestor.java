@@ -42,12 +42,6 @@ class ViewRequestor {
     /** View of window system. */
     private final View view;
     
-    // XXX This is to prevent loop, caused by TopComponent.requestFocus(), 
-    // which causes problems, e.g. when selecting and activating component.
-    // Note: Access only from AWT thread.
-    private boolean processingRequest;
-    
-    
     /** List of requests to process. */
     private final List requests = new ArrayList(10);
     // PENDING
@@ -148,21 +142,11 @@ class ViewRequestor {
     
     private void postRequest() {
         if(SwingUtilities.isEventDispatchThread()) {
-            processingRequest = true;
-            try {
-                processRequest();
-            } finally {
-                processingRequest = false;
-            }
+            processRequest();
         } else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    processingRequest = true;
-                    try {
-                        processRequest();
-                    } finally {
-                        processingRequest = false;
-                    }
+                    processRequest();
                 }
             });
         }
