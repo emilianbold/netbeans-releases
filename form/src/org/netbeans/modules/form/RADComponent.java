@@ -263,7 +263,7 @@ public class RADComponent {
 
   public Node.PropertySet[] getProperties () {
     if (beanPropertySets == null) {
-      if (beanExpertProperties.length != 0) {
+      if (beanExpertProperties.length == 0) {
         // No expert properties
         beanPropertySets = new Node.PropertySet [] {
           new Node.PropertySet ("synthetic", "Synthetic", "Synthetic Properties") {
@@ -1091,6 +1091,9 @@ public class RADComponent {
 
 /*
  * Log
+ *  42   Gandalf   1.41        8/16/99  Ian Formanek    Fixed bug 3369 - The 
+ *       expert properties of beans used in form editor are not accessible, 
+ *       beans with no expert properties have empty expert tab.
  *  41   Gandalf   1.40        8/9/99   Ian Formanek    Used currentClassLoader 
  *       to fix problems with loading beans only present in repository
  *  40   Gandalf   1.39        8/6/99   Ian Formanek    setComponent is public, 
