@@ -214,7 +214,7 @@ public class JavaCodeGenerator extends CodeGenerator {
       variablesWriter.write (VARIABLES_FOOTER);
       variablesWriter.write ("\n");
       synchronized (GEN_LOCK) {
-        variablesSection.setText (variablesWriter.toString ());
+        variablesSection.setText (variablesBuffer.toString ());
       }
     } catch (IOException e) {
       throw new InternalError (); // cannot happen
@@ -310,8 +310,15 @@ public class JavaCodeGenerator extends CodeGenerator {
     Method writeMethod = desc.getWriteMethod ();
     PropertyEditor ed = null;
     try {
-      ed = (PropertyEditor)prop.getCurrentEditor ().getClass ().newInstance ();
+      if (prop.getCurrentEditor () instanceof RADConnectionPropertyEditor) {
+        ed = new RADConnectionPropertyEditor (prop.getPropertyDescriptor ().getPropertyType ());
+      } else {
+        ed = (PropertyEditor)prop.getCurrentEditor ().getClass ().newInstance ();
+      }
     } catch (Exception e) {
+      if (System.getProperty ("netbeans.full.hack") != null) {
+        e.printStackTrace ();
+      }
       return; // cannot generate code for this property without the property editor
     }
     Object value = null;
@@ -892,6 +899,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  28   Gandalf   1.27        6/27/99  Ian Formanek    Fixed for usage with 
+ *       RADConnectionPropertyEditor
  *  27   Gandalf   1.26        6/27/99  Ian Formanek    Uses indentation engine 
  *       for code generation
  *  26   Gandalf   1.25        6/25/99  Ian Formanek    Improved size policy 
