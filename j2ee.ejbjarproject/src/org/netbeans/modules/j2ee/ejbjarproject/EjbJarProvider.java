@@ -155,15 +155,14 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     }
     
     public org.netbeans.modules.schema2beans.BaseBean getDeploymentDescriptor(String location) {
-        if (! J2eeModule.EJBJAR_XML.equals(location))
-            return null;
-        
-        EjbJar webApp = getEjbJar();
-        if (webApp != null) {
-            //PENDING find a better way to get the BB from WApp and remove the HACK from DDProvider!!
-            return DDProvider.getDefault().getBaseBean(webApp);
+        if (J2eeModule.EJBJAR_XML.equals(location)){
+            EjbJar webApp = getEjbJar();
+            if (webApp != null) {
+                //PENDING find a better way to get the BB from WApp and remove the HACK from DDProvider!!
+                return DDProvider.getDefault().getBaseBean(webApp);
+            }
         }
-        else if(J2eeModule.WEBSERVICES_XML.equals(location)){
+        else if(J2eeModule.EJBSERVICES_XML.equals(location)){
             Webservices webServices = getWebservices();
             if(webServices != null){
                 return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getBaseBean(webServices);

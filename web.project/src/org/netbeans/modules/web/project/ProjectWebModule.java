@@ -270,13 +270,13 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
 
     public org.netbeans.modules.schema2beans.BaseBean getDeploymentDescriptor (String location) {
-        if (! J2eeModule.WEB_XML.equals(location))
-            return null;
+        if (J2eeModule.WEB_XML.equals(location)){
 
-        WebApp webApp = getWebApp ();
-        if (webApp != null) {
-            //PENDING find a better way to get the BB from WApp and remove the HACK from DDProvider!!
-            return DDProvider.getDefault ().getBaseBean (webApp);
+            WebApp webApp = getWebApp ();
+            if (webApp != null) {
+                //PENDING find a better way to get the BB from WApp and remove the HACK from DDProvider!!
+                return DDProvider.getDefault ().getBaseBean (webApp);
+            }
         }
         else if(J2eeModule.WEBSERVICES_XML.equals(location)){
             Webservices webServices = getWebservices();
@@ -287,6 +287,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return null;
     }
 
+    
     public void uncacheDescriptors() {
         // this.getConfigSupport().resetStorage();
         // reset timeout when closing the project
