@@ -95,7 +95,8 @@ public class ImageViewer extends CloneableTopComponent {
         scaled = 0;
         factor = (float)storedImage.getIconHeight() / storedImage.getIconWidth(); // y/x
 
-        redrawImage();
+        resizePanel();
+        panel.repaint();
     }
     
     /** Initializes member variables and set listener for name changes on DataObject. */
@@ -246,25 +247,23 @@ public class ImageViewer extends CloneableTopComponent {
     /** Draws zoom in scaled image. */
     public void zoomIn() {
         scaled += 10;
-        redrawImage();
+        resizePanel();
+        panel.repaint(0, 0, storedImage.getIconWidth() + scaled, (int)((storedImage.getIconHeight()+scaled)*factor));
     }
     
     /** Draws zoom out scaled image. */
     public void zoomOut() {
         if (isNewSizeOK()) { // You can't still make picture smaller, but bigger why not? 
             scaled -= 10;
-            redrawImage();
+            resizePanel();
+            panel.repaint(0, 0, storedImage.getIconWidth() + scaled + 10, (int)((storedImage.getIconHeight()+scaled)*factor) + 10);
         } // Show dialog ? I thing no.
     }
     
-    /** Redraws image and resets size of panel. */
-    private void redrawImage() {
-        int x = storedImage.getIconWidth() + scaled;
-        int y = (int)((storedImage.getIconHeight()+scaled)*factor);
-        
-        panel.setPreferredSize(new Dimension(x, y));
+    /** Resizes panel. */
+    private void resizePanel() {
+        panel.setPreferredSize(new Dimension(storedImage.getIconWidth() + scaled, (int)((storedImage.getIconHeight()+scaled)*factor)));
         panel.revalidate();
-        panel.repaint(0, 0, x+10, y+10);
     }
     
     /** Tests new size of image. If image is smaller than  minimum
