@@ -39,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="netbeans/system/ParserDB"/>
         <makeparserdb db="netbeans/system/ParserDB/OpenAPIs" sources="../../openide/src" nbroot="../.."/>
         <makeparserdb db="netbeans/system/ParserDB/CompilerAPI" sources="../../openide/compiler/src" nbroot="../.."/>
+        <makeparserdb db="netbeans/system/ParserDB/LoadersAPI" sources="../../openide/loaders/src" nbroot="../.."/>
         <makeparserdb db="netbeans/system/ParserDB/ExecutionAPI" sources="../../openide/execution/src" nbroot="../.."/>
         <makeparserdb db="netbeans/system/ParserDB/DebuggerAPI" sources="../../debuggercore/oldapi/src" nbroot="../.."/>
         <makeparserdb db="netbeans/system/ParserDB/InputOutputAPI" sources="../../openide/io/src" nbroot="../.."/>
@@ -60,6 +61,8 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="../../debuggercore/oldapi/javadoc/DebuggerAPI.zip" tofile="netbeans/docs/DebuggerAPI.zip"/>
         <ant dir="../../openide/compiler" target="javadoc"/>
         <copy file="../../openide/compiler/javadoc/CompilerAPI.zip" tofile="netbeans/docs/CompilerAPI.zip"/>
+        <ant dir="../../openide/loaders" target="javadoc"/>
+        <copy file="../../openide/loaders/javadoc/LoadersAPI.zip" tofile="netbeans/docs/LoadersAPI.zip"/>
         <ant dir="../../core/javahelp" target="javadoc"/>
         <copy file="../../core/javahelp/javadoc/JavaHelpAPI.zip" tofile="netbeans/docs/JavaHelpAPI.zip"/>
         <ant dir="../../core/settings" target="javadoc"/>

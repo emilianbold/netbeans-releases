@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -71,7 +71,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="jars" depends="compile">
-        <mkdir dir="netbeans/modules/autoload"/>
+        <mkdir dir="netbeans/lib"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
         <locjar jarfile="netbeans/lib/openide-loaders.jar"
@@ -105,10 +105,10 @@ Microsystems, Inc. All Rights Reserved.
             <property name="javadoc.base" location="."/>
             <property name="javadoc.name" value="LoadersAPI"/>
             <property name="javadoc.title" value="Loaders API"/>
-            <property name="javadoc.packages" value="org.openide.actions,org.openide.cookies,org.openide.text,org.openide.loaders"/>
+            <property name="javadoc.packages" value="org.openide.actions,org.openide.awt,org.openide.loaders,org.openide.text"/>
             <property name="javadoc.classpath" value="${_cp}"/>
-            <property name="javadoc.main.page" value="org/openide/compiler/doc-files/api.html"/>
-            <property name="javadoc.arch" location="../arch/arch-openide-loaders.xml"/>
+            <property name="javadoc.main.page" value="org/openide/loaders/doc-files/api.html"/>
+            <property name="javadoc.arch" location="../arch/arch-openide-datasystems.xml"/>
             <property name="javadoc.docfiles" location="api/doc"/>
         </ant>
     </target>

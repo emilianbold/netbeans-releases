@@ -288,7 +288,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
      * line is created by a DataEditorSupport then associated DataObject
      * can be accessed by this method.
      *
-     * @param line line object 
+     * @param l line object 
      * @return data object or null
      *
      * @since 4.3

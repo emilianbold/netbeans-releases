@@ -50,7 +50,7 @@ import org.openide.nodes.Node;
 public class EditorSupport extends OpenSupport
 implements EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie {
     /** Common name for editor mode.
-     * @deprecated Use {@link CloneableEditorSupport#EDITOR_MODE} instead.
+     * @deprecated Use {@link org.openide.text.CloneableEditorSupport#EDITOR_MODE} instead.
      */
     public static final String EDITOR_MODE = CloneableEditorSupport.EDITOR_MODE;
 
@@ -186,7 +186,7 @@ implements EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie {
 
     /** Get the document associated with this cookie.
     * It is an instance of Swing's {@link StyledDocument} but it should
-    * also understand the NetBeans {@link NbDocument#GUARDED} to
+    * also understand the NetBeans {@link org.openide.text.NbDocument#GUARDED} to
     * prevent certain lines from being edited by the user.
     * <P>
     * If the document is not loaded the method blocks until

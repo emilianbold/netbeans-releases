@@ -62,6 +62,7 @@ cause it to fail.
         <property name="javadoc.docs.openide/io" value="http://www.netbeans.org/download/dev/javadoc/InputOutputAPI"/>
         <property name="javadoc.docs.openide/execution" value="http://www.netbeans.org/download/dev/javadoc/ExecutionAPI"/>
         <property name="javadoc.docs.openide/compiler" value="http://www.netbeans.org/download/dev/javadoc/CompilerAPI"/>
+        <property name="javadoc.docs.openide/loaders" value="http://www.netbeans.org/download/dev/javadoc/LoadersAPI"/>
         <property name="javadoc.docs.openide/deprecated" value="http://www.netbeans.org/download/dev/javadoc/DeprecatedAPIs"/>
         <property name="javadoc.docs.core/javahelp" value="http://www.netbeans.org/download/dev/javadoc/JavaHelpAPI"/>
         <property name="javadoc.docs.java/api" value="http://www.netbeans.org/download/dev/javadoc/JavaSupportAPIs"/>
@@ -119,6 +120,7 @@ cause it to fail.
             <link href="${javadoc.docs.openide/io}" offline="true" packagelistloc="../../openide/io/javadoc/InputOutputAPI"/>
             <link href="${javadoc.docs.openide/execution}" offline="true" packagelistloc="../../openide/execution/javadoc/ExecutionAPI"/>
             <link href="${javadoc.docs.openide/compiler}" offline="true" packagelistloc="../../openide/compiler/javadoc/CompilerAPI"/>
+            <link href="${javadoc.docs.openide/loaders}" offline="true" packagelistloc="../../openide/loaders/javadoc/LoadersAPI"/>
             <link href="${javadoc.docs.core/javahelp}" offline="true" packagelistloc="../../core/javahelp/javadoc/JavaHelpAPI"/>
             <link href="${javadoc.docs.java/api}" offline="true" packagelistloc="../../java/api/javadoc/JavaSupportAPIs"/>
             <doctitle>NetBeans ${javadoc.title}</doctitle>
@@ -159,6 +161,7 @@ cause it to fail.
             <replacefilter token="@OPENIDE/IO@" value="${javadoc.docs.openide/io}"/>
             <replacefilter token="@OPENIDE/EXECUTION@" value="${javadoc.docs.openide/execution}"/>
             <replacefilter token="@OPENIDE/COMPILER@" value="${javadoc.docs.openide/compiler}"/>
+            <replacefilter token="@OPENIDE/LOADERS@" value="${javadoc.docs.openide/loaders}"/>
             <replacefilter token="@OPENIDE/DEPRECATED@" value="${javadoc.docs.openide/deprecated}"/>
             <replacefilter token="@CORE/JAVAHELP@" value="${javadoc.docs.core/javahelp}"/>
             <replacefilter token="@JAVA/API@" value="${javadoc.docs.java/api}"/>
