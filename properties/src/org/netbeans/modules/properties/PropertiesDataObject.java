@@ -11,7 +11,9 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.properties;
+
 
 import java.util.Set;
 import java.util.Iterator;
@@ -21,6 +23,7 @@ import java.util.ArrayList;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.IOException;
 import java.io.NotActiveException;
 
@@ -37,6 +40,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.NodeListener;
+
 
 /** Object that provides main functionality for properties data loader.
 * This class is final only for performance reasons,
@@ -70,7 +74,7 @@ public final class PropertiesDataObject extends MultiDataObject {
     /** Initializes the object after it is created or deserialized */
     private void init() {
         bundleStructure = null;
-        getCookieSet().add(new PropertiesOpen((PropertiesFileEntry)getPrimaryEntry()));
+        getCookieSet().add(new PropertiesOpen(this));
         getCookieSet().add(((PropertiesFileEntry)getPrimaryEntry()).getPropertiesEditor());
     }
 
@@ -78,13 +82,6 @@ public final class PropertiesDataObject extends MultiDataObject {
     public PropertiesOpen getOpenSupport () {
         return (PropertiesOpen)getCookie(OpenCookie.class);
     }
-
-    /** Setter for modification status. Mod.status is handled by events from entries,
-    * so this method does nothing. */
-    public void setModified(boolean modif) {
-        // do nothing, modification status is handled in other ways
-    }
-
 
     /** Updates modification status of this dataobject from its entries. */
     void updateModificationStatus() {
@@ -139,7 +136,7 @@ public final class PropertiesDataObject extends MultiDataObject {
         return new KeyComparator();
     }
 
-    /** Deserialization */
+    /** Deserialization. */
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         init();
@@ -232,37 +229,3 @@ public final class PropertiesDataObject extends MultiDataObject {
     } // end of class PropertiesChildren
 
 }
-
-/*
- * <<Log>>
- *  22   Gandalf   1.21        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  21   Gandalf   1.20        10/12/99 Petr Jiricka    
- *  20   Gandalf   1.19        9/13/99  Petr Jiricka    MIME type changed to a 
- *       constant
- *  19   Gandalf   1.18        9/10/99  Petr Jiricka    Comparator change
- *  18   Gandalf   1.17        8/18/99  Petr Jiricka    Some fix
- *  17   Gandalf   1.16        8/17/99  Petr Jiricka    Changed node 
- *       initialization
- *  16   Gandalf   1.15        6/24/99  Petr Jiricka    
- *  15   Gandalf   1.14        6/23/99  Petr Jiricka    
- *  14   Gandalf   1.13        6/22/99  Ian Formanek    employed DEFAULT_HELP
- *  13   Gandalf   1.12        6/11/99  Petr Jiricka    
- *  12   Gandalf   1.11        6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  11   Gandalf   1.10        6/8/99   Petr Jiricka    
- *  10   Gandalf   1.9         5/16/99  Petr Jiricka    
- *  9    Gandalf   1.8         5/14/99  Petr Jiricka    
- *  8    Gandalf   1.7         5/13/99  Petr Jiricka    
- *  7    Gandalf   1.6         5/12/99  Petr Jiricka    
- *  6    Gandalf   1.5         5/11/99  Ian Formanek    Undone last change to 
- *       compile
- *  5    Gandalf   1.4         5/11/99  Petr Jiricka    
- *  4    Gandalf   1.3         3/9/99   Ian Formanek    Moved images to this 
- *       package
- *  3    Gandalf   1.2         2/3/99   Jaroslav Tulach Inner class for node is 
- *       not needed
- *  2    Gandalf   1.1         1/22/99  Ian Formanek    
- *  1    Gandalf   1.0         1/22/99  Ian Formanek    
- * $
- */
