@@ -91,7 +91,7 @@ public class HtmlLoader extends UniFileLoader {
 
     MultiDataObject obj = new Obj (primaryFile, this);
     EditorSupport es = new EditorSupport (obj.getPrimaryEntry ());
-    es.setMIMEType ("text/plain");
+//    es.setMIMEType ("text/plain");
     obj.getCookieSet ().add (es);
     obj.getCookieSet ().add (new ViewCookie () {
       public void view () {
@@ -107,6 +107,7 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  17   Gandalf   1.16        6/10/99  Jan Jancura     Bug 1772
 *  16   Gandalf   1.15        6/9/99   Ian Formanek    ToolsAction
 *  15   Gandalf   1.14        6/9/99   Ian Formanek    ---- Package Change To 
 *       org.openide ----
