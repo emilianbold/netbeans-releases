@@ -96,6 +96,8 @@ public class ProductInformationPanel extends JPanel {
     }
 
     private void initComponents() {//GEN-BEGIN:initComponents
+        java.awt.GridBagConstraints gridBagConstraints;
+
         ideImageLabel = new javax.swing.JLabel();
         productVersionLabel = new javax.swing.JLabel();
         ideVersioningLabel = new javax.swing.JLabel();
@@ -110,269 +112,281 @@ public class ProductInformationPanel extends JPanel {
         ideInstallLabel = new javax.swing.JLabel();
         userDirLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
-        productInformationLabel = new NbLabelA11y();
-        productVersionValueLabel = new NbLabelA11y();
-        ideVersioningValueLabel = new NbLabelA11y();
-        operatingSystemValueLabel = new NbLabelA11y();
-        javaValueLabel = new NbLabelA11y();
-        vmValueLabel = new NbLabelA11y();
-        vendorValueLabel = new NbLabelA11y();
-        javaHomeValueLabel = new NbLabelA11y();
-        systemLocaleValueLabel = new NbLabelA11y();
-        homeDirValueLabel = new NbLabelA11y();
-        currentDirValueLabel = new NbLabelA11y();
-        ideInstallValueLabel = new NbLabelA11y();
-        userDirValueLabel = new NbLabelA11y();
-        
+        productInformationLabel = new fLabel();
+        productVersionValueLabel = new fLabel();
+        ideVersioningValueLabel = new fLabel();
+        operatingSystemValueLabel = new fLabel();
+        javaValueLabel = new fLabel();
+        vmValueLabel = new fLabel();
+        vendorValueLabel = new fLabel();
+        javaHomeValueLabel = new fLabel();
+        systemLocaleValueLabel = new fLabel();
+        homeDirValueLabel = new fLabel();
+        currentDirValueLabel = new fLabel();
+        ideInstallValueLabel = new fLabel();
+        userDirValueLabel = new fLabel();
+
         setLayout(new java.awt.GridBagLayout());
-        java.awt.GridBagConstraints gridBagConstraints1;
-        
+
         ideImageLabel.setIcon(getIcon());
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 0;
-        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        add(ideImageLabel, gridBagConstraints1);
-        
+        ideImageLabel.setLabelFor(productInformationLabel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        add(ideImageLabel, gridBagConstraints);
+
         productVersionLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_ProductVersion"));
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 1;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 12, 0, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(productVersionLabel, gridBagConstraints1);
-        
+        productVersionLabel.setLabelFor(productVersionValueLabel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        add(productVersionLabel, gridBagConstraints);
+
         ideVersioningLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_IDEVersioning"));
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 2;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(ideVersioningLabel, gridBagConstraints1);
-        
+        ideVersioningLabel.setLabelFor(ideVersioningValueLabel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        add(ideVersioningLabel, gridBagConstraints);
+
         operatingSystemLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_OperationgSystem"));
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 3;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(operatingSystemLabel, gridBagConstraints1);
-        
+        operatingSystemLabel.setLabelFor(operatingSystemValueLabel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        add(operatingSystemLabel, gridBagConstraints);
+
         javaLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_Java"));
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 4;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(javaLabel, gridBagConstraints1);
-        
+        javaLabel.setLabelFor(javaValueLabel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        add(javaLabel, gridBagConstraints);
+
         vmLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_VM"));
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 5;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(vmLabel, gridBagConstraints1);
-        
+        vmLabel.setLabelFor(vmValueLabel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        add(vmLabel, gridBagConstraints);
+
         vendorLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_Vendor"));
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 6;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(vendorLabel, gridBagConstraints1);
-        
+        vendorLabel.setLabelFor(vendorValueLabel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        add(vendorLabel, gridBagConstraints);
+
         javaHomeLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_JavaHome"));
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 7;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(javaHomeLabel, gridBagConstraints1);
-        
+        javaHomeLabel.setLabelFor(javaHomeValueLabel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        add(javaHomeLabel, gridBagConstraints);
+
         systemLocaleLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_SystemLocale"));
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 8;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(systemLocaleLabel, gridBagConstraints1);
-        
+        systemLocaleLabel.setLabelFor(systemLocaleValueLabel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        add(systemLocaleLabel, gridBagConstraints);
+
         homeDirLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_HomeDir"));
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 9;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(homeDirLabel, gridBagConstraints1);
-        
+        homeDirLabel.setLabelFor(homeDirValueLabel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        add(homeDirLabel, gridBagConstraints);
+
         currentDirLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_CurrentDir"));
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 10;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(currentDirLabel, gridBagConstraints1);
-        
+        currentDirLabel.setLabelFor(currentDirValueLabel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        add(currentDirLabel, gridBagConstraints);
+
         ideInstallLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_IDEInstall"));
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 11;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(ideInstallLabel, gridBagConstraints1);
-        
+        ideInstallLabel.setLabelFor(ideInstallValueLabel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        add(ideInstallLabel, gridBagConstraints);
+
         userDirLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_UserDir"));
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 12;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 11, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(userDirLabel, gridBagConstraints1);
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 13;
-        gridBagConstraints1.gridwidth = 3;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.weightx = 1.0;
-        gridBagConstraints1.weighty = 1.0;
-        add(jPanel1, gridBagConstraints1);
-        
-        productInformationLabel.setText(getProductInformationTitle());
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridwidth = 2;
-        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 11);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(productInformationLabel, gridBagConstraints1);
-        
+        userDirLabel.setLabelFor(userDirValueLabel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 12;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 11, 0);
+        add(userDirLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(jPanel1, gridBagConstraints);
+
+        productInformationLabel.setText(getProductInformationTitle ());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        add(productInformationLabel, gridBagConstraints);
+
         productVersionValueLabel.setText(getProductVersionValue());
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 1;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 12, 0, 11);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(productVersionValueLabel, gridBagConstraints1);
-        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 11);
+        add(productVersionValueLabel, gridBagConstraints);
+
         ideVersioningValueLabel.setText(getIDEVersioningValue());
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 2;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 11);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(ideVersioningValueLabel, gridBagConstraints1);
-        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
+        add(ideVersioningValueLabel, gridBagConstraints);
+
         operatingSystemValueLabel.setText(getOperatingSystemValue());
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 3;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 11);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(operatingSystemValueLabel, gridBagConstraints1);
-        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
+        add(operatingSystemValueLabel, gridBagConstraints);
+
         javaValueLabel.setText(getJavaValue());
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 4;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 11);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(javaValueLabel, gridBagConstraints1);
-        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
+        add(javaValueLabel, gridBagConstraints);
+
         vmValueLabel.setText(getVMValue());
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 5;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 11);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(vmValueLabel, gridBagConstraints1);
-        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
+        add(vmValueLabel, gridBagConstraints);
+
         vendorValueLabel.setText(getVendorValue());
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 6;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 11);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(vendorValueLabel, gridBagConstraints1);
-        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
+        add(vendorValueLabel, gridBagConstraints);
+
         javaHomeValueLabel.setText(getJavaHomeValue());
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 7;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 11);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(javaHomeValueLabel, gridBagConstraints1);
-        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
+        add(javaHomeValueLabel, gridBagConstraints);
+
         systemLocaleValueLabel.setText(getSystemLocaleValue());
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 8;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 11);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(systemLocaleValueLabel, gridBagConstraints1);
-        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
+        add(systemLocaleValueLabel, gridBagConstraints);
+
         homeDirValueLabel.setText(getHomeDirValue());
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 9;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 11);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(homeDirValueLabel, gridBagConstraints1);
-        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
+        add(homeDirValueLabel, gridBagConstraints);
+
         currentDirValueLabel.setText(getCurrentDirValue());
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 10;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 11);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(currentDirValueLabel, gridBagConstraints1);
-        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
+        add(currentDirValueLabel, gridBagConstraints);
+
         ideInstallValueLabel.setText(getIDEInstallValue());
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 11;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 0, 11);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(ideInstallValueLabel, gridBagConstraints1);
-        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
+        add(ideInstallValueLabel, gridBagConstraints);
+
         userDirValueLabel.setText(getUserDirValue());
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 12;
-        gridBagConstraints1.insets = new java.awt.Insets(6, 12, 11, 11);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(userDirValueLabel, gridBagConstraints1);
-        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 12;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 11, 11);
+        add(userDirValueLabel, gridBagConstraints);
+
     }//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel ideImageLabel;
-    private javax.swing.JLabel productVersionLabel;
-    private javax.swing.JLabel ideVersioningLabel;
-    private javax.swing.JLabel operatingSystemLabel;
-    private javax.swing.JLabel javaLabel;
-    private javax.swing.JLabel vmLabel;
-    private javax.swing.JLabel vendorLabel;
-    private javax.swing.JLabel javaHomeLabel;
-    private javax.swing.JLabel systemLocaleLabel;
-    private javax.swing.JLabel homeDirLabel;
-    private javax.swing.JLabel currentDirLabel;
-    private javax.swing.JLabel ideInstallLabel;
-    private javax.swing.JLabel userDirLabel;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JLabel productInformationLabel;
-    private javax.swing.JLabel productVersionValueLabel;
     private javax.swing.JLabel ideVersioningValueLabel;
-    private javax.swing.JLabel operatingSystemValueLabel;
-    private javax.swing.JLabel javaValueLabel;
-    private javax.swing.JLabel vmValueLabel;
-    private javax.swing.JLabel vendorValueLabel;
     private javax.swing.JLabel javaHomeValueLabel;
+    private javax.swing.JLabel operatingSystemLabel;
+    private javax.swing.JLabel vmValueLabel;
+    private javax.swing.JLabel homeDirLabel;
+    private javax.swing.JLabel javaHomeLabel;
+    private javax.swing.JLabel productVersionLabel;
     private javax.swing.JLabel systemLocaleValueLabel;
-    private javax.swing.JLabel homeDirValueLabel;
-    private javax.swing.JLabel currentDirValueLabel;
-    private javax.swing.JLabel ideInstallValueLabel;
+    private javax.swing.JLabel productVersionValueLabel;
+    private javax.swing.JLabel javaLabel;
+    private javax.swing.JLabel currentDirLabel;
+    private javax.swing.JLabel vendorValueLabel;
     private javax.swing.JLabel userDirValueLabel;
+    private javax.swing.JLabel homeDirValueLabel;
+    private javax.swing.JLabel ideInstallLabel;
+    private javax.swing.JLabel javaValueLabel;
+    private javax.swing.JLabel operatingSystemValueLabel;
+    private javax.swing.JLabel ideImageLabel;
+    private javax.swing.JLabel ideInstallValueLabel;
+    private javax.swing.JLabel ideVersioningLabel;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel systemLocaleLabel;
+    private javax.swing.JLabel vmLabel;
+    private javax.swing.JLabel currentDirValueLabel;
+    private javax.swing.JLabel vendorLabel;
+    private javax.swing.JLabel productInformationLabel;
+    private javax.swing.JLabel userDirLabel;
     // End of variables declaration//GEN-END:variables
     
     private String fromBundle (String bundleString) {
@@ -488,5 +502,50 @@ public class ProductInformationPanel extends JPanel {
 
     private String getUserDirValue () {
         return System.getProperty("netbeans.user");
+    }
+    
+    /**
+     */
+    class fLabel extends JLabel {
+    
+        private boolean isFocused = false;
+
+        public fLabel(){
+            addFocusListener(
+            new java.awt.event.FocusListener() {
+                public void focusGained(java.awt.event.FocusEvent event) {
+                    isFocused = true;
+                    repaint();
+                }
+                public void focusLost(java.awt.event.FocusEvent event) {
+                    isFocused = false;
+                    repaint();
+                }
+            });
+            setLabelFor(this);
+            getAccessibleContext().setAccessibleDescription(getText());
+        }
+        
+        public boolean isFocusTraversable() {
+            return (true);
+        }
+        
+        public void paintComponent(java.awt.Graphics g) {
+            if (ui != null) {
+                try {
+                    ui.update(g, this);
+                }
+                finally {
+                    g.dispose();
+                }
+            }
+        
+            if (isFocused) {
+                java.awt.Dimension size = getSize();
+                g.setColor(javax.swing.UIManager.getColor("Button.focus")); // NOI18N
+                g.drawRect(0, 0, size.width-1, size.height-1);
+            }
+        }
+        
     }
 }
