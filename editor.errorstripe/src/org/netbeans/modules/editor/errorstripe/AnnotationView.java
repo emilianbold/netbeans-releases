@@ -17,7 +17,6 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -27,7 +26,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JComponent;
-import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
@@ -265,8 +264,13 @@ public class AnnotationView extends JComponent implements AnnotationsListener, F
     }
 
     public void changedAll() {
-        invalidate();
-        repaint();
+        //Fix for #54193:
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                invalidate();
+                repaint();
+            }
+        });
     }
     
     private double getComponentHeight() {
