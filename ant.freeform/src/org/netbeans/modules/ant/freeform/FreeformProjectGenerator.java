@@ -22,9 +22,11 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Document;
@@ -37,14 +39,42 @@ public class FreeformProjectGenerator {
     
     private FreeformProjectGenerator() {}
 
-    public static AntProjectHelper createProject(File dir, String name, Map mappings) throws IOException {
+    /**
+     * Creates new Freeform project at the given folder with the given name,
+     * target mappings, source folders, etc.
+     * @param mappings map of <String, List> where String is name of the IDE action
+     *    and List is list of target names (<String's>)
+     * @param sources list of SourceFolder instances
+     * @param compUnits list of JavaCompilationUnit instances
+     */
+    public static AntProjectHelper createProject(File dir, String name, Map mappings, List sources, List compUnits) throws IOException {
         FileObject dirFO = createProjectDir (dir);
-        AntProjectHelper h = createProject(dirFO, PropertyUtils.getUsablePropertyName(name), mappings);
+        AntProjectHelper h = createProject(dirFO, PropertyUtils.getUsablePropertyName(name), mappings, sources, compUnits);
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         return h;
     }
     
+    /**
+     * Finds AuxiliaryConfiguration for the given project helper.
+     */
+    public static AuxiliaryConfiguration getAuxiliaryConfiguration(AntProjectHelper helper) {
+        try {
+            Project p = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+            AuxiliaryConfiguration aux = (AuxiliaryConfiguration)p.getLookup().lookup(AuxiliaryConfiguration.class);
+            assert aux != null;
+            return aux;
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(e);
+            return null;
+        }
+    }
+    
+    /**
+     * Read target mappings from project.
+     * @return map of <String, List> where String is name of the IDE action
+     *    and List is list of target names (<String's>)
+     */
     public static Map/*<String,List>*/ getTargetMappings(AntProjectHelper helper) {
         Map map = new HashMap();
         Element genldata = helper.getPrimaryConfigurationData(true);
@@ -69,6 +99,12 @@ public class FreeformProjectGenerator {
         return map;
     }
     
+    /**
+     * Update target mappings of the project. Project is left modified and 
+     * you must save it explicitely.
+     * @return mappings map of <String, List> where String is name of the IDE
+     *     action and List is list of target names (<String's>)
+     */
     public static void putTargetMappings(AntProjectHelper helper, Map/*<String,List>*/ mappings) {
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -96,18 +132,27 @@ public class FreeformProjectGenerator {
         helper.putPrimaryConfigurationData(data, true);
     }
 
-    private static AntProjectHelper createProject(FileObject dirFO, String name, Map mappings) throws IOException {
-        AntProjectHelper h = ProjectGenerator.createProject(dirFO, FreeformProjectType.TYPE, name);
-        Element data = h.getPrimaryConfigurationData(true);
-        Document doc = data.getOwnerDocument();
-        
-        Element nm = doc.createElementNS(FreeformProjectType.NS_GENERAL, "name"); // NOI18N
-        nm.appendChild(doc.createTextNode(name)); // NOI18N
-        data.appendChild(nm);
-        h.putPrimaryConfigurationData(data, true);
-        
-        putTargetMappings(h, mappings);
-        
+    private static AntProjectHelper createProject(final FileObject dirFO, final String name, final Map mappings, final List sources, final List compUnits) throws IOException {
+        final AntProjectHelper h = ProjectGenerator.createProject(dirFO, FreeformProjectType.TYPE, name);
+        ProjectManager.mutex().writeAccess(new Runnable() {
+                public void run() {
+                    // XXX: is this OK:
+                    AuxiliaryConfiguration aux = h.createAuxiliaryConfiguration();
+
+                    Element data = h.getPrimaryConfigurationData(true);
+                    Document doc = data.getOwnerDocument();
+
+                    Element nm = doc.createElementNS(FreeformProjectType.NS_GENERAL, "name"); // NOI18N
+                    nm.appendChild(doc.createTextNode(name)); // NOI18N
+                    data.appendChild(nm);
+                    h.putPrimaryConfigurationData(data, true);
+
+                    putTargetMappings(h, mappings);
+                    putSourceFolders(h, sources);
+                    putJavaCompilationUnits(h, aux, compUnits);
+                }
+            });
+
         return h;
     }
 
@@ -126,6 +171,245 @@ public class FreeformProjectGenerator {
         assert dirFO.isFolder() : "Not really a dir: " + dir;
         //assert dirFO.getChildren().length == 0 : "Dir must have been empty: " + dir;
         return dirFO;
+    }
+
+    /**
+     * Structure describing source folder.
+     */
+    public static final class SourceFolder {
+        public String label;
+        public String type;
+        public String location;
+    }
+
+    /**
+     * Read source folders from the project.
+     * @return list of SourceFolder instances
+     */
+    public static List/*<SourceFolder>*/ getSourceFolders(AntProjectHelper helper) {
+        ArrayList list = new ArrayList();
+        Element data = helper.getPrimaryConfigurationData(true);
+        Element foldersEl = Util.findElement(data, "folders", FreeformProjectType.NS_GENERAL); // NOI18N
+        List/*<Element>*/ sourceFolders = Util.findSubElements(foldersEl);
+        Iterator it = sourceFolders.iterator();
+        while (it.hasNext()) {
+            Element sourceFolderEl = (Element)it.next();
+            if (!sourceFolderEl.getLocalName().equals("source-folder")) { // NOI18N
+                continue;
+            }
+            SourceFolder sf = new SourceFolder();
+            Element el = Util.findElement(sourceFolderEl, "label", FreeformProjectType.NS_GENERAL);
+            if (el != null) {
+                sf.label = Util.findText(el);
+            }
+            el = Util.findElement(sourceFolderEl, "type", FreeformProjectType.NS_GENERAL);
+            if (el != null) {
+                sf.type = Util.findText(el);
+            }
+            el = Util.findElement(sourceFolderEl, "location", FreeformProjectType.NS_GENERAL);
+            if (el != null) {
+                sf.location = Util.findText(el);
+            }
+            list.add(sf);
+        }
+        return list;
+    }
+
+    /**
+     * Update source folders of the project. Project is left modified and you 
+     * must save it explicitely.
+     * @param sources list of SourceFolder instances
+     */
+    public static void putSourceFolders(AntProjectHelper helper, List/*<SourceFolder>*/ sources) {
+        ArrayList list = new ArrayList();
+        Element data = helper.getPrimaryConfigurationData(true);
+        Document doc = data.getOwnerDocument();
+        Element foldersEl = Util.findElement(data, "folders", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (foldersEl == null) {
+            foldersEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "folders"); // NOI18N
+            data.appendChild(foldersEl);
+        } else {
+            List/*<Element>*/ sourceFolders = Util.findSubElements(foldersEl);
+            Iterator it = sourceFolders.iterator();
+            while (it.hasNext()) {
+                Element sourceFolderEl = (Element)it.next();
+                if (!sourceFolderEl.getLocalName().equals("source-folder")) { // NOI18N
+                    continue;
+                }
+                foldersEl.removeChild(sourceFolderEl);
+            }
+        }
+        Iterator it2 = sources.iterator();
+        while (it2.hasNext()) {
+            SourceFolder sf = (SourceFolder)it2.next();
+            Element sourceFolderEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "source-folder"); // NOI18N
+            Element el;
+            if (sf.label != null) {
+                el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "label"); // NOI18N
+                el.appendChild(doc.createTextNode(sf.label)); // NOI18N
+                sourceFolderEl.appendChild(el);
+            }
+            if (sf.location != null) {
+                el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "location"); // NOI18N
+                el.appendChild(doc.createTextNode(sf.location)); // NOI18N
+                sourceFolderEl.appendChild(el);
+            }
+            if (sf.type != null) {
+                el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "type"); // NOI18N
+                el.appendChild(doc.createTextNode(sf.type)); // NOI18N
+                sourceFolderEl.appendChild(el);
+            }
+            foldersEl.appendChild(sourceFolderEl);
+        }
+        helper.putPrimaryConfigurationData(data, true);
+        
+        // XXX: do not call it here
+        putSourceView(helper, sources);
+    }
+    
+    /**
+     * Update source folders of the project. Project is left modified and you 
+     * must save it explicitely.
+     * @param sources list of SourceFolder instances
+     */
+    public static void putSourceView(AntProjectHelper helper, List/*<SourceFolder>*/ sources) {
+        // XXX: sorry, for now it removes all elements and replace ours. TBD.
+        ArrayList list = new ArrayList();
+        Element data = helper.getPrimaryConfigurationData(true);
+        Document doc = data.getOwnerDocument();
+        Element viewEl = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (viewEl == null) {
+            viewEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "view"); // NOI18N
+            data.appendChild(viewEl);
+        }
+        Element itemsEl = Util.findElement(viewEl, "items", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (itemsEl != null) {
+            viewEl.removeChild(itemsEl);
+        }
+        itemsEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "items"); // NOI18N
+        viewEl.appendChild(itemsEl);
+        
+        Iterator it2 = sources.iterator();
+        while (it2.hasNext()) {
+            SourceFolder sf = (SourceFolder)it2.next();
+            Element sourceFolderEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "source-folder"); // NOI18N
+            sourceFolderEl.setAttribute("style", "packages");
+            Element el;
+            if (sf.label != null) {
+                el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "label"); // NOI18N
+                el.appendChild(doc.createTextNode(sf.label)); // NOI18N
+                sourceFolderEl.appendChild(el);
+            }
+            if (sf.location != null) {
+                el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "location"); // NOI18N
+                el.appendChild(doc.createTextNode(sf.location)); // NOI18N
+                sourceFolderEl.appendChild(el);
+            }
+            itemsEl.appendChild(sourceFolderEl);
+        }
+        Element fileEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "source-file"); // NOI18N
+        Element el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "location"); // NOI18N
+        // XXX: use REAL Ant script here!!!
+        el.appendChild(doc.createTextNode("build.xml")); // NOI18N
+        fileEl.appendChild(el);
+        itemsEl.appendChild(fileEl);
+        
+        helper.putPrimaryConfigurationData(data, true);
+    }
+
+    /**
+     * Read Java compilation units from the project.
+     * @return list of JavaCompilationUnit instances
+     */
+    public static List/*<JavaCompilationUnit>*/ getJavaCompilationUnits(
+            AntProjectHelper helper, AuxiliaryConfiguration aux) {
+        ArrayList list = new ArrayList();
+        Element data = aux.getConfigurationFragment("java-data", FreeformProjectType.NS_JAVA, true);
+        List/*<Element>*/ cus = Util.findSubElements(data);
+        Iterator it = cus.iterator();
+        while (it.hasNext()) {
+            Element cuEl = (Element)it.next();
+            JavaCompilationUnit cu = new JavaCompilationUnit();
+            Element el = Util.findElement(cuEl, "package-root", FreeformProjectType.NS_JAVA);
+            if (el != null) {
+                cu.packageRoot = Util.findText(el);
+            }
+            el = Util.findElement(cuEl, "classpath", FreeformProjectType.NS_JAVA);
+            if (el != null) {
+                cu.classpath = Util.findText(el);
+            }
+            el = Util.findElement(cuEl, "built-to", FreeformProjectType.NS_JAVA);
+            if (el != null) {
+                cu.output = Util.findText(el);
+            }
+            el = Util.findElement(cuEl, "source-level", FreeformProjectType.NS_JAVA);
+            if (el != null) {
+                cu.sourceLevel = Util.findText(el);
+            }
+            list.add(cu);
+        }
+        return list;
+    }
+
+    /**
+     * Update Java compilation units of the project. Project is left modified
+     * and you must save it explicitely.
+     * @param compUnits list of JavaCompilationUnit instances
+     */
+    public static void putJavaCompilationUnits(AntProjectHelper helper, 
+            AuxiliaryConfiguration aux, List/*<JavaCompilationUnit>*/ compUnits) {
+        ArrayList list = new ArrayList();
+        Element data = aux.getConfigurationFragment("java-data", FreeformProjectType.NS_JAVA, true);
+        if (data == null) {
+            data = helper.getPrimaryConfigurationData(true).getOwnerDocument().
+                createElementNS(FreeformProjectType.NS_JAVA, "java-data");
+        }
+        Document doc = data.getOwnerDocument();
+        List cus = Util.findSubElements(data); // NOI18N
+        Iterator it = cus.iterator();
+        while (it.hasNext()) {
+            Element cuEl = (Element)it.next();
+            data.removeChild(cuEl);
+        }
+        Iterator it2 = compUnits.iterator();
+        while (it2.hasNext()) {
+            Element cuEl = doc.createElementNS(FreeformProjectType.NS_JAVA, "compilation-unit"); // NOI18N
+            data.appendChild(cuEl);
+            JavaCompilationUnit cu = (JavaCompilationUnit)it2.next();
+            Element el;
+            if (cu.packageRoot != null) {
+                el = doc.createElementNS(FreeformProjectType.NS_JAVA, "package-root"); // NOI18N
+                el.appendChild(doc.createTextNode(cu.packageRoot));
+                cuEl.appendChild(el);
+            }
+            if (cu.classpath != null) {
+                el = doc.createElementNS(FreeformProjectType.NS_JAVA, "classpath"); // NOI18N
+                el.appendChild(doc.createTextNode(cu.classpath));
+                el.setAttribute("mode", "compile");
+                cuEl.appendChild(el);
+            }
+            if (cu.output != null) {
+                el = doc.createElementNS(FreeformProjectType.NS_JAVA, "built-to"); // NOI18N
+                el.appendChild(doc.createTextNode(cu.output));
+                cuEl.appendChild(el);
+            }
+            if (cu.sourceLevel != null) {
+                el = doc.createElementNS(FreeformProjectType.NS_JAVA, "source-level"); // NOI18N
+                el.appendChild(doc.createTextNode(cu.sourceLevel));
+                cuEl.appendChild(el);
+            }
+        }
+        aux.putConfigurationFragment(data, true);
+    }
+
+    /**
+     * Structure describing compilation unit.
+     */
+    public static final class JavaCompilationUnit {
+        public String packageRoot;
+        public String classpath;
+        public String output;
+        public String sourceLevel;
     }
     
 }

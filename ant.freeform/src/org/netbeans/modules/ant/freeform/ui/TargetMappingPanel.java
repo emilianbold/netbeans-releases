@@ -37,6 +37,8 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
     public static String RUN_ACTION = "run"; // NOI18N
     public static String TEST_ACTION = "test"; // NOI18N
 
+    private boolean initialized;
+    
     public TargetMappingPanel() {
         initComponents();
     }
@@ -134,6 +136,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         jLabel1.setText("Specify Ant targets executed by common menu items.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel1, gridBagConstraints);
 
@@ -141,6 +144,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel2, gridBagConstraints);
 
@@ -148,6 +152,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel4, gridBagConstraints);
 
@@ -155,6 +160,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel5, gridBagConstraints);
 
@@ -163,6 +169,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(buildTargetName, gridBagConstraints);
 
@@ -171,6 +178,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(cleanTargetName, gridBagConstraints);
 
@@ -179,6 +187,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(runTargetName, gridBagConstraints);
 
@@ -195,6 +204,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel6, gridBagConstraints);
 
@@ -203,6 +213,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(javadocTargetName, gridBagConstraints);
 
@@ -210,6 +221,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel7, gridBagConstraints);
 
@@ -223,11 +235,17 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
 
     }//GEN-END:initComponents
 
-    public void initValues(AntProjectHelper helper) {
-        initMappings(FreeformProjectGenerator.getTargetMappings(helper));
+    public void initValues(AntProjectHelper helper, List panels) {
+        if (!initialized) {
+            initMappings(FreeformProjectGenerator.getTargetMappings(helper));
+            initialized = true;
+        }
     }    
     
     public void storeValues(AntProjectHelper helper) {
+        if (!initialized) {
+            return;
+        }
         FreeformProjectGenerator.putTargetMappings(helper, getMapping());
     }    
     
