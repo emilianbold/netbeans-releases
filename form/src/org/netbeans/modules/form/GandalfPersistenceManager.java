@@ -1153,11 +1153,26 @@ public class GandalfPersistenceManager extends PersistenceManager {
       if ((ed != null) && (ed instanceof XMLPropertyEditor)) {
         org.w3c.dom.NodeList propChildren = propertyNode.getChildNodes ();
         if ((propChildren != null) && (propChildren.getLength () > 0)) {
+          // for forward compatibility - to be able to read props that support XML now
+          // but were saved in past when class did not support XML
+          boolean isXMLSerialized = false;
           for (int i = 0; i < propChildren.getLength (); i++) {
-            if (propChildren.item (i).getNodeType () == org.w3c.dom.Node.ELEMENT_NODE) {
-              ((XMLPropertyEditor)ed).readFromXML (propChildren.item (i));
-              value = ed.getValue ();
+            if (XML_SERIALIZED_PROPERTY_VALUE.equals (propChildren.item (i).getNodeName ())) {
+              isXMLSerialized = true;
+              String serValue = findAttribute (propChildren.item (i), ATTR_PROPERTY_VALUE);
+              if (serValue != null) {
+                value = decodeValue (serValue);
+              }
               break;
+            }
+          }
+          if (!isXMLSerialized) {
+            for (int i = 0; i < propChildren.getLength (); i++) {
+              if (propChildren.item (i).getNodeType () == org.w3c.dom.Node.ELEMENT_NODE) {
+                ((XMLPropertyEditor)ed).readFromXML (propChildren.item (i));
+                value = ed.getValue ();
+                break;
+              }
             }
           }
         }
@@ -1513,6 +1528,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  44   Gandalf   1.43        12/9/99  Pavel Buzek     reading propertied that 
+ *       support XML but were serialized in older beta version
  *  43   Gandalf   1.42        11/24/99 Pavel Buzek     decodeValue and 
  *       encodeValue made public and static to be used as utility methods
  *  42   Gandalf   1.41        11/16/99 Pavel Buzek     recognition of XML file 
