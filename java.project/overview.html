@@ -6,9 +6,10 @@ Support for creating projects involving Java sources.
 Besides the visible Javadoc, this module permits a project to add implementations
 of {@link org.netbeans.spi.java.classpath.ClassPathProvider}
 and/or {@link org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation}
+and/or {@link org.netbeans.spi.java.queries.SourceLevelQueryImplementation}
 and/or {@link org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation}
 and/or {@link org.netbeans.spi.java.queries.AccessibilityQueryImplementation}
-and/or {@link org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation}
+and/or {@link org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation}
 into the project lookup (rather than global lookup).
 The implementations will be consulted only in the case the relevant file
 belongs to that project (according to {@link org.netbeans.api.project.FileOwnerQuery}).
