@@ -16,8 +16,10 @@ package org.netbeans.modules.project.ui.actions;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Action;
 import junit.framework.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -75,16 +77,53 @@ public class LookupSensitiveActionTest extends NbTestCase {
         
         lookup.change( new Object[] { d1 } );       
         assertEquals( "No refresh should be called ", 0, tlsa.refreshCounter );
+        lookup.change( new Object[] { d2 } );       
+        lookup.change( new Object[] { d1 } );       
+        assertEquals( "No refresh should be called ", 0, tlsa.refreshCounter );
         
-        tlsa.addPropertyChangeListener( new TestPropertyChangeListener() );
-        lookup.change( new Object[] { d2 } );        
-        assertEquals( "Refresh should be called once", 1, tlsa.refreshCounter );
                 
+        TestPropertyChangeListener tpcl = new TestPropertyChangeListener();
+        tlsa.addPropertyChangeListener( tpcl );
+        lookup.change( new Object[] { d2 } ); 
+        assertEquals( "Refresh should be called once", 1, tlsa.refreshCounter );
+        assertEquals( "One event should be fired", 1, tpcl.getEvents().size() );
+        
+        
         tlsa.clear();
-        tlsa.isEnabled();
+        tpcl.clear();
+        lookup.change( new Object[] { d3 } );         
         assertEquals( "Refresh should be called once", 1, tlsa.refreshCounter );
-                
+        assertEquals( "One event should be fired", 1, tpcl.getEvents().size() );        
+        
     }
+    
+    public void testCorrectValuesWithoutListener() throws Exception {
+        
+        TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup( new Object[] { } );
+        TestLSA tlsa = new TestLSA( lookup );
+        
+        lookup.change( new Object[] { d1 } );       
+        assertEquals( "Action should return correct name ", d1.getName(), tlsa.getValue( Action.NAME ) );
+        
+        assertEquals( "Refresh should be called once", 1, tlsa.refreshCounter );
+        
+        assertEquals( "Action should return correct name ", d1.getName(), tlsa.getValue( Action.NAME ) );        
+        assertEquals( "Refresh should still be called only once", 1, tlsa.refreshCounter );
+        
+    }
+    
+    public void testActionGC() throws Exception {
+        
+        TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup( new Object[] { } );
+        TestLSA tlsa = new TestLSA( lookup );
+        
+        WeakReference reference = new WeakReference( tlsa );
+        tlsa = null;
+        
+        assertGC( "Action should be GCed", reference );
+        
+    }
+    
     
     private static class TestLSA extends LookupSensitiveAction {
         
@@ -102,7 +141,9 @@ public class LookupSensitiveActionTest extends NbTestCase {
         protected void refresh( Lookup context ) {
             refreshCounter++;
             
-            context.lookup( DataObject.class );
+            DataObject dobj = (DataObject)context.lookup( DataObject.class );
+            
+            putValue( Action.NAME, dobj.getName() );
             
         }
         

@@ -50,8 +50,11 @@ public class ProjectSensitiveActions {
      * on the action performer supplied
      * as a parameter. The action will only be enabled when the exactly one 
      * project is selected and {@link ProjectActionPerformer#enable}
-     * returns true.
-     * @param performer an action performer
+     * returns true.<BR>
+     * Notice that it is not guaranteed that the {@link ProjectActionPerformer#enable}
+     * method will be called unless the project selection changes and someone is
+     * listeningon the action or explicitely asks for some of the action's values.
+     * @param performer an action performer. 
      * @param namePattern pattern which should be used for determining the action's
      *        name (label). It takes two parameters a la {@link MessageFormat}: <code>{0}</code> - number of selected projects;
      *        <code>{1}</code> - name of the first project.

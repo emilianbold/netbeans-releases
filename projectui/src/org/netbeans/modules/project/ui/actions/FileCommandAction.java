@@ -36,7 +36,6 @@ public class FileCommandAction extends ProjectAction {
         super( command, namePattern, icon, lookup );
         this.command = command;
         assert namePattern != null : "Name patern must not be null";
-        refresh( getLookup()  );        
     }
     
     protected void refresh( Lookup context ) {
@@ -55,7 +54,7 @@ public class FileCommandAction extends ProjectAction {
     }
     
     protected void actionPerformed( Lookup context ) {
-
+                
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
 
         if ( projects.length == 1 ) {            
@@ -66,6 +65,7 @@ public class FileCommandAction extends ProjectAction {
     }
 
     public Action createContextAwareInstance( Lookup actionContext ) {
+        
         return new FileCommandAction( command, getNamePattern(), (Icon)getValue( SMALL_ICON ), actionContext );
     }
    

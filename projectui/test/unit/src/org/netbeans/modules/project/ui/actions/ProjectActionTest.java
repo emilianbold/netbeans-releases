@@ -111,7 +111,7 @@ public class ProjectActionTest extends NbTestCase {
         TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup( new Object[]{} );
         TestActionPerformer tap = new TestActionPerformer();
         ProjectAction action = new ProjectAction( tap, "TestProjectAction", null,lookup );
-        
+     
         assertFalse( "Action should NOT be enabled", action.isEnabled() );                
         assertEquals( "enable() should NOT be called: ", 0, tap.enableCount );
         
@@ -129,10 +129,11 @@ public class ProjectActionTest extends NbTestCase {
         
         tap.clear();
         tap.on( true );
+        lookup.change( new Object[] { d1_2 } );        
         assertTrue( "Action should be enabled", action.isEnabled() );        
         assertEquals( "enable() should be called once: ", 1, tap.enableCount );
         assertEquals( "enable() should be called on right project: ", project1.toString(), tap.project.toString() );
-        
+                
         tap.clear();
         tap.on( false );
         lookup.change( new Object[] { d1_1, d2_1 } );
@@ -212,5 +213,5 @@ public class ProjectActionTest extends NbTestCase {
         
         
     }
-    
+        
 }

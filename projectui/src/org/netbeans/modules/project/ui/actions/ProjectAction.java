@@ -15,25 +15,26 @@ package org.netbeans.modules.project.ui.actions;
 
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
+import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
+
 
 /** Action sensitive to current project
  * 
  * @author Pet Hrebejk 
  */
-public class ProjectAction extends LookupSensitiveAction implements ContextAwareAction {
+public class ProjectAction extends LookupSensitiveAction implements /* Presenter.Menu, */ ContextAwareAction {
     
     private String command;
     private ProjectActionPerformer performer;
     private String namePattern;
-            
+    private JMenuItem menuPresenter;    
+    
     /** 
      * Constructor for global actions. E.g. actions in main menu which 
      * listen to the global context.
@@ -55,7 +56,6 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         }
         this.performer = performer;
         this.namePattern = namePattern;
-        refresh( getLookup() );
     }
     
     public void putValue( String key, Object value ) {
@@ -107,6 +107,19 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
     protected final String getNamePattern() {
         return namePattern;
     }
+    
+    /*
+    // Implementation of Presenter.Menu ----------------------------------------
+    
+    public JMenuItem getMenuPresenter () {
+        if ( menuPresenter == null ) {        
+            menuPresenter = new JMenuItem();
+            org.openide.awt.Actions.connect( menuPresenter, this, false );
+            Mnemonics.setLocalizedText( menuPresenter, "TR&ADA" );
+        }
+        return menuPresenter;        
+    }
+    */
     
     // Implementation of ContextAwareAction ------------------------------------
     

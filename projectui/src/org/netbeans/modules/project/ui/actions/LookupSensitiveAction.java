@@ -15,15 +15,12 @@ package org.netbeans.modules.project.ui.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import org.netbeans.api.project.Project;
-import org.openide.loaders.DataObject;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+
 
 /** Action sensitive to current project
  * 
@@ -33,9 +30,10 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
     
     private Lookup lookup;    
     private Class[] watch;
-    private LookupListener[] resultListeners;
+    private Lookup.Result results[];
+    private boolean needsRefresh = true;
+        
     private static boolean refreshing = false;
-    
     
     /** Formats the name with following 
      */    
@@ -57,15 +55,33 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
         }
         this.lookup = lookup;
         this.watch = watch;
-        this.resultListeners = new LookupListener[watch.length];
+        this.results = new Lookup.Result[watch.length];
         // Needs to listen on changes in results
         for ( int i = 0; i < watch.length; i++ ) {
-            Lookup.Result result = lookup.lookup( new Lookup.Template( watch[i] ) );
-            result.allItems();
-            resultListeners[i] = (LookupListener)WeakListeners.create( LookupListener.class, this, result );
-            result.addLookupListener( resultListeners[i] ); 
+            results[i] = lookup.lookup( new Lookup.Template( watch[i] ) );
+            results[i].allItems();
+            LookupListener resultListener = (LookupListener)WeakListeners.create( LookupListener.class, this, results[i] );
+            results[i].addLookupListener( resultListener ); 
         }
         
+    }
+    
+    /** Needs to override getValue in order to force refresh
+     */
+    public Object getValue( String key ) {
+        if ( needsRefresh ) {
+            doRefresh();
+        }
+        return super.getValue( key );
+    }
+    
+    /** Needs to override isEnabled in order to force refresh
+     */
+    public boolean isEnabled() {
+        if ( needsRefresh ) {
+            doRefresh();
+        }
+        return super.isEnabled();
     }
     
     public final void actionPerformed( ActionEvent e ) {
@@ -75,6 +91,15 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
     protected final Lookup getLookup() {
         return lookup;
     }
+        
+    private void doRefresh() {
+        refreshing = true;
+        refresh( lookup );
+        refreshing = false;
+        needsRefresh = false;
+    }
+    
+    // Abstract methods --------------------------------------------------------
     
     /** Called when the action is performed
      */
@@ -85,32 +110,17 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
      */
     protected abstract void refresh( Lookup context );
     
-    
-    /** Needs to override isEnabled in order to force refresh
-     */
-    public boolean isEnabled() {
-        refresh( lookup );
-        return super.isEnabled();
-    }
-        
     // Implementation of LookupListener ----------------------------------------
     
     public void resultChanged( LookupEvent e ) {
-        
-        if ( getPropertyChangeListeners().length == 0 ) {
+        if ( refreshing ) {
             return;
+        }        
+        else if ( getPropertyChangeListeners().length == 0 ) {        
+            needsRefresh = true;
         }
-        
-        if (!refreshing) {
-            refreshing = true;            
-//            long start = System.currentTimeMillis();
-              refresh( lookup );
-//            System.err.println("Calling refresh" + this + " - " + getValue( javax.swing.Action.NAME ) + " : " + ( System.currentTimeMillis() - start ) );
-//            System.err.println("   " + e.getSource() + " : " + e);
-//            if ( this instanceof CloseProject ) {
-//                Thread.dumpStack();
-//            }
-            refreshing = false;
+        else {
+            doRefresh();
         }
     }
     
