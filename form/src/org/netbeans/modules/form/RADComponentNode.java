@@ -188,6 +188,13 @@ public class RADComponentNode extends FormNode
             actions.add(SystemAction.get(EventsAction.class));
             actions.add(null);
 
+            if (InPlaceEditLayer.supportsEditingFor(component.getBeanClass(),
+                                                    false))
+            {
+                actions.add(SystemAction.get(InPlaceEditAction.class));
+                actions.add(null);
+            }
+
             if (component instanceof ComponentContainer) {
                 if (component != component.getFormModel().getTopRADComponent())
                     actions.add(SystemAction.get(CutAction.class));
@@ -201,8 +208,6 @@ public class RADComponentNode extends FormNode
                 }
                 actions.add(SystemAction.get(ReorderAction.class));
             } else {
-                actions.add(SystemAction.get(InPlaceEditAction.class));
-                actions.add(null);
                 actions.add(SystemAction.get(CutAction.class));
                 actions.add(SystemAction.get(CopyAction.class));
                 actions.add(null);
@@ -217,6 +222,7 @@ public class RADComponentNode extends FormNode
             }
 
             if (getNewTypes().length != 0) {
+                actions.add(null);
                 actions.add(SystemAction.get(NewAction.class));
             }
         }
