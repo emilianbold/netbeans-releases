@@ -47,7 +47,6 @@ public class Deploy extends Task {
 
     private boolean alsoStartTargets = true;    //TODO - make it a property? is it really needed?
     
-    
     public void execute() throws BuildException { 
 
         J2eeDeploymentLookup jdl = null;
@@ -70,12 +69,12 @@ public class Deploy extends Task {
         
         try {
             if (module == null) {
-                progress.addError(/*NbBundle.getMessage(ServerExecutor.class, "MSG_NoJ2eeModule")*/"No J2eeModule");//TODO
-                throw new BuildException("No J2ee module");
+                progress.addError(getBundle("MSG_NoJ2eeModule"));
+                throw new BuildException(getBundle("MSG_NoJ2eeModule"));
             }
             if (server == null || server.getServerInstance() == null) {
-                progress.addError(/*NbBundle.getMessage(ServerExecutor.class, "MSG_NoTargetServer")*/"No target server.");//TODO
-                throw new BuildException("No target server.");
+                progress.addError(getBundle("MSG_NoTargetServer"));
+                throw new BuildException(getBundle("MSG_NoTargetServer"));
             }
             
             progress.recordWork(1);
@@ -89,8 +88,8 @@ public class Deploy extends Task {
                 serverReady = server.getServerInstance().start(progress);
             }
             if (! serverReady) {
-                progress.addError(/*NbBundle.getMessage(ServerExecutor.class, "MSG_StartServerFailed", server)*/"Start server failed");//TODO
-                throw new BuildException("Start server failed.");
+                progress.addError(getBundle("MSG_StartServerFailed"));
+                throw new BuildException(getBundle("MSG_StartServerFailed"));
             }
             
             progress.recordWork(2);
@@ -98,7 +97,7 @@ public class Deploy extends Task {
             progress.recordWork(MAX_DEPLOY_PROGRESS-1);
             
         } catch (Exception ex) {
-            throw new BuildException("Deploy failed.");
+            throw new BuildException(getBundle("MSG_DeployFailed"));
         }
         
         if (modules != null && modules.length > 0) {
@@ -139,6 +138,10 @@ public class Deploy extends Task {
         
     }
 
+    private String getBundle(String key) {
+        return java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ant/Bundle").getString(key); // NOI18N
+    }
+    
     /**
      * Getter for property debugmode.
      * @return Value of property debugmode.
