@@ -252,7 +252,8 @@ public class PropertyPattern extends Pattern {
                                            new Object[] { oldName } );
             String newGetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertyGetter" ),
                                            new Object[] { getName() } );
-            if (oldGetterComment.trim().equals(getterMethod.getJavaDoc().getRawText().trim())) {
+            if (!getterMethod.getJavaDoc().isEmpty() &&
+                oldGetterComment.trim().equals(getterMethod.getJavaDoc().getRawText().trim())) {
                 getterMethod.getJavaDoc().setRawText( newGetterComment );
             }
         }
@@ -263,7 +264,8 @@ public class PropertyPattern extends Pattern {
                                            new Object[] { oldName, oldName } );
             String newSetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertySetter" ),
                                            new Object[] { getName(), getName() } );
-            if (oldSetterComment.trim().equals(setterMethod.getJavaDoc().getRawText().trim())) {
+            if (!setterMethod.getJavaDoc().isEmpty() &&
+                oldSetterComment.trim().equals(setterMethod.getJavaDoc().getRawText().trim())) {
                 setterMethod.getJavaDoc().setRawText( newSetterComment );
             }
         }
@@ -274,7 +276,8 @@ public class PropertyPattern extends Pattern {
                                                    new Object[] { oldName } );
             String newFieldComment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertyField" ),
                                                    new Object[] { getName() } );
-            if (oldFieldComment.trim().equals(estimatedField.getJavaDoc().getRawText().trim())) {
+            if (!estimatedField.getJavaDoc().isEmpty() &&
+                oldFieldComment.trim().equals(estimatedField.getJavaDoc().getRawText().trim())) {
                 estimatedField.getJavaDoc().setRawText(newFieldComment);
             }
                                                    

@@ -268,7 +268,8 @@ public class IdxPropertyPattern extends PropertyPattern {
                                            new Object[] { oldName } );
             String newGetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_IdxPropertyGetter" ),
                                            new Object[] { getName() } );
-            if (oldGetterComment.trim().equals(indexedGetterMethod.getJavaDoc().getRawText().trim())) {
+            if (!indexedGetterMethod.getJavaDoc().isEmpty() &&
+                oldGetterComment.trim().equals(indexedGetterMethod.getJavaDoc().getRawText().trim())) {
                 indexedGetterMethod.getJavaDoc().setRawText( newGetterComment );
             }
         }
@@ -279,7 +280,8 @@ public class IdxPropertyPattern extends PropertyPattern {
                                            new Object[] { oldName, oldName } );
             String newSetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_IdxPropertySetter" ),
                                            new Object[] { getName(), getName() } );
-            if (oldSetterComment.trim().equals(indexedSetterMethod.getJavaDoc().getRawText().trim())) {
+            if (!indexedSetterMethod.getJavaDoc().isEmpty() &&
+                oldSetterComment.trim().equals(indexedSetterMethod.getJavaDoc().getRawText().trim())) {
                 indexedSetterMethod.getJavaDoc().setRawText( newSetterComment );
             }
         }
