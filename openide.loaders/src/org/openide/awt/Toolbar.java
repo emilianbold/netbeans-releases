@@ -803,7 +803,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
 
         /** Create new ToolbarGrip for default number of grip elements. */
         public ToolbarGrip () {
-            this (2);
+            this (1);
         }
 
         /** Create new ToolbarGrip for specific number of grip elements.
