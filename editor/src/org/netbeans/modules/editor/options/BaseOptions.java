@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import javax.swing.text.JTextComponent;
 
@@ -33,6 +34,8 @@ import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.editor.ext.ExtSettingsNames;
+import org.netbeans.editor.ext.ExtSettingsDefaults;
+import org.netbeans.editor.ext.ExtKit;
 
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.FormatterIndentEngine;
@@ -270,9 +273,27 @@ public class BaseOptions extends OptionSupport {
     public void setKeyBindingList(List list) {
         if( list.size() > 0 &&
             ( list.get( 0 ) instanceof Class || list.get( 0 ) instanceof String )
-        ) {
+        ) {         
             list.remove( 0 ); //remove kit class name
         }
+
+        /* Patch for the older projects, where the ExtKit actions
+         * were not added to the map so we need to add them manually.
+         */
+        if (getKitClass() == BaseKit.class) {
+            int i;
+            for (i = list.size() - 1; i >= 0; i--) {
+                MultiKeyBinding mkb = (MultiKeyBinding)list.get(i);
+                if (ExtKit.completionShowAction.equals(mkb.actionName)) {
+                    break;
+                }
+            }
+            
+            if (i < 0) {
+                list.addAll(Arrays.asList(ExtSettingsDefaults.defaultExtKeyBindings));
+            }
+        }
+        
         setSettingValue(SettingsNames.KEY_BINDING_LIST, list);
     }
 
