@@ -42,7 +42,9 @@ import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.actions.StepActionProvider;
 
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.LocalsTreeModel;
@@ -52,8 +54,10 @@ import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext;
 import org.netbeans.modules.debugger.jpda.expr.ParseException;
+import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
+import org.netbeans.spi.debugger.jpda.SmartSteppingListener;
 
 import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -265,6 +269,21 @@ public class JPDADebuggerImpl extends JPDADebugger {
             updateCurrentCallStackFrame (t);
             setState (STATE_STOPPED);
         }
+    }
+    
+    /** 
+     * Returns instance of SmartSteppingFilter.
+     *
+     * @return instance of SmartSteppingFilter
+     */
+    public SmartSteppingFilter getSmartSteppingFilter () {
+        Iterator i = lookupProvider.lookup (ActionsProvider.class).iterator ();
+        while (i.hasNext ()) {
+            ActionsProvider sap = (ActionsProvider) i.next ();
+            if (sap instanceof StepActionProvider)
+                return ((StepActionProvider) sap).getSmartSteppingFilter ();
+        }
+        return null;
     }
 
     /**

@@ -23,6 +23,8 @@ import javax.swing.SwingUtilities;
 import org.netbeans.spi.viewmodel.Models;
 
 import org.netbeans.spi.viewmodel.ColumnModel;
+import org.netbeans.spi.viewmodel.ComputingException;
+import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.TreeTableView;
@@ -82,7 +84,14 @@ ExplorerManager.Provider, PropertyChangeListener {
             );
         }
         treeTable.setProperties (ps);
-        
+//        try {
+//            treeTable.setToolTipText (model.getShortDescription (
+//                model.getRoot ()
+//            ));
+//        } catch (ComputingException ex) {
+//        } catch (UnknownTypeException ex) {
+//            ex.printStackTrace ();
+//        }
         getExplorerManager ().setRootContext (
             new TreeModelRoot (model).getRootNode ()
         );

@@ -78,7 +78,7 @@ public class ThreadsNodeModel implements NodeModel {
     
     public String getShortDescription (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT) {
-            return null;
+            return "Displayes all threads for current session.";
         } else
         if (o instanceof JPDAThread) {
             JPDAThread t = (JPDAThread) o;

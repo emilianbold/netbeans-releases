@@ -318,6 +318,13 @@ public abstract class JPDADebugger {
      * @param map a map from class names to be fixed to byte[] 
      */
     public abstract void fixClasses (Map classes);
+    
+    /** 
+     * Returns instance of SmartSteppingFilter.
+     *
+     * @return instance of SmartSteppingFilter
+     */
+    public abstract SmartSteppingFilter getSmartSteppingFilter ();
 
     /**
      * Helper method that fires JPDABreakpointEvent on JPDABreakpoints.

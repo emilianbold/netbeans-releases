@@ -184,23 +184,9 @@ public class JPDAStart extends Task implements Runnable {
                     sourcepath, 
                     bootclasspath
                 );
-//                debug ("Creating cookie");
+                
                 debug ("Debugger started");
                 JPDADebugger.startListening (lc, args, new Object[] {sourcePath});
-                
-//                ListeningDICookie ldic = ListeningDICookie.create (lc, args);
-//                debug ("Cookie created");
-//                DebuggerInfo di = DebuggerInfo.create (
-//                    ListeningDICookie.ID, 
-//                    new Object [] {
-//                        ldic, 
-//                        sourcePath
-//                    }
-//                );
-//
-//                debug ("Debugger info created");
-//                DebuggerManager.getDebuggerManager ().startDebugging (di);
-//                debug ("Debugger started");
             } catch (Throwable e) {
                 lock [1] = e;
             } finally {
@@ -303,7 +289,9 @@ public class JPDAStart extends Task implements Runnable {
                 continue;
             }
             FileObject fos[] = SourceForBinaryQuery.findSourceRoot (u);
+            System.out.println("class: " + u);
             if (fos.length > 0) {
+            System.out.println("source : " + fos [0]);
                 try {
                   File file = FileUtil.toFile(fos [0]);
                   if (file == null) continue;

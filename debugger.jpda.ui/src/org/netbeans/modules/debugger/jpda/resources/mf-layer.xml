@@ -162,6 +162,15 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
             </file>
         </folder>
+
+        <folder name="Window">
+            <folder name="Debug">
+                <attr name="org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.instance/org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.instance" boolvalue="true" />
+                <file name="org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.instance" />
+                <attr name="org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.instance/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance" boolvalue="true" />
+                <file name="org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance" />
+            </folder>
+        </folder>
     </folder>
 
     <folder name="Shortcuts">
@@ -242,4 +251,27 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="classes.settings" url="classes.settings" />
+            <file name="sources.settings" url="sources.settings" />
+        </folder>
+
+        <folder name="Modes">
+            <folder name="debugger">
+                <attr name="threads.wstcref/classes.wstcref" boolvalue="true"/>
+                <file name="classes.wstcref" url="classes.wstcref" />
+                <attr name="classes.wstcref/sources.wstcref" boolvalue="true"/>
+                <file name="sources.wstcref" url="sources.wstcref" />
+            </folder>
+        </folder>
+        
+        <folder name="Groups">
+            <folder name="debugger">
+                <file name="sources.wstcgrp" url="sources.wstcgrp" />
+                <file name="classes.wstcgrp" url="classes.wstcgrp" />
+            </folder>
+        </folder>
+
+    </folder>
 </filesystem>

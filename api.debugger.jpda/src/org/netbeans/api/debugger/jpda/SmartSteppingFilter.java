@@ -13,6 +13,7 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import java.beans.PropertyChangeListener;
 import java.util.Set;
 
 /**
@@ -23,6 +24,11 @@ import java.util.Set;
  */
 public interface SmartSteppingFilter {
 
+
+    /** Property name constant. */
+    public static final String PROP_EXCLUSION_PATTERNS = "exclusionPatterns";
+    
+    
     /**
      * Adds a set of new class exclusion filters. Filter is 
      * {@link java.lang.String} containing full class name. Filter can 
@@ -39,5 +45,26 @@ public interface SmartSteppingFilter {
      * @param patterns a set of class exclusion filters to be added
      */
     public void removeExclusionPatterns (Set patterns);
+    
+    /**
+     * Returns list of all exclusion patterns.
+     */
+    public String[] getExclusionPatterns ();
+    
+    /**
+     * Adds property change listener.
+     *
+     * @param l new listener.
+     */
+    public abstract void addPropertyChangeListener (PropertyChangeListener l);
+
+    /**
+     * Removes property change listener.
+     *
+     * @param l removed listener.
+     */
+    public abstract void removePropertyChangeListener (
+        PropertyChangeListener l
+    );
 }
 

@@ -43,6 +43,7 @@ import org.netbeans.api.debugger.LookupProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.spi.debugger.jpda.SmartSteppingListener;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -156,6 +157,10 @@ implements Executor {
             );
     }
 
+    public SmartSteppingFilter getSmartSteppingFilter () {
+        return ssManager;
+    }
+    
     
     // Executor ................................................................
     

@@ -12,6 +12,8 @@
  */
 package org.netbeans.modules.debugger.jpda.actions;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -29,6 +31,8 @@ class SmartSteppingFilterImpl implements SmartSteppingFilter {
     private ArrayList exact = new ArrayList ();
     private ArrayList start = new ArrayList ();
     private ArrayList end = new ArrayList ();
+    private PropertyChangeSupport pcs;
+    {pcs = new PropertyChangeSupport (this);}
 
 
     /**
@@ -42,10 +46,12 @@ class SmartSteppingFilterImpl implements SmartSteppingFilter {
     public void addExclusionPatterns (Set patterns) {
         Set reallyNew = new HashSet (patterns);
         reallyNew.removeAll (filter);
+        if (reallyNew.size () < 1) return;
 
         filter.addAll (reallyNew);
         refreshFilters (reallyNew);
 
+        pcs.firePropertyChange (PROP_EXCLUSION_PATTERNS, null, null);
 //        if (ssManager != null)
 //            ssManager.addPatterns (reallyNew);
     }
@@ -62,8 +68,17 @@ class SmartSteppingFilterImpl implements SmartSteppingFilter {
         end = new ArrayList ();
         refreshFilters (filter);
 
+        pcs.firePropertyChange (PROP_EXCLUSION_PATTERNS, null, null);
 //        if (ssManager != null)
 //            ssManager.initPatterns ();
+    }
+    
+    /**
+     * Returns list of all exclusion patterns.
+     */
+    public String[] getExclusionPatterns () {
+        String[] ef = new String [filter.size ()];
+        return (String[]) filter.toArray (ef);
     }
 
     Set getPatterns () {
@@ -101,5 +116,25 @@ class SmartSteppingFilterImpl implements SmartSteppingFilter {
             if (className.endsWith ((String) end.get (i))) return false;
         }
         return true;
+    }
+    
+    /**
+     * Adds property change listener.
+     *
+     * @param l new listener.
+     */
+    public void addPropertyChangeListener (PropertyChangeListener l) {
+        pcs.addPropertyChangeListener (l);
+    }
+
+    /**
+     * Removes property change listener.
+     *
+     * @param l removed listener.
+     */
+    public void removePropertyChangeListener (
+        PropertyChangeListener l
+    ) {
+        pcs.removePropertyChangeListener (l);
     }
 }
