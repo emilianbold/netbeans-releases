@@ -331,7 +331,7 @@ Microsystems, Inc. All Rights Reserved.
             		<include name="core.jar"/>
             		<include name="ext/*.jar"/>
                 </fileset>             
-                <fileset dir="../../core/windows/netbeans/lib">
+                <fileset dir="../../core/windows/netbeans/modules">
             		<include name="core-windows.jar"/>
                 </fileset>             
     	</path>
@@ -359,7 +359,7 @@ Microsystems, Inc. All Rights Reserved.
             		<include name="core.jar"/> <!-- for the manifest -->
             		<include name="ext/*.jar"/>
                 </fileset>             
-                <fileset dir="../../core/windows/netbeans/lib">
+                <fileset dir="../../core/windows/netbeans/modules">
             		<include name="core-windows.jar"/>
                 </fileset>             
                 <pathelement location="../netbeans/lib/openide.jar"/> <!-- for the manifest -->

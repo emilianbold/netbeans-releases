@@ -779,7 +779,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <!-- #27098: MakeParserDB requires several modules to have been successfully built. -->
   <!-- Target all/mmm should depend on makeparserdb-modules if mmm/build.xml uses <makeparserdb>. -->
-  <target name="makeparserdb-modules" depends="all-openide,all-openide/loaders,all-openide/execution,all-openide/io,all-core,all-classfile,all-java/api,all-java/srcmodel,all-java,all-editor,all-debuggercore/oldapi,all-openide/compiler,all-core/windows,all-core/execution,all-core/compiler,all-core/output,all-core/term"/>
+  <target name="makeparserdb-modules" depends="all-openide,all-openide/loaders,all-openide/execution,all-openide/io,all-core,all-classfile,all-java/api,all-java/srcmodel,all-java,all-editor,all-debuggercore/oldapi,all-openide/compiler,all-core/execution,all-core/compiler,all-core/output,all-core/term"/>
   
   <!-- build NBMs for selected modules -->
   <target name="build-nbms" depends="init">
