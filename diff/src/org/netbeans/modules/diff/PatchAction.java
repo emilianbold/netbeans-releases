@@ -154,7 +154,8 @@ public class PatchAction extends NodeAction {
     }
 
     private File getPatchFor(FileObject fo) {
-        JFileChooser chooser = new JFileChooser(System.getProperty("user.home"));
+        JFileChooser chooser = new JFileChooser();
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, new File(System.getProperty("user.home")));
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         String title = NbBundle.getMessage(PatchAction.class,
             (fo.isData()) ? "TITLE_SelectPatchForFile"
