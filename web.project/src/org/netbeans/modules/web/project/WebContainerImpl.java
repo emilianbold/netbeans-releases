@@ -102,19 +102,19 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
     }
     
     private void addJ2eeLibrary() {
-        Library lib = LibraryManager.getDefault().getLibrary(J2EE_14_LIBRARY);
-        
-        WebProjectProperties wp = new WebProjectProperties(
-            webProject, 
-            new UpdateHelper (webProject, antHelper, antHelper.createAuxiliaryConfiguration(), new GeneratedFilesHelper(antHelper), UpdateHelper.createDefaultNotifier()),
-            ((WebProject) webProject).evaluator(),
-            helper);
-        
-        List vcpis = (List) wp.get (WebProjectProperties.JAVAC_CLASSPATH);
-        VisualClassPathItem vcpi = VisualClassPathItem.create (lib, VisualClassPathItem.PATH_IN_WAR_NONE);
-        vcpis.add (vcpi);
-        wp.put (WebProjectProperties.JAVAC_CLASSPATH, vcpis); 
-        wp.store();
+//        Library lib = LibraryManager.getDefault().getLibrary(J2EE_14_LIBRARY);
+//        
+//        WebProjectProperties wp = new WebProjectProperties(
+//            webProject, 
+//            new UpdateHelper (webProject, antHelper, antHelper.createAuxiliaryConfiguration(), new GeneratedFilesHelper(antHelper), UpdateHelper.createDefaultNotifier()),
+//            ((WebProject) webProject).evaluator(),
+//            helper);
+//        
+//        List vcpis = (List) wp.get (WebProjectProperties.JAVAC_CLASSPATH);
+//        VisualClassPathItem vcpi = VisualClassPathItem.create (lib, VisualClassPathItem.PATH_IN_WAR_NONE);
+//        vcpis.add (vcpi);
+//        wp.put (WebProjectProperties.JAVAC_CLASSPATH, vcpis); 
+//        wp.store();
     }
     
     private BaseBean findDD() throws IOException {
