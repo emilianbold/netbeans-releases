@@ -581,13 +581,6 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
 
         revalidateWindow();
 
-        if (writeAtAll) {
-            if (someBarRemoved || someBarAdded)
-            {
-                //Do not reflect non user change
-                //reflectChanges();
-            }
-        }
     }
 
     /**
@@ -1032,7 +1025,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     }
 
     // class WritableToolbarConfiguration
-    class WritableToolbarConfiguration {
+    static class WritableToolbarConfiguration {
 	/** List of rows. */
         Vector rows;
 
