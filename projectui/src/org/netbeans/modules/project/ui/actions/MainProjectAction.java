@@ -13,16 +13,21 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.project.ui.NoMainProjectWarning;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /** Invokes command on the main project.
  * 
@@ -53,7 +58,7 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
             setSmallIcon( icon );
         }
         
-        refreshView();                
+        //refreshView();                
         // Start listening on open projects list to correctly enable the action
         OpenProjectList.getDefault().addPropertyChangeListener( this );
     }
@@ -61,9 +66,12 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
     public void actionPerformed( ActionEvent e ) {
     
         Project p = OpenProjectList.getDefault().getMainProject();
-
-        if ( p == null ) {
-            return; // Action should be disabled
+        
+        // if no main project than show warning and allow choose a main project
+        while (p == null) {
+            // show warning, if cancel then return
+            if (showNoMainProjectWarning (OpenProjectList.getDefault().getOpenProjects ())) return ;
+            p = OpenProjectList.getDefault().getMainProject();
         }
 
         if ( command != null ) {
@@ -80,25 +88,38 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
     
     public void propertyChange( PropertyChangeEvent evt ) {
         
-        if ( evt.getPropertyName() == OpenProjectList.PROPERTY_MAIN_PROJECT ) {
-            refreshView();            
-        }
+        // ??? could be removed, listening is useless now
+        if ( evt.getPropertyName() == OpenProjectList.PROPERTY_MAIN_PROJECT ) {}
                
     }   
     
     // Private methods ---------------------------------------------------------
     
-    private void refreshView() {
+    private boolean showNoMainProjectWarning (Project[] projects) {
+        boolean canceled;
         
-        Project p = OpenProjectList.getDefault().getMainProject();
-        
-        
-        if ( command == null ) {
-            setEnabled( performer.enable( p ) );
+        // no main project set => warning
+        NoMainProjectWarning panel = new NoMainProjectWarning (projects);
+
+        Object[] options = new Object[] {
+            NbBundle.getMessage (NoMainProjectWarning.class, "LBL_NoMainClassWarning_ChooseMainProject_OK"), // NOI18N
+            DialogDescriptor.CANCEL_OPTION
+        };
+        DialogDescriptor desc = new DialogDescriptor (panel,
+                NbBundle.getMessage (NoMainProjectWarning.class, "CTL_NoMainProjectWarning_Title"), // NOI18N
+            true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
+        Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
+        dlg.setVisible (true);
+        if (desc.getValue() != options[0]) {
+            canceled = true;
+        } else {
+            Project mainProject = panel.getSelectedProject ();
+            OpenProjectList.getDefault ().setMainProject (mainProject);
+            canceled = false;
         }
-        else {
-            setEnabled( p != null );
-        }        
+        dlg.dispose();            
+
+        return canceled;
     }
-    
+        
 }
