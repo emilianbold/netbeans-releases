@@ -196,7 +196,7 @@ No answer
             NetBeans module system allows restriction of access rights to
             public classes of your module from other modules. This prevents
             unwanted dependencies of others on your code and should be used
-            whenever possible (<a href="http://www.netbeans.org/download/apis/org/openide/doc-files/upgrade.html#3.4-public-packages">
+            whenever possible (<a href="http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/upgrade.html#3.4-public-packages">
             public packages
             </a>). 
             </hint>
