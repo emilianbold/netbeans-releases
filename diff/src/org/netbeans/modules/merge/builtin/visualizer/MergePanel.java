@@ -1138,7 +1138,7 @@ public class MergePanel extends javax.swing.JPanel {
         int offset2 = (line2 >= 0) ? org.openide.text.NbDocument.findLineOffset(doc1, line2)
                                    : (doc1.getLength() - 1);
         if (offset1 >= offset2) return ;
-        int offset3 = org.openide.text.NbDocument.findLineOffset(doc2, line3);
+        int offset3 = org.openide.text.NbDocument.findLineOffset(doc2, line3-1);
         int length = offset2 - offset1;
         if (line2 < 0) length++;
         String text = doc1.getText(offset1, length);
@@ -1149,7 +1149,7 @@ public class MergePanel extends javax.swing.JPanel {
         if (line2 < 0) line2 = org.openide.text.NbDocument.findLineNumber(doc1, doc1.getLength());
         int numLines = line2 - line1 + 1;
         //System.out.println("copy("+line1+", "+line2+", "+line3+"): resultLineNumbers.length = "+resultLineNumbers.length);
-        assureResultLineNumbersLength(line3 + numLines);
+        assureResultLineNumbersLength(line3 - 1 + numLines);
         if (resultLineNumbers[line3] == 0 && line3 > 0) resultLineNumbers[line3] = resultLineNumbers[line3 - 1] + 1;
         int resultLine = resultLineNumbers[line3];
         //System.out.println("resultLine = rln["+line3+"] = "+resultLine);

@@ -185,7 +185,7 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
             }
             int length = Math.max(n2 - n1, n4 - n3);
             //System.out.println("  length = "+length+", addEmptyLines3("+line3+", "+(length + 1)+")");
-            panel.addEmptyLines3(line3, length + 1);
+            panel.addEmptyLines3(line3 - 1 , length + 1);
             panel.highlightRegion3(line3, line3 + length, colorUnresolvedConflict);
             resultDiffLocations[i] = line3;
             line3 += length + 1;
