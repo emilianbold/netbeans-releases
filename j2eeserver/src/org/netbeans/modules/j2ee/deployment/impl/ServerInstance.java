@@ -108,7 +108,10 @@ public class ServerInstance implements Node.Cookie {
                 manager.release();
                 manager = null;
             }
+            incrementalDeployment = null;
+            startServer = null;
             management = null;
+            findJSPServlet = null;
             targets = null;
             coTarget = null;
         }
@@ -215,38 +218,6 @@ public class ServerInstance implements Node.Cookie {
         lastCheck = System.currentTimeMillis();
         return isRunning;
     }
-    
-    /*static final long PING_WAIT_MILLIS = 100;
-    private final Object state = new Object();
-    public Boolean checkRunning() {
-        Runnable r = new Runnable() {
-            public void run() {
-                isRunning();
-                gotIt();
-            }
-        };
-        (new Thread(r)).start();
-        if (waitForState())
-            return (isRunning ? Boolean.TRUE : Boolean.FALSE);
-        else
-            return null;
-    }
-    
-    private boolean waitForState() {
-        long t0 = System.currentTimeMillis();
-        try {
-            synchronized(state) {
-                state.wait(PING_WAIT_MILLIS);
-            }
-        } catch(InterruptedException e) {}
-        return (System.currentTimeMillis() - t0 < PING_WAIT_MILLIS);
-    }        
-
-    private void gotIt() {
-        synchronized(state) {
-            state.notify();
-        }
-    }*/
     
     public boolean isDebuggable() {
         StartServer ss = getStartServer();
@@ -706,21 +677,4 @@ public class ServerInstance implements Node.Cookie {
         }
         return null;
     }
-    
-    /*static public interface ServerStatusListener {
-        public void serverStatusChanged(boolean isRunning);
-    }
-    Vector statusListeners = new Vector();
-    private void fireServerStatusChanged(boolean isRunning) {
-        for (Iterator i=statusListeners.iterator(); i.hasNext();) {
-            ServerStatusListener l = (ServerStatusListener) i.next();
-            l.serverStatusChanged(isRunning);
-        }
-    }
-    public void addStatusListener(ServerStatusListener l) {
-        statusListeners.add(l);
-    }
-    public void removeStatusListener(ServerStatusListener l) {
-        statusListeners.remove(l);
-    }*/
 }
