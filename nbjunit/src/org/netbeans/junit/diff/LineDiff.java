@@ -80,100 +80,93 @@ public class LineDiff implements Diff {
     }
     
     /**
-     * @param first first file to compare
-     * @param second second file to compare
+     * @param first first file to compare -- ref
+     * @param second second file to compare -- golden
      * @param diff difference file, caller can pass null value, when results are not needed.
      * @return true iff files differ
      */
     public boolean diff(java.io.File firstFile, java.io.File secondFile, java.io.File diffFile) throws java.io.IOException {
         LineNumberReader first = new LineNumberReader(new FileReader(firstFile));
         LineNumberReader second = new LineNumberReader(new FileReader(secondFile));
-        String firstLine;
-        String secondLine;
+        String passLine;
+        String testLine;
         
         if (diffFile == null) {
-            while ((firstLine = first.readLine()) != null) {
-                secondLine = second.readLine();
-                if (secondLine == null) {
+            while ((passLine = first.readLine()) != null) {
+                testLine = second.readLine();
+                if (testLine == null) {
                     first.close();
                     second.close();
                     return true;
                 }
-                if (!compareLines(firstLine,secondLine)) {
+                if (!compareLines(passLine,testLine)) {
                     first.close();
                     second.close();
                     return true;
                 }
             }
         } else {
-            ArrayList a1,a2,newLines,missingLines;
+            ArrayList testLines,passLines;
+            ArrayList retls=new ArrayList();
             
-            a1=new ArrayList();
-            while ((firstLine = first.readLine()) != null) {
-                a1.add(firstLine);
+            testLines=new ArrayList();
+            while ((passLine = first.readLine()) != null) {
+                testLines.add(passLine);
             }
-            a2=new ArrayList();
-            while ((secondLine = second.readLine()) != null) {
-                a2.add(secondLine);
+            passLines=new ArrayList();
+            while ((testLine = second.readLine()) != null) {
+                passLines.add(testLine);
             }
             first.close();
             second.close();
-            newLines=new ArrayList();
-            missingLines=new ArrayList();
             
             int j=0,bj;
             boolean found;
             
-            for (int i=0;i < a1.size();i++) {
-                if (j >= a2.size()) {
-                    for (int k=i;k < a1.size();k++) {
-                        missingLines.add(k+"> "+a1.get(k));
+            for (int i=0;i < passLines.size();i++) { //go through golden file
+                //remains
+                if (j >= testLines.size()) {
+                    for (int k=i;k < passLines.size();k++) {
+                        retls.add(formatOutput(false, testLines.size(), k+1, (String)passLines.get(k)));
                     }
                     break;
                 }
-                firstLine=(String)(a1.get(i));
-                secondLine=(String)(a2.get(j));
-                if (!compareLines(firstLine,secondLine)) {
+                
+                passLine=(String)(passLines.get(i));
+                testLine=(String)(testLines.get(j));
+                if (!compareLines(passLine,testLine)) {
                     found=false;
-                    for (int k=j;k < a2.size();k++) {
-                        secondLine = (String)(a2.get(k));
-                        if (compareLines(firstLine,secondLine)) {
+                    //read all lines to end of test file - finding pass line
+                    for (int k=j;k < testLines.size();k++) {
+                        testLine = (String)(testLines.get(k));
+                        if (compareLines(passLine,testLine)) { //found last passLine - all between last pass line and this line are new lines
                             for (int l=j;l < k;l++) {
-                                newLines.add(l+"> "+a2.get(l));
+                                retls.add(formatOutput(true, l+1, i+1, (String)testLines.get(l)));
                             }
                             j=k;
                             found=true;
                             break;
                         }
                     }
-                    if (!found) {
-                        missingLines.add(i+"> "+firstLine);
+                    if (!found) { //last pass line is not found at all - it is missing
+                        retls.add(formatOutput(false, j+1, i+1, passLine));
                         j--;
                     }
                 }
                 j++;
             }
-            if (j < a2.size()) {
-                for (int i=j;i < a2.size();i++) {
-                    newLines.add(i+"> "+a2.get(i));
+            //remains lines in test file
+            if (j < testLines.size()) {
+                for (int i=j;i < testLines.size();i++) {
+                    retls.add(formatOutput(true, i+1, passLines.size(), (String)testLines.get(i)));
                 }
             }
             
-            if (missingLines.size() > 0 || newLines.size() > 0) {
+            if (retls.size() > 0) {
                 PrintStream pw=null;
                 pw=new PrintStream(new FileOutputStream(diffFile));
-                //pw=System.out;
-                if (missingLines.size() > 0) {
-                    pw.println("-----------------------------Missing Lines:-----");
-                    for (int i=0;i < missingLines.size();i++) {
-                        pw.println(missingLines.get(i));
-                    }
-                }
-                if (newLines.size() > 0) {
-                    pw.println("-----------------------------New Lines:---------");
-                    for (int i=0;i < newLines.size();i++) {
-                        pw.println(newLines.get(i));
-                    }
+                for (int i=0;i < retls.size();i++) {
+                    pw.println(retls.get(i));
                 }
                 pw.close();
                 return true;
@@ -182,10 +175,36 @@ public class LineDiff implements Diff {
         return false;
     }
     
+    //+ 1234 - 1234
+    public String formatOutput(boolean positive, int testLine, int passLine, String line) {
+        char[] ret=new char[15];
+        
+        int index=0;
+        if (positive) {
+            ret[index++]='+';
+        } else {
+            ret[index++]='-';
+        }
+        ret[index++]=' ';
+        String tmp=String.valueOf(testLine);
+        for (int i=0;i < tmp.length();i++) {
+            ret[index++]=tmp.charAt(i);
+        }
+        ret[index++]=' ';ret[index++]='-';ret[index++]=' ';
+        tmp=String.valueOf(passLine);
+        for (int i=0;i < tmp.length();i++) {
+            ret[index++]=tmp.charAt(i);
+        }
+        for (int i=index;i < ret.length;i++) {
+            ret[i]=' ';
+        }
+        return new String(ret)+line;
+    }
+    
     public static void main(String[] argv) {
         try {
             LineDiff diff=new LineDiff(true);
-            diff.diff("/tmp/diff/test.pass","/tmp/diff/test.ref","/tmp/diff/test.diff");
+            diff.diff("/tmp/diff/test.ref", "/tmp/diff/test.pass","/tmp/diff/test.diff");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
