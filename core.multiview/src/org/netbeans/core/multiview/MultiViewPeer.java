@@ -158,7 +158,9 @@ public final class MultiViewPeer  {
         el.componentShowing();
         delegatingMap.setDelegateMap(el.getVisualRepresentation().getActionMap());
         ((MultiViewTopComponentLookup)peer.getLookup()).setElementLookup(el.getLookup());
-        tabs.setInnerToolBar(el.getToolbarRepresentation());
+        JComponent jc = el.getToolbarRepresentation();
+        jc.setOpaque(false);
+        tabs.setInnerToolBar(jc);
         
     }
     

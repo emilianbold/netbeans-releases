@@ -21,6 +21,7 @@ package org.netbeans.swing.plaf.aqua;
 import org.netbeans.swing.plaf.util.UIUtils;
 
 import javax.swing.*;
+import javax.swing.BoxLayout;
 import javax.swing.border.Border;
 import javax.swing.plaf.ButtonUI;
 import javax.swing.plaf.ComponentUI;
@@ -62,8 +63,8 @@ public class PlainAquaToolbarUI extends BasicToolBarUI implements ContainerListe
         c.setBorder(aquaborder);
         c.setOpaque(true);
         c.addContainerListener(this);
+        
         installButtonUIs (c);
-//        c.setLayout (layout);
     }
     
     public void uninstallUI (JComponent c) {
@@ -73,6 +74,9 @@ public class PlainAquaToolbarUI extends BasicToolBarUI implements ContainerListe
     }
     
     public void paint(Graphics g, JComponent c) {
+        if (!c.isOpaque()) {
+            return;
+        }
         UIUtils.configureRenderingHints(g);
         Color temp = g.getColor();
         Dimension size = c.getSize();
@@ -117,7 +121,7 @@ public class PlainAquaToolbarUI extends BasicToolBarUI implements ContainerListe
         if (c instanceof AbstractButton) {
             ((AbstractButton) c).setBorderPainted(false);
             ((AbstractButton) c).setBorder(BorderFactory.createEmptyBorder());
-            ((AbstractButton) c).setContentAreaFilled(false);
+//            ((AbstractButton) c).setContentAreaFilled(false);
             ((AbstractButton) c).setOpaque(false);
         }
         if (c instanceof JComponent) {
@@ -128,7 +132,7 @@ public class PlainAquaToolbarUI extends BasicToolBarUI implements ContainerListe
     protected void setBorderToNormal(Component c) {
         if (c instanceof AbstractButton) {
             ((AbstractButton) c).setBorderPainted(false);
-            ((AbstractButton) c).setContentAreaFilled(false);
+//            ((AbstractButton) c).setContentAreaFilled(false);
             ((AbstractButton) c).setOpaque(false);
         }
         if (c instanceof JComponent) {
@@ -182,7 +186,7 @@ public class PlainAquaToolbarUI extends BasicToolBarUI implements ContainerListe
     }
     
     
-    private static class AquaTbBorder implements Border {
+    static class AquaTbBorder implements Border {
 
         int arcsize = 13;
         
@@ -343,7 +347,6 @@ public class PlainAquaToolbarUI extends BasicToolBarUI implements ContainerListe
             Polygon p = new Polygon (xpoints, ypoints, ypoints.length);
             return p;
         }
-        
     }
     
     private static Color mezi (Color c1, Color c2) {
@@ -370,56 +373,4 @@ public class PlainAquaToolbarUI extends BasicToolBarUI implements ContainerListe
         
         jf.show();
     }
-    
-    /** Unfortunately, the aqua combo box bounds don't fit exactly into the
-     * toolbar - we need to force it */
-    /*
-    private static class AquaToolbarLayout implements LayoutManager {
-        
-        public void addLayoutComponent(String str, Component component) {
-            //do nothing
-        }
-        
-        public void layoutContainer(Container container) {
-            Component[] c = container.getComponents();
-            Insets ins = container.getInsets();
-            int maxHeight = container.getHeight() - (ins.top + ins.bottom);
-            int maxX = container.getWidth() - ins.left;
-            int x = ins.left;
-            int y;
-            for (int i=0; i < c.length; i++) {
-                Dimension d = c[i].getPreferredSize();
-                d.height = Math.min (d.height, maxHeight);
-                if (d.height < maxHeight) {
-                    y = (maxHeight / 2) - (d.height / 2);
-                } else {
-                    y = ins.top;
-                }
-                c[i].setBounds (x, y, d.width, d.height);
-                x += d.width;
-            }
-        }
-        
-        public java.awt.Dimension minimumLayoutSize(Container container) {
-            return preferredLayoutSize (container);
-        }
-        
-        public java.awt.Dimension preferredLayoutSize(Container container) {
-            Component[] c = container.getComponents();
-            Insets ins = container.getInsets();
-            Dimension result = new Dimension();
-            
-            for (int i=0; i < c.length; i++) {
-                Dimension d = c[i].getPreferredSize();
-                result.width += d.width;
-                result.height = Math.max (result.height, d.height);
-            }
-            return result;
-        }
-        
-        public void removeLayoutComponent(Component component) {
-            //do nothing
-        }
-    }
-     */
 }

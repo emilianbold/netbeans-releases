@@ -46,15 +46,14 @@ class TabsComponent extends JPanel {
     private Set alreadyAddedElements;
     private JToolBar bar;
     
+    private static boolean aqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+    
     /** Creates a new instance of TabsComponent */
     public TabsComponent() {
         super();
-        bar = new JToolBar();
-        // special border installed by core or no border if not available
+        bar = aqua ? new TB() : new JToolBar();
         Border b = (Border)UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
         bar.setBorder(b);
-//        setBorder (BorderFactory.createEmptyBorder(0,0,0,0));
-//        setLayout (new AdaptiveGridLayout());
         bar.setLayout (new OneLineGridLayout());
         bar.setFloatable(false);
         bar.setFocusable(true);
@@ -177,15 +176,17 @@ class TabsComponent extends JPanel {
         synchronized (getTreeLock()) {
             if (toolbarPanel != null) {
                 bar.remove(toolbarPanel);
-            } else {
-                System.err.println("something wrong.. model was not set..");
             }
             if (innerbar == null) {
                 innerbar = getEmptyInnerToolBar();
             }
             innerbar.putClientProperty(TOOLBAR_MARKER, "X"); //NOI18N
             // need to set it to null, because CloneableEditor set's the border for the editor bar part only..
-            innerbar.setBorder(null);
+            if (!aqua) {
+                innerbar.setBorder(null);
+            } else {
+                innerbar.setBorder (BorderFactory.createEmptyBorder(2, 0, 2, 0));
+            }
             toolbarPanel = innerbar;
             if (toolbarPanel != null) {
                 bar.add(toolbarPanel);
@@ -382,183 +383,7 @@ class TabsComponent extends JPanel {
         }
         
     }    
-    
-
-    // Copied from opneide's SheetTabbedPane which was a copy itself.
-    //Copied from form editor's CategorySelectPanel
-    static class AdaptiveGridLayout implements LayoutManager {
-
-        private int h_margin_left = 2; // margin on the left
-        private int h_margin_right = 1; // margin on the right
-        private int v_margin_top = 2; // margin at the top
-        private int v_margin_bottom = 3; // margin at the bottom
-        private int h_gap = 1; // horizontal gap between components
-        private int v_gap = 1; // vertical gap between components
-        private int MINIMUM_HEIGHT = 20;
-
-        public void addLayoutComponent(String name, Component comp) {
-        }
-
-        public void removeLayoutComponent(Component comp) {
-        }
-
-        public Dimension preferredLayoutSize(Container parent) {
-            synchronized (parent.getTreeLock()) {
-                int containerWidth = parent.getWidth();
-                int count = parent.getComponentCount();
-
-                if (containerWidth <= 0 || count == 0) {
-                    // compute cumulated width of all components placed on one row
-                    int cumulatedWidth = 0;
-                    int height = MINIMUM_HEIGHT;
-                    for (int i=0; i < count; i++) {
-                        Dimension size = parent.getComponent(i).getPreferredSize();
-                        cumulatedWidth += size.width;
-                        if (i + 1 < count)
-                            cumulatedWidth += h_gap;
-                        if (size.height > height)
-                            height = size.height;
-                    }
-                    cumulatedWidth += h_margin_left + h_margin_right;
-                    height += v_margin_top + v_margin_bottom;
-                    return new Dimension(cumulatedWidth, height);
-                }
-
-                // otherwise the container already has some width set - so we
-                // just compute preferred height for it
-
-                // get max. component width and height
-                int columnWidth = 0;
-                int rowHeight = MINIMUM_HEIGHT;
-                for (int i=0; i < count; i++) {
-                    Dimension size = parent.getComponent(i).getPreferredSize();
-                    if (size.width > columnWidth)
-                        columnWidth = size.width;
-                    if (size.height > rowHeight)
-                        rowHeight = size.height;
-                }
-
-                // compute column count
-                int columnCount = 0;
-                int w = h_margin_left + columnWidth + h_margin_right;
-                do {
-                    columnCount++;
-                    w += h_gap + columnWidth;
-                }
-                while (w <= containerWidth && columnCount < count);
-
-                // compute row count and preferred height
-                int rowCount = count / columnCount +
-                               (count % columnCount > 0 ? 1 : 0);
-                int prefHeight = v_margin_top + rowCount * rowHeight
-                                     + (rowCount - 1) * v_gap + v_margin_bottom;
-
-                return new Dimension(containerWidth, prefHeight);
-            }
-        }
-
-        public Dimension minimumLayoutSize(Container parent) {
-            return new Dimension(h_margin_left + h_margin_right,
-                                 v_margin_top + v_margin_bottom);
-        }
-
-        public void layoutContainer(Container parent) {
-            synchronized (parent.getTreeLock()) {
-                int count = parent.getComponentCount();
-                if (count == 0)
-                    return;
-
-                // get max. component width and height
-                int columnWidth = 0;
-                int rowHeight = MINIMUM_HEIGHT;
-                
-                Component jsc = null;
-                Component bar = null;
-                
-                for (int i=0; i < count; i++) {
-                    Component c = parent.getComponent(i);
-                    if (!(c instanceof JPanel || c instanceof JToolBar)) {
-                        Dimension size = c.getPreferredSize();
-//                        if (!(c instanceof JToolBar)) {
-                            if (size.width > columnWidth)
-                                columnWidth = size.width;
-//                        }
-                        if (size.height > rowHeight)
-                            rowHeight = size.height;
-                    } else {
-                        if (c instanceof JPanel) {
-                            jsc = c;
-                        }                        
-                        if (c instanceof JToolBar) {
-                            bar = c;
-                        }
-                    }
-                }
-                count -=2;
-
-                // compute column count
-                int containerWidth = parent.getWidth();
-                int columnCount = 0;
-                int w = h_margin_left + columnWidth + h_margin_right;
-                do {
-                    columnCount++;
-                    w += h_gap + columnWidth;
-                }
-                while (w <= containerWidth && columnCount < count);
-
-                int roundedRowCount = 1;
-                // adjust layout matrix - balance number of columns according
-                // to last row
-                if (count % columnCount > 0) {
-                    roundedRowCount = count / columnCount;
-                    int lastRowEmpty = columnCount - count % columnCount;
-                    if (lastRowEmpty > roundedRowCount) {
-                        columnCount -= lastRowEmpty / (roundedRowCount + 1);
-                        roundedRowCount --;
-                    }
-                }
-
-                // adjust column width
-                if (count > columnCount)
-                    columnWidth = (containerWidth - h_margin_left - h_margin_right
-                                     - (columnCount - 1) * h_gap) / columnCount;
-                if (columnWidth < 0)
-                    columnWidth = 0;
-
-                int row = 0;
-                int top = v_margin_top;
-                int left = h_margin_left;
-                // layout the components
-                for (int i=0, col=0; i < count+1; i++) {
-                    Component c = parent.getComponent(i);
-                    if (c != jsc && c != bar) {
-                        parent.getComponent(i).setBounds(
-                                           h_margin_left + col * (columnWidth + h_gap),
-                                           v_margin_top + row * (rowHeight + v_gap),
-                                           columnWidth,
-                                           rowHeight);
-                        top = v_margin_top + row * (rowHeight + v_gap);
-                        left = h_margin_left + (col + 1) * (columnWidth + h_gap) ;
-                        if (++col >= columnCount) {
-                            col = 0;
-                            row++;
-                        }
-                    }
-                }
-                
-                top += rowHeight + 3;
-                
-                if (jsc != null) {
-                    jsc.setBounds (0, top, parent.getWidth(), parent.getHeight() - top);
-                }
-                if (bar != null) {
-                    bar.setBounds(left, (row - 1) * (rowHeight + v_gap), parent.getWidth() - left, rowHeight);
-                }
-            }
-        }
-    }    
   
-    
     // Copied from opneide's SheetTabbedPane which was a copy itself.
     //Copied from form editor's CategorySelectPanel
     static class OneLineGridLayout implements LayoutManager {
@@ -653,6 +478,14 @@ class TabsComponent extends JPanel {
                 }
                 cumulatedWidth += h_margin_left + h_margin_right;
                 height += v_margin_top + v_margin_bottom;
+                if (TabsComponent.aqua) {
+                    Insets ii = ((JComponent) parent).getInsets();
+                    int rowHeight = parent.getHeight() - (ii.top + ii.bottom);
+                    if (height < rowHeight) {
+                        height = rowHeight;
+                    }
+                }
+                
                 return new Dimension(cumulatedWidth, height);
             }
             return new Dimension(0,0);
@@ -744,21 +577,25 @@ class TabsComponent extends JPanel {
 //                    System.out.println("gone..");
                 }
                 
+                Insets ii = ((JComponent) parent).getInsets();
+                if (aqua) {
+                    rowHeight = parent.getHeight() - (ii.top + ii.bottom);
+                }
 
 //                System.out.println("column =" + columnWidth);
-                int row = 0;
-                int top = v_margin_top;
+                int top = aqua ? ii.top : v_margin_top;
                 int left = h_margin_left;
                 // layout the components
                 for (int i=0, col=0; i < count+1; i++) {
                     Component c = parent.getComponent(i);
                     if (c != jsc && c != bar) {
-                        parent.getComponent(i).setBounds(
-                                           h_margin_left + col * (columnWidth + h_gap),
-                                           v_margin_top + row * (rowHeight + v_gap),
-                                           columnWidth,
-                                           rowHeight);
-                        top = v_margin_top + row * (rowHeight + v_gap);
+                            //XXX multiplication by "row" field below is meaningless-
+                            //it is always 0
+                        c.setBounds(
+                                   h_margin_left + col * (columnWidth + h_gap),
+                                   top,
+                                   columnWidth,
+                                   rowHeight);
                         left = h_margin_left + (col + 1) * (columnWidth + h_gap) ;
                         col++;
                     }
@@ -774,6 +611,38 @@ class TabsComponent extends JPanel {
                 }
             }
         }
-    }        
+    }
     
+    private static final class TB extends JToolBar {
+        private boolean updating = false;
+        
+        public TB() {
+            //Aqua UI will look for this value to ensure the
+            //toolbar is tall enough that the "glow" which paints
+            //outside the combo box bounds doesn't make a mess painting
+            //into other components
+            setName("editorToolbar");
+        }
+        
+        public void setBorder (Border b) {
+            if (!updating) {
+                return;
+            }
+            super.setBorder(b);
+        }
+        
+        public void updateUI() {
+            updating = true;
+            try {
+                super.updateUI();
+            } finally {
+                updating = false;
+            }
+        }
+        
+        public String getUIClassID() {
+            return UIManager.get("Nb.Toolbar.ui") == null ?
+                super.getUIClassID() : "Nb.Toolbar.ui";
+        }
+    }
 }

@@ -87,8 +87,8 @@ public final class AquaLFCustoms extends LFCustoms {
             EDITOR_STATUS_LEFT_BORDER, empty,
             EDITOR_STATUS_RIGHT_BORDER, empty,
             EDITOR_STATUS_INNER_BORDER, empty,
-            EDITOR_STATUS_ONLYONEBORDER, empty,
-            EDITOR_TOOLBAR_BORDER, bottomOnly,
+            EDITOR_STATUS_ONLYONEBORDER, topOnly,
+            EDITOR_TOOLBAR_BORDER, new PlainAquaToolbarUI.AquaTbBorder(),
 
             EDITOR_TAB_OUTER_BORDER, BorderFactory.createEmptyBorder(),
             EDITOR_TAB_CONTENT_BORDER, lowerBorder,

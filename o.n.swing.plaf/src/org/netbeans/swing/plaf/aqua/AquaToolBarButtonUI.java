@@ -66,7 +66,38 @@ class AquaToolBarButtonUI extends ButtonUI implements ChangeListener {
         Paint temp = ((Graphics2D) g).getPaint();
         paintBackground ((Graphics2D)g, b, r);
         paintIcon (g, b, r);
+        paintText (g, b, r);
         ((Graphics2D) g).setPaint(temp);
+    }
+    
+    private void paintText (Graphics g, AbstractButton b, Rectangle r) {
+        String s = b.getText();
+        if (s == null || s.length() == 0) {
+            return;
+        }
+        g.setColor (b.getForeground());
+        Font f = b.getFont();
+        if (b.isSelected()) {
+            f = f.deriveFont (Font.BOLD);
+        }
+        g.setFont (f);
+        FontMetrics fm = g.getFontMetrics();
+        int x = 0;
+        Icon ic = b.getIcon();
+        if (ic != null) {
+            x = ic.getIconWidth() + 2;
+        } else {
+            int w = fm.stringWidth (s);
+            if (w <= r.width) {
+                x = (r.width / 2) - (w / 2);
+            }
+        }
+        int h = fm.getHeight();
+        int y = fm.getMaxAscent();
+        if (h <= r.height) {
+            y += (r.height / 2) - (h / 2);
+        }
+        g.drawString (s, x, y);
     }
     
     private void paintBackground (Graphics2D g, AbstractButton b, Rectangle r) {
@@ -150,7 +181,11 @@ class AquaToolBarButtonUI extends ButtonUI implements ChangeListener {
     
     private static final int minButtonSize = 32;
     public Dimension getPreferredSize(JComponent c) {
-        if (c instanceof AbstractButton) {
+        boolean isButton = c instanceof AbstractButton;
+        boolean noText = !isButton ? true : 
+            ((AbstractButton) c).getText() == null || 
+            ((AbstractButton) c).getText().length() == 0;
+        if (isButton && noText) {
             Icon ic = getIconForState((AbstractButton) c);
             Dimension result;
             int minSize = isFirst((AbstractButton)c) ? 0 : minButtonSize;
