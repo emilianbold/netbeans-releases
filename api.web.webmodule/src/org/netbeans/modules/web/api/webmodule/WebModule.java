@@ -132,6 +132,9 @@ public final class WebModule {
     /** Returns true if the object represents the same web module.
      */
     public boolean equals (Object obj) {
+        if (obj == null) {
+            return false;
+        }
         if (!WebModule.class.isAssignableFrom(obj.getClass()))
             return false;
         WebModule wm = (WebModule) obj;
