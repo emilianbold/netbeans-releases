@@ -66,7 +66,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/explorer/propertysheet/*.class"/>
                 <exclude name="org/openide/explorer/propertysheet/FindHelpTest.class"/>
                 <include name="org/openide/explorer/view/*.class"/>
-                <exclude name="org/openide/explorer/view/SelectionModeTest.class"/>
             </patternset>
         </testset>        
     </testbag>
@@ -94,8 +93,6 @@ Microsystems, Inc. All Rights Reserved.
 		<include name="org/openide/nodes/CookieSetTest*class"/>
                 <!-- Implementation was apparently killed during a refactoring: -->
                 <include name="org/openide/explorer/propertysheet/FindHelpTest.class/testFindHelpOnPropertySheetRow"/>
-                <!-- Should be moved to stable after implementation enh #11928 -->
-                <include name="org/openide/explorer/view/SelectionModeTest.class"/>
             </patternset>
         </testset>      
     </testbag>
