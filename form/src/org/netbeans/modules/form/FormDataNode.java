@@ -28,7 +28,7 @@ public class FormDataNode extends JavaNode {
 //  static final long serialVersionUID = 1795549004166402392L;
   
   /** Icons for form data objects. */
-  private static final String[] FORM_ICONS = { "form", "formMain", "formError", "form", "formMain" }; // [PENDING bean forms]
+  private static final String[] FORM_ICONS = { "form", "formMain", "formError", "form", "formMain" };
 
   /** Icon base for form data objects. */
   private static final String FORM_ICON_BASE = "com/netbeans/developer/modules/loaders/form/resources/";
@@ -52,6 +52,7 @@ public class FormDataNode extends JavaNode {
 
 /*
  * Log
+ *  10   Gandalf   1.9         7/31/99  Ian Formanek    Comments cleaned up
  *  9    Gandalf   1.8         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  8    Gandalf   1.7         5/4/99   Ian Formanek    package change 
