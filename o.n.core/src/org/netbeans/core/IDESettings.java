@@ -329,9 +329,18 @@ public class IDESettings extends SystemOption {
             DataObject [] dobjs = folder.getChildren ();
             for (int i = 0; i<dobjs.length; i++) {
                 Object o = ((InstanceCookie)dobjs[i].getCookie (InstanceCookie.class)).instanceCreate ();
-                if ((o != null) && o.equals (brow)) {
-                    putProperty(PROP_WWWBROWSER, dobjs[i].getNodeDelegate ().getHandle (), true);    
-                    break;
+                if (o != null) {
+                    if (o.equals (brow)) {
+                        putProperty(PROP_WWWBROWSER, dobjs[i].getNodeDelegate ().getHandle (), true); 
+                        // mark this object so it can be found by modules (utilities, open URL in new window)
+                        dobjs[i].getPrimaryFile ().setAttribute ("DEFAULT_BROWSER", Boolean.TRUE);
+                    }
+                    else {
+                        // unset default browser attribute in other browsers
+                        Object attr = dobjs[i].getPrimaryFile ().getAttribute ("DEFAULT_BROWSER");
+                        if ((attr != null) && (attr instanceof Boolean))
+                            dobjs[i].getPrimaryFile ().setAttribute ("DEFAULT_BROWSER", Boolean.FALSE);
+                    }
                 }
             }
         }
