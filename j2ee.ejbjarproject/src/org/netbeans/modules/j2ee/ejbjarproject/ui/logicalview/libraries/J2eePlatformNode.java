@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,6 +24,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.api.project.Project;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
@@ -31,6 +32,8 @@ import org.openide.util.WeakListeners;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.filesystems.FileObject;
@@ -46,7 +49,7 @@ import org.openide.util.actions.SystemAction;
  * @see J2eePlatform
  * @author Andrei Badea
  */
-class J2eePlatformNode extends AbstractNode implements PropertyChangeListener {
+class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, InstanceListener {
 
     private static final String ARCHIVE_ICON = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/jar.gif"; //NOI18N
     private static final String DEFAULT_ICON = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/j2eeServer.gif"; //NOI18N
@@ -75,15 +78,19 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener {
         }
     };
 
-    private J2eePlatformNode(PropertyEvaluator evaluator, String platformPropName) {
+    private J2eePlatformNode(Project project, PropertyEvaluator evaluator, String platformPropName) {
         super(new PlatformContentChildren());
         this.evaluator = evaluator;
         this.platformPropName = platformPropName;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
+        
+        J2eeModuleProvider moduleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        moduleProvider.addInstanceListener(
+                (InstanceListener)WeakListeners.create(InstanceListener.class, this, moduleProvider));
     }
     
-    public static J2eePlatformNode create(PropertyEvaluator evaluator, String platformPropName) {
-        return new J2eePlatformNode(evaluator, platformPropName);
+    public static J2eePlatformNode create(Project project, PropertyEvaluator evaluator, String platformPropName) {
+        return new J2eePlatformNode(project, evaluator, platformPropName);
     }
 
     public String getName () {
@@ -122,19 +129,36 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener {
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
+        //The caller holds ProjectManager.mutex() read lock
+        
         if (platformPropName.equals(evt.getPropertyName())) {
-            if (platformCache != null)
-                platformCache.removePropertyChangeListener(platformListener);
-            
-            platformCache = null;
-            
-            this.fireNameChange(null, null);
-            this.fireDisplayNameChange(null, null);
-            this.fireIconChange();
-            
-            //The caller holds ProjectManager.mutex() read lock
-            postAddNotify();
+            refresh();
         }
+    }
+    
+    private void refresh() {
+        if (platformCache != null)
+            platformCache.removePropertyChangeListener(platformListener);
+
+        platformCache = null;
+
+        this.fireNameChange(null, null);
+        this.fireDisplayNameChange(null, null);
+        this.fireIconChange();
+        
+        // The caller may hold ProjectManager.mutex() read lock (i.e., the propertyChange() method)
+        postAddNotify();
+    }
+    
+    public void instanceAdded(String serverInstanceID) {
+        refresh();
+    }
+    
+    public void instanceRemoved(String serverInstanceID) {
+        refresh();
+    }
+    
+    public void changeDefaultInstance(String oldServerInstanceID, String newServerInstanceID) {
     }
 
     private void postAddNotify() {
@@ -202,5 +226,3 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener {
         }
     }
 }
-
-
