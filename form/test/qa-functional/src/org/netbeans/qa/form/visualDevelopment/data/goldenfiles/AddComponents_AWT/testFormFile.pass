@@ -2,6 +2,31 @@
 
 <Form version="1.0" type="org.netbeans.modules.form.forminfo.FrameFormInfo">
   <NonVisualComponents>
+    <Menu class="java.awt.PopupMenu" name="popupMenu1">
+      <Properties>
+        <Property name="label" type="java.lang.String" value="PopupMenu"/>
+      </Properties>
+    </Menu>
+    <Menu class="java.awt.MenuBar" name="menuBar1">
+      <SubComponents>
+        <Menu class="java.awt.Menu" name="menu1">
+          <Properties>
+            <Property name="label" type="java.lang.String" value="Menu"/>
+          </Properties>
+        </Menu>
+      </SubComponents>
+    </Menu>
+  </NonVisualComponents>
+  <SyntheticProperties>
+    <SyntheticProperty name="menuBar" type="java.lang.String" value="menuBar1"/>
+    <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+  </SyntheticProperties>
+  <Events>
+    <EventHandler event="windowClosing" listener="java.awt.event.WindowListener" parameters="java.awt.event.WindowEvent" handler="exitForm"/>
+  </Events>
+
+  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+  <SubComponents>
     <Component class="java.awt.Label" name="label1">
       <Properties>
         <Property name="text" type="java.lang.String" value="label1"/>
@@ -40,27 +65,5 @@
     </Container>
     <Component class="java.awt.Canvas" name="canvas1">
     </Component>
-    <Menu class="java.awt.MenuBar" name="menuBar1">
-      <SubComponents>
-        <Menu class="java.awt.Menu" name="menu1">
-          <Properties>
-            <Property name="label" type="java.lang.String" value="Menu"/>
-          </Properties>
-        </Menu>
-      </SubComponents>
-    </Menu>
-    <Menu class="java.awt.PopupMenu" name="popupMenu1">
-      <Properties>
-        <Property name="label" type="java.lang.String" value="PopupMenu"/>
-      </Properties>
-    </Menu>
-  </NonVisualComponents>
-  <SyntheticProperties>
-    <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
-  </SyntheticProperties>
-  <Events>
-    <EventHandler event="windowClosing" listener="java.awt.event.WindowListener" parameters="java.awt.event.WindowEvent" handler="exitForm"/>
-  </Events>
-
-  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+  </SubComponents>
 </Form>
