@@ -56,7 +56,7 @@ public class Method extends Field {
 	    code = new Code(in, pool);
             return true;
 	}
-        else if (includeCode && name.equals("Exceptions")) { //NOI18N
+        else if (name.equals("Exceptions")) { //NOI18N
             exceptions = ClassFile.getCPClassList(in, pool);
             return true;
         }
