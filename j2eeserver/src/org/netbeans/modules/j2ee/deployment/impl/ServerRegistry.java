@@ -470,7 +470,7 @@ public final class ServerRegistry implements java.io.Serializable {
         
     }
     
-    public interface InstanceListener {
+    public interface InstanceListener extends EventListener {
         
         public void instanceAdded(ServerString instance);
         
