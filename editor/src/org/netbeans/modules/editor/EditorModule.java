@@ -73,6 +73,9 @@ import org.netbeans.editor.AnnotationTypes;
 public class EditorModule extends ModuleInstall 
 implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable  {
 
+    private static final boolean debug = Boolean.getBoolean("netbeans.debug.editor.kits");
+
+
     /** PrintOptions to be installed */
     Class[] printOpts = new Class[] {
         PlainPrintOptions.class,
@@ -174,7 +177,12 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
             keyField.setAccessible(true);
             Object key = keyField.get(JEditorPane.class);
             HackMap kitMapping = (HackMap)sun.awt.AppContext.getAppContext().get(key);
-            sun.awt.AppContext.getAppContext().put(key, kitMapping.getOriginal());
+            if (kitMapping.getOriginal() != null) {
+                sun.awt.AppContext.getAppContext().put(key, kitMapping.getOriginal());
+            } else {
+                sun.awt.AppContext.getAppContext().remove(key);
+            }
+
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -246,6 +254,22 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
 
         HackMap(Hashtable h) {
             delegate = h;
+            
+            if (debug) {
+                if (h != null) {
+                    System.err.println("Original kit mappings: " + h);
+                }
+
+                try {
+                    Field keyField = JEditorPane.class.getDeclaredField("kitTypeRegistryKey");  // NOI18N
+                    keyField.setAccessible(true);
+                    Object key = keyField.get(JEditorPane.class);
+                    Hashtable kitTypeMapping = (Hashtable)sun.awt.AppContext.getAppContext().get(key);
+                    sun.awt.AppContext.getAppContext().put(key, new DebugHashtable(kitTypeMapping));
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
+            }
         }
 
         private Object findKit(String type) {
@@ -290,13 +314,28 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
             
             if (delegate != null) {
                 retVal = delegate.get(key);
+                if (debug && retVal != null) {
+                    System.err.println("Found cached instance kit=" + retVal + " for mimeType=" + key);
+                }
             }
 
-	    if (retVal == null && key instanceof String) {
+	    if ((retVal == null || retVal.getClass().getName().startsWith("javax.swing."))
+                && key instanceof String
+            ) {
                 // first check the type registry
                 String kitClassName = getKitClassName((String)key);
-                if (kitClassName == null || kitClassName.startsWith("javax.swing")) { // prefer layers
-                    retVal = findKit((String)key);
+                if (debug) {
+                    System.err.println("Found kitClassName=" + kitClassName + " for mimeType=" + key);
+                }
+                
+                if (kitClassName == null || kitClassName.startsWith("javax.swing.")) { // prefer layers
+                    Object kit = findKit((String)key);
+                    if (kit != null) {
+                        retVal = kit;
+                        if (debug) {
+                            System.err.println("Found kit=" + retVal + " in xml layers for mimeType=" + key);
+                        }
+                    }
                 }
 	    }
 
@@ -308,17 +347,58 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
                 delegate = new Hashtable();
             }
 
-            return delegate.put(key,value);
+            Object ret = delegate.put(key,value);
+            
+            if (debug) {
+                System.err.println("registering mimeType=" + key
+                    + " -> kitInstance=" + value
+                    + " original was " + ret);
+            }
+             
+            return ret;
         }
 
         public synchronized Object remove(Object key) {
-            return (delegate != null) ? delegate.remove(key) : null;
+            Object ret = (delegate != null) ? delegate.remove(key) : null;
+            
+            if (debug) {
+                System.err.println("removing kitInstance=" + ret
+                    + " for mimeType=" + key);
+            }
+            
+            return ret;
         }
         
         Hashtable getOriginal() {
             return delegate;
         }
 
+    }
+    
+    private static final class DebugHashtable extends Hashtable {
+        
+        DebugHashtable(Hashtable h) {
+            if (h != null) {
+                putAll(h);
+                System.err.println("Existing kit classNames mappings: " + this);
+            }
+        }
+        
+        public Object put(Object key, Object value) {
+            Object ret = super.put(key, value);
+            System.err.println("registering mimeType=" + key
+                + " -> kitClassName=" + value
+                + " original was " + ret);
+            return ret;
+        }
+        
+        public Object remove(Object key) {
+            Object ret = super.remove(key);
+            System.err.println("removing kitClassName=" + ret
+                + " for mimeType=" + key);
+            return ret;
+        }
+        
     }
     
 }
