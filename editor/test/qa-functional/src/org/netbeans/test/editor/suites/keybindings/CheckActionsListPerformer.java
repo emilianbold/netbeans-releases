@@ -32,7 +32,7 @@ import org.netbeans.test.editor.LineDiff;
 public class CheckActionsListPerformer extends JellyTestCase {
     
     public static String[] TESTED_EDITORS={"Java Editor","Plain Editor","HTML Editor"};
-    
+    String editorName;
     
     public CheckActionsListPerformer(String name) {
         super(name);
@@ -41,18 +41,19 @@ public class CheckActionsListPerformer extends JellyTestCase {
     /**
      * @param args the command line arguments
      */
-    public void doTest(String editorName) throws Exception {
+    public void doTest() throws Exception {
         log("doTest start");
-        
+        log("Editor name: "+editorName);
         try {
+            log("Grabbing actions...");
             List list = KeyBindings.listActions(editorName);
+            log("Writting to ref file...");
             File f=new File(getWorkDir(),editorName+" actions.ref");
             PrintWriter pw=new PrintWriter(new FileWriter(f));
             for (int i=0;i < list.size();i++) {
                 pw.println(list.get(i));
             }
             pw.close();
-            assertFile("Output does not match golden file.", getGoldenFile(editorName+" actions.pass"), f, null, new LineDiff(false));
         } finally {
             log("doTest finished");
         }
@@ -60,22 +61,30 @@ public class CheckActionsListPerformer extends JellyTestCase {
     
     public void setUp() {
         log("Starting check Key Bindings actions test.");
-        log("Test name=" + getName());
     }
     
     public void tearDown() throws Exception {
         log("Starting check Key Bindings actions test.");
-        //assertFile("Output does not match golden file.", getGoldenFile(), new File(getWorkDir(), this.getName() + ".ref"), null, new LineDiff(false));
+        assertFile("Some actions aren't same as before the split.", getGoldenFile(editorName+" actions.pass"), new File(getWorkDir(),editorName+" actions.ref"), null, new LineDiff(false));
     }
     
-    public void testCheckActions() throws Exception {
-        for (int i=0;i < TESTED_EDITORS.length;i++) {
-            doTest(TESTED_EDITORS[i]);
-        }
+    public void testCheckPlainActions() throws Exception {
+        editorName="Plain Editor";
+        doTest();
+    }
+    
+    public void testCheckJavaActions() throws Exception {
+        editorName="Java Editor";
+        doTest();
+    }
+    
+    public void testCheckHTMLActions() throws Exception {
+        editorName="HTML Editor";
+        doTest();
     }
     
     public static void main(String[] args) throws Exception {
-        new CheckActionsListPerformer("testCheckActions").testCheckActions();
+        //new CheckActionsListPerformer("testCheckActions").testCheckActions();
     }
     
 }
