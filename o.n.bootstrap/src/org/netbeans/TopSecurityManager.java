@@ -200,6 +200,7 @@ public class TopSecurityManager extends SecurityManager {
     private static final Set warnedClassesNH = new HashSet(25); // Set<String>
     static {
         warnedClassesNH.add ("org.netbeans.core.LookupCache"); // NOI18N
+        warnedClassesNH.add ("org.netbeans.updater.UpdateTracking"); // NOI18N
     }
 
     /* ----------------- private methods ------------- */
