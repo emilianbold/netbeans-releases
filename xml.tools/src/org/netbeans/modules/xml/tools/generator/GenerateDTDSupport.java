@@ -166,12 +166,6 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
             // <!ELEMENT ...
             sb.append ("<!ELEMENT ").append (elem.name).append (" "); // NOI18N
 
-            System.out.println ("\n GenerateDTDSupport.xml2dtd: name = " + elem.name);
-            System.out.println ("                  .xml2dtd: pcdata = " + elem.pcdata);
-            System.out.println ("                  .xml2dtd: empty  = " + elem.empty);
-            System.out.println ("                  .xml2dtd: children.size() = " +
-                                elem.children.size());
-
             if ( elem.empty ) {
                 sb.append ("EMPTY"); // NOI18N
             } else {
