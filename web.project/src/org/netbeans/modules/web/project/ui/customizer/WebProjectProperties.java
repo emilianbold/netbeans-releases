@@ -876,8 +876,8 @@ public class WebProjectProperties {
                     String pathItem = vcpi.getRaw();
                     if (pathItem == null) {
                         // New file
-                        return refHelper.createForeignFileReference((File) vcpi.getObject(),
-                                JavaProjectConstants.ARTIFACT_TYPE_JAR);
+                        // pass null as expected artifact type to always get file reference
+                        return refHelper.createForeignFileReference((File) vcpi.getObject(), null);
                     } else {
                         return pathItem;
                     }
