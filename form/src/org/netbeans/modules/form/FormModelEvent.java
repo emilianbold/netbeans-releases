@@ -226,15 +226,11 @@ public class FormModelEvent extends EventObject
     }
 
     public final Object getOldPropertyValue() {
-        return oldPropertyValue instanceof FormProperty.ValueWithEditor ?
-                 ((FormProperty.ValueWithEditor)oldPropertyValue).getValue() :
-                 oldPropertyValue;
+        return oldPropertyValue;
     }
 
     public final Object getNewPropertyValue() {
-        return newPropertyValue instanceof FormProperty.ValueWithEditor ?
-                 ((FormProperty.ValueWithEditor)newPropertyValue).getValue() :
-                 newPropertyValue;
+        return newPropertyValue;
     }
 
     public final LayoutSupportDelegate getOldLayoutSupport() {
@@ -475,7 +471,7 @@ public class FormModelEvent extends EventObject
         }
 
         public void die() {
-            // it's very important to release undo changes from CodeStructure
+            // it's quite necessary to release undo changes from CodeStructure
             if (codeUndoRedoStart != null && codeUndoRedoEnd != null)
                 getFormModel().getCodeStructure().releaseUndoableChanges(
                                        codeUndoRedoStart, codeUndoRedoEnd);
@@ -499,7 +495,7 @@ public class FormModelEvent extends EventObject
             try {
                 getFormModel().setContainerLayout(
                     (RADVisualContainer)getContainer(),
-                    getOldLayoutSupport(),
+                    getNewLayoutSupport(),
                     null);
             }
             catch (Exception ex) {
