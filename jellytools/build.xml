@@ -13,18 +13,35 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project name="jellytools" default="jars" basedir=".">
 
+    <!-- Standard jar excludes - can be obtained from
+    	 excludesfile="../nbbuild/standard-jar-excludes.txt" -->
+    <patternset id="standard-jar-excludes">
+        <exclude name="**/*.java"/>
+        <exclude name="**/*.orig"/>
+        <exclude name="**/*.rej"/>
+        <exclude name="**/*.form"/>
+        <exclude name="**/*.jar.MAKEME"/>
+        <exclude name="**/filesystem.attributes"/>
+        <exclude name="**/.nbattrs"/>
+        <exclude name="**/.#*"/>
+    </patternset>
+
+    <path id="jellytools.classpath">
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <pathelement location="../core/netbeans/lib/core.jar"/>
+        <pathelement location="../core/netbeans/lib/ext/terminalemulator.jar"/>
+        <pathelement location="../jemmy/jemmy.jar"/>
+        <pathelement location="../xtest/lib/junit.jar"/>
+        <pathelement location="../xtest/lib/junit-ext.jar"/>
+    </path>
+    
     <target name="all" depends="jars,zipsrc,javadoc" description="Create jars, source zip and javadoc zip">
     </target>
 
     <target name="compile" depends="jemmy">
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
           <classpath>
-            <pathelement location="../openide/netbeans/lib/openide.jar"/>
-            <pathelement location="../core/netbeans/lib/core.jar"/>
-            <pathelement location="../core/netbeans/lib/ext/terminalemulator.jar"/>
-            <pathelement location="../jemmy/jemmy.jar"/>
-            <pathelement location="../xtest/lib/junit.jar"/>
-            <pathelement location="../xtest/lib/junit-ext.jar"/>
+            <path refid="jellytools.classpath"/>
           </classpath>
         </javac>
     </target>
@@ -34,30 +51,27 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="jars" depends="compile" description="Create jars">
-        <jar basedir="src" compress="false" jarfile="jelly-nb.jar" >
+        <tstamp>
+            <format property="buildnumber" pattern="yyyyMMddhhmm"/>
+        </tstamp>
+        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+
+        <!-- Create jelly1 jar -->
+        <filter token="VERSION_SUBST" value="1.0"/>
+        <delete file="manifest-subst.mf"/>
+        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+        <jar basedir="src" compress="false" jarfile="jelly-nb.jar" manifest="manifest-subst.mf">
           <include name="**/test/oo/**"/>
-	  <!-- These would come from standard-jar-excludes -->
-	  <exclude name="**/*.java"/>
-	  <exclude name="**/*.orig"/>
-	  <exclude name="**/*.rej"/>
-	  <exclude name="**/*.form"/>
-	  <exclude name="**/*.jar.MAKEME"/>
-	  <exclude name="**/filesystem.attributes"/>
-          <exclude name="**/.nbattrs"/>
-          <exclude name="**/.#*"/>
+          <patternset refid="standard-jar-excludes"/>
         </jar>
-        <!-- Create jell2 jar -->
-        <jar basedir="src" compress="false" jarfile="jelly2-nb.jar" >
+        
+        <!-- Create jelly2 jar -->
+        <filter token="VERSION_SUBST" value="2.0"/>
+        <delete file="manifest-subst.mf"/>
+        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+        <jar basedir="src" compress="false" jarfile="jelly2-nb.jar" manifest="manifest-subst.mf">
           <include name="**/jellytools/**"/>
-	  <!-- These would come from standard-jar-excludes -->
-	  <exclude name="**/*.java"/>
-	  <exclude name="**/*.orig"/>
-	  <exclude name="**/*.rej"/>
-	  <exclude name="**/*.form"/>
-	  <exclude name="**/*.jar.MAKEME"/>
-	  <exclude name="**/filesystem.attributes"/>
-          <exclude name="**/.nbattrs"/>
-          <exclude name="**/.#*"/>
+          <patternset refid="standard-jar-excludes"/>
         </jar>
       </target>
     
@@ -77,10 +91,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="src"/>
             </sourcepath>
             <classpath>
-                <pathelement location="../openide/netbeans/lib/openide.jar"/>
-                <pathelement location="../core/netbeans/lib/core.jar"/>
-                <pathelement location="../core/netbeans/lib/ext/terminalemulator.jar"/>
-                <pathelement location="../jemmy/jemmy.jar"/>
+                <path refid="jellytools.classpath"/>
             </classpath>
         </javadoc>
         <zip zipfile="jelly-nb-javadoc.zip" basedir="." includes="javadoc/**"/>
@@ -92,12 +103,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="src"/>
             </sourcepath>
             <classpath>
-                <pathelement location="../openide/netbeans/lib/openide.jar"/>
-                <pathelement location="../core/netbeans/lib/core.jar"/>
-                <pathelement location="../core/netbeans/lib/ext/terminalemulator.jar"/>
-                <pathelement location="../jemmy/jemmy.jar"/>
-                <pathelement location="../xtest/lib/junit.jar"/>
-                <pathelement location="../xtest/lib/junit-ext.jar"/>
+                <path refid="jellytools.classpath"/>
             </classpath>
         </javadoc>
         <zip zipfile="jelly2-nb-javadoc.zip" basedir="." includes="javadoc/**"/>
@@ -107,10 +113,11 @@ Microsystems, Inc. All Rights Reserved.
         <delete>
             <fileset dir=".">
                 <include name="**/*.class"/>
+                <include name="**/*.zip"/>
+                <include name="**/*.jar"/>
             </fileset>
         </delete>
-        <delete file="*.jar"/>
-        <delete file="*.zip"/>
+        <delete file="manifest-subst.mf"/>
         <delete dir="javadoc"/>
     </target>
 
