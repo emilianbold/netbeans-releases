@@ -23,8 +23,8 @@ Microsystems, Inc. All Rights Reserved.
     
     <property name="xtest.hostname" location="amos.czech"/>
 
-    <property name="xtest.mail.all" value="milan@sun.com"/>
-    <property name="xtest.mail.failed" value="milan@sun.com"/>
+    <property name="xtest.mail.all" value=""/>
+    <property name="xtest.mail.failed" value=""/>
     
     <target name="init" depends="check">
         <taskdef name="nbtaskdef" classname="org.netbeans.xtest.NbMultiTaskDef" 
