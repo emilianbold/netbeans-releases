@@ -18,7 +18,7 @@ package org.apache.tools.ant.module;
 import java.io.*;
 import java.util.Enumeration;
 
-import org.openide.TopManager;
+import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem;
 import org.openide.modules.ModuleInstall;
@@ -31,7 +31,9 @@ public class AntModule extends ModuleInstall {
 
     private static final long serialVersionUID = -8877465721852434693L;
 
-    private static final String PROP_INSTALL_COUNT = "installCount";
+    private static final String PROP_INSTALL_COUNT = "installCount"; // NOI18N
+    
+    static final ErrorManager err = TopManager.getDefault ().getErrorManager ().getInstance ("org.apache.tools.ant.module"); // NOI18N
     
     public void installed () {
         restored ();
