@@ -19,19 +19,19 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Form">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
 
-            <file name="Add To Component Palette[org-netbeans-modules-form-actions-InstallToPaletteAction].instance" />
-            <file name="Component Inspector[org-netbeans-modules-form-actions-ComponentInspectorAction].instance" />
-            <file name="Component Palette[org-netbeans-modules-form-palette-PaletteAction].instance" />
-            <file name="Customize Layout[org-netbeans-modules-form-actions-CustomizeLayoutAction].instance" />
-            <file name="Design Mode[org-netbeans-modules-form-actions-DesignModeAction].instance" />
-            <file name="Events[org-netbeans-modules-form-actions-EventsAction].instance" />
-            <file name="Goto Form[org-netbeans-modules-form-actions-GotoFormAction].instance" />
-            <file name="Goto Inspector[org-netbeans-modules-form-actions-GotoInspectorAction].instance" />
-            <file name="Goto Source[org-netbeans-modules-form-actions-GotoEditorAction].instance" />
-            <file name="Install New JavaBean[org-netbeans-modules-form-actions-InstallBeanAction].instance" />
-            <file name="Set Layout[org-netbeans-modules-form-actions-SelectLayoutAction].instance" />
-            <file name="Show Grid[org-netbeans-modules-form-actions-ShowGridAction].instance" />
-            <file name="Test Mode[org-netbeans-modules-form-actions-TestModeAction].instance" />
+            <file name="org-netbeans-modules-form-actions-InstallToPaletteAction.instance" />
+            <file name="org-netbeans-modules-form-actions-ComponentInspectorAction.instance" />
+            <file name="org-netbeans-modules-form-palette-PaletteAction.instance" />
+            <file name="org-netbeans-modules-form-actions-CustomizeLayoutAction.instance" />
+            <file name="org-netbeans-modules-form-actions-DesignModeAction.instance" />
+            <file name="org-netbeans-modules-form-actions-EventsAction.instance" />
+            <file name="org-netbeans-modules-form-actions-GotoFormAction.instance" />
+            <file name="org-netbeans-modules-form-actions-GotoInspectorAction.instance" />
+            <file name="org-netbeans-modules-form-actions-GotoEditorAction.instance" />
+            <file name="org-netbeans-modules-form-actions-InstallBeanAction.instance" />
+            <file name="org-netbeans-modules-form-actions-SelectLayoutAction.instance" />
+            <file name="org-netbeans-modules-form-actions-ShowGridAction.instance" />
+            <file name="org-netbeans-modules-form-actions-TestModeAction.instance" />
         </folder>
     </folder>
 
@@ -39,33 +39,33 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Form">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
 
-            <file name="Component Inspector[org-netbeans-modules-form-actions-ComponentInspectorAction].instance" />
-            <file name="Show Grid[org-netbeans-modules-form-actions-ShowGridAction].instance" />
-            <file name="Design Mode[org-netbeans-modules-form-actions-DesignModeAction].instance" />
-            <file name="Test Mode[org-netbeans-modules-form-actions-TestModeAction].instance" />
+            <file name="org-netbeans-modules-form-actions-ComponentInspectorAction.instance" />
+            <file name="org-netbeans-modules-form-actions-ShowGridAction.instance" />
+            <file name="org-netbeans-modules-form-actions-DesignModeAction.instance" />
+            <file name="org-netbeans-modules-form-actions-TestModeAction.instance" />
 
-            <attr name="Component Inspector[org-netbeans-modules-form-actions-ComponentInspectorAction].instance/Test Mode[org-netbeans-modules-form-actions-TestModeAction].instance" boolvalue="true" />
-            <attr name="Test Mode[org-netbeans-modules-form-actions-TestModeAction].instance/Design Mode[org-netbeans-modules-form-actions-DesignModeAction].instance" boolvalue="true" />
-            <attr name="Design Mode[org-netbeans-modules-form-actions-DesignModeAction].instance/Show Grid[org-netbeans-modules-form-actions-ShowGridAction].instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-form-actions-ComponentInspectorAction.instance/org-netbeans-modules-form-actions-TestModeAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-form-actions-TestModeAction.instance/org-netbeans-modules-form-actions-DesignModeAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-form-actions-DesignModeAction.instance/org-netbeans-modules-form-actions-ShowGridAction.instance" boolvalue="true" />
         </folder>
 
         <folder name="Palette">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
-            <file name="Component Palette[org-netbeans-modules-form-palette-PaletteAction].instance" />
+            <file name="org-netbeans-modules-form-palette-PaletteAction.instance" />
         </folder>
     </folder>
 
     <folder name="Menu">
         <folder name="View">
-            <attr name="org-netbeans-core-actions-HTMLViewAction.instance/Component Inspector[org-netbeans-modules-form-actions-ComponentInspectorAction].instance" boolvalue="true" />
-            <file name="Component Inspector[org-netbeans-modules-form-actions-ComponentInspectorAction].instance" />
-            <attr name="Component Inspector[org-netbeans-modules-form-actions-ComponentInspectorAction].instance/org-netbeans-modules-objectbrowser-ShowBrowserAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-core-actions-HTMLViewAction.instance/org-netbeans-modules-form-actions-ComponentInspectorAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-form-actions-ComponentInspectorAction.instance" />
+            <attr name="org-netbeans-modules-form-actions-ComponentInspectorAction.instance/org-netbeans-modules-objectbrowser-ShowBrowserAction.instance" boolvalue="true" />
         </folder>
 
         <folder name="Tools">
-            <attr name="Separator1[javax-swing-JSeparator].instance/Install New JavaBean[org-netbeans-modules-form-actions-InstallBeanAction].instance" boolvalue="true" />
-            <file name="Install New JavaBean[org-netbeans-modules-form-actions-InstallBeanAction].instance" />
-            <attr name="Install New JavaBean[org-netbeans-modules-form-actions-InstallBeanAction].instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
+            <attr name="Separator1[javax-swing-JSeparator].instance/org-netbeans-modules-form-actions-InstallBeanAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-form-actions-InstallBeanAction.instance" />
+            <attr name="org-netbeans-modules-form-actions-InstallBeanAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
         </folder>
     </folder>
 
@@ -74,68 +74,68 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
 
             <file name="javax-swing-JLabel.instance">
-                name=JLabel
-                icon=/javax/swing/beaninfo/images/JLabelColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JLabelColor16.gif" />
             </file>
             <file name="javax-swing-JButton.instance">
-                name=JButton
-                icon=/javax/swing/beaninfo/images/JButtonColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JButtonColor16.gif" />
             </file>
             <file name="javax-swing-JToggleButton.instance">
-                name=JToggleButton
-                icon=/javax/swing/beaninfo/images/JToggleButtonColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JToggleButtonColor16.gif" />
             </file>
             <file name="javax-swing-JCheckBox.instance">
-                name=JCheckBox
-                icon=/javax/swing/beaninfo/images/JCheckBoxColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JCheckBoxColor16.gif" />
             </file>
             <file name="javax-swing-JRadioButton.instance">
-                name=JRadioButton
-                icon=/javax/swing/beaninfo/images/JRadioButtonColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JRadioButtonColor16.gif" />
             </file>
             <file name="javax-swing-ButtonGroup.instance">
-                name=ButtonGroup
-                icon=/org/netbeans/modules/form/resources/ButtonGroup16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/resources/ButtonGroup16.gif" />
             </file>
             <file name="javax-swing-JComboBox.instance">
-                name=JComboBox
-                icon=/javax/swing/beaninfo/images/JComboBoxColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JComboBoxColor16.gif" />
             </file>
             <file name="javax-swing-JList.instance">
-                name=JList
-                icon=/javax/swing/beaninfo/images/JListColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JListColor16.gif" />
             </file>
             <file name="javax-swing-JTextField.instance">
-                name=JTextField
-                icon=/javax/swing/beaninfo/images/JTextFieldColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JTextFieldColor16.gif" />
             </file>
             <file name="javax-swing-JTextArea.instance">
-                name=JTextArea
-                icon=/javax/swing/beaninfo/images/JTextAreaColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JTextAreaColor16.gif" />
             </file>
             <file name="javax-swing-JPanel.instance">
-                name=JPanel
-                icon=/javax/swing/beaninfo/images/JPanelColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JPanelColor16.gif" />
             </file>
             <file name="javax-swing-JTabbedPane.instance">
-                name=JTabbedPane
-                icon=/javax/swing/beaninfo/images/JTabbedPaneColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JTabbedPaneColor16.gif" />
             </file>
             <file name="javax-swing-JScrollBar.instance">
-                name=JScrollBar
-                icon=/javax/swing/beaninfo/images/JScrollBarColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JScrollBarColor16.gif" />
             </file>
             <file name="javax-swing-JScrollPane.instance">
-                name=JScrollPane
-                icon=/javax/swing/beaninfo/images/JScrollPaneColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JScrollPaneColor16.gif" />
             </file>
             <file name="javax-swing-JMenuBar.instance">
-                name=JMenuBar
-                icon=/javax/swing/beaninfo/images/JMenuBarColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JMenuBarColor16.gif" />
             </file>
             <file name="javax-swing-JPopupMenu.instance">
-                name=JPopupMenu
-                icon=/javax/swing/beaninfo/images/JPopupMenuColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JPopupMenuColor16.gif" />
             </file>
 
             <attr name="javax-swing-JLabel.instance/javax-swing-JButton.instance" boolvalue="true" />
@@ -158,60 +158,60 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
 
             <file name="javax-swing-JSlider.instance">
-                name=JSlider
-                icon=/javax/swing/beaninfo/images/JSliderColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JSliderColor16.gif" />
             </file>
             <file name="javax-swing-JProgressBar.instance">
-                name=JProgressBar
-                icon=/javax/swing/beaninfo/images/JProgressBarColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JProgressBarColor16.gif" />
             </file>
             <file name="javax-swing-JSplitPane.instance">
-                name=JSplitPane
-                icon=/javax/swing/beaninfo/images/JSplitPaneColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JSplitPaneColor16.gif" />
             </file>
             <file name="javax-swing-JPasswordField.instance">
-                name=JPasswordField
-                icon=/javax/swing/beaninfo/images/JPasswordFieldColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JPasswordFieldColor16.gif" />
             </file>
             <file name="javax-swing-JSeparator.instance">
-                name=JSeparator
-                icon=/javax/swing/beaninfo/images/JSeparatorColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JSeparatorColor16.gif" />
             </file>
             <file name="javax-swing-JTextPane.instance">
-                name=JTextPane
-                icon=/javax/swing/beaninfo/images/JTextPaneColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JTextPaneColor16.gif" />
             </file>
             <file name="javax-swing-JEditorPane.instance">
-                name=JEditorPane
-                icon=/javax/swing/beaninfo/images/JEditorPaneColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JEditorPaneColor16.gif" />
             </file>
             <file name="javax-swing-JTree.instance">
-                name=JTree
-                icon=/javax/swing/beaninfo/images/JTreeColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JTreeColor16.gif" />
             </file>
             <file name="javax-swing-JTable.instance">
-                name=JTable
-                icon=/javax/swing/beaninfo/images/JTableColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JTableColor16.gif" />
             </file>
             <file name="javax-swing-JToolBar.instance">
-                name=JToolBar
-                icon=/javax/swing/beaninfo/images/JToolBarColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JToolBarColor16.gif" />
             </file>
             <file name="javax-swing-JInternalFrame.instance">
-                name=JInternalFrame
-                icon=/javax/swing/beaninfo/images/JInternalFrameColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JInternalFrameColor16.gif" />
             </file>
             <file name="javax-swing-JLayeredPane.instance">
-                name=JLayeredPane
-                icon=/javax/swing/beaninfo/images/JLayeredPaneColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JLayeredPaneColor16.gif" />
             </file>
             <file name="javax-swing-JDesktopPane.instance">
-                name=JDesktopPane
-                icon=/javax/swing/beaninfo/images/JDesktopPaneColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JDesktopPaneColor16.gif" />
             </file>
             <file name="javax-swing-JOptionPane.instance">
-                name=JOptionPane
-                icon=/javax/swing/beaninfo/images/JOptionPaneColor16.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JOptionPaneColor16.gif" />
             </file>
 
             <attr name="javax-swing-JSlider.instance/javax-swing-JProgressBar.instance" boolvalue="true" />
@@ -233,56 +233,56 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
 
             <file name="java-awt-Label.instance">
-                name=Label
-                icon=/org/netbeans/beaninfo/awt/label.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/awt/label.gif" />
             </file>
             <file name="java-awt-Button.instance">
-                name=Button
-                icon=/org/netbeans/beaninfo/awt/button.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/awt/button.gif" />
             </file>
             <file name="java-awt-TextField.instance">
-                name=TextField
-                icon=/org/netbeans/beaninfo/awt/textfield.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/awt/textfield.gif" />
             </file>
             <file name="java-awt-TextArea.instance">
-                name=TextArea
-                icon=/org/netbeans/beaninfo/awt/textarea.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/awt/textarea.gif" />
             </file>
             <file name="java-awt-Checkbox.instance">
-                name=Checkbox
-                icon=/org/netbeans/beaninfo/awt/checkbox.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/awt/checkbox.gif" />
             </file>
             <file name="java-awt-Choice.instance">
-                name=Choice
-                icon=/org/netbeans/beaninfo/awt/choice.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/awt/choice.gif" />
             </file>
             <file name="java-awt-List.instance">
-                name=List
-                icon=/org/netbeans/beaninfo/awt/list.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/awt/list.gif" />
             </file>
             <file name="java-awt-Scrollbar.instance">
-                name=Scrollbar
-                icon=/org/netbeans/beaninfo/awt/scrollbar.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/awt/scrollbar.gif" />
             </file>
             <file name="java-awt-ScrollPane.instance">
-                name=ScrollPane
-                icon=/org/netbeans/beaninfo/awt/scrollpane.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/awt/scrollpane.gif" />
             </file>
             <file name="java-awt-Panel.instance">
-                name=Panel
-                icon=/org/netbeans/beaninfo/awt/panel.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/awt/panel.gif" />
             </file>
             <file name="java-awt-Canvas.instance">
-                name=Canvas
-                icon=/org/netbeans/beaninfo/awt/canvas.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/awt/canvas.gif" />
             </file>
             <file name="java-awt-MenuBar.instance">
-                name=MenuBar
-                icon=/org/netbeans/beaninfo/awt/menubar.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/awt/menubar.gif" />
             </file>
             <file name="java-awt-PopupMenu.instance">
-                name=PopupMenu
-                icon=/org/netbeans/beaninfo/awt/popupmenu.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/awt/popupmenu.gif" />
             </file>
 
             <attr name="java-awt-Label.instance/java-awt-Button.instance" boolvalue="true" />
@@ -306,32 +306,32 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
 
             <file name="java-awt-FlowLayout.instance">
-                name=FlowLayout
-                icon=/org/netbeans/beaninfo/swing/flowLayout.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/swing/flowLayout.gif" />
             </file>
             <file name="java-awt-BorderLayout.instance">
-                name=BorderLayout
-                icon=/org/netbeans/beaninfo/swing/borderLayout.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/swing/borderLayout.gif" />
             </file>
             <file name="java-awt-GridLayout.instance">
-                name=GridLayout
-                icon=/org/netbeans/beaninfo/swing/gridLayout.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/swing/gridLayout.gif" />
             </file>
             <file name="java-awt-GridBagLayout.instance">
-                name=GridBagLayout
-                icon=/org/netbeans/beaninfo/swing/gridBagLayout.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/swing/gridBagLayout.gif" />
             </file>
             <file name="java-awt-CardLayout.instance">
-                name=CardLayout
-                icon=/org/netbeans/beaninfo/swing/cardLayout.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/swing/cardLayout.gif" />
             </file>
             <file name="javax-swing-BoxLayout.instance">
-                name=BoxLayout
-                icon=/org/netbeans/beaninfo/swing/boxLayout.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/swing/boxLayout.gif" />
             </file>
             <file name="org-netbeans-modules-form-layoutsupport-NullLayoutSupport.instance">
-                name=Null Layout
-                icon=/org/netbeans/modules/form/layoutsupport/resources/NullLayout.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/layoutsupport/resources/NullLayout.gif" />
             </file>
 
             <attr name="java-awt-FlowLayout.instance/java-awt-BorderLayout.instance" boolvalue="true" />
@@ -346,36 +346,36 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
 
             <file name="javax-swing-border-EmptyBorder.instance">
-                name=EmptyBorder
-                icon=/org/netbeans/beaninfo/swing/emptyBorder.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/swing/emptyBorder.gif" />
             </file>
             <file name="javax-swing-border-LineBorder.instance">
-                name=LineBorder
-                icon=/org/netbeans/beaninfo/swing/lineBorder.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/swing/lineBorder.gif" />
             </file>
             <file name="javax-swing-border-MatteBorder.instance">
-                name=MatteBorder
-                icon=/org/netbeans/beaninfo/swing/matteBorder.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/swing/matteBorder.gif" />
             </file>
             <file name="javax-swing-border-TitledBorder.instance">
-                name=TitledBorder
-                icon=/org/netbeans/beaninfo/swing/titledBorder.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/swing/titledBorder.gif" />
             </file>
             <file name="javax-swing-border-EtchedBorder.instance">
-                name=EtchedBorder
-                icon=/org/netbeans/beaninfo/swing/etchedBorder.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/swing/etchedBorder.gif" />
             </file>
             <file name="javax-swing-border-BevelBorder.instance">
-                name=BevelBorder
-                icon=/org/netbeans/beaninfo/swing/bevelBorder.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/swing/bevelBorder.gif" />
             </file>
             <file name="javax-swing-border-SoftBevelBorder.instance">
-                name=SoftBevelBorder
-                icon=/org/netbeans/beaninfo/swing/softBevelBorder.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/swing/softBevelBorder.gif" />
             </file>
             <file name="javax-swing-border-CompoundBorder.instance">
-                name=CompoundBorder
-                icon=/org/netbeans/beaninfo/swing/compoundBorder.gif
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/swing/compoundBorder.gif" />
             </file>
 
             <attr name= "javax-swing-border-EmptyBorder.instance/javax-swing-border-LineBorder.instance" boolvalue="true"/>
