@@ -107,6 +107,8 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     private Vector      toolbarRows;
     /** All invisible toolbars (visibility==false || tb.isCorrect==false). */
     private HashMap     invisibleToolbars;
+    
+    private JMenu       toolbarMenu;
     /** Toolbars which was described in DOM Document,
 	but which aren't represented in ToolbarPool.
 	For exapmle ComponentPalette and first start of IDE. */
@@ -655,6 +657,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
      * filled menu. */ 
     public JMenu getToolbarsMenu (JMenu menu) {
         fillToolbarsMenu(menu);
+        toolbarMenu = menu;
         return menu;
     }
 
@@ -664,7 +667,8 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         Iterator it = Arrays.asList (ToolbarPool.getDefault ().getToolbars ()).iterator ();
         while (it.hasNext()) {
             final Toolbar tb = (Toolbar)it.next();
-            final ToolbarConstraints tc = 
+            final String tbName = tb.getName();
+            ToolbarConstraints tc = 
                 (ToolbarConstraints)allToolbars.get (tb.getName());
 /*            
             if (tc == null) {
@@ -678,8 +682,14 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
             JCheckBoxMenuItem mi = new JCheckBoxMenuItem (
                 tb.getDisplayName(), tc.isVisible()
             );
+            mi.putClientProperty("ToolbarName", tbName); //NOI18N
             mi.addActionListener (new ActionListener () {
                                       public void actionPerformed (ActionEvent ae) {
+                                          // #39741 fix
+                                          // for some reason (unknown to me - mkleint) the menu gets recreated repeatedly, which 
+                                          // can cause the formerly final ToolbarConstraints instance to be obsolete.
+                                          // that's why we each time look up the current instance on the allToolbars map.
+                                          ToolbarConstraints tc = (ToolbarConstraints)allToolbars.get (tbName );
                                           setToolbarVisible(tb, !tc.isVisible());
                                       }
                                   });
@@ -755,6 +765,20 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
             addInvisible(tc);
         } else {
             removeVisible(tc);
+        }
+        if (toolbarMenu != null) {
+            //#39808 - somoewhat bruteforce approach, but works and is simple enough.
+            // assumes the toolbar selection is always processed through the setToolbarVisible() method.
+            //correct selection of the toolbar checkboxes in the main menu..
+            Component[] elements = toolbarMenu.getMenuComponents();
+            for (int i = 0; i < elements.length; i++) {
+                JComponent component = (JComponent)elements[i];
+                String tcmenu  = (String)component.getClientProperty("ToolbarName"); //NOI18N
+                if (tcmenu != null && tcmenu.equals(tb.getName())) {
+                    ((JCheckBoxMenuItem)component).setSelected(b);
+                    break;
+                }
+            }
         }
         tb.setVisible(b);
         reflectChanges();
