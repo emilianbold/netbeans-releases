@@ -22,6 +22,8 @@ package org.netbeans.modules.testtools;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import org.openide.TopManager;
+import org.openide.ServiceType;
 import org.openide.util.HelpCtx;
 import org.openide.nodes.Node;
 import org.openide.nodes.CookieSet;
@@ -40,7 +42,6 @@ import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.nodes.AntProjectNode;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.apache.tools.ant.module.loader.AntCompilerSupport;
-import org.openide.TopManager;
 
 /** Data Object class representing XTest Workspace Build Script
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
@@ -101,7 +102,6 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
 
     void removeSaveCookie(SaveCookie saveCookie) {
         Node.Cookie cookie = getCookie(SaveCookie.class);
-
         if(cookie != null && cookie.equals(saveCookie)) {
             getCookieSet().remove(saveCookie);
             setModified(false);
@@ -128,7 +128,9 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
         /** returns default Executor
          * @return XTestExecutor */        
         protected Executor defaultExecutor () {
-            Executor e=(Executor)TopManager.getDefault().getServices().find(XTestExecutor.class);
+            ServiceType.Registry registry=TopManager.getDefault().getServices();
+            registry.services();
+            Executor e=(Executor)registry.find(XTestExecutor.class);
             return e==null?super.defaultExecutor():e;
         }
     }
@@ -146,7 +148,9 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
         /** returns default Compiler Type for XTestDataObject
          * @return XTestCompilerType */        
         protected CompilerType defaultCompilerType () {
-            CompilerType c=(CompilerType)TopManager.getDefault().getServices().find(XTestCompilerType.class);
+            ServiceType.Registry registry=TopManager.getDefault().getServices();
+            registry.services();
+            CompilerType c=(CompilerType)registry.find(XTestCompilerType.class);
             return c==null?super.defaultCompilerType():c;
         }
     }
