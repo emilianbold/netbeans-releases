@@ -6,7 +6,3 @@ OpenIDE-Module-Layer: org/netbeans/modules/db/resources/mf-layer.xml
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/db/resources/Bundle.properties
 Class-Path: docs/db.jar
-
-Name: org/netbeans/modules/db/explorer/nodes/RootNode.class
-OpenIDE-Module-Class: Node
-Type: Environment
