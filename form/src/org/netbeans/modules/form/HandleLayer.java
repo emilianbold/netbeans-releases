@@ -1120,12 +1120,6 @@ class HandleLayer extends JPanel
                     }
                 }
 
-                if (!e.isShiftDown()
-                    && palette.getMode() == PaletteAction.MODE_ADD)
-                {
-                    palette.setMode(PaletteAction.MODE_SELECTION);
-                }
-
                 prevLeftMousePoint = lastLeftMousePoint;
                 lastLeftMousePoint = null;
             }
@@ -1196,6 +1190,7 @@ class HandleLayer extends JPanel
                                 processMouseClickInLayoutSupport(hitMetaComp, e);
                         }
                     }
+                    draggingCanceled = false;
                 }
                 else if (!viewOnly) {
                     if (paletteMode == PaletteAction.MODE_CONNECTION) {
@@ -1225,6 +1220,11 @@ class HandleLayer extends JPanel
                                 .createComponent(item.getInstanceCookie(),
                                                  hitMetaComp,
                                                  constraints);
+                        }
+
+                        if (!e.isShiftDown()) {
+                            palette.setMode(PaletteAction.MODE_SELECTION);
+                            draggingCanceled = true;
                         }
                     }
                 }
