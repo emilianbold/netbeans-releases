@@ -40,7 +40,7 @@ public class MainSubMenus extends testUtilities.PerformanceTestCase {
     /** Creates a new instance of MainSubMenus */
     public MainSubMenus(String testName) {
         super(testName);
-        expectedTime = 250; // TODO what is expacted time?
+        expectedTime = 250;
         WAIT_AFTER_OPEN = 500;
     }
     
@@ -49,7 +49,7 @@ public class MainSubMenus extends testUtilities.PerformanceTestCase {
     public MainSubMenus(String testName, String performanceDataName) {
         this(testName);
         repeat = 1; // only first use is interesting
-        expectedTime = 250; // TODO what is expacted time?
+        expectedTime = 250;
         WAIT_AFTER_OPEN = 500;
         setTestCaseName(testName, performanceDataName);
     }
