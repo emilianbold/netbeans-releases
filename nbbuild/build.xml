@@ -89,6 +89,8 @@ workspaceswitcher
     <property name="firststart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true -single ${firststart.args.additional}"/>
     <!-- But this it is OK to change: -->
     <property name="tryme.args" value=" -J-Dnetbeans.debug.exceptions=true -single ${tryme.args.additional}"/>
+    <!-- Only useful to override in conjunction with merge target during development: -->
+    <property name="fixedmodules" value="core,openide"/>
     <!-- Override this with the Ant command, e.g. -Dmoduleconfig=superslim -->
     <property name="moduleconfig" value="stable"/>
     <!-- You can also explicitly set a particular list of modules if you prefer: -->
@@ -385,7 +387,7 @@ workspaceswitcher
   
   <target name="merge" depends="init,build-messaging">
     <mkdir dir="${netbeans.dest}"/>
-    <nbmerge dest="${netbeans.dest}" topdir=".." modules="openide,core,${modules}" targetprefix="all-">
+    <nbmerge dest="${netbeans.dest}" topdir=".." modules="${fixedmodules},${modules}" targetprefix="all-">
       <suppress locale="ja" unless="netbeans.japanese"/>
     </nbmerge>
     <chmod perm="ugo+x">
@@ -715,11 +717,14 @@ the ${netbeans.dest}/bin/ directory.
 
   <target name="clean" depends="init,localclean"
           description="Clean out (almost) all build products.">
-    <cleanall topdir=".." modules="openide,core,${modules}" targetname="clean"/>
+    <cleanall topdir=".." modules="${fixedmodules},${modules}" targetname="clean"/>
     <echo message="Run `ant real-clean' if desired."/>
   </target>
 
   <target name="print-selected-modules" depends="init" description="Prints list of modules to build in selected moduleconfig.">
-    <echo message="modules=openide,core,${modules}"/>
+    <echo message="modules=${fixedmodules},${modules}"/>
   </target>
 </project>
+
+
+
