@@ -64,6 +64,8 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
     public static final String PROP_SHORT_DESCRIPTION = "shortDescription"; // NOI18N
     /** Property include constant */
     public static final String PROP_INCLUDED = "included"; // NOI18N
+    /** Property include constant */
+    public static final String PROP_CUSTOMIZER = "customizer"; // NOI18N
 
     /** Property bound constant */
     public static final String PROP_BOUND = "bound"; // NOI18N
@@ -86,10 +88,10 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
 
     // variables ..........................................................................
 
-    private static SystemAction [] staticActions;
+    //private static SystemAction [] staticActions;
 
     // feature mode asociated to this node
-    private BiFeature  biFeature = null;
+    protected BiFeature  biFeature = null;
 
     // constructors .......................................................................
 
@@ -153,7 +155,8 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_NAME )
                ) {
                    public Object getValue () {
-                       return biFeature.getName ();
+
+                       return (!(biFeature instanceof BiFeature.Descriptor )) ? biFeature.getName () : ((BiFeature.Descriptor)biFeature).getBeanName();
                    }
                    public void setValue (Object val) throws IllegalAccessException {
                        throw new IllegalAccessException(GenerateBeanInfoAction.getString("MSG_Cannot_Write"));
@@ -258,6 +261,7 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                        }
                    }
                 });
+        /*
         ps.put(new PropertySupport.ReadWrite (
                    PROP_INCLUDED,
                    Boolean.TYPE,
@@ -277,9 +281,12 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                        }
                    }
                });
-
+               */
         // Add special properties according to type of feature
-
+        if( ! (biFeature instanceof BiFeature.Descriptor) )
+            addIncludedProperty( ps );
+        else
+            addCustomizerProperty( sheet );
 
         if ( biFeature instanceof BiFeature.Property || biFeature instanceof BiFeature.IdxProperty )
             addExpertProperty( sheet );
@@ -290,7 +297,57 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
         setSheet(sheet);
     }
 
-    private void addExpertProperty( Sheet sheet ) {
+    protected void addIncludedProperty( Sheet.Set ps ) {    
+        ps.put(new PropertySupport.ReadWrite (
+                   PROP_INCLUDED,
+                   Boolean.TYPE,
+                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_INCLUDED ),
+                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_INCLUDED )
+               ) {
+                   public Object getValue () {
+                       return new Boolean( biFeature.isIncluded () );
+                   }
+                   public void setValue (Object val) throws
+                       IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                       try {
+                           biFeature.setIncluded ( ((Boolean)val).booleanValue() );
+                           setIconBase( biFeature.getIconBase() );
+                       } catch (ClassCastException e) {
+                           throw new IllegalArgumentException ();
+                       }
+                   }
+               });
+    }
+    
+    protected void addCustomizerProperty( Sheet sheet ) {
+        Sheet.Set ps = Sheet.createExpertSet();
+    
+          ps.put(new CodePropertySupportRW(//PropertySupport.ReadWrite (
+          //ps.put(new PropertySupport.ReadWrite (
+               PROP_DISPLAY_NAME,
+                   String.class,
+                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_CUSTOMIZER ),
+                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_CUSTOMIZER )
+               ) {
+                   public Object getValue () {
+                       String toRet = ((BiFeature.Descriptor)biFeature).getCustomizer() != null ? ((BiFeature.Descriptor)biFeature).getCustomizer() : "null";
+                       return toRet;
+                   }
+                   public void setValue (Object val) throws
+                       IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                       try {
+                           if( "null".equals((String)val) )
+                                val = null;
+                           ((BiFeature.Descriptor)biFeature).setCustomizer( (String)val );
+                       } catch (ClassCastException e) {
+                           throw new IllegalArgumentException ();
+                       }
+                   }
+               });
+        sheet.put( ps );
+    }
+
+    protected void addExpertProperty( Sheet sheet ) {
         Sheet.Set ps = Sheet.createExpertSet();
 
         ps.put(new PropertySupport.ReadWrite (
@@ -472,7 +529,9 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
     * @return array of system actions that should be in popup menu
     */
     public SystemAction[] getActions () {
-        if (staticActions == null) {
+        SystemAction [] staticActions = null;
+        //if (staticActions == null) {
+            if( ! (biFeature instanceof BiFeature.Descriptor) ){
             staticActions = new SystemAction[] {
                                 SystemAction.get (BiToggleAction.class),
                                 null
@@ -484,6 +543,10 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                                 */
                             };
         }
+            else {                
+                staticActions = new SystemAction[0];
+            }
+        //}
         return staticActions;
     }
 
@@ -564,7 +627,8 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
     * @return human presentable name of this breakpoint.
     */
     public String getName () {
-        return biFeature.getName();
+        return (!(biFeature instanceof BiFeature.Descriptor )) ? biFeature.getName () : ((BiFeature.Descriptor)biFeature).getBeanName();
+        //return biFeature.getName();
     }
 
     abstract class CodePropertySupportRW extends PropertySupport.ReadWrite

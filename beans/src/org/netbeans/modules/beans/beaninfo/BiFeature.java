@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.openide.src.MethodElement;
+import org.openide.src.ClassElement;
 import org.openide.nodes.Node;
 
 import org.netbeans.modules.beans.Pattern;
@@ -51,6 +52,7 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
     private String shortDescription = null;
     private boolean included = true;
 
+    private String brackets = "]";
     /**
     * Creates empty BiFeature.
     */
@@ -61,6 +63,10 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
     public BiFeature( MethodElement me ) {
         displayName = "\"\"";
         name = me.getName().getName();
+    }
+
+    public BiFeature( ClassElement ce ) {        
+        name = "beanDescriptor";//NOI18N GenerateBeanInfoAction.getString("CTL_NODE_DescriptorDisplayName");
     }
 
     abstract String getCreationString();
@@ -114,6 +120,14 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
 
     public void setShortDescription(String shortDescription) {
         this.shortDescription = shortDescription;
+    }
+
+    String getBrackets(){
+        return brackets;
+    }
+    
+    void setBrackets(String brackets){
+        this.brackets = brackets;
     }
 
     public boolean isIncluded() {
@@ -171,13 +185,12 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
         
         Iterator it = code.iterator();
 
-        String stNew = new String( getName() + "]=new" ); // NOI18N
-        String stExpert = new String( getName() + "]." + TEXT_EXPERT ); // NOI18N
-        String stHidden = new String( getName() + "]." + TEXT_HIDDEN ); // NOI18N
-        String stPreferred = new String( getName() + "]." + TEXT_PREFERRED ); // NOI18N
-        String stDisplayName = new String( getName() + "]." + TEXT_DISPLAY_NAME ); // NOI18N
-        String stShortDescription = new String( getName() + "]." + TEXT_SHORT_DESCRIPTION ); // NOI18N
-
+        String stNew = new String( getName() + getBrackets() + "=new" ); // NOI18N
+        String stExpert = new String( getName() + getBrackets() + "." + TEXT_EXPERT ); // NOI18N
+        String stHidden = new String( getName() + getBrackets() + "." + TEXT_HIDDEN ); // NOI18N
+        String stPreferred = new String( getName() + getBrackets() + "." + TEXT_PREFERRED ); // NOI18N
+        String stDisplayName = new String( getName() + getBrackets() + "." + TEXT_DISPLAY_NAME ); // NOI18N
+        String stShortDescription = new String( getName() + getBrackets() + "." + TEXT_SHORT_DESCRIPTION ); // NOI18N
         while( it.hasNext() ) {
             String statement = ( String ) it.next();
 
@@ -222,6 +235,78 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
     abstract void analyzeCreationString( String statement );
     abstract void analyzeCustomizationString( String statement );
 
+    static class Descriptor extends BiFeature {
+        ClassElement element;
+        private String varName;
+        private ClassElement ce;
+        String customizer;
+        
+        Descriptor( ClassElement ce ) {
+            super( ce );
+            element = ce;
+            this.ce = ce;
+        }
+
+        /** Returns the call to constructor of PropertyDescriptor */
+        String getCreationString () {
+            StringBuffer sb = new StringBuffer( 100 );
+
+            sb.append( "new BeanDescriptor  ( " ); // NOI18N
+            sb.append( getBeanName() + ".class , " ); // NOI18N
+            sb.append( String.valueOf(getCustomizer()) + " )"); // NOI18N
+
+            return sb.toString();
+        }
+
+        String getIconBase() {                
+            //now there be no icon !!!
+            return null;    // NOI18N
+            //return BIF_DESCRIPTOR + "S"; // NOI18N
+        }
+        
+
+        Collection getCustomizationStrings () {
+            Collection col = super.getCustomizationStrings();
+            StringBuffer sb = new StringBuffer( 100 );
+
+            return col;
+        }
+
+        void analyzeCustomizationString( String statement ) {
+        }
+
+        void analyzeCreationString( String statement ) {
+            int beg = statement.indexOf( ',' );
+            int end = statement.lastIndexOf( ')' );
+
+            if ( beg != -1 && end != -1 && ( ++beg < end ) )
+                setCustomizer( statement.substring( beg, end ) );
+            else
+                setCustomizer( null );
+        }
+
+        String getBrackets(){
+            return "";
+        }
+        
+        public String getCustomizer(){
+            return customizer;
+        }
+
+        public void setCustomizer(String customizer){
+            this.customizer = customizer;
+        }
+        
+        //overrides BiFeature.isIncluded(), this property is always included ( disabled by setting get from Introspection )
+        public boolean isIncluded() {
+            return true;
+        }
+        
+        public String getBeanName(){
+            return element.getName().getName();
+        }
+    }
+    
     static class Property extends BiFeature {
 
         private PropertyPattern pattern;

@@ -42,6 +42,7 @@ public final class BiNode extends AbstractNode {
     private static String ICON_BASE_PATTERNS = "/org/netbeans/modules/beans/resources/patternGroup"; // NOI18N
     private static String WAIT_ICON_BASE = "/org/openide/resources/src/wait"; // NOI18N
 
+    private static String PROP_NULL_DESCRIPTOR = "nullDescriptor"; // NOI18N
     private static String PROP_NULL_PROPERTIES = "nullProperties"; // NOI18N
     private static String PROP_NULL_EVENTS = "nullEvents"; // NOI18N
     private static String PROP_NULL_METHODS = "nullMethods"; // NOI18N
@@ -55,6 +56,27 @@ public final class BiNode extends AbstractNode {
     // variables ....................................................................................
 
     private BiAnalyser biAnalyser;
+
+    private PropertySupport[] descSubnodeDescriptor =  new PropertySupport[] {
+                new PropertySupport.ReadWrite (
+                    PROP_NULL_DESCRIPTOR,
+                    Boolean.TYPE,
+                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_NULL_DESCRIPTOR ),
+                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_NULL_DESCRIPTOR )
+                ) {
+                    public Object getValue () {
+                        return new Boolean(  biAnalyser.isNullDescriptor () );
+                    }
+                    public void setValue (Object val) throws
+                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                        try {
+                            biAnalyser.setNullDescriptor ( ((Boolean)val).booleanValue() );
+                        } catch (ClassCastException e) {
+                            throw new IllegalArgumentException ();
+                        }
+                    }
+                }
+            };
 
     private PropertySupport[] propSubnodeProperties =  new PropertySupport[] {
                 new PropertySupport.ReadWrite (
@@ -152,6 +174,12 @@ public final class BiNode extends AbstractNode {
                                ICON_BASE_PATTERNS,
                                eventSubnodeProperties )
             } : new Node[] {
+                    new SubNode( biAnalyser,
+                               new Class[] { BiFeature.Descriptor.class },
+                               "CTL_NODE_Descriptor", // NOI18N
+                               ICON_BASE_PATTERNS,
+                               descSubnodeDescriptor ),//new PropertySupport[0] ),
+
                     new SubNode( biAnalyser,
                                new Class[] { BiFeature.Property.class, BiFeature.IdxProperty.class },
                                "CTL_NODE_Properties", // NOI18N
@@ -304,7 +332,7 @@ public final class BiNode extends AbstractNode {
 
     static class SubNode extends AbstractNode implements Node.Cookie {
 
-        private static SystemAction[] staticActions;
+        //private static SystemAction[] staticActions;
 
         SubNode ( BiAnalyser biAnalyser, Class[] keys, String titleKey, String iconBase,
                   PropertySupport[] properties ) {
@@ -338,14 +366,21 @@ public final class BiNode extends AbstractNode {
         * @return array of system actions that should be in popup menu
         */
         public SystemAction[] getActions () {
-            if (staticActions == null) {
-                staticActions = new SystemAction[] {
+            SystemAction[] staticActions;
+            
+            Children ch = getChildren();
+            Node[] nodes = ch.getNodes();
+            if ( nodes == null )
+                return new SystemAction[0];
+
+            if( nodes[0] != null && ((BiFeatureNode)nodes[0]).getBiFeature() instanceof BiFeature.Descriptor )
+                return new SystemAction[0];
+
+            return new SystemAction[] {
                                     SystemAction.get (BiIncludeAllAction.class),
                                     SystemAction.get (BiExcludeAllAction.class),
                                     null
                                 };
-            }
-            return staticActions;
         }
 
         void includeAll( boolean value) {

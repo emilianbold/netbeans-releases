@@ -74,6 +74,8 @@ public class BiChildren extends Children.Keys {
     /** Creates nodes for given key.
     */
     protected Node[] createNodes( final Object key ) {
+        if ( key == BiFeature.Descriptor.class )
+            return createNodesFromFeatures( biAnalyser.getDescriptor() );
         if ( key == BiFeature.Property.class )
             return createNodesFromFeatures( biAnalyser.getProperties() );
         if ( key == BiFeature.IdxProperty.class )

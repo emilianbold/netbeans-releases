@@ -39,6 +39,7 @@ public class BeanInfoSource extends Object {
 
     private static final String BEANINFO_NAME_EXT = "BeanInfo"; // NOI18N
 
+    private static final String DESCRIPTOR_SECTION = "BeanDescriptor"; // NOI18N
     private static final String PROPERTIES_SECTION = "Properties"; // NOI18N
     private static final String EVENTSETS_SECTION = "Events"; // NOI18N
     private static final String ICONS_SECTION = "Icons"; // NOI18N
@@ -73,6 +74,7 @@ public class BeanInfoSource extends Object {
             return false;
         }
 
+        JavaEditor.InteriorSection dis = javaEditor.findInteriorSection( DESCRIPTOR_SECTION );
         JavaEditor.InteriorSection pis = javaEditor.findInteriorSection( PROPERTIES_SECTION );
         JavaEditor.InteriorSection eis = javaEditor.findInteriorSection( EVENTSETS_SECTION );
         JavaEditor.InteriorSection mis = javaEditor.findInteriorSection( METHODS_SECTION );
@@ -82,6 +84,17 @@ public class BeanInfoSource extends Object {
         return ( pis != null && eis != null && iss != null && dss != null);
     }
 
+    /** Checks wether the bean descriptor object has Guarded sections i.e.
+     * was created from new netbeans template.
+     */
+    boolean isNbBeanInfoDescriptor() {
+
+        if ( !exists() || javaEditor == null ) {
+            return false;
+        }
+        JavaEditor.InteriorSection dis = javaEditor.findInteriorSection( DESCRIPTOR_SECTION );
+        return ( dis != null );
+    }
 
     /** Finds the bean info for classElement asspciated with this
         object */
@@ -186,6 +199,28 @@ public class BeanInfoSource extends Object {
     /** opens the source */
     void open() {
         javaEditor.open();
+    }
+
+    /** Sets the header and bottom of properties section */
+    void setDescriptorSection( String header, String bottom ) {
+        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( DESCRIPTOR_SECTION );
+
+        if ( is != null ) {
+            is.setHeader( header );
+            is.setBottom( bottom );
+        }
+    }
+
+    /** Gets the header of properties setion */
+    String getDescriptorSection() {
+        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( DESCRIPTOR_SECTION );
+
+        if ( is != null ) {
+            return is.getText();
+        }
+        else
+            return null;
+
     }
 
     /** Sets the header and bottom of properties section */

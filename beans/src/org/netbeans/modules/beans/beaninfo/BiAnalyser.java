@@ -56,6 +56,9 @@ public class BiAnalyser extends Object implements Node.Cookie {
     private static final String DEFAULT_PROPERTY_INDEX = "defaultPropertyIndex"; // NOI18N
     private static final String DEFAULT_EVENT_INDEX = "defaultEventIndex"; // NOI18N
 
+    /** Holds Bean descriptor */
+    List descriptor;
+    
     /** Holds all properties */
     List properties;
 
@@ -70,6 +73,9 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
     /** Object representing source code of associated BeanInfo */
     BeanInfoSource bis;
+
+    /** Should bean descriptor be obtained from introspection */
+    private boolean nullDescriptor = false;
 
     /** Should properties be obtained from introspection */
     private boolean nullProperties = false;
@@ -134,6 +140,10 @@ public class BiAnalyser extends Object implements Node.Cookie {
         bis = new BeanInfoSource( classElement );
         olderVersion = (bis.isNbBeanInfo() && bis.getMethodsSection() == null);
         
+        // Fill Descriptor list (only in case we have new templates)
+        descriptor = new ArrayList();
+        descriptor.add(new BiFeature.Descriptor(pa.getClassElement()));
+
         // Fill methods list (only in case we have new templates)
         methods = new ArrayList();
         if (!olderVersion) {
@@ -197,6 +207,10 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
         analyzeBeanInfoSource( );
 
+    }
+    
+    Collection getDescriptor() {
+        return descriptor;
     }
     
     Collection getProperties() {
@@ -267,12 +281,20 @@ public class BiAnalyser extends Object implements Node.Cookie {
         this.defaultEventIndex = defaultEventIndex;
     }
 
+    boolean isNullDescriptor() {
+        return nullDescriptor;
+    }
+
     boolean isNullProperties() {
         return nullProperties;
     }
 
     boolean isNullMethods() {
         return nullMethods;
+    }
+
+    void setNullDescriptor( boolean nullDescriptor ) {
+        this.nullDescriptor = nullDescriptor;
     }
 
     void setNullProperties( boolean nullProperties ) {
@@ -316,6 +338,19 @@ public class BiAnalyser extends Object implements Node.Cookie {
                 }
                 bis.createFromTemplate();
             }
+            else if ( !bis.isNbBeanInfoDescriptor() ) {
+                try {
+                    bis.delete();
+                }
+                catch ( java.io.IOException e ) {
+                    String mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoCantDelete" );
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
+                    nd = new NotifyDescriptor.Message ( mssg );
+                    TopManager.getDefault().notify( nd );
+                    return;
+                }
+                bis.createFromTemplate();
+            }
         }
         else {
             
@@ -330,6 +365,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         javax.swing.SwingUtilities.invokeLater( new Runnable() {
                                                     public void run() {
                                                         bis.open();
+                                                        regenerateBeanDescriptor();
                                                         regenerateProperties();
                                                         regenerateEvents();
                                                         if (!olderVersion) {
@@ -341,6 +377,45 @@ public class BiAnalyser extends Object implements Node.Cookie {
                                                 } );
     }
 
+    private void regenerateBeanDescriptor(){
+        StringBuffer sb = new StringBuffer( 512 );
+        int methodCount = 0;
+
+
+        if ( nullDescriptor ) {
+            sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_NullDescriptor" ) );
+            sb.append( TAB + "private static BeanDescriptor beanDescriptor = null;\n" ); // NOI18N
+            bis.setDescriptorSection( sb.toString(), "  \n" ); // NOI18N
+            return;
+        }
+        
+        // Make common list of bean descriptor, in allDescriptor  will be the only one
+        ArrayList allDescriptor = new ArrayList( getMethods().size());
+        allDescriptor.addAll( getDescriptor() );
+
+        Iterator it = allDescriptor.iterator();
+        while( it.hasNext() ) {
+            BiFeature bif = ( BiFeature )it.next();
+            if( bif.isIncluded() ){
+                
+                sb.append( "\n" + TAB + GenerateBeanInfoAction.getString("COMMENT_BeanDescriptor" ));
+                sb.append( TAB + "private static BeanDescriptor beanDescriptor = ");
+                sb.append( bif.getCreationString() );
+                sb.append( ";\n\n" ); // NOI18N
+
+                sb.append( TAB + "static {\n" ); // NOI18N
+
+                Collection cs = bif.getCustomizationStrings();
+                Iterator csit = cs.iterator();
+                while( csit.hasNext() ) {
+                    sb.append(  TABx3 + "beanDescriptor."); // NOI18N
+                    sb.append( (String)csit.next() ).append( ";\n" ); // NOI18N
+                }
+                bis.setDescriptorSection( sb.toString(), "}\n"); // NOI18N
+            }            
+        }
+    }
+    
     /** Regenerates the property section of BeanInfo */
     private void regenerateProperties() {
         StringBuffer sb = new StringBuffer( 512 );
@@ -568,6 +643,11 @@ public class BiAnalyser extends Object implements Node.Cookie {
         code = normalizeText( section );
         setDefaultIdxFromBeanInfo( code );
 
+        section = bis.getDescriptorSection();
+        code = normalizeText( section );
+        nullDescriptor = setPropertiesFromBeanInfo( descriptor, code, "BeanDescriptor" ); // NOI18N
+        if ( !nullDescriptor )
+            setPropertiesFromBeanInfo( descriptor, code, "BeanDescriptor" ); // NOI18N
 
         section = bis.getPropertiesSection();
         code = normalizeText( section );
@@ -608,7 +688,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         boolean guarded = false;    //guarded beetwen ""
         boolean escape = false;    //guarded beetwen ""
         
-        for ( int i = 0; i < code.length(); i++ ) {
+        for ( int i = 0; code != null && i < code.length(); i++ ) {
             char ch = code.charAt( i );
             
             if( ch != '\"' )
@@ -747,8 +827,11 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
         it = features.iterator();
 
+        
         while( it.hasNext() ) {
-            ((BiFeature) it.next()).analyzeCustomization( code );
+            BiFeature bif = ((BiFeature) it.next());
+            bif.setBrackets(bif.getBrackets());
+            bif.analyzeCustomization( code );            
         }
 
         return false;

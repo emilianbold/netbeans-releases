@@ -4,6 +4,12 @@ import java.beans.*;
 
 public class __NAME__ extends SimpleBeanInfo {
 
+    private static BeanDescriptor beanDescriptor = null; //GEN-FIRST:BeanDescriptor
+
+    // Here you can add code for customizing the BeanDescriptor.
+
+    //GEN-LAST:BeanDescriptor
+
     private static PropertyDescriptor[] properties = null; //GEN-FIRST:Properties
 
     // Here you can add code for customizing the properties array.
@@ -34,6 +40,17 @@ public class __NAME__ extends SimpleBeanInfo {
     private static int defaultPropertyIndex = -1; //GEN-BEGIN:Idx
     private static int defaultEventIndex = -1; //GEN-END:Idx
 
+
+    /**
+     * Gets the bean's <code>BeanDescriptor</code>s.
+     * 
+     * @return BeanDescriptor describing the editable
+     * properties of this bean.  May return null if the
+     * information should be obtained by automatic analysis.
+     */
+    public BeanDescriptor getBeanDescriptor() {
+	return beanDescriptor;
+    }
 
     /**
      * Gets the bean's <code>PropertyDescriptor</code>s.

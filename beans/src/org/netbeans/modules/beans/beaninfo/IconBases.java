@@ -22,6 +22,9 @@ interface IconBases {
     // Properties for Bean Info Features. There should be added S for selected features
     // and N for non selected features at the end of the string.
 
+    public static final String BIF_DESCRIPTOR =
+        "/org/netbeans/modules/beans/resources/bifPropertyRW_"; // NOI18N !!! MUST BE CHANGED, BAD ICON
+
     public static final String BIF_PROPERTY_RW =
         "/org/netbeans/modules/beans/resources/bifPropertyRW_"; // NOI18N
 
