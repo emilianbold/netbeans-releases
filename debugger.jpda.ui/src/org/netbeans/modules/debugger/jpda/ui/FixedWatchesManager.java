@@ -104,7 +104,7 @@ NodeActionsProvider, NodeActionsProviderFilter {
         } else if (node instanceof FixedWatch) {
             myActions.add (DELETE_ACTION);
         } else {
-            throw new UnknownTypeException(node);
+            return actions;
         }
         myActions.addAll(Arrays.asList(actions));
         return (Action[]) myActions.toArray(new Action[myActions.size()]);
