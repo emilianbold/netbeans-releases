@@ -20,6 +20,8 @@ import java.awt.BorderLayout;
 
 // Swing
 import javax.swing.JTextField;
+import javax.swing.JTextArea;
+import javax.swing.text.JTextComponent;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JButton;
@@ -36,7 +38,7 @@ import org.openide.util.NbBundle;
  *
  */
 public class SimpleDialogPanel extends JPanel {
-    private JTextField[] jTextFields;
+    private JTextComponent[] jTextComponents;
     private JLabel[] jLabels;
     private JButton[] jButtons;
     private GridBagConstraints gridBagConstraints;
@@ -47,38 +49,54 @@ public class SimpleDialogPanel extends JPanel {
     */      
     public SimpleDialogPanel(DialogDescriptor desc) {
         super();
-        initComponents(desc.getLabels(), desc.getSize(), desc.getButtons(), desc.getMnemonics(), desc.getA11yDesc());
+        initComponents(desc.getLabels(), desc.isTextField(), desc.getSize(), desc.getButtons(), desc.getMnemonics(), desc.getA11yDesc());
         String[] initValues = desc.getInitValues();
         if (initValues!=null)
             for (int i=0;i<initValues.length;i++) {
-                jTextFields[i].setText(initValues[i]);
+                jTextComponents[i].setText(initValues[i]);
             }
     }
     
-    private void initComponents(String[] labels, int size, boolean[] customizers, char[] mnem, String[] a11yDesc) {
+    private void initComponents(String[] labels, boolean[] isTextField, int size, boolean[] customizers, char[] mnem, String[] a11yDesc) {
         setLayout(new GridBagLayout());
         jLabels = new JLabel [labels.length];
-        jTextFields = new JTextField [labels.length];
+        jTextComponents = new JTextComponent [labels.length];
         for (int i=0;i<labels.length;i++) {
             jLabels[i] = new JLabel(labels[i]);
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = i;
             gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+            if (isTextField[i])
+                gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+            else 
+                gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
             add(jLabels[i], gridBagConstraints);
         }
-        for (int i=0;i<jTextFields.length;i++) {
-            jTextFields[i] = new JTextField();
-            jTextFields[i].setColumns(size);
+        for (int i=0;i<jTextComponents.length;i++) {
+            if (isTextField[i]) { // text field
+                jTextComponents[i] = new JTextField();
+                ((JTextField)jTextComponents[i]).setColumns(size);
+            } else { // text area
+                jTextComponents[i] = new JTextArea();
+                ((JTextArea)jTextComponents[i]).setRows(3);
+                if (i>0) jTextComponents[i].setBorder(jTextComponents[0].getBorder());
+            }
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 1;
             gridBagConstraints.gridy = i;
-            gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
             gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
             gridBagConstraints.weightx = 1.0;
-            jLabels[i].setLabelFor(jTextFields[i]);
-            add(jTextFields[i], gridBagConstraints);
+            jLabels[i].setLabelFor(jTextComponents[i]);
+            if (isTextField[i]) {// text field
+                gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+                add(jTextComponents[i], gridBagConstraints);
+            } else {
+                gridBagConstraints.weighty = 1.0;
+                gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+                javax.swing.JScrollPane sp = new javax.swing.JScrollPane(jTextComponents[i]);
+                add(sp, gridBagConstraints);
+            }
         }
         if (customizers!=null) {
             java.util.List buttonList = new java.util.ArrayList();
@@ -102,13 +120,13 @@ public class SimpleDialogPanel extends JPanel {
         }
         if (mnem!=null) {
             for (int i=0;i<labels.length;i++) {
-                jLabels[i].setLabelFor(jTextFields[i]);
+                jLabels[i].setLabelFor(jTextComponents[i]);
                 jLabels[i].setDisplayedMnemonic(mnem[i]);
             }
         }
         if (a11yDesc!=null) {
-            for (int i=0;i<jTextFields.length;i++) {
-                jTextFields[i].getAccessibleContext().setAccessibleDescription(a11yDesc[i]);
+            for (int i=0;i<jTextComponents.length;i++) {
+                jTextComponents[i].getAccessibleContext().setAccessibleDescription(a11yDesc[i]);
             }
         }
     }
@@ -116,10 +134,10 @@ public class SimpleDialogPanel extends JPanel {
     * @return text fields values
     */
     public String[] getValues() {
-        if (jTextFields==null) return null;
-        String[] values = new String[jTextFields.length];
+        if (jTextComponents==null) return null;
+        String[] values = new String[jTextComponents.length];
         for (int i=0;i<values.length;i++) {
-            values[i] = jTextFields[i].getText();
+            values[i] = jTextComponents[i].getText();
         }
         return values;
     }
@@ -132,8 +150,8 @@ public class SimpleDialogPanel extends JPanel {
     /** Returns the dialog text fields.
     * @return array of text fields
     */    
-    public JTextField[] getTextFields() {
-        return jTextFields;
+    public JTextComponent[] getTextComponents() {
+        return jTextComponents;
     }
     /** This is the descriptor for the dialog components.
     * Parameters are :<ul>
@@ -151,6 +169,7 @@ public class SimpleDialogPanel extends JPanel {
         String[] initValues;
         boolean adding;
         boolean[] buttons;
+        boolean textField[];
         char[] mnem;
         String[] a11yDesc;
         int size;
@@ -163,6 +182,10 @@ public class SimpleDialogPanel extends JPanel {
             this.labels=labels;
             size=25;
             adding=true;
+            textField = new boolean[labels.length];
+            for (int i=0;i<labels.length;i++) {
+                textField[i]=true; // setting textFields to text fields
+            }
         }
         public String[] getLabels() {
             return labels;
@@ -172,6 +195,12 @@ public class SimpleDialogPanel extends JPanel {
         }
         public boolean[] getButtons() {
             return buttons;
+        }
+        public void setTextField(boolean[] textField) {
+            this.textField=textField;
+        }
+        public boolean[] isTextField() {
+            return textField;
         }
         public void setInitValues(String[] initValues) {
             this.initValues=initValues;
