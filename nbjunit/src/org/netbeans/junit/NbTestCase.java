@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -348,20 +348,24 @@ public abstract class NbTestCase extends TestCase implements NbTest {
 
     
     /** Returns path to test method working directory as a String. Path is constructed
-     * as ${nbjunit.workdir}/${package}/${classname}/${testmethodname}. (The nbjunit.workdir
-     * property should be set in junit.properties; otherwise the default is ${java.io.tmpdir}.)
+     * as ${nbjunit.workdir}/${package}.${classname}/${testmethodname}. (The nbjunit.workdir
+     * property should be set in junit.properties; otherwise the default is ${java.io.tmpdir}/tests.)
      * Please note that this method does not guarantee that the working directory really exists.
      * @return a path to a test method working directory
      */    
     public String getWorkDirPath() {
         return Manager.getWorkDirPath() +
-            File.separator + getClass().getName().replace('.', File.separatorChar) +
+            File.separator + getClass().getName() +
             File.separator + getName();
     }
 
     /** Returns unique working directory for a test (each test method has a unique dir).
-     * If not available, method tries to create it. This method uses getWorkDirPath()
+     * If not available, method tries to create it. This method uses {@link #getWorkDirPath}
      * method to determine the unique path.
+     * <p><strong>Warning:</strong> the working directory is <em>not</em> guaranteed
+     * to be empty when you get it, so if this is being called in {@link #setUp} you
+     * are strongly advised to first call {@link #clearWorkDir} to ensure that each
+     * test run starts with a clean slate.</p>
      * @throws IOException if the directory cannot be created
      * @return file to the working directory directory
      */    

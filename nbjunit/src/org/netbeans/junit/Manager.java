@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
@@ -48,6 +48,7 @@ public class Manager extends Object {
      * - it must be set before running tests using workdir
      * - in the case of running tests from XTest framework, this 
      *   property is set by the framework itself
+     * - otherwise the default is ${java.io.tmpdir}/tests
      */
     public static final String NBJUNIT_WORKDIR = "nbjunit.workdir";
     
@@ -86,7 +87,7 @@ public class Manager extends Object {
             path = path.replace('/', File.separatorChar);
         } else {
             // Fallback value, guaranteed to be defined.
-            path = System.getProperty("java.io.tmpdir");
+            path = System.getProperty("java.io.tmpdir") + File.separatorChar + "tests";
         }
         return path;
     }
