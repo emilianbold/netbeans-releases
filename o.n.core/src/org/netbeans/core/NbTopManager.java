@@ -749,27 +749,12 @@ public abstract class NbTopManager /*extends TopManager*/ {
         public Lkp () {
             super (new Lookup[] {
                        // #14722: pay attention also to META-INF/services/class.Name resources:
-                       createMetaInfServicesLookup(),
+                       Lookups.metaInfServices(classLoader),
                        Lookups.singleton(classLoader),
                        Lookup.EMPTY, // will be moduleLookup
                    });
         }
                 
-        private static Lookup createMetaInfServicesLookup() {
-            //System.err.println("cMISL: modules=" + modules);
-            try {
-                // XXX consider just making this a public class!
-                // or making Lookups.metaInfServices(ClassLoader) static utility method
-                Class clazz = Class.forName("org.openide.util.MetaInfServicesLookup"); // NOI18N
-                Constructor c = clazz.getDeclaredConstructor(new Class[] {ClassLoader.class});
-                c.setAccessible(true);
-                return (Lookup)c.newInstance(new Object[] {classLoader});
-            } catch (Exception e) {
-                e.printStackTrace();
-                return Lookup.EMPTY;
-            }
-        }
-        
         /** Called when a system classloader changes.
          */
         public static final void systemClassLoaderChanged (ClassLoader nue) {
@@ -779,7 +764,7 @@ public abstract class NbTopManager /*extends TopManager*/ {
                 Lookup[] delegates = l.getLookups();
                 Lookup[] newDelegates = (Lookup[])delegates.clone();
                 // Replace classloader.
-                newDelegates[0] = createMetaInfServicesLookup();
+                newDelegates[0] = Lookups.metaInfServices(classLoader);
                 newDelegates[1] = Lookups.singleton(classLoader);
                 l.setLookups(newDelegates);
             }
@@ -792,7 +777,7 @@ public abstract class NbTopManager /*extends TopManager*/ {
             Lookup[] newDelegates = null;
             Lookup[] delegates = l.getLookups();
             newDelegates = (Lookup[])delegates.clone();
-            newDelegates[0] = createMetaInfServicesLookup();
+            newDelegates[0] = Lookups.metaInfServices(classLoader);
             l.setLookups(newDelegates);
         }
 
