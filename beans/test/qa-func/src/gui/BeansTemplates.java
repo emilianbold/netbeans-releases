@@ -157,7 +157,7 @@ public class BeansTemplates extends JellyTestCase {
     
     public void testCustomizer() {
         MainWindowOperator mainWindowOper  = MainWindowOperator.getDefault();
-        mainWindowOper.switchToGUIEditingWorkspace();
+//        mainWindowOper.switchToGUIEditingWorkspace();
         ExplorerOperator explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         Node repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();

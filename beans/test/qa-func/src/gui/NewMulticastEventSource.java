@@ -16,7 +16,11 @@ package gui;
 import java.io.File;
 import java.io.IOException;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.*;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.RepositoryTabOperator;
 import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
@@ -84,10 +88,9 @@ public class NewMulticastEventSource extends JellyTestCase {
 
      public void testGenerateEmpty() {
 //
-        ExplorerOperator explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
+        RepositoryTabOperator explorerOperator = new RepositoryTabOperator();
         
-        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        Node repositoryRootNode = explorerOperator.getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_MULTICASTSE"));
@@ -106,8 +109,7 @@ public class NewMulticastEventSource extends JellyTestCase {
 
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        EditorOperator eo = new EditorOperator(NAME_TEST_FILE);
         ref(eo.getText());
         compareReferenceFiles();                               
 //                                       
@@ -116,10 +118,9 @@ public class NewMulticastEventSource extends JellyTestCase {
     
      public void testGenerateArrayListImplementation() {
 //
-        ExplorerOperator explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
+        RepositoryTabOperator explorerOperator = new RepositoryTabOperator();
         
-        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        Node repositoryRootNode = explorerOperator.getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_MULTICASTSE"));
@@ -138,8 +139,7 @@ public class NewMulticastEventSource extends JellyTestCase {
 
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        EditorOperator eo = new EditorOperator(NAME_TEST_FILE);
         ref(eo.getText());
         compareReferenceFiles();                               
 //                                       
@@ -147,10 +147,9 @@ public class NewMulticastEventSource extends JellyTestCase {
 
      public void testGenerateEventListenerListImplementation() {
 //
-        ExplorerOperator explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
+        RepositoryTabOperator explorerOperator = new RepositoryTabOperator();
         
-        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        Node repositoryRootNode = explorerOperator.getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_MULTICASTSE"));
@@ -169,8 +168,7 @@ public class NewMulticastEventSource extends JellyTestCase {
 
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        EditorOperator eo = new EditorOperator(NAME_TEST_FILE);
         ref(eo.getText());
         compareReferenceFiles();                               
 //                                       
@@ -178,10 +176,9 @@ public class NewMulticastEventSource extends JellyTestCase {
      
      public void testGenerateEventFiringMethods() {
 //
-        ExplorerOperator explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
+        RepositoryTabOperator explorerOperator = new RepositoryTabOperator();
         
-        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        Node repositoryRootNode = explorerOperator.getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_MULTICASTSE"));
@@ -202,8 +199,7 @@ public class NewMulticastEventSource extends JellyTestCase {
 
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        EditorOperator eo = new EditorOperator(NAME_TEST_FILE);
         ref(eo.getText());
         compareReferenceFiles();                               
 //                                       
@@ -211,10 +207,9 @@ public class NewMulticastEventSource extends JellyTestCase {
 
      public void testPassEventAsParameter() {
 //
-        ExplorerOperator explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
+        RepositoryTabOperator explorerOperator = new RepositoryTabOperator();
         
-        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        Node repositoryRootNode = explorerOperator.getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_MULTICASTSE"));
@@ -237,8 +232,7 @@ public class NewMulticastEventSource extends JellyTestCase {
 
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        EditorOperator eo = new EditorOperator(NAME_TEST_FILE);
         ref(eo.getText());
         compareReferenceFiles();                               
 //                                       

@@ -15,15 +15,23 @@ package gui;
 
 import java.io.*;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.*;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.ChooseTemplateStepOperator;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.NewWizardOperator;
+import org.netbeans.jellytools.OptionsOperator;
+import org.netbeans.jellytools.RepositoryTabOperator;
+import org.netbeans.jellytools.TargetLocationStepOperator;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.NewTemplateAction;
 import org.netbeans.jellytools.nodes.FolderNode;
 import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.properties.ComboBoxProperty;
-import org.netbeans.jellytools.properties.PropertySheetTabOperator;
-import org.netbeans.jellytools.properties.TextFieldProperty;
+import org.netbeans.jellytools.properties.Property;
+import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -102,19 +110,17 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
      */
     public void testChangeOfStyleOfDeclaredVariable() {
         MainWindowOperator mainWindowOper  = MainWindowOperator.getDefault();
-        mainWindowOper.switchToEditingWorkspace();
         
         
         OptionsOperator optionsOperator = OptionsOperator.invoke();
         optionsOperator.selectOption(Bundle.getString("org.netbeans.core.Bundle", "UI/Services/Editing")+ "|" + Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Menu"));
-        PropertySheetTabOperator propertySheetTabOperator = new PropertySheetTabOperator(optionsOperator);
-        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Prop_Style")).setValue(Bundle.getString("org.netbeans.modules.beans.Bundle", "MSG_Option_Gen_This"));
+        PropertySheetOperator propertySheetTabOperator = new PropertySheetOperator(optionsOperator);
+        new Property(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Prop_Style")).setValue(Bundle.getString("org.netbeans.modules.beans.Bundle", "MSG_Option_Gen_This"));
         
         new EventTool().waitNoEvent(3000);
         
-        ExplorerOperator explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
-        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        RepositoryTabOperator explorerOperator = new RepositoryTabOperator();
+        Node repositoryRootNode = explorerOperator.getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         
         patternsNode.select();
@@ -143,12 +149,11 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         new EventTool().waitNoEvent(2000);
         nbDialogOperator.ok();
         
-        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Prop_Style")).setValue(Bundle.getString("org.netbeans.modules.beans.Bundle", "MSG_Option_Gen_Undescored"));
+        new Property(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Prop_Style")).setValue(Bundle.getString("org.netbeans.modules.beans.Bundle", "MSG_Option_Gen_Undescored"));
         new EventTool().waitNoEvent(3000);
         //////////////////
-        explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
-        repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        explorerOperator = new RepositoryTabOperator();
+        repositoryRootNode = explorerOperator.getRootNode();
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         
         patternsNode.select();
@@ -180,8 +185,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
         
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        EditorOperator eo = new EditorOperator(NAME_TEST_FILE);
         new EventTool().waitNoEvent(500);
         ref(eo.getText());
         compareReferenceFiles();
@@ -196,19 +200,17 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
      */
     public void testChangePropertyNameAndType() {
         MainWindowOperator mainWindowOper  = MainWindowOperator.getDefault();
-        mainWindowOper.switchToEditingWorkspace();
         
         
         OptionsOperator optionsOperator = OptionsOperator.invoke();
         optionsOperator.selectOption(Bundle.getString("org.netbeans.core.Bundle", "UI/Services/Editing")+ "|" + Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Menu"));
-        PropertySheetTabOperator propertySheetTabOperator = new PropertySheetTabOperator(optionsOperator);
-        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Prop_Style")).setValue("this.property_Value");
+        PropertySheetOperator propertySheetTabOperator = new PropertySheetOperator(optionsOperator);
+        new Property(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Prop_Style")).setValue("this.property_Value");
         
         new EventTool().waitNoEvent(3000);
         
-        ExplorerOperator explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
-        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        RepositoryTabOperator explorerOperator = new RepositoryTabOperator();
+        Node repositoryRootNode = explorerOperator.getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         
         patternsNode.select();
@@ -231,24 +233,22 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         new EventTool().waitNoEvent(2000);
         nbDialogOperator.ok();
         
-        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Prop_Style")).setValue("_property_Value");
+        new Property(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Prop_Style")).setValue("_property_Value");
         new EventTool().waitNoEvent(3000);
         optionsOperator.close();
         /////////////////
-        explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
+        explorerOperator = new RepositoryTabOperator();
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"initialName");
         patternsNode.select();
 
-        propertySheetTabOperator = new PropertySheetTabOperator(explorerOperator);
+        propertySheetTabOperator = new PropertySheetOperator();
         answerYes();
-        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_name")).setValue("requiredName");
+        new Property(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_name")).setValue("requiredName");
         new EventTool().waitNoEvent(1500);
         
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        EditorOperator eo = new EditorOperator(NAME_TEST_FILE);
         ref(eo.getText());
         compareReferenceFiles();
         
@@ -280,19 +280,17 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
     public void testChangeMode() {
         //
         MainWindowOperator mainWindowOper  = MainWindowOperator.getDefault();
-        mainWindowOper.switchToEditingWorkspace();
         
         
         OptionsOperator optionsOperator = OptionsOperator.invoke();
         optionsOperator.selectOption(Bundle.getString("org.netbeans.core.Bundle", "UI/Services/Editing")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Menu"));
-        PropertySheetTabOperator propertySheetTabOperator = new PropertySheetTabOperator(optionsOperator);
-        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Prop_Style")).setValue("this.property_Value");
+        PropertySheetOperator propertySheetTabOperator = new PropertySheetOperator(optionsOperator);
+        new Property(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Prop_Style")).setValue("this.property_Value");
         
         new EventTool().waitNoEvent(3000);
         
-        ExplorerOperator explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
-        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        RepositoryTabOperator explorerOperator = new RepositoryTabOperator();
+        Node repositoryRootNode = explorerOperator.getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         
         patternsNode.select();
@@ -321,13 +319,12 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         new EventTool().waitNoEvent(1000);
         nbDialogOperator.ok();
         
-        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Prop_Style")).setValue("_property_Value");
+        new Property(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Prop_Style")).setValue("_property_Value");
         new EventTool().waitNoEvent(1000);
         optionsOperator.close();
         //////////////////
-        explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
-        repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        explorerOperator = new RepositoryTabOperator();
+        repositoryRootNode = explorerOperator.getRootNode();
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         
         patternsNode.select();
@@ -356,31 +353,29 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         new EventTool().waitNoEvent(1000);
         nbDialogOperator.ok();
         ////
-        explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
+        explorerOperator = new RepositoryTabOperator();
         
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"firstName");
         patternsNode.select();
         new EventTool().waitNoEvent(1000);
         answerYes();
-        propertySheetTabOperator = new PropertySheetTabOperator(explorerOperator);
+        propertySheetTabOperator = new PropertySheetOperator();
         //new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_mode")).setValue(Bundle.getString("org.netbeans.modules.beans.Bundle", "LAB_ReadOnlyMODE"));
-        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_mode")).setValue(1);
+        new Property(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_mode")).setValue(1);
         new EventTool().waitNoEvent(1000);
         
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"secondName");
         patternsNode.select();
         new EventTool().waitNoEvent(1000);
         answerYes();
-        propertySheetTabOperator = new PropertySheetTabOperator(explorerOperator);
+        propertySheetTabOperator = new PropertySheetOperator();
         //new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_mode")).setValue(Bundle.getString("org.netbeans.modules.beans.Bundle", "LAB_WriteOnlyMODE"));
-        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_mode")).setValue(2);
+        new Property(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_mode")).setValue(2);
         new EventTool().waitNoEvent(1000);
         
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
         
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        EditorOperator eo = new EditorOperator(NAME_TEST_FILE);
         ref(eo.getText());
         compareReferenceFiles();
         
@@ -407,8 +402,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         tlso.selectLocation(sampleDir);
         tlso.finish();
         
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        EditorOperator eo = new EditorOperator(NAME_TEST_FILE);
         eo.setCaretPosition(1,1);
         eo.insert("    private static final String PROP_MY_PROPERTY = \"MyProperty\";\n", 16, 1);
         new EventTool().waitNoEvent(500);
@@ -438,28 +432,26 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         eo.insert("\n", 47, 1);
         new EventTool().waitNoEvent(500);
         
-        ExplorerOperator explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
+        RepositoryTabOperator explorerOperator = new RepositoryTabOperator();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"myProperty");
         patternsNode.select();
         new EventTool().waitNoEvent(1000);
-        PropertySheetTabOperator propertySheetTabOperator = new PropertySheetTabOperator(explorerOperator);
+        PropertySheetOperator propertySheetTabOperator = new PropertySheetOperator();
         
-        assertEquals("Estimated Field" ,"String myProperty",new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_estimatedField")).getValue());
-        assertEquals("Getter" ,"getMyProperty ()",new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_getter")).getValue());
-        assertEquals("Mode" ,Bundle.getString("org.netbeans.modules.beans.Bundle", "LAB_ReadWriteMODE") ,new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_mode")).getValue());
-        assertEquals("Name of Property","myProperty",new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_name")).getValue());
-        assertEquals("Setter","setMyProperty (String)",new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_setter")).getValue());
-        assertEquals("Type","String",new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_type")).getValue());
+        assertEquals("Estimated Field" ,"String myProperty",new Property(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_estimatedField")).getValue());
+        assertEquals("Getter" ,"getMyProperty ()",new Property(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_getter")).getValue());
+        assertEquals("Mode" ,Bundle.getString("org.netbeans.modules.beans.Bundle", "LAB_ReadWriteMODE") ,new Property(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_mode")).getValue());
+        assertEquals("Name of Property","myProperty",new Property(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_name")).getValue());
+        assertEquals("Setter","setMyProperty (String)",new Property(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_setter")).getValue());
+        assertEquals("Type","String",new Property(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_type")).getValue());
     }
     
     
     private void createContent() {
         // Start - NonIndexProperty
-        ExplorerOperator explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
+        RepositoryTabOperator explorerOperator = new RepositoryTabOperator();
         
-        Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        Node repositoryRootNode = explorerOperator.getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_PROPERTY"));
@@ -488,10 +480,9 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         nbDialogOperator.ok();
         // End - NonIndexProperty
         // Start - IndexProperty
-        explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
+        explorerOperator = new RepositoryTabOperator();
         
-        repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        repositoryRootNode = explorerOperator.getRootNode();
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
@@ -528,10 +519,9 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         nbDialogOperator.ok();
         // End - IndexProperty
         // Start - UnicastEventSource
-        explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
+        explorerOperator = new RepositoryTabOperator();
         
-        repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        repositoryRootNode = explorerOperator.getRootNode();
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_UNICASTSE"));
@@ -552,10 +542,9 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         nbDialogOperator.ok();
         // End - UnicastEventSource
         // Start - MulticastEventSourceArrayListImpl
-        explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
+        explorerOperator = new RepositoryTabOperator();
         
-        repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        repositoryRootNode = explorerOperator.getRootNode();
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_MULTICASTSE"));
@@ -577,10 +566,9 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         nbDialogOperator.ok();
         // End - MulticastEventSourceArrayListImpl
         // Start - MulticastEventSourceEventListenerListImpl
-        explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
+        explorerOperator = new RepositoryTabOperator();
         
-        repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+        repositoryRootNode = explorerOperator.getRootNode();
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_MULTICASTSE"));
@@ -619,8 +607,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         tlso.selectLocation(sampleDir);
         tlso.finish();
         
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
+        EditorOperator eo = new EditorOperator(NAME_TEST_FILE);
         eo.select(1,6);
         new DeleteAction().performAPI(eo);
         new EventTool().waitNoEvent(1500);
