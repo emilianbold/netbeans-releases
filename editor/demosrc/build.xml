@@ -25,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="compile" depends="editor">
+     <copy file="../netbeans/modules/ext/nb-editor.jar" tofile="${target_dir}/nb-editor.jar" />
      <javac srcdir="base" destdir="base" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
        <classpath>
         <pathelement location="${target_dir}/nb-editor.jar"/>
@@ -44,7 +45,6 @@ Microsystems, Inc. All Rights Reserved.
 
    <target name="standalone" depends="jars">
      <copy file="base/run.sh" tofile="${target_dir}/run.sh" />
-     <copy file="../netbeans/modules/ext/nb-editor.jar" tofile="${target_dir}/nb-editor.jar" />
 
      <mkdir dir="${target_dir}/ParserDB" />
      <copy todir="${target_dir}/ParserDB">
