@@ -326,7 +326,9 @@ public class PanelSourceFolders extends SettingsPanel {
             assert obj instanceof FileObject : "Instance of FileObject: " + obj;
             FileObject fo = (FileObject) obj;
             try {
-                fo.delete ();
+                if ("class".equals (fo.getExt ())) { // NOI18N
+                    fo.delete ();
+                }
             } catch (IOException ioe) {
                 ErrorManager.getDefault ().notify (ioe);
             }
