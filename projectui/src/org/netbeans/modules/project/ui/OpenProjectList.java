@@ -17,6 +17,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -509,7 +510,7 @@ public final class OpenProjectList {
      */    
     private static class RecentProjectList {
        
-        private List /*<Project>*/ recentProjects;
+        private List /*<ProjectReference>*/ recentProjects;
         
         private int size;
         
@@ -530,12 +531,12 @@ public final class OpenProjectList {
                     // Need some space for the newly added project
                     recentProjects.remove( size - 1 ); 
                 }
-                recentProjects.add( 0, p );
+                recentProjects.add( 0, new ProjectReference( p ) );
             }
             else {
                 // Project is in list => just move it to first place
                 recentProjects.remove( index );
-                recentProjects.add( 0, p );
+                recentProjects.add( 0, new ProjectReference( p ) );
             }
         }
         
@@ -549,27 +550,41 @@ public final class OpenProjectList {
         }
         
         
-        public List getProjects() {         
+        public List getProjects() {
+            ArrayList result = new ArrayList( recentProjects.size() );
             // Copy the list
-            ArrayList result = new ArrayList( recentProjects  );
-            for ( Iterator it = result.iterator(); it.hasNext(); ) {
-                Project p = (Project)it.next();
-                if ( !p.getProjectDirectory().isValid() ) {
+            ArrayList references = new ArrayList( recentProjects );
+            for ( Iterator it = references.iterator(); it.hasNext(); ) {
+                ProjectReference pRef = (ProjectReference)it.next(); 
+                Project p = pRef.getProject();
+                if ( p == null || !p.getProjectDirectory().isValid() ) {
                     remove( p );        // Folder does not exist any more => remove from
-                    it.remove();        // both the list and the result
+                }
+                else {
+                    result.add( p );
                 }
             }
             return result;
         }
         
+        
         public void load() {
             List URLs = OpenProjectListSettings.getInstance().getRecentProjectsURLs();
-            recentProjects.clear();
-            recentProjects.addAll( URLs2Projects( URLs ) );            
+            recentProjects.clear(); 
+            for ( Iterator it = URLs.iterator(); it.hasNext(); ) {
+                recentProjects.add( new ProjectReference( (URL)it.next() ) );
+            }
         }
         
         public void save() {
-            List /*<URL>*/ URLs = projects2URLs( recentProjects );
+            List /*<URL>*/ URLs = new ArrayList( recentProjects.size() );
+            for ( Iterator it = recentProjects.iterator(); it.hasNext(); ) {
+                ProjectReference pRef = (ProjectReference)it.next(); 
+                URL pURL = pRef.getURL();
+                if ( pURL != null ) {
+                    URLs.add( pURL );
+                }
+            }
             OpenProjectListSettings.getInstance().setRecentProjectsURLs( URLs );
         }
         
@@ -578,13 +593,69 @@ public final class OpenProjectList {
             int i = 0;
             
             for( Iterator it = recentProjects.iterator(); it.hasNext(); i++) {
-                if ( compareProjects( p, (Project)it.next() ) ) {
+                Project p2 = ((ProjectReference)it.next()).getProject();
+                if ( compareProjects( p, p2 ) ) {
                     return i;
                 }
             }
             
             return -1;
         }        
+        
+        private static class ProjectReference {
+            
+            private WeakReference projectReference;
+            private URL projectURL;
+            
+            public ProjectReference( URL url ) {                
+                this.projectURL = url;
+            }
+            
+            public ProjectReference( Project p ) {
+                this.projectReference = new WeakReference( p );
+                try {
+                    projectURL = p.getProjectDirectory().getURL();                
+                }
+                catch( FileStateInvalidException e ) {
+                    // Do nothing;
+                }
+            }
+            
+            public Project getProject() {
+                
+                Project p = null; 
+                
+                if ( projectReference != null ) { // Reference to project exists
+                    p = (Project)projectReference.get();
+                    if ( p != null ) {
+                        return p; // And refers to some project
+                    }
+                }
+                
+                if ( projectURL != null ) {                    
+                    FileObject dir = URLMapper.findFileObject( projectURL );
+                    if ( dir != null && dir.isFolder() ) {
+                        try {
+                            p = ProjectManager.getDefault().findProject( dir );
+                            if ( p != null ) {
+                                projectReference = new WeakReference( p ); 
+                                return p;
+                            }
+                        }       
+                        catch ( IOException e ) {
+                            // Ignore invalid folders
+                        }
+                    }
+                }
+                
+                return null; // Empty reference                
+            }
+            
+            public URL getURL() {
+                return projectURL;
+            }
+            
+        }
         
     }
     
