@@ -33,6 +33,7 @@ import org.openide.explorer.*;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
@@ -187,6 +188,11 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     add(toolbar = createToolbar(), BorderLayout.NORTH);
 
     updateTitle ();
+  }
+
+  /** Rarely used, only when fresh Expl created & no components selected. */
+  public HelpCtx getHelp () {
+    return new HelpCtx (NbMainExplorer.class);
   }
 
   private Node[] getRoots () {
@@ -422,6 +428,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  15   Gandalf   1.14        7/12/99  Jesse Glick     Context help.
 *  14   Gandalf   1.13        7/11/99  David Simonek   window system change...
 *  13   Gandalf   1.12        6/8/99   Ian Formanek    ---- Package Change To 
 *       org.openide ----
