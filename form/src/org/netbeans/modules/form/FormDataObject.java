@@ -25,6 +25,7 @@ import com.netbeans.ide.nodes.Node;
 import com.netbeans.ide.nodes.CookieSet;
 import com.netbeans.developer.modules.loaders.java.JavaDataObject;
 import com.netbeans.developer.modules.loaders.form.*;
+import com.netbeans.developer.modules.loaders.form.formeditor.DesignForm;
 
 /** The DataObject for forms.
 *
@@ -34,7 +35,7 @@ public class FormDataObject extends JavaDataObject {
   /** generated Serialized Version UID */
 //  static final long serialVersionUID = 7952143476761137063L;
 
-  private static java.util.ResourceBundle formBundle = com.netbeans.ide.util.NbBundle.getBundle (FormLoaderSettingsBeanInfo.class);
+  private static java.util.ResourceBundle formBundle = com.netbeans.ide.util.NbBundle.getBundle (FormDataObject.class);
 
   /** The icon base for FormDataObject */
   private static final String URL_ICON_BASE = "com/netbeans/developer/modules/resources/formObject";
@@ -49,7 +50,6 @@ public class FormDataObject extends JavaDataObject {
 
   /** Initalizes the FormDataObject after deserialization */
   private void init() {
-    formLoaded = false;
     templateInit = false;
     modifiedInit = false;
     componentRefRegistered = false;
@@ -62,92 +62,11 @@ public class FormDataObject extends JavaDataObject {
 
   }
 
-  boolean isLoaded () {
-    return formLoaded;
-  }
-
-  /** Loads the DesignForm from the .form file */
-  protected boolean loadForm () {
-/*    java.io.InputStream is = null;
-    try {
-      is = formEntry.getFile().getInputStream();
-    } catch (java.io.FileNotFoundException e) {
-      String message = MessageFormat.format(FormLoaderSettings.formBundle.getString("FMT_ERR_LoadingForm"),
-                                            new Object[] {getName(), e.getClass().getName()});
-      TopManager.getDefault().notify(new NotifyDescriptor.Exception(e, message));
-      return false;
-    }
-    NbObjectInputStream ois = null;
-    try {
-      ois = new NbObjectInputStream(is);
-      designForm = (DesignForm) ois.readObject ();
-      FormEditor.displayErrorLog ();
-
-      formLoaded = true;
-      designForm.initialize (this);
-      if (!modifiedInit) {
-        setModified (false);
-        if (editorLock != null) {
-          editorLock.releaseLock();
-          editorLock = null;
-        }
-        // though we regenerated, it should
-        // not be different (AKA modified)
-      }
-    }
-    catch (Throwable e) {
-      if (System.getProperty ("netbeans.full.hack") != null) {
-        e.printStackTrace ();
-        System.out.println ("IOException during opening form: Opening empty form");
-        switch (new FormLoaderSettings ().getEmptyFormType ()) {
-          default:
-          case 0: designForm = new JFrameForm(); break;
-          case 1: designForm = new JDialogForm(); break;
-          case 2: designForm = new JAppletForm(); break;
-          case 3: designForm = new JPanelForm(); break;
-          case 4: designForm = new FrameForm(); break;
-          case 5: designForm = new DialogForm(); break;
-          case 6: designForm = new AppletForm(); break;
-          case 7: designForm = new PanelForm(); break;
-          case 8: designForm = new JInternalFrameForm(); break;
-        }
-
-        formLoaded = true;
-        designForm.initialize (this);
-        if (!modifiedInit)
-          setModified (false); // though we regenerated, it should not be different (AKA modified)
-      } else {
-        Stringring message = MessageFormat.format(FormLoaderSettings.formBundle.getString("FMT_ERR_LoadingForm"),
-                                              new Object[] {getName(), e.getClass().getName()});
-        TopManager.getDefault().notify(new NotifyDescriptor.Exception(e, message));
-        return false;
-      }
-    }
-    finally {
-      if (ois != null) {
-        try {
-          ois.close();
-        }
-        catch (IOException e) {
-        }
-      }
-    }
-
-    // enforce recreation of children
-    ((FormDataNode)nodeDelegate).updateFormNode ();
-*/
-    return true;
-  }
-
   /** Help context for this object.
   * @return help context
   */
   public com.netbeans.ide.util.HelpCtx getHelpCtx () {
-    return new com.netbeans.ide.util.HelpCtx ("com.netbeans.developer.docs.Users_Guide.usergd-using-div-12", "USERGD-USING-TABLE-2");
-  }
-
-  public boolean isOpened () {
-    return formLoaded;
+    return new com.netbeans.ide.util.HelpCtx (FormDataObject.class);
   }
 
   /** returns an editor with the document */
@@ -333,8 +252,6 @@ public class FormDataObject extends JavaDataObject {
 //--------------------------------------------------------------------
 // private variables
 
-  /** True, if the design form has been loaded from the form file */
-  transient private boolean formLoaded;
   /** If true, a postInit method is called after reparsing - used after createFromTemplate */
   transient private boolean templateInit;
   /** If true, the form is marked as modified after regeneration - used if created from template */
@@ -343,14 +260,13 @@ public class FormDataObject extends JavaDataObject {
   transient private boolean componentRefRegistered;
 
 
-  /** The DesignForm of this form */
-//  transient private DesignForm designForm;
   /** The entry for the .form file */
   private FileEntry formEntry;
 }
 
 /*
  * Log
+ *  8    Gandalf   1.7         3/17/99  Ian Formanek    
  *  7    Gandalf   1.6         3/17/99  Ian Formanek    
  *  6    Gandalf   1.5         3/16/99  Ian Formanek    
  *  5    Gandalf   1.4         3/14/99  Jaroslav Tulach Change of 
