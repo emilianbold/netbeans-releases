@@ -35,6 +35,7 @@ import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem; // override java.io.FileSystem
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
@@ -460,58 +461,37 @@ public class TemplateWizard extends WizardDescriptor {
         //
         // waiting times
         //
-        if (SwingUtilities.isEventDispatchThread ()) {
-            try {
-                JFrame f = (JFrame)WindowManager.getDefault ().getMainWindow ();
-                Component c = f.getGlassPane ();
-                c.setVisible (true);
-                c.setCursor (Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR));
-            } catch (NullPointerException npe) {
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, npe);
-            }
-        } else {
-            SwingUtilities.invokeLater (new Runnable () {
-                public void run () {
-                    try {
-                        JFrame f = (JFrame)WindowManager.getDefault ().getMainWindow ();
-                        Component c = f.getGlassPane ();
-                        c.setVisible (true);
-                        c.setCursor (Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR));
-                    } catch (NullPointerException npe) {
-                        ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, npe);
-                    }
+        Mutex.EVENT.writeAccess (new Runnable () {
+            public void run () {
+                try {
+                    JFrame f = (JFrame)WindowManager.getDefault ().getMainWindow ();
+                    Component c = f.getGlassPane ();
+                    c.setVisible (true);
+                    c.setCursor (Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR));
+                } catch (NullPointerException npe) {
+                    ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, npe);
                 }
-            });
-        }
+
+            }
+        });
     }
     
     private void showNormalCursor () {
         //
         // normal times
         //
-        if (SwingUtilities.isEventDispatchThread ()) {
-            try {
-                JFrame f = (JFrame)WindowManager.getDefault ().getMainWindow ();
-                Component c = f.getGlassPane ();
-                c.setCursor (null);
-                c.setVisible (false);
-            } catch (NullPointerException npe) {
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, npe);
-            }
-        } else {
-            SwingUtilities.invokeLater (new Runnable () {
-                public void run () {
-                    try {
-                        JFrame f = (JFrame)WindowManager.getDefault ().getMainWindow ();
-                        Component c = f.getGlassPane ();
-                        c.setCursor (null);
-                        c.setVisible (false);
-                    } catch (NullPointerException npe) {
-                        ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, npe);
-                    }
+        Mutex.EVENT.writeAccess (new Runnable () {
+            public void run () {
+                try {
+                    JFrame f = (JFrame)WindowManager.getDefault ().getMainWindow ();
+                    Component c = f.getGlassPane ();
+                    c.setCursor (null);
+                    c.setVisible (false);
+                } catch (NullPointerException npe) {
+                    ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, npe);
                 }
-            });
-        }
+            }
+        });
     }
     
 
