@@ -112,13 +112,13 @@ public class PropertyPatternPanel extends javax.swing.JPanel
 
     private void initAccessibility()
     {
-        this.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACSD_IdxPropertyPanelDialog"));
-        nameLabel.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACS_IdxPropertyPanel_nameLabelA11yDesc"));
-        nameTextField.getAccessibleContext().setAccessibleName(PatternNode.getString("ACS_IdxPropertyPanel_nameTextFieldA11yName"));
-        typeLabel.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACS_IdxPropertyPanel_typeLabelA11yDesc"));
-        typeComboBox.getAccessibleContext().setAccessibleName(PatternNode.getString("ACS_IdxPropertyPanel_typeComboBoxA11yName"));
-        modeLabel.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACS_IdxPropertyPanel_modeLabelA11yDesc"));
-        modeComboBox.getAccessibleContext().setAccessibleName(PatternNode.getString("ACS_IdxPropertyPanel_modeComboBoxA11yName"));
+        this.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACSD_PropertyPanelDialog"));
+        nameLabel.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACS_PropertyPanel_nameLabelA11yDesc"));
+        nameTextField.getAccessibleContext().setAccessibleName(PatternNode.getString("ACS_PropertyPanel_nameTextFieldA11yName"));
+        typeLabel.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACS_PropertyPanel_typeLabelA11yDesc"));
+        typeComboBox.getAccessibleContext().setAccessibleName(PatternNode.getString("ACS_PropertyPanel_typeComboBoxA11yName"));
+        modeLabel.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACS_PropertyPanel_modeLabelA11yDesc"));
+        modeComboBox.getAccessibleContext().setAccessibleName(PatternNode.getString("ACS_PropertyPanel_modeComboBoxA11yName"));
     }
 
     /** This method is called from within the constructor to

@@ -87,6 +87,7 @@ public class EventSetPatternPanel extends javax.swing.JPanel
     
     private void initAccessibility()
     {
+        this.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACSD_EventSetPanelDialog"));
         typeLabel.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACS_EventSetPanel_typeLabelA11yDesc"));
         typeComboBox.getAccessibleContext().setAccessibleName(PatternNode.getString("ACS_EventSetPanel_typeComboBoxA11yName"));
         textLabel.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACS_EventSetPanel_textLabelA11yDesc"));
