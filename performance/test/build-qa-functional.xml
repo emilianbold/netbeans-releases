@@ -100,7 +100,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Overrides default qa-functional-compiler because we need something 
          more on classpath -->
     <target name="qa-functional-compiler">
-        <ant dir="../guitracker" target="jar"/>
+        <!-- build guitracker library first -->
+        <ant dir="../guitracker" antfile="../guitracker/build-for-tests.xml" target="jar"/>
 
         <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
             <classpath>
