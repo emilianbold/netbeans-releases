@@ -443,6 +443,10 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
         
         /** place where to filter events comming from setting object */
         private boolean ignoreChange(PropertyChangeEvent pce) {
+            // undocumented workaround used in 3.3; since 3.4 convertors make
+            // possible to customize the setting change notification filtering 
+            if (Boolean.FALSE.equals(pce.getPropagationId())) return true;
+            
             if (knownToBeTemplate == null) knownToBeTemplate = getDataObject().isTemplate() ? Boolean.TRUE : Boolean.FALSE;
             return knownToBeTemplate.booleanValue();
         }
