@@ -77,28 +77,20 @@ cause it to fail.
     </target>
 
     <target name="javadoc-check-timestamps" depends="javadoc-init">
-        <!-- XXX under Ant 1.5.1, you can just use <srcfiles file="abspath"/> -->
-        <!-- However Ant 1.4.1 has several problems: -->
-        <!-- 1. <uptodate> only accepts one srcfile, of course -->
-        <!-- 2. Specifying a regular <srcfiles> with a random dir and absolute includes does not work -->
-        <!-- 3. <fileset> does not accept the file attr -->
-        <!-- So in order to express a dep on *two* absolute files, you need <condition>. Sigh. -->
-        <condition property="javadoc.up.to.date">
-            <and>
-                <uptodate targetfile="${javadoc.out.zip}">
-                    <srcfiles dir="${javadoc.src}">
-                        <include name="**/*.java"/>
-                    </srcfiles>
-                    <srcfiles dir="${javadoc.docfiles}"/>
-                    <srcfiles refid="javadoc.css.files"/>
-                    <srcfiles dir=".">
-                        <include name="apichanges.xsl"/>
-                    </srcfiles>
-                </uptodate>
-                <uptodate targetfile="${javadoc.out.zip}" srcfile="${javadoc.apichanges}"/>
-                <uptodate targetfile="${javadoc.out.zip}" srcfile="${javadoc.arch}"/>
-            </and>
-        </condition>
+        <uptodate targetfile="${javadoc.out.zip}" property="javadoc.up.to.date">
+            <srcfiles dir="${javadoc.src}">
+                <include name="**/*.java"/>
+            </srcfiles>
+            <srcfiles dir="${javadoc.docfiles}"/>
+            <srcfiles refid="javadoc.css.files"/>
+            <srcfiles dir=".">
+                <include name="apichanges.xsl"/>
+            </srcfiles>
+            <!-- XXX Ant 1.5.1:
+            <srcfiles file="${javadoc.apichanges}"/>
+            <srcfiles file="${javadoc.arch}"/>
+            -->
+        </uptodate>
     </target>
 
     <target name="javadoc-make-plain-title" unless="javadoc.main.page">
