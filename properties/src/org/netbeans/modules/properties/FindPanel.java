@@ -17,6 +17,7 @@ package org.netbeans.modules.properties;
 
 import java.util.ResourceBundle;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 
@@ -24,7 +25,7 @@ import org.openide.util.NbBundle;
 
 
 /**
- * Find panel for Resource Bundles table view component.
+ * Find panel for Resource Bundles table view component. GUI represenation only.
  *
  * @author  Peter Zavadsky
  */
@@ -40,6 +41,8 @@ public class FindPanel extends javax.swing.JPanel {
     }
  
 
+    // Accessor methods.
+    
     /** Accessor to buttons. */
     public JButton[] getButtons() {
         return new JButton[] { findButton, cancelButton};
@@ -50,24 +53,29 @@ public class FindPanel extends javax.swing.JPanel {
         return findCombo;
     }
 
-    /** If match case check box is checked. Match case search flag. */
-    public boolean isMatchCaseSearch() {
-        return matchCaseCheck.isSelected();
+    /** Accessor to highlight check box. */
+    public JCheckBox getHighlightCheck() {
+        return highlightCheck;
     }
     
-    /** If backward check box is checked. Backward search flag. */
-    public boolean isBackwardSearch() {
-        return backwardCheck.isSelected(); 
+    /** Accessor to match case check box. */
+    public JCheckBox getMatchCaseCheck() {
+        return matchCaseCheck;
     }
     
-    /** If wrap check box is checked. Wrap search flag. */
-    public boolean isWrapSearch() {
-        return wrapCheck.isSelected();
+    /** Accessor to backward check box. */
+    public JCheckBox getBackwardCheck() {
+        return backwardCheck;
     }
     
-    /** If row check box is checked. Search by rows flag. */
-    public boolean isRowSearch() {
-        return rowCheck.isSelected();
+    /** Accessor to wrap check box. */
+    public JCheckBox getWrapCheck() {
+        return wrapCheck;
+    }
+    
+    /** Accessor to row check box. */
+    public JCheckBox getRowCheck() {
+        return rowCheck;
     }
     
     /** This method is called from within the constructor to
@@ -84,6 +92,7 @@ public class FindPanel extends javax.swing.JPanel {
         backwardCheck = new javax.swing.JCheckBox();
         wrapCheck = new javax.swing.JCheckBox();
         rowCheck = new javax.swing.JCheckBox();
+        highlightCheck = new javax.swing.JCheckBox();
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
         
@@ -97,6 +106,7 @@ public class FindPanel extends javax.swing.JPanel {
         
         
         findCombo.setEditable(true);
+        findCombo.setNextFocusableComponent(highlightCheck);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
@@ -110,6 +120,7 @@ public class FindPanel extends javax.swing.JPanel {
         
         
         findButton.setText(bundle.getString("CTL_Find"));
+        findButton.setNextFocusableComponent(cancelButton);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 3;
@@ -121,6 +132,7 @@ public class FindPanel extends javax.swing.JPanel {
         
         
         cancelButton.setText(bundle.getString("CTL_Cancel"));
+        cancelButton.setNextFocusableComponent(findCombo);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 3;
@@ -132,29 +144,31 @@ public class FindPanel extends javax.swing.JPanel {
         
         
         matchCaseCheck.setText(bundle.getString("CTL_MatchCaseCheck"));
+        matchCaseCheck.setNextFocusableComponent(backwardCheck);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 1;
+        gridBagConstraints1.gridy = 2;
         gridBagConstraints1.gridwidth = 2;
-        gridBagConstraints1.insets = new java.awt.Insets(5, 12, 0, 0);
+        gridBagConstraints1.insets = new java.awt.Insets(0, 12, 0, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         add(matchCaseCheck, gridBagConstraints1);
         
         
         backwardCheck.setText(bundle.getString("CTL_BackwardCheck"));
+        backwardCheck.setNextFocusableComponent(wrapCheck);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 2;
+        gridBagConstraints1.gridy = 3;
         gridBagConstraints1.gridwidth = 2;
         gridBagConstraints1.insets = new java.awt.Insets(0, 12, 11, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(backwardCheck, gridBagConstraints1);
         
         
-        wrapCheck.setSelected(true);
         wrapCheck.setText(bundle.getString("CTL_WrapSearch"));
+        wrapCheck.setNextFocusableComponent(rowCheck);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 2;
@@ -164,15 +178,27 @@ public class FindPanel extends javax.swing.JPanel {
         add(wrapCheck, gridBagConstraints1);
         
         
-        rowCheck.setSelected(true);
         rowCheck.setText(bundle.getString("CTL_SearchByRows"));
+        rowCheck.setNextFocusableComponent(findButton);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 2;
         gridBagConstraints1.gridy = 2;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 11, 11, 0);
+        gridBagConstraints1.insets = new java.awt.Insets(0, 11, 0, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(rowCheck, gridBagConstraints1);
+        
+        
+        highlightCheck.setText(bundle.getString("CTL_HighlightCheck"));
+        highlightCheck.setNextFocusableComponent(matchCaseCheck);
+        
+        gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 1;
+        gridBagConstraints1.gridwidth = 2;
+        gridBagConstraints1.insets = new java.awt.Insets(5, 12, 0, 0);
+        gridBagConstraints1.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        add(highlightCheck, gridBagConstraints1);
         
     }//GEN-END:initComponents
 
@@ -186,6 +212,7 @@ public class FindPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox backwardCheck;
     private javax.swing.JCheckBox wrapCheck;
     private javax.swing.JCheckBox rowCheck;
+    private javax.swing.JCheckBox highlightCheck;
     // End of variables declaration//GEN-END:variables
 
 }
