@@ -64,7 +64,7 @@ public class JspNode extends DataNode {
         setIconBase(getIconBase());
         setDefaultAction (SystemAction.get (OpenAction.class));
         
-        String ext = getDataObject().getPrimaryFile().getExt();
+        String ext = getExtension();
         
         if (ext.equals(JspLoader.TAGF_FILE_EXTENSION) 
             || ext.equals(JspLoader.TAGX_FILE_EXTENSION)
@@ -75,6 +75,10 @@ public class JspNode extends DataNode {
         
     }
 
+    private String getExtension(){
+        return getDataObject().getPrimaryFile().getExt();
+    }
+    
     public DataObject getDataObject() {
         return super.getDataObject();
     }
@@ -132,9 +136,18 @@ public class JspNode extends DataNode {
         sheet.put(ps);
     
         Node.PropertySet[] tmp = sheet.toArray();
-        for(int i = 0; i < tmp.length; i++){
-            tmp[i].setValue("helpID", JspNode.class.getName() + ".PropertySheet");
-        }
+        String ext = getExtension();
+        if (ext.equals(JspLoader.TAGF_FILE_EXTENSION) 
+            || ext.equals(JspLoader.TAGX_FILE_EXTENSION)
+            || ext.equals(JspLoader.TAG_FILE_EXTENSION))
+            for(int i = 0; i < tmp.length; i++){
+                tmp[i].setValue("helpID", JspNode.class.getName() + ".Tag.PropertySheet"); // NOI18N
+            }
+        else    
+            for(int i = 0; i < tmp.length; i++){
+                tmp[i].setValue("helpID", JspNode.class.getName() + ".PropertySheet"); // NOI18N
+            }
+        
         
         return sheet;
     }
@@ -194,7 +207,13 @@ public class JspNode extends DataNode {
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.web.core.jsploader.JspNode");//NOI18N
+        String ext = getExtension();
+        if (ext.equals(JspLoader.TAGF_FILE_EXTENSION) 
+            || ext.equals(JspLoader.TAGX_FILE_EXTENSION)
+            || ext.equals(JspLoader.TAG_FILE_EXTENSION))
+            return new HelpCtx(JspNode.class.getName() + ".Tag");//NOI18N
+        else    
+            return new HelpCtx(JspNode.class.getName());//NOI18N
     }
 }
 
