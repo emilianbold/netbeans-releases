@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
@@ -168,14 +168,6 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="System">
       <file name="View Servlet.instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.jsploader.EditServletAction"/>
-      </file>
-    </folder>
-    <folder name="Tools">
-      <file name="Convert to Servlet....instance">
-        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.jsploader.ConvertToServletAction"/>
-      </file>
-      <file name="Convert to Java....instance">
-        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.jsploader.ConvertToJavaAction"/>
       </file>
     </folder>
   </folder>
