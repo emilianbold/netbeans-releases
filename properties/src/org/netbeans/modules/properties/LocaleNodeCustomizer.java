@@ -90,7 +90,7 @@ public class LocaleNodeCustomizer extends JPanel {
 
     /** Utility method. Gets icon for key item in key list. */    
     private static Icon getKeyIcon() {
-        return new ImageIcon(Utilities.loadImage("/org/netbeans/modules/properties/propertiesKey.gif")); // NOI18N
+        return new ImageIcon(Utilities.loadImage("org/netbeans/modules/properties/propertiesKey.gif")); // NOI18N
     }
     
     /** Gets locale which represents the entry. Utility method.

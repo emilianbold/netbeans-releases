@@ -653,7 +653,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
 
         /** Overrides superclass method. Gets <code>Icon</code>. */
         public Image getIcon () {
-            return Utilities.loadImage("/org/netbeans/modules/properties/propertiesEditorMode.gif"); // NOI18N
+            return Utilities.loadImage("org/netbeans/modules/properties/propertiesEditorMode.gif"); // NOI18N
         }
 
         /** Overrides superclass method. Gets help context. */
