@@ -13,20 +13,11 @@
 
 package com.netbeans.developer.impl;
 
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ResourceBundle;
-import java.util.Vector;
-
 import org.openide.*;
 import org.openide.loaders.*;
 import org.openide.options.*;
 import org.openide.actions.PropertiesAction;
+import org.openide.actions.ToolsAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
 import org.openide.nodes.*;
@@ -55,14 +46,15 @@ final class EnvironmentNode extends AbstractNode {
   /** Constructor */
   private EnvironmentNode () {
     super (children = new Children.Array());
-    initialize();
+    setName(NbBundle.getBundle(EnvironmentNode.class).
+                   getString("CTL_Environment_name"));
+    setIconBase(EN_ICON_BASE);
   }
 
   /** Method to add an node to the environment.
   */
   public static void addNode (Node n) {
     getDefault ();
-    
     children.add (new Node[] { n });
   }
   
@@ -80,36 +72,6 @@ final class EnvironmentNode extends AbstractNode {
     return node;
   }
 
-  /** Does all initialization */
-  private void initialize () {
-    initializeChildren();
-    setName(NbBundle.getBundle(EnvironmentNode.class).
-                   getString("CTL_Environment_name"));
-    setIconBase(EN_ICON_BASE);
-  }
-
-  /** Initialize children of this node - adds 6 currently defined subnodes. */
-  private void initializeChildren () {
-  /*
-    ret = new Node[8];
-    ret[0] = new FSPoolNode(this);
-    ret[1] = new MainWindowNode(this);
-    ret[2] = CoronaTopManager.getWorkspacePoolContextNode(this);
-    ret[3] = CoronaTopManager.getShortcutNode (this);
-    if (paletteContextNode != null) // deserialized
-      ret[4] = paletteContextNode;
-    else {
-      ret[4] = new SerializableFilterNode(PaletteContext.getPaletteContext(), this);
-      paletteContextNode = ret[4];
-    }
-    ret[5] = com.netbeans.developer.modules.debugger.JavaDebuggerNode.getDebuggerNode(this);
-    ret[6] = com.netbeans.developer.impl.execution.ExecutionNode.getExecutionNode(this);
-    ret[7] = com.netbeans.developer.defaults.Default.getDefaultActions(this);
-
-    getChildren().add(ret);
-    */
-  }
-
   /** Getter for set of actions that should be present in the
   * popup menu of this node. This set is used in construction of
   * menu returned from getContextMenu and specially when a menu for
@@ -119,33 +81,15 @@ final class EnvironmentNode extends AbstractNode {
   */
   public SystemAction[] createActions () {
     return new SystemAction[] {
+      SystemAction.get(ToolsAction.class),
       SystemAction.get(PropertiesAction.class)
     };
   }
-
-  /** serializes the class */
-  /*private void writeObject(ObjectOutputStream os)
-  throws IOException {
-    os.defaultWriteObject(); // outer ref
-    os.writeObject(getDisplayName());
-  }*/
-
-  /** deserializes the class */
-  /*private void readObject(ObjectInputStream is)
-  throws IOException, ClassNotFoundException {
-    is.defaultReadObject(); // outer ref
-    setDisplayName((String)is.readObject());
-    is.registerValidation(new java.io.ObjectInputValidation() {
-      public void validateObject() {
-        initialize();
-        thisNodeChange();
-      }
-    }, 0);
-  }*/
 }
 
 /*
  * Log
+ *  16   Gandalf   1.15        6/9/99   Ian Formanek    ToolsAction
  *  15   Gandalf   1.14        6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  14   Gandalf   1.13        5/9/99   Ian Formanek    Fixed bug 1655 - 
@@ -172,6 +116,4 @@ final class EnvironmentNode extends AbstractNode {
  *       ide.loaders.*
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
- * Beta Change History:
- *  0    Tuborg    0.12        --/--/98 Jan Formanek    Shortcuts and Workspaces moved here from the MainWindowNode
  */

@@ -122,7 +122,8 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
       null,
       SystemAction.get (org.openide.actions.NewAction.class),
       null,
-      SystemAction.get (org.openide.actions.PropertiesAction.class)
+      SystemAction.get (org.openide.actions.PropertiesAction.class),
+      SystemAction.get (org.openide.actions.ToolsAction.class),
     };
   }
 
@@ -218,6 +219,7 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
 
 /*
  * Log
+ *  17   Gandalf   1.16        6/9/99   Ian Formanek    ToolsAction
  *  16   Gandalf   1.15        6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  15   Gandalf   1.14        5/9/99   Ian Formanek    Fixed bug 1655 - 

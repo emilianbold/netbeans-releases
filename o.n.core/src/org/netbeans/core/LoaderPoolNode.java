@@ -90,6 +90,7 @@ public final class LoaderPoolNode extends AbstractNode {
     return new SystemAction[] {
       SystemAction.get(ReorderAction.class),
       null,
+      SystemAction.get(ToolsAction.class),
       SystemAction.get(PropertiesAction.class),
     };
     
@@ -418,6 +419,7 @@ public final class LoaderPoolNode extends AbstractNode {
           SystemAction.get(MoveUpAction.class),
           SystemAction.get(MoveDownAction.class),
           null,
+          SystemAction.get(ToolsAction.class),
           SystemAction.get(PropertiesAction.class),
         };
       return loaderActions;
@@ -560,6 +562,7 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  22   Gandalf   1.21        6/9/99   Ian Formanek    ToolsAction
 *  21   Gandalf   1.20        6/8/99   Ian Formanek    ---- Package Change To 
 *       org.openide ----
 *  20   Gandalf   1.19        5/12/99  Jaroslav Tulach NullPointer fix.
