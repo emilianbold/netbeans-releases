@@ -562,7 +562,6 @@
 <mapID target="workspace.clone" url="workspace/clone.html" />
 <mapID target="workspace.window.mode" url="workspace/window_modes.html" />
 
-<mapID target="propfiles.editbundles" url="propfiles/editbundles.html" />
 <mapID target="propfiles.prop" url="java/nodes/properties.html" />
 <mapID target="propfiles.intro" url="propfiles/propfile.html" />
 <mapID target="propfiles.creating" url="propfiles/creatingprops.html" />
