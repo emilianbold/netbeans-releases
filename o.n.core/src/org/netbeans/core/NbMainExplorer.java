@@ -316,7 +316,7 @@ public final class NbMainExplorer extends CloneableTopComponent
         Places.Nodes ns = TopManager.getDefault().getPlaces().nodes();
         if (rc.equals(NbProjectOperation.getProjectDesktop())) {
             // projects tab
-            panel = new ProjectsTab();
+            panel = ProjectsTab.getDefault();
         } else if (rc.equals(ns.repository())) {
             panel = new RepositoryTab ();
         } else if (rc.equals(ns.environment())) {
@@ -791,6 +791,22 @@ public final class NbMainExplorer extends CloneableTopComponent
     /** Special class for projects tab in main explorer */
     public static class ProjectsTab extends RepositoryTab {
         static final long serialVersionUID =-8178367548546385799L;
+        
+        private static ProjectsTab DEFAULT;
+        
+        public ProjectsTab() {
+            if (DEFAULT == null) {
+                DEFAULT = this;
+            }
+        }
+        
+        public static synchronized ProjectsTab getDefault() {
+            if (DEFAULT == null) {
+                DEFAULT = new ProjectsTab();
+            }
+            
+            return DEFAULT;
+        }
 
         /** Exchanges deserialized root context to projects root context
         * to keep the uniquennes. */
