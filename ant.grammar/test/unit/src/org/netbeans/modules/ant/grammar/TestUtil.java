@@ -219,10 +219,10 @@ final class TestUtil {
      * for text nodes, the value.
      * (No namespaces returned.)
      */
-    public static List/*<String>*/ grammarResultValues(Enumeration/*<Node>*/ enum) {
+    public static List/*<String>*/ grammarResultValues(Enumeration/*<Node>*/ e) {
         List l = new ArrayList();
-        while (enum.hasMoreElements()) {
-            Object o = enum.nextElement();
+        while (e.hasMoreElements()) {
+            Object o = e.nextElement();
             String s;
             if (o instanceof Element) {
                 s = ((Element)o).getNodeName();
