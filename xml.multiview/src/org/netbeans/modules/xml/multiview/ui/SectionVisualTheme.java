@@ -33,13 +33,14 @@ public class SectionVisualTheme {
      static Color documentBackgroundColor =  new java.awt.Color(255, 255, 255);
      static Color documentMarginColor = new java.awt.Color(153, 153, 153);
      static Color sectionHeaderColor = new java.awt.Color(255, 255, 255);
-     static Color sectionHeaderActiveColor = javax.swing.UIManager.getDefaults().getColor("Button.focus");
-     static Color fillerColor = javax.swing.UIManager.getDefaults().getColor("Button.background");
+     static Color sectionHeaderActiveColor = javax.swing.UIManager.getDefaults().getColor("Button.focus"); //NOI18N
+     static Color fillerColor = javax.swing.UIManager.getDefaults().getColor("Button.background"); //NOI18N
      static Color tableHeaderColor = new java.awt.Color(204, 204, 204);
      static Color tableGridColor = new java.awt.Color(255, 255, 255);
      static Color sectionHeaderLineColor = new java.awt.Color(204, 204, 204);
      static Color hyperlinkColor = new java.awt.Color(0, 0, 255);
      static Color textColor = new java.awt.Color(0, 0, 0);
+     static Color errorLabelColor = javax.swing.UIManager.getDefaults().getColor("ToolBar.dockingForeground"); //NOI18N
    
      public SectionVisualTheme() {
     }
@@ -77,6 +78,10 @@ public class SectionVisualTheme {
     
     static public Color getFillerColor(){
         return fillerColor;
+    }
+    
+    static public Color getErrorLabelColor(){
+        return errorLabelColor;
     }    
     
 }
