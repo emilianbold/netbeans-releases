@@ -33,7 +33,15 @@ public class Main extends Object {
 
         String home = System.getProperty ("netbeans.home"); // NOI18N
         if (home != null) {
-            build_cp (new File (home), list);
+            build_cp (new File (home), list, false);
+        }
+        // #34069: need to do the same for nbdirs.
+        String nbdirs = System.getProperty("netbeans.dirs"); // NOI18N
+        if (nbdirs != null) {
+            StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
+            while (tok.hasMoreTokens()) {
+                build_cp(new File(tok.nextToken()), list, true);
+            }
         }
         
         //
@@ -126,9 +134,11 @@ public class Main extends Object {
     }
         
     
-    private static void build_cp(File base, Collection toAdd) {
-        append_jars_to_cp (new File (base, "lib/patches"), toAdd);
-        append_jars_to_cp (new File (base, "lib"), toAdd);
+    private static void build_cp(File base, Collection toAdd, boolean localeOnly) {
+        if (!localeOnly) {
+            append_jars_to_cp (new File (base, "lib/patches"), toAdd);
+            append_jars_to_cp (new File (base, "lib"), toAdd);
+        }
         // XXX a minor optimization: exclude any unused locale JARs
         // For example, lib/locale/ might contain:
         // core_ja.jar
