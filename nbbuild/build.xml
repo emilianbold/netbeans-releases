@@ -234,7 +234,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module openide/registry..."/>
     <ant dir="../openide/registry" target="netbeans"/>
   </target>
-  <target name="all-core/registry" depends="all-openide,all-openide/registry,all-openide/loaders,all-core">
+  <target name="all-core/registry" depends="all-openide,all-openide/registry,all-openide/loaders,all-core,all-openide/convertor">
     <echo message="Building module core/registry..."/>
     <ant dir="../core/registry" target="netbeans"/>
   </target>
