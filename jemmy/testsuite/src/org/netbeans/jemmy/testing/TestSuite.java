@@ -34,6 +34,8 @@ public class TestSuite extends Task {
     File resourcesFile = null;
     File timeoutsFile = null;
     boolean robot = false;
+    boolean shortcut = false;
+    boolean queue = true;
     public TestSuite() {
 	tests = new Vector();
     }
@@ -61,6 +63,12 @@ public class TestSuite extends Task {
     }
     public void setRobotDispatching(boolean v) {
 	robot = v;
+    }
+    public void setShortcutEvents(boolean v) {
+	shortcut = v;
+    }
+    public void setUseQueue(boolean v) {
+	queue = v;
     }
     public void execute() throws BuildException {
 	try {
@@ -188,7 +196,7 @@ public class TestSuite extends Task {
 	JemmyProperties.
 	    getCurrentTimeouts().
 	    loadDefaults(timeoutsFile.getAbsolutePath());
-	JemmyProperties.getProperties().initDispatchingModel(true, robot);
+	JemmyProperties.getProperties().initDispatchingModel(queue, robot, shortcut);
 	Operator.setDefaultVerification(true);
     }
     class TestRunner implements Runnable {

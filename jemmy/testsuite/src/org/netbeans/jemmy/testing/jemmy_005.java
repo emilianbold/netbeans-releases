@@ -5,6 +5,8 @@ import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
 import org.netbeans.jemmy.*;
+import org.netbeans.jemmy.drivers.*;
+import org.netbeans.jemmy.drivers.menus.*;
 import org.netbeans.jemmy.testing.*;
 import org.netbeans.jemmy.operators.*;
 
@@ -101,8 +103,9 @@ public class jemmy_005 extends JemmyTest {
 		Demonstrator.nextStep("Call popup on \"" + strPaths[i] + "\" path");
 		paths[i] = to.findPath(strPaths[i], "|", true, true);
 		to.callPopupOnPath(paths[i]);
-		pmo = JPopupMenuOperator.waitJPopupMenu("XXX");
-		
+
+                pmo = JPopupMenuOperator.waitJPopupMenu("XXX");
+
 		if(i == 0) {
 		    if(!testJPopupMenu(pmo)) {
 			finalize();
@@ -134,9 +137,11 @@ public class jemmy_005 extends JemmyTest {
                     finalize();
                     return(1);
                 }
+
 		pmo.pushMenu("XXX|submenu|subsubmenu|menuItem", "|", true, true);
 		TreePath[] pths = {paths[i]};
 		(new Waiter(checker)).waitAction(pths);
+                Thread.sleep(100);
 	    }
 
 	    new JCheckBoxOperator(new JFrameOperator(frm), "Huge Popup").changeSelection(false);
@@ -155,6 +160,7 @@ public class jemmy_005 extends JemmyTest {
 			    pmo = new JPopupMenuOperator(to.callPopupOnPaths(pths));
 			    pmo.pushMenu("XXX|submenu|subsubmenu|menuItem", "|", true, true);
 			    (new Waiter(checker)).waitAction(pths);
+                            Thread.sleep(100);
 			}
 		    }
 		}

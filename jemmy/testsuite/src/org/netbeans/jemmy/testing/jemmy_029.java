@@ -99,37 +99,31 @@ public class jemmy_029 extends JemmyTest {
 	    JMenuBarOperator mbo = new JMenuBarOperator(new ContainerOperator(win));
 	    mbo.pushMenuNoBlock("Menu|MenuItem", "|", false, false);
 
-	    Thread.sleep(1000);
+	    Thread.sleep(100);
 
 	    JDialogOperator modal = new JDialogOperator("Modal");
 	    new JButtonOperator(modal, "").push();
 	    modal.waitClosed();
 
-	    Thread.sleep(1000);
+	    Thread.sleep(100);
 
 	    mbo.pushMenuNoBlock("Menu|MenuItem", "|");
 
-	    Thread.sleep(1000);
-
 	    modal = new JDialogOperator("Modal");
 	    new JButtonOperator(modal, "").push();
 	    modal.waitClosed();
 
-	    Thread.sleep(1000);
+	    Thread.sleep(100);
 
 	    mbo.pushMenuNoBlock(new String[] {"Menu", "MenuItem"}, false, false);
 
-	    Thread.sleep(1000);
-
 	    modal = new JDialogOperator("Modal");
 	    new JButtonOperator(modal, "").push();
 	    modal.waitClosed();
 
-	    Thread.sleep(1000);
+	    Thread.sleep(100);
 
 	    mbo.pushMenuNoBlock(new String[] {"Menu", "MenuItem"});
-
-	    Thread.sleep(1000);
 
 	    modal = new JDialogOperator("Modal");
 	    new JButtonOperator(modal, "").push();

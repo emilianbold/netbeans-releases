@@ -23,6 +23,13 @@ public class jemmy_041 extends JemmyTest {
     public int runIt(Object obj) {
 	
 	try {
+            /*
+            Toolkit.getDefaultToolkit().addAWTEventListener(new AWTEventListener() {
+                    public void eventDispatched(AWTEvent e) {
+                        System.out.println(e);
+                    }
+                }, EventTool.getTheWholeEventMask());
+            */
 
 	    try {
 		(new ClassReference("org.netbeans.jemmy.testing.Application_041")).startApplication();
@@ -33,20 +40,22 @@ public class jemmy_041 extends JemmyTest {
 	    } catch(NoSuchMethodException e) {
 		getOutput().printStackTrace(e);
 	    }
-
 	    new QueueTool().waitEmpty(100);
 
             JFrameOperator foper = new JFrameOperator("41");
             foper.maximize();
 
+            long time = Long.parseLong(new JLabelOperator(foper).getText());
+
             JButtonOperator start = new JButtonOperator(foper);
 
             JTreeOperator tree = new JTreeOperator(foper);
+            tree.setComparator(new Operator.DefaultStringComparator(true, true));
 
             start.push();
 
-            for(int i = 0; i < 10; i++) {
-                doSleep(30);
+            for(int i = 0; i < 20; i++) {
+                doSleep(time * 3);
                 tree.selectPath(tree.findPath("node" + i, "|"));
             }
 

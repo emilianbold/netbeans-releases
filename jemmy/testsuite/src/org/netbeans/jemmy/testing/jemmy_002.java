@@ -44,18 +44,14 @@ public class jemmy_002 extends JemmyTest {
 
 	    JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout",
 					      5000);
-	    JFrame win =JFrameOperator.waitJFrame("Application_002", true, true);
-	    JFrameOperator wino = new JFrameOperator(win);
+	    JFrameOperator wino = new JFrameOperator("Application_002");
 	    
 	    EventDispatcher.waitQueueEmpty();
 
 	    Demonstrator.setTitle("jemmy_002 test");
 	    Demonstrator.nextStep("Type text into text field");
 
-	    JTextFieldOperator tfo = new JTextFieldOperator(JTextFieldOperator.
-							    waitJTextField(win,
-									   "Text",
-									   false, true));
+	    JTextFieldOperator tfo = new JTextFieldOperator(wino, "Text");
 
 	    JTextFieldOperator tf1 = new JTextFieldOperator(wino);
 	    if(tf1.getSource() != tfo.getSource()) {
@@ -69,11 +65,13 @@ public class jemmy_002 extends JemmyTest {
 	    tfo.clearText();
 	    tfo.typeText("Text has been typed");
 
-	    JTextFieldOperator.waitJTextField(win, "has been typed", false, true);
+	    new JTextFieldOperator(wino, "has been typed");
 
 	    Demonstrator.nextStep("Push menu/menuItem");
 
-	    JMenuBarOperator mbo = new JMenuBarOperator(JMenuBarOperator.findJMenuBar(win));
+	    JMenuBarOperator mbo = new JMenuBarOperator(wino);
+            mbo.getTimeouts().setTimeout("JMenuOperator.PushMenuTimeout",
+                                         600000);
 
             if(mbo.showMenuItems("menu|submenu", "|").length != 2) {
 		finalize();
@@ -82,12 +80,12 @@ public class jemmy_002 extends JemmyTest {
 
                 mbo.closeSubmenus();
 
-                sleep(2000);
-
             if(!mbo.showMenuItem("menu|submenu", "|").getText().equals("submenu")) {
 		finalize();
 		return(1);
             }
+
+            mbo.pushMenu("menu", "|");
 
             if(!mbo.showMenuItem("menu", "|").getText().equals("menu")) {
 		finalize();
@@ -106,30 +104,42 @@ public class jemmy_002 extends JemmyTest {
 		return(1);
             }
 
-
-	    mbo.pushMenu("menu|submenu|subsubmenu|menuItem", "|", true, true);
-	    JLabelOperator lbo = new JLabelOperator(JLabelOperator.waitJLabel(win, "Menu \"menu/menuItem\" has been pushed", false, true));
+	    mbo.pushMenu("menu|submenu|subsubmenu|menuItem", "|");
+	    JLabelOperator lbo = new JLabelOperator(wino, "Menu \"menu/menuItem\" has been pushed");
 
 
 	    
 	    Demonstrator.nextStep("Push menu0");
 
-	    mbo.pushMenu("menu0", "|", true, true);
+	    mbo.pushMenu("menu0", "|");
 
 	    Demonstrator.nextStep("Push menu1Item");
 
-	    mbo.pushMenu("menu1Item", "|", true, true);
-	    JLabelOperator.waitJLabel(win, "Menu \"menu1Item\" has been pushed", false, true);
+	    mbo.pushMenu("menu1Item", "|");
+	    new JLabelOperator(wino, "Menu \"menu1Item\" has been pushed");
 
 	    Demonstrator.nextStep("Push button");
 
-	    JButtonOperator bo = new JButtonOperator(JButtonOperator.
-						     waitJButton(win,
-								 "button",
-								 true, true));
+	    JButtonOperator bo = new JButtonOperator(wino, "button");
 
 	    bo.push();
-	    JLabelOperator.waitJLabel(win, "Button has been pushed", false, true);
+	    new JLabelOperator(wino, "Button has been pushed");
+
+            mbo.setTimeouts(mbo.getTimeouts().cloneThis());
+            mbo.getTimeouts().setTimeout("ComponentOperator.WaitComponentEnabledTimeout", 1000);
+            try {
+                mbo.pushMenu("menu|submenu|subsubmenu2", "|", true, true);
+                printLine("Exception was not thrown!");
+		finalize();
+		return(1);
+            } catch(Exception e) {
+                if(e instanceof TimeoutExpiredException) {
+                    printLine("Exception was thrown:");
+                    getOutput().printStackTrace(e);
+                } else {
+                    throw(e);
+                }
+            }                
 
 	    Demonstrator.showFinalComment("Test passed");
 

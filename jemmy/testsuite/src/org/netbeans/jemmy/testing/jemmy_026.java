@@ -13,6 +13,7 @@ public class jemmy_026 extends JemmyTest {
 	    JemmyProperties.push();
 
 	    QueueTool cleaner = new QueueTool();
+            cleaner.setTimeouts(cleaner.getTimeouts().cloneThis());
 	    cleaner.getTimeouts().setTimeout("QueueTool.WaitQueueEmptyTimeout",
 					   30000);
 	    cleaner.setOutput(getOutput().createErrorOutput());
@@ -20,18 +21,27 @@ public class jemmy_026 extends JemmyTest {
 	    JemmyProperties.setCurrentTimeout("EventDispatcher.WaitQueueEmptyTimeout",
 					      2000);
 
+            /*	    QueueTool testing = new QueueTool();
+                    testing.getTimeouts().setTimeout("QueueTool.WaitQueueEmptyTimeout",
+                    2000);
+            */
+
+	    cleaner.waitEmpty(1000);
+
 	    getOutput().printLine("===================================================");
 	    getOutput().printLine("Positive empty");
 	    SwingUtilities.invokeLater(new Sleeper(1000));
-	    EventDispatcher.waitQueueEmpty();
 	    SwingUtilities.invokeLater(new Sleeper(1000));
+            doSleep(500);
+            EventDispatcher.waitQueueEmpty();
 	    getOutput().printLine("END Positive empty");
 	    getOutput().printLine("===================================================");
 
-	    cleaner.waitEmpty();
+	    cleaner.waitEmpty(1000);
 
 	    getOutput().printLine("===================================================");
 	    getOutput().printLine("Negative empty");
+	    SwingUtilities.invokeLater(new Sleeper(1000));
 	    SwingUtilities.invokeLater(new Sleeper(1000));
 	    SwingUtilities.invokeLater(new Sleeper(1000));
 	    SwingUtilities.invokeLater(new Sleeper(1000));
@@ -43,7 +53,7 @@ public class jemmy_026 extends JemmyTest {
 	    getOutput().printLine("END Negative empty");
 	    getOutput().printLine("===================================================");
 
-	    cleaner.waitEmpty();
+	    cleaner.waitEmpty(1000);
 
 	    JemmyProperties.setCurrentTimeout("EventDispatcher.WaitQueueEmptyTimeout",
 					      5000);
@@ -51,11 +61,12 @@ public class jemmy_026 extends JemmyTest {
 	    getOutput().printLine("===================================================");
 	    getOutput().printLine("Positive timed");
 	    SwingUtilities.invokeLater(new Sleeper(2000));
-	    EventDispatcher.waitQueueEmpty(100);
+	    SwingUtilities.invokeLater(new Sleeper(1000));
+	    EventDispatcher.waitQueueEmpty(500);
 	    getOutput().printLine("END Positive timed");
 	    getOutput().printLine("===================================================");
 
-	    cleaner.waitEmpty();
+	    cleaner.waitEmpty(1000);
 
 	    getOutput().printLine("===================================================");
 	    getOutput().printLine("Negative timed");
@@ -93,7 +104,9 @@ public class jemmy_026 extends JemmyTest {
 	}
 	public void run() {
 	    try {
+                getOutput().printLine("Sleeper started at " + System.currentTimeMillis());
 		Thread.currentThread().sleep(timeToSleep);
+                getOutput().printLine("Sleeper ended   at " + System.currentTimeMillis());
 	    } catch(InterruptedException e) {
 		getOutput().printStackTrace(e);
 	    }

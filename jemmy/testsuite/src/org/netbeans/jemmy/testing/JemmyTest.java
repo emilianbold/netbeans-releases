@@ -9,34 +9,7 @@ import org.netbeans.jemmy.util.Dumper;
 
 public class JemmyTest extends org.netbeans.jemmy.Test {
     public void finalize() {
-	try {
-	    JemmyProperties.setCurrentTimeout("QueueTool.LockTimeout", 60000);
-	    Dumper.dumpAll(System.getProperty("user.dir") +
-			   System.getProperty("file.separator") +
-			   "dump.xml");
-	    /*
-	    if(!System.getProperty("java.version").startsWith("1.2")) {
-		Object[] params = {System.getProperty("user.dir") +
-				   System.getProperty("file.separator") +
-				   "screen.png"};
-		Class[] classes = {params[0].getClass()};
-		new ClassReference("org.netbeans.jemmy.util.PNGEncoder").
-		    invokeMethod("captureScreen",
-				 params,
-				 classes);
-	    }
-	} catch(ClassNotFoundException e) {
-	    getOutput().printStackTrace(e);
-	} catch(java.lang.reflect.InvocationTargetException e) {
-	    getOutput().printStackTrace(e);
-	} catch(NoSuchMethodException e) {
-	    getOutput().printStackTrace(e);
-	} catch(IllegalAccessException e) {
-	    getOutput().printStackTrace(e);
-	    */
-	} catch(java.io.FileNotFoundException e) {
-	    getOutput().printStackTrace(e);
-	}
+        JemmyProperties.setCurrentTimeout("QueueTool.LockTimeout", 60000);
 	Window win;
 	while((win = WindowWaiter.getWindow(new org.netbeans.jemmy.ComponentChooser() {
 		public boolean checkComponent(Component comp) {

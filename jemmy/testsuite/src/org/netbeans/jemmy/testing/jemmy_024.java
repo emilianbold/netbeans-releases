@@ -160,8 +160,7 @@ public class jemmy_024 extends JemmyTest {
 
 	    tpo.selectPage("Tree Page", true, true);
 
-	    JTreeOperator treeOper = new JTreeOperator(JTreeOperator.
-						       findJTree(win, null, false, false, -1));
+	    JTreeOperator treeOper = new JTreeOperator(new JFrameOperator(win));
 
 	    treeOper.clickOnPath(treeOper.getPathForRow(0));
 	    JTreeOperator tro1 = new JTreeOperator(wino);
@@ -236,8 +235,7 @@ public class jemmy_024 extends JemmyTest {
 
 	    tpo.selectPage("List Page", true, true);
 
-	    JListOperator listOper = new JListOperator(JListOperator.
-						       findJList(win, null, false, false, -1));
+	    JListOperator listOper = new JListOperator(new JFrameOperator(win));
 	    listOper.scrollToItem(49);
 
 	    if(!checkInside(listOper, 
@@ -268,16 +266,8 @@ public class jemmy_024 extends JemmyTest {
 
 	    tpo.selectPage("Text Page", true, true);
 
-	    JTextAreaOperator textOper = new JTextAreaOperator(JTextAreaOperator.
-							       findJTextArea(win, null, false, false));
 
-
-	    JTextAreaOperator textOpe1 = new JTextAreaOperator(wino);
-	    if(textOpe1.getSource() != textOper.getSource()) {
-		getOutput().printError("Wrong");
-		getOutput().printErrLine(textOper.getSource().toString());
-		getOutput().printErrLine(textOpe1.getSource().toString());
-	    }
+	    JTextAreaOperator textOper = new JTextAreaOperator(wino);
 
 	    textOper.scrollToPosition(textOper.getText().length());
 

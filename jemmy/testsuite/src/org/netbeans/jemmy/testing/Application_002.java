@@ -42,6 +42,7 @@ public class Application_002 extends TestFrame {
 	MyMenu subsubmenu = new MyMenu("subsubmenu");
 	subsubmenu.add(menuItem);
 	MyMenu subsubmenu2 = new MyMenu("subsubmenu2");
+        subsubmenu2.setEnabled(false);
 
 	MyMenu submenu = new MyMenu("submenu");
 	submenu.add(subsubmenu);

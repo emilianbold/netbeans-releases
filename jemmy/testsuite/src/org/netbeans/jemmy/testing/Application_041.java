@@ -15,6 +15,7 @@ public class Application_041 extends TestFrame {
     JTree tree;
     DefaultTreeModel model;
     DefaultMutableTreeNode root;    
+    long time;
     public Application_041() {
 	super("Application_041");
 
@@ -27,6 +28,13 @@ public class Application_041 extends TestFrame {
 
 	getContentPane().setLayout(new BorderLayout());
         getContentPane().add(start, BorderLayout.SOUTH);
+
+        time = System.currentTimeMillis() % 100;
+        if ((org.netbeans.jemmy.JemmyProperties.getCurrentDispatchingModel() & 
+             org.netbeans.jemmy.JemmyProperties.ROBOT_MODEL_MASK) != 0) {
+            time = time * 10;
+        }
+        getContentPane().add(new JLabel(Long.toString(time)), BorderLayout.NORTH);
 
         root = new DefaultMutableTreeNode("Root");
 
@@ -46,21 +54,21 @@ public class Application_041 extends TestFrame {
                     TreePath path = new TreePath(new Object[] {root});
                     for(int i = 0; i < 30; i++) {
                         final int index = i;
-                        try {Thread.sleep(20);} catch(Exception e) {}
+                        try {Thread.sleep(time * 2);} catch(Exception e) {}
                         if(!tree.isExpanded(path)) {
                             tree.expandPath(path);
                         }
-                        //                        try {
-                        //                            EventQueue.invokeAndWait(new Runnable() {
-                        //                                    public void run() {
-                        model.insertNodeInto(new DefaultMutableTreeNode("node" + index), root, 0);
-                        //                                    }
-                        //                                });
-                        //                        } catch(InterruptedException e) {
-                        //                            e.printStackTrace();
-                        //                        } catch(InvocationTargetException e) {
-                        //                            e.printStackTrace();
-                        //}
+                        try {
+                            EventQueue.invokeAndWait(new Runnable() {
+                                    public void run() {
+                                        model.insertNodeInto(new DefaultMutableTreeNode("node" + index), root, 0);
+                                    }
+                                });
+                        } catch(InterruptedException e) {
+                            e.printStackTrace();
+                        } catch(InvocationTargetException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }).start();
