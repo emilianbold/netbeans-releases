@@ -66,11 +66,11 @@ public class NonGui extends NbTopManager implements Runnable {
   protected static int uiFontSize = 11;
 
   /** The netbeans home dir - acquired from property netbeans.home */
-  protected static String homeDir;
+  private static String homeDir;
   /** The netbeans user dir - acquired from property netbeans.user / or copied from homeDir if such property does not exist */
-  protected static String userDir;
+  private static String userDir;
   /** The netbeans system dir - it is netbeans.home/system or a folder specified via -system option */
-  protected static String systemDir;
+  private static String systemDir;
   
   /** system file system */
   private static FileSystem systemFileSystem;
@@ -90,6 +90,41 @@ public class NonGui extends NbTopManager implements Runnable {
   /** The Class that logs the IDE events to a log file */
   private static TopLogging logger;
 
+
+  /** Getter for home directory.
+  */
+  protected static String getHomeDir () {
+      if (homeDir == null) {
+          homeDir = System.getProperty ("netbeans.home");
+          if (homeDir == null) {
+            System.out.println(getString("CTL_Netbeanshome_property"));
+            doExit (1);
+          }
+      }
+      return homeDir;
+  }
+
+  /** Getter for user home directory.
+  */
+  protected static String getUserDir () {
+      if (userDir == null) {
+          userDir = System.getProperty ("netbeans.user");
+          if (userDir == null) {
+              userDir = getHomeDir ();
+              System.getProperties ().put ("netbeans.user", homeDir); // NOI18N
+          }
+      }
+      return userDir;
+  }
+
+  /** System directory getter.
+  */
+  protected static String getSystemDir () {
+      if (systemDir == null) {
+          systemDir = getUserDir () + File.separator + "system"; // NOI18N
+      }
+      return systemDir;
+  }
   
   //
   // Protected methods that are provided for subclasses (Main) 
@@ -103,19 +138,8 @@ public class NonGui extends NbTopManager implements Runnable {
 // -----------------------------------------------------------------------------------------------------
 // 1. Initialization and checking of netbeans.home and netbeans.user directories
 
-    homeDir = System.getProperty("netbeans.home");
-    if (homeDir == null) {
-      System.out.println(getString("CTL_Netbeanshome_property"));
-      doExit (1);
-    }
-
-    if (System.getProperty ("netbeans.user") == null)
-      System.getProperties ().put ("netbeans.user", homeDir); // NOI18N
-
-    userDir = System.getProperty ("netbeans.user");
-
-    File homeDirFile = new File (homeDir);
-    File userDirFile = new File (userDir);
+    File homeDirFile = new File (getHomeDir ());
+    File userDirFile = new File (getUserDir ());
     if (!homeDirFile.exists ()) {
       System.out.println (getString("CTL_Netbeanshome_notexists"));
       doExit (2);
@@ -133,9 +157,7 @@ public class NonGui extends NbTopManager implements Runnable {
       doExit (5);
     }
 
-    systemDir = userDir + File.separator + "system"; // NOI18N
-
-    File systemDirFile = new File (systemDir);
+    File systemDirFile = new File (getSystemDir ());
     if (systemDirFile.exists ()) {
       if (!systemDirFile.isDirectory ()) {
         Object[] arg = new Object[] {userDir};
@@ -182,13 +204,13 @@ public class NonGui extends NbTopManager implements Runnable {
   }
 
   
-  private static void showSystemInfo() {
+  protected static void showSystemInfo() {
     System.out.println("-- " + getString("CTL_System_info") + " ----------------------------------------------------------------");
     TopLogging.printSystemInfo(System.out);
     System.out.println("-------------------------------------------------------------------------------"); // NOI18N
   }
 
-  private static void showHelp() {
+  protected static void showHelp() {
     System.out.println(getString("CTL_Cmd_options"));
     System.out.println(getString("CTL_System_option"));
     System.out.println("                      " + getString("CTL_System_option2"));
