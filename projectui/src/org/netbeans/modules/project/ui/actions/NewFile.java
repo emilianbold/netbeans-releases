@@ -42,6 +42,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter.Popup;
 
 
@@ -64,7 +65,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     public NewFile( Lookup context ) {
         super( (String)null, NAME, ICON, context ); //NOI18N    
         putValue("iconBase","org/netbeans/modules/project/ui/resources/newFile.gif"); //NOI18N
-        OpenProjectList.getDefault().addPropertyChangeListener( this );
+        OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
         refresh( getLookup() );
     }
 
