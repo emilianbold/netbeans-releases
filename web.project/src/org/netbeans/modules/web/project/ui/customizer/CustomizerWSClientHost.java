@@ -47,7 +47,7 @@ import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
  * @author Peter Williams
  */
 public class CustomizerWSClientHost extends javax.swing.JPanel 
-    implements WebCustomizer.Panel, WebCustomizer.ValidatingPanel, PropertyChangeListener {
+    implements /*WebCustomizer.Panel, WebCustomizer.ValidatingPanel,*/ PropertyChangeListener {
     
     private WebProjectProperties webProperties;
     private WsCompileEditorSupport.Panel wsCompileEditor;
@@ -125,12 +125,12 @@ public class CustomizerWSClientHost extends javax.swing.JPanel
     }
     
     private void ensurePropertyExists(String propertyName, String features) {
-        if(webProperties.get(propertyName) == null) {
-            WebProjectProperties.PropertyDescriptor propertyDescriptor = new WebProjectProperties.PropertyDescriptor(
-                propertyName, AntProjectHelper.PROJECT_PROPERTIES_PATH, WebProjectProperties.STRING_PARSER);
-            WebProjectProperties.PropertyInfo propertyInfo = 
-                webProperties.new PropertyInfo(propertyDescriptor, features, features);
-            webProperties.initProperty(propertyName, propertyInfo);
-        }
+//        if(webProperties.get(propertyName) == null) {
+//            WebProjectProperties.PropertyDescriptor propertyDescriptor = new WebProjectProperties.PropertyDescriptor(
+//                propertyName, AntProjectHelper.PROJECT_PROPERTIES_PATH, WebProjectProperties.STRING_PARSER);
+//            WebProjectProperties.PropertyInfo propertyInfo = 
+//                webProperties.new PropertyInfo(propertyDescriptor, features, features);
+//            webProperties.initProperty(propertyName, propertyInfo);
+//        }
     }
 }

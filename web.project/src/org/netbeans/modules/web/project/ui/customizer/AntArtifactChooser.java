@@ -7,45 +7,46 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.project.ui.customizer;
 
 import java.awt.Dimension;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.netbeans.modules.web.project.ui.FileChooser;
+import org.netbeans.modules.web.project.ui.FoldersListSettings;
 import org.openide.DialogDisplayer;
-
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
-/** Accessory component used in the ProjectChooser for choosing project
+/**
+ * Accessory component used in the ProjectChooser for choosing project
  * artifacts.
- *
- * @author  phrebejk
+ * @author Petr Hrebejk
  */
-public class AntArtifactChooser extends javax.swing.JPanel implements PropertyChangeListener {
+public class AntArtifactChooser extends JPanel implements PropertyChangeListener {
     
     // XXX to become an array later
     private String artifactType;
     
-    /** Creates new form AntArtifactChooser */
+    /** Creates new form JarArtifactChooser */
     public AntArtifactChooser( String artifactType, JFileChooser chooser ) {
         this.artifactType = artifactType;
         
@@ -107,36 +108,40 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
     }//GEN-END:initComponents
     
     
-    public void propertyChange( PropertyChangeEvent e ) {
-        
-        if ( JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals( e.getPropertyName() ) ) {             
+    public void propertyChange(PropertyChangeEvent e) {
+        if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(e.getPropertyName())) {
             // We have to update the Accessory
-            JFileChooser chooser = (JFileChooser)e.getSource();
-            File dir = chooser.getSelectedFile();
-            Project project = dir == null ? null : getProject(FileUtil.normalizeFile(dir));
-            populateAccessory( project );
+            JFileChooser chooser = (JFileChooser) e.getSource();
+            File dir = chooser.getSelectedFile(); // may be null (#46744)
+            Project project = getProject(dir); // may be null
+            populateAccessory(project);
         }
     }
     
     private Project getProject( File projectDir ) {
         
-        try {            
-            projectDir = FileUtil.normalizeFile (projectDir);
-            FileObject fo = FileUtil.toFileObject(projectDir);
-            
-            if (fo != null) {
-                Project project = ProjectManager.getDefault().findProject(fo);
-                return project;
-            }
+        if (projectDir == null) { // #46744
+            return null;
         }
-        catch ( IOException e ) {
+        
+        try {            
+            File normProjectDir = FileUtil.normalizeFile(projectDir);
+            FileObject fo = FileUtil.toFileObject(normProjectDir);
+            if (fo != null) {
+                return ProjectManager.getDefault().findProject(fo);
+            }
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             // Return null
         }
         
         return null;
     }    
     
-    
+    /**
+     * Set up GUI fields according to the requested project.
+     * @param project a subproject, or null
+     */
     private void populateAccessory( Project project ) {
         
         DefaultListModel model = (DefaultListModel)jListArtifacts.getModel();
@@ -148,8 +153,12 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
             AntArtifact artifacts[] = AntArtifactQuery.findArtifactsByType( project, artifactType );
         
             for( int i = 0; i < artifacts.length; i++ ) {
-                model.addElement( new ArtifactItem( artifacts[i]));
+                URI uris[] = artifacts[i].getArtifactLocations();
+                for( int y = 0; y < uris.length; y++ ) {
+                    model.addElement( new ArtifactItem(artifacts[i], uris[y]));
+                }
             }
+            jListArtifacts.setSelectionInterval(0, model.size());
         }
         
     }
@@ -167,30 +176,23 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
     /** Shows dialog with the artifact chooser 
      * @return null if canceled selected jars if some jars selected
      */
-    public static AntArtifact[] showDialog( String artifactType, Project master ) {
-
+    public static ArtifactItem[] showDialog( String artifactType, Project master ) {
+        
         JFileChooser chooser = ProjectChooser.projectChooser();
         chooser.setDialogTitle( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_Title" ) ); // NOI18N
         chooser.setApproveButtonText( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_SelectProject" ) ); // NOI18N
         
         AntArtifactChooser accessory = new AntArtifactChooser( artifactType, chooser );
         chooser.setAccessory( accessory );
-        
-        chooser.setPreferredSize( new Dimension( 650, 360 ) );
-        
-        String key = AntArtifactChooser.class.getName();
-        final File lastChooserLocation = FileChooser.getLastChooserLocation(key);
-        if (lastChooserLocation != null) {
-            chooser.setSelectedFile(lastChooserLocation);
-        }
+        chooser.setPreferredSize( new Dimension( 650, 380 ) );
+        chooser.setCurrentDirectory (FoldersListSettings.getDefault().getLastUsedArtifactFolder());
 
         int option = chooser.showOpenDialog( null ); // Show the chooser
               
         if ( option == JFileChooser.APPROVE_OPTION ) {
-            
+
             File dir = chooser.getSelectedFile();
             dir = FileUtil.normalizeFile (dir);
-            FileChooser.setLastChooserLocation(key, dir);
             Project selectedProject = accessory.getProject( dir );
 
             if ( selectedProject == null ) {
@@ -211,17 +213,19 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
                 return null;
             }
             
-            DefaultListModel model = (DefaultListModel)accessory.jListArtifacts.getModel();
+            FoldersListSettings.getDefault().setLastUsedArtifactFolder (FileUtil.normalizeFile(chooser.getCurrentDirectory()));
             
-            AntArtifact artifacts[] = new AntArtifact[ model.size() ];
-            
-            // XXX Adding references twice            
-            for( int i = 0; i < artifacts.length; i++ ) {
-                artifacts[i] = ((ArtifactItem)model.getElementAt( i )).getArtifact();
+            Object[] tmp = new Object[accessory.jListArtifacts.getModel().getSize()];
+            int count = 0;
+            for(int i = 0; i < tmp.length; i++) {
+                if (accessory.jListArtifacts.isSelectedIndex(i)) {
+                    tmp[count] = accessory.jListArtifacts.getModel().getElementAt(i);
+                    count++;
+                }
             }
-            
-            return artifacts;
-            
+            ArtifactItem artifactItems[] = new ArtifactItem[count];
+            System.arraycopy(tmp, 0, artifactItems, 0, count);
+            return artifactItems;
         }
         else {
             return null; 
@@ -229,20 +233,29 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
                 
     }
        
-    private static class ArtifactItem {
+    /**
+     * Pair of AntArtifact and one of jars it produces.
+     */
+    public static class ArtifactItem {
         
         private AntArtifact artifact;
+        private URI artifactURI;
         
-        ArtifactItem( AntArtifact artifact ) {
+        public ArtifactItem(AntArtifact artifact, URI artifactURI) {
             this.artifact = artifact;
+            this.artifactURI = artifactURI;
         }
         
-        AntArtifact getArtifact() {
+        public AntArtifact getArtifact() {
             return artifact;
         }
         
+        public URI getArtifactURI() {
+            return artifactURI;
+        }
+        
         public String toString() {
-            return artifact.getArtifactLocation().toString();
+            return artifactURI.toString();
         }
         
     }

@@ -7,77 +7,65 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.project.ui.customizer;
 
-import org.netbeans.api.project.libraries.LibrariesCustomizer;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.web.project.WebProjectGenerator;
-import org.netbeans.modules.web.project.Utils;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.netbeans.api.project.libraries.LibrariesCustomizer;
+import org.openide.util.HelpCtx;
 import org.openide.util.WeakListeners;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+
 import java.util.*;
 import java.util.List;
+
+
+import org.openide.util.Utilities;
+import org.openide.util.NbBundle;
 /**
  *
  * @author  tz97951
  */
-public class LibrariesChooser extends javax.swing.JPanel {
-    private Collection incompatibleLibs;
-    private Collection alreadySelectedLibs;
-    private String j2eePlatform;
+public class LibrariesChooser extends javax.swing.JPanel implements HelpCtx.Provider {
+
+    private Set/*<Library>*/ containedLibraries;
 
     /** Creates new form LibrariesChooser */
-    public LibrariesChooser(Collection alreadySelectedLibs, String j2eePlatform) {
+    public LibrariesChooser (final JButton addLibraryOption, Set/*<Library>*/ containedLibraries) {
+        this.containedLibraries = containedLibraries;
         initComponents();
-        jLabel2.setForeground(Utils.getErrorColor());
         jList1.setPrototypeCellValue("0123456789012345678901234");      //NOI18N
         jList1.setModel(new LibrariesListModel());
-        this.j2eePlatform = j2eePlatform;
-        incompatibleLibs =
-                VisualClasspathSupport.getLibrarySet(Collections.EMPTY_LIST/*WebProjectGenerator.getIncompatibleLibraries(j2eePlatform)*/);
-        jList1.setCellRenderer(new LibraryRenderer(incompatibleLibs));
-        this.alreadySelectedLibs = alreadySelectedLibs;
+        jList1.setCellRenderer(new LibraryRenderer());
+        jList1.addListSelectionListener( new ListSelectionListener () {
+            public void valueChanged(ListSelectionEvent e) {
+                if (e.getValueIsAdjusting()) {
+                    return;
+                }
+                addLibraryOption.setEnabled (jList1.getSelectedIndices().length != 0);
+            }
+        });
+    }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx( LibrariesChooser.class );
     }
 
     public Library[] getSelectedLibraries () {
         Object[] selected = this.jList1.getSelectedValues();
-        Collection libs = new ArrayList();
-        for (int i = 0; i < selected.length; i++) {
-            final Library lib = (Library) selected[i];
-            if(!incompatibleLibs.contains(lib)) {   // incompatible libraries are not added
-                libs.add(lib);
-            }
-        }
-        return (Library[]) libs.toArray(new Library[libs.size()]);
-    }
-
-    public void addListSelectionListener(ListSelectionListener listener) {
-        jList1.addListSelectionListener(listener);
-    }
-
-    public boolean isValidSelection() {
-        Object[] selected = this.jList1.getSelectedValues();
-        if(selected.length == 0) {
-            return false;
-        }
-        for (int i = 0; i < selected.length; i++) {
-            if(incompatibleLibs.contains(selected[i])) {
-                return false;
-            }
-        }
-        return true;
+        Library[] libraries = new Library[selected.length];
+        System.arraycopy(selected,0,libraries,0,selected.length);
+        return libraries;
     }
 
     /** This method is called from within the constructor to
@@ -91,18 +79,15 @@ public class LibrariesChooser extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
-        jLabel2 = new javax.swing.JLabel();
         edit = new javax.swing.JButton();
-
-        FormListener formListener = new FormListener();
 
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(350, 250));
-        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("AD_LibrariesChooser"));
-        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("MNE_InstalledLibraries").charAt(0));
-        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("CTL_InstalledLibraries"));
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(LibrariesChooser.class).getString("AD_LibrariesChooser"));
+        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(LibrariesChooser.class).getString("MNE_InstalledLibraries").charAt(0));
         jLabel1.setLabelFor(jList1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getBundle(LibrariesChooser.class).getString("CTL_InstalledLibraries"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -113,11 +98,8 @@ public class LibrariesChooser extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jLabel1, gridBagConstraints);
 
-        jScrollPane1.setMinimumSize(new java.awt.Dimension(100, 74));
-        jList1.addListSelectionListener(formListener);
-
         jScrollPane1.setViewportView(jList1);
-        jList1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("AD_jScrollPaneLibraries"));
+        jList1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(LibrariesChooser.class).getString("AD_jScrollPaneLibraries"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -127,77 +109,36 @@ public class LibrariesChooser extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 12);
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 12);
         add(jScrollPane1, gridBagConstraints);
 
-        jLabel2.setForeground(javax.swing.UIManager.getColor("nb.errorForeground"));
-        jLabel2.setPreferredSize(new java.awt.Dimension(50, 16));
-        jLabel2.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
-        add(jLabel2, gridBagConstraints);
-
-        edit.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("MNE_EditLibraries").charAt(0));
-        edit.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("CTL_EditLibraries"));
-        edit.addActionListener(formListener);
+        org.openide.awt.Mnemonics.setLocalizedText(edit, org.openide.util.NbBundle.getBundle(LibrariesChooser.class).getString("CTL_EditLibraries"));
+        edit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editLibraries(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         add(edit, gridBagConstraints);
-        edit.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("AD_jButtonManageLibraries"));
+        edit.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(LibrariesChooser.class).getString("AD_jButtonManageLibraries"));
 
-    }
-
-    // Code for dispatching events from components to event handlers.
-
-    private class FormListener implements java.awt.event.ActionListener, javax.swing.event.ListSelectionListener {
-        public void actionPerformed(java.awt.event.ActionEvent evt) {
-            if (evt.getSource() == edit) {
-                LibrariesChooser.this.editLibraries(evt);
-            }
-        }
-
-        public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-            if (evt.getSource() == jList1) {
-                LibrariesChooser.this.jList1ValueChanged(evt);
-            }
-        }
     }//GEN-END:initComponents
-
-    private void jList1ValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jList1ValueChanged
-        if (evt.getValueIsAdjusting()) {
-            return;
-        }
-        Object[] selected = this.jList1.getSelectedValues();
-        for (int i = 0; i < selected.length; i++) {
-            final Library lib = (Library) selected[i];
-            if (incompatibleLibs.contains(lib)) {
-                jLabel2.setText(NbBundle.getMessage(LibrariesChooser.class, "MSG_IncompatibleLibrary", j2eePlatform));
-                return;
-            }
-        }
-        jLabel2.setText("");
-    }//GEN-LAST:event_jList1ValueChanged
 
     private void editLibraries(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editLibraries
         LibrariesListModel model = (LibrariesListModel) jList1.getModel ();
         Collection oldLibraries = Arrays.asList(model.getLibraries());
         LibrariesCustomizer.showCustomizer((Library)this.jList1.getSelectedValue());
         List currentLibraries = Arrays.asList(model.getLibraries());
-        Collection newLibraries = new ArrayList (currentLibraries);
-
-        newLibraries.removeAll(oldLibraries);
+        Collection newLibraries = new ArrayList (currentLibraries);                
+        
+        newLibraries.removeAll(oldLibraries);                
         int indexes[] = new int [newLibraries.size()];
-
+        
         Iterator it = newLibraries.iterator();
         for (int i=0; it.hasNext();i++) {
             Library lib = (Library) it.next ();
@@ -210,7 +151,6 @@ public class LibrariesChooser extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton edit;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JList jList1;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
@@ -220,8 +160,6 @@ public class LibrariesChooser extends javax.swing.JPanel {
     private static final class LibrariesListModel extends AbstractListModel implements PropertyChangeListener {
 
         private Library[] cache;
-        /** No of libs in LibraryManager when last refreshed */
-        private int numberOfLibs;
 
         public LibrariesListModel () {
             LibraryManager manager = LibraryManager.getDefault();
@@ -236,7 +174,7 @@ public class LibrariesChooser extends javax.swing.JPanel {
             return this.cache.length;
         }
 
-        public synchronized Object getElementAt(int index) {
+        public synchronized Object getElementAt(int index) {            
             if (this.cache == null) {
                 this.cache = this.createLibraries();
             }
@@ -249,9 +187,9 @@ public class LibrariesChooser extends javax.swing.JPanel {
         }
 
         public synchronized void propertyChange(PropertyChangeEvent evt) {
-            int oldSize = this.cache == null ? 0 : numberOfLibs;
-            this.cache = createLibraries();
-            int newSize = numberOfLibs;
+            int oldSize = this.cache == null ? 0 : this.cache.length;
+            this.cache = createLibraries();            
+            int newSize = this.cache.length;            
             this.fireContentsChanged(this, 0, Math.min(oldSize-1,newSize-1));
             if (oldSize > newSize) {
                 this.fireIntervalRemoved(this,newSize,oldSize-1);
@@ -260,7 +198,7 @@ public class LibrariesChooser extends javax.swing.JPanel {
                 this.fireIntervalAdded(this,oldSize,newSize-1);
             }
         }
-
+        
         public synchronized Library[] getLibraries () {
             if (this.cache == null) {
                 this.cache = this.createLibraries();
@@ -270,7 +208,6 @@ public class LibrariesChooser extends javax.swing.JPanel {
 
         private Library[] createLibraries () {
             Library[] libs = LibraryManager.getDefault().getLibraries();
-            numberOfLibs = libs.length;
             Arrays.sort(libs, new Comparator () {
                 public int compare (Object o1, Object o2) {
                     assert (o1 instanceof Library) && (o2 instanceof Library);
@@ -284,39 +221,33 @@ public class LibrariesChooser extends javax.swing.JPanel {
     }
 
 
-    private static final class LibraryRenderer extends DefaultListCellRenderer {
-
-        private static final String LIBRARY_ICON = "org/netbeans/modules/web/project/ui/resources/libraries.gif";  //NOI18N
+    private final class LibraryRenderer extends DefaultListCellRenderer {
+        
+        private static final String LIBRARY_ICON = "org/netbeans/modules/web/project/ui/resources/libraries.gif";  //NOI18N               
         private Icon cachedIcon;
-        private Collection incompatibleLibs;
-
-        public LibraryRenderer(Collection incompatibleLibs) {
-            this.incompatibleLibs = incompatibleLibs;
-        }
-
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                boolean cellHasFocus) {
+        
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String displayName = null;
+            String toolTip = null;
+            Color color = null;
             if (value instanceof Library) {
-                displayName = ((Library) value).getDisplayName();
+                Library lib = ((Library)value);
+                displayName = lib.getDisplayName();
             }
             super.getListCellRendererComponent(list, displayName, index, isSelected, cellHasFocus);
-            if (incompatibleLibs.contains(value)) {
-                setEnabled(false);
-            }
-            setToolTipText(value instanceof Library ? VisualClasspathSupport.getLibraryString((Library) value) : null);
+
             setIcon(createIcon());
             return this;
         }
-
+        
         private synchronized Icon createIcon () {
             if (this.cachedIcon == null) {
                 Image img = Utilities.loadImage(LIBRARY_ICON);
                 this.cachedIcon = new ImageIcon (img);
-            }
+            }                
             return this.cachedIcon;
-        }
-
-    }
+        }        
+        
+    }   
 
 }

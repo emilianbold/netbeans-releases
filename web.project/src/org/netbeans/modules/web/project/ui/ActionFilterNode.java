@@ -7,21 +7,20 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.web.project.ui;
 
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+
 import javax.swing.Action;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
+
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.loaders.DataObject;
@@ -32,21 +31,22 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.modules.web.project.UpdateHelper;
-import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
-import org.netbeans.modules.web.project.ui.customizer.VisualClassPathItem;
 
+import org.netbeans.modules.web.project.UpdateHelper;
+import org.netbeans.modules.web.project.classpath.ClassPathSupport;
+import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 
 /**
  * This class decorates package nodes and file nodes under the Libraries Nodes.
@@ -238,6 +238,7 @@ class ActionFilterNode extends FilterNode {
        private final String classPathId;
        private final String entryId;
        private final String webModuleElementName;
+       private final ClassPathSupport cs;
 
        Removable (UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId, String webModuleElementName) {
            this.helper = helper;
@@ -246,6 +247,13 @@ class ActionFilterNode extends FilterNode {
            this.classPathId = classPathId;
            this.entryId = entryId;
            this.webModuleElementName = webModuleElementName;
+           
+           this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(), 
+                                        WebProjectProperties.WELL_KNOWN_PATHS, 
+                                        WebProjectProperties.LIBRARY_PREFIX, 
+                                        WebProjectProperties.LIBRARY_SUFFIX, 
+                                        WebProjectProperties.ANT_ARTIFACT_PREFIX );        
+
        }
 
 
@@ -267,19 +275,18 @@ class ActionFilterNode extends FilterNode {
                         boolean removed = false;
                         EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                         String raw = props.getProperty (classPathId);
-                        WebProjectProperties.PathParser parser = new WebProjectProperties.PathParser (webModuleElementName);
-                        List/*VisualClassPathItem*/ resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
+                        List resources = cs.itemsList( raw, webModuleElementName );
                         for (Iterator i = resources.iterator(); i.hasNext();) {
-                            VisualClassPathItem item = (VisualClassPathItem)i.next();
-                            if (entryId.equals(WebProjectProperties.getAntPropertyName(item.getRaw()))) {
+                            ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
+                            if (entryId.equals(WebProjectProperties.getAntPropertyName(item.getReference()))) {
                                 i.remove();
                                 removed = true;
                             }
                         }
                         if (removed) {
-                            raw = parser.encode (resources, project, helper.getAntProjectHelper(), refHelper);
+                            String[] itemRefs = cs.encodeToStrings(resources.iterator(), webModuleElementName);
                             props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-                            props.put (classPathId, raw);
+                            props.put (classPathId, itemRefs);
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                             ProjectManager.getDefault().saveProject(project);
                         }

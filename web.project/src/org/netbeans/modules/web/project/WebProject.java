@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.web.project;
 
-import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -25,7 +24,8 @@ import java.util.*;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -47,29 +47,21 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
 
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.web.project.classpath.WebProjectClassPathExtender;
 import org.netbeans.modules.web.project.queries.*;
-import org.netbeans.modules.web.project.ui.WebCustomizerProvider;
 import org.netbeans.modules.web.project.ui.WebPhysicalViewProvider;
-import org.netbeans.modules.web.project.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
@@ -82,14 +74,10 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
-import org.netbeans.modules.web.project.ui.BrokenReferencesAlertPanel;
-import org.netbeans.modules.web.project.ui.FoldersListSettings;
 import org.netbeans.modules.web.project.queries.SourceLevelQueryImpl;
-import org.netbeans.modules.web.project.ui.NoSelectedServerWarning;
+import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
@@ -298,7 +286,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             enterpriseResourceSupport,
             new WebActionProvider( this, this.updateHelper ),
             new WebPhysicalViewProvider(this, this.updateHelper, evaluator (), spp, refHelper),
-            new WebCustomizerProvider( this, this.updateHelper, evaluator(), refHelper ),
+            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper),        
             new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()),
             new CompiledSourceForBinaryQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
             new JavadocForBinaryQueryImpl(this.helper, evaluator()),
@@ -558,9 +546,9 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             return false;
         }
         for (Iterator vcpsIter = cpItems.iterator (); vcpsIter.hasNext ();) {
-            VisualClassPathItem vcpi = (VisualClassPathItem) vcpsIter.next ();
+            ClassPathSupport.Item vcpi = (ClassPathSupport.Item) vcpsIter.next ();
 
-            if (vcpi.getType () != VisualClassPathItem.TYPE_JAR) {
+            if (vcpi.getType () != ClassPathSupport.Item.TYPE_JAR) {
                 continue;
             }
             FileObject fo = helper.resolveFileObject(helper.getStandardPropertyEvaluator ().evaluate (vcpi.getEvaluated ()));
@@ -576,7 +564,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             if (eval != null) {
                 f = helper.resolveFile(eval);
             }
-            VisualClassPathItem cpItem = VisualClassPathItem.create ( f, VisualClassPathItem.PATH_IN_WAR_LIB);
+            ClassPathSupport.Item cpItem = ClassPathSupport.Item.create ( f, null, ClassPathSupport.Item.PATH_IN_WAR_LIB);
             cpItems.add (cpItem);
         }
         return needsAdding;

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -135,8 +135,8 @@ public class WebSources implements Sources, PropertyChangeListener  {
         }
         
         //Web Pages
-        String webModuleLabel = org.openide.util.NbBundle.getMessage(org.netbeans.modules.web.project.ui.WebCustomizerProvider.class, "LBL_Node_WebModule"); //NOI18N
-        String webPagesLabel = org.openide.util.NbBundle.getMessage(org.netbeans.modules.web.project.ui.WebCustomizerProvider.class, "LBL_Node_DocBase"); //NOI18N
+        String webModuleLabel = org.openide.util.NbBundle.getMessage(org.netbeans.modules.web.project.ui.customizer.WebProjectProperties.class, "LBL_Node_WebModule"); //NOI18N
+        String webPagesLabel = org.openide.util.NbBundle.getMessage(org.netbeans.modules.web.project.ui.customizer.WebProjectProperties.class, "LBL_Node_DocBase"); //NOI18N
         h.addPrincipalSourceRoot("${"+org.netbeans.modules.web.project.ui.customizer.WebProjectProperties.SOURCE_ROOT+"}", webModuleLabel, /*XXX*/null, null); //NOI18N
         h.addPrincipalSourceRoot("${"+org.netbeans.modules.web.project.ui.customizer.WebProjectProperties.WEB_DOCBASE_DIR+"}", webPagesLabel, /*XXX*/null, null); //NOI18N
         h.addTypedSourceRoot("${"+org.netbeans.modules.web.project.ui.customizer.WebProjectProperties.WEB_DOCBASE_DIR+"}", org.netbeans.modules.web.api.webmodule.WebProjectConstants.TYPE_DOC_ROOT, webPagesLabel, /*XXX*/null, null); //NOI18N

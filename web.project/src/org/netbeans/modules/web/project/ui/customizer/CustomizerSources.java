@@ -7,57 +7,76 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.project.ui.customizer;
 
 import java.io.File;
+
+import javax.swing.JFileChooser;
+
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+
+import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
+
 import org.netbeans.modules.web.project.WebProject;
 
 /**
  *
- * @author  tom
+ * @author  tom, Radko Najman
  */
-public class CustomizerSources extends javax.swing.JPanel implements WebCustomizer.Panel, HelpCtx.Provider {
+public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Provider {
     
-    private WebProjectProperties webProperties;
-    private VisualPropertySupport vps;
-    private VisualSourceRootsSupport sources;
-    private VisualSourceRootsSupport tests;
-
-
-    /** Creates new form CustomizerSources */
-    public CustomizerSources (WebProjectProperties webProperties) {
-        this.webProperties = webProperties;
+    public CustomizerSources( WebProjectProperties uiProperties ) {
         initComponents();
-        this.vps = new VisualPropertySupport( webProperties );
-        this.sources = new VisualSourceRootsSupport((WebProject)webProperties.getProject(),this.sourceRoots,this.addSourceRoot,
-                this.removeSourceRoot, this.upSourceRoot, this.downSourceRoot,
-                NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInTests"));
-        this.tests = new VisualSourceRootsSupport((WebProject)webProperties.getProject(),this.testRoots,this.addTestRoot,
-                this.removeTestRoot, this.upTestRoot, this.downTestRoot,
-                NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInSources"));
-        this.sources.setRelatedVisualSourceRootsSupport(this.tests);
-        this.tests.setRelatedVisualSourceRootsSupport(this.sources);
-    }
-
-    public void initValues() {
-        FileObject projectFolder = webProperties.getProject().getProjectDirectory();
+        jScrollPane1.getViewport().setBackground( sourceRoots.getBackground() );
+        jScrollPane2.getViewport().setBackground( testRoots.getBackground() );
+        
+        sourceRoots.setModel( uiProperties.SOURCE_ROOTS_MODEL );
+        testRoots.setModel( uiProperties.TEST_ROOTS_MODEL );
+        
+        FileObject projectFolder = uiProperties.getProject().getProjectDirectory();
         File pf = FileUtil.toFile( projectFolder );
         this.projectLocation.setText( pf == null ? "" : pf.getPath() ); // NOI18N
-        vps.register(this.sources, WebProjectProperties.SOURCE_ROOTS );
-        vps.register(this.tests, WebProjectProperties.TEST_ROOTS );
+        
+        jTextFieldWebPages.setDocument(uiProperties.WEB_DOCBASE_DIR_MODEL);
+        
+        WebSourceRootsUi.EditMediator emSR = WebSourceRootsUi.registerEditMediator(
+            (WebProject) uiProperties.getProject(),
+            sourceRoots,
+            addSourceRoot,
+            removeSourceRoot, 
+            upSourceRoot, 
+            downSourceRoot,
+            NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), 
+            NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInTests") );
+        
+        WebSourceRootsUi.EditMediator emTSR = WebSourceRootsUi.registerEditMediator(
+            (WebProject) uiProperties.getProject(),
+            testRoots,
+            addTestRoot,
+            removeTestRoot, 
+            upTestRoot, 
+            downTestRoot,
+            NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), 
+            NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInSources"));
+        
+        emSR.setRelatedEditMediator( emTSR );
+        emTSR.setRelatedEditMediator( emSR );
+        
     }
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx (CustomizerSources.class);
-    }        
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -69,6 +88,9 @@ public class CustomizerSources extends javax.swing.JPanel implements WebCustomiz
 
         jLabel1 = new javax.swing.JLabel();
         projectLocation = new javax.swing.JTextField();
+        jLabelWebPages = new javax.swing.JLabel();
+        jTextFieldWebPages = new javax.swing.JTextField();
+        jButtonBrowse = new javax.swing.JButton();
         sourceRootsPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -88,12 +110,11 @@ public class CustomizerSources extends javax.swing.JPanel implements WebCustomiz
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EtchedBorder());
         jLabel1.setLabelFor(projectLocation);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CTL_ProjectFolder"));
+        jLabel1.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_ProjectFolder"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 12);
         add(jLabel1, gridBagConstraints);
 
         projectLocation.setEditable(false);
@@ -101,14 +122,41 @@ public class CustomizerSources extends javax.swing.JPanel implements WebCustomiz
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(projectLocation, gridBagConstraints);
+
+        jLabelWebPages.setLabelFor(jTextFieldWebPages);
+        jLabelWebPages.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CTL_WebPagesFolder"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        add(jLabelWebPages, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        add(jTextFieldWebPages, gridBagConstraints);
+
+        jButtonBrowse.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_Browse_JButton"));
+        jButtonBrowse.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonBrowseActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        add(jButtonBrowse, gridBagConstraints);
 
         sourceRootsPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel2.setLabelFor(sourceRoots);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CTL_SourceRoots"));
+        jLabel2.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_SourceRoots"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -155,7 +203,7 @@ public class CustomizerSources extends javax.swing.JPanel implements WebCustomiz
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         sourceRootsPanel.add(jScrollPane1, gridBagConstraints);
 
-        addSourceRoot.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CTL_AddSourceRoot"));
+        addSourceRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_AddSourceRoot"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -164,7 +212,7 @@ public class CustomizerSources extends javax.swing.JPanel implements WebCustomiz
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         sourceRootsPanel.add(addSourceRoot, gridBagConstraints);
 
-        removeSourceRoot.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CTL_RemoveSourceRoot"));
+        removeSourceRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_RemoveSourceRoot"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -174,7 +222,7 @@ public class CustomizerSources extends javax.swing.JPanel implements WebCustomiz
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         sourceRootsPanel.add(removeSourceRoot, gridBagConstraints);
 
-        upSourceRoot.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CTL_UpSourceRoot"));
+        upSourceRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_UpSourceRoot"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -184,7 +232,7 @@ public class CustomizerSources extends javax.swing.JPanel implements WebCustomiz
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         sourceRootsPanel.add(upSourceRoot, gridBagConstraints);
 
-        downSourceRoot.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CTL_DownSourceRoot"));
+        downSourceRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_DownSourceRoot"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -196,18 +244,18 @@ public class CustomizerSources extends javax.swing.JPanel implements WebCustomiz
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.45;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(sourceRootsPanel, gridBagConstraints);
 
         testRootsPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel3.setLabelFor(testRoots);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CTL_TestRoots"));
+        jLabel3.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_TestRoots"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -254,7 +302,7 @@ public class CustomizerSources extends javax.swing.JPanel implements WebCustomiz
         gridBagConstraints.weighty = 1.0;
         testRootsPanel.add(jScrollPane2, gridBagConstraints);
 
-        addTestRoot.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CTL_AddTestRoot"));
+        addTestRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_AddTestRoot"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -264,7 +312,7 @@ public class CustomizerSources extends javax.swing.JPanel implements WebCustomiz
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 6, 0);
         testRootsPanel.add(addTestRoot, gridBagConstraints);
 
-        removeTestRoot.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CTL_RemoveTestRoot"));
+        removeTestRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_RemoveTestRoot"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -274,7 +322,7 @@ public class CustomizerSources extends javax.swing.JPanel implements WebCustomiz
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         testRootsPanel.add(removeTestRoot, gridBagConstraints);
 
-        upTestRoot.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("CTL_UpTestRoot"));
+        upTestRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_UpTestRoot"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -284,7 +332,7 @@ public class CustomizerSources extends javax.swing.JPanel implements WebCustomiz
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 6, 0);
         testRootsPanel.add(upTestRoot, gridBagConstraints);
 
-        downTestRoot.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CTL_DownTestRoot"));
+        downTestRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_DownTestRoot"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -296,17 +344,32 @@ public class CustomizerSources extends javax.swing.JPanel implements WebCustomiz
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.45;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(testRootsPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
+
+    private void jButtonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
+//        if (jTextFieldWebPages.getText().length() > 0 && getWebPages().exists()) {
+//            chooser.setSelectedFile(getWebPages());
+//        } else {
+            chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
+//        }
+        if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+            File webPagesDir = FileUtil.normalizeFile(chooser.getSelectedFile());
+            jTextFieldWebPages.setText(webPagesDir.getAbsolutePath());
+        }
+    }//GEN-LAST:event_jButtonBrowseActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -314,11 +377,14 @@ public class CustomizerSources extends javax.swing.JPanel implements WebCustomiz
     private javax.swing.JButton addTestRoot;
     private javax.swing.JButton downSourceRoot;
     private javax.swing.JButton downTestRoot;
+    private javax.swing.JButton jButtonBrowse;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabelWebPages;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextField jTextFieldWebPages;
     private javax.swing.JTextField projectLocation;
     private javax.swing.JButton removeSourceRoot;
     private javax.swing.JButton removeTestRoot;
@@ -329,5 +395,5 @@ public class CustomizerSources extends javax.swing.JPanel implements WebCustomiz
     private javax.swing.JButton upSourceRoot;
     private javax.swing.JButton upTestRoot;
     // End of variables declaration//GEN-END:variables
-    
+
 }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -41,6 +41,7 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser.ArtifactItem;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -525,18 +526,18 @@ final class LibrariesNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent e) {
-            AntArtifact artifacts[] = AntArtifactChooser.showDialog(JavaProjectConstants.ARTIFACT_TYPE_JAR, project);
+            ArtifactItem artifacts[] = AntArtifactChooser.showDialog(JavaProjectConstants.ARTIFACT_TYPE_JAR, project);
                 if ( artifacts != null ) {
                     addArtifacts( artifacts );
                 }
         }
 
-        private void addArtifacts (AntArtifact[] artifacts) {
+        private void addArtifacts (ArtifactItem[] artifacts) {
             WebProjectClassPathExtender cpExtender = (WebProjectClassPathExtender) project.getLookup().lookup(WebProjectClassPathExtender.class);
             if (cpExtender != null) {
                 for (int i=0; i<artifacts.length;i++) {
                     try {
-                        cpExtender.addAntArtifact(classPathId, artifacts[i], webModuleElementName);
+                        cpExtender.addAntArtifact(classPathId, artifacts[i].getArtifact(), artifacts[i].getArtifactURI(), webModuleElementName);
                     } catch (IOException ioe) {
                         ErrorManager.getDefault().notify(ioe);
                     }
@@ -564,24 +565,18 @@ final class LibrariesNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent e) {
-            final JButton btnAddLibraries = new JButton (NbBundle.getMessage (LibrariesNode.class,"LBL_AddLibrary"));
             Object[] options = new Object[] {
-                btnAddLibraries,
+                new JButton (NbBundle.getMessage (LibrariesNode.class,"LBL_AddLibrary")),
                 DialogDescriptor.CANCEL_OPTION
             };
-            btnAddLibraries.setEnabled(false);
-            btnAddLibraries.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (LibrariesNode.class,"AD_AddLibrary"));
-            final LibrariesChooser panel = new LibrariesChooser (Collections.EMPTY_SET, getProjectJ2eeVersion());
+            ((JButton)options[0]).setEnabled(false);
+            ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (LibrariesNode.class,"AD_AddLibrary"));
+            LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], Collections.EMPTY_SET);
             DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( LibrariesNode.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
                     true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
             Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
-            panel.addListSelectionListener(new ListSelectionListener() {
-                public void valueChanged(ListSelectionEvent e) {
-                    btnAddLibraries.setEnabled(panel.isValidSelection());
-                }
-            });
             dlg.setVisible(true);
-            if (desc.getValue() == btnAddLibraries) {
+            if (desc.getValue() == options[0]) {
                 addLibraries (panel.getSelectedLibraries());
             }
             dlg.dispose();

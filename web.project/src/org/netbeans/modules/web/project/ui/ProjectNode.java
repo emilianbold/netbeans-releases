@@ -29,6 +29,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
@@ -53,7 +54,6 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
-import org.netbeans.modules.web.project.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.web.project.UpdateHelper;
 
 
@@ -238,6 +238,8 @@ class ProjectNode extends AbstractNode {
         private final String entryId;
         private final String webModuleElementName;
 
+        private final ClassPathSupport cs;
+
         Removable (UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId, String webModuleElementName) {
             this.helper = helper;
             this.eval = eval;
@@ -245,6 +247,13 @@ class ProjectNode extends AbstractNode {
             this.classPathId = classPathId;
             this.entryId = entryId;
             this.webModuleElementName = webModuleElementName;
+            
+            this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(), 
+                                        WebProjectProperties.WELL_KNOWN_PATHS, 
+                                        WebProjectProperties.LIBRARY_PREFIX, 
+                                        WebProjectProperties.LIBRARY_SUFFIX, 
+                                        WebProjectProperties.ANT_ARTIFACT_PREFIX );        
+
         }
 
         public boolean canRemove () {
@@ -267,21 +276,20 @@ class ProjectNode extends AbstractNode {
                                 boolean removed = false;
                                 EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                 String raw = props.getProperty (classPathId);
-                                WebProjectProperties.PathParser parser = new WebProjectProperties.PathParser (webModuleElementName);
-                                List/*VisualClassPathItem*/ resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
+                                List resources = cs.itemsList( raw, webModuleElementName );
                                 for (Iterator i = resources.iterator(); i.hasNext();) {
-                                    VisualClassPathItem item = (VisualClassPathItem)i.next();
-                                    if (entryId.equals(WebProjectProperties.getAntPropertyName(item.getRaw()))) {
+                                    ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
+                                    if (entryId.equals(WebProjectProperties.getAntPropertyName(item.getReference()))) {
                                         i.remove();
                                         removed = true;
                                     }
                                 }
                                 if (removed) {
-                                    raw = parser.encode (resources, project, helper.getAntProjectHelper(), refHelper);
+                                    String[] itemRefs = cs.encodeToStrings(resources.iterator(), webModuleElementName);
                                     props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-                                    props.put (classPathId, raw);
+                                    props.put (classPathId, itemRefs);
                                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                                    
+
                                     String ref = "${" + entryId + "}"; //NOI18N
                                     if (!RemoveClassPathRootAction.isReferenced (new EditableProperties[] {
                                         props,
@@ -291,8 +299,7 @@ class ProjectNode extends AbstractNode {
                                     
                                     ProjectManager.getDefault().saveProject(project);
                                 }
-                            }
-                            catch (IOException ioe) {
+                            } catch (IOException ioe) {
                                 ErrorManager.getDefault().notify(ioe);
                             }
                        }
