@@ -81,6 +81,13 @@ public abstract class AbstractTabCellRenderer extends JLabel
         if (supportsCloseButton(getBorder())) {
             TabPainter cbp = (TabPainter) getBorder();
             cbp.getCloseButtonRectangle (this, scratch, bounds);
+            if (getClass() != AquaEditorTabCellRenderer.class) {
+                //#47408 - hit test area of close button is too small
+                scratch.x -=3;
+                scratch.y -=3;
+                scratch.width += 6;
+                scratch.height += 6;
+            }
             if (scratch.contains(p)) {
                 return TabDisplayer.COMMAND_CLOSE;
             }
