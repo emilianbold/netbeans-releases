@@ -524,6 +524,7 @@ public final class ServerRegistry implements java.io.Serializable {
         if (configNamesByType != null) {
             return;
         }
+        configNamesByType = new HashMap();
         for (int i=0 ; i<allTypes.length; i++) {
             Set configNames = new HashSet();
             for (Iterator j=servers.values().iterator(); j.hasNext();) {
