@@ -116,6 +116,7 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
       }
     };
     Settings.DEFAULT.addPropertyChangeListener (pcl);
+    
     DatagramPacket p = new DatagramPacket (new byte[LENGTH], LENGTH);
     try {
       while (!stop && Settings.DEFAULT.isRunning ()) {
@@ -137,11 +138,20 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
         // Try to open the requested file:
         String fileName = new String (p.getData (), p.getOffset (), p.getLength ());
         TopManager.getDefault ().setStatusText ("Opening " + fileName);
+        
+        byte res;
         try {
           open (new File (fileName));
+          res = 0;
         } catch (IOException ex) {
           TopManager.getDefault ().notifyException (ex);
+          res = 1;
         }
+        
+        // send reply
+        p.getData ()[0] = res;
+        p.setLength (1);
+        s.send (p);
       }
     } finally {
       if (pcl != null) Settings.DEFAULT.removePropertyChangeListener (pcl);
