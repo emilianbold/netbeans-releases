@@ -16,7 +16,6 @@ package org.netbeans.modules.web.core.jsploader;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.*;
 import java.net.URLEncoder;
 import java.util.StringTokenizer;
 import java.util.Enumeration;
