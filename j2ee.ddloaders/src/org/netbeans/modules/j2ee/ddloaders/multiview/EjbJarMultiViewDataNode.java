@@ -68,12 +68,14 @@ public class EjbJarMultiViewDataNode extends DataNode {
 
             public void propertyChange(PropertyChangeEvent evt) {
                 String propertyName = evt.getPropertyName();
+                Object oldValue = evt.getOldValue();
+                Object newValue = evt.getNewValue();
                 if (EjbJarMultiViewDataObject.PROP_DOCUMENT_DTD.equals(propertyName)) {
-                    firePropertyChange(PROPERTY_DOCUMENT_TYPE, evt.getOldValue(), evt.getNewValue());
-                } else if (DataObject.PROP_VALID.equals(propertyName) && Boolean.TRUE.equals(evt.getNewValue())) {
+                    firePropertyChange(PROPERTY_DOCUMENT_TYPE, oldValue, newValue);
+                } else if (DataObject.PROP_VALID.equals(propertyName) && Boolean.TRUE.equals(newValue)) {
                     removePropertyChangeListener(EjbJarMultiViewDataNode.this.ddListener);
                 } else if (XmlMultiViewDataObject.PROP_DOCUMENT_VALID.equals(propertyName)) {
-                    if (Boolean.TRUE.equals(evt.getNewValue())) {
+                    if (Boolean.TRUE.equals(newValue)) {
                         setIconBase(dataObject.getIconBaseForValidDocument());
                     } else {
                         setIconBase(dataObject.getIconBaseForInvalidDocument());
@@ -81,7 +83,9 @@ public class EjbJarMultiViewDataNode extends DataNode {
                     fireIconChange();
                 } else if (Node.PROP_PROPERTY_SETS.equals(propertyName)) {
                     firePropertySetsChange(null, null);
-                }
+                } else if (XmlMultiViewDataObject.PROP_SAX_ERROR.equals(propertyName)) {
+                    fireShortDescriptionChange((String) oldValue, (String) newValue);
+                }  
             }
 
         };

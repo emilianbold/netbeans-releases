@@ -15,6 +15,7 @@ package org.netbeans.modules.xml.multiview;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -27,7 +28,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.windows.CloneableTopComponent;
 import org.xml.sax.InputSource;
 
-import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.FileReader;
@@ -46,6 +46,7 @@ import java.util.Date;
 public abstract class XmlMultiViewDataObject extends MultiDataObject implements CookieSet.Factory {
 
     public static final String PROP_DOCUMENT_VALID = "document_valid"; //NOI18N
+    public static final String PROP_SAX_ERROR = "sax_error"; //NOI18N
     protected XmlMultiViewEditorSupport editor;
     private org.xml.sax.SAXException saxError;
     boolean changedFromUI;
@@ -108,16 +109,21 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     protected void reloadModelFromFileObject() throws java.io.IOException {
         editor.openDocument();
     }
-    
-    /** Update data model from document text . Called when something is changed in xml editor. 
-    * @return true if model was succesfully created, false otherwise
-    */
-    protected abstract boolean updateModelFromDocument() throws java.io.IOException;
-    
-    /** Similar to updateModelFromDocument() but data model is not modified.
-     */
-    protected void validateSource(){
+
+
+    public void editElement(Object key) {
+        getEditorSupport().edit();
     }
+
+
+    /**
+     *
+     * @param updateModel indicator whether model should be updated
+     * @return true in case of success, otherwise false
+     * @throws IOException
+     */
+    protected abstract boolean parseDocument(boolean updateModel) throws IOException;
+
     /** Update text document from data model. Called when something is changed in visual editor.
     */
     protected abstract String generateDocumentFromModel();
@@ -144,8 +150,13 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 firePropertyChange(PROP_DOCUMENT_VALID, Boolean.FALSE, Boolean.TRUE);
             }
         }
+        firePropertyChange(PROP_SAX_ERROR, getErrorMessage(oldError), getErrorMessage(saxError));
     }
-    
+
+    private String getErrorMessage(Exception e) {
+        return e == null ? null : e.getMessage();
+    }
+
     public org.xml.sax.SAXException getSaxError() {
         return saxError;
     }
@@ -231,7 +242,6 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         try {
             javax.swing.text.Document doc = getEditorSupport().openDocument();
             Utils.replaceDocument(doc, newDoc);
-            setSaxError(null);
         } catch (javax.swing.text.BadLocationException e) {
             org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
         } catch (IOException e) {
@@ -343,11 +353,15 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             } finally {
                 updatingFromModel = false;
             }
-            validateSource();
+            try {
+                parseDocument(false);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
         } else {
             updatingModel = true;
             try {
-                updateModelFromDocument();
+                parseDocument(true);
             } catch (IOException e) {
                 synchronizeModel(updateFromModel);
             } finally {

@@ -43,7 +43,6 @@ import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.DataNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
@@ -374,16 +373,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         refreshSourceFolders();
     }
 
-    /**
-     * Update data model from document text . Called when something is changed in xml editor.
-     *
-     * @return true if model was succesfully created, false otherwise
-     */
-    protected boolean updateModelFromDocument() throws IOException {
-        return parse(createInputSource());
-    }
-
-    private boolean parse(InputSource is) throws IOException {
+    protected boolean parseDocument(boolean updateModel) throws IOException {
         if (ejbJar == null || ejbJar.getOriginal() == null) {
             try {
                 setEjbJar((EjbJarProxy) DDProvider.getDefault().getDDRoot(getPrimaryFile()));
@@ -394,21 +384,21 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             }
         }
         parseable = false;
+        InputSource is = createInputSource();
         if (is != null) { // merging model with the document
-            SAXException oldError = getSaxError();
-            final String oldDescription = oldError == null ? null : oldError.getMessage();
             try {
                 EjbJarProxy newEjbJar = (EjbJarProxy) EjbJarDDUtils.createEjbJar(is);
-                if (ejbJar.getOriginal() != null) {
-                    ejbJar.merge(newEjbJar, EjbJar.MERGE_UPDATE);
-                } else {
-                    ejbJar.setOriginal(newEjbJar);
-                }
                 ejbJar.setStatus(EjbJar.STATE_VALID);
                 ejbJar.setError(null);
-                descriptionChanged(oldDescription, null);
-                parseable = true;
                 setSaxError(null);
+                if (updateModel) {
+                    if (ejbJar.getOriginal() != null) {
+                        ejbJar.merge(newEjbJar, EjbJar.MERGE_UPDATE);
+                    } else {
+                        ejbJar.setOriginal(newEjbJar);
+                    }
+                }
+                parseable = true;
             } catch (SAXException ex) {
                 if (ejbJar.getOriginal() == null) {
                     ejbJar.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
@@ -418,17 +408,10 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
                         ejbJar.setError((SAXParseException) ex.getException());
                     }
                 }
-                descriptionChanged(oldDescription, ex.getMessage());
                 setSaxError(ex);
             }
         }
         return parseable;
-    }
-
-    private void descriptionChanged(final String oldDescription, final String newDescription) {
-        if (oldDescription != newDescription && oldDescription != null && !oldDescription.equals(newDescription)) {
-            firePropertyChange(DataNode.PROP_SHORT_DESCRIPTION, oldDescription, newDescription);
-        }
     }
 
     private void setEjbJar(EjbJarProxy newEjbJar) {

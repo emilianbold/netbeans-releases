@@ -85,55 +85,31 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
     * @see org.openide.cookies.EditCookie#edit
     */
     public void edit () {
-        if (java.awt.EventQueue.isDispatchThread()) {
-            openInAWT(-1);
-        } else {
-            java.awt.EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    openInAWT(-1);
-                }
-            });
-        }
+        openView(-1);
     }
 
     /** Opens the specific View
      */
     public void openView(final int index) {
-        if (java.awt.EventQueue.isDispatchThread()) {
-            openInAWT(index);
-        } else {
-            java.awt.EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    openInAWT(index);
-                }
-            });
-        }
+        dObj.documentUpdated();
+        Utils.runInAwtDispatchThread(new Runnable() {
+            public void run() {
+                CloneableTopComponent mvtc = openCloneableTopComponent();
+                MultiViewHandler handler = MultiViews.findMultiViewHandler(mvtc);
+                handler.requestVisible(handler.getPerspectives()[index < 0 ? xmlMultiViewIndex : index]);
+                mvtc.requestActive();
+            }
+        });
     }
     
     /** Overrides superclass method
      */
     public void open() {
-        if (java.awt.EventQueue.isDispatchThread()) {
-            openInAWT(lastOpenView);
-        } else {
-            java.awt.EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    openInAWT(lastOpenView);
-                }
-            });
-        }
+        openView(lastOpenView);
     }
-    
-    private void openInAWT(int index) {
-        dObj.documentUpdated();
-        CloneableTopComponent mvtc = openCloneableTopComponent();
-        MultiViewHandler handler = MultiViews.findMultiViewHandler(mvtc);
-        handler.requestVisible(handler.getPerspectives()[index<0?xmlMultiViewIndex:index]);
-        mvtc.requestActive();
-    }
-    
+
     void goToXmlPerspective() {
-        java.awt.EventQueue.invokeLater(new Runnable() {
+        Utils.runInAwtDispatchThread(new Runnable() {
             public void run() {
                 MultiViewHandler handler = MultiViews.findMultiViewHandler(mvtc);
                 handler.requestVisible(handler.getPerspectives()[xmlMultiViewIndex]);
