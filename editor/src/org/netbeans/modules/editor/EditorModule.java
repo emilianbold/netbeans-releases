@@ -56,6 +56,7 @@ import org.netbeans.modules.editor.NbImplementationProvider;
 import java.util.Iterator;
 import org.openide.text.CloneableEditor;
 import java.util.HashSet;
+import javax.swing.SwingUtilities;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.editor.java.AutoUpdateQuestionPanel;
 import org.netbeans.modules.editor.java.JCStorage;

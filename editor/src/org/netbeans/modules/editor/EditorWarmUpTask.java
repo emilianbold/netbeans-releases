@@ -15,6 +15,7 @@ package org.netbeans.modules.editor;
 
 import java.io.File;
 import java.util.Enumeration;
+import javax.swing.JEditorPane;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.editor.java.JCStorage;
 import org.netbeans.modules.editor.java.JavaKit;
@@ -47,26 +48,33 @@ public class EditorWarmUpTask implements Runnable{
     public void run() {
         long startTime = System.currentTimeMillis();
         
+        // initializing code completion database. Reading *.jcs files and creating memory map of available 
+        // completin classes
         JCStorage.getStorage();
         if (debug){
             System.out.println("storage initialized:"+(System.currentTimeMillis()-startTime));
             startTime = System.currentTimeMillis();
         }
         
+        // Parsing of sampledir, that is mounted by default.
+        // The autoupdate of that filesystem cannot start as it starts only after 
+        // mount action.
         sampleDirParsing();
         if (debug){
             System.out.println("sample dir parsed:"+(System.currentTimeMillis()-startTime));
             startTime = System.currentTimeMillis();
         }
+        
+        // Initialization of editor settings initializers and PrintOptions.
+        EditorModule.init();        
 
-/*
-        EditorModule.init();
-
+        // Init of JavaKit and JavaOptions
         BaseKit javaKit = BaseKit.getKit(JavaKit.class);
+        
+        //creating actions instances
         javaKit.getActions();
+        
         javaKit.createDefaultDocument();
-
         BaseKit.getKit(PlainKit.class);
- */
     }
 }
