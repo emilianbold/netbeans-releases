@@ -244,7 +244,7 @@ PropertyChangeListener {
                         },
                         line
                     );
-                else
+                else if (sourceName.length() > 0 && methodName.length() > 0)
                     print (
                         "CTL_Thread_stopped_no_line",
                     //    IOManager.DEBUGGER_OUT + IOManager.STATUS_OUT,
@@ -253,6 +253,12 @@ PropertyChangeListener {
                             sourceName,
                             methodName
                         },
+                        line
+                    );
+                else
+                    print (
+                        "CTL_Thread_stopped_no_line_no_source",
+                        new String[] { threadName },
                         line
                     );
             } catch (NoInformationException ex) {
