@@ -58,6 +58,8 @@ public class VariablesTableModel implements TableModel, Constants {
         if ( columnID.equals (LOCALS_TYPE_COLUMN_ID) ||
              columnID.equals (WATCH_TYPE_COLUMN_ID)
         ) {
+            if (row instanceof JPDAWatch)
+                Thread.dumpStack();
             if (row instanceof Variable)
                 return getShort (((Variable) row).getType ());
         } else

@@ -13,12 +13,11 @@
 
 package org.netbeans.modules.j2ee.debug.callstackviewfilterring;
 
+import com.sun.jdi.AbsentInformationException;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
-import org.netbeans.spi.viewmodel.ComputingException;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
@@ -90,7 +89,7 @@ public class CallStackFilter implements TreeModelFilter, NodeModel {
         
         try {
             url = getURL (convertSlash (csf.getSourcePath (null)));
-        } catch (NoInformationException e) {
+        } catch (AbsentInformationException e) {
             url = getURL (convertClassNameToRelativePath (csf.getClassName ()));
         }
         
@@ -127,7 +126,7 @@ public class CallStackFilter implements TreeModelFilter, NodeModel {
     public int getChildrenCount (
         TreeModel original,
         Object node
-    ) throws NoInformationException, ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         if (node.equals (original.getRoot ())) {
             Object[] originalCh = original.getChildren (
                 node, 
@@ -182,7 +181,7 @@ public class CallStackFilter implements TreeModelFilter, NodeModel {
         Object parent, 
         int from, 
         int to
-    ) throws NoInformationException, ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         if (parent.equals (original.getRoot ())) {
             Object[] originalCh = original.getChildren (
                 parent, 

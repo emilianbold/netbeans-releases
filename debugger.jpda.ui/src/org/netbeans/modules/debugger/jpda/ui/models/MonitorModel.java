@@ -22,8 +22,6 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
-import org.netbeans.spi.viewmodel.ComputingException;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
@@ -60,7 +58,7 @@ NodeActionsProviderFilter {
         Object      o, 
         int         from, 
         int         to
-    ) throws NoInformationException, ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         if (o instanceof ThreadWithBordel) {
             try {
                 JPDAThread t = ((ThreadWithBordel) o).originalThread;
@@ -114,7 +112,7 @@ NodeActionsProviderFilter {
     public int getChildrenCount (
         TreeModel   model, 
         Object      o
-    ) throws NoInformationException, ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         if (o instanceof ThreadWithBordel) {
             try {
                 JPDAThread t = ((ThreadWithBordel) o).originalThread;
@@ -158,7 +156,7 @@ NodeActionsProviderFilter {
     // NodeModel impl...........................................................
     
     public String getDisplayName (NodeModel model, Object o) throws 
-    UnknownTypeException, ComputingException {
+    UnknownTypeException {
         if (o instanceof ContendedMonitor) {
             ObjectVariable v = ((ContendedMonitor) o).variable;
             return java.text.MessageFormat.format(NbBundle.getBundle(MonitorModel.class).getString(
@@ -181,7 +179,7 @@ NodeActionsProviderFilter {
     }
     
     public String getShortDescription (NodeModel model, Object o) throws 
-    UnknownTypeException, ComputingException {
+    UnknownTypeException {
         if (o instanceof ContendedMonitor) {
             ObjectVariable v = ((ContendedMonitor) o).variable;
             try {
@@ -210,7 +208,7 @@ NodeActionsProviderFilter {
     }
     
     public String getIconBase (NodeModel model, Object o) throws 
-    UnknownTypeException, ComputingException {
+    UnknownTypeException {
         if (o instanceof ContendedMonitor) {
             return CONTENDED_MONITOR;
         } else

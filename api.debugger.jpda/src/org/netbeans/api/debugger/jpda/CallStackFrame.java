@@ -13,10 +13,9 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import com.sun.jdi.AbsentInformationException;
 import java.beans.PropertyChangeListener;
 import java.util.List;
-
-import org.netbeans.spi.viewmodel.NoInformationException;
 
 
 /**
@@ -71,7 +70,7 @@ public interface CallStackFrame {
      *   included in class file
      */
     public abstract String getSourceName (String struts) 
-    throws NoInformationException;
+    throws AbsentInformationException;
     
     /**
      * Returns source path of file this frame is stopped in or null.
@@ -79,7 +78,7 @@ public interface CallStackFrame {
      * @return source path of file this frame is stopped in or null
      */
     public abstract String getSourcePath (String stratum) 
-    throws NoInformationException;
+    throws AbsentInformationException;
     
     /**
      * Returns local variables.
@@ -87,7 +86,7 @@ public interface CallStackFrame {
      * @return local variables
      */
     public abstract LocalVariable[] getLocalVariables () 
-    throws NoInformationException;
+    throws AbsentInformationException;
 
     /**
      * Returns object reference this frame is associated with or null (

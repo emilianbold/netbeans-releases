@@ -22,8 +22,6 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.ant.debugger.AntDebugger;
 import org.netbeans.modules.ant.debugger.Utils;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.viewmodel.ComputingException;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;

@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.debugger.jpda;
 
+import com.sun.jdi.AbsentInformationException;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
@@ -23,7 +24,6 @@ import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.debugger.jpda.EditorContext;
-import org.netbeans.spi.viewmodel.NoInformationException;
 
 
 /**
@@ -338,7 +338,7 @@ public class EditorContextBridge {
     ) {
         try {
             return convertSlash (thread.getSourcePath (stratumn));
-        } catch (NoInformationException e) {
+        } catch (AbsentInformationException e) {
             return getRelativePath (thread.getClassName ());
         }
     }
@@ -349,7 +349,7 @@ public class EditorContextBridge {
     ) {
         try {
             return convertSlash (csf.getSourcePath (stratumn));
-        } catch (NoInformationException e) {
+        } catch (AbsentInformationException e) {
             return getRelativePath (csf.getClassName ());
         }
     }

@@ -13,9 +13,9 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import com.sun.jdi.AbsentInformationException;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.spi.debugger.ui.Constants;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -38,7 +38,7 @@ public class CallStackTableModel implements TableModel, Constants {
                     return ((CallStackFrame) row).getSourceName (
                         null // default stratumn for current csf is used
                     );
-                } catch (NoInformationException e) {
+                } catch (AbsentInformationException e) {
                     return NbBundle.getMessage (
                         CallStackTableModel.class, 
                         "MSG_Callstack_NoInformation"

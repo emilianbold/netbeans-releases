@@ -18,7 +18,6 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.jpda.VariablesFilterAdapter;
 import org.netbeans.spi.debugger.ui.Constants;
-import org.netbeans.spi.viewmodel.ComputingException;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -57,7 +56,7 @@ public class EnumConstantsFilter extends VariablesFilterAdapter {
         TableModel original, 
         Variable variable, 
         String columnID
-    ) throws ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         
         ObjectVariable ov = (ObjectVariable) variable;
         if ( columnID == Constants.LOCALS_VALUE_COLUMN_ID || 

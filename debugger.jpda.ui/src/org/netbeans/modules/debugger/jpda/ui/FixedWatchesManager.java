@@ -139,7 +139,7 @@ NodeActionsProvider, NodeActionsProviderFilter, TableModel, NodeModel {
         Object parent, 
         int from, 
         int to
-    ) throws NoInformationException, ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         if (parent == TreeModel.ROOT) {
             if (fixedWatches == null || fixedWatches.size
                 () == 0) 
@@ -183,7 +183,7 @@ NodeActionsProvider, NodeActionsProviderFilter, TableModel, NodeModel {
     public int getChildrenCount (
         TreeModel original, 
         Object parent
-    ) throws NoInformationException, ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         if (parent == TreeModel.ROOT) {
             int chc = original.getChildrenCount (parent);
             if (fixedWatches == null) return chc;
@@ -225,7 +225,7 @@ NodeActionsProvider, NodeActionsProviderFilter, TableModel, NodeModel {
     // TableModel ..............................................................
     
     public Object getValueAt (Object row, String columnID) throws 
-    UnknownTypeException, ComputingException {
+    UnknownTypeException {
         if (row instanceof FixedWatch)
             return getOriginalModel ().getValueAt (
                 ((FixedWatch) row).getVariable (),

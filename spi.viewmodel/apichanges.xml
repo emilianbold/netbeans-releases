@@ -70,6 +70,25 @@ Microsystems, Inc. All Rights Reserved.
         <class package="org.netbeans.spi.viewmodel" name="TreeModel" />
         <issue number="46368"/>
     </change>
+    <change>
+        <api name="ViewModelAPI"/>
+        <summary>Support for synchronous & asynchronous ViewModels implementation fixed.</summary>
+        <date day="7" month="1" year="2005"/>
+        <author login="jjancura"/>
+        <compatibility binary="incompatible" source="incompatible" deletion="yes" modification="yes"/>
+        <description>
+                Support for synchronous & asynchronous ViewModels implementations is one of the major 
+                ViewModel API requirements. During fixing of #46614 (toString update should not run 
+                in AWT thread) I have realized, that current support for asynchronous ViewModels 
+                implementations is not usable. This change fixes the problem. 
+                1) ComputingException, and NoInformationException removed - as completely useless.
+                2) All methods throwing these exceptions changed.
+                3) New ViewModel implementation supports asynchronous model only. Its fast & safe.
+        </description>
+        <class package="org.netbeans.spi.viewmodel" name="ComputingException" />
+        <class package="org.netbeans.spi.viewmodel" name="NoInformationException" />
+        <issue number="53073"/>
+    </change>
 
 </changes>
 

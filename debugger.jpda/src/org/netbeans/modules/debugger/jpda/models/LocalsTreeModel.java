@@ -32,7 +32,6 @@ import java.util.Vector;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -68,7 +67,7 @@ public class LocalsTreeModel implements TreeModel {
     }
     
     public Object[] getChildren (Object o, int from, int to) 
-    throws NoInformationException, UnknownTypeException {
+    throws UnknownTypeException {
         try {
             if (o.equals (ROOT)) {
                 Object[] os = getLocalVariables (from, to);
@@ -103,17 +102,16 @@ public class LocalsTreeModel implements TreeModel {
      *
      * @return  true if node is leaf
      */
-    public int getChildrenCount (Object node) throws UnknownTypeException,
-    NoInformationException {
+    public int getChildrenCount (Object node) throws UnknownTypeException {
         try {
             if (node.equals (ROOT)) {
                 CallStackFrameImpl frame = (CallStackFrameImpl) debugger.
                     getCurrentCallStackFrame ();
                 if (frame == null) 
-                    throw new NoInformationException ("No current thread");
+                    return 1;
                 StackFrame sf = frame.getStackFrame ();
                 if (sf == null) 
-                    throw new NoInformationException ("No current thread");
+                    return 1;
                 try {
                     int i = 0;
                     try {
@@ -124,9 +122,9 @@ public class LocalsTreeModel implements TreeModel {
                     if (sf.thisObject () != null) i++;
                     return i;
                 } catch (NativeMethodException ex) {
-                    throw new NoInformationException ("native method");
+                    return 1;//throw new NoInformationException ("native method");
                 } catch (InvalidStackFrameException ex) {
-                    throw new NoInformationException ("thread is running");
+                    return 1;//throw new NoInformationException ("thread is running");
                 } catch (VMDisconnectedException ex) {
                 }
                 return 0;
@@ -191,15 +189,15 @@ public class LocalsTreeModel implements TreeModel {
     private Object[] getLocalVariables (
         int from, 
         int to
-    ) throws NoInformationException {
+    ) {
         synchronized (debugger.LOCK) {
             CallStackFrameImpl callStackFrame = (CallStackFrameImpl) debugger.
                 getCurrentCallStackFrame ();
             if (callStackFrame == null) 
-                throw new NoInformationException ("No current thread");
+                return new String [] {"No current thread"};
             StackFrame stackFrame = callStackFrame.getStackFrame ();
             if (stackFrame == null) 
-                throw new NoInformationException ("No current thread");
+                return new String [] {"No current thread"};
             ObjectReference thisR = stackFrame.thisObject ();
             if (thisR == null) {
                 Object[] avs = null;
@@ -211,7 +209,7 @@ public class LocalsTreeModel implements TreeModel {
                         to
                     );
                 } catch (AbsentInformationException ex) {
-                    throw new NoInformationException ("compiled without -g");
+                    return new String [] {"compiled without -g"};
                 }
             } else {
                 Object[] avs = null;
@@ -239,7 +237,7 @@ public class LocalsTreeModel implements TreeModel {
         final StackFrame            stackFrame,
         final int                   from,
         final int                   to
-    ) throws NoInformationException, AbsentInformationException {
+    ) throws AbsentInformationException {
         try {
             String className = stackFrame.location ().declaringType ().name ();
             List l = stackFrame.visibleVariables ();
@@ -251,9 +249,9 @@ public class LocalsTreeModel implements TreeModel {
             }
             return locals;
         } catch (NativeMethodException ex) {
-            throw new NoInformationException ("native method");
+            throw new AbsentInformationException ("native method");
         } catch (InvalidStackFrameException ex) {
-            throw new NoInformationException ("thread is running");
+            throw new AbsentInformationException ("thread is running");
         } catch (VMDisconnectedException ex) {
             return new AbstractVariable [0];
         }

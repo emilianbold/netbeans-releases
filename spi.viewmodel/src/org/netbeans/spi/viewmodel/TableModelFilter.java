@@ -49,7 +49,7 @@ public interface TableModelFilter {
         TableModel original,
         Object node, 
         String columnID
-    ) throws ComputingException, UnknownTypeException;
+    ) throws UnknownTypeException;
     
     /**
      * Filters original isReadOnly value from given table model. You should 

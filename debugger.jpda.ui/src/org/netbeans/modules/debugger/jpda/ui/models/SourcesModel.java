@@ -27,7 +27,6 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 import org.netbeans.spi.viewmodel.ColumnModel;
-import org.netbeans.spi.viewmodel.ComputingException;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TableModel;
@@ -164,7 +163,7 @@ NodeActionsProvider {
     // TableModel ..............................................................
     
     public Object getValueAt (Object node, String columnID) throws 
-    ComputingException, UnknownTypeException {
+    UnknownTypeException {
         if (columnID.equals ("use")) {
             if (node instanceof String)
                 return Boolean.valueOf (

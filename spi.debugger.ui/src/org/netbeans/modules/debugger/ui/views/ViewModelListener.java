@@ -30,7 +30,6 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
-import org.netbeans.spi.viewmodel.ComputingException;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
@@ -76,7 +75,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             this
         );
         Models.setModelsToView (
-            view, null, null, null, null, Collections.EMPTY_LIST
+            view, 
+            Models.EMPTY_TREE_MODEL, 
+            Models.EMPTY_NODE_MODEL, 
+            Models.EMPTY_TABLE_MODEL, 
+            Models.EMPTY_NODE_ACTIONS_PROVIDER, 
+            Collections.EMPTY_LIST
         );
     }
 
@@ -153,21 +157,22 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
     private static class EmptyModel implements NodeModel {
         
-        public String getDisplayName (Object node) throws ComputingException, UnknownTypeException {
+        public String getDisplayName (Object node) throws UnknownTypeException {
             if (node == TreeModel.ROOT) {
                 return "Name";
             }
             throw new UnknownTypeException (node);
         }
         
-        public String getIconBase (Object node) throws ComputingException, UnknownTypeException {
+        public String getIconBase (Object node) throws UnknownTypeException {
             if (node == TreeModel.ROOT) {
                 return "org/netbeans/modules/debugger/resources/DebuggerTab";
             }
             throw new UnknownTypeException (node);
         }
         
-        public String getShortDescription (Object node) throws ComputingException, UnknownTypeException {
+        public String getShortDescription (Object node) 
+        throws UnknownTypeException {
             throw new UnknownTypeException (node);
         }
         

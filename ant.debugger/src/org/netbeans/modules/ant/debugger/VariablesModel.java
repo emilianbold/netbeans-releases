@@ -17,8 +17,6 @@ import java.util.Vector;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.apache.tools.ant.module.spi.TaskStructure;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.viewmodel.ComputingException;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;

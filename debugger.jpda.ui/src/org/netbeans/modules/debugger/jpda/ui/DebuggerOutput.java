@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui;
 
+import com.sun.jdi.AbsentInformationException;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.HashSet;
@@ -33,7 +34,6 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LaunchingDICookie;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.openide.util.NbBundle;
@@ -257,7 +257,7 @@ PropertyChangeListener {
                         new String[] { threadName },
                         line
                     );
-            } catch (NoInformationException ex) {
+            } catch (AbsentInformationException ex) {
                 if (lineNumber > 0)
                     print (
                         "CTL_Thread_stopped_no_info",

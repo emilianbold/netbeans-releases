@@ -23,8 +23,6 @@ import javax.swing.Action;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
-import org.netbeans.spi.viewmodel.ComputingException;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
@@ -118,7 +116,7 @@ NodeModel, TableModel, NodeActionsProvider {
         Object      parent, 
         int         from, 
         int         to
-    ) throws NoInformationException, ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         //parent = switchParentIfFixedWatch(parent);
         if (parent instanceof ObjectVariable) {
             ObjectVariable variable = (ObjectVariable) parent;
@@ -157,7 +155,7 @@ NodeModel, TableModel, NodeActionsProvider {
     public int getChildrenCount (
         TreeModel   original, 
         Object      parent
-    ) throws NoInformationException, ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         //parent = switchParentIfFixedWatch(parent);
         if (parent instanceof ObjectVariable) {
             ObjectVariable variable = (ObjectVariable) parent;
@@ -208,19 +206,19 @@ NodeModel, TableModel, NodeActionsProvider {
     // NodeModelFilter
     
     public String getDisplayName (Object node) 
-    throws ComputingException, UnknownTypeException {
+    throws UnknownTypeException {
         if (node instanceof SpecialNode) return ((SpecialNode) node).getDisplayName();
         throw new UnknownTypeException (node);
     }
     
     public String getIconBase (Object node) 
-    throws ComputingException, UnknownTypeException {
+    throws UnknownTypeException {
         if (node instanceof SpecialNode) return ((SpecialNode) node).getIconBase();
         throw new UnknownTypeException (node);
     }
     
     public String getShortDescription (Object node) 
-    throws ComputingException, UnknownTypeException {
+    throws UnknownTypeException {
         if (node instanceof SpecialNode) return null;
         throw new UnknownTypeException (node);
     }
@@ -248,7 +246,7 @@ NodeModel, TableModel, NodeActionsProvider {
     public Object getValueAt (
         Object row, 
         String columnID
-    ) throws ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         if (row instanceof SpecialNode) return "";
         throw new UnknownTypeException (row);
     }

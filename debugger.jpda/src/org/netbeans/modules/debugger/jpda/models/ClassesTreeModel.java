@@ -53,7 +53,6 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -89,7 +88,7 @@ public class ClassesTreeModel implements TreeModel {
     }
     
     public Object[] getChildren (Object o, int from, int to) 
-    throws NoInformationException, UnknownTypeException {
+    throws UnknownTypeException {
         try {
             Object[] r = null;
             if (o.equals (ROOT)) {
@@ -125,8 +124,7 @@ public class ClassesTreeModel implements TreeModel {
      *
      * @return  true if node is leaf
      */
-    public int getChildrenCount (Object node) throws NoInformationException, 
-    UnknownTypeException {
+    public int getChildrenCount (Object node) throws UnknownTypeException {
         try {
             if (node.equals (ROOT))
                 return getLoaders ().length;

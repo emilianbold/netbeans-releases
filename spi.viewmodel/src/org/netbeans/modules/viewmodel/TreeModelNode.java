@@ -20,14 +20,13 @@ import java.lang.IllegalAccessException;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 
 import org.netbeans.spi.viewmodel.ColumnModel;
-import org.netbeans.spi.viewmodel.ComputingException;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.openide.nodes.AbstractNode;
@@ -35,6 +34,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 
@@ -50,6 +50,11 @@ public class TreeModelNode extends AbstractNode {
     private CompoundModel       model;
     private TreeModelRoot       treeModelRoot;
     private Object              object;
+    
+    private String              name;
+    private String              shortDescription;
+    private Map                 properties = new HashMap ();
+    private Map                 oldProperties = new HashMap ();
 
     
     // init ....................................................................
@@ -73,6 +78,9 @@ public class TreeModelNode extends AbstractNode {
         refresh ();
         initProperties ();
     }
+
+    
+    // Node implementation .....................................................
     
     private void initProperties () {
         Sheet sheet = Sheet.createDefault();
@@ -97,71 +105,73 @@ public class TreeModelNode extends AbstractNode {
                 Children.LEAF : 
                 new TreeModelChildren (model, treeModelRoot, object);
         } catch (UnknownTypeException e) {
-            e.printStackTrace ();
+            if (!(object instanceof String)) {
+                e.printStackTrace ();
+                System.out.println (model);
+                System.out.println ();
+            }
             return Children.LEAF;
         }
     }
     
-    public String getName () {
-        try {
-            return model.getDisplayName (object);
-        } catch (UnknownTypeException e) {
-            e.printStackTrace ();
-            return object.toString ();
-        } catch (ComputingException e) {
-            return "Computing";
-        }
-    }
-    
-    public String getDisplayName () {
-        try {
-            return model.getDisplayName (object);
-        } catch (UnknownTypeException e) {
-            e.printStackTrace ();
-            return object.toString ();
-        } catch (ComputingException e) {
-            return "Computing";
-        }
-    }
+//    public String getName () {
+//        try {
+//            if (name == null) {
+//                name = model.getDisplayName (object);
+//                if (name == null) 
+//                    throw new NullPointerException (
+//                        "Model: " + model + ".getDisplayName (" + object + 
+//                        ") = null!"
+//                    );
+//            }
+//            return name;
+//        } catch (UnknownTypeException e) {
+//            e.printStackTrace ();
+//            System.out.println (model);
+//            System.out.println ();
+//            return object.toString ();
+//        } catch (final ComputingException ex) {
+//            name = "";
+//            RequestProcessor.getDefault ().post (new Runnable () {
+//                public void run () {
+//                    name = (String) ex.getValue ();
+//                    if (name == null) {
+//                        name = "?";
+//                        throw new NullPointerException (
+//                            "Model: " + model + ".getDisplayName (" + object + 
+//                            ") = null!"
+//                        );
+//                    }
+//                    setName (name);
+//                    setDisplayName (name);
+//                }
+//            });
+//            return "";
+//        }
+//    }
+//    
+//    public String getDisplayName () {
+//        return getName ();
+//    }
     
     public String getShortDescription () {
-        try {
-            return model.getShortDescription (object);
-        } catch (UnknownTypeException e) {
-            e.printStackTrace ();
-            System.out.println (model);
-            System.out.println ();
-            return null;
-        } catch (ComputingException e) {
-            return "Computing";
+        if (shortDescription == null) {
+            RequestProcessor.getDefault ().post (new Runnable () {
+                public void run () {
+                    try {
+                        shortDescription = model.getShortDescription (object);
+                        setShortDescription (shortDescription);
+                    } catch (UnknownTypeException e) {
+                        if (!(object instanceof String)) {
+                            e.printStackTrace ();
+                            System.out.println (model);
+                            System.out.println ();
+                        }
+                    }
+                }
+            });
         }
-    }
-
-    void refresh () {
-//        try {
-//            setDisplayName (model.getDisplayName (object));
-//        } catch (UnknownTypeException e) {
-//            setDisplayName (object.toString ());
-//            e.printStackTrace ();
-//        } catch (ComputingException e) {
-//            setDisplayName ("Computing");
-//        }
-        try {
-            String iconBase = model.getIconBase (object);
-            if (iconBase != null)
-                setIconBase (iconBase);
-            else
-                setIconBase ("org/openide/resources/actions/empty");
-        } catch (UnknownTypeException e) {
-            e.printStackTrace ();
-            System.out.println (model);
-            System.out.println ();
-        } catch (ComputingException e) {
-            setIconBase ("org/openide/resources/actions/empty");
-        }
-        Children ch = getChildren ();
-        if (ch instanceof TreeModelChildren)
-            ((TreeModelChildren) ch).refreshChildren ();
+        return shortDescription;
     }
     
     public Action[] getActions (boolean context) {
@@ -170,9 +180,7 @@ public class TreeModelNode extends AbstractNode {
         try {
             return model.getActions (object);
         } catch (UnknownTypeException e) {
-//            e.printStackTrace ();
-//            System.out.println (model);
-//            System.out.println ();
+            // NodeActionsProvider is voluntary
             return new Action [0];
         }
     }
@@ -183,24 +191,10 @@ public class TreeModelNode extends AbstractNode {
                 try {
                     model.performDefaultAction (object);
                 } catch (UnknownTypeException ex) {
-                    ex.printStackTrace ();
-                    System.out.println (model);
-                    System.out.println ();
+                    // NodeActionsProvider is voluntary
                 }
             }
         };
-    }
-    
-    void setObject (Object o) {
-        object = o;
-        Children ch = getChildren ();
-        if (ch instanceof TreeModelChildren)
-            ((TreeModelChildren) ch).object = o;
-        refresh ();
-    }
-    
-    public Object getObject () {
-        return object;
     }
     
     public boolean canDestroy () {
@@ -216,9 +210,7 @@ public class TreeModelNode extends AbstractNode {
             }
             return false;
         } catch (UnknownTypeException e) {
-//            e.printStackTrace ();
-//            System.out.println (model);
-//            System.out.println ();
+            // NodeActionsProvider is voluntary
             return false;
         }
     }
@@ -251,7 +243,68 @@ public class TreeModelNode extends AbstractNode {
             System.out.println ();
         }
     }
+
     
+    // other methods ...........................................................
+    
+    void setObject (Object o) {
+        object = o;
+        Children ch = getChildren ();
+        if (ch instanceof TreeModelChildren)
+            ((TreeModelChildren) ch).object = o;
+        refresh ();
+    }
+    
+    public Object getObject () {
+        return object;
+    }
+
+    void refresh () {
+        
+        // 1) empty cache
+        name = null;
+        shortDescription = null;
+        oldProperties = properties;
+        properties = new HashMap ();
+        
+        // 2) refresh name, displayName and iconBase
+        RequestProcessor.getDefault ().post (new Runnable () {
+            public void run () {
+                try {
+                    name = model.getDisplayName (object);
+                    if (name == null) 
+                        new NullPointerException (
+                            "Model: " + model + ".getDisplayName (" + object + 
+                            ") = null!"
+                        ).printStackTrace ();
+                    setName (name);
+                    setDisplayName (name);
+                    String iconBase = model.getIconBase (object);
+                    if (iconBase != null)
+                        setIconBase (iconBase);
+                    else
+                        setIconBase ("org/openide/resources/actions/empty");
+                } catch (UnknownTypeException e) {
+                    if (object instanceof String) {
+                        name = (String) object;
+                        setName (name);
+                        setDisplayName (name);
+                        setIconBase ("org/openide/resources/actions/empty");
+                    } else {
+                        e.printStackTrace ();
+                        System.out.println (model);
+                        System.out.println ();
+                    }
+                }
+            }
+        });
+        
+        // 3) refresh children
+        Children ch = getChildren ();
+        if (ch instanceof TreeModelChildren)
+            ((TreeModelChildren) ch).refreshChildren ();
+    }
+
     
     // innerclasses ............................................................
     
@@ -266,9 +319,9 @@ public class TreeModelNode extends AbstractNode {
         
         
         TreeModelChildren (
-            CompoundModel model,
-            TreeModelRoot treeModelRoot,
-            Object object
+            CompoundModel   model,
+            TreeModelRoot   treeModelRoot,
+            Object          object
         ) {
             this.model = model;
             this.treeModelRoot = treeModelRoot;
@@ -287,11 +340,29 @@ public class TreeModelNode extends AbstractNode {
         
         void refreshChildren () {
             if (!initialezed) return;
+
+            RequestProcessor.getDefault ().post (new Runnable () {
+                public void run () {
+                    try {
+                        refreshChildren (model.getChildrenCount (object));
+                    } catch (UnknownTypeException e) {
+                        if (!(object instanceof String)) {
+                            e.printStackTrace ();
+                            System.out.println (model);
+                            System.out.println ();
+                        }
+                        setKeys (new Object [0]);
+                    }
+                }
+            });
+        }
+        
+        void refreshChildren (int count) {
             try {
                 Object[] ch = model.getChildren (
                     object, 
                     0, 
-                    model.getChildrenCount (object)
+                    count
                 );
                 int i, k = ch.length; 
                 WeakHashMap newObjectToNode = new WeakHashMap ();
@@ -313,13 +384,11 @@ public class TreeModelNode extends AbstractNode {
                 setKeys (ch);
             } catch (UnknownTypeException e) {
                 setKeys (new Object [0]);
-                e.printStackTrace ();
-                System.out.println (model);
-                System.out.println ();
-            } catch (NoInformationException e) {
-                setKeys (new Object[] {e});
-            } catch (ComputingException e) {
-                setKeys (new Object[] {e});
+                if (!(object instanceof String)) {
+                    e.printStackTrace ();
+                    System.out.println (model);
+                    System.out.println ();
+                }
             }
         }
         
@@ -383,32 +452,50 @@ public class TreeModelNode extends AbstractNode {
             try {
                 return !model.isReadOnly (object, columnModel.getID ());
             } catch (UnknownTypeException e) {
-                e.printStackTrace ();
-                System.out.println("  Column id:" + columnModel.getID ());
-                System.out.println (model);
-                System.out.println ();
+                if (!(object instanceof String)) {
+                    e.printStackTrace ();
+                    System.out.println("  Column id:" + columnModel.getID ());
+                    System.out.println (model);
+                    System.out.println ();
+                }
                 return false;
             }
         }
         
         public Object getValue () {
-            try {
-                return model.getValueAt (object, id);
-            } catch (ComputingException e) {
-            } catch (UnknownTypeException e) {
-                e.printStackTrace ();
-                System.out.println("  Column id:" + columnModel.getID ());
-                System.out.println (model);
-                System.out.println ();
-            }
-            return null;
+            if (properties.containsKey (id))
+                return properties.get (id);
+            
+            RequestProcessor.getDefault ().post (new Runnable () {
+                public void run () {
+                    try {
+                        Object value = model.getValueAt (object, id);
+                        if (value != null)
+                            properties.put (id, value);
+                        firePropertyChange (id, null, value);
+                    } catch (UnknownTypeException e) {
+                        if (!(object instanceof String)) {
+                            e.printStackTrace ();
+                            System.out.println("  Column id:" + columnModel.getID ());
+                            System.out.println (model);
+                            System.out.println ();
+                        }
+                    }
+                }
+            });
+            Object value = oldProperties.get (id);
+            if ( value == null &&
+                 columnModel.getType ().equals (String.class)
+            )
+                value = "";
+            return value;
         }
         
         public void setValue (Object v) throws IllegalAccessException, 
         IllegalArgumentException, java.lang.reflect.InvocationTargetException {
             try {
                 model.setValueAt (object, id, v);
-                TreeModelNode.this.firePropertyChange (null, null, null);
+                TreeModelNode.this.firePropertyChange (id, null, null);
             } catch (UnknownTypeException e) {
                 e.printStackTrace ();
                 System.out.println("  Column id:" + columnModel.getID ());

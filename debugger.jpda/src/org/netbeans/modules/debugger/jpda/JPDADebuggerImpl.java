@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.debugger.jpda;
 
+import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.LocalVariable;
@@ -76,7 +77,6 @@ import org.netbeans.modules.debugger.jpda.expr.ParseException;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
 
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
@@ -283,7 +283,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (t.getStackDepth () < 2) return;
             try {
                 if (!frame.equals (t.getCallStack (0, 1) [0])) return;
-            } catch (NoInformationException ex) {
+            } catch (AbsentInformationException ex) {
                 return;
             }
             if (!frame.isObsolete ()) return;
@@ -809,7 +809,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         else
         try {
             setCurrentCallStackFrame (thread.getCallStack (0, 1) [0]);
-        } catch (NoInformationException e) {
+        } catch (AbsentInformationException e) {
             setCurrentCallStackFrame (null);
         }
     }
@@ -866,7 +866,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 )
                     javaEngineProvider.getSession ().setCurrentLanguage (stratum);
                 lastStratumn = stratum;
-            } catch (NoInformationException e) {
+            } catch (AbsentInformationException e) {
                 System.out.println("NoInformationException");
             }
     }

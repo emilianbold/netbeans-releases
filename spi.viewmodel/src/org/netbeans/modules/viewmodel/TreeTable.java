@@ -35,8 +35,6 @@ import javax.swing.tree.TreeModel;
 
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
-import org.netbeans.spi.viewmodel.ComputingException;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.explorer.ExplorerActions;
 
 import org.openide.explorer.ExplorerManager;

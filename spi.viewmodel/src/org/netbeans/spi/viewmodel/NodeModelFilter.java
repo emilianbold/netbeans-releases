@@ -33,7 +33,7 @@ public interface NodeModelFilter {
      * @return  display name for given node
      */
     public abstract String getDisplayName (NodeModel original, Object node) 
-    throws ComputingException, UnknownTypeException;
+    throws UnknownTypeException;
     
     /**
      * Returns filterred icon for given node. You should not throw 
@@ -46,7 +46,7 @@ public interface NodeModelFilter {
      * @return  icon for given node
      */
     public abstract String getIconBase (NodeModel original, Object node) 
-    throws ComputingException, UnknownTypeException;
+    throws UnknownTypeException;
     
     /**
      * Returns filterred tooltip for given node. You should not throw 
@@ -59,7 +59,7 @@ public interface NodeModelFilter {
      * @return  tooltip for given node
      */
     public abstract String getShortDescription (NodeModel original, Object node) 
-    throws ComputingException, UnknownTypeException;
+    throws UnknownTypeException;
 
 
     /** 

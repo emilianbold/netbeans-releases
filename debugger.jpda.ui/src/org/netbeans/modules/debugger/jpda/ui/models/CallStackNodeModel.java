@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import com.sun.jdi.AbsentInformationException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
@@ -24,7 +25,6 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
@@ -144,7 +144,7 @@ public class CallStackNodeModel implements NodeModel {
         else
             try {
                 fileName = sf.getSourcePath (language);
-            } catch (NoInformationException e) {
+            } catch (AbsentInformationException e) {
                 fileName += "." + sf.getMethodName ();
             }
         if (ln < 0)

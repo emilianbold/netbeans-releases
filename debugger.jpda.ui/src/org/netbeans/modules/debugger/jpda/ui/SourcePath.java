@@ -37,7 +37,6 @@ import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext;
-import org.netbeans.spi.viewmodel.NoInformationException;
 
 /**
  *
@@ -190,7 +189,7 @@ public class SourcePath {
             return sourceAvailable (
                 convertSlash (t.getSourcePath (stratumn)), global
             );
-        } catch (NoInformationException e) {
+        } catch (AbsentInformationException e) {
             return sourceAvailable (
                 convertClassNameToRelativePath (t.getClassName ()), global
             );
@@ -212,7 +211,7 @@ public class SourcePath {
             return sourceAvailable (
                 convertSlash (csf.getSourcePath (stratumn)), true
             );
-        } catch (NoInformationException e) {
+        } catch (AbsentInformationException e) {
             return sourceAvailable (
                 convertClassNameToRelativePath (csf.getClassName ()), true
             );
@@ -225,7 +224,7 @@ public class SourcePath {
     ) {
         try {
             return getURL (convertSlash (csf.getSourcePath (stratumn)), true);
-        } catch (NoInformationException e) {
+        } catch (AbsentInformationException e) {
             return getURL (
                 convertClassNameToRelativePath (csf.getClassName ()), true
             );
@@ -244,7 +243,7 @@ public class SourcePath {
                 lineNumber,
                 debugger
             );
-        } catch (NoInformationException e) {
+        } catch (AbsentInformationException e) {
             return EditorContextBridge.showSource (
                 getURL (
                     convertClassNameToRelativePath (t.getClassName ()), true
@@ -274,7 +273,7 @@ public class SourcePath {
                 lineNumber,
                 debugger
             );
-        } catch (NoInformationException e) {
+        } catch (AbsentInformationException e) {
             return EditorContextBridge.showSource (
                 getURL (
                     convertClassNameToRelativePath (csf.getClassName ()), true
@@ -332,7 +331,7 @@ public class SourcePath {
                 EditorContext.CURRENT_LINE_ANNOTATION_TYPE,
                 debugger
             );
-        } catch (NoInformationException e) {
+        } catch (AbsentInformationException e) {
             return EditorContextBridge.annotate (
                 getURL (
                     convertClassNameToRelativePath (t.getClassName ()), true
@@ -357,7 +356,7 @@ public class SourcePath {
                 EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE,
                 debugger
             );
-        } catch (NoInformationException e) {
+        } catch (AbsentInformationException e) {
             return EditorContextBridge.annotate (
                 getURL (
                     convertClassNameToRelativePath (csf.getClassName ()), true

@@ -50,7 +50,7 @@ NodeActionsProviderFilter {
         TableModel original, 
         Object node, 
         String columnID
-    ) throws ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         if (columnID == this.columnID && 
             node instanceof Variable && 
             isIntegralType ((Variable) node)

@@ -43,7 +43,7 @@ public interface TableModel {
      * @return value of variable representing given position in tree table.
      */
     public abstract Object getValueAt (Object node, String columnID) throws 
-    ComputingException, UnknownTypeException;
+    UnknownTypeException;
     
     /**
      * Returns true if value displayed in column <code>columnID</code>

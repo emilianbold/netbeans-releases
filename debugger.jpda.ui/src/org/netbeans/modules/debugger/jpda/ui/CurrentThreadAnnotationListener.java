@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.debugger.jpda.ui;
 
+import com.sun.jdi.AbsentInformationException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
@@ -23,7 +24,6 @@ import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
-import org.netbeans.spi.viewmodel.NoInformationException;
 
 import org.openide.util.RequestProcessor;
 
@@ -115,7 +115,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         CallStackFrame[] stack = new CallStackFrame [0];
         try {
             stack = currentThread.getCallStack ();
-        } catch (NoInformationException ex) {
+        } catch (AbsentInformationException ex) {
             removeAnnotations ();
             return;
         }

@@ -47,6 +47,7 @@ public class WatchesNodeModel extends VariablesNodeModel {
         if (o == TreeModel.ROOT)
             return TreeModel.ROOT;
         if (o instanceof JPDAWatch) {
+            Thread.dumpStack();
             JPDAWatch w = (JPDAWatch) o;
             String t = w.getType ();
             String e = w.getExceptionDescription ();

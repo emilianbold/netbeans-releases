@@ -21,7 +21,6 @@ import java.util.List;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.This;
-import org.netbeans.spi.viewmodel.NoInformationException;
 
 
 /**
@@ -127,11 +126,9 @@ public class CallStackFrameImpl implements CallStackFrame {
     * @throws NoInformationException if informations about source are not included or some other error
     *   occurres.
     */
-    public String getSourceName (String stratum) throws NoInformationException {
+    public String getSourceName (String stratum) throws AbsentInformationException {
         try {
             return getStackFrame().location ().sourceName (stratum);
-        } catch (AbsentInformationException ex) {
-            throw new NoInformationException (ex.getMessage ());
         } catch (Exception ex) {
             // this stack frame is not available or information in it is not available
         }
@@ -143,11 +140,9 @@ public class CallStackFrameImpl implements CallStackFrame {
      *
      * @return source path of file this frame is stopped in or null
      */
-    public String getSourcePath (String stratum) throws NoInformationException {
+    public String getSourcePath (String stratum) throws AbsentInformationException {
         try {
             return getStackFrame().location ().sourcePath (stratum);
-        } catch (AbsentInformationException ex) {
-            throw new NoInformationException (ex.getMessage ());
         } catch (Exception ex) {
         // this stack frame is not available or information in it is not available
         }
@@ -160,19 +155,15 @@ public class CallStackFrameImpl implements CallStackFrame {
      * @return local variables
      */
     public org.netbeans.api.debugger.jpda.LocalVariable[] getLocalVariables () 
-    throws NoInformationException {
-        try {
-            LocalsTreeModel ltm = ctm.getLocalsTreeModel ();
-            int count = getStackFrame ().visibleVariables ().size ();
-            AbstractVariable vs[] = ltm.getLocalVariables 
-                (this, getStackFrame (), 0, count);
-            org.netbeans.api.debugger.jpda.LocalVariable[] var = new
-                org.netbeans.api.debugger.jpda.LocalVariable [vs.length];
-            System.arraycopy (vs, 0, var, 0, vs.length);
-            return var;
-        } catch (AbsentInformationException ex) {
-            throw new NoInformationException ("compiled without -g");
-        }
+    throws AbsentInformationException {
+        LocalsTreeModel ltm = ctm.getLocalsTreeModel ();
+        int count = getStackFrame ().visibleVariables ().size ();
+        AbstractVariable vs[] = ltm.getLocalVariables 
+            (this, getStackFrame (), 0, count);
+        org.netbeans.api.debugger.jpda.LocalVariable[] var = new
+            org.netbeans.api.debugger.jpda.LocalVariable [vs.length];
+        System.arraycopy (vs, 0, var, 0, vs.length);
+        return var;
     }
     
     /**

@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import com.sun.jdi.AbsentInformationException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
@@ -27,7 +28,6 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
@@ -131,7 +131,7 @@ public class ThreadsNodeModel implements NodeModel {
                 try { 
                     CallStackFrame sf = t.getCallStack (0, 1) [0];
                     s += " " + CallStackNodeModel.getCSFName (session, sf, true);
-                } catch (NoInformationException e) {
+                } catch (AbsentInformationException e) {
                 }
             }
             return s;

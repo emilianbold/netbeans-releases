@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import com.sun.jdi.AbsentInformationException;
 import java.awt.event.ActionEvent;
 import java.util.Vector;
 import javax.swing.Action;
@@ -25,7 +26,6 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -91,7 +91,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
             try {
                 popToHere = ! debugger.getCurrentThread ().getCallStack (0, 1) [0].
                     equals (csf);
-            } catch (NoInformationException ex) {
+            } catch (AbsentInformationException ex) {
                 popToHere = false;
             }
 
@@ -119,15 +119,15 @@ public class CallStackActionsProvider implements NodeActionsProvider {
 
     private static void popToHere (final CallStackFrame frame) {
         try {
-        JPDAThread t = frame.getThread ();
-        CallStackFrame[] stack = t.getCallStack ();
-        int i, k = stack.length;
-        for (i = 0; i < k; i++)
-            if (stack [i].equals (frame)) {
-                stack [i - 1].popFrame ();
-                return;
-            }
-        } catch (NoInformationException ex) {
+            JPDAThread t = frame.getThread ();
+            CallStackFrame[] stack = t.getCallStack ();
+            int i, k = stack.length;
+            for (i = 0; i < k; i++)
+                if (stack [i].equals (frame)) {
+                    stack [i - 1].popFrame ();
+                    return;
+                }
+        } catch (AbsentInformationException ex) {
         }
     }
     

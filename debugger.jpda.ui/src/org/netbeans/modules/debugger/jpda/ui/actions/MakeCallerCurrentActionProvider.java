@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui.actions;
 
+import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ThreadReference;
 
 import java.util.Collections;
@@ -26,7 +27,6 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.spi.viewmodel.NoInformationException;
 
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 
@@ -91,7 +91,7 @@ public class MakeCallerCurrentActionProvider extends JPDADebuggerAction {
             int i, k = s.length;
             for (i = 0; i < k; i++)
                 if (csf.equals (s [i])) return i;
-        } catch (NoInformationException e) {
+        } catch (AbsentInformationException e) {
         }
         return -1;
     }
@@ -107,7 +107,7 @@ public class MakeCallerCurrentActionProvider extends JPDADebuggerAction {
             if (t.getStackDepth () <= index) return;
             final CallStackFrame csf = t.getCallStack (index, index + 1) [0];
             csf.makeCurrent ();
-        } catch (NoInformationException e) {
+        } catch (AbsentInformationException e) {
         }
     }
 }

@@ -20,8 +20,6 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.jpda.VariablesFilterAdapter;
 import org.netbeans.spi.debugger.ui.Constants;
-import org.netbeans.spi.viewmodel.ComputingException;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -95,7 +93,7 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
         Variable variable, 
         int from, 
         int to
-    ) throws NoInformationException, ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         
         String type = variable.getType ();
         
@@ -217,8 +215,7 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
      * @return  number of filtered children for given variable
      */
     public int getChildrenCount (TreeModel original, Variable variable) 
-    throws NoInformationException,
-            ComputingException, UnknownTypeException {
+    throws UnknownTypeException {
 
         String type = variable.getType();
 
@@ -259,7 +256,7 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
         TableModel original, 
         Variable variable, 
         String columnID
-    ) throws ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
 
         String type = variable.getType ();
         ObjectVariable ov = (ObjectVariable) variable;

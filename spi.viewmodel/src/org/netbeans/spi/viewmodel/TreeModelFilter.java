@@ -55,7 +55,7 @@ public interface TreeModelFilter {
         Object      parent, 
         int         from, 
         int         to
-    ) throws NoInformationException, ComputingException, UnknownTypeException;
+    ) throws UnknownTypeException;
     
     /**
      * Returns number of filterred children for given node.
@@ -74,7 +74,7 @@ public interface TreeModelFilter {
     public abstract int getChildrenCount (
         TreeModel original,
         Object node
-    ) throws NoInformationException, ComputingException, UnknownTypeException;
+    ) throws UnknownTypeException;
     
     /**
      * Returns true if node is leaf. You should not throw UnknownTypeException

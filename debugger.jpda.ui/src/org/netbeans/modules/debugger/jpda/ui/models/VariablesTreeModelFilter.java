@@ -21,8 +21,6 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.jpda.VariablesFilter;
-import org.netbeans.spi.viewmodel.ComputingException;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
@@ -79,7 +77,7 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
         Object      parent, 
         int         from, 
         int         to
-    ) throws NoInformationException, ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         VariablesFilter vf = getFilter (parent);
         if (vf == null) 
             return original.getChildren (parent, from, to);
@@ -103,7 +101,7 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
     public int getChildrenCount (
         TreeModel   original, 
         Object      parent
-    ) throws NoInformationException, ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         VariablesFilter vf = getFilter (parent);
         if (vf == null) 
             return original.getChildrenCount (parent);
@@ -138,7 +136,7 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
     // NodeModelFilter
     
     public String getDisplayName (NodeModel original, Object node) 
-    throws ComputingException, UnknownTypeException {
+    throws UnknownTypeException {
         VariablesFilter vf = getFilter (node);
         if (vf == null) 
             return original.getDisplayName (node);
@@ -146,7 +144,7 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
     }
     
     public String getIconBase (NodeModel original, Object node) 
-    throws ComputingException, UnknownTypeException {
+    throws UnknownTypeException {
         VariablesFilter vf = getFilter (node);
         if (vf == null) 
             return original.getIconBase (node);
@@ -154,7 +152,7 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
     }
     
     public String getShortDescription (NodeModel original, Object node) 
-    throws ComputingException, UnknownTypeException {
+    throws UnknownTypeException {
         VariablesFilter vf = getFilter (node);
         if (vf == null) 
             return original.getShortDescription (node);
@@ -192,7 +190,7 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
         TableModel original, 
         Object row, 
         String columnID
-    ) throws ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         VariablesFilter vf = getFilter (row);
         if (vf == null) 
             return original.getValueAt (row, columnID);

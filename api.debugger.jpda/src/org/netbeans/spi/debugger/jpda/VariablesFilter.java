@@ -15,8 +15,6 @@ package org.netbeans.spi.debugger.jpda;
 
 import javax.swing.Action;
 import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.spi.viewmodel.ComputingException;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
@@ -73,7 +71,7 @@ public abstract class VariablesFilter {
         Variable       variable, 
         int            from, 
         int            to
-    ) throws NoInformationException, ComputingException, UnknownTypeException;
+    ) throws UnknownTypeException;
     
     /** 
      * Returns number of filtered children for given variable.
@@ -93,7 +91,7 @@ public abstract class VariablesFilter {
     public abstract int getChildrenCount (
         TreeModel      original,
         Variable       variable
-    ) throws NoInformationException, ComputingException, UnknownTypeException;
+    ) throws UnknownTypeException;
     
     /**
      * Returns true if variable is leaf.
@@ -121,7 +119,7 @@ public abstract class VariablesFilter {
      * @return  display name for given node
      */
     public abstract String getDisplayName (NodeModel original, Variable variable) 
-    throws ComputingException, UnknownTypeException;
+    throws UnknownTypeException;
     
     /**
      * Returns filterred icon for given variable.
@@ -133,7 +131,7 @@ public abstract class VariablesFilter {
      * @return  icon for given node
      */
     public abstract String getIconBase (NodeModel original, Variable variable) 
-    throws ComputingException, UnknownTypeException;
+    throws UnknownTypeException;
     
     /**
      * Returns filterred tooltip for given variable.
@@ -145,7 +143,7 @@ public abstract class VariablesFilter {
      * @return  tooltip for given node
      */
     public abstract String getShortDescription (NodeModel original, Variable variable) 
-    throws ComputingException, UnknownTypeException;
+    throws UnknownTypeException;
     
     
     // NodeActionsProviderFilter
@@ -196,7 +194,7 @@ public abstract class VariablesFilter {
         TableModel original, 
         Variable variable, 
         String columnID
-    ) throws ComputingException, UnknownTypeException;
+    ) throws UnknownTypeException;
     
     /**
      * Filters original isReadOnly value from given table model.

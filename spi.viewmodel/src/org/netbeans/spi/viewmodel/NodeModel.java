@@ -32,7 +32,7 @@ public interface NodeModel {
      * @return  display name for given node
      */
     public abstract String getDisplayName (Object node) 
-    throws ComputingException, UnknownTypeException;
+    throws UnknownTypeException;
     
     /**
      * Returns icon for given node.
@@ -44,7 +44,7 @@ public interface NodeModel {
      * @return  icon for given node
      */
     public abstract String getIconBase (Object node) 
-    throws ComputingException, UnknownTypeException;
+    throws UnknownTypeException;
     
     /**
      * Returns tooltip for given node.
@@ -56,7 +56,7 @@ public interface NodeModel {
      * @return  tooltip for given node
      */
     public abstract String getShortDescription (Object node) 
-    throws ComputingException, UnknownTypeException;
+    throws UnknownTypeException;
 
     /** 
      * Registers given listener.

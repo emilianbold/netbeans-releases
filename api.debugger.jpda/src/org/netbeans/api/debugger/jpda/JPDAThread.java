@@ -13,10 +13,9 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ThreadReference;
 import java.beans.PropertyChangeListener;
-
-import org.netbeans.spi.viewmodel.NoInformationException;
 
 
 /**
@@ -119,7 +118,7 @@ public interface JPDAThread {
      * @return file name this frame is stopped in
      */
     public abstract String getSourceName (String stratum) 
-    throws NoInformationException;
+    throws AbsentInformationException;
     
     /**
      * Returns source path of file this frame is stopped in or null.
@@ -127,7 +126,7 @@ public interface JPDAThread {
      * @return source path of file this frame is stopped in or null
      */
     public abstract String getSourcePath (String stratum) 
-    throws NoInformationException;
+    throws AbsentInformationException;
     
     /**
      * Returns call stack for this thread.
@@ -137,7 +136,7 @@ public interface JPDAThread {
      * @return call stack
      */
     public abstract CallStackFrame[] getCallStack () 
-    throws NoInformationException;
+    throws AbsentInformationException;
     
     /**
      * Returns call stack for this thread on the given indexes.
@@ -149,7 +148,7 @@ public interface JPDAThread {
      * @return call stack
      */
     public abstract CallStackFrame[] getCallStack (int from, int to) 
-    throws NoInformationException;
+    throws AbsentInformationException;
     
     /**
      * Returns length of current call stack.

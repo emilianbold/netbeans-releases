@@ -18,8 +18,6 @@ import java.util.List;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
-import org.netbeans.spi.viewmodel.ComputingException;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.TreeModelListener;
@@ -66,7 +64,7 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
         Object      parent, 
         int         from, 
         int         to
-    ) throws NoInformationException, ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         if (to - from <= 0) return new Object[0]; 
         Object[] ch = original.getChildren (parent, 0, 0);
         List l = new ArrayList ();
@@ -100,7 +98,7 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
     public int getChildrenCount (
         TreeModel original,
         Object node
-    ) throws NoInformationException, ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         int j = original.getChildrenCount (node);
         Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
             getBreakpoints ();

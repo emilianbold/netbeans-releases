@@ -30,7 +30,6 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 
@@ -163,14 +162,12 @@ public class JPDAThreadImpl implements JPDAThread {
     *
     * @return Returns name of file of this frame.
     */
-    public String getSourceName (String stratum) throws NoInformationException {
+    public String getSourceName (String stratum) throws AbsentInformationException {
         try {
             if (threadReference.frameCount () < 1) return "";
             return threadReference.frame (0).location ().sourceName (stratum);
         } catch (InvalidStackFrameException ex) {
         } catch (IncompatibleThreadStateException ex) {
-        } catch (AbsentInformationException ex) {
-            throw new NoInformationException (ex.getMessage ());
         } catch (VMDisconnectedException ex) {
         }
         return "";
@@ -181,14 +178,13 @@ public class JPDAThreadImpl implements JPDAThread {
     *
     * @return Returns name of file of this frame.
     */
-    public String getSourcePath (String stratum) throws NoInformationException {
+    public String getSourcePath (String stratum) 
+    throws AbsentInformationException {
         try {
             if (threadReference.frameCount () < 1) return "";
             return threadReference.frame (0).location ().sourcePath (stratum);
         } catch (InvalidStackFrameException ex) {
         } catch (IncompatibleThreadStateException ex) {
-        } catch (AbsentInformationException ex) {
-            throw new NoInformationException (ex.getMessage ());
         } catch (VMDisconnectedException ex) {
         }
         return "";
@@ -201,7 +197,7 @@ public class JPDAThreadImpl implements JPDAThread {
      *         to return callstack
      * @return call stack
      */
-    public CallStackFrame[] getCallStack () throws NoInformationException {
+    public CallStackFrame[] getCallStack () throws AbsentInformationException {
         return getCallStack (0, getStackDepth ());
     }
     
@@ -214,7 +210,8 @@ public class JPDAThreadImpl implements JPDAThread {
      *         to return callstack
      * @return call stack
      */
-    public CallStackFrame[] getCallStack (int from, int to) throws NoInformationException {
+    public CallStackFrame[] getCallStack (int from, int to) 
+    throws AbsentInformationException {
         try {
             return (CallStackFrame[]) ttm.getCallStackTreeModel ().getChildren (
                 threadReference, from, to

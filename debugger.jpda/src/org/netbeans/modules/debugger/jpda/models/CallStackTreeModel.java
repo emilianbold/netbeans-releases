@@ -32,8 +32,6 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.spi.viewmodel.ComputingException;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -69,7 +67,7 @@ public class CallStackTreeModel implements TreeModel {
      * @return threads contained in this group of threads
      */
     public Object[] getChildren (Object parent, int from, int to) 
-    throws NoInformationException, UnknownTypeException {
+    throws UnknownTypeException {
         if ( parent.equals (ROOT) ||
              (parent instanceof ThreadReference) 
         ) {
@@ -82,10 +80,13 @@ public class CallStackTreeModel implements TreeModel {
                     threadRef = ti.getThreadReference ();
             } else
                 threadRef = (ThreadReference) parent;
-            if (threadRef == null) throw new NoInformationException ("No current thread");
+            if (threadRef == null) 
+                return new String [] {"No current thread"};
 
             // 2) get StackFrames
-            StackFrame[] ch = (StackFrame[]) model.getChildren (parent, from, to);
+            Object[] res = (Object[]) model.getChildren (parent, from, to);
+            if (res instanceof String[]) return res;
+            StackFrame[] ch = (StackFrame[]) res;
             
             // 3) encapsulate them to CallStackFrameImpls
             int i, k = ch.length, j = from;
@@ -123,8 +124,7 @@ public class CallStackTreeModel implements TreeModel {
      *
      * @return  true if node is leaf
      */
-    public int getChildrenCount (Object node) throws UnknownTypeException,
-    NoInformationException {
+    public int getChildrenCount (Object node) throws UnknownTypeException {
         return model.getChildrenCount (node);
     }
     
@@ -139,10 +139,12 @@ public class CallStackTreeModel implements TreeModel {
     public boolean isLeaf (Object node) throws UnknownTypeException {
         if (node == BasicCallStackTreeModel.ROOT) 
             return model.isLeaf (node);
-        StackFrame sf = ((CallStackFrameImpl) node).getStackFrame();
-        if (sf == null) return true;
-        if (node instanceof CallStackFrameImpl)
-            return model.isLeaf(sf);
+        if (node instanceof CallStackFrameImpl) {
+            StackFrame sf = ((CallStackFrameImpl) node).getStackFrame ();
+            if (sf == null) return true;
+            if (node instanceof CallStackFrameImpl)
+                return model.isLeaf (sf);
+        }
         throw new UnknownTypeException (node);
     }
 

@@ -35,7 +35,6 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -85,7 +84,7 @@ public class WatchesModel implements TreeModel {
      * @return watches contained in this group of watches
      */
     public Object[] getChildren (Object parent, int from, int to) 
-    throws UnknownTypeException, NoInformationException {
+    throws UnknownTypeException {
         if (parent == ROOT) {
             
             // 1) get Watches
@@ -123,8 +122,7 @@ public class WatchesModel implements TreeModel {
      *
      * @return  true if node is leaf
      */
-    public int getChildrenCount (Object node) throws UnknownTypeException, 
-    NoInformationException {
+    public int getChildrenCount (Object node) throws UnknownTypeException {
         if (node == ROOT) {
             if (listener == null)
                 listener = new Listener (this, debugger);

@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.debugger.jpda.actions;
 
+import com.sun.jdi.AbsentInformationException;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
@@ -22,7 +23,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.spi.viewmodel.NoInformationException;
+
 
 /**
 * Representation of a debugging session.
@@ -50,7 +51,7 @@ public class PopToHereActionProvider extends JPDADebuggerActionProvider {
         try {
             JPDAThread t = getDebuggerImpl ().getCurrentThread ();
             t.getCallStack (0, 1) [0].popFrame ();
-        } catch (NoInformationException ex) {
+        } catch (AbsentInformationException ex) {
         }
     }
     

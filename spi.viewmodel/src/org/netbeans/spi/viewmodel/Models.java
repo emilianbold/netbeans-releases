@@ -32,8 +32,6 @@ import org.netbeans.modules.viewmodel.TreeModelNode;
 import org.netbeans.modules.viewmodel.TreeTable;
 
 import org.netbeans.spi.viewmodel.ColumnModel;
-import org.netbeans.spi.viewmodel.ComputingException;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
@@ -57,6 +55,10 @@ import org.openide.windows.TopComponent;
 public final class Models {
 
     public static final TreeModel EMPTY_TREE_MODEL = new EmptyTreeModel ();
+    public static final NodeModel EMPTY_NODE_MODEL = new EmptyNodeModel ();
+    public static final TableModel EMPTY_TABLE_MODEL = new EmptyTableModel ();
+    public static final NodeActionsProvider EMPTY_NODE_ACTIONS_PROVIDER = 
+        new EmptyNodeActionsProvider ();
     
     public static int MULTISELECTION_TYPE_EXACTLY_ONE = 1;
     public static int MULTISELECTION_TYPE_ALL = 2;
@@ -528,7 +530,7 @@ public final class Models {
          * @return  children for given parent on given indexes
          */
         public Object[] getChildren (Object parent, int from, int to) 
-            throws NoInformationException, ComputingException, UnknownTypeException {
+            throws UnknownTypeException {
 
             return filter.getChildren (model, parent, from, to);
         }
@@ -546,8 +548,7 @@ public final class Models {
          *
          * @return  true if node is leaf
          */
-        public int getChildrenCount (Object node) throws 
-        NoInformationException, ComputingException, UnknownTypeException {
+        public int getChildrenCount (Object node) throws UnknownTypeException {
             return filter.getChildrenCount (model, node);
         }
 
@@ -627,7 +628,7 @@ public final class Models {
          * @return  display name for given node
          */
         public String getDisplayName (Object node) 
-        throws ComputingException, UnknownTypeException {
+        throws UnknownTypeException {
             return filter.getDisplayName (model, node);
         }
 
@@ -641,7 +642,7 @@ public final class Models {
          * @return  icon for given node
          */
         public String getIconBase (Object node) 
-        throws ComputingException, UnknownTypeException {
+        throws UnknownTypeException {
             return filter.getIconBase (model, node);
         }
 
@@ -655,7 +656,7 @@ public final class Models {
          * @return  tooltip for given node
          */
         public String getShortDescription (Object node) 
-        throws ComputingException, UnknownTypeException {
+        throws UnknownTypeException {
             return filter.getShortDescription (model, node);
         }
 
@@ -734,7 +735,7 @@ public final class Models {
          * @return value of variable representing given position in tree table.
          */
         public Object getValueAt (Object node, String columnID) throws 
-        ComputingException, UnknownTypeException {
+        UnknownTypeException {
             return filter.getValueAt (model, node, columnID);
         }
 
@@ -810,12 +811,14 @@ public final class Models {
     }
     
     /**
-     * Creates {@link org.netbeans.spi.viewmodel.NodeActionsProvider} for given NodeActionsProvider and
+     * Creates {@link org.netbeans.spi.viewmodel.NodeActionsProvider} 
+     * for given NodeActionsProvider and
      * {@link org.netbeans.spi.viewmodel.NodeActionsProviderFilter}.
      * 
      * @author   Jan Jancura
      */
-    final static class CompoundNodeActionsProvider implements NodeActionsProvider {
+    final static class CompoundNodeActionsProvider 
+    implements NodeActionsProvider {
 
 
         private NodeActionsProvider model;
@@ -823,10 +826,14 @@ public final class Models {
 
 
         /**
-         * Creates {@link org.netbeans.spi.viewmodel.NodeActionsProvider} for given NodeActionsProvider and
+         * Creates {@link org.netbeans.spi.viewmodel.NodeActionsProvider} 
+         * for given NodeActionsProvider and
          * {@link org.netbeans.spi.viewmodel.NodeActionsProviderFilter}.
          */
-        CompoundNodeActionsProvider (NodeActionsProvider model, NodeActionsProviderFilter filter) {
+        CompoundNodeActionsProvider (
+            NodeActionsProvider model, 
+            NodeActionsProviderFilter filter
+        ) {
             this.model = model;
             this.filter = filter;
         }
@@ -834,8 +841,9 @@ public final class Models {
         /**
          * Performs default action for given node.
          *
-         * @throws  UnknownTypeException if this NodeActionsProvider implementation 
-         *          is not able to resolve actions for given node type
+         * @throws  UnknownTypeException if this NodeActionsProvider 
+         *          implementation is not able to resolve actions 
+         *          for given node type
          * @return  display name for given node
          */
         public void performDefaultAction (Object node) 
@@ -945,7 +953,7 @@ public final class Models {
          * @return value of variable representing given position in tree table.
          */
         public Object getValueAt (Object node, String columnID)
-        throws ComputingException, UnknownTypeException {
+        throws UnknownTypeException {
             TableModel model = (TableModel) classNameToModel.get (
                 node.getClass ().getName ()
             );
@@ -1130,7 +1138,7 @@ public final class Models {
          * @return  display name for given node
          */
         public String getDisplayName (Object node) 
-        throws ComputingException, UnknownTypeException {
+        throws UnknownTypeException {
             NodeModel model = (NodeModel) classNameToModel.get (
                 node.getClass ().getName ()
             );
@@ -1161,7 +1169,7 @@ public final class Models {
          * @return  tooltip for given node
          */
         public String getShortDescription (Object node) 
-        throws ComputingException, UnknownTypeException {
+        throws UnknownTypeException {
             NodeModel model = (NodeModel) classNameToModel.get (
                 node.getClass ().getName ()
             );
@@ -1192,7 +1200,7 @@ public final class Models {
          * @return  icon for given node
          */
         public String getIconBase (Object node) 
-        throws ComputingException, UnknownTypeException {
+        throws UnknownTypeException {
             NodeModel model = (NodeModel) classNameToModel.get (
                 node.getClass ().getName ()
             );
@@ -1259,7 +1267,7 @@ public final class Models {
      *
      * @author   Jan Jancura
      */
-    static final class EmptyTreeModel implements TreeModel {
+    private static final class EmptyTreeModel implements TreeModel {
 
         /** 
          * Returns {@link org.netbeans.spi.viewmodel.TreeModel#ROOT}.
@@ -1305,6 +1313,201 @@ public final class Models {
             return false;
         }
 
+        /** 
+         * Do nothing.
+         *
+         * @param l the listener to be added
+         */
+        public void addTreeModelListener (TreeModelListener l) {
+        }
+
+        /** 
+         * Do nothing.
+         *
+         * @param l the listener to be removed
+         */
+        public void removeTreeModelListener (TreeModelListener l) {
+        }
+    }
+
+    /**
+     * Empty impleemntation of {@link org.netbeans.spi.viewmodel.NodeModel}.
+     *
+     * @author   Jan Jancura
+     */
+    private static final class EmptyNodeModel implements NodeModel {
+
+        /**
+         * Returns display name for given node.
+         *
+         * @throws  ComputingException if the display name resolving process 
+         *          is time consuming, and the value will be updated later
+         * @throws  UnknownTypeException if this NodeModel implementation is not
+         *          able to resolve display name for given node type
+         * @return  display name for given node
+         */
+        public String getDisplayName (Object node) 
+        throws UnknownTypeException {
+            throw new UnknownTypeException (node);
+        }
+
+        /**
+         * Returns icon for given node.
+         *
+         * @throws  ComputingException if the icon resolving process 
+         *          is time consuming, and the value will be updated later
+         * @throws  UnknownTypeException if this NodeModel implementation is not
+         *          able to resolve icon for given node type
+         * @return  icon for given node
+         */
+        public String getIconBase (Object node) 
+        throws UnknownTypeException {
+            throw new UnknownTypeException (node);
+        }
+
+        /**
+         * Returns tooltip for given node.
+         *
+         * @throws  ComputingException if the tooltip resolving process 
+         *          is time consuming, and the value will be updated later
+         * @throws  UnknownTypeException if this NodeModel implementation is not
+         *          able to resolve tooltip for given node type
+         * @return  tooltip for given node
+         */
+        public String getShortDescription (Object node) 
+        throws UnknownTypeException {
+            throw new UnknownTypeException (node);
+        }
+
+        /** 
+         * Do nothing.
+         *
+         * @param l the listener to be added
+         */
+        public void addTreeModelListener (TreeModelListener l) {
+        }
+
+        /** 
+         * Do nothing.
+         *
+         * @param l the listener to be removed
+         */
+        public void removeTreeModelListener (TreeModelListener l) {
+        }
+    }
+
+    /**
+     * Empty impleemntation of {@link org.netbeans.spi.viewmodel.TableModel}.
+     *
+     * @author   Jan Jancura
+     */
+    private static final class EmptyTableModel implements TableModel {
+ 
+        /**
+         * Returns value to be displayed in column <code>columnID</code>
+         * and row identified by <code>node</code>. Column ID is defined in by 
+         * {@link ColumnModel#getID}, and rows are defined by values returned from 
+         * {@link org.netbeans.spi.viewmodel.TreeModel#getChildren}.
+         *
+         * @param node a object returned from 
+         *         {@link org.netbeans.spi.viewmodel.TreeModel#getChildren} for this row
+         * @param columnID a id of column defined by {@link ColumnModel#getID}
+         * @throws ComputingException if the value is not known yet and will 
+         *         be computed later
+         * @throws UnknownTypeException if there is no TableModel defined for given
+         *         parameter type
+         *
+         * @return value of variable representing given position in tree table.
+         */
+        public Object getValueAt (Object node, String columnID) throws 
+        UnknownTypeException {
+            throw new UnknownTypeException (node);
+        }
+
+        /**
+         * Returns true if value displayed in column <code>columnID</code>
+         * and row <code>node</code> is read only. Column ID is defined in by 
+         * {@link ColumnModel#getID}, and rows are defined by values returned from 
+         * {@link TreeModel#getChildren}.
+         *
+         * @param node a object returned from {@link TreeModel#getChildren} for this row
+         * @param columnID a id of column defined by {@link ColumnModel#getID}
+         * @throws UnknownTypeException if there is no TableModel defined for given
+         *         parameter type
+         *
+         * @return true if variable on given position is read only
+         */
+        public boolean isReadOnly (Object node, String columnID) throws 
+        UnknownTypeException {
+            throw new UnknownTypeException (node);
+        }
+
+        /**
+         * Changes a value displayed in column <code>columnID</code>
+         * and row <code>node</code>. Column ID is defined in by 
+         * {@link ColumnModel#getID}, and rows are defined by values returned from 
+         * {@link TreeModel#getChildren}.
+         *
+         * @param node a object returned from {@link TreeModel#getChildren} for this row
+         * @param columnID a id of column defined by {@link ColumnModel#getID}
+         * @param value a new value of variable on given position
+         * @throws UnknownTypeException if there is no TableModel defined for given
+         *         parameter type
+         */
+        public void setValueAt (Object node, String columnID, Object value) 
+        throws UnknownTypeException {
+            throw new UnknownTypeException (node);
+        }
+        
+        /** 
+         * Do nothing.
+         *
+         * @param l the listener to be added
+         */
+        public void addTreeModelListener (TreeModelListener l) {
+        }
+
+        /** 
+         * Do nothing.
+         *
+         * @param l the listener to be removed
+         */
+        public void removeTreeModelListener (TreeModelListener l) {
+        }
+    }
+
+    /**
+     * Empty impleemntation of {@link org.netbeans.spi.viewmodel.TableModel}.
+     *
+     * @author   Jan Jancura
+     */
+    private static final class EmptyNodeActionsProvider implements 
+    NodeActionsProvider {
+    
+        /**
+         * Performs default action for given node.
+         *
+         * @throws  UnknownTypeException if this NodeActionsProvider implementation 
+         *          is not able to resolve actions for given node type
+         * @return  display name for given node
+         */
+        public void performDefaultAction (Object node) 
+        throws UnknownTypeException {
+            throw new UnknownTypeException (node);
+        }
+
+        /**
+         * Returns set of actions for given node.
+         *
+         * @throws  UnknownTypeException if this NodeActionsProvider implementation 
+         *          is not able to resolve actions for given node type
+         * @return  display name for given node
+         */
+        public Action[] getActions (Object node) 
+        throws UnknownTypeException {
+            throw new UnknownTypeException (node);
+        }
+        
         /** 
          * Do nothing.
          *

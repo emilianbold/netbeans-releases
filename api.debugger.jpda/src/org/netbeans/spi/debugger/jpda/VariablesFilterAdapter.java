@@ -15,8 +15,6 @@ package org.netbeans.spi.debugger.jpda;
 
 import javax.swing.Action;
 import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.spi.viewmodel.ComputingException;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
@@ -68,7 +66,7 @@ public abstract class VariablesFilterAdapter extends VariablesFilter {
         Variable       variable, 
         int            from, 
         int            to
-    ) throws NoInformationException, ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         return original.getChildren (variable, from, to);
     }
     
@@ -90,7 +88,7 @@ public abstract class VariablesFilterAdapter extends VariablesFilter {
     public int getChildrenCount (
         TreeModel      original,
         Variable       variable
-    ) throws NoInformationException, ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         return original.getChildrenCount (variable);
     }
     
@@ -122,7 +120,7 @@ public abstract class VariablesFilterAdapter extends VariablesFilter {
      * @return  display name for given node
      */
     public String getDisplayName (NodeModel original, Variable variable) 
-    throws ComputingException, UnknownTypeException {
+    throws UnknownTypeException {
         return original.getDisplayName (variable);
     }
     
@@ -136,7 +134,7 @@ public abstract class VariablesFilterAdapter extends VariablesFilter {
      * @return  icon for given node
      */
     public String getIconBase (NodeModel original, Variable variable) 
-    throws ComputingException, UnknownTypeException {
+    throws UnknownTypeException {
         return original.getIconBase (variable);
     }
     
@@ -150,7 +148,7 @@ public abstract class VariablesFilterAdapter extends VariablesFilter {
      * @return  tooltip for given node
      */
     public String getShortDescription (NodeModel original, Variable variable) 
-    throws ComputingException, UnknownTypeException {
+    throws UnknownTypeException {
         return original.getShortDescription (variable);
     }
     
@@ -207,7 +205,7 @@ public abstract class VariablesFilterAdapter extends VariablesFilter {
         TableModel original, 
         Variable variable, 
         String columnID
-    ) throws ComputingException, UnknownTypeException {
+    ) throws UnknownTypeException {
         return original.getValueAt (variable, columnID);
     }
     
