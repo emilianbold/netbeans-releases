@@ -366,6 +366,7 @@ public class AntTargetNode extends ElementNode {
             final JButton help = new javax.swing.JButton();
             final JComboBox combo = new javax.swing.JComboBox(names.toArray ());
 
+            help.setText(NbBundle.getMessage(AntTargetNode.class, "LBL_task_help"));
             jLabel1.setFont(new java.awt.Font("Arial", 0, 11));
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -377,7 +378,6 @@ public class AntTargetNode extends ElementNode {
                 // We have help available. (<property> is well-known.)
                 ActionListener helplistener = new ActionListener () {
                         public void actionPerformed (ActionEvent ignore) {
-                            help.setText (NbBundle.getMessage (AntTargetNode.class, "LBL_help_on_task", combo.getSelectedItem ()));
                             help.setEnabled(AntTaskNode.helpFor((String)combo.getSelectedItem(), "task") != null); // NOI18N
                         }
                     };
