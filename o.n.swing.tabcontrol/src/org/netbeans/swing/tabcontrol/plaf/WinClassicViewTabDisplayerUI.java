@@ -96,12 +96,12 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         if (ColorUtil.shouldAntialias()) {
             ColorUtil.setupAntialiasing(g);
         }
-        paintOverallBorder(g, c);
         Color col = c.getBackground();
         if (col != null) {
             g.setColor (col);
             g.fillRect (0, 0, c.getWidth(), c.getHeight());
         }
+        paintOverallBorder(g, c);
         super.paint(g, c);
     }
 
@@ -191,21 +191,13 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
 
         g.setColor(UIManager.getColor("InternalFrame.borderShadow")); //NOI18N
         g.drawLine(0, height - 1, width - 2, height - 1);
-        if (isLast) {
-            g.drawLine(width - 1, height - 1, width - 1, 0);
-        } else {
-            g.drawLine(width - 2, height - 2, width - 2, 0);
-        }
+        g.drawLine(width - 1, height - 1, width - 1, 0);
 
         g.setColor(isSelected ? UIManager.getColor(
                 "InternalFrame.borderHighlight") //NOI18N
                    : UIManager.getColor("InternalFrame.borderLight")); //NOI18N
         g.drawLine(0, 0, 0, height - 1);
         g.drawLine(1, 0, width - 2, 0);
-        if (!isLast) {
-            g.setColor(UIManager.getColor("InternalFrame.borderDarkShadow")); //NOI18N
-            g.drawLine(width - 1, 0, width - 1, height - 1);
-        }
 
         g.translate(-x, -y);
     }
