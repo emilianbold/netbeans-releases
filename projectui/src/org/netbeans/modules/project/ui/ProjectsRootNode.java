@@ -119,8 +119,7 @@ public class ProjectsRootNode extends AbstractNode {
     /** Finds node for given object in the view
      * @return the node or null if the node was not found
      */
-    Node findNode( Object target ) {
-        System.out.println( "Searching for object" );
+    Node findNode( Object target ) {        
         
         ProjectChildren ch = (ProjectChildren)getChildren();
         
