@@ -29,8 +29,8 @@ import org.openide.text.CloneableEditorSupport;
 
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.netbeans.modules.web.jsps.parserapi.JSPColoringData;
-import org.netbeans.modules.web.core.syntax.spi.*;
+import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
+import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 

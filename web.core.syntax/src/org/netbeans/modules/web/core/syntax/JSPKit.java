@@ -50,7 +50,7 @@ import org.netbeans.editor.ext.plain.PlainSyntax;
 import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.web.jsps.parserapi.JSPColoringData;
+import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 
 /**
  * Editor kit implementation for JSP content type

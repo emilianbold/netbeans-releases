@@ -25,27 +25,24 @@ import org.openide.util.RequestProcessor.Task;
 
 import org.openide.filesystems.FileObject;
 
-//import org.netbeans.api.projects.Project;
-//import org.netbeans.api.projects.ProjectMember;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
-import org.netbeans.modules.web.jsps.parserapi.JSPColoringData;
-//import org.netbeans.modules.web.project.WebModuleUtils;
-//import org.netbeans.modules.web.project.WebModule;
+import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 
-/** Support for parsing JSP pages and cooperation between the parser and the editor.
- * Parsing is not available outside a project, which means that project-less pages 
- * may not have proper tag library coloring and completion and other webmodule-dependent
+/** Support for parsing JSP pages and tag files and cooperation between the parser 
+ * and the editor.
+ * Parsing is context-aware, which means that a web module and the associated 
+ * environment (libraries) is needed to provide proper tag library coloring and completion and other webmodule-dependent
  * features. The support tries to do its best to get good parse results even for
- * project-less pages, but in this case nothing can be guaranteed.
+ * pages and tag files for which the web module context is not known, but 
+ * in this case nothing can be guaranteed.
  *
  * @author Petr Jiricka
  * @version 
  */
 public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
 
-    //private Project proj;
     private FileObject wmRoot;
     private FileObject jspFile;
     
