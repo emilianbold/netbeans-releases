@@ -18,6 +18,7 @@ import java.awt.datatransfer.Transferable;
 import java.beans.*;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.File;
 import java.lang.ref.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -1384,7 +1385,14 @@ implements Serializable, DataObject.Container {
                          * @return true if parent is fo's (indirect) parent 
                          */
                         /*not private called from FolderNode*/ 
-                        private boolean isParent (FileObject fo, FileObject parent) {        
+                        private boolean isParent (FileObject fo, FileObject parent) {
+                            File parentFile = FileUtil.toFile(parent);
+                            File foFile = FileUtil.toFile(fo);
+                            
+                            if (foFile != null && parentFile != null) {
+                                return isParentFile(foFile, parentFile);
+                            }
+                            
                             try {
                                 if (fo.getFileSystem () != parent.getFileSystem ()) {
                                     return false;
@@ -1453,6 +1461,19 @@ implements Serializable, DataObject.Container {
             }
             return new PasteTypeExt [] {};
         }
+
+        private boolean isParentFile(File foFile, File parentFile) {
+            boolean retVal = false;
+            while (foFile != null) {
+                if (foFile.equals (parentFile)) {
+                    retVal = true;
+                    break;
+                }
+                foFile = foFile.getParentFile ();
+            }
+            return retVal;
+        }
+
         /** Defines array of data clipboard operations recognized by this paste support.
         * @return array of DataFlavors
         */
