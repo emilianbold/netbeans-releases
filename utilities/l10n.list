@@ -7,6 +7,7 @@ utilities/loaderswitcher/src/org/netbeans/modules/loaderswitcher/ChangeTypeActio
 utilities/src/**/Bundle.properties
 utilities/src/**/*.html
 utilities/src/org/netbeans/modules/openfile/openFile.gif
+utilities/src/org/netbeans/modules/search/res/find.gif
 utilities/src/org/netbeans/modules/url/bookmarks.gif
 utilities/src/org/netbeans/modules/url/webLink.gif
 utilities/src/org/netbeans/modules/utilities/quick-start.url
