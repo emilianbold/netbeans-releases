@@ -24,6 +24,8 @@ import org.netbeans.modules.xsl.transform.TransformPerformer;
 
 /**
  * Perform Transform action on XML document.
+ * <p>
+ * It should be cancellable in future.
  *
  * @author  Libor Kramolis
  */
@@ -31,7 +33,29 @@ public class TransformAction extends CookieAction implements CollectXMLAction.XM
     /** Serial Version UID */
     private static final long serialVersionUID = -640535981015250507L;
 
-    
+    private static TransformPerformer recentPerfomer;
+
+    protected boolean enable(Node[] activatedNodes) {
+        return super.enable(activatedNodes) && ready();
+    }
+
+    /**
+     * Avoid spawing next transformatio until recent one is finished.
+     * This check should be replaced by cancellable actions in future.
+     */
+    private boolean ready() {
+        if (recentPerfomer == null) {
+            return true;
+        } else {
+            if (recentPerfomer.isActive()) {
+                return false;
+            } else {
+                recentPerfomer = null;
+                return true;
+            }
+        }
+    }
+
     /** */
     protected Class[] cookieClasses () {
         return new Class[] { TransformableCookie.class, XSLDataObject.class };
@@ -61,8 +85,8 @@ public class TransformAction extends CookieAction implements CollectXMLAction.XM
 
     /** Check all selected nodes. */
     protected void performAction (Node[] nodes) {
-        TransformPerformer performer = new TransformPerformer (nodes);
-        performer.perform();
+        recentPerfomer = new TransformPerformer (nodes);
+        recentPerfomer.perform();
     }
 
 }

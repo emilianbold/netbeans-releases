@@ -36,6 +36,8 @@ import org.openide.filesystems.*;
 import org.openide.nodes.Node;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 import org.openide.util.actions.CookieAction;
 
 import org.netbeans.api.xml.cookies.*;
@@ -54,6 +56,10 @@ import org.netbeans.modules.xsl.actions.TransformAction;
 import org.netbeans.modules.xsl.utils.TransformUtil;
 
 /**
+ * Handle workflow of transformation action, gather UI info and
+ * launch the processor.
+ * <p>
+ * This class has very/needlessly complicated workflow.
  *
  * @author  Libor Kramolis
  * @version 0.1
@@ -62,69 +68,93 @@ public class TransformPerformer {
     /** Represent transformation output window. */
     private InputOutputReporter cookieObserver = null;
     private Node[] nodes;
-    
+
+    // instance freshness state
+    private volatile boolean stalled = false;
+    private volatile boolean active = true;
+
     public TransformPerformer(Node[] nodes) {
         this.nodes = nodes;
     }
-    
+
+    /**
+     * Entry point called from transform action.
+     * There is a fresh instance per call.
+     */
     public void perform() {
-        AbstractPerformer performer;
-        if ( nodes.length == 2 ) {
-            DataObject do1 = (DataObject) nodes[0].getCookie(DataObject.class);
-            boolean xslt1 = TransformUtil.isXSLTransformation(do1);
-            DataObject do2 = (DataObject) nodes[1].getCookie(DataObject.class);
-            boolean xslt2 = TransformUtil.isXSLTransformation(do2);
-            
-            if ( Util.THIS.isLoggable() ) /* then */ {
-                Util.THIS.debug("TransformAction.performAction:");
-                Util.THIS.debug("    do1 [" + xslt1 + "] = " + do1);
-                Util.THIS.debug("    do2 [" + xslt2 + "] = " + do2);
-            }
-            
-            if ( xslt1 != xslt2 ) {
-                TransformableCookie transformable;
-                DataObject xmlDO;
-                DataObject xslDO;
-                if ( xslt1 ) {
-                    transformable = (TransformableCookie) nodes[1].getCookie(TransformableCookie.class);
-                    xmlDO = do2;
-                    xslDO = do1;
+
+        if (stalled) throw new IllegalStateException();
+
+        try {
+            if ( nodes.length == 2 ) {
+
+                // automatically detect if one of selected nodes is transformation
+                // in such case suppose that user want to it to transform second file
+
+                DataObject do1 = (DataObject) nodes[0].getCookie(DataObject.class);
+                boolean xslt1 = TransformUtil.isXSLTransformation(do1);
+                DataObject do2 = (DataObject) nodes[1].getCookie(DataObject.class);
+                boolean xslt2 = TransformUtil.isXSLTransformation(do2);
+
+                if ( Util.THIS.isLoggable() ) /* then */ {
+                    Util.THIS.debug("TransformAction.performAction:");
+                    Util.THIS.debug("    do1 [" + xslt1 + "] = " + do1);
+                    Util.THIS.debug("    do2 [" + xslt2 + "] = " + do2);
+                }
+
+                if ( xslt1 != xslt2 ) {
+                    TransformableCookie transformable;
+                    DataObject xmlDO;
+                    DataObject xslDO;
+                    if ( xslt1 ) {
+                        transformable = (TransformableCookie) nodes[1].getCookie(TransformableCookie.class);
+                        xmlDO = do2;
+                        xslDO = do1;
+                    } else {
+                        transformable = (TransformableCookie) nodes[0].getCookie(TransformableCookie.class);
+                        xmlDO = do1;
+                        xslDO = do2;
+                    }
+                    DoublePerformer performer = new DoublePerformer(transformable, xmlDO, xslDO);
+                    performer.perform();
                 } else {
-                    transformable = (TransformableCookie) nodes[0].getCookie(TransformableCookie.class);
-                    xmlDO = do1;
-                    xslDO = do2;
+                    TransformableCookie transformable1 = (TransformableCookie) nodes[0].getCookie(TransformableCookie.class);
+                    SinglePerformer performer = new SinglePerformer(transformable1, do1, xslt1);
+                    performer.setLastInBatch(false);
+                    performer.perform();
+
+                    TransformableCookie transformable2 = (TransformableCookie) nodes[1].getCookie(TransformableCookie.class);
+                    performer = new SinglePerformer(transformable2, do2, xslt2);
+                    performer.perform();
                 }
-                performer = new DoublePerformer(transformable, xmlDO, xslDO);
-                performer.perform();
-            } else {
-                TransformableCookie transformable1 = (TransformableCookie) nodes[0].getCookie(TransformableCookie.class);
-                performer = new SinglePerformer(transformable1, do1, xslt1);
-                performer.perform();
-                
-                TransformableCookie transformable2 = (TransformableCookie) nodes[1].getCookie(TransformableCookie.class);
-                performer = new SinglePerformer(transformable2, do2, xslt2);
-                performer.perform();
-            }
-        } else { // nodes.length != 2
-            for ( int i = 0; i < nodes.length; i++ ) {
-                DataObject dataObject = (DataObject) nodes[i].getCookie(DataObject.class);
-                TransformableCookie transformable = null;
-                boolean xslt = TransformUtil.isXSLTransformation(dataObject);
-                if ( xslt == false ) {
-                    transformable = (TransformableCookie) nodes[i].getCookie(TransformableCookie.class);
+            } else { // nodes.length != 2
+                for ( int i = 0; i < nodes.length; i++ ) {
+                    DataObject dataObject = (DataObject) nodes[i].getCookie(DataObject.class);
+                    TransformableCookie transformable = null;
+                    boolean xslt = TransformUtil.isXSLTransformation(dataObject);
+                    if ( xslt == false ) {
+                        transformable = (TransformableCookie) nodes[i].getCookie(TransformableCookie.class);
+                    }
+                    SinglePerformer performer = new SinglePerformer(transformable, dataObject, xslt);
+                    performer.setLastInBatch(i == (nodes.length -1));
+                    performer.perform();
                 }
-                performer = new SinglePerformer(transformable, dataObject, xslt);
-                performer.perform();
             }
-        }
-        
-        if ( cookieObserver != null ) {
-            cookieObserver.message(Util.THIS.getString("MSG_transformation_2"));
-            cookieObserver.moveToFront();
+        } finally {
+            stalled = true;
         }
     }
-    
-    
+
+    /**
+     * Is still running
+     */
+    public boolean isActive() {
+        return active;
+    }
+
+    /**
+     * Always return an instance. Shareable by all children nested performers.
+     */
     private InputOutputReporter getCookieObserver() {
         if ( cookieObserver == null ) {
             String label = Util.THIS.getString("PROP_transformation_io_name");
@@ -163,13 +193,17 @@ public class TransformPerformer {
         private Dialog dialog;
         
         private TransformPanel.Data data;
-        
-        
+        private boolean last = true;
+
+
         public AbstractPerformer(TransformableCookie transformable) {
             this.transformableCookie = transformable;
         }
-        
-        
+
+
+        /**
+         * It shows a dialog and let user selct his options. Then it performs them.
+         */
         public final void perform() {
             try {
                 init(); // throws IOException
@@ -179,6 +213,10 @@ public class TransformPerformer {
                 
                 NotifyDescriptor nd = new NotifyDescriptor.Message(exc.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
                 DialogDisplayer.getDefault().notify(nd);
+
+                if (isLastInBatch()) {
+                    active = false;
+                }
             }
         }
         
@@ -275,12 +313,19 @@ public class TransformPerformer {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             }
         }
-        
+
+        /**
+         * Inicializes a servet and then provokes it by opening browser poiting to it.
+         * External XSLT processor is called from the servlet.
+         */
         private void previewOutput() throws MalformedURLException, UnknownHostException {
             TransformServlet.prepare(transformableCookie, xmlSource, xslSource);
             showURL(TransformServlet.getServletURL());
         }
-        
+
+        /**
+         * External XSLT processor is called from this method.
+         */
         private void fileOutput() throws IOException, FileStateInvalidException, TransformerException {
             OutputStream outputStream = null;
             FileLock fileLock = null;
@@ -344,16 +389,9 @@ public class TransformPerformer {
                     }
                     
                     dialog.dispose();
-                    
                     storeData();
-                    
-                    if ( data.getOutput() == null ) { // Preview
-                        previewOutput(); // throws IOException (MalformedURLException, UnknownHostException)
-                    } else {
-                        fileOutput(); // throws IOException(, FileStateInvalidException), TransformerException
-                    }
-                } catch (TransformerException exc) { // during fileOutput();
-                    // ignore it -> it should be displayed by CookieObserver!
+                    async();
+
                 } catch (Exception exc) { // IOException, ParserConfigurationException, SAXException
                     // during prepareData(), previewOutput() and fileOutput()
                     if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(exc);
@@ -362,11 +400,51 @@ public class TransformPerformer {
                     //                     TopManager.getDefault().notify (nd);
                     
                     ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
+                    if (isLastInBatch()) {
+                        active = false;
+                    }
                 }
             }
         }
-        
-        
+
+        /**
+         * Perform the transformatin itself asynchronously ... (#29614)
+         */
+        private void async() {
+            RequestProcessor rp = RequestProcessor.getDefault();
+            rp.post(new Runnable() {
+                public void run() {
+                    try {
+                        if ( data.getOutput() == null ) { // Preview
+                            previewOutput(); // throws IOException (MalformedURLException, UnknownHostException)
+                        } else {
+                            fileOutput(); // throws IOException(, FileStateInvalidException), TransformerException
+                        }
+                    } catch (TransformerException exc) { // during fileOutput();
+                        // ignore it -> it should be displayed by CookieObserver!
+                    } catch (Exception exc) { // IOException, ParserConfigurationException, SAXException
+                        // during prepareData(), previewOutput() and fileOutput()
+                        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(exc);
+
+                        //                     NotifyDescriptor nd = new NotifyDescriptor.Message (exc.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
+                        //                     TopManager.getDefault().notify (nd);
+
+                        ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
+                    } finally {
+                        if (isLastInBatch()) {
+                            InputOutputReporter cookieObserver = getCookieObserver();
+                            if ( cookieObserver != null ) {
+                                cookieObserver.message(Util.THIS.getString("MSG_transformation_2"));
+                                cookieObserver.moveToFront();
+                            }
+                            active = false;
+                        }
+                    }
+                }
+            });
+        }
+
+
         /**
          * If possible it finds "file:" URL if <code>fileObject</code> is on LocalFileSystem.
          * @return URL of <code>fileObject</code>.
@@ -382,7 +460,17 @@ public class TransformPerformer {
             }
             return fileURL;
         }
-        
+
+        public final void setLastInBatch(boolean last) {
+            this.last = last;
+        }
+
+        /**
+         * Return if caller uses more perfomers and this one is the last one.
+         */
+        public final boolean isLastInBatch() {
+            return last;
+        }
     } // class AbstractPerformer
     
     
