@@ -19,6 +19,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="f4jroot" value=".."/>
   <property name="nbext" value="${nbroot}/nbbuild"/>
 
+  <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbroot}/nbbuild/nbantext.jar"/>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
   <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar" classpath="${nbext}/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar"/>
@@ -76,6 +77,14 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="javahelp">
+    <mkdir dir="javahelp/org/netbeans/modules/db/docs/JavaHelpSearch"/>
+    <jhindexer basedir="javahelp/org/netbeans/modules/db/docs/"
+               db="javahelp/org/netbeans/modules/db/docs/JavaHelpSearch"
+               jhall="${binroot}/nbbuild/lib/jhall.jar">
+      <include name="**/*.html"/>
+      <exclude name="JavaHelpSearch/"/>
+      <exclude name="credits.html"/>
+    </jhindexer>
     <copy todir="netbeans/docs">
       <fileset dir="javahelp"/>
     </copy>
