@@ -33,13 +33,12 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   private PropertyEditor modifiedEditor;
   private Class propertyType;
   private PropertyEditor[] allEditors;
-  private java.util.HashMap valuesCache = new java.util.HashMap (6);
 
   // -----------------------------------------------------------------------------
   // Constructor
 
   /** Crates a new FormPropertyEditor */
-  FormPropertyEditor(RADComponent radComponent, Class propertyType, RADComponent.RADProperty radProperty, PropertyEditor defaultEditor) {
+  FormPropertyEditor(RADComponent radComponent, Class propertyType, RADComponent.RADProperty radProperty) {
     source = this;
     this.radComponent = radComponent;
     this.radProperty = radProperty;
@@ -57,6 +56,10 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   Class getPropertyType () {
     return propertyType;
   }
+  
+  RADComponent.RADProperty getRADProperty () {
+    return radProperty;
+  }
 
   PropertyEditor getModifiedEditor () {
     return modifiedEditor;
@@ -67,22 +70,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   }
 
   void setModifiedEditor (PropertyEditor editor) {
-    valuesCache.put (modifiedEditor, value);
     modifiedEditor.removePropertyChangeListener (this);
     modifiedEditor = editor;
-    value = valuesCache.get (modifiedEditor);
-    if (value == null) {
-      value = radComponent.getDefaultPropertyValue (radProperty); 
-    }
-    if (value != null) { // [PENDING - what to do in the other case !!! ???]
-      modifiedEditor.setValue (value);
-    }
-    if (modifiedEditor instanceof FormAwareEditor) {
-      ((FormAwareEditor)modifiedEditor).setRADComponent (radComponent);
-    }
-    if (modifiedEditor instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
-      ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)modifiedEditor).attach (new org.openide.nodes.Node[] { radComponent.getNodeReference () });
-    }
     modifiedEditor.addPropertyChangeListener (this);
   }
 
@@ -233,18 +222,29 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   /**
   * Determines whether the propertyEditor can provide a custom editor.
   *
-      if (allEditors[i].supportsCustomEditor ())
   * @return  True if the propertyEditor can provide a custom editor.
   */
   public boolean supportsCustomEditor() {
-    if (allEditors == null) {
-      allEditors = FormPropertyEditorManager.getAllEditors (propertyType, false);
-    }
-    if (allEditors.length > 1) return true; // we must allow to choose the editor even if none of them supports custom editing
-    if (allEditors.length == 1) return allEditors[0].supportsCustomEditor ();
+    PropertyEditor[] editors = getAllEditors ();
+    if (editors.length > 1) return true; // we must allow to choose the editor even if none of them supports custom editing
+    if (editors.length == 1) return editors[0].supportsCustomEditor ();
     return false;
   }
 
+  PropertyEditor[] getAllEditors () {
+    if (allEditors == null) {
+      PropertyEditor expliciteEditor = radProperty.getExpliciteEditor ();
+      allEditors = FormPropertyEditorManager.getAllEditors (propertyType, false);
+      if (expliciteEditor != null) {
+        PropertyEditor[] newAllEditors = new PropertyEditor[allEditors.length + 1];
+        newAllEditors[0] = expliciteEditor;
+        System.arraycopy (allEditors, 0, newAllEditors, 1, allEditors.length);
+        allEditors = newAllEditors;
+      }
+    }
+    return allEditors;
+  }
+  
   // -----------------------------------------------------------------------------
   // EnhancedPropertyEditor implementation
 
@@ -311,6 +311,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
 
 /*
  * Log
+ *  13   Gandalf   1.12        8/17/99  Ian Formanek    Fixed work with multiple
+ *       property editors
  *  12   Gandalf   1.11        8/1/99   Ian Formanek    NodePropertyEditor 
  *       employed
  *  11   Gandalf   1.10        8/1/99   Ian Formanek    cleaned usage of 

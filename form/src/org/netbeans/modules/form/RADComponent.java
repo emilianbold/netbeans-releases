@@ -582,12 +582,16 @@ public class RADComponent {
     public PropertyDescriptor getPropertyDescriptor ();
     public PropertyEditor getPropertyEditor ();
     public PropertyEditor getCurrentEditor ();
+    public PropertyEditor getExpliciteEditor ();
     public void setCurrentEditor (PropertyEditor editor);
     public RADComponent getRADComponent ();
     public boolean canRead ();
     public Object getValue () throws IllegalAccessException, IllegalArgumentException, InvocationTargetException;
     public boolean canWrite ();
     public void setValue (Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+    public boolean supportsDefaultValue ();
+    public void restoreDefaultValue ();
+    public Object getDefaultValue ();
   }
 
   class RADPropertyImpl extends Node.Property implements RADProperty {
@@ -728,6 +732,10 @@ public class RADComponent {
       // [PENDING - test]
     }
 
+    public Object getDefaultValue () {
+      return defaultPropertyValues.get (desc.getName ());
+    }
+    
     /* Returns property editor for this property.
     * @return the property editor or <CODE>null</CODE> if there should not be
     *    any editor.
@@ -749,26 +757,30 @@ public class RADComponent {
       PropertyEditor defaultEditor = findDefaultEditor (desc);
       FormPropertyEditor editor = null;
       if (defaultEditor != null) {
-        editor = new FormPropertyEditor (RADComponent.this, desc.getPropertyType (), RADPropertyImpl.this, defaultEditor);
+        editor = new FormPropertyEditor (RADComponent.this, desc.getPropertyType (), RADPropertyImpl.this);
       }
 //System.out.println ("RADComponent::RADPropertyImpl::getPropertyEditor: "+editor);
       return editor;
     }
 
-    private PropertyEditor findDefaultEditor (PropertyDescriptor desc) {
-      PropertyEditor defaultEditor = null;
+    public PropertyEditor getExpliciteEditor () {
       if (desc.getPropertyEditorClass () != null) {
         try {
-          defaultEditor = (PropertyEditor) desc.getPropertyEditorClass ().newInstance ();
-        } catch (InstantiationException ex) {
+          return (PropertyEditor) desc.getPropertyEditorClass ().newInstance ();
+        } catch (Exception ex) {
           if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace ();
-        } catch (IllegalAccessException iex) {
-          if (System.getProperty ("netbeans.debug.exceptions") != null) iex.printStackTrace ();
         }
+      } 
+      return null;
+    }
+    
+    private PropertyEditor findDefaultEditor (PropertyDescriptor desc) {
+      PropertyEditor defaultEditor = getExpliciteEditor ();
+      if (defaultEditor == null) {
+        return FormPropertyEditorManager.findEditor (desc.getPropertyType ());
       } else {
-        defaultEditor = FormPropertyEditorManager.findEditor (desc.getPropertyType ());
+        return defaultEditor;
       }
-      return defaultEditor;
     }
   }
 
@@ -906,6 +918,10 @@ public class RADComponent {
       // [PENDING - test]
     }
 
+    public Object getDefaultValue () {
+      return defaultPropertyValues.get (desc.getName ());
+    }
+    
     /* Returns property editor for this property.
     * @return the property editor or <CODE>null</CODE> if there should not be
     *    any editor.
@@ -929,25 +945,29 @@ public class RADComponent {
       PropertyEditor defaultEditor = findDefaultIndexedEditor (desc);
       FormPropertyEditor editor = null;
       if (defaultEditor != null) {
-        editor = new FormPropertyEditor (RADComponent.this, desc.getIndexedPropertyType (), RADIndexedPropertyImpl.this, defaultEditor);
+        editor = new FormPropertyEditor (RADComponent.this, desc.getIndexedPropertyType (), RADIndexedPropertyImpl.this);
       }
       return editor;
     }
 
-    private PropertyEditor findDefaultIndexedEditor (IndexedPropertyDescriptor desc) {
-      PropertyEditor defaultEditor = null;
+    public PropertyEditor getExpliciteEditor () {
       if (desc.getPropertyEditorClass () != null) {
         try {
-          defaultEditor = (PropertyEditor) desc.getPropertyEditorClass ().newInstance ();
-        } catch (InstantiationException ex) {
+          return (PropertyEditor) desc.getPropertyEditorClass ().newInstance ();
+        } catch (Exception ex) {
           if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace ();
-        } catch (IllegalAccessException iex) {
-          if (System.getProperty ("netbeans.debug.exceptions") != null) iex.printStackTrace ();
         }
+      } 
+      return null;
+    }
+    
+    private PropertyEditor findDefaultIndexedEditor (IndexedPropertyDescriptor desc) {
+      PropertyEditor defaultEditor = getExpliciteEditor ();
+      if (defaultEditor == null) {
+        return FormPropertyEditorManager.findEditor (desc.getIndexedPropertyType ());
       } else {
-        defaultEditor = FormPropertyEditorManager.findEditor (desc.getIndexedPropertyType ());
+        return defaultEditor;
       }
-      return defaultEditor;
     }
 
     /** Test whether the property is readable by index.
@@ -1091,6 +1111,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  43   Gandalf   1.42        8/17/99  Ian Formanek    Fixed work with multiple
+ *       property editors
  *  42   Gandalf   1.41        8/16/99  Ian Formanek    Fixed bug 3369 - The 
  *       expert properties of beans used in form editor are not accessible, 
  *       beans with no expert properties have empty expert tab.

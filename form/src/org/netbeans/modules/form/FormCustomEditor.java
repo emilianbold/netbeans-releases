@@ -41,13 +41,14 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
 // -----------------------------------------------------------------------------
 // Constructor
 
-static final long serialVersionUID =-5566324092702416875L;
+  static final long serialVersionUID =-5566324092702416875L;
+
   public FormCustomEditor (FormPropertyEditor editor) {
     this.editor = editor;
     setBorder (new EmptyBorder (5, 5, 5, 5));
     setLayout (new BorderLayout ());
 
-    allEditors = FormPropertyEditorManager.getAllEditors (editor.getPropertyType (), false);
+    allEditors = editor.getAllEditors ();
     allCustomEditors = new Component[allEditors.length];
     PropertyEditor currentlyUsedEditor = editor.getModifiedEditor ();
     if (currentlyUsedEditor == null) {
@@ -67,10 +68,12 @@ static final long serialVersionUID =-5566324092702416875L;
         ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)allEditors[0]).attach (new org.openide.nodes.Node[] { editor.getRADComponent ().getNodeReference () });
       }
 
+      allEditors[0].setValue (editor.getValue ());
+
       if (allEditors[0].supportsCustomEditor ()) {
         add (allCustomEditors[0] = allEditors[0].getCustomEditor (), BorderLayout.CENTER);
       } else {
-        // [PENDING - add property sheet line component]
+        // [FUTURE - add property sheet line component]
         add (allCustomEditors[0] = new JLabel ("PropertyEditor does not support custom editing"), BorderLayout.CENTER);
       }
       
@@ -78,20 +81,28 @@ static final long serialVersionUID =-5566324092702416875L;
       tabs = new JTabbedPane ();
       int indexToSelect = -1;
       for (int i = 0; i < allEditors.length; i++) {
-        if (allEditors[i].getClass ().equals (currentlyUsedEditor.getClass ()) && (indexToSelect == -1)) {
-          allEditors[i].setValue (editor.getValue ());
-          indexToSelect = i;
-        }
         if (allEditors[i] instanceof FormAwareEditor) {
           ((FormAwareEditor)allEditors[i]).setRADComponent (editor.getRADComponent ());
         }
+
         if (allEditors[i] instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
           ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)allEditors[i]).attach (new org.openide.nodes.Node[] { editor.getRADComponent ().getNodeReference () });
         }
+
+        if (allEditors[i].getClass ().equals (currentlyUsedEditor.getClass ()) && (indexToSelect == -1)) {
+          allEditors[i].setValue (editor.getValue ());
+          indexToSelect = i;
+        } else {
+          Object defValue = editor.getRADProperty ().getDefaultValue ();
+          if (defValue != null) {
+            allEditors[i].setValue (defValue);
+          }
+        }
+
         if (allEditors[i].supportsCustomEditor ()) {
           tabs.addTab (Utilities.getShortClassName (allEditors[i].getClass ()), allCustomEditors[i] = allEditors[i].getCustomEditor ());
         } else {
-          // [PENDING - add property sheet line component]
+          // [FUTURE - add property sheet line component]
           tabs.addTab (Utilities.getShortClassName (allEditors[i].getClass ()), allCustomEditors[i] = new JLabel ("PropertyEditor does not support custom editing"));
         }
       }
@@ -163,6 +174,8 @@ static final long serialVersionUID =-5566324092702416875L;
 
 /*
  * Log
+ *  13   Gandalf   1.12        8/17/99  Ian Formanek    Fixed work with multiple
+ *       property editors
  *  12   Gandalf   1.11        8/10/99  Ian Formanek    Generated Serial Version
  *       UID
  *  11   Gandalf   1.10        8/1/99   Ian Formanek    NodePropertyEditor 
