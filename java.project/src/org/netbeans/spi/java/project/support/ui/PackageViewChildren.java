@@ -523,9 +523,6 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                         else if ( superActions[i] instanceof org.openide.actions.PropertiesAction ) {
                             continue;
                         }
-                        else if ( superActions[i] instanceof org.openide.actions.FileSystemAction ) {
-                            continue;
-                        }
                         else {
                             actionList.add( superActions[i] );  
                         }
