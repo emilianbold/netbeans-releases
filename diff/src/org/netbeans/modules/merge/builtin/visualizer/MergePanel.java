@@ -479,7 +479,7 @@ public class MergePanel extends javax.swing.JPanel {
   
   private void updateStatusLine() {
       statusLabel.setText(org.openide.util.NbBundle.getMessage(MergePanel.class,
-          "MergePanel.statusLine", Integer.toString(currentConflictPos),
+          "MergePanel.statusLine", Integer.toString(currentConflictPos + 1),
           Integer.toString(numConflicts), Integer.toString(numUnresolvedConflicts)));
   }
   
@@ -1365,16 +1365,60 @@ public class MergePanel extends javax.swing.JPanel {
     }
     
     /**
-     * Write the result content into the given writer.
+     * Write the result content into the given writer. Skip all unresolved conflicts.
      * @param w The writer to write the result into.
      * @throws IOException When the writing process fails.
      */
     public void writeResult(Writer w) throws IOException {
+        //System.out.println("writeResult()");
+        /*
         try {
             jEditorPane3.getEditorKit().write(w, jEditorPane3.getDocument(),
                                               0, jEditorPane3.getDocument().getLength());
         } catch (BadLocationException blex) {
             throw new IOException(blex.getLocalizedMessage());
+        }
+         */
+        int end = resultLineNumbers.length;
+        while (end > 0 && resultLineNumbers[end - 1] == 0) end--;
+        int startSetLine = -1;
+        StyledDocument doc = (StyledDocument) jEditorPane3.getDocument();
+        try {
+            for (int i = 1; i <= end; i++) {
+                if (resultLineNumbers[i] <= resultLineNumbers[i - 1]) {
+                    if (startSetLine > 0) {
+                        //System.out.println("write("+startSetLine+", "+i+")");
+                        int offsetStart = org.openide.text.NbDocument.findLineOffset(doc, startSetLine - 1);
+                        int offsetEnd = org.openide.text.NbDocument.findLineOffset(doc, i - 1);
+                        //System.out.println("  Have text(<l="+(startSetLine-1)+",off="+offsetStart+";l="+(i-1)+",off="+offsetEnd+">), length = "+doc.getLength());
+                        try {
+                            //System.out.println("'"+doc.getText(offsetStart, offsetEnd - offsetStart)+"'");
+                            w.write(doc.getText(offsetStart, offsetEnd - offsetStart));
+                        } catch (BadLocationException blex) {
+                            throw new IOException(blex.getLocalizedMessage());
+                        }
+                        //dumpResultLineNumbers();
+                        startSetLine = -1;
+                    }
+                } else {
+                    if (startSetLine < 0) {
+                        startSetLine = i;
+                    }
+                }
+            }
+            if (startSetLine > 0) {
+                //System.out.println("write("+startSetLine+", "+end+" (END))");
+                int offsetStart = org.openide.text.NbDocument.findLineOffset(doc, startSetLine - 1);
+                int offsetEnd = doc.getLength();
+                try {
+                    w.write(doc.getText(offsetStart, offsetEnd - offsetStart));
+                } catch (BadLocationException blex) {
+                    throw new IOException(blex.getLocalizedMessage());
+                }
+                //dumpResultLineNumbers();
+            }
+        } finally {
+            w.close();
         }
     }
     
