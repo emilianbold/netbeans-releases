@@ -134,7 +134,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return isXmlSyntax;
     }
     
-    private JspParserAPI.ParseResult getParseResult() {
+    protected JspParserAPI.ParseResult getParseResult() {
         JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(getDocument(), fobj, true, false);
         if (result == null) {
             result = JspUtils.getCachedParseResult(getDocument(), fobj, false, false);
