@@ -82,7 +82,7 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         initComponents ();
 
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CAEP_Panel")); // NOI18N
-        syntaxLabel.setDisplayedMnemonic (bundle.getString("CAEP_SyntaxLabel").charAt (0)); // NOI18N
+        syntaxLabel.setDisplayedMnemonic (bundle.getString("CAEP_SyntaxLabel_Mnemonic").charAt (0)); // NOI18N
         syntaxList.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CAEP_Syntax")); // NOI18N
         
         coloringModel = new PropertyModelSupport( ColoringBean.class, ColoringEditor.class);
