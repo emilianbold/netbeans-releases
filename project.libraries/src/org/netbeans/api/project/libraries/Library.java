@@ -67,9 +67,9 @@ public final class Library {
      * </p>
      *
      * @param volumeType which resources to return.
-     * @return path of given type (possibly empty but never <code>null</code>)
+     * @return path of URLs of given type (possibly empty but never <code>null</code>)
      */
-    public List getContent(final String volumeType) {
+    public List/*<URL>*/ getContent(final String volumeType) {
         return this.impl.getContent (volumeType);
     } // end getContent
 
