@@ -298,10 +298,6 @@ public class HTMLSyntax extends Syntax {
                     state = ISP_EQ_WS;
                     break;
                 }
-                if( isName( actChar ) ) {
-                    state = ISI_VAL;
-                    break;
-                }
                 switch( actChar ) {
                 case '\'':
                     state = ISI_VAL_QUOT;
@@ -314,8 +310,8 @@ public class HTMLSyntax extends Syntax {
                     state = INIT;
                     return HTMLTokenContext.TAG_OPEN;    
                 default:
-                    state = ISI_ERROR;
-                    continue;
+                    state = ISI_VAL; //everything else if attribute value
+                    break;
                 }
                 break;
 
@@ -326,7 +322,7 @@ public class HTMLSyntax extends Syntax {
 
 
             case ISI_VAL:
-                if( isName( actChar ) ) break;  // Consume whole value
+                if( !isWS( actChar ) ) break;  // Consume whole value
                 state = ISP_TAG_X;
                 return HTMLTokenContext.VALUE;
 
