@@ -593,10 +593,16 @@ public class BaseOptions extends OptionSupport {
     }
     
     public void setIndentEngine(IndentEngine eng) {
-        // To force serialization of the handle instead of service type
-        putProperty(INDENT_ENGINE_PROP, new ServiceType.Handle(eng), false);
-        
-        refreshIndentEngineSettings();
+        /* Disabled direct setting of the engine
+         * during project deserialization to avoid doubled
+         * indent engine as described in #9687
+         */
+        if (!isReadExternal()) {
+            // To force serialization of the handle instead of service type
+            putProperty(INDENT_ENGINE_PROP, new ServiceType.Handle(eng), false);
+            
+            refreshIndentEngineSettings();
+        }
     }
 
     private void refreshIndentEngineSettings() {
