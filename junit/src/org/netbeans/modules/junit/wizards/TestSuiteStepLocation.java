@@ -73,20 +73,22 @@ class TestSuiteStepLocation implements WizardDescriptor.Panel {
                         GuiUtils.CHK_HINTS}));
         chkCodeHints = chkBoxes[0];
 
-        JComponent box = new SelfResizingPanel();
+        JComponent bottomPanel = new SelfResizingPanel();
+        bottomPanel.setLayout(new BorderLayout(0, 24));
+        bottomPanel.add(infoLabel, BorderLayout.NORTH);
+        JComponent box = new JPanel();
         box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
-        box.add(infoLabel);
-        box.add(Box.createVerticalStrut(24));
         box.add(optCode);
         box.add(Box.createVerticalStrut(11));
         box.add(optComments);
+        bottomPanel.add(box, BorderLayout.CENTER);
         
         /* tune layout of the components within the box: */
         infoLabel.setAlignmentX(0.0f);
         optCode.setAlignmentX(0.0f);
         optComments.setAlignmentX(0.0f);
      
-        return box;
+        return bottomPanel;
     }
 
     public void addChangeListener(ChangeListener l) {
