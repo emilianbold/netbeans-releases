@@ -2222,6 +2222,7 @@
 		infoclass = org.netbeans.modules.db.explorer.infos.ProcedureNodeInfo;
 		iconbase = "/org/netbeans/modules/db/resources/procedure";
 		resultset = (catalog,schema,name,reserved1,reserverd2,reserverd3,remarks,type);
+		children = ();
 		options = {
 			cut = NO;
 			copy = NO;
