@@ -33,7 +33,6 @@ import org.openide.loaders.UniFileLoader;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
 
-import org.apache.tools.ant.module.loader.AntCompilerSupport;
 import org.openide.util.NbBundle;
 
 /** Data Loader class for XTest Workspace Script Data Object

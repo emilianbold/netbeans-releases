@@ -22,6 +22,8 @@ package org.netbeans.modules.testtools;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.openide.ServiceType;
 import org.openide.util.HelpCtx;
@@ -39,10 +41,14 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
 
 import org.apache.tools.ant.module.api.AntProjectCookie;
-import org.apache.tools.ant.module.nodes.AntProjectNode;
-import org.apache.tools.ant.module.xml.AntProjectSupport;
-import org.apache.tools.ant.module.loader.AntCompilerSupport;
+import org.openide.loaders.CompilerSupport;
+import org.openide.loaders.DataNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.WeakListener;
+import org.w3c.dom.Element;
 
 /** Data Object class representing XTest Workspace Build Script
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
@@ -62,7 +68,7 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
         CookieSet cookies = getCookieSet();
         cookies.add(new XTestEditorSupport(this));
         FileObject prim = getPrimaryFile();
-        AntProjectCookie proj = new AntProjectSupport(prim);
+        AntProjectCookie proj = new XTestProjectSupport(prim);
         cookies.add(proj);
         if(proj.getFile() != null) {
             MultiDataObject.Entry pe = getPrimaryEntry();
@@ -118,7 +124,7 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
     public void propertyChange(PropertyChangeEvent ev) {
         String prop = ev.getPropertyName();
         if(prop == null || prop.equals(DataObject.PROP_PRIMARY_FILE)) {
-           ((AntProjectSupport) getCookie(AntProjectSupport.class)).setFileObject(getPrimaryFile());
+           ((XTestProjectSupport) getCookie(XTestProjectSupport.class)).setFileObject(getPrimaryFile());
         }
     }
     
@@ -141,7 +147,7 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
     }
     
     /** Compiler Support class for XTestDataObject */    
-    public static class XTestCompilerSupport extends AntCompilerSupport {
+    public static class XTestCompilerSupport extends CompilerSupport {
 
         /** creates new XTestCompilerSupport
          * @param entry MultiDataObject.Entry
@@ -197,20 +203,28 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
     }
     
     /** Node class representing XTEstDataObject */    
-    public static class XTestNode extends AntProjectNode {
+    public static class XTestNode extends DataNode implements ChangeListener {
         /** creates new XTestNode for given DataObject
          * @param obj DataObject */        
         public XTestNode (DataObject obj) {
-            super(obj);
+            super(obj, Children.LEAF);
+            AntProjectCookie cookie=(AntProjectCookie)obj.getCookie(AntProjectCookie.class);
+            cookie.addChangeListener(WeakListener.change(this, cookie));
         }
 
         public Image getIcon(int type) {
-            AntProjectCookie cookie = (AntProjectCookie)getDataObject().getCookie(AntProjectCookie.class);
+            AntProjectCookie.ParseStatus cookie = (AntProjectCookie.ParseStatus)getDataObject().getCookie(AntProjectCookie.ParseStatus.class);
+            if (cookie.getFile() == null && cookie.getFileObject() == null) {
+                return errIcon;
+            }
+            if (!cookie.isParsed()) {
+                return icon;
+            }
             Throwable exc = cookie.getParseException();
             if (exc != null) {
-                return errIcon; // NOI18N
+                return errIcon;
             } else {
-                return icon; // NOI18N
+                return icon;
             }
         }
 
@@ -222,6 +236,86 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
          * @return HelpCtx */    
         public HelpCtx getHelpCtx() {
             return new HelpCtx(XTestNode.class);
+        }
+
+        public String getShortDescription() {
+            AntProjectCookie cookie = (AntProjectCookie)getDataObject().getCookie(AntProjectCookie.class);
+            if (cookie.getFile() == null && cookie.getFileObject() == null) {
+                // Script has been invalidated perhaps? Don't continue, we would
+                // just get an NPE from the getParseException.
+                return super.getShortDescription();
+            }
+            Throwable exc = cookie.getParseException();
+            if (exc != null) {
+                String m = exc.getLocalizedMessage();
+                if (m != null) {
+                     return m;
+                } else {
+                    return exc.toString();
+                }
+            } else {
+                Element pel = cookie.getProjectElement();
+                if (pel != null) {
+                    String projectName = pel.getAttribute("name"); // NOI18N
+                    if (!projectName.equals("")) { // NOI18N
+                        // Set the node description in the IDE to the name of the project
+                        return NbBundle.getMessage(XTestDataObject.class, "LBL_named_script_description", projectName);
+                    } else {
+                        // No name specified, OK.
+                        return NbBundle.getMessage(XTestDataObject.class, "LBL_anon_script_description");
+                    }
+                } else {
+                    // ???
+                    return super.getShortDescription();
+                }
+            }
+        }
+
+        protected Sheet createSheet() {  
+            Sheet sheet = super.createSheet();
+
+/*
+            // Make sure there is a "Properties" set: // NOI18N
+            Sheet.Set props = sheet.get(Sheet.PROPERTIES); // get by name, not display name
+            if (props == null)  {
+                props = Sheet.createPropertiesSet ();
+                sheet.put(props);
+            }
+            add2Sheet (props);
+*/
+            Sheet.Set exec = new Sheet.Set ();
+            exec.setName ("execution"); // NOI18N
+            exec.setDisplayName (NbBundle.getMessage (XTestDataObject.class, "LBL_execution"));
+            exec.setShortDescription (NbBundle.getMessage (XTestDataObject.class, "HINT_execution"));
+            CompilerSupport csupp = (CompilerSupport) getCookie (CompilerSupport.class);
+            if (csupp != null) csupp.addProperties (exec);
+            ExecutionSupport xsupp = (ExecutionSupport) getCookie (ExecutionSupport.class);
+            if (xsupp != null) xsupp.addProperties (exec);
+            exec.remove (ExecutionSupport.PROP_FILE_PARAMS);
+            if (csupp != null || xsupp != null) {
+                sheet.put (exec);
+            }
+            return sheet;
+        }
+
+        public void stateChanged (ChangeEvent ev) {
+            fireIconChange();
+            fireOpenedIconChange();
+            fireShortDescriptionChange(null, null);
+            fireCookieChange();
+            firePropertyChange (null, null, null);
+        }
+
+        /** Returns true if the Antscript represented by the passed cookie is read-only. */
+        public static boolean isScriptReadOnly(AntProjectCookie cookie) {
+            if (cookie != null) {
+                if (cookie.getFileObject() != null) {
+                    return cookie.getFileObject().isReadOnly();
+                } else if (cookie.getFile() != null) {
+                    return ! cookie.getFile().canWrite();
+                }
+            }
+            return true;
         }
     }
     

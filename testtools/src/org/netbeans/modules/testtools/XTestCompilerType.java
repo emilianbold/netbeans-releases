@@ -41,12 +41,11 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.compiler.CompilerGroup;
 import org.openide.compiler.ProgressEvent;
 
-import org.apache.tools.ant.module.run.AntCompiler;
-import org.apache.tools.ant.module.run.TargetExecutor;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.netbeans.modules.testtools.wizards.WizardIterator;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
 
@@ -240,15 +239,18 @@ public class XTestCompilerType extends CompilerType {
     }        
 
     /** class representing Compiler for XTest Workspace Build Script */    
-    public static  class XTestCompiler extends AntCompiler {
+    public static  class XTestCompiler extends Compiler {
         private Properties props;
+        private AntProjectCookie pcookie;
+        private String target;
 
         /** creates new XTestCompiler
          * @param cookie AntProjectCookie of compiled Data Object
          * @param target String name of target to be called for compilation
          * @param props additional Properties for compilation */        
-        public XTestCompiler (AntProjectCookie cookie, String target, Properties props) {
-            super(cookie, target);
+        public XTestCompiler (AntProjectCookie pcookie, String target, Properties props) {
+            this.pcookie = pcookie;
+            this.target = target;
             this.props=props;
         }
 
@@ -260,6 +262,37 @@ public class XTestCompilerType extends CompilerType {
 
         Properties getProperties() {
             return props;
+        }
+
+        public boolean equals (Object o) {
+            if (! (o instanceof XTestCompiler)) return false;
+            XTestCompiler other = (XTestCompiler) o;
+            return pcookie.equals (other.pcookie) &&
+                Utilities.compareObjects (target, other.target);
+        }
+
+        public int hashCode () {
+            return 4882 ^
+                pcookie.hashCode () ^
+                ((target == null) ? 0 : target.hashCode ());
+        }
+
+        public String toString () {
+            // For debugging e.g. #10585:
+            return "XTestCompiler[project=" + pcookie + ",target=" + target + "]"; // NOI18N
+        }
+
+        public AntProjectCookie getProjectCookie () {
+            return pcookie;
+        }
+
+        public String getTarget () {
+            return target;
+        }
+
+        public boolean isUpToDate () {
+            // Only Ant knows for sure:
+            return false;
         }
     }
     

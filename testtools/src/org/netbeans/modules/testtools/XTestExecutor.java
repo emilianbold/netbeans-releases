@@ -36,7 +36,6 @@ import org.openide.execution.ExecInfo;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 
-import org.apache.tools.ant.module.run.TargetExecutor;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.netbeans.modules.testtools.wizards.WizardIterator;
 import org.openide.util.NbBundle;

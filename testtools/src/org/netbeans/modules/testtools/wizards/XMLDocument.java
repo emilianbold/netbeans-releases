@@ -37,7 +37,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.xml.EntityCatalog;
 
 import org.apache.tools.ant.module.api.AntProjectCookie;
-import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.xml.sax.SAXException;
 
 /**
