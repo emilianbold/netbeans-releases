@@ -45,6 +45,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         
         J2SESourceRootsUi.EditMediator emSR = J2SESourceRootsUi.registerEditMediator(
             (J2SEProject)uiProperties.getProject(),
+            ((J2SEProject)uiProperties.getProject()).getSourceRoots(),
             sourceRoots,
             addSourceRoot,
             removeSourceRoot, 
@@ -53,6 +54,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         
         J2SESourceRootsUi.EditMediator emTSR = J2SESourceRootsUi.registerEditMediator(
             (J2SEProject)uiProperties.getProject(),
+            ((J2SEProject)uiProperties.getProject()).getTestSourceRoots(),
             testRoots,
             addTestRoot,
             removeTestRoot, 

@@ -59,25 +59,15 @@ final class J2SESourceRootsUi {
         URL[] rootURLs = roots.getRootURLs();
         Object[][] data = new Object[rootURLs.length] [2];
         for (int i=0; i< rootURLs.length; i++) {
-            data[i][0] = new File (URI.create (rootURLs[i].toExternalForm()));
-            if (rootLabels[i].length()>0) {
-                data[i][1] = rootLabels[i];
-            }
-            else if ( "src.dir".equals(rootProps[i])) {   //NOI18N
-                data[i][1] = SourceRoots.DEFAULT_SOURCE_LABEL;
-            }
-            else if ( "test.src.dir".equals(rootProps[i])) { //NOI18N
-                data[i][1] = SourceRoots.DEFAULT_TEST_LABEL;
-            }
-            else {
-                data[i][1] = ""; //NOI18N
-            }
+            data[i][0] = new File (URI.create (rootURLs[i].toExternalForm()));            
+            data[i][1] = roots.getRootDisplayName(rootLabels[i], rootProps[i]);
         }
         return new SourceRootsModel(data);
                 
     }
     
     public static EditMediator registerEditMediator( J2SEProject master,
+                                             SourceRoots sourceRoots,
                                              JTable rootsList,
                                              JButton addFolderButton,
                                              JButton removeButton,
@@ -85,6 +75,7 @@ final class J2SESourceRootsUi {
                                              JButton downButton) {
         
         EditMediator em = new EditMediator( master,
+                                            sourceRoots,
                                             rootsList,
                                             addFolderButton,
                                             removeButton,
@@ -127,12 +118,14 @@ final class J2SESourceRootsUi {
         final JButton upButton;
         final JButton downButton;
         private final Project project;
+        private final SourceRoots sourceRoots;
         private final Set ownedFolders;
         private DefaultTableModel rootsModel;
         private EditMediator relatedEditMediator;
 
         
         public EditMediator( J2SEProject master,
+                             SourceRoots sourceRoots,
                              JTable rootsList,
                              JButton addFolderButton,
                              JButton removeButton,
@@ -151,6 +144,7 @@ final class J2SESourceRootsUi {
             this.ownedFolders = new HashSet();
 
             this.project = master;
+            this.sourceRoots = sourceRoots;
 
             this.ownedFolders.clear();
             this.rootsModel = (DefaultTableModel)rootsList.getModel();
@@ -279,7 +273,7 @@ final class J2SESourceRootsUi {
                 }
                 else {
                     int current = lastIndex + 1 + i;
-                    rootsModel.insertRow( current, new Object[] {normalizedFile,""}); //NOI18N
+                    rootsModel.insertRow( current, new Object[] {normalizedFile, sourceRoots.createInitialDisplayName(normalizedFile)}); //NOI18N
                     selectionModel.addSelectionInterval(current,current);
                     this.ownedFolders.add (normalizedFile);
                 }

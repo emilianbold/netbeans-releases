@@ -69,69 +69,22 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
     }
 
     private Sources initSources() {
-        final SourcesHelper h = new SourcesHelper(helper, evaluator);   //Safe to pass APH
-        File projectDir = FileUtil.toFile(this.helper.getProjectDirectory());
+        final SourcesHelper h = new SourcesHelper(helper, evaluator);   //Safe to pass APH        
         String[] propNames = sourceRoots.getRootProperties();
         String[] rootNames = sourceRoots.getRootNames();
         for (int i = 0; i < propNames.length; i++) {
             String displayName = rootNames[i];
-            String prop = "${" + propNames[i] + "}";
-            if (displayName.length() ==0) {
-                //If the prop is src.dir use the default name
-                if ("src.dir".equals(propNames[i])) {   //NOI18N
-                    displayName = SourceRoots.DEFAULT_SOURCE_LABEL;
-                }
-                else {
-                    //If the name is not given, it should be either a relative path in the project dir
-                    //or absolute path when the root is not under the project dir
-                    File sourceRoot = helper.resolveFile(evaluator.evaluate(prop));
-                    if (sourceRoot != null) {
-                        String srPath = sourceRoot.getAbsolutePath();
-                        String pdPath = projectDir.getAbsolutePath() + File.separatorChar;
-                        if (srPath.startsWith(pdPath)) {
-                            displayName = srPath.substring(pdPath.length());
-                        }
-                        else {
-                            displayName = sourceRoot.getAbsolutePath();
-                        }
-                    }
-                    else {
-                        displayName = SourceRoots.DEFAULT_SOURCE_LABEL;
-                    }
-                }
-            }
+            displayName = sourceRoots.getRootDisplayName(displayName, propNames[i]);
+            String prop = "${" + propNames[i] + "}";            
             h.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
             h.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
         }
         propNames = testRoots.getRootProperties();
         rootNames = testRoots.getRootNames();
         for (int i = 0; i < propNames.length; i++) {
-            String displayName = rootNames[i];
+            String displayName = rootNames[i];            
+            displayName = testRoots.getRootDisplayName(displayName, propNames[i]);
             String prop = "${" + propNames[i] + "}";
-            if (displayName.length() ==0) {
-                //If the prop is test.src.dir use the default name
-                if ("test.src.dir".equals(propNames[i])) {   //NOI18N
-                    displayName = SourceRoots.DEFAULT_TEST_LABEL;
-                }
-                else {
-                    //If the name is not given, it should be either a relative path in the project dir
-                    //or absolute path when the root is not under the project dir
-                    File sourceRoot = helper.resolveFile(evaluator.evaluate(prop));
-                    if (sourceRoot != null) {
-                        String srPath = sourceRoot.getAbsolutePath();
-                        String pdPath = projectDir.getAbsolutePath() + File.separatorChar;
-                        if (srPath.startsWith(pdPath)) {
-                            displayName = srPath.substring(pdPath.length());
-                        }
-                        else {
-                            displayName = sourceRoot.getAbsolutePath();
-                        }
-                    }
-                    else {
-                        displayName = SourceRoots.DEFAULT_TEST_LABEL;
-                    }
-                }
-            }
             h.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
             h.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
         }

@@ -70,6 +70,8 @@ public final class SourceRoots {
     private List/*<URL>*/ sourceRootURLs;
     private final PropertyChangeSupport support;
     private final ProjectMetadataListener listener;
+    private final boolean isTest;
+    private final File projectDir;
 
     /**
      * Creates new SourceRoots
@@ -78,13 +80,15 @@ public final class SourceRoots {
      * @param elementName the name of XML element under which are declared the roots
      * @param newRootNameTemplate template for new property name of source root
      */
-    SourceRoots (UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper, String elementName, String newRootNameTemplate) {
+    SourceRoots (UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper, String elementName, boolean isTest, String newRootNameTemplate) {
         assert helper != null && evaluator != null && refHelper != null && elementName != null && newRootNameTemplate != null;
         this.helper = helper;
         this.evaluator = evaluator;
         this.refHelper = refHelper;
         this.elementName = elementName;
-        this.newRootNameTemplate = newRootNameTemplate;
+        this.isTest = isTest;
+        this.newRootNameTemplate = newRootNameTemplate;        
+        this.projectDir = FileUtil.toFile(this.helper.getAntProjectHelper().getProjectDirectory());
         this.support = new PropertyChangeSupport(this);
         this.listener = new ProjectMetadataListener();
         this.evaluator.addPropertyChangeListener (WeakListeners.propertyChange(this.listener,this.evaluator));
@@ -286,8 +290,7 @@ public final class SourceRoots {
                             Element newRootNode = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root"); //NOI18N
                             newRootNode.setAttribute("id",rootName);    //NOI18N
                             String label = (String) newRoots2lab.get (newRoot);
-                            if (label != null && label.length()>0 &&
-                               !((label.equals(DEFAULT_SOURCE_LABEL) && "src.dir".equals(rootName))||(label.equals(DEFAULT_TEST_LABEL) && "test.src.dir".equals(rootName)))) { //NOI18N
+                            if (label != null && label.length()>0 && !label.equals (getRootDisplayName(null,rootName))) { //NOI18N
                                 newRootNode.setAttribute("name",label); //NOI18N
                             }
                             ownerElement.appendChild (newRootNode);
@@ -297,6 +300,49 @@ public final class SourceRoots {
                     }
                 }
         );
+    }
+    
+    /**
+     * Translates root name into display name of source/test root
+     * @param rootName the name of root got from {@link SourceRoots#getRootNames}
+     * @param propName the name of property the root is stored in
+     * @return the label to be displayed
+     */
+    public String getRootDisplayName (String rootName, String propName) {
+        if (rootName == null || rootName.length() ==0) {
+            //If the prop is src.dir use the default name
+            if (isTest && "test.src.dir".equals(propName)) {    //NOI18N
+                rootName = DEFAULT_TEST_LABEL;
+            }
+            else if (!isTest && "src.dir".equals(propName)) {   //NOI18N
+                rootName = DEFAULT_SOURCE_LABEL;
+            }
+            else {
+                //If the name is not given, it should be either a relative path in the project dir
+                //or absolute path when the root is not under the project dir
+                File sourceRoot = helper.getAntProjectHelper().resolveFile(evaluator.getProperty(propName));
+                rootName = createInitialDisplayName(sourceRoot);                
+            }
+        }
+        return rootName;
+    }
+    
+    public String createInitialDisplayName (File sourceRoot) {
+        String rootName;
+        if (sourceRoot != null) {
+        String srPath = sourceRoot.getAbsolutePath();
+        String pdPath = projectDir.getAbsolutePath() + File.separatorChar;
+        if (srPath.startsWith(pdPath)) {
+            rootName = srPath.substring(pdPath.length());
+        }
+        else {
+            rootName = sourceRoot.getAbsolutePath();
+        }
+        }
+        else {
+            rootName = isTest ? DEFAULT_TEST_LABEL : DEFAULT_SOURCE_LABEL;
+        }
+        return rootName;
     }
 
     private void resetCache (boolean isXMLChange, String propName) {
