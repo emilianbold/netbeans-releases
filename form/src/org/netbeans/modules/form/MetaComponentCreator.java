@@ -516,7 +516,7 @@ public class MetaComponentCreator {
                                         FormUtils.cloneObject(auxValue));
                 }
                 catch (Exception e) { // ignore problem with aux value
-                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
 
@@ -563,40 +563,48 @@ public class MetaComponentCreator {
             if (!initComponentInstance(newMetaComp, source))
                 return null;
 
-            // initialize layout support (if the new component is a container)
-            if (newMetaCont != null) {
-                boolean layoutInitialized = false;
-                Throwable layoutEx = null;
-                try {
-                    layoutInitialized = newMetaCont.getLayoutSupport()
-                                          .initializeLayoutDelegate(false);
+            if (newMetaCont == null)
+                break; // not a container, the component is done
+
+            // initialize layout support (the new component is a container)
+            boolean layoutInitialized = false;
+            Throwable layoutEx = null;
+            try {
+                layoutInitialized = newMetaCont.getLayoutSupport()
+                                      .initializeLayoutDelegate(false);
+            }
+            catch (RuntimeException ex) { // silently ignore, try again as non-container
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                newMetaComp.removeCodeExpression(); // created in initComponentInstance
+                newMetaComp = null;
+                newMetaCont = null;
+                continue;
+            }
+            catch (Exception ex) {
+                layoutEx = ex;
+            }
+            catch (LinkageError ex) {
+                layoutEx = ex;
+            }
+
+            if (!layoutInitialized) {
+                if (layoutEx == null) {
+                    // no LayoutSupportDelegate found for the container
+                    TopManager.getDefault().notify(
+                        new NotifyDescriptor.Message(
+                            FormUtils.getBundleString(
+                                        "MSG_ERR_NoLayoutSupportFound2"), // NOI18N
+                        NotifyDescriptor.WARNING_MESSAGE));
                 }
-                catch (Exception ex) {
-                    layoutEx = ex;
-                }
-                catch (LinkageError ex) {
-                    layoutEx = ex;
+                else { // layout support initialization failed
+                    ErrorManager em = ErrorManager.getDefault();
+                    em.annotate(
+                        layoutEx, 
+                        FormUtils.getBundleString("MSG_ERR_LayoutInitFailed2")); // NOI18N
+                    em.notify(layoutEx);
                 }
 
-                if (!layoutInitialized) {
-                    if (layoutEx == null) {
-                        // no LayoutSupportDelegate found for the container
-                        TopManager.getDefault().notify(
-                            new NotifyDescriptor.Message(
-                                FormUtils.getBundleString(
-                                            "MSG_ERR_NoLayoutSupportFound2"), // NOI18N
-                            NotifyDescriptor.WARNING_MESSAGE));
-                    }
-                    else { // layout support initialization failed
-                        ErrorManager em = ErrorManager.getDefault();
-                        em.annotate(
-                            layoutEx, 
-                            FormUtils.getBundleString("MSG_ERR_LayoutInitFailed2")); // NOI18N
-                        em.notify(layoutEx);
-                    }
-
-                    newMetaCont.getLayoutSupport().setUnknownLayoutDelegate(false);
-                }
+                newMetaCont.getLayoutSupport().setUnknownLayoutDelegate(false);
             }
         }
 
@@ -638,7 +646,7 @@ public class MetaComponentCreator {
             }
             catch (RuntimeException ex) {
                 // LayoutSupportDelegate may not accept the component
-                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 return null;
             }
         }
@@ -808,10 +816,10 @@ public class MetaComponentCreator {
             FormUtils.copyProperties(sourceProps, targetProps, copyMode);
         }
         catch (Exception ex) { // ignore
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         catch (LinkageError ex) { // ignore
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
 
         return targetComp;
@@ -879,10 +887,10 @@ public class MetaComponentCreator {
             setComponentBorderProperty(designBorder, targetComp);
         }
         catch (Exception ex) { // ignore
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         catch (LinkageError ex) { // ignore
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
 
         return targetComp;
@@ -1017,12 +1025,12 @@ public class MetaComponentCreator {
         }
         catch (Exception ex) {
             // report exception...
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return null;
         }
         catch (LinkageError ex) {
             // report exception...
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return null;
         }
     }
