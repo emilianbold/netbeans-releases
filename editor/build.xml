@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compile">
     <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
-       <pathelement location="../core/release/lib/ext/regexp.jar"/>
+       <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
       </classpath>
     </javac>
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
        <pathelement location="libsrc"/>
        <pathelement location="../openide/netbeans/lib/openide.jar"/>
        <pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
-       <pathelement location="../core/release/lib/ext/regexp.jar"/>
+       <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
       </classpath>
     </javac>
   </target>
