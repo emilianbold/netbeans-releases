@@ -54,25 +54,6 @@ public class JSPVariablesFilter implements TreeModelFilter {
 
     
     
-    /**
-     * 
-     * Returns filtered children for given parent on given indexes.
-     * Typically you should get original nodes 
-     * (<code>original.getChildren (...)</code>), and modify them, or return
-     * it without modifications. You should not throw UnknownTypeException
-     * directly from this method!
-     * 
-     * @param   original the original tree model
-     * @param   parent a parent of returned nodes
-     * @throws  NoInformationException if the set of children can not be 
-     *          resolved
-     * @throws  ComputingException if the children resolving process 
-     *          is time consuming, and will be performed off-line 
-     * @throws  UnknownTypeException this exception can be thrown from 
-     *          <code>original.getChildren (...)</code> method call only!
-     * 
-     * @return  children for given parent on given indexes
-     */
     public Object[] getChildren(TreeModel original, Object parent, int from, int to)
         throws UnknownTypeException
     {
@@ -169,20 +150,6 @@ public class JSPVariablesFilter implements TreeModelFilter {
         return visibleChildren;
     }
 
-    /**
-     * Returns number of filterred children for given node.
-     * 
-     * @param   original the original tree model
-     * @param   node the parent node
-     * @throws  NoInformationException if the set of children can not be 
-     *          resolved
-     * @throws  ComputingException if the children resolving process 
-     *          is time consuming, and will be performed off-line 
-     * @throws  UnknownTypeException if this TreeModel implementation is not
-     *          able to resolve children for given node type
-     * 
-     * @return  true if node is leaf
-     */
     public int getChildrenCount(TreeModel original, Object node) 
         throws UnknownTypeException
     {
@@ -205,7 +172,7 @@ public class JSPVariablesFilter implements TreeModelFilter {
                 else if (!(var instanceof This))
                     countVisible--;
             }
-            //fold implicit locals and request/session/application attributes in a special nodes
+            //fold implicit locals and request/session/application attributes in the special nodes
             countVisible += 4;
         }
 /*        
@@ -241,8 +208,6 @@ public class JSPVariablesFilter implements TreeModelFilter {
         else if (node instanceof ImplicitLocals)
             countVisible = ((ImplicitLocals)node).getLocals().size();
         else if (node instanceof AttributeMap)
-            //TODO
-//            countVisible = ((AttributeMap)node).size();
             countVisible = ((AttributeMap)node).getAttributes().size();
         else if (node instanceof AttributeMap.Attribute)
             countVisible = original.getChildrenCount(((AttributeMap.Attribute)node).getValue());
@@ -377,7 +342,6 @@ public class JSPVariablesFilter implements TreeModelFilter {
     }
     
     public static class AttributeMap {// extends java.util.HashMap {
-        //TODO inherit or delegate?
         private ArrayList attributes = new ArrayList();
         private ObjectVariable owner = null;
         private String ownerName = null;
@@ -389,7 +353,6 @@ public class JSPVariablesFilter implements TreeModelFilter {
             while (it.hasNext()) {
                 Attribute attribute = (Attribute)it.next();
                 attributes.add(attribute);
-//                put(attribute.getName(), attribute.getValue());
             }
         }
 
