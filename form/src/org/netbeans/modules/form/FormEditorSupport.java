@@ -721,7 +721,7 @@ public class FormEditorSupport extends JavaEditor
         MultiViewPerspective[] mvps = handler.getPerspectives();
         for (int i=0; i < mvps.length; i++) {
             if (mvps[i] == handler.getSelectedPerspective()) {
-                elementToOpen = i;
+                elementToOpen = i; // remember selected element
                 break;
             }
         }
@@ -730,11 +730,15 @@ public class FormEditorSupport extends JavaEditor
 
         org.openide.util.Task docLoadTask = super.reloadDocumentTask();
 
-        openCloneableTopComponent();
-
-        multiviewTC.requestActive();
-        handler = MultiViews.findMultiViewHandler(multiviewTC);
-        handler.requestActive(handler.getPerspectives()[elementToOpen]);
+        // after reloading is done, open the form editor again
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                openCloneableTopComponent();
+                multiviewTC.requestActive();
+                MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
+                handler.requestActive(handler.getPerspectives()[elementToOpen]);
+            }
+        });
 
         return docLoadTask;
     }
