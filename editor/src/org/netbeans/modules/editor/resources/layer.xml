@@ -274,12 +274,7 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
                     <attr name="Separator8.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
 
-                    <attr name="org-openide-actions-DeleteAction.instance/Separator9.instance" boolvalue="true"/>
-
-                    <file name="Separator9.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="Separator9.instance/org-openide-actions-NewAction.instance" boolvalue="true"/>
+                    <attr name="SeparatorAfterDelete.instance/org-openide-actions-NewAction.instance" boolvalue="true"/>
 
                     <file name="org-openide-actions-NewAction.instance"/>
                     <attr name="org-openide-actions-NewAction.instance/Separator10.instance" boolvalue="true"/>
