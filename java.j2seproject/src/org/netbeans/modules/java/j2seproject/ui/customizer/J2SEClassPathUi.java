@@ -83,7 +83,7 @@ public class J2SEClassPathUi {
         private static Icon ICON_ARTIFACT  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
         private static Icon ICON_CLASSPATH  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
 
-        
+                
         // Contains well known paths in the J2SEProject
         private static final Map WELL_KNOWN_PATHS_NAMES = new HashMap();
         static {
@@ -115,7 +115,7 @@ public class J2SEClassPathUi {
                     return item.getLibrary().getDisplayName();
                     // return NbBundle.getMessage(VisualClassPathItem.class, "LBL_MISSING_LIBRARY", getLibraryName(getRaw()));
                 case ClassPathSupport.Item.TYPE_CLASSPATH:
-                    String name = (String)WELL_KNOWN_PATHS_NAMES.get( item.getReference() );
+                    String name = (String)WELL_KNOWN_PATHS_NAMES.get( J2SEProjectProperties.getAntPropertyName( item.getReference() ) );
                     return name == null ? item.getReference() : name;
                 case ClassPathSupport.Item.TYPE_ARTIFACT:
                     return item.getArtifactURI().toString();
@@ -164,9 +164,9 @@ public class J2SEClassPathUi {
                 ICON_FOLDER = new ImageIcon( dataFolder.getNodeDelegate().getIcon( BeanInfo.ICON_COLOR_16x16 ) );            
             }
 
-            return ICON_FOLDER;
-   
+            return ICON_FOLDER;   
         }
+        
         
     }
     
