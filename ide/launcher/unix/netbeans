@@ -36,6 +36,21 @@ if [ -f /etc/netbeans.conf ] ; then
     . /etc/netbeans.conf
 fi
 
+args="$@"
+
+userdir=${netbeans_default_userdir}
+while [ $# -gt 0 ] ; do
+    case "$1" in
+        --userdir) shift; if [ $# -gt 0 ] ; then userdir=$1; fi
+            ;;
+    esac
+    shift
+done
+
+if [ -f "${userdir}"/etc/netbeans.conf ] ; then
+    . "${userdir}"/etc/netbeans.conf
+fi
+
 if [ -z "$netbeans_clusters" ] ; then
     netbeans_clusters="$progdir/../nb4.0:$progdir/../ide4"
     if [ -d "$progdir/../extra" ]; then
@@ -56,19 +71,19 @@ case "`uname`" in
             "-J-Xdock:icon=$progdir/../nb4.0/netbeans.icns" \
             --branding nb \
             --clusters "$netbeans_clusters" \
-            --userdir "${netbeans_default_userdir}" \
+            --userdir "${userdir}" \
             -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \
             ${netbeans_default_options} \
-            "$@"
+            $args
         ;;
     *)
         "$progdir"/../platform4/lib/nbexec \
             --jdkhome "$netbeans_jdkhome" \
             --branding nb \
             --clusters "$netbeans_clusters" \
-            --userdir "${netbeans_default_userdir}" \
+            --userdir "${userdir}" \
             -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \
             ${netbeans_default_options} \
-            "$@"
+            $args
         ;;
 esac

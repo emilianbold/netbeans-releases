@@ -9,15 +9,14 @@
 # 
 # The Original Code is Forte for Java, Community Edition. The Initial
 # Developer of the Original Code is Sun Microsystems, Inc. Portions
-# Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
+# Copyright 1997-2004 Sun Microsystems, Inc. All Rights Reserved.
 #
-
-JDK_HOME = c:\j2sdk1.4.2_04
 
 LIBS = advapi32.lib user32.lib
 
+CFLAGS = -nologo -W4
 !ifdef DEBUG
-CFLAGS = $(CFLAGS) -Zi
+    CFLAGS = $(CFLAGS) -Zi
 !endif
 
 all : netbeans.exe nb.exe
