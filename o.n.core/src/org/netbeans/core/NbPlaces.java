@@ -66,6 +66,19 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     return DataSystem.getDataSystem (f);
   }
 
+  /** Node with all installed loaders.
+  */
+  public Node loaderPool () {
+    return LoaderPoolNode.getLoaderPoolNode ();
+  }
+
+  /** Environment node. Place for all transient information about
+  * the IDE.
+  */
+  public Node environment () {
+    return EnvironmentNode.getDefault ();
+  }
+  
   /** Control panel
   */
   public Node controlPanel () {
@@ -128,6 +141,8 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  6    Gandalf   1.5         1/25/99  Jaroslav Tulach Added default project, 
+*       its desktop and changed default explorer in Main.
 *  5    Gandalf   1.4         1/25/99  David Peroutka  support for menus and 
 *       toolbars
 *  4    Gandalf   1.3         1/20/99  Jaroslav Tulach 

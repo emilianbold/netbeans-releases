@@ -40,14 +40,15 @@ import com.netbeans.developer.impl.actions.*;
 *
 * @author Petr Hamernik, Dafe Simonek
 */
-public final class EnvironmentNode extends AbstractNode {
+final class EnvironmentNode extends AbstractNode {
   /** generated Serialized Version UID */
   static final long serialVersionUID = 4782447107972624693L;
   /** icon base for icons of this node */
-  private static final String EN_ICON_BASE =
-    "/com/netbeans/developer/impl/resources/environment";
-  /** Array of actions in popup menu of this node */
-  private static SystemAction[] staticActions;
+  private static final String EN_ICON_BASE = "/com/netbeans/developer/impl/resources/environment";
+
+  /** base instance of the node */
+  private static EnvironmentNode node;
+  
 
   /** used during deserialization */
   private transient Node[] ret;
@@ -55,9 +56,17 @@ public final class EnvironmentNode extends AbstractNode {
   private Node paletteContextNode;
 
   /** Constructor */
-  public EnvironmentNode () {
+  private EnvironmentNode () {
     super (new Children.Array());
     initialize();
+  }
+
+  /** Default instance */
+  public static synchronized Node getDefault () {
+    if (node == null) {
+      node = new EnvironmentNode ();
+    }
+    return node;
   }
 
   public boolean canRename () {
@@ -135,14 +144,12 @@ public final class EnvironmentNode extends AbstractNode {
   *
   * @return array of system actions that should be in popup menu
   */
-  public SystemAction[] getActions () {
-    if (staticActions == null)
-      staticActions = new SystemAction[] {
-        SystemAction.get(RenameAction.class),
-        null,
-        SystemAction.get(PropertiesAction.class)
-      };
-    return staticActions;
+  public SystemAction[] createActions () {
+    return new SystemAction[] {
+      SystemAction.get(RenameAction.class),
+      null,
+      SystemAction.get(PropertiesAction.class)
+    };
   }
 
   /** serializes the class */
@@ -168,6 +175,8 @@ public final class EnvironmentNode extends AbstractNode {
 
 /*
  * Log
+ *  7    Gandalf   1.6         1/25/99  Jaroslav Tulach Added default project, 
+ *       its desktop and changed default explorer in Main.
  *  6    Gandalf   1.5         1/20/99  Jaroslav Tulach 
  *  5    Gandalf   1.4         1/7/99   Ian Formanek    
  *  4    Gandalf   1.3         1/7/99   Ian Formanek    fixed resource names
