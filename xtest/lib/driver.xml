@@ -124,8 +124,8 @@ Microsystems, Inc. All Rights Reserved.
    <target name="build" depends="actionlist" if="xtest.execute_actions.build">
      <property name="xtest.nobuildxtest" value="true"/>
      <ant dir="${xtest.instance.dir}" target="cleantests"/>
-     <ant dir="${xtest.instance.dir}" target="cleantestdist"/>
-     <ant dir="${xtest.instance.dir}" target="buildtestdist">
+     <ant dir="${xtest.instance.dir}" target="cleantests"/>
+     <ant dir="${xtest.instance.dir}" target="buildtests">
         <property name="xtest.source.location" value="ide"/>
         <property name="netbeans.home" value="${ide.home}"/>
      </ant>
@@ -139,7 +139,7 @@ Microsystems, Inc. All Rights Reserved.
      <property name="xtest.nobuildxtest" value="true"/>
      <ant dir="${xtest.instance.dir}" target="cleanresults"/>
      <ant dir="${xtest.instance.dir}" target="localresults-clean"/>
-     <ant dir="${xtest.instance.dir}" target="runtestsfromdist">
+     <ant dir="${xtest.instance.dir}" target="runtests">
        	<property name="netbeans.home" value="${ide.home}"/>
       	<property name="xtest.mode" value="ide"/>
       	<property name="xtest.noboot" value="true"/>
