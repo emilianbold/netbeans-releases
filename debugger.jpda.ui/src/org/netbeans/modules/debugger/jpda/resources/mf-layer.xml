@@ -63,6 +63,12 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-debugger-ui-actions-FixAction.instance" />
             <file name="org-netbeans-modules-debugger-ui-actions-PopTopmostCallAction.instance" />
         </folder>
+        <folder name="Window">
+            <folder name="Debug">
+                <file name="org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.instance" />
+                <file name="org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance" />
+            </folder>
+        </folder>
     </folder>
 
     <!-- Main menu -->
@@ -163,13 +169,16 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
             </file>
         </folder>
-
         <folder name="Window">
             <folder name="Debug">
-                <attr name="org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.instance/org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.instance" boolvalue="true" />
-                <file name="org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.instance" />
-                <attr name="org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.instance/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance" boolvalue="true" />
-                <file name="org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance" />
+                <attr name="org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.shadow/org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.shadow" boolvalue="true" />
+                <file name="org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.instance"/>
+                </file>
+                <attr name="org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.shadow/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.shadow" boolvalue="true" />
+                <file name="org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance"/>
+                </file>
             </folder>
         </folder>
     </folder>
@@ -207,6 +216,12 @@ Microsystems, Inc. All Rights Reserved.
         </file>
         <file name="CA-DOWN.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-MakeCallerCurrentAction.instance"/>
+        </file>
+        <file name="SA-7.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.instance"/>
+        </file>
+        <file name="SA-8.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance"/>
         </file>
     </folder>
 
