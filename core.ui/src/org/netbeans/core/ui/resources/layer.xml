@@ -11,7 +11,7 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 
 <!-- XML Layer for core-ui -->
 
@@ -116,7 +116,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-actions-UnmountFSAction.instance"/>
             <attr name="org-netbeans-core-actions-UnmountFSAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
             <file name="Separator2[javax-swing-JSeparator].instance"/>
-            <attr name="Separator2[javax-swing-JSeparator].instance/org-openide-actions-SaveAction.instance" boolvalue="true" />7
+            <attr name="Separator2[javax-swing-JSeparator].instance/org-openide-actions-SaveAction.instance" boolvalue="true" />
             <file name="org-openide-actions-SaveAction.instance"/>
             <attr name="org-openide-actions-SaveAction.instance/org-openide-actions-SaveAllAction.instance" boolvalue="true" />
             <file name="org-openide-actions-SaveAllAction.instance"/>
