@@ -51,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- These are the primary targets. -->
 
-  <target name="netbeans" depends="jars,javahelp,copy-to-tomcat4"/>
+  <target name="netbeans" depends="jars,javahelp,copy-to-tomcat5"/>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="monitor.nbm"
@@ -100,7 +100,7 @@ Microsystems, Inc. All Rights Reserved.
     </locjar>
   </target>
 
-  <target name="copy-to-tomcat4" if="tomcat4-bundled" depends="bundled-tomcat4-check">
+  <target name="copy-to-tomcat5" if="tomcat5-bundled" depends="bundled-tomcat5-check">
     <!-- Originally added by Radim Kubacki. This target copies the
     server side component directly to the installed Tomcat server,
     should such a server exist, for release purposes. This makes sense
@@ -112,19 +112,17 @@ Microsystems, Inc. All Rights Reserved.
     The need for this target will be removed when we move the the
     projects based deployment of the monitor. 
     --> 
-    <copy file="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat406/lib/schema2beans.jar"/>
-    <copy file="netbeans/modules/ext/httpmonitor.jar"                      tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat406/lib/httpmonitor.jar"/>
-    <copy file="netbeans/modules/ext/monitor-valve.jar"                    tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat406/server/lib/monitor-valve.jar"/>
+    <copy file="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" tofile="${nb_root}/tomcatint/tomcat5/bundled/netbeans/jakarta-tomcat-5.0.16/common/lib/schema2beans.jar"/>
+    <copy file="netbeans/modules/ext/httpmonitor.jar"                      tofile="${nb_root}/tomcatint/tomcat5/bundled/netbeans/jakarta-tomcat-5.0.16/common/lib/httpmonitor.jar"/>
   </target>
 
-  <target name="bundled-tomcat4-check">
-    <available property="tomcat4-bundled" 
-    file="${nb_root}/tomcatint/bundledtomcat/netbeans/modules/tomcat40-bundled.jar"/>
+  <target name="bundled-tomcat5-check">
+    <available property="tomcat5-bundled" 
+    file="${nb_root}/tomcatint/tomcat5/bundled/netbeans/modules/eager/tomcat5-bundled.jar"/>
   </target>
 
   <target name="compile"
-	  depends="setup-jdkhome, compile-core, compile-server,
-		   compile-catalina"/>
+	  depends="setup-jdkhome, compile-core, compile-server"/>
 
   <target name="compile-core">
     <javac srcdir="src" destdir="src"
@@ -156,6 +154,7 @@ Microsystems, Inc. All Rights Reserved.
      </javac>
   </target>
 
+<!--
   <target name="compile-catalina" if="tomcat4-bundled" depends="bundled-tomcat4-check">
     <javac srcdir="src" destdir="src"
          deprecation="${build.compiler.deprecation}" 
@@ -167,8 +166,9 @@ Microsystems, Inc. All Rights Reserved.
        </classpath>
      </javac>
   </target>
+-->  
 
-  <target name="jars" depends="compile,module-jars,catalina-jar">
+  <target name="jars" depends="compile,module-jars">
   </target>
 
   <target name="module-jars">
@@ -208,13 +208,14 @@ Microsystems, Inc. All Rights Reserved.
     </jar>
   </target>
 
-  <target name="catalina-jar" if="tomcat4-bundled" depends="bundled-tomcat4-check">
- <!-- NOTE: this is not an IDE module. It is deployed on the execution 
+<!--
+  <target name="catalina-jar" if="tomcat5-bundled" depends="bundled-tomcat5-check">
+ - NOTE: this is not an IDE module. It is deployed on the execution 
       server. It will not be deployed correctly if we build a separate 
       version for another language. 
       This jar file will no longer be required when we switch to J2EE
       1.4. 
-   --> 
+   -
   <jar jarfile="netbeans/modules/ext/monitor-valve.jar"
          compress="false">
       <fileset dir="src">
@@ -227,6 +228,7 @@ Microsystems, Inc. All Rights Reserved.
 
     </jar>
   </target>
+-->
 
 </project>
 
