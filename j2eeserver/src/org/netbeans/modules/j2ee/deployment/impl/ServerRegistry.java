@@ -21,6 +21,7 @@ import org.openide.*;
 import org.openide.util.Lookup;
 
 import java.util.*;
+import java.util.logging.*;
 import java.io.IOException;
 
 public final class ServerRegistry implements java.io.Serializable {
@@ -102,23 +103,28 @@ public final class ServerRegistry implements java.io.Serializable {
     class LayerListener implements FileChangeListener {
         
         public void fileAttributeChanged(FileAttributeEvent fae) {
-            //            System.out.println("Attribute changed event");
+            Logger.global.log(Level.FINEST,"Attribute changed event");
         }
         public void fileChanged(FileEvent fe) {
-            //            System.out.println("File changed event");
+            //
+            System.out.println("File changed event");
         }
         public void fileFolderCreated(FileEvent fe) {
-            //            System.out.println("Folder created event");
+            //
+            System.out.println("Folder created event");
         }
         public void fileRenamed(FileRenameEvent fe) {
-            //            System.out.println("File renamed event");
+            //
+            System.out.println("File renamed event");
         }
         
         public void fileDataCreated(FileEvent fe) {
-            //            System.out.println("file created event");
+            //
+            System.out.println("file created event");
         }
         public void fileDeleted(FileEvent fe) {
-            //            System.out.println("file deleted event");
+            //
+            System.out.println("file deleted event");
         }
         
     }
@@ -159,16 +165,40 @@ public final class ServerRegistry implements java.io.Serializable {
         return rep.findResource(INSTALLED_SERVERS_PATH+"/"+url);
     }
     
-    public synchronized void addInstance(String url, String username, String password) throws IOException {
-        Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
-        FileObject dir = rep.findResource(INSTALLED_SERVERS_PATH);
-        String name = FileUtil.findFreeFileName(dir,"instance",null);
-        FileObject fo = dir.createData(name);
-        fo.setAttribute(URL_ATTR, url);
-        fo.setAttribute(USERNAME_ATTR, username);
-        fo.setAttribute(PASSWORD_ATTR, password);
-        // PENDING synchronize this so that the instance isn't created before
-        // the attributes are set?
+    public void addInstance(String url, String username, String password) throws IOException {
+        if(addInstanceImpl(url,username,password)) writeInstanceToFile(url,username,password);
+    }
+    
+    private synchronized void writeInstanceToFile(String url, String username, String password) throws IOException {
+            Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
+            FileObject dir = rep.findResource(INSTALLED_SERVERS_PATH);
+            String name = FileUtil.findFreeFileName(dir,"instance",null);
+            FileObject fo = dir.createData(name);
+            fo.setAttribute(URL_ATTR, url);
+            fo.setAttribute(USERNAME_ATTR, username);
+            fo.setAttribute(PASSWORD_ATTR, password);
+        }
+    
+    private synchronized boolean addInstanceImpl(String url, String username, String password) {
+        if (instances.containsKey(url)) return false;
+        for(Iterator i = servers.values().iterator(); i.hasNext();) {
+            Server server = (Server) i.next();
+            try {
+                DeploymentManager manager = server.getDeploymentManager(url,username,password);
+                if(manager != null) {
+                    ServerInstance instance = new ServerInstance(server,url,manager);
+                    // PENDING persist url/password in ServerString as well
+                    instances.put(url,instance);
+                    ServerString str = new ServerString(server.getShortName(),url,null);
+                    fireInstanceListeners(str,true);
+                    return true;
+                }
+            } catch (Exception e) {
+                e.printStackTrace(System.err);
+            }
+        }
+        // PENDING need error dialog saying this server wasn't recognized by any plugin
+        return false;
     }
     
     public void addInstance(FileObject fo) {
@@ -176,20 +206,7 @@ public final class ServerRegistry implements java.io.Serializable {
         String username = (String) fo.getAttribute(USERNAME_ATTR);
         String password = (String) fo.getAttribute(PASSWORD_ATTR);
         //        System.err.println("Adding instance " + fo);
-        for(Iterator i = servers.values().iterator(); i.hasNext();) {
-            Server server = (Server) i.next();
-            try {
-                DeploymentManager manager = server.getDeploymentManager(url,username,password);
-                if(manager != null) {
-                    ServerInstance instance = new ServerInstance(server,url,manager);
-                    // PENDING persist url/password in ServerString as well?
-                    instances.put(url,instance);
-                    ServerString str = new ServerString(server.getShortName(),url,null);
-                    fireInstanceListeners(str,true);
-                }
-            } catch (Exception e) {
-            }
-        }
+        addInstanceImpl(url,username,password);
     }
     
     public Collection getInstances(InstanceListener il) {
