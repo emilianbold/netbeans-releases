@@ -198,6 +198,15 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
 
     private void writeQuestions (Writer w, Set missing) throws IOException {
         java.util.Iterator it = missing.iterator();
+
+        ElementToString convertor;
+        try {
+            convertor = (ElementToString)Class.forName (getClass ().getName () + "$XercesE2S").newInstance ();  
+            convertor.convertElement(null);
+        } catch (Throwable ex) {
+            log ("Cannot initialize xerces to print out DOM elements. Trying org.w3c.dom.Node.toString() which might work as well");
+            convertor = new ToStringE2S ();
+        }
         
         boolean useXerces = true;
         while (it.hasNext()) {
@@ -207,51 +216,11 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
             //w.write("\n\n<!-- Question: " + s + "\n");
             w.write("\n\n<!--\n        ");
             
-            try {
-                if (useXerces) {
-                    w.write (convertUsingXerces (n));
-                }
-            } catch (NoClassDefFoundError ex) {
-                String str = n.toString ();
-                if (str == null || str.length() == 0) {
-                    // will not work anyway
-                    throw ex;
-                }
-                log ("Cannot find class: " + ex.getLocalizedMessage() + " trying org.w3c.dom.Node.toString() might work");
-                useXerces = false;
-            }
+            w.write (convertor.convertElement (n));
             
-            if (!useXerces) {
-                w.write("\n     " + n); // #30529 - does not work with all DOM parsers
-            }
-
             w.write("\n-->\n");
             w.write("<answer id=\"" + s + "\">\nNo answer\n</answer>\n\n");
         }
-    }
-    
-    private static String convertUsingXerces (Element n) throws IOException {
-        XMLSerializer ser = new XMLSerializer();
-        StringWriter wr = new StringWriter();
-        ser.setOutputCharStream(wr);
-        OutputFormat fmt = new OutputFormat();
-        fmt.setIndenting(false);
-        fmt.setOmitXMLDeclaration(true);
-        fmt.setOmitDocumentType(true);
-        fmt.setPreserveSpace(true);
-        fmt.setOmitComments(true);
-        ser.setOutputFormat(fmt);
-        ser.serialize(n);
-        /*
-        DocumentFragment frag = n.getOwnerDocument().createDocumentFragment();
-        NodeList l = n.getChildNodes();
-        for (int i = 0; i < l.getLength(); i++) {
-            frag.appendChild(l.item(i));
-        }
-        ser.serialize(frag);
-         */
-        
-        return wr.toString ();
     }
         
     
@@ -344,5 +313,54 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
         System.out.println("      s: " + systemId);
         return null;
     }
+
+    private static interface ElementToString {
+        public String convertElement (Element e) throws BuildException;
+    }
     
+    public static final class XercesE2S implements ElementToString {
+        
+        public String convertElement(Element n) throws BuildException {
+            XMLSerializer ser = new XMLSerializer();
+            StringWriter wr = new StringWriter();
+            ser.setOutputCharStream(wr);
+            OutputFormat fmt = new OutputFormat();
+            fmt.setIndenting(false);
+            fmt.setOmitXMLDeclaration(true);
+            fmt.setOmitDocumentType(true);
+            fmt.setPreserveSpace(true);
+            fmt.setOmitComments(true);
+            ser.setOutputFormat(fmt);
+            try {
+                if (n != null) {
+                    ser.serialize(n);
+                }
+            } catch (IOException ex) {
+                throw new BuildException (ex);
+            }
+            /*
+            DocumentFragment frag = n.getOwnerDocument().createDocumentFragment();
+            NodeList l = n.getChildNodes();
+            for (int i = 0; i < l.getLength(); i++) {
+                frag.appendChild(l.item(i));
+            }
+            ser.serialize(frag);
+             */
+
+            return wr.toString ();
+        }
+        
+    }
+    
+    private static final class ToStringE2S implements ElementToString {
+        public String convertElement(Element e) throws BuildException {
+            String str = e.toString ();
+            if (str == null || str.length() == 0) {
+                // will not work anyway
+                throw new BuildException ("DOM model does not support Element.toString conversion");
+            }
+            return str;
+        }
+        
+    }
 }
