@@ -200,13 +200,32 @@ final class Favorites extends FilterNode {
         }
         
         public String getDisplayName () {
-            String s = super.getDisplayName ();
+            //Change display name only for favorite nodes (links) under Favorites node.
+            if (Favorites.getNode().equals(this.getParentNode())) {
+                DataShadow ds = (DataShadow) getCookie(DataShadow.class);
+                if (ds != null) {
+                    String name = ds.getOriginal().getName();
+                    File f = FileUtil.toFile(ds.getOriginal().getPrimaryFile());
+                    String path;
+                    if (f != null) {
+                        path = f.getAbsolutePath();
+                    } else {
+                        path = ds.getOriginal().getPrimaryFile().getPath();
+                    }
+                    return NbBundle.getMessage(Favorites.class, "CTL_DisplayNameTemplate", name, path);
+                } else {
+                    return super.getDisplayName();
+                }
+            } else {
+                return super.getDisplayName();
+            }
+            /*String s = super.getDisplayName ();
             for (;;) {
                 int indx = s.indexOf("(->)"); // NOI18N
                 if (indx == -1) return s;
                 
                 s = s.substring(0, indx) + s.substring (indx + 4);
-            }
+            }*/
         }
         
         // Must be overridden since getDisplayName is.
