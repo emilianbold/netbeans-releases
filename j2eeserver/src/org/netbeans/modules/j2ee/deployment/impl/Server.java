@@ -165,11 +165,13 @@ public class Server implements Node.Cookie {
     }
     
     private Object getClassFromPlugin(String className) {
+        if (className == null) return null;
         try {
         return factory.getClass().getClassLoader().loadClass(className).newInstance();
         } catch (Exception e) {
-			e.printStackTrace();
-            throw new IllegalStateException("Couldn't load class " + className + " from plugin.");
+			e.printStackTrace();  // PENDING log this?
+                        return null;
+        //    throw new IllegalStateException("Couldn't load class " + className + " from plugin.");
         }
     }
     

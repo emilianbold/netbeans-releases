@@ -24,13 +24,13 @@ import java.util.*;
 import java.io.IOException;
 
 public final class ServerRegistry implements java.io.Serializable {
-       
+    
     private static ServerRegistry instance = null;
     public synchronized static ServerRegistry getInstance() {
         if(instance == null) instance = new ServerRegistry();
         return instance;
         //PENDING need to get this from lookup
-		//    return (ServerRegistry) Lookup.getDefault().lookup(ServerRegistry.class);
+        //    return (ServerRegistry) Lookup.getDefault().lookup(ServerRegistry.class);
     }
     
     private transient Map servers = new HashMap();
@@ -66,7 +66,7 @@ public final class ServerRegistry implements java.io.Serializable {
             }
         } catch (Exception e) {
             e.printStackTrace(System.err);
-            TopManager.getDefault().notify(new NotifyDescriptor.Message("Plugin installation failed"));
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Plugin installation failed"));
         }
     }
     
@@ -102,23 +102,23 @@ public final class ServerRegistry implements java.io.Serializable {
     class LayerListener implements FileChangeListener {
         
         public void fileAttributeChanged(FileAttributeEvent fae) {
-//            System.out.println("Attribute changed event");
+            //            System.out.println("Attribute changed event");
         }
         public void fileChanged(FileEvent fe) {
-//            System.out.println("File changed event");
+            //            System.out.println("File changed event");
         }
         public void fileFolderCreated(FileEvent fe) {
-//            System.out.println("Folder created event");
+            //            System.out.println("Folder created event");
         }
         public void fileRenamed(FileRenameEvent fe) {
-//            System.out.println("File renamed event");
+            //            System.out.println("File renamed event");
         }
         
         public void fileDataCreated(FileEvent fe) {
-//            System.out.println("file created event");
+            //            System.out.println("file created event");
         }
         public void fileDeleted(FileEvent fe) {
-//            System.out.println("file deleted event");
+            //            System.out.println("file deleted event");
         }
         
     }
@@ -150,14 +150,14 @@ public final class ServerRegistry implements java.io.Serializable {
         return ret;
     }
     
-	public static final String INSTALLED_SERVERS_PATH = "/J2EE/InstalledServers";
-	public static final String USERNAME_ATTR = "username";
-	public static final String PASSWORD_ATTR = "password";
-	public static FileObject getInstanceFileObject(String url) {
+    public static final String INSTALLED_SERVERS_PATH = "/J2EE/InstalledServers";
+    public static final String USERNAME_ATTR = "username";
+    public static final String PASSWORD_ATTR = "password";
+    public static FileObject getInstanceFileObject(String url) {
         Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
         return rep.findResource(INSTALLED_SERVERS_PATH+"/"+url);
-	}
-
+    }
+    
     public void addInstance(String url, String username, String password) throws IOException {
         Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
         FileObject dir = rep.findResource(INSTALLED_SERVERS_PATH);
@@ -172,7 +172,7 @@ public final class ServerRegistry implements java.io.Serializable {
         String url = fo.getNameExt();
         String username = (String) fo.getAttribute("username");
         String password = (String) fo.getAttribute("password");
-//        System.err.println("Adding instance " + fo);
+        //        System.err.println("Adding instance " + fo);
         for(Iterator i = servers.values().iterator(); i.hasNext();) {
             Server server = (Server) i.next();
             try {

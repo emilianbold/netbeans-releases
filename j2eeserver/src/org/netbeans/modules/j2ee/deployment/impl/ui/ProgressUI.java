@@ -151,7 +151,7 @@ public class ProgressUI extends JPanel {
                     myMonitor.setMaximum (max);
                     myMonitor.setValue (0);
                     taskTitle.setText (msg);
-                    dialog = TopManager.getDefault ().createDialog (dd);
+                    dialog = DialogDisplayer.getDefault().createDialog(dd);
                     dialog.setVisible (true);
                 }
             });

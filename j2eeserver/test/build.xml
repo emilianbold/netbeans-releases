@@ -87,9 +87,7 @@ Microsystems, Inc. All Rights Reserved.
           <include name="org/"/>
       </patternset>
       <classpath>
-        <pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
-        <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
-        <pathelement location="${nbroot}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
+        <pathelement location="../netbeans/modules/j2ee.jar"/>
         <fileset dir="../external">
             <include name="*.jar"/>
         </fileset>
@@ -129,7 +127,9 @@ symbols and copy jar file(s)">
         <antcall target="jars">
                 <param name="build.compiler.debug" value="on"/>
         </antcall>
-        <copy todir="${buildroot}/nb_all/nbbuild/netbeans">
+        <property name="devloc" value="${buildroot}/f4j_all/f4jbuild/firststart"/>
+        <!--property name="devloc" value="${buildroot}/nb_all/nbbuild/netbeans"/-->
+        <copy todir="${devloc}">
             <fileset dir="netbeans">
               <exclude name="**/locale/*"/>
               <exclude name="**/*-test.jar" /> 

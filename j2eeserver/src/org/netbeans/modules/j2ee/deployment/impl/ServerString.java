@@ -25,6 +25,12 @@ public class ServerString implements java.io.Serializable {
         this.plugin = plugin; this.instance = instance; this.targets = targets;
     }
     
+    public ServerString(Server server) {
+        this.plugin = server.getShortName();
+        this.instance = null;
+        this.targets = null;
+    }
+    
     public ServerString(ServerInstance instance) {
         this.plugin = instance.getServer().getShortName();
         this.instance = instance.getUrl();
@@ -47,6 +53,10 @@ public class ServerString implements java.io.Serializable {
     
     public String[] getTargets() {
         return targets;
+    }
+    
+    public Server getServer() {
+        return ServerRegistry.getInstance().getServer(plugin);
     }
     
     public ServerInstance getServerInstance() {

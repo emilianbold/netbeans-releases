@@ -3,23 +3,6 @@
 
 <filesystem>
 
-<!--  Everything is "Run" now
-  <folder name="Menu">
-    <folder name="Build">
-      <file name="Deploy.instance">
-          <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.execution.DeployAction"/>
-      </file>
-      <attr name="org-openide-actions-ExecuteAction.instance/Deploy.instance" boolvalue="true"/>
-    </folder>
-  </folder>
-
-  <folder name="Actions">
-    <folder name="Build">
-      <file name="Deploy[org-netbeans-modules-j2ee-deployment-execution-DeployAction].instance" />
-    </folder>
-  </folder>
-  -->
-
   <folder name="EnvironmentProviders">
     <folder name="ProfileTypes">
        <folder name="Execution">
@@ -59,50 +42,6 @@
        
   </folder>
 
-<!--
-    <folder name="DebuggerType">
-      <file name="org-netbeans-modules-j2ee-deployment-execution-ServerDebuggerType.settings" url="Debugger.settings">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.impl.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/core/resources/debuggerTypes.gif"/>
-        <attr name="SystemFileSystem.layer" stringvalue="project"/>
-      </file>
-    </folder>
-  </folder>
-
-  <folder name="UI">
-    <folder name="Services">
-      <folder name="DebuggingAndExecuting">
-        <file name="org-netbeans-modules-j2ee-deployment-impl-ServerOptions.shadow">
-<![CDATA[Services/org-netbeans-modules-j2ee-deployment-impl-ServerOptions.settings
-SystemFileSystem
-]]>
-        </file>
-      </folder>
-    </folder>
-  </folder>
-
-  <folder name="Templates">
-    <folder name="Services">
-      
-      <folder name="Executor">
-        <file name="org-netbeans-modules-j2ee-deployment-execution-ServerExecutor.settings" url="Executor.settings">
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.impl.Bundle"/>
-          <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/core/resources/executionTypes.gif"/>
-          <attr name="template" boolvalue="true"/>
-       </file>
-      </folder>
-
-      <folder name="DebuggerType">
-        <file name="org-netbeans-modules-j2ee-deployment-execution-ServerDebuggerType.settings" url="Debugger.settings">
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.impl.Bundle"/>
-          <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/core/resources/debuggerTypes.gif"/>
-          <attr name="template" boolvalue="true"/>
-       </file>
-
-      </folder>
-    </folder>
-  </folder>
--->
   <folder name="J2EE">
     <folder name="ApplicationProviders">
     </folder>
@@ -114,7 +53,7 @@ SystemFileSystem
 
   <folder name="UI">
     <folder name="Runtime">
-       <file name="ServerRegistry.instance">
+       <file name="ServerRegistry2.instance">
 <!--          <module name="org.netbeans.modules.j2eeserver/3" spec="1.0"/> -->
           <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.impl.ui.ServerRegistryNode"/>
        </file>

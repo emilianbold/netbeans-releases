@@ -15,6 +15,7 @@
 package org.netbeans.modules.j2ee.deployment.impl;
 
 import org.openide.nodes.Node;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetNameResolver;
 import javax.management.j2ee.Management;
 import javax.enterprise.deploy.spi.Target;
 
@@ -29,7 +30,8 @@ public class ServerTarget implements Node.Cookie {
     public ServerTarget(ServerInstance instance, Target target) {
         this.instance = instance;
         this.targetName = target.getName();
-        names = instance.getTargetResolver().getManagedServerNames(targetName);
+        TargetNameResolver resolver = instance.getTargetResolver();
+        if(resolver != null) names = resolver.getManagedServerNames(targetName);
     }
     
     public String[] getServers() {
@@ -42,7 +44,7 @@ public class ServerTarget implements Node.Cookie {
     
     public Management getManagement(String serverName) {
         return instance.getTargetResolver().getJ2eeManagement(serverName);
-    } 
+    }
     
     public String getName() {
         return targetName;
