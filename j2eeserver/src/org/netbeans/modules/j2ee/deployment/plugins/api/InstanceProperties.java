@@ -148,4 +148,9 @@ public abstract class InstanceProperties {
      */
     public abstract void setAsDefaultServer(String targetName);
     
+    /**
+     * Ask the server instance to reset cached deployment manager, J2EE
+     * management objects and refresh it UI elements.
+     */
+    public abstract void refreshServerInstance();
 }
