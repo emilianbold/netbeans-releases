@@ -15,16 +15,11 @@ package org.apache.tools.ant.module.loader;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Locale;
-import java.util.Set;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -37,6 +32,7 @@ import org.apache.tools.ant.module.run.TargetExecutor;
 import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 import org.openide.util.RequestProcessor;
@@ -50,10 +46,8 @@ import org.w3c.dom.Element;
 public class AntActionInstance implements
         InstanceCookie, Action,
         Presenter.Menu, Presenter.Toolbar,
-        ChangeListener, Serializable
+        ChangeListener
 {
-    
-    private static final long serialVersionUID = 295629651296596532L;
     
     private final AntProjectCookie proj;
     private transient PropertyChangeSupport changeSupport;
@@ -75,7 +69,13 @@ public class AntActionInstance implements
     }
     
     public String instanceName () {
-        return instanceClass ().getName ();
+        FileObject fo = proj.getFileObject();
+        if (fo != null) {
+            return fo.getName(); // without .xml extension
+        } else {
+            // ???
+            return ""; // NOI18N
+        }
     }
     
     /*
