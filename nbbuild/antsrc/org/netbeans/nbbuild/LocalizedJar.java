@@ -27,9 +27,9 @@ import org.apache.tools.ant.types.*;
  * Whenever files are found which should be localized, or are the result
  * of localization, places them in separate JAR files named according to the locale,
  * in a <samp>locale/</samp> subdirectory of the directory containing the master JAR.
- * Each sub-JAR gets a manifest which is a copy of the master's, but with special tags
+ * Each sub-JAR gets a manifest which just has some informational tags
  * indicating its purpose (locale and branding):
- * <code>OpenIDE-Archive-Locale</code> and <code>OpenIDE-Archive-Branding</code>.
+ * <code>X-Informational-Archive-Locale</code> and/or <code>X-Informational-Archive-Branding</code>.
  * The values may be e.g. <code>ja</code> or <code>f4j_ce</code>; or <code>-</code>
  * if there is no suffix for this JAR.
  * You can control the available locales; brandings; and set of files which should
@@ -411,10 +411,12 @@ if( localeKitFiles.contains( file)) {
                         // Add the manifest.
                         InputStream is;
                         long time;
-                        if (manifest != null) {
+                        if (manifest != null && localeMark == null && brandingMark == null) {
+                            // Master JAR, and it has a manifest.
                             is = new FileInputStream (manifest);
                             time = manifest.lastModified ();
                         } else {
+                            // Some subsidiary JAR.
                             is = MatchingTask.class.getResourceAsStream ("/org/apache/tools/ant/defaultManifest.mf");
                             time = System.currentTimeMillis ();
                         }
@@ -429,14 +431,10 @@ if( localeKitFiles.contains( file)) {
                             attr.put (Attributes.Name.MANIFEST_VERSION, "1.0");
                         }
                         if (localeMark != null) {
-                            attr.putValue ("OpenIDE-Archive-Locale", localeMark);
+                            attr.putValue ("X-Informational-Archive-Locale", localeMark);
                         }
                         if (brandingMark != null) {
-                            attr.putValue ("OpenIDE-Archive-Branding", brandingMark);
-                        }
-                        if (localeMark != null || brandingMark != null) {
-                            // Presumably this no longer applies:
-                            attr.remove (Attributes.Name.CLASS_PATH);
+                            attr.putValue ("X-Informational-Archive-Branding", brandingMark);
                         }
                         ByteArrayOutputStream baos = new ByteArrayOutputStream ();
                         mani.write (baos);
