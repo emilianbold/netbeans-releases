@@ -257,9 +257,9 @@ public final class ModeImpl implements Comparable, Mode, FrameTypeListener, Comp
         ((WorkspaceImpl)workspace).addMode((Mode)this);
         
         TopComponent[] tcs = original.getTopComponents();
-        Object constr;
+        TopComponentContainer tcContainer = original.tcc;
         for (int i = 0; i < tcs.length; i++) {
-            constr = original.tcc.getConstraints(tcs[i]);
+            Object constr = tcContainer == null ? null : tcContainer.getConstraints(tcs[i]);
             if (canDock(tcs[i])) {
                 if (this.dockInto(tcs[i], constr)) {
                     tcs[i].open(workspace);
