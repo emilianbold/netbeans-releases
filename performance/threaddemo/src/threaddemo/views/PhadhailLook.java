@@ -19,20 +19,17 @@ import javax.swing.Action;
 import org.netbeans.api.looks.*;
 import org.netbeans.spi.looks.*;
 import org.openide.actions.*;
-import org.openide.cookies.SaveCookie;
-import org.openide.util.Lookup;
+import org.openide.cookies.*;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 import threaddemo.model.*;
 
 /**
  * A look which wraps phadhails.
  * @author Jesse Glick
  */
-final class PhadhailLook extends DefaultLook implements PhadhailListener {
+final class PhadhailLook extends DefaultLook implements PhadhailListener/*, PhadhailEditorSupport.Saver*/ {
     
     PhadhailLook() {
         super("PhadhailLook");
@@ -40,11 +37,10 @@ final class PhadhailLook extends DefaultLook implements PhadhailListener {
     
     public void attachTo(Object o) {
         Phadhail ph = (Phadhail)o;
-        //System.err.println("attached to " + ph);
         ph.addPhadhailListener((PhadhailListener)WeakListener.create(PhadhailListener.class, this, ph));
     }
     
-    /* Uncomment if present in Look; then also remove WeakListener usage from attachTo:
+    /* XXX phrebejk: Uncomment if present in Look; then also remove WeakListener usage from attachTo:
     public void unregister(Object o) {
         Phadhail ph = (Phadhail)o;
         ph.removePhadhailListener(this);
@@ -118,80 +114,44 @@ final class PhadhailLook extends DefaultLook implements PhadhailListener {
         }
     }
     
-    /* XXX currently Look does not define these:
-    public Lookup getLookup(Object o) {
+    /* XXX phrebejk: uncomment if Look gets support for "poor man's Lookup":
+    // cache of save cookies for unsaved phadhails
+    private final Map saveCookies = new WeakHashMap(); // Map<Phadhail,SaveCookie>
+    
+    public void addSaveCookie(Phadhail ph, SaveCookie s) {
+        saveCookies.put(ph, s);
+        fireLookupItemsChanged(ph);
+    }
+    
+    public void removeSaveCookie(Phadhail ph) {
+        saveCookies.remove(ph);
+        fireLookupItemsChanged(ph);
+    }
+    
+    // cache of editor supports; need to retain identity since they have state
+    private final Map editorCookies = new WeakHashMap(); // Map<Phadhail,EditorCookie>
+    
+    public Collection getLookupItems(Object o) {
         Phadhail ph = (Phadhail)o;
-        return new PhadhailLookup(ph);
-    }
-    
-    // XXX currently there is nothing lighter-weight than AbstractLookup: #32203
-    private static final class PhadhailLookup extends AbstractLookup implements InstanceContent.Convertor, PhadhailEditorSupport.Saver {
-        
-        private static final Object ED_KEY = "editorSupport";
-        
-        private final InstanceContent ic;
-
-        private final Phadhail ph;
-        
-        public PhadhailLookup(Phadhail ph) {
-            this(ph, new InstanceContent());
+        EditorCookie ec = (EditorCookie)editorCookies.get(ph);
+        if (ec == null) {
+            ec = new PhadhailEditorSupport(ph, this);
+            editorCookies.put(ph, ec);
         }
-        
-        private PhadhailLookup(Phadhail ph, InstanceContent ic) {
-            super(ic);
-            this.ic = ic;
-            this.ph = ph;
-            if (!ph.hasChildren()) {
-                ic.add(ED_KEY, this);
-            }
+        SaveCookie sc = (SaveCookie)saveCookies.get(ph);
+        if (sc != null) {
+            Collection c = new ArrayList(2);
+            c.add(ec);
+            c.add(sc);
+            return c;
+        } else {
+            return Collections.singleton(ec);
         }
-        
-        public Object convert(Object obj) {
-            if (obj == ED_KEY) {
-                return new PhadhailEditorSupport(ph, this);
-            } else {
-                throw new IllegalStateException();
-            }
-        }
-        
-        public String displayName(Object obj) {
-            return null;
-        }
-        
-        public String id(Object obj) {
-            return null;
-        }
-        
-        public Class type(Object obj) {
-            if (obj == ED_KEY) {
-                return PhadhailEditorSupport.class;
-            } else {
-                throw new IllegalStateException();
-            }
-        }
-        
-        public void addSaveCookie(SaveCookie s) {
-            ic.add(s);
-        }
-        
-        public void removeSaveCookie() {
-            ic.remove(lookup(SaveCookie.class));
-        }
-        
-        public String toString() {
-            return "PhadhailLookup<" + ph + ">";
-        }
-        
-    }
-    
-    public Lookup getLookupForChildren(Object o) {
-        return Lookup.EMPTY;
     }
      */
     
     public void childrenChanged(PhadhailEvent ev) {
         if (!java.awt.EventQueue.isDispatchThread()) Thread.dumpStack();//XXX
-        //System.err.println("firing childrenChanged on " + ev.getPhadhail());
         refreshChildren(ev.getPhadhail());
     }
     

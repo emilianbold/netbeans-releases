@@ -113,12 +113,12 @@ final class PhadhailNode extends AbstractNode implements PhadhailListener, Phadh
         };
     }
     
-    public void addSaveCookie(SaveCookie s) {
+    public void addSaveCookie(Phadhail ph, SaveCookie s) {
         save = s;
         fireCookieChange();
     }
     
-    public void removeSaveCookie() {
+    public void removeSaveCookie(Phadhail ph) {
         save = null;
         fireCookieChange();
     }
