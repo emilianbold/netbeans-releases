@@ -232,7 +232,10 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
             );
         }
         
-        // XXX probably better is to check exit status before reporting COMPLETED
+        while ((command == CommandType.START && !URLWait.waitForStartup (tm, 1000)) ||  //still no feedback when starting
+               (command == CommandType.STOP && URLWait.waitForStartup (tm, 1000))) {    //still getting feedback when stopping
+            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, NbBundle.getMessage (StartTomcat.class, "MSG_waiting"), StateType.RUNNING));
+        }
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, "", StateType.COMPLETED));
         running = command == CommandType.START;
     }
