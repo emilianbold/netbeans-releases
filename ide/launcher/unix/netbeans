@@ -53,7 +53,7 @@ case "`uname`" in
     Darwin*) osxappnameswitch="-J-Dcom.apple.mrj.application.apple.menu.about.name=NetBeans" ;;
 esac
 
-eval "$progdir"/../platform4/launcher/nbexec \
+eval "$progdir"/../platform4/lib/nbexec \
     $jdkhomeswitch \
     --branding nb \
     --clusters "$netbeans_clusters" \
