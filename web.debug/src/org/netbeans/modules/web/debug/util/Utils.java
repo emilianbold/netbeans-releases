@@ -112,21 +112,26 @@ public class Utils {
         WebModule wm = WebModule.getWebModule (fo);
         
         String jspRelativePath = FileUtil.getRelativePath(wm.getDocumentBase(), fo);
+        String contextPath = wm.getContextPath();
+
         String servletPath = finder.getServletResourcePath(jspRelativePath);      
-        
-        if (servletPath == null) {
-            return null;
+        if (servletPath == null) { // we don't have class name, so assume we are debugging tomcat or appsrv
+            servletPath = JspNameUtil.getServletResourcePath(contextPath, jspRelativePath);
         }
-        servletPath = servletPath.substring(0, servletPath.length()-5); // length of ".java"
-        servletPath = servletPath.replace('/', '.'); //NOI18N
+        if (servletPath != null) {
+            servletPath = servletPath.substring(0, servletPath.length()-5); // length of ".java"
+            servletPath = servletPath.replace('/', '.'); //NOI18N
+        }
         Utils.getEM().log("servlet class: " + servletPath);
         return servletPath;
     }
 
     public static String getClassFilter(String url) {
         String filter = getServletClass(url);
-        // get package only
-        filter = filter.substring(0, filter.lastIndexOf('.') + 1); 
+        if (filter != null) {
+            // get package only
+            filter = filter.substring(0, filter.lastIndexOf('.') + 1);
+        }
         return filter;
     }
     
