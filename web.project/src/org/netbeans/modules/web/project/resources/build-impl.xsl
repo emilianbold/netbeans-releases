@@ -478,7 +478,7 @@ is divided into following sections:
                   <wscompile import="true"
                      config="${{{$wsname}.config.name}}"
                      features="${{wscompile.service.{$wsname}.features}}"
-                     mapping="${{web.docbase.dir}}/WEB-INF/wsdl/${{{$wsname}.mapping}}"
+                     mapping="${{web.docbase.dir}}/WEB-INF/${{{$wsname}.mapping}}"
                      classpath="${{wscompile.classpath}}:${{javac.classpath}}"
                      nonClassDir="${{build.web.dir.real}}/WEB-INF/wsdl"
                      verbose="true"
@@ -500,7 +500,7 @@ is divided into following sections:
                      verbose="true"
                      nonClassDir="${{build.web.dir.real}}/WEB-INF/wsdl"
                      classpath="${{wscompile.classpath}}:${{build.classes.dir.real}}:${{javac.classpath}}"
-                     mapping="${{build.web.dir.real}}/WEB-INF/wsdl/${{{$wsname}.mapping}}"
+                     mapping="${{build.web.dir.real}}/WEB-INF/${{{$wsname}.mapping}}"
                      config="${{{$wsname}.config.name}}"
                      features="${{wscompile.service.{$wsname}.features}}"
                      sourceBase="${{build.generated.dir}}/wsservice">
@@ -548,7 +548,7 @@ is divided into following sections:
                         base="${{build.generated.dir}}/wsbinary"
                         sourceBase="${{build.generated.dir}}/wsclient"
                         classpath="${{wscompile.classpath}}:${{javac.classpath}}"
-                        mapping="${{build.web.dir.real}}/WEB-INF/wsdl/{$wsclientname}-mapping.xml"
+                        mapping="${{build.web.dir.real}}/WEB-INF/{$wsclientname}-mapping.xml"
                         config="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-config.xml">
                     </wscompile>
                 </target>

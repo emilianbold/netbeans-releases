@@ -404,7 +404,7 @@ is divided into following sections:
                   <wscompile import="true" 
                      config="${{{$wsname}.config.name}}"
                      features="${{wscompile.service.{$wsname}.features}}"
-                     mapping="${{meta.inf}}/wsdl/${{{$wsname}.mapping}}"
+                     mapping="${{meta.inf}}/${{{$wsname}.mapping}}"
                      classpath="${{wscompile.classpath}}:${{javac.classpath}}" 
                      nonClassDir="${{classes.dir}}/META-INF/wsdl" 
                      verbose="true" 
@@ -427,7 +427,7 @@ is divided into following sections:
                      verbose="true"
                      nonClassDir="${{classes.dir}}/META-INF/wsdl"
                      classpath="${{wscompile.classpath}}:${{classes.dir}}:${{javac.classpath}}"
-                     mapping="${{classes.dir}}/META-INF/wsdl/${{{$wsname}.mapping}}"
+                     mapping="${{classes.dir}}/META-INF/${{{$wsname}.mapping}}"
                      config="${{{$wsname}.config.name}}"
                      features="${{wscompile.service.{$wsname}.features}}"
                      sourceBase="${{build.generated.dir}}/wsservice">
@@ -475,7 +475,7 @@ is divided into following sections:
                         base="${{classes.dir}}"
                         sourceBase="${{build.generated.dir}}/wsclient"
                         classpath="${{wscompile.classpath}}:${{javac.classpath}}"
-                        mapping="${{classes.dir}}/META-INF/wsdl/{$wsclientname}-mapping.xml"
+                        mapping="${{classes.dir}}/META-INF/{$wsclientname}-mapping.xml"
                         config="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-config.xml">
                     </wscompile>
                 </target>
