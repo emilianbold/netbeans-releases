@@ -1088,7 +1088,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     private static final JAXRPCStubDescriptor seiServiceStub = new JAXRPCStubDescriptor(
     StubDescriptor.SEI_SERVICE_STUB,
     NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_SEIServiceStub"),
-    new String [] { "documentliteral", "strict" });
+    new String [] { "documentliteral", "strict", "useonewayoperations" });
     
     private static final JAXRPCStubDescriptor wsdlServiceStub = new JAXRPCStubDescriptor(
     StubDescriptor.WSDL_SERVICE_STUB,

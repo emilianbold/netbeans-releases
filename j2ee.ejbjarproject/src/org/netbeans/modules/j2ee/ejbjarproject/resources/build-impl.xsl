@@ -389,6 +389,10 @@ is divided into following sections:
                 </target>
             </xsl:if>
 
+            <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service">
+                <target name="fromwsdl-noop"/>
+            </xsl:if>
+
             <xsl:for-each select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service">
               <xsl:variable name="wsname">
                 <xsl:value-of select="ejbjarproject3:web-service-name"/>
@@ -414,7 +418,7 @@ is divided into following sections:
               <xsl:otherwise>
                  <target name="{$wsname}_wscompile" depends="wscompile-init">
                   <wscompile
-                     server="true"
+                     define="true"
                      fork="true"
                      keep="true"
                      base="${{build.generated.dir}}/wsbinary"
@@ -658,14 +662,17 @@ is divided into following sections:
                 <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service">
                     <xsl:attribute name="depends">
                         <xsl:for-each select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service">
-                            <xsl:if test="not(ejbjarproject3:from-wsdl)">
-                                <xsl:if test="position()!=1 and not(preceding-sibling::ejbjarproject3:web-service/ejbjarproject3:from-wsdl)"><xsl:text>, </xsl:text></xsl:if>
-                                <xsl:variable name="wsname2">
-                                    <xsl:value-of select="ejbjarproject3:web-service-name"/>
-                                </xsl:variable>
-                                <xsl:value-of select="ejbjarproject3:web-service-name"/><xsl:text>_wscompile</xsl:text>
-                            </xsl:if>
-                        </xsl:for-each>
+                                <xsl:if test="position()!=1"><xsl:text>, </xsl:text>
+                                </xsl:if>
+                                <xsl:choose>
+                                  <xsl:when test="not(ejbjarproject3:from-wsdl)">
+                                    <xsl:value-of select="ejbjarproject3:web-service-name"/><xsl:text>_wscompile</xsl:text>
+                                  </xsl:when>
+                                  <xsl:otherwise>
+                                    <xsl:text>fromwsdl-noop</xsl:text>
+                                  </xsl:otherwise>
+                                </xsl:choose>
+                         </xsl:for-each>
                     </xsl:attribute>
                 </xsl:if>
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
