@@ -892,16 +892,12 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
     }
     
     public List/*StubDescriptor*/ getStubDescriptors() {
-//        ArrayList stubs = new ArrayList(2);
-//        stubs.add(jsr109ClientStub);
-//        stubs.add(jaxrpcClientStub);
-//        return stubs;
         ArrayList stubs = new ArrayList(2);
-        stubs.add(jaxrpcClientStub);
         String version = project.getEjbModule().getJ2eePlatformVersion();
         if(J2eeProjectConstants.J2EE_14_LEVEL.equals(version)) {
             stubs.add(jsr109ClientStub);
         }
+        stubs.add(jaxrpcClientStub);
         return stubs;
     }
     
