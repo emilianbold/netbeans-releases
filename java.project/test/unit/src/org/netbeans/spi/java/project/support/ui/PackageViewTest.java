@@ -25,12 +25,6 @@ import org.openide.filesystems.LocalFileSystem;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
-
-/**
- * Factory for package views.
- * @see org.netbeans.spi.project.ui.LogicalViewProvider
- * @author Jesse Glick
- */
 public class PackageViewTest extends NbTestCase {
     
     public PackageViewTest( String name ) {

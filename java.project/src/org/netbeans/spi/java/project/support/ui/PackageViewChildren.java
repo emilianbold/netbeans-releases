@@ -53,11 +53,11 @@ import org.openide.util.Utilities;
  * Display of Java sources in a package structure rather than folder structure.
  * @author Adam Sotona, Jesse Glick, Petr Hrebejk
  */
-final class PackageViewChildren extends Children.Keys implements FileChangeListener {
+final class PackageViewChildren extends Children.Keys/*<String>*/ implements FileChangeListener {
     
     private static final String NODE_NOT_CREATED = "NNC"; // NOI18N
     
-    private TreeMap names2nodes;
+    private java.util.Map/*<String,NODE_NOT_CREATED|PackageNode>*/ names2nodes;
     private final FileObject root;
 
     /**

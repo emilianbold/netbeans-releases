@@ -15,14 +15,4 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="java/project/test-unit" basedir="." default="all">
     <import file="../../../nbbuild/templates/xtest-unit.xml"/>
-
-    <target name="pre-init-cp">
-        <!-- XXX: xtext does not support compilation to build/test/classes.
-            Add org.netbeans.api.project.TestUtil to classpath. -->
-        <!-- Extra classpath for compilation: -->
-        <property name="cp.compile.extra" value="../../../projects/projectapi/test/unit/src"/>
-        <!-- Extra classpath for execution: -->
-        <!-- <property name="cp.run.extra" value=""/> -->
-    </target>
-    
 </project>
