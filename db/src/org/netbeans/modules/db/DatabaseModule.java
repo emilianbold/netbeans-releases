@@ -27,6 +27,10 @@ import org.openide.nodes.Node;
 import org.netbeans.modules.db.explorer.nodes.ConnectionNode;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 
+import org.openide.nodes.*;
+
+//import org.openide.util.Mutex;
+
 public class DatabaseModule extends ModuleInstall {
     private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
@@ -85,22 +89,25 @@ public class DatabaseModule extends ModuleInstall {
     }
     
     public void uninstalled() {
-
         // test if the ppointbase module is installed
         // if not then ini file is set in the default place
         if(System.getProperty(INI_FILE)==null)
             System.setProperty(INI_FILE, home + java.io.File.separator + POINTBASE_HOME_DIR + java.io.File.separator + INI_FILE); //NOI18N
 
         // closing all open connection
-        try {
-//            Node n[] = TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild(bundle.getString("Databases")).getChildren().getNodes(); //NOI18N
-            Node n[] = TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild("Databases").getChildren().getNodes(); //NOI18N
-            for (int i = 0; i < n.length; i++)
-                if (n[i] instanceof ConnectionNode)
-                    ((ConnectionNodeInfo)((ConnectionNode)n[i]).getInfo()).disconnect();
-        } catch (Exception exc) {
-            //connection not closed
-        }
+//        Node n[] = TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild(bundle.getString("Databases")).getChildren().getNodes(); //NOI18N
+        Children.MUTEX.writeAccess (new Runnable () {
+            public void run () {
+                try {
+                    Node n[] = TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild("Databases").getChildren().getNodes(); //NOI18N
+                    for (int i = 0; i < n.length; i++)
+                        if (n[i] instanceof ConnectionNode)
+                            ((ConnectionNodeInfo)((ConnectionNode)n[i]).getInfo()).disconnect();
+                } catch (Exception exc) {
+                    //connection not closed
+                }
+            }
+        });
     }
     
     public void restored() {
@@ -112,7 +119,6 @@ public class DatabaseModule extends ModuleInstall {
     }
 
     public boolean closing () {
-        
         // method is called because of closing connections
         uninstalled();
         return true;
