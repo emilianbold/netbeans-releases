@@ -306,9 +306,13 @@ ToDo:
     <echo message="Building module jarpackager..."/>
     <ant dir="../jarpackager" target="netbeans"/>
   </target>
-  <target name="all-java" depends="all-openide">
+  <target name="all-java" depends="all-openide,all-java/api">
     <echo message="Building module java..."/>
     <ant dir="../java" target="netbeans"/>
+  </target>
+  <target name="all-java/api" depends="all-openide">
+    <echo message="Building Java support APIs.."/>
+    <ant dir="../java/api" target="netbeans"/>
   </target>
   <target name="all-javadoc" depends="all-openide,all-java">
     <echo message="Building module javadoc..."/>
