@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?><!-- -*- sgml-indent-step: 2 -*- -->
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="Arch Questions and Answers Generator" default="answer" basedir=".">
+  <!-- modify this property to point to root of NetBeans CVS 
+       so necessary files in the build system may be found -->
+  <property name="ide.root" value="../../.." />
+
+  <!-- choose a name of your project. It will be used to name
+       input and output files -->  
+  <property name="arch.name" value="sample" />
+  
+  <!-- directory for the generated file. Usually may stay untouched -->
+  <property name="arch.outputdir" value="." />
+  
+  <!-- Uncomment following line to add missing questions into your sample file
+  <property name="arch.generate" value="true" /> 
+  -->
+  
+  <taskdef name="arch" classname="org.netbeans.nbbuild.Arch" classpath="${ide.root}/nbbuild/nbantext.jar"/>
+
+  <target name="answer" description="Generates HTML file with answers to architecture questions" >
+    <arch answers="arch-${arch.name}.xml" output="${arch.outputdir}/${arch.name}.html" />
+  </target>
+  
+  <target name="question" description="Generates HTML file with well formated questions" >
+    <style in="${ide.root}/nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml" style="arch2html.xsl" out="${arch.outputdir}/questions.html" />
+  </target>
+
+  <target name="clean">
+    <delete file="${arch.outputdir}/${arch.name}.html" />
+  </target>    
+</project>
