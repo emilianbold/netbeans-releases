@@ -21,7 +21,10 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
@@ -38,6 +41,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
 import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
 
@@ -270,13 +274,18 @@ public final class GeneratedFilesHelper {
                                     } finally {
                                         is.close();
                                     }
-                                } else {
-                                    // XXX set a file header comment, when EditableProperties supports that
                                 }
                                 p.setProperty(path + KEY_SUFFIX_DATA_CRC,
-                                    computeCrc32(new ByteArrayInputStream(projectXmlData)));
+                                    getCrc32(new ByteArrayInputStream(projectXmlData), projectXml));
+                                if (genfiles == null) {
+                                    // New file, set a comment on it. XXX this puts comment in middle if write build-impl.xml before build.xml
+                                    p.setComment(path + KEY_SUFFIX_DATA_CRC, new String[] {
+                                        "# " + NbBundle.getMessage(GeneratedFilesHelper.class, "COMMENT_genfiles.properties_1"), // NOI18N
+                                        "# " + NbBundle.getMessage(GeneratedFilesHelper.class, "COMMENT_genfiles.properties_2"), // NOI18N
+                                    }, false);
+                                }
                                 p.setProperty(path + KEY_SUFFIX_STYLESHEET_CRC,
-                                    computeCrc32(new ByteArrayInputStream(stylesheetData)));
+                                    getCrc32(new ByteArrayInputStream(stylesheetData), stylesheet));
                                 p.setProperty(path + KEY_SUFFIX_SCRIPT_CRC,
                                     computeCrc32(new ByteArrayInputStream(resultData)));
                                 if (genfiles == null) {
@@ -377,7 +386,7 @@ public final class GeneratedFilesHelper {
                         return new Integer(FLAG_UNKNOWN | FLAG_MODIFIED |
                                            FLAG_OLD_PROJECT_XML | FLAG_OLD_STYLESHEET);
                     }
-                    InputStream is = genfiles.getInputStream();
+                    InputStream is = new BufferedInputStream(genfiles.getInputStream());
                     try {
                         p.load(is);
                     } finally {
@@ -385,36 +394,21 @@ public final class GeneratedFilesHelper {
                     }
                     FileObject projectXml = dir.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
                     if (projectXml != null) {
-                        is = projectXml.getInputStream();
-                        try {
-                            String crc = computeCrc32(new BufferedInputStream(is));
-                            if (!crc.equals(p.getProperty(path + KEY_SUFFIX_DATA_CRC))) {
-                                flags |= FLAG_OLD_PROJECT_XML;
-                            }
-                        } finally {
-                            is.close();
+                        String crc = getCrc32(projectXml);
+                        if (!crc.equals(p.getProperty(path + KEY_SUFFIX_DATA_CRC))) {
+                            flags |= FLAG_OLD_PROJECT_XML;
                         }
                     } else {
                         // Broken project?!
                         flags |= FLAG_OLD_PROJECT_XML;
                     }
-                    is = stylesheet.openStream();
-                    try {
-                        String crc = computeCrc32(new BufferedInputStream(is));
-                        if (!crc.equals(p.getProperty(path + KEY_SUFFIX_STYLESHEET_CRC))) {
-                            flags |= FLAG_OLD_STYLESHEET;
-                        }
-                    } finally {
-                        is.close();
+                    String crc = getCrc32(stylesheet);
+                    if (!crc.equals(p.getProperty(path + KEY_SUFFIX_STYLESHEET_CRC))) {
+                        flags |= FLAG_OLD_STYLESHEET;
                     }
-                    is = script.getInputStream();
-                    try {
-                        String crc = computeCrc32(new BufferedInputStream(is));
-                        if (!crc.equals(p.getProperty(path + KEY_SUFFIX_SCRIPT_CRC))) {
-                            flags |= FLAG_MODIFIED;
-                        }
-                    } finally {
-                        is.close();
+                    crc = getCrc32(script);
+                    if (!crc.equals(p.getProperty(path + KEY_SUFFIX_SCRIPT_CRC))) {
+                        flags |= FLAG_MODIFIED;
                     }
                     return new Integer(flags);
                 }
@@ -433,7 +427,6 @@ public final class GeneratedFilesHelper {
         Checksum crc = new CRC32();
         int last = -1;
         int curr;
-        // XXX possibly can be optimized to use update(byte[], off, len) to make less JNI calls
         while ((curr = is.read()) != -1) {
             if (curr != '\n' && last == '\r') {
                 crc.update('\n');
@@ -452,6 +445,114 @@ public final class GeneratedFilesHelper {
             hex = "0" + hex; // NOI18N
         }
         return hex;
+    }
+    
+    // #50440 - cache CRC32's for various files to save time esp. during startup.
+    
+    private static final Map/*<URL,String>*/ crcCache = new HashMap();
+    private static final Map/*<URL,Long>*/ crcCacheTimestampsXorSizes = new HashMap();
+
+    /** Try to find a CRC in the cache according to location of file and last mod time xor size. */
+    private static synchronized String findCachedCrc32(URL u, long footprint) {
+        String crc = (String) crcCache.get(u);
+        if (crc != null) {
+            Long l = (Long) crcCacheTimestampsXorSizes.get(u);
+            assert l != null;
+            if (l.longValue() == footprint) {
+                // Cache hit.
+                return crc;
+            }
+        }
+        // Cache miss - missing or old.
+        return null;
+    }
+    
+    /** Cache a known CRC for a file, using current last mod time xor size. */
+    private static synchronized void cacheCrc32(String crc, URL u, long footprint) {
+        crcCache.put(u, crc);
+        crcCacheTimestampsXorSizes.put(u, new Long(footprint));
+    }
+    
+    /** Find (maybe cached) CRC for a file, using a preexisting input stream (not closed by this method). */
+    private static String getCrc32(InputStream is, FileObject fo) throws IOException {
+        URL u = fo.getURL();
+        fo.refresh(); // in case was written on disk and we did not notice yet...
+        long footprint = fo.lastModified().getTime() ^ fo.getSize();
+        String crc = findCachedCrc32(u, footprint);
+        if (crc == null) {
+            crc = computeCrc32(is);
+            cacheCrc32(crc, u, footprint);
+        }
+        return crc;
+    }
+
+    /** Find the time the file this URL represents was last modified xor its size, if possible. */
+    private static long checkFootprint(URL u) {
+        URL nested = FileUtil.getArchiveFile(u);
+        if (nested != null) {
+            u = nested;
+        }
+        if (u.getProtocol().equals("file")) { // NOI18N
+            File f = new File(URI.create(u.toExternalForm()));
+            return f.lastModified() ^ f.length();
+        } else {
+            return 0L;
+        }
+    }
+    
+    /** Find (maybe cached) CRC for a URL, using a preexisting input stream (not closed by this method). */
+    private static String getCrc32(InputStream is, URL u) throws IOException {
+        long footprint = checkFootprint(u);
+        String crc = null;
+        if (footprint != 0L) {
+            crc = findCachedCrc32(u, footprint);
+        }
+        if (crc == null) {
+            crc = computeCrc32(is);
+            if (footprint != 0L) {
+                cacheCrc32(crc, u, footprint);
+            }
+        }
+        return crc;
+    }
+    
+    /** Find (maybe cached) CRC for a file. Will open its own input stream. */
+    private static String getCrc32(FileObject fo) throws IOException {
+        URL u = fo.getURL();
+        fo.refresh();
+        long footprint = fo.lastModified().getTime() ^ fo.getSize();
+        String crc = findCachedCrc32(u, footprint);
+        if (crc == null) {
+            InputStream is = fo.getInputStream();
+            try {
+                crc = computeCrc32(new BufferedInputStream(is));
+                cacheCrc32(crc, u, footprint);
+            } finally {
+                is.close();
+            }
+        }
+        return crc;
+    }
+    
+    /** Find (maybe cached) CRC for a URL. Will open its own input stream. */
+    private static String getCrc32(URL u) throws IOException {
+        long footprint = checkFootprint(u);
+        String crc = null;
+        if (footprint != 0L) {
+            crc = findCachedCrc32(u, footprint);
+        }
+        if (crc == null) {
+            InputStream is = u.openStream();
+            try {
+                crc = computeCrc32(new BufferedInputStream(is));
+                if (footprint != 0L) {
+                    cacheCrc32(crc, u, footprint);
+                }
+            } finally {
+                is.close();
+            }
+        }
+        return crc;
     }
 
     /**
