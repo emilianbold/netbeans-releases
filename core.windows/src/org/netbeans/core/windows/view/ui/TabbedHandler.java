@@ -474,25 +474,7 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
                 // don't activate sliding views when user clicked edge bar
                 if (modeComp.getKind() != Constants.MODE_KIND_SLIDING) {
                     ModeView modeView = modeComp.getModeView();
-//#52877 start first check selected component against clicked tab -> when not matching, select right tab first
-// patch submitted by Uta Sommerweiss
-                    TopComponent selected = modeView.getSelectedTopComponent();
-                    Component c = (Component) evt.getSource();
-                    while (c != null && !(c instanceof Tabbed.Accessor))
-                        c = c.getParent();
-                    if (c != null) {
-                        final Tabbed tab = ((Tabbed.Accessor)c).getTabbed();
-                        final Point p = SwingUtilities.convertPoint((Component) evt.getSource(), evt.getPoint(), c);
-                        int idx = tab.tabForCoordinate(p);
-                        if (idx >= 0){
-                            TopComponent tc = tab.getTopComponentAt(idx);
-                            if (tc!=null && tc!=selected)
-                                modeView.getController().userSelectedTab(modeView, tc);
-                        }
-                        modeView.getController().userActivatedModeView(modeView);
-                    }else
-//#52877 end                  
-                      modeView.getController().userActivatedModeView(modeView);
+                    modeView.getController().userActivatedModeView(modeView);
                 }
             }
         }
