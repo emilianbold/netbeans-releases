@@ -22,7 +22,7 @@ import java.text.MessageFormat;
 * @author   Petr Hamernik
 * @version  0.14, Jul 20, 1998
 */
-abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport {
+abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport implements org.openide.explorer.propertysheet.editors.XMLPropertyEditor  {
   private static final String VALUE_FORMAT = org.openide.util.NbBundle.getBundle(
     ArrayOfIntSupport.class).getString("EXC_BadFormatValue");
                                                                 
@@ -163,11 +163,52 @@ abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport {
 
     return buf.toString();
   }
+
+//--------------------------------------------------------------------------
+// XMLPropertyEditor implementation
+
+  public static final String ATTR_VALUE = "value";
+
+  /** Provides name of XML tag to use for XML persistence of the property value */
+  protected abstract String getXMLValueTag ();
+
+  /** Called to load property value from specified XML subtree. If succesfully loaded, 
+  * the value should be available via the getValue method.
+  * An IOException should be thrown when the value cannot be restored from the specified XML element
+  * @param element the XML DOM element representing a subtree of XML from which the value should be loaded
+  * @exception IOException thrown when the value cannot be restored from the specified XML element
+  */
+  public void readFromXML (org.w3c.dom.Node element) throws java.io.IOException {
+    if (!getXMLValueTag ().equals (element.getNodeName ())) {
+      throw new java.io.IOException ();
+    }
+    org.w3c.dom.NamedNodeMap attributes = element.getAttributes ();
+    try {
+      String value = attributes.getNamedItem (ATTR_VALUE).getNodeValue ();
+      setAsText (value);
+    } catch (Exception e) {
+      throw new java.io.IOException ();
+    }
+  }
+  
+  /** Called to store current property value into XML subtree. The property value should be set using the
+  * setValue method prior to calling this method.
+  * @param doc The XML document to store the XML in - should be used for creating nodes only
+  * @return the XML DOM element representing a subtree of XML from which the value should be loaded
+  */
+  public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
+    org.w3c.dom.Element el = doc.createElement (getXMLValueTag ());
+    el.setAttribute (ATTR_VALUE, getAsText ());
+    return el;
+  }
+
+
 }
 
 
 /*
  * Log
+ *  4    Gandalf   1.3         7/19/99  Ian Formanek    XML Serialization
  *  3    Gandalf   1.2         6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  2    Gandalf   1.1         3/4/99   Jan Jancura     bundle moved

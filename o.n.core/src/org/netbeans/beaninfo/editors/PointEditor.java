@@ -57,10 +57,17 @@ public class PointEditor extends ArrayOfIntSupport {
   String getHintFormat() {
     return bundle.getString ("CTL_HintFormatPE");
   }
+
+  /** Provides name of XML tag to use for XML persistence of the property value */
+  protected String getXMLValueTag () {
+    return "Point";
+  }
+
 }
 
 /*
  * Log
+ *  4    Gandalf   1.3         7/19/99  Ian Formanek    XML Serialization
  *  3    Gandalf   1.2         6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  2    Gandalf   1.1         3/4/99   Jan Jancura     bundle moved
