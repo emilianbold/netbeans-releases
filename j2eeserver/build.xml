@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <project basedir="." default="netbeans" name="j2eeserver">
 
-  <property name="nbroot" location="../../nb_all"/>
+  <property name="nbroot" location=".."/>
   <property name="binroot" location="../../nbextra"/>
   <property name="nbext" location="${nbroot}/nbbuild"/>
   <property name="nbm_alias" value="nb_ide"/>
