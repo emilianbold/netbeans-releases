@@ -189,6 +189,19 @@ public class XMLUtil {
         }
 
         /**
+         * Same as write(OutputStream os, Document document)
+         * where os = the file's OutputStream.
+         */
+        public void write(File f, Document document) throws java.io.IOException {
+            OutputStream fout = new FileOutputStream(f);
+            try {
+                write(fout, document);
+            } finally {
+                fout.close();
+            }
+        }
+
+        /**
          * Same as write(OutputStream os, String encoding, Document document)
          * where encoding == null.
          */
