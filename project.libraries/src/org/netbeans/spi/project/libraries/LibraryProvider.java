@@ -18,6 +18,9 @@ import java.beans.PropertyChangeListener;
 
 /**
  * Provider interface for implementing the read only library storage.
+ * Library storage is a source of libraries used by LibraryManager.
+ * LibraryManager allows existence of multiple LibraryProviders registered in
+ * the default lookup.
  */
 public interface LibraryProvider {
 

@@ -24,7 +24,7 @@ import java.beans.PropertyChangeEvent;
 /**
  * Library models typed bundle of typed volumes.
  * <p>
- * Library volumes are typed and quriable by their type. The type is
+ * Library volumes are typed and query-able by their type. The type is
  * represented by type string. Strictly speaking volumes are
  * named rather then typed but the name express their type.
  * The volume is a list of resoruces.
