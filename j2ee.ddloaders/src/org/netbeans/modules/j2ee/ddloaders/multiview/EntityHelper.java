@@ -52,7 +52,6 @@ public class EntityHelper extends EntityAndSessionHelper {
         this.entity = ((Entity) ejb);
         cmpFields = new CmpFields();
         queries = new Queries();
-        ejbJarMultiViewDataObject.getEjbJar().addPropertyChangeListener(this);
     }
 
     public MethodElement createAccessMethod(String fieldName, Type type, boolean get) {
@@ -119,6 +118,9 @@ public class EntityHelper extends EntityAndSessionHelper {
 
     public void propertyChange(PropertyChangeEvent evt) {
         super.propertyChange(evt);
+        if (queries == null) {
+            return;
+        }
         Object source = evt.getSource();
         String propertyName = evt.getPropertyName();
         Object oldValue = evt.getOldValue();
