@@ -15,18 +15,20 @@ package gui.action;
 
 import java.io.File;
 
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.MaximizeWindowAction;
-import org.netbeans.jellytools.actions.RefreshFolderAction;
+//import org.netbeans.jellytools.actions.RefreshFolderAction;
 import org.netbeans.jellytools.actions.RestoreWindowAction;
 
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
 
 /**
  * Test of Delete nodes/folders in the Explorer.
@@ -132,7 +134,8 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
             
             foldersNode = new Node(projectNode, gui.Utilities.SOURCE_PACKAGES + "|folders");
             
-            new RefreshFolderAction().perform(foldersNode); // foldersNode.performPopupAction("Refresh Folder");
+            new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu("File|Refresh All Files","|"); //NOI18N 
+            //new RefreshFolderAction().perform(foldersNode); // foldersNode.performPopupAction("Refresh Folder");
             waitNoEvent(500);
 
             nodeToBeDeleted = new Node(projectNode, gui.Utilities.SOURCE_PACKAGES + "|folders." + folderToBeDeleted + "_delete");
@@ -149,7 +152,9 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
                 gui.Utilities.copyFile(files[i], copyFile);
             }
             
-            new RefreshFolderAction().perform(nodeToBeDeleted); // nodeToBeDeleted.performPopupAction("Refresh Folder");
+            new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu("File|Refresh All Files","|"); //NOI18N 
+            //new RefreshFolderAction().perform(foldersNode); // foldersNode.performPopupAction("Refresh Folder");
+            waitNoEvent(500);
             nodeToBeDeleted.expand();
             
         }catch(Exception exc){
