@@ -217,7 +217,7 @@
 <!--csh page for Options|IDE Configuration|System|Filesystems Settings|Java Libraries-->
 <mapID target="org.netbeans.modules.java.Filesystem.libraries" url="filesystems/filesystems_classpath.html" />
 <!--csh page for Options|IDE Configuration|System|Filesystems Settings|Javadoc Documentation-->
-<mapID target="org.netbeans.modules.javadoc.FileSystem.docRoots" url="javadoc/search_path.html" />
+<mapID target="org.netbeans.modules.javadoc.FileSystem.docroots" url="javadoc/search_path.html" />
 <!--csh page for projects|settings|Java Sources-->
 <mapID target="org.netbeans.modules.java.settings.JavaSettings" url="java/java_sources.html" />
 <!--csh page for projects|settings|Java Source|Import Management Tool Settings-->
