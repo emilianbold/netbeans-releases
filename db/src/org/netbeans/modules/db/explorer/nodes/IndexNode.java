@@ -103,17 +103,18 @@ public class IndexNode extends DatabaseNode
 					spec = (Specification)info.getSpecification();
 					catalog = (String)info.get(DatabaseNode.CATALOG);
 
-          ResultSet rs = info.getDriverSpecification().getIndexInfo(catalog, dmd, info.getTable(), true, false);
-					if (rs != null) {
+          DriverSpecification drvSpec = info.getDriverSpecification();
+          drvSpec.getIndexInfo(catalog, dmd, info.getTable(), true, false);
+					if (drvSpec.rs != null) {
             String index = destinfo.getName();
             HashSet ixrm = new HashSet();
 
-            while (rs.next()) {
-              String ixname = rs.getString("INDEX_NAME");
-              String colname = rs.getString("COLUMN_NAME");
+            while (drvSpec.rs.next()) {
+              String ixname = drvSpec.rs.getString("INDEX_NAME");
+              String colname = drvSpec.rs.getString("COLUMN_NAME");
               if (ixname.equals(index)) ixrm.add(colname);
             }
-            rs.close();
+            drvSpec.rs.close();
             
             if (ixrm.contains(info.getName())) throw new IOException("index "+index+" already contains column "+info.getName());
 
@@ -128,24 +129,24 @@ public class IndexNode extends DatabaseNode
             spec.createCommandDropIndex(index).execute();
             icmd.execute();
 
-            rs = info.getDriverSpecification().getIndexInfo(catalog, dmd, destinfo.getTable(), true, false);
+            drvSpec.getIndexInfo(catalog, dmd, destinfo.getTable(), true, false);
             //Hack - ODBC bug
-            ResultSet rsTemp = info.getDriverSpecification().getIndexInfo(catalog, dmd, destinfo.getTable(), true, false);
+//            ResultSet rsTemp = info.getDriverSpecification().getIndexInfo(catalog, dmd, destinfo.getTable(), true, false);
             
-            if (rs != null) {
-              while (rs.next()) {
-                rsTemp.next();
-                String ixname = rs.getString("INDEX_NAME");
-                String colname = rs.getString("COLUMN_NAME");
+            if (drvSpec.rs != null) {
+              while (drvSpec.rs.next()) {
+//                rsTemp.next();
+                String ixname = drvSpec.rs.getString("INDEX_NAME");
+                String colname = drvSpec.rs.getString("COLUMN_NAME");
                 if (ixname.equals(index) && colname.equals(info.getName())) {
-                  IndexNodeInfo ixinfo = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(destinfo, DatabaseNode.INDEX, rsTemp);
+                  IndexNodeInfo ixinfo = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(destinfo, DatabaseNode.INDEX, drvSpec.rs);
                   if (ixinfo != null) {
                     ((DatabaseNodeChildren)destinfo.getNode().getChildren()).createSubnode(ixinfo,true);
                   } else throw new Exception("unable to create node information for index");
                 }
               }
-              rs.close();
-              rsTemp.close();
+              drvSpec.rs.close();
+//              rsTemp.close();
             }
           }
 				} catch (Exception e) { 
@@ -159,6 +160,8 @@ public class IndexNode extends DatabaseNode
 }
 /*
  * <<Log>>
+ *  13   Gandalf   1.12        1/26/00  Radko Najman    new driver adaptor 
+ *       version
  *  12   Gandalf   1.11        1/25/00  Radko Najman    new driver adaptor 
  *       version
  *  11   Gandalf   1.10        12/15/99 Radko Najman    driver adaptor
