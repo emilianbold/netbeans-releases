@@ -58,18 +58,6 @@ public interface JspParserAPI {
          */
         public abstract java.io.InputStream getEditorInputStream (FileObject fo);
         
-        /**
-         * Returns the list of libraries used by this web module.
-         * @deprecated use classpath API to obtain classpath for document base folder
-         */
-        public abstract FileObject[] getLibraries();
-        
-        /**
-         * Returns the list package roots used by this web module.
-         * @deprecated use classpath API to obtain classpath for document base folder
-         */
-        public abstract FileObject[] getPackageRoots();
-        
         public abstract void addPropertyChangeListener(PropertyChangeListener l);
         
         public abstract void removePropertyChangeListener(PropertyChangeListener l);
