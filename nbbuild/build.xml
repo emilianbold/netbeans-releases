@@ -903,7 +903,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../utilities/loaderswitcher" target="netbeans"/>
   </target>
 
-  <target name="all-xtest" depends="build-platform,all-java/j2seproject">
+  <target name="all-xtest" depends="build-platform,all-java/j2seproject,all-projects/projectui">
       <echo message="Building module xtest..."/>
       <ant dir="../xtest" antfile="build.xml" target="netbeans"/>
   </target>
