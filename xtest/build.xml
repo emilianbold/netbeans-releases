@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
 <!--
                 Sun Public License Notice
 
@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -18,16 +18,17 @@ Microsystems, Inc. All Rights Reserved.
   <property name="build.compiler.deprecation" value="off"/>    
   <property name="build.compiler.debug" value="on"/>
   
-  <property name="xtest.extra.home" location="../../nbextra/xtest"/>
- <property name="junit.framework.jar" location="${xtest.extra.home}/lib/junit.jar"/>
-
   <target name="prepare-junit-extensions">
     <ant dir="../junit" antfile="build.xml" target="jar-junit-extensions"/>
     <mkdir dir="lib"/>
     <copy file="../junit/netbeans/modules/ext/junit-ext.jar" todir="lib"/>
   </target>
 
-  <target name="compile" depends="prepare-junit-extensions">
+  <target name="init">
+    <ant dir="external" target="unscramble"/>
+  </target>
+
+  <target name="compile" depends="init,prepare-junit-extensions">
     <javac srcdir="src" destdir="src"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">
@@ -40,17 +41,20 @@ Microsystems, Inc. All Rights Reserved.
         </fileset>
 	<pathelement location="../core/netbeans/lib/core.jar"/>
 	<pathelement location="../core/netbeans/lib/ext/boot.jar"/>
-        <!-- XXX stop using this! Not to mention it should use ${binroot}. -->
-        <fileset dir="../../nbextra/ant/release/modules/ext">
-          <include name="ant.jar"/>
+        <!-- XXX stop using this! -->
+        <fileset dir="../ant/external">
           <include name="ant-1.*.jar"/>
         </fileset>
         <!-- use junit with already compiled extensions -->
 	<pathelement location="src"/>
-	<pathelement location="${xtest.extra.home}/lib/junit.jar"/>
-	<pathelement location="${xtest.extra.home}/lib/xml-apis.jar"/>
-	<pathelement location="${xtest.extra.home}/lib/xerces.jar"/>
-	<pathelement location="${xtest.extra.home}/lib/xalan.jar"/>
+        <fileset dir="external">
+          <include name="xml-apis*.jar"/>
+          <include name="xerces*.jar"/>
+          <include name="xalan*.jar"/>
+        </fileset>
+        <fileset dir="../junit/external">
+          <include name="junit*.jar"/>
+        </fileset>
 	<pathelement location="lib/junit-ext.jar"/>
       </classpath>
     </javac>
@@ -76,17 +80,12 @@ Microsystems, Inc. All Rights Reserved.
 	-->
 	<include name="META-INF/services/org.openide.ErrorManager"/>
     </jar>	    
-
-
-    <copy file="${xtest.extra.home}/lib/junit.jar" todir="lib"/>
-    <copy file="${xtest.extra.home}/lib/xml-apis.jar" todir="lib"/>
-    <copy file="${xtest.extra.home}/lib/xerces.jar" todir="lib"/>
-    <copy file="${xtest.extra.home}/lib/xalan.jar" todir="lib"/>
-    <copy file="${xtest.extra.home}/lib/xtest-ext.jar" todir="lib"/>
-    <copy file="${xtest.extra.home}/lib/lib.jnikill.linux.i386.so" todir="lib"/>
-    <copy file="${xtest.extra.home}/lib/lib.jnikill.solaris.sparc.so" todir="lib"/>
-    <copy file="${xtest.extra.home}/lib/lib.jnikill.win32.x86.dll" todir="lib"/>
-    <copy file="${xtest.extra.home}/lib/kill.exe" todir="lib"/>
+  
+    <copy file="../junit/external/junit-3.7.jar" tofile="lib/junit.jar"/>
+    <copy file="external/xml-apis-1.0b2.jar" tofile="lib/xml-apis.jar"/>
+    <copy file="external/xerces-2.0.1.jar" tofile="lib/xerces.jar"/>
+    <copy file="external/xalan-2.3.1.jar" tofile="lib/xalan.jar"/>
+    <copy file="external/xtest-ext.jar" todir="lib"/>
   </target>
   
   <target name="makedist" depends="jars">
@@ -116,10 +115,6 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="lib/xml-apis.jar"/>
     <delete file="lib/xalan.jar"/>
     <delete file="lib/xtest-ext.jar"/>
-    <delete file="lib/lib.jnikill.linux.i386.so"/>
-    <delete file="lib/lib.jnikill.solaris.sparc.so"/>
-    <delete file="lib/lib.jnikill.win32.x86.dll"/>
-    <delete file="lib/kill.exe"/>
     <delete file="xtest-distribution.zip"/>
     <delete file="xtest-pes-distribution.zip"/>
   </target>
@@ -134,13 +129,14 @@ Microsystems, Inc. All Rights Reserved.
       <include name="org/netbeans/xtest/pe/**"/>      
       <include name="org/netbeans/xtest/util/**"/>
       <classpath>		
-		<pathelement location="src"/>
-		<pathelement location="${xtest.extra.home}/lib/xml-apis.jar"/>
-		<pathelement location="${xtest.extra.home}/lib/xerces.jar"/>
-		<pathelement location="${xtest.extra.home}/lib/xalan.jar"/>
-    	<!-- XXX stop using this! Not to mention it should use ${binroot}. -->
-    	<fileset dir="../../nbextra/ant/release/modules/ext">
-	        <include name="ant.jar"/>
+        <pathelement location="src"/>
+        <fileset dir="external">
+          <include name="xml-apis*.jar"/>
+          <include name="xerces*.jar"/>
+          <include name="xalan*.jar"/>
+        </fileset>
+    	<!-- XXX stop using this! -->
+    	<fileset dir="../ant/external">
         	<include name="ant-1.*.jar"/>
      	</fileset>		
       </classpath>
@@ -157,9 +153,9 @@ Microsystems, Inc. All Rights Reserved.
             excludesfile="../nbbuild/standard-jar-excludes.txt"
             compress="false"
             includes="org/netbeans/xtest/pe/**,org/netbeans/xtest/util/**"/>
-    <copy file="${xtest.extra.home}/lib/xml-apis.jar" todir="lib"/>
-    <copy file="${xtest.extra.home}/lib/xerces.jar" todir="lib"/>
-    <copy file="${xtest.extra.home}/lib/xalan.jar" todir="lib"/>
+    <copy file="external/xml-apis-1.0b2.jar" tofile="lib/xml-apis.jar"/>
+    <copy file="external/xerces-2.0.1.jar" tofile="lib/xerces.jar"/>
+    <copy file="external/xalan-2.3.1.jar" tofile="lib/xalan.jar"/>
   </target>
   
   <target name="makedist-pes" depends="jar-pes">
@@ -167,7 +163,7 @@ Microsystems, Inc. All Rights Reserved.
      	<zipfileset dir="lib" prefix="lib" includes="**/*.jar,**/*.xsl"/>
      	<zipfileset dir="bin" prefix="bin" includes="xtest-pes.sh"/>
      	<!-- again - this shoudn't be done this way -->
-     	<zipfileset  dir="../../nbextra/ant/release/modules/ext" prefix="lib" includes="ant-1.4.1.jar"/>
+     	<zipfileset  dir="../ant/external" prefix="lib" includes="ant-1.4.1.jar"/>
      </zip>  
   </target>
 

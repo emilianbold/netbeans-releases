@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
 <!--
                 Sun Public License Notice
 
@@ -8,13 +8,12 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="usersguide" default="netbeans" basedir=".">
 
-  <property name="binroot" location="../../nbextra"/>
   <property name="nbm_alias" value="nb_ide"/>
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
@@ -72,7 +71,7 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="javahelp/org/netbeans/modules/usersguide/JavaHelpSearch2"/>
     <jhindexer basedir="javahelp/org/netbeans/modules/usersguide"
                db="javahelp/org/netbeans/modules/usersguide/JavaHelpSearch2"
-               jhall="${binroot}/nbbuild/lib/jhall.jar">
+               jhall="../nbbuild/external/jhall-1.1.2_02.jar">
       <include name="**/*.html"/>
       <exclude name="credits.html"/>
       <exclude name="ant/credits.html"/>
@@ -132,7 +131,17 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- See #13931: -->
   <target name="check-javahelp" depends="javahelp" description="Validate helpset for various errors.">
-    <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets" classpath="../nbbuild/nbantext.jar:${binroot}/core/release/lib/ext/regexp.jar:${binroot}/nbbuild/lib/jhall.jar"/>
+    <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets">
+      <classpath>
+        <pathelement location="../nbbuild/nbantext.jar"/>
+        <fileset dir="../core/external">
+          <include name="regexp*.jar"/>
+        </fileset>
+        <fileset dir="../nbbuild/external">
+          <include name="jhall*.jar"/>
+        </fileset>
+      </classpath>
+    </taskdef>
     <checkhelpsets>
       <fileset dir="javahelp">
         <include name="org/netbeans/modules/usersguide/ide.hs"/>

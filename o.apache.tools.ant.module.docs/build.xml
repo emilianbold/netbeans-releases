@@ -13,7 +13,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project name="ant/docs" default="netbeans" basedir=".">
 
-    <property name="binroot" location="../../../nbextra"/>
     <property name="homepage.base" value="netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
     <property name="license.file" location="../../nbbuild/standard-nbm-license.txt"/>
@@ -24,6 +23,10 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../nbbuild/nbantext.jar"/>
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../../nbbuild/nbantext.jar"/>
+
+    <target name="init">
+        <ant dir="../external" target="unscramble"/>
+    </target>
 
     <target name="jars">
         <mkdir dir="netbeans/modules"/>
@@ -44,13 +47,13 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
     </target>
 
-    <target name="javahelp">
+    <target name="javahelp" depends="init">
         <mkdir dir="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
-        <unzip src="${binroot}/ant/ant-docs.zip" dest="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
+        <unzip src="../external/ant-docs-1.4.1.zip" dest="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
         <mkdir dir="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch"/>
         <jhindexer basedir="javahelp/org/apache/tools/ant/module/docs"
                    db="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch"
-                   jhall="${binroot}/nbbuild/lib/jhall.jar">
+                   jhall="../../nbbuild/external/jhall-1.1.2_02.jar">
             <include name="**/*.html"/>
             <exclude name="JavaHelpSearch/"/>
             <exclude name="credits.html"/>
@@ -64,7 +67,17 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="check-javahelp" depends="javahelp" description="Validate helpset for various errors.">
-        <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets" classpath="../../nbbuild/nbantext.jar:${binroot}/core/release/lib/ext/regexp.jar:${binroot}/nbbuild/lib/jhall.jar"/>
+        <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets">
+            <classpath>
+                <pathelement location="../../nbbuild/nbantext.jar"/>
+                <fileset dir="../../core/external">
+                    <include name="regexp*.jar"/>
+                </fileset>
+                <fileset dir="../../nbbuild/external">
+                    <include name="jhall*.jar"/>
+                </fileset>
+            </classpath>
+        </taskdef>
         <checkhelpsets>
             <fileset dir="javahelp">
                 <include name="org/apache/tools/ant/module/docs/HelpSet.hs"/>
@@ -87,7 +100,7 @@ Microsystems, Inc. All Rights Reserved.
                 <text>For the Ant documentation module itself:</text>
                 <file location="${license.file}"/>
                 <text>For the Ant manual:</text>
-                <file location="../Ant_License"/>
+                <file location="../../nbbuild/external/apache-license.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>

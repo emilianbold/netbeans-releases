@@ -22,22 +22,7 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar"/>
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../../nbbuild/nbantext.jar"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../nbbuild/nbantext.jar"/>
-    <property name="binroot" location="../../../nbextra"/>
     <property name="xml-apis" value="xml-apis.jar"/>
-
-    <!--
-    <target name="compile">
-        <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-            <classpath>
-                <pathelement location="../../openide/openide-13javac-workaround.jar"/>
-                <fileset dir="../../openide/netbeans/lib">
-                    <include name="openide*.jar" />
-                </fileset>
-                <pathelement location="${binroot}/core/release/lib/ext/${xml-apis}"/>
-            </classpath>
-        </javac>
-    </target>
-	-->
 
     <target name="jars">
         <mkdir dir="netbeans/lib"/>

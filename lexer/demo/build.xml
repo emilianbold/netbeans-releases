@@ -8,20 +8,16 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="lexer" default="help" basedir=".">
 
   <property name="lexer.module.root" location=".."/>
-  <property name="binroot" location="${lexer.module.root}/../../nbextra"/>
   <property name="lexerjar" location="${lexer.module.root}/netbeans/modules/lexer.jar"/>
   <!-- <property name="build.compiler.debug" value="on"/> -->
   <!-- <property name="build.compiler.deprecation" value="on"/> -->
-
-  <!-- <property name="xmlparser" value="${binroot}/core/release/lib/ext/xerces.jar"/> -->
-  <!-- <property name="antlr" value="${binroot}/lexer/release/modules/ext/antlr.jar"/> -->
 
   <property name="democlass" value="org.netbeans.modules.lexer.demo.javacc.CalcPaneDemo"/>
   <property name="testclass" value="org.netbeans.modules.lexer.demo.javacc.CalcAlgorithmTest"/>
@@ -34,7 +30,6 @@ Microsystems, Inc. All Rights Reserved.
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">
       <classpath>
-        <!-- <pathelement location="${xmlparser}"/> -->
         <pathelement location="${lexer.module.root}/tmp"/>
         <pathelement location="${lexerjar}"/>
       </classpath>

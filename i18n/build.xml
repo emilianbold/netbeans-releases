@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
 <!--
                 Sun Public License Notice
 
@@ -18,7 +18,6 @@ Microsystems, Inc. All Rights Reserved.
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
-  <property name="binroot" location="../../nbextra"/>
   <property name="build.compiler.debug" value="on"/>
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
@@ -35,8 +34,9 @@ Microsystems, Inc. All Rights Reserved.
         </fileset>
         <pathelement location="../core/netbeans/lib/core.jar"/>
         <pathelement location="../properties/netbeans/modules/properties.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
+        <fileset dir="../core/external">
+          <include name="regexp*.jar" />
+        </fileset>
      </classpath>
     </javac>
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
@@ -49,7 +49,9 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../properties/netbeans/modules/properties.jar"/>
         <pathelement location="../form/netbeans/modules/form.jar"/>
         <pathelement location="../java/netbeans/modules/java.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
+        <fileset dir="../core/external">
+          <include name="xml-apis*.jar" />
+        </fileset>
       </classpath>
     </javac>
 
@@ -146,8 +148,10 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../form/netbeans/modules/ext/AbsoluteLayout.jar"/>
         <pathelement location="../java/netbeans/modules/java.jar"/>
 -->
-        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
+        <fileset dir="../core/external">
+          <include name="regexp*.jar" />
+          <include name="xml-apis*.jar" />
+        </fileset>
       </classpath>
     </javadoc>    
   </target>

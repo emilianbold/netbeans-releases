@@ -6,5 +6,5 @@ OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.3
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.web.core/1 > 1.6, org.netbeans.modules.servletapi23/1
 OpenIDE-Module-Package-Dependencies: [javax.servlet.ServletException], [org.apache.jasper.Constants], [org.apache.jasper.Options]
-Class-Path: ext/jasper-runtime.jar ext/jasper-compiler.jar
+Class-Path: ext/jasper-runtime-4.0.4.jar ext/jasper-compiler-4.0.4.jar
 

@@ -19,13 +19,11 @@ Microsystems, Inc. All Rights Reserved.
     <property name="core_root" location="${xml_root}/core"/>
 
     <property name="nbroot" location="${xml_root}/.."/>
-    <property name="binroot" location="${nbroot}/../nbextra"/>
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
     <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
     <property name="homepage.base" value="netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40/xml"/>
-    <property name="storepass" value="?"/>
     <property name="nbm_alias" value="nb_ide"/>
 
     <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext_root}/nbantext.jar"/>
@@ -43,19 +41,22 @@ Microsystems, Inc. All Rights Reserved.
         <filter token="CATALOG_SPEC_VERS_SUBST" value="${xml.catalog.specification.version}"/>
         <filter    token="CORE_SPEC_VERS_SUBST" value="${xml.core.specification.version}"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+        <ant dir="${nbroot}/xml/external" target="unscramble"/>
     </target>
 
-    <target name="compile">
+    <target name="compile" depends="init">
         <echo message="Compiling XML catalog module classes..."/>
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>        
                 <fileset dir="${nbroot}/openide/netbeans/lib">
                     <include name="openide*.jar"/>
                 </fileset>
-                <pathelement location="${binroot}/core/release/lib/ext/sax.jar"/>
-                <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/> <!-- actually needed by dead code -->
-                <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/> <!-- is covered by above -->
-                <pathelement location="${binroot}/xml/catalog/release/modules/ext/resolver-1_1_nb.jar"/>
+                <fileset dir="${nbroot}/core/external">
+                    <include name="xml-apis*.jar"/>
+                </fileset>
+                <fileset dir="${nbroot}/xml/external">
+                    <include name="resolver*.jar"/>
+                </fileset>
                 <pathelement location="${core_root}/src/"/>
                 <pathelement location="${api_root}/src/"/>
             </classpath>
@@ -77,10 +78,9 @@ Microsystems, Inc. All Rights Reserved.
         </locjar>    
     </target>
 
-    <target name="release">
-        <copy todir="netbeans" includeEmptyDirs="false">
-            <fileset dir="${binroot}/xml/catalog/release"/>
-        </copy>
+    <target name="release" depends="init">
+        <mkdir dir="netbeans/modules/ext"/>
+        <copy file="${nbroot}/xml/external/resolver-1_1_nb.jar" tofile="netbeans/modules/ext/resolver-1_1_nb.jar"/>
     </target>
 
     <target name="javahelp">
@@ -116,8 +116,8 @@ Microsystems, Inc. All Rights Reserved.
             <license name="xml-catalog-license.txt">
                  <text>For the XML Entity Catalog module itself:</text>
                  <file location="${license.file}"/>
-                 <text>For the Apache's xml-commons XML Resolver library:</text>
-                 <file location="Resolver.license"/>
+                 <text>For the XML Resolver library:</text>
+                 <file location="${nbroot}/xml/external/resolver-license.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>

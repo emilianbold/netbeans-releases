@@ -19,8 +19,7 @@
 # It is used as automatical update of XML web pages.
 #
 # You must specify $CVS_ROOT, which should contain nb_all/xml,
-#   nb_all/nbbuild with compiled nbantext.jar and plans folder and
-#   nbextra folder which contains actual binaries.
+#   nb_all/nbbuild with compiled nbantext.jar and plans folder.
 # e.g.: CVS_ROOT=/tmp/cvs_netbeans_org
 # If necessary, you can specify proxy host and port
 #   HTTP_PROXYHOST, HTTP_PROXYPORT variables.

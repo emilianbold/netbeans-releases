@@ -49,7 +49,7 @@
 	      <![CDATA[
 	          <!DOCTYPE Library PUBLIC "-//NetBeans IDE//DTD JavaLibrary//EN" "http://www.netbeans.org/dtds/JavaLibrary-1_0.dtd">
 	          <Library>
-	              <Archive name="modules/ext/junit.jar"/>
+	              <Archive name="modules/ext/junit-3.7.jar"/>
 	          </Library>
 	      ]]>
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 

@@ -20,7 +20,6 @@ Microsystems, Inc. All Rights Reserved.
 <!-- Not clear how to solve this. Try rerunning build if it happens. -->
 
 <project name="openide" default="netbeans" basedir=".">
-  <property name="binroot" location="../../nbextra"/>
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" location="../nbbuild/standard-nbm-license.txt"/>
@@ -29,15 +28,32 @@ Microsystems, Inc. All Rights Reserved.
 
   <taskdef name="enhanceclass" classname="org.netbeans.nbbuild.NbEnhanceClass" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks" classpath="../nbbuild/nbantext.jar:${binroot}/core/release/lib/ext/regexp.jar"/>
+  <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks">
+    <classpath>
+      <pathelement location="../nbbuild/nbantext.jar"/>
+      <fileset dir="../core/external">
+        <include name="regexp*.jar"/>
+      </fileset>
+    </classpath>
+  </taskdef>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
+
+  <target name="init">
+    <ant dir="../core/external" target="unscramble"/>
+    <path id="openide-cp">
+      <fileset dir="../core/external">
+        <include name="xml-apis*.jar"/>
+        <include name="regexp*.jar"/>
+      </fileset>
+    </path>
+  </target>
 
   <target name="init-14">
     <available property="jdk14" classname="java.lang.CharSequence" />
   </target>
   
-  <target name="compile-regular">
+  <target name="compile-regular" depends="init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <exclude name="org/openide/**/*14.java"/>
       <bootclasspath>
@@ -45,10 +61,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement path="${sun.boot.class.path}"/>
         <pathelement location="openide-13javac-workaround.jar"/>
       </bootclasspath>
-      <classpath>
-        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>        
-        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
-      </classpath>
+      <classpath refid="openide-cp"/>
     </javac>
   </target>
 
@@ -60,12 +73,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement path="${sun.boot.class.path}"/>
         <pathelement location="openide-13javac-workaround.jar"/>
       </bootclasspath>
-<!--
-      <classpath>
-        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>        
-        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
-      </classpath>
--->      
+      <!-- As needed: <classpath refid="openide-cp"/> -->
     </javac>
   </target>
   
@@ -77,8 +85,8 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="openide-13javac-workaround.jar"/>
       </bootclasspath>
       <classpath>
-        <!-- could add regexp.jar, xml-apis.jar as needed -->
         <pathelement location="src"/>
+        <!-- As needed: <path refid="openide-cp"/> -->
       </classpath>
     </javac>
   </target>
@@ -359,7 +367,11 @@ Microsystems, Inc. All Rights Reserved.
     </locjar>
     
     <!-- It also needs regexp.jar: -->
-    <copy file="${binroot}/core/release/lib/ext/regexp.jar" tofile="standalone/regexp.jar"/>
+    <copy todir="standalone">
+      <fileset dir="../core/external">
+        <include name="regexp*.jar"/>
+      </fileset>
+    </copy>
     
   </target>
 
@@ -628,10 +640,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
         <pathelement location="api/doc"/>
         <pathelement location="src"/>
       </sourcepath>
-      <classpath>
-        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
-      </classpath>
+      <classpath refid="openide-cp"/>
       <link href="${jdk-docs-location}"
             offline="true"
             packagelistLoc="api/doc"
@@ -948,8 +957,10 @@ Set jmf.home to the location of your JMF installation to continue."/>
                 <include name="openide-lookup.jar"/>
                 <include name="README-FS.txt"/>
             </fileset>
-            <fileset dir="${binroot}/core/release/lib/ext" includes="xml-apis.jar"/>
-            <fileset dir="${binroot}/core/release/lib/ext" includes="xerces.jar"/>
+            <fileset dir="../core/external">
+                <include name="xml-apis*.jar"/>
+                <include name="xerces*.jar"/>
+            </fileset>
         </zip>
     </target>
 

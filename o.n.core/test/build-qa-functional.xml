@@ -163,7 +163,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="runplatformtest" depends="set_classpath">
         <mkdir dir="${netbeans.home}/modules/ext"/>
         <copy todir="${netbeans.home}/modules/ext" >
-             <fileset dir="${nbextra.dir}/ant/release/modules/ext/">
+             <fileset dir="../../ant/external">
                 <include name="*.jar"/>
              </fileset>
         </copy>        

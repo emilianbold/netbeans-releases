@@ -8,14 +8,13 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 
 <project name="db" default="netbeans" basedir=".">
 
-  <property name="binroot" location="../../nbextra"/>
   <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
 
   <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="../nbbuild/nbantext.jar"/>
@@ -81,7 +80,7 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="javahelp/org/netbeans/modules/db/docs/JavaHelpSearch2"/>
     <jhindexer basedir="javahelp/org/netbeans/modules/db/docs/"
                db="javahelp/org/netbeans/modules/db/docs/JavaHelpSearch2"
-               jhall="${binroot}/nbbuild/lib/jhall.jar">
+               jhall="../nbbuild/external/jhall-1.1.2_02.jar">
       <include name="**/*.html"/>
       <exclude name="JavaHelpSearch2/"/>
       <exclude name="ja/"/>
@@ -91,7 +90,7 @@ Microsystems, Inc. All Rights Reserved.
     <jhindexer basedir="javahelp/org/netbeans/modules/db/docs/ja/"
                db="javahelp/org/netbeans/modules/db/docs/ja/JavaHelpSearch2"
                locale="ja"
-               jhall="${binroot}/nbbuild/lib/jhall.jar">
+               jhall="../nbbuild/external/jhall-1.1.2_02.jar">
       <include name="**/*.html"/>
       <exclude name="JavaHelpSearch2/"/>
       <exclude name="credits.html"/>

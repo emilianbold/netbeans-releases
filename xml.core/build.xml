@@ -20,10 +20,9 @@ Microsystems, Inc. All Rights Reserved.
     <property name="tax_lib_root" location="${tax_root}/lib"/>
 
     <property name="nbroot" location="${xml_root}/.."/>
-    <property name="binroot" location="${nbroot}/../nbextra"/>
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
-    <property name="xml-apis" location="${binroot}/core/release/lib/ext/xml-apis.jar" />
+    <property name="xml-apis" location="${nbroot}/core/external/xml-apis-1.0b2.jar" />
 
     <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
     <property name="homepage.base" value="netbeans.org"/>
@@ -91,7 +90,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="javahelp/org/netbeans/modules/xml/core/docs/JavaHelpSearch"/>
         <jhindexer basedir="javahelp/org/netbeans/modules/xml/core/docs/"
                    db="javahelp/org/netbeans/modules/xml/core/docs/JavaHelpSearch"
-                   jhall="${binroot}/nbbuild/lib/jhall.jar">
+                   jhall="${nbroot}/nbbuild/external/jhall-1.1.2_02.jar">
             <include name="**/*.html"/>
             <exclude name="JavaHelpSearch/"/>
         </jhindexer>

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
 <!--
                 Sun Public License Notice
 
@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -19,30 +19,11 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../nbbuild/nbantext.jar"/>
 
   <property name="nb_root" location="../.."/>
-  <property name="binroot" location="../../../nbextra"/>
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="../../nbbuild/standard-nbm-license.txt"/>
   <property name="nbm_alias" value="nb_ide"/>
-  <property name="storepass" value="?"/>
   <property name="webbeans_root" location="src/org/netbeans/modules/web/dd/model"/>
-
-  <target name="setup-jdkhome-1">
-    <!-- Note: user-configured -Djavahome=... will always override this: -->
-    <property name="javahome" location="${java.home}"/>
-    <available property="javahome-valid" file="${javahome}/lib/tools.jar"/>
-  </target>
-  <target name="setup-jdkhome-2" depends="setup-jdkhome-1" if="javahome-valid">
-    <property name="jdkhome" value="${javahome}"/>
-    <property name="jdkhome-valid" value="true"/>
-  </target>
-  <target name="setup-jdkhome-3" depends="setup-jdkhome-1" unless="javahome-valid">
-    <property name="jdkhome" location="${javahome}/.."/>
-    <available property="jdkhome-valid" file="${jdkhome}/lib/tools.jar"/>
-  </target>
-  <target name="setup-jdkhome" depends="setup-jdkhome-2,setup-jdkhome-3" unless="jdkhome-valid">
-    <fail message="No tools.jar found in ${javahome}! Set -Djavahome=... as needed."/>
-  </target>
 
   <!-- Check if it is neceseary to rebuild beans -->
   <target name="dd2beans_init">
@@ -60,9 +41,11 @@ Microsystems, Inc. All Rights Reserved.
      <echo message="generating code generation input file information" />
      <java classname="org.netbeans.modules.schema2beans.GenBeans" fork="yes">
      	<classpath>
-	  <pathelement path="${binroot}/core/release/lib/ext/crimson.jar" />
-          <pathelement path="${binroot}/core/release/lib/ext/xml-apis.jar" />
-	  <pathelement path="${nb_root}/logger/netbeans/lib/ext/logger.jar" />
+          <fileset dir="${nb_root}/core/external">
+            <include name="crimson*.jar"/>
+            <include name="xml-apis*.jar"/>
+          </fileset>
+	  <!--<pathelement path="${nb_root}/logger/netbeans/lib/ext/logger.jar" />-->
 	  <pathelement path="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" />
 	  <fileset dir = "${nb_root}/openide">
 		<include name="netbeans/lib/openide*.jar"/>
@@ -75,11 +58,13 @@ Microsystems, Inc. All Rights Reserved.
      </java>
   </target>
 
-  <target name="compile" depends="setup-jdkhome,dd2beansgen">
+  <target name="compile" depends="dd2beansgen">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
+          <fileset dir="${nb_root}/core/external">
+            <include name="xml-apis*.jar"/>
+          </fileset>
         <pathelement location="${nb_root}/openidex/netbeans/modules/autoload/openidex.jar"/>
         <pathelement location="${nb_root}/html/netbeans/modules/html.jar"/>
         <pathelement location="${nb_root}/java/netbeans/modules/java.jar"/>
@@ -90,8 +75,6 @@ Microsystems, Inc. All Rights Reserved.
           <include name="openide*.jar" />
         </fileset>
         <pathelement location="${nb_root}/openidex/netbeans/modules/autoload/openidex.jar"/>
-        <!-- Hopefully set up by nbbuild/build.xml: -->
-        <pathelement location="${jdkhome}/lib/tools.jar"/>
         <pathelement location="${nb_root}/j2eeserver/netbeans/modules/autoload/j2eeserver.jar"/>
 	<pathelement path="${nb_root}/xml/api/netbeans/modules/autoload/xml-api.jar" />
       </classpath>
@@ -113,10 +96,7 @@ Microsystems, Inc. All Rights Reserved.
     </locjar>
   </target>
 
-  <target name="release">
-  </target>
-
-  <target name="netbeans" depends="jars,release">
+  <target name="netbeans" depends="jars">
     <genlist targetname="nbm" outputfiledir="${nb_root}/nbbuild/netbeans"/>
   </target>
 

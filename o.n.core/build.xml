@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -17,33 +17,26 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
-  <property name="binroot" location="../../nbextra"/>
-  <property name="xml-apis" value="xml-apis.jar"/>
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" location="../nbbuild/standard-nbm-license.txt"/>
 
-  <target name="compile">
-    <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">    
-      <classpath>
-        <pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
-        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/${xml-apis}"/>
-      </classpath>
-    </javac>
+  <target name="init">
+    <ant dir="external" target="unscramble"/>
+  </target>
+
+  <target name="compile" depends="init">
+    <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}"/>
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/${xml-apis}"/>
+        <fileset dir="external">
+          <include name="regexp*.jar"/>
+          <include name="xml-apis*.jar"/>
+        </fileset>
         <pathelement location="libsrc"/>
       </classpath>
     </javac>
@@ -90,10 +83,13 @@ Microsystems, Inc. All Rights Reserved.
     <copy todir="netbeans" includeEmptyDirs="false">
       <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
     </copy>
-    <copy todir="netbeans">
-      <fileset dir="${binroot}/core/release" excludesfile="../nbbuild/standard-jar-excludes.txt">
-        <!-- Only in this position for historical reasons; cf. core/javahelp/build.xml -->
-        <exclude name="lib/ext/jh.jar"/>
+    <mkdir dir="netbeans/lib/ext"/>
+    <copy todir="netbeans/lib/ext">
+      <fileset dir="external">
+        <include name="crimson*.jar"/>
+        <include name="xerces*.jar"/>
+        <include name="xml-apis*.jar"/>
+        <include name="regexp*.jar"/>
       </fileset>
     </copy>
     <!-- [PENDING] may according to wishes give another attribute: eof="add" -->
@@ -118,9 +114,11 @@ Microsystems, Inc. All Rights Reserved.
       <license name="core-license.txt">
         <text>For the NetBeans core code itself:</text>
         <file location="${license.file}"/>
-        <text>For the Crimson, Regexp, XML Commons, and Xerces software products
+        <text>For the Crimson, Regexp, and Xerces software products
 included with the NetBeans core:</text>
-        <file location="apache-license.txt"/>
+        <file location="../nbbuild/external/apache-license.txt"/>
+        <text>For the XML Commons software product:</text>
+        <file location="external/xml-apis-license.txt"/>
       </license>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>

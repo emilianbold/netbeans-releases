@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
 <!--
                 Sun Public License Notice
 
@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -35,11 +35,13 @@ To implement:
 
 <project name="Source Monitor" default="all" basedir=".">
 
-  <property name="binroot" location="../../nbextra"/>
   <property name="mailhost" value="localhost"/>
+  <property name="nb_all" location=".."/>
   <path id="nbantext">
     <pathelement location="nbantext.jar"/>
-    <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
+    <fileset dir="${nb_all}/core/external">
+      <include name="regexp*.jar"/>
+    </fileset>
   </path>
   <target name="init">
     <ant dir="." target="bootstrap"/>
@@ -51,7 +53,6 @@ To implement:
   <target name="all" depends="check-licenses,check-dbl-checked-locking,check-bundle-snafus" description="Run all implemented tests."/>
 
   <target name="kvetch" depends="init" description="Run tests, and send mail to culprits. Under development.">
-    <property name="nb_all" location=".."/>
     <kvetch mailhost="${mailhost}"
             target="all"
             from="jesse.glick@sun.com"

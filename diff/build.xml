@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
 <!--
                 Sun Public License Notice
 
@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -17,7 +17,6 @@ Microsystems, Inc. All Rights Reserved.
 <project name="diff" default="netbeans" basedir=".">
 
   <property name="nbroot" value=".."/>
-  <property name="binroot" location="../../nbextra"/>
   <property name="nbext" value="${nbroot}/nbbuild"/>
   <property name="nbm_alias" value="nb_ide"/>
   <property name="homepage.base" value="netbeans.org"/>
@@ -41,7 +40,9 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="${nbroot}/openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
+        <fileset dir="${nbroot}/core/external">
+          <include name="regexp*.jar"/>
+        </fileset>
       </classpath>
     </javac>
   </target>
@@ -107,7 +108,9 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="${nbroot}/openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
+        <fileset dir="${nbroot}/core/external">
+          <include name="regexp*.jar"/>
+        </fileset>
       </classpath>
       <link href="${jdk-docs-location}"
             offline="true"

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
 <!--
                 Sun Public License Notice
 
@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -16,21 +16,22 @@ Microsystems, Inc. All Rights Reserved.
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
 
-  <property name="binroot" location="../../nbextra"/>
-  <property name="junit.framework.jar" location="${binroot}/junit/release/modules/ext/junit.jar"/>
-
   <property name="build.compiler.deprecation" value="off"/>
   <property name="build.compiler.debug" value="off"/>  
 
   <property name="module.license.file" location="../nbbuild/standard-nbm-license.txt"/>
-  <property name="junit.license.file" location="ibm-public-license.txt"/>
 
-  <target name="compile-junit-extensions">
-    <echo message="junit framework is set to ${junit.framework.jar}"/>
+  <target name="init">
+    <ant dir="external" target="unscramble"/>
+  </target>
+
+  <target name="compile-junit-extensions" depends="init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <include name="org/netbeans/junit/**"/>
       <classpath>        
-	<pathelement location="${junit.framework.jar}"/>
+        <fileset dir="external">
+          <include name="junit*.jar"/>
+        </fileset>
          <fileset dir="../openide/netbeans/lib">
             <include name="openide*.jar" />
          </fileset>
@@ -63,8 +64,13 @@ Microsystems, Inc. All Rights Reserved.
 	       destdir="javadoc/nbjunit-api"
 	       windowtitle="NetBeans extensions to JUnit"
 	       doctitle="NetBeans extensions to JUnit"
-	       classpath="${junit.framework.jar}"
-      />  
+      >  
+        <classpath>
+          <fileset dir="external">
+            <include name="junit*.jar"/>
+          </fileset>
+        </classpath>
+      </javadoc>
       <mkdir dir="netbeans/docs"/>
       <zip zipfile="netbeans/docs/nbjunit-api.zip"
            basedir="javadoc/nbjunit-api"
@@ -76,7 +82,7 @@ Microsystems, Inc. All Rights Reserved.
       <delete file="netbeans/docs/nbjunit-api.zip"/>
   </target>
 
-  <target name="compile">
+  <target name="compile" depends="init">
     <javac srcdir="src" destdir="src"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">
@@ -86,7 +92,9 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-	<pathelement location="${junit.framework.jar}"/>
+        <fileset dir="external">
+          <include name="junit*.jar"/>
+        </fileset>
       </classpath>
     </javac>
   </target>
@@ -105,11 +113,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="javahelp">
-  	<!--
-    <copy todir="netbeans/docs">
-      <fileset dir="javahelp"/>
-    </copy>
-    -->
+    <!-- XXX consider running jhindexer too -->
     <mkdir dir="netbeans/modules/docs"/>
     <jar jarfile="netbeans/modules/docs/junit-module-help.jar"
     	basedir="javahelp"
@@ -125,9 +129,14 @@ Microsystems, Inc. All Rights Reserved.
   	</copy>
   </target>
 
-  <target name="release">
-    <copy todir="netbeans">
-      <fileset dir="${binroot}/junit/release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+  <target name="release" depends="init">
+    <mkdir dir="netbeans/docs"/>
+    <copy file="external/junit-api.zip" tofile="netbeans/docs/junit-api.zip"/>
+    <mkdir dir="netbeans/modules/ext"/>
+    <copy todir="netbeans/modules/ext">
+      <fileset dir="external">
+        <include name="junit*.jar"/>
+      </fileset>
     </copy>
   </target>
 
@@ -143,7 +152,7 @@ Microsystems, Inc. All Rights Reserved.
         <text>For the JUnit module itself:</text>
         <file location="${module.license.file}"/>
 	<text>For the JUnit framework:</text>
-	<file location="${junit.license.file}"/>
+	<file location="external/ibm-public-license.txt"/>
       </license>
       <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
     </makenbm>
@@ -176,6 +185,3 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
 </project>
-
-
-

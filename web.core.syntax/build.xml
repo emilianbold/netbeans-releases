@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
 <!--
                 Sun Public License Notice
 
@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -19,19 +19,17 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../nbbuild/nbantext.jar"/>
 
   <property name="nb_root" location="../.."/>
-  <property name="binroot" location="../../../nbextra"/>
   <property name="core_root" location="../core"/>
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="../../nbbuild/standard-nbm-license.txt"/>
   <property name="nbm_alias" value="nb_ide"/>
-  <property name="storepass" value="?"/>
 
-  <target name="web-core.compile">
-    <ant dir="${core_root}" target="compile"/>
+  <target name="init">
+    <ant dir="../external" target="unscramble"/>
   </target>
 
-  <target name="compile" depends="web-core.compile">
+  <target name="compile" depends="init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
@@ -39,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_root}/editor/netbeans/modules/editor.jar"/>
         <pathelement location="${nb_root}/xml/netbeans/modules/xml-text-edit.jar"/>
         <pathelement location="${core_root}/src/"/>
-        <pathelement location="${binroot}/web/servletapi23/release/modules/ext/servlet-2.3.jar"/>
+        <pathelement location="../external/servlet-2.3.jar"/>
         <fileset dir="${nb_root}/openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>

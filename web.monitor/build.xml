@@ -21,7 +21,6 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="../nbbuild/nbantext.jar"/>
 
   <property name="nb_root" location=".."/>
-  <property name="binroot" location="../../nbextra"/>
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
@@ -29,9 +28,9 @@ Microsystems, Inc. All Rights Reserved.
   <property name="storepass" value="?"/>
 
   <property name="servlet22" 
-     location="${binroot}/httpserver/servletapi/release/modules/ext/servlet-2.2.jar"/>
+     location="${nb_root}/httpserver/external/servlet-2.2.jar"/>
   <property name="servlet23" 
-     location="${binroot}/web/servletapi23/release/modules/ext/servlet-2.3.jar"/>
+     location="${nb_root}/web/external/servlet-2.3.jar"/>
 
   <target name="setup-jdkhome-1">
     <!-- Note: user-configured -Djavahome=... will always override this: -->
@@ -84,7 +83,7 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="javahelp/org/netbeans/modules/web/monitor/docs/JavaHelpSearch2"/>
     <jhindexer basedir="javahelp/org/netbeans/modules/web/monitor/docs/"
                db="javahelp/org/netbeans/modules/web/monitor/docs/JavaHelpSearch2"
-               jhall="${binroot}/nbbuild/lib/jhall.jar">
+               jhall="${nb_root}/nbbuild/external/jhall-1.1.2_02.jar">
       <include name="**/*.html"/>
       <exclude name="JavaHelpSearch2/"/>
       <exclude name="ja/"/>
@@ -94,7 +93,7 @@ Microsystems, Inc. All Rights Reserved.
     <jhindexer basedir="javahelp/org/netbeans/modules/web/monitor/docs/ja/"
                db="javahelp/org/netbeans/modules/web/monitor/docs/ja/JavaHelpSearch2"
                locale="ja"
-               jhall="${binroot}/nbbuild/lib/jhall.jar">
+               jhall="${nb_root}/nbbuild/external/jhall-1.1.2_02.jar">
       <include name="**/*.html"/>
       <exclude name="JavaHelpSearch2/"/>
       <exclude name="credits.html"/>
@@ -137,7 +136,9 @@ Microsystems, Inc. All Rights Reserved.
          <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
          <pathelement location="${nb_root}/httpserver/netbeans/modules/httpserver.jar"/>
          <pathelement location="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar"/>
-         <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
+         <fileset dir="${nb_root}/core/external">
+           <include name="xml-apis*.jar"/>
+         </fileset>
          <pathelement location="${servlet22}"/>
        </classpath>
      </javac>
@@ -151,7 +152,9 @@ Microsystems, Inc. All Rights Reserved.
        excludes="**/SCCS/**, **/CVS/**">
 
        <classpath>
-         <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
+         <fileset dir="${nb_root}/core/external">
+           <include name="xml-apis*.jar"/>
+         </fileset>
          <pathelement location="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar"/>
          <pathelement location="${servlet23}"/>	
        </classpath>

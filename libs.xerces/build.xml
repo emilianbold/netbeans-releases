@@ -17,26 +17,24 @@ Microsystems, Inc. All Rights Reserved.
     <property name="libs_root" location=".."/>
 
     <property name="nbroot" location="${libs_root}/.."/>
-    <property name="binroot" location="${nbroot}/../nbextra"/>
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
     <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
     <property name="apache-license.file" location="${libs_root}/apache-license.txt"/>
     <property name="homepage.base" value="netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-    <property name="storepass" value="?"/>
     <property name="nbm_alias" value="nb_ide"/>
 
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext_root}/nbantext.jar"/>
 
-
     <target name="init">
         <property file="${libs_root}/public.properties"/>
         <filter token="XERCES_SPEC_VERS_SUBST" value="${libs.xerces.specification.version}"/>
         <filter token="XERCES_IMPL_VERS_SUBST" value="${libs.xerces.implementation.version}"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+        <ant dir="../external" target="unscramble"/>
     </target>
 
     <target name="jars" depends="init">
@@ -51,9 +49,12 @@ Microsystems, Inc. All Rights Reserved.
         </locjar>    
     </target>
 
-    <target name="release">
-        <copy todir="netbeans">
-            <fileset dir="${binroot}/libs/xerces/release"/>
+    <target name="release" depends="init">
+        <mkdir dir="netbeans/modules/autoload/ext"/>
+        <copy todir="netbeans/modules/autoload/ext">
+            <fileset dir="../external">
+                <include name="xerces*.jar"/>
+            </fileset>
         </copy>
     </target>
 
@@ -69,13 +70,13 @@ Microsystems, Inc. All Rights Reserved.
         <makenbm file="${libs_root}/xerces.nbm"
                  topdir="."
                  module="netbeans/modules/autoload/xerces.jar"
-                 homepage="http://libs.${homepage.base}/#xerces"
-                 distribution="http://${dist.base}/xerces.nbm">
-            <license name="xerces-license.txt">
-                 <text>For the Xerces module itself:</text>
-                 <file location="${license.file}"/>
-                 <text>For the Apache's XML parser (Xerces):</text>
-                 <file location="${apache-license.file}"/>
+                 homepage="http://${homepage.base}/#xerces"
+                 distribution="${dist.base}/xerces.nbm">
+            <license name="xalan-license.txt">
+                <text>For the integration module:</text>
+                <file location="${license.file}"/>
+                <text>For the Xerces library:</text>
+                <file location="../../nbbuild/external/apache-license.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>

@@ -21,7 +21,7 @@ This folder contains scripts used while development, not for module runtime.
 - It is used for generating xml/*/l10n.list files.
 
 * init-xalan.sh
-- Extends classpath with JAXP, Xerces and Xalan from NetBeans nbextra.
+- Extends classpath with JAXP, Xerces and Xalan.
 
 * update_www.sh
 - It is used as automatical update of XML web pages.

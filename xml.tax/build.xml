@@ -19,7 +19,6 @@ Microsystems, Inc. All Rights Reserved.
     <property name="api_root" location="${xml_root}/api"/>
 
     <property name="nbroot" location="${xml_root}/.."/>
-    <property name="binroot" location="${nbroot}/../nbextra"/>
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
     <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
@@ -76,10 +75,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="release">
         <for-each locations="lib"/>
-
-        <copy todir="netbeans" includeEmptyDirs="false">
-            <fileset dir="${binroot}/xml/tax/release"/>
-        </copy>
     </target>
 
     <target name="javahelp">
@@ -115,11 +110,11 @@ Microsystems, Inc. All Rights Reserved.
                  module="netbeans/modules/autoload/xml-tax.jar"
                  homepage="http://xml.${homepage.base}/tax/"
                  distribution="http://${dist.base}/xml-tax.nbm">
-            <license name="xml-tax-license.txt">
-                <text>For the Tree API for XML ("TAX") module itself:</text>
-                <file location="${license.file}"/>
-                <text>For the Apache's XML Parser (Xerces):</text>
-                <file location="lib/Xerces.license"/>
+             <license name="xml-tax-license.txt">
+                 <text>For the Tree API for XML ("TAX") module itself:</text>
+                 <file location="${license.file}"/>
+                 <text>For the Apache's XML Parser (Xerces):</text>
+                 <file location="${nbroot}/nbbuild/external/apache-license.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>

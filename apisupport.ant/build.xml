@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
 <!--
                 Sun Public License Notice
 
@@ -19,7 +19,6 @@ Microsystems, Inc. All Rights Reserved.
     <property name="homepage.base" value="netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
     <property name="license.file" location="../../nbbuild/standard-nbm-license.txt"/>
-    <property name="binroot" location="../../../nbextra"/>
 
     <property name="nbm_alias" value="nb_ide"/>
 
@@ -27,8 +26,7 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="../src" destdir="../src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>
                 <pathelement location="../../ant/netbeans/modules/ant.jar"/>
-                <fileset dir="${binroot}/ant/release/modules/ext">
-                    <include name="ant.jar"/>
+                <fileset dir="../../ant/external">
                     <include name="ant-1.*.jar"/>
                 </fileset>
                 <fileset dir="../../openide/netbeans/lib">

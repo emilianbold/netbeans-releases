@@ -15,10 +15,8 @@ Microsystems, Inc. All Rights Reserved.
 <project name="xml" default="netbeans" basedir=".">
 
     <property name="nbroot" location=".."/>
-    <property name="binroot" location="${nbroot}/../nbextra"/>
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
-    <taskdef name="validatexml" classname="org.netbeans.nbbuild.XMLValidate" classpath="${nbext_root}/nbantext.jar;${binroot}/xml/catalog/release/modules/ext/resolver-1_1_nb.jar"/>
     <taskdef  name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext_root}/nbantext.jar"/>
     <property name="submodules" value="api, tax, core, catalog, tools, text-edit, tree-edit, css, xsl, schema"/>
 
@@ -105,6 +103,20 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- Check all XML files in all sub-modules. -->
     <target name="check">
+        <ant dir="${nbroot}/core/external" target="unscramble"/>
+        <ant dir="external" target="unscramble"/>
+        <taskdef name="validatexml" classname="org.netbeans.nbbuild.XMLValidate">
+            <classpath>
+                <pathelement location="${nbroot}/nbbuild/nbantext.jar"/>
+                <fileset dir="${nbroot}/core/external">
+                    <include name="xml-apis*.jar"/>
+                    <include name="xerces*.jar"/>
+                </fileset>
+                <fileset dir="external">
+                    <include name="resolver*.jar"/>
+                </fileset>
+            </classpath>
+        </taskdef>
         <validatexml basedir="." catalog="${nbroot}/www/www/dtds/catalog" warnings="true">
 <!--            <include name="**/src/**/*.xml"/>-->
             <include name="**/src/**/mf-layer.xml"/>

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
 <!--
                 Sun Public License Notice
 
@@ -24,29 +24,29 @@ ToDo:
   <!-- To make people happy who want to do `ant clean all': -->
   <target name="all" depends="build,sanity-check" description="Build the IDE and run a sanity check."/>
 
-  <target name="bootstrap-init">
-    <property name="binroot" location="../../nbextra"/>
-    <property name="checked.binary.file" location="${binroot}/core/release/lib/ext/jh.jar"/>
-    <available property="have-binaries-already" file="${checked.binary.file}"/>
-  </target>
-
-  <target name="bootstrap" depends="check-for-binaries"
+  <target name="bootstrap"
           description="Bootstrap NetBeans-specific Ant extensions.">
     <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
-    <javac srcdir="antsrc" destdir="antsrc" deprecation="true" debug="${build.compiler.debug}">
-      <classpath>
-        <!-- Needed for CheckLinks: -->
-        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
+    <ant dir="external" target="unscramble"/>
+    <ant dir="../core/external" target="unscramble"/>
+    <ant dir="../xml/external" target="unscramble"/>
+    <path id="bootstrap-cp">
+      <fileset dir="..">
         <!-- For running inside IDE, to pick up ant.jar -->
-        <pathelement location="${binroot}/nbbuild/lib/ant.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/sax.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/dom.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/> <!-- XML serializer -->
-        <pathelement location="${binroot}/nbbuild/lib/jhall.jar"/>
-        <pathelement location="${binroot}/xml/catalog/release/modules/ext/resolver-1_1_nb.jar"/>
-      </classpath>
+        <include name="nbbuild/external/ant*.jar"/>
+        <!-- General XML stuff, XML serializer, and resolver catalog: -->
+        <include name="core/external/xml-apis*.jar"/>
+        <include name="core/external/xerces*.jar"/>
+        <!-- Needed for CheckLinks: -->
+        <include name="core/external/regexp*.jar"/>
+        <!-- For JavaHelp indexing: -->
+        <include name="nbbuild/external/jhall*.jar"/>
+        <!-- For XMLValidate Ant task: -->
+        <include name="xml/external/resolver-1_1_nb.jar"/>
+      </fileset>
+    </path>
+    <javac srcdir="antsrc" destdir="antsrc" deprecation="true" debug="${build.compiler.debug}">
+      <classpath refid="bootstrap-cp"/>
     </javac>
     <jar jarfile="nbantext.jar" basedir="antsrc">
       <exclude name="**/*.java"/>
@@ -70,16 +70,7 @@ ToDo:
     <fail message="No tools.jar found in ${javahome}! Set -Djavahome=... as needed."/>
   </target>
 
-  <target name="init" depends="bootstrap,setup-jdkhome-4">
-    <tstamp>
-    	<format property="buildnumber" pattern="yyyyMMddHHmm"/>
-    </tstamp>
-    <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
-    <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
-    <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc" classpath="nbantext.jar"/>
-    <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="nbantext.jar"/>
-    <taskdef name="validatexml" classname="org.netbeans.nbbuild.XMLValidate" classpath="nbantext.jar;${binroot}/xml/catalog/release/modules/ext/resolver-1_1_nb.jar"/>
-
+  <target name="init-module-list" depends="bootstrap,setup-jdkhome-4">
     <!-- Read the user property file at first -->
     <property file="user.build.properties"/>
 
@@ -95,6 +86,36 @@ fixedmodules=$${config.fixedmodules.${moduleconfig}}
 </echo>
     <property file="moduledefs-tmp.properties"/>
     <property name="allmodules" value="${fixedmodules},${modules}"/>
+  </target>
+
+  <target name="check-whether-to-pre-unscramble" depends="init-module-list">
+    <property name="moduleconfig-is-${moduleconfig}" value="true"/>
+  </target>
+  <target name="maybe-pre-unscramble" depends="check-whether-to-pre-unscramble" if="moduleconfig-is-stable" unless="netbeans.no.pre.unscramble">
+    <!-- To make things more pleasant for the user, unscramble standard modules now. -->
+    <!-- Otherwise the user would be prompted at intervals and it would get annoying. -->
+    <!-- bootstrap already did core, nbbuild, xml -->
+    <echo>About to unscramble additional third-party files you will probably need.
+If you do not plan to use them and wish to avoid accepting their licenses,
+try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
+    <ant dir="../ant/external" target="unscramble"/>
+    <ant dir="../httpserver/external" target="unscramble"/>
+    <ant dir="../java/external" target="unscramble"/>
+    <ant dir="../libs/external" target="unscramble"/>
+    <ant dir="../scripting/external" target="unscramble"/>
+    <ant dir="../tomcatint/external" target="unscramble"/>
+    <ant dir="../web/external" target="unscramble"/>
+    <ant dir="../xml/external" target="unscramble"/>
+  </target>
+
+  <target name="init" depends="init-module-list,maybe-pre-unscramble">
+    <tstamp>
+    	<format property="buildnumber" pattern="yyyyMMddHHmm"/>
+    </tstamp>
+    <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
+    <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
+    <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc" classpath="nbantext.jar"/>
+    <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="nbantext.jar"/>
 
     <!-- We need absolute path to ${netbeans.dest} -->
     <property name="netbeans.dest.abs" location="${netbeans.dest}"/>
@@ -105,10 +126,6 @@ fixedmodules=$${config.fixedmodules.${moduleconfig}}
     <!-- But this it is OK to change: -->
     <property name="tryme.args" value=" -J-Dnetbeans.debug.exceptions=true ${tryme.args.additional}"/>
 
-  </target>
-
-  <target name="check-for-binaries" depends="bootstrap-init" unless="have-binaries-already">
-    <fail message="You seem to be missing the required download of binaries which are required to build the IDE (I was looking for ${checked.binary.file}). Please see: http://www.netbeans.org/downloads.html"/>
   </target>
 
   <!-- How to build the IDE core: -->
@@ -691,7 +708,21 @@ the ${netbeans.dest}/bin/ directory.
 </echo>
   </target>
 
-  <target name="checkXMLs" depends="init">
+  <target name="checkXMLs" depends="bootstrap">
+    <ant dir="../core/external" target="unscramble"/>
+    <ant dir="../xml/external" target="unscramble"/>
+    <taskdef name="validatexml" classname="org.netbeans.nbbuild.XMLValidate">
+      <classpath>
+        <pathelement location="nbantext.jar"/>
+        <fileset dir="../core/external">
+          <include name="xml-apis*.jar"/>
+          <include name="xerces*.jar"/>
+        </fileset>
+        <fileset dir="../xml/external">
+          <include name="resolver*.jar"/>
+        </fileset>
+      </classpath>
+    </taskdef>
     <validatexml basedir="../" catalog="../www/www/dtds/catalog">
         <include name="*/build.xml"/>
 	<include name="*/src/**/*.xml/"/>
@@ -787,7 +818,7 @@ the ${netbeans.dest}/bin/ directory.
   </target>
 
   <target name="bootstrap-javadoc"
-          depends="check-for-binaries"
+          depends="bootstrap"
           description="Generate Javadoc for Ant extensions.">
     <mkdir dir="www/nbantext-javadoc"/>
     <tstamp/>
@@ -807,17 +838,7 @@ the ${netbeans.dest}/bin/ directory.
              version="false"
              bottom="Built on ${TODAY}"
     >
-      <classpath>
-        <!-- Needed for CheckLinks: -->
-        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
-        <!-- For running inside IDE, to pick up ant.jar -->
-        <pathelement location="${binroot}/nbbuild/lib/ant.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
-        <pathelement location="${binroot}/nbbuild/lib/jhall.jar"/>
-        <!-- For XMLValidate: -->
-        <pathelement location="${binroot}/xml/catalog/release/modules/ext/resolver-1_1_nb.jar"/>
-      </classpath>
+      <classpath refid="bootstrap-cp"/>
     </javadoc>
   </target>
 

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="xtest/external" default="unscramble" basedir=".">
+    <property name="extnl" location="../../nbbuild/external"/>
+    <target name="unscramble">
+        <taskdef name="unscramble" classname="org.netbeans.nbbuild.Unscramble" classpath="${extnl}/scrambler.jar"/>
+        <unscramble logfile="${extnl}/unscrambling.log">
+            <!-- LFI #111324 for Xalan 2.2: -->
+            <binary clear="xalan-2.3.1.jar" scrambled="xalan-2.3.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
+            <!-- LFI #111159 for Xerces 2.0.2-1: -->
+            <binary clear="xerces-2.0.1.jar" scrambled="xerces-2.0.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
+            <!-- LFI #1078: -->
+            <binary clear="xml-apis-1.0b2.jar" scrambled="xml-apis-1.0b2.jar.scrambled" license="../../core/external/xml-apis-license.txt"/>
+            <!-- No LFI #? -->
+            <binary clear="xtest-ext.jar" scrambled="xtest-ext.jar.scrambled" license="xtest-ext-license.txt"/>
+        </unscramble>
+    </target>
+    <target name="scramble">
+        <taskdef name="scramble" classname="org.netbeans.nbbuild.Scramble" classpath="${extnl}/scrambler.jar"/>
+        <scramble>
+            <binary clear="xalan-2.3.1.jar.master" scrambled="xalan-2.3.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
+            <binary clear="xerces-2.0.1.jar.master" scrambled="xerces-2.0.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
+            <binary clear="xml-apis-1.0b2.jar.master" scrambled="xml-apis-1.0b2.jar.scrambled" license="../../core/external/xml-apis-license.txt"/>
+            <binary clear="xtest-ext.jar.master" scrambled="xtest-ext.jar.scrambled" license="xtest-ext-license.txt"/>
+        </scramble>
+    </target>
+    <target name="clean">
+        <delete file="xalan-2.3.1.jar"/>
+        <delete file="xerces-2.0.1.jar"/>
+        <delete file="xml-apis-1.0b2.jar"/>
+        <delete file="xtest-ext.jar"/>
+    </target>
+</project>
