@@ -63,7 +63,7 @@
       <Properties>
         <Property name="mnemonic" type="int" value="112"/>
         <Property name="selected" type="boolean" value="true"/>
-        <Property name="text" type="java.lang.String" value="private"/>
+        <Property name="text" type="java.lang.String" value=" private"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
 
@@ -78,8 +78,8 @@
     </Component>
     <Component class="javax.swing.JRadioButton" name="protectedRadio">
       <Properties>
-        <Property name="mnemonic" type="int" value="114"/>
-        <Property name="text" type="java.lang.String" value="protected"/>
+        <Property name="mnemonic" type="int" value="101"/>
+        <Property name="text" type="java.lang.String" value=" protected"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
 
@@ -95,7 +95,7 @@
     <Component class="javax.swing.JRadioButton" name="publicRadio">
       <Properties>
         <Property name="mnemonic" type="int" value="117"/>
-        <Property name="text" type="java.lang.String" value="public"/>
+        <Property name="text" type="java.lang.String" value=" public"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
 
@@ -116,7 +116,7 @@
       <Properties>
         <Property name="mnemonic" type="int" value="97"/>
         <Property name="selected" type="boolean" value="true"/>
-        <Property name="text" type="java.lang.String" value="static"/>
+        <Property name="text" type="java.lang.String" value=" static"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
 
@@ -133,7 +133,7 @@
       <Properties>
         <Property name="mnemonic" type="int" value="102"/>
         <Property name="selected" type="boolean" value="true"/>
-        <Property name="text" type="java.lang.String" value="final"/>
+        <Property name="text" type="java.lang.String" value=" final"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
 
@@ -149,7 +149,7 @@
     <Component class="javax.swing.JCheckBox" name="transientCheck">
       <Properties>
         <Property name="mnemonic" type="int" value="116"/>
-        <Property name="text" type="java.lang.String" value="transient"/>
+        <Property name="text" type="java.lang.String" value=" transient"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
 

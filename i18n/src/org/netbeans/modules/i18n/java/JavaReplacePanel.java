@@ -125,6 +125,19 @@ public class JavaReplacePanel extends JPanel {
         fieldLabel.setDisplayedMnemonic((bundle.getString("LBL_Field_Mnem")).charAt(0));        
         fieldTextField.selectAll();
         initTextField.selectAll();
+        staticCheck.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_staticCheck"));
+        identifierTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_identifierTextField"));
+        transientCheck.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_transientCheck"));
+        defaultRadio.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_defaultRadio"));
+        fieldTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_fieldTextField"));
+        initButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_initButton"));
+        publicRadio.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_publicRadio"));        
+        generateCheck.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_generateCheck"));
+        finalCheck.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_finalCheck"));
+        privateRadio.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_privateRadio"));
+        initTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_initTextField"));
+        protectedRadio.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_protectedRadio"));
+        
     }
     
     /** This method is called from within the constructor to
@@ -195,7 +208,7 @@ public class JavaReplacePanel extends JPanel {
 
         privateRadio.setMnemonic('p');
         privateRadio.setSelected(true);
-        privateRadio.setText("private");
+        privateRadio.setText(" private");
         privateRadio.setEnabled(false);
         privateRadio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -210,8 +223,8 @@ public class JavaReplacePanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(privateRadio, gridBagConstraints);
 
-        protectedRadio.setMnemonic('r');
-        protectedRadio.setText("protected");
+        protectedRadio.setMnemonic('e');
+        protectedRadio.setText(" protected");
         protectedRadio.setEnabled(false);
         protectedRadio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -227,7 +240,7 @@ public class JavaReplacePanel extends JPanel {
         add(protectedRadio, gridBagConstraints);
 
         publicRadio.setMnemonic('u');
-        publicRadio.setText("public");
+        publicRadio.setText(" public");
         publicRadio.setEnabled(false);
         ButtonGroup radioGroup = new ButtonGroup();
 
@@ -250,7 +263,7 @@ public class JavaReplacePanel extends JPanel {
 
         staticCheck.setMnemonic('a');
         staticCheck.setSelected(true);
-        staticCheck.setText("static");
+        staticCheck.setText(" static");
         staticCheck.setEnabled(false);
         staticCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -268,7 +281,7 @@ public class JavaReplacePanel extends JPanel {
 
         finalCheck.setMnemonic('f');
         finalCheck.setSelected(true);
-        finalCheck.setText("final");
+        finalCheck.setText(" final");
         finalCheck.setEnabled(false);
         finalCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -285,7 +298,7 @@ public class JavaReplacePanel extends JPanel {
         add(finalCheck, gridBagConstraints);
 
         transientCheck.setMnemonic('t');
-        transientCheck.setText("transient");
+        transientCheck.setText(" transient");
         transientCheck.setEnabled(false);
         transientCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
