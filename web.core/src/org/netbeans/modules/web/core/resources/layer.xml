@@ -90,6 +90,8 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="template" boolvalue="true" />
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/TemplateHelp.html" />
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+          <attr name="templateWizardIterator" 
+                methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createHtmlIterator"/>
       </file>
       <!-- Servlet Listener --> 
       <file name="ServletListener.java" url="templates/ServletListener.template">
