@@ -102,6 +102,12 @@ Microsystems, Inc. All Rights Reserved.
 	<antcall target="test"/>
     </target>
 
+    <target name="test-newinner">
+        <property name="tests.specs" value="org.netbeans.performance.platform.InnerClassConstruct"/>
+        <property name="tests.output" value="report/newinner.xml"/>
+	<antcall target="test"/>
+    </target>
+
     <target depends="jars" name="test-runnablemethod">
         <property name="tests.specs" value="org.netbeans.performance.platform.RunnableMethod"/>
         <property name="tests.output" value="report/runnablemethod.xml"/>
