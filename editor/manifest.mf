@@ -5,6 +5,7 @@ OpenIDE-Module-Install: org/netbeans/modules/editor/EditorModule.class
 OpenIDE-Module-Specification-Version: 1.8
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/editor/resources/layer.xml
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.20
 OpenIDE-Module-Short-Description: Enables editing of files in the IDE.
 OpenIDE-Module-Long-Description: The Editor module enables you to edit source files within the
   IDE. It provides syntax coloring for Java and HTML files, word matching, code completion,
