@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
     is run on the plugin node.  If the user selects a server from this dialog, the class
     should install it in the /J2EE/InstalledServers/ section of the DefaultFileSystem.
     -->
-    <finder-ui></finder-ui>
+    <finder-ui>org.netbeans.modules.tomcat5.ide.AddInstallationJPanel</finder-ui>
     <!--
     The  name-mapper must be a class-name that implements TargetNameResolver.
     This class provides mapping between names in jsr88 and jsr77
