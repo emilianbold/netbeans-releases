@@ -221,7 +221,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
                     //If null -> broken library, repair it.
                     for (Iterator eit = volume.iterator(); eit.hasNext();) {
                         URL url = (URL) eit.next ();
-                        out.println("\t\t<resource><![CDATA["+url+"]]></resource>"); //NOI18N
+                        out.println("\t\t<resource>"+org.openide.xml.XMLUtil.toElementContent(url.toExternalForm())+"</resource>"); //NOI18N
                     }
                 }
                 out.println("\t</volume>");     //NOI18N
