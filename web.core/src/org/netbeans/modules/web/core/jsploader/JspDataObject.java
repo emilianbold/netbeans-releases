@@ -382,7 +382,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
 
     public String getURL() {
         String url = JspCompileUtil.findRelativeContextPath(WebModule.getWebModule (getPrimaryFile ()).getDocumentBase (), getPrimaryFile ());
-        url = url + JspNode.getRequestParams(((MultiDataObject)this).getPrimaryEntry());        
+        url = url + JspNode.getRequestParams(((MultiDataObject)this).getPrimaryEntry());
+        url = org.openide.util.Utilities.replaceString(url, " ", "%20");
         return url;
     }
     
