@@ -290,7 +290,7 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
 
     public FileObject[] getSourceRoots() {
         Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
         FileObject[] roots = new FileObject[groups.length];
         for (int i=0; i < roots.length; i++) {
             roots[i] = groups[i].getRootFolder();
