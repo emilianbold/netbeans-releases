@@ -67,7 +67,6 @@ public class UnitTestForSourceQueryImplTest extends NbTestCase {
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
         }, UnitTestForSourceQueryImpl.class.getClassLoader());
         scratch = TestUtil.makeScratchDir(this);
-        Repository.getDefault().addFileSystem(scratch.getFileSystem()); // so FileUtil.fromFile works
         projdir = scratch.createFolder("proj");
         AntProjectHelper helper = ProjectGenerator.createProject(projdir, "org.netbeans.modules.java.j2seproject");
         pm = ProjectManager.getDefault();
@@ -81,7 +80,6 @@ public class UnitTestForSourceQueryImplTest extends NbTestCase {
     }
 
     protected void tearDown() throws Exception {
-        Repository.getDefault().removeFileSystem(scratch.getFileSystem());
         scratch = null;
         projdir = null;
         pm = null;
