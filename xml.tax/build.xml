@@ -25,8 +25,8 @@ Microsystems, Inc. All Rights Reserved.
     <property name="parserimpl" value="${binroot}/xml/tax/release/modules/ext/xerces2.jar"/> <!-- parser implementation used internally by module -->
 
     <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
-    <property name="homepage.base" value="xml.netbeans.org"/>
-    <property name="dist.base" value="http://www.netbeans.org/download/nbms/40/xml"/>
+    <property name="homepage.base" value="netbeans.org"/>
+    <property name="dist.base" value="www.netbeans.org/download/nbms/40/xml"/>
     <property name="storepass" value="?"/>
     <property name="nbm_alias" value="nb_ide"/>
     <property name="release" value="dev"/>
@@ -120,8 +120,8 @@ Microsystems, Inc. All Rights Reserved.
         <makenbm file="../xml-tax-${release}.nbm"
                  topdir="."
                  module="netbeans/modules/autoload/xml-tax.jar"
-                 homepage="http://${homepage.base}/tax/"
-                 distribution="${dist.base}/xml-tax-${release}.nbm">
+                 homepage="http://xml.${homepage.base}/tax/"
+                 distribution="http://${dist.base}/xml-tax-${release}.nbm">
             <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>

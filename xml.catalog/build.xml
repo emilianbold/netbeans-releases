@@ -23,8 +23,8 @@ Microsystems, Inc. All Rights Reserved.
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
     <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
-    <property name="homepage.base" value="xml.netbeans.org"/>
-    <property name="dist.base" value="http://www.netbeans.org/download/nbms/40/xml"/>
+    <property name="homepage.base" value="netbeans.org"/>
+    <property name="dist.base" value="www.netbeans.org/download/nbms/40/xml"/>
     <property name="storepass" value="?"/>
     <property name="nbm_alias" value="nb_ide"/>
     <property name="release" value="dev"/>
@@ -119,8 +119,8 @@ Microsystems, Inc. All Rights Reserved.
         <makenbm file="../xml-catalog-${release}.nbm"
                  topdir="."
                  module="netbeans/modules/xml-catalog.jar"
-                 homepage="http://${homepage.base}/catalog/"
-                 distribution="${dist.base}/xml-catalog-${release}.nbm">
+                 homepage="http://xml.${homepage.base}/catalog/"
+                 distribution="http://${dist.base}/xml-catalog-${release}.nbm">
             <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>

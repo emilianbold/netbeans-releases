@@ -69,7 +69,7 @@ Microsystems, Inc. All Rights Reserved.
     <makenbm file="httpserver.nbm"
              topdir="."
              module="netbeans/modules/httpserver.jar"
-	     homepage="http://httpserver.${hompage.base}/"
+	     homepage="http://httpserver.${homepage.base}/"
 	     distribution="http://${dist.base}/httpserver.nbm">
       <license file="${license.file}"/>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
