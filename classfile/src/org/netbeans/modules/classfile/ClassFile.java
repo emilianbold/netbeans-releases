@@ -45,7 +45,6 @@ public class ClassFile {
     String typeSignature;
     EnclosingMethod enclosingMethod;
     private boolean includeCode = false;
-    private byte[] laterBytes;
     
     /** size of buffer in buffered input streams */
     private static final int BUFFER_SIZE = 4096;
@@ -154,33 +153,12 @@ public class ClassFile {
                 throw new IOException();
             constantPool = loadClassHeader(in);
             interfaces = getCPClassList(in, constantPool);
-
-	    // Cache remaining bytes to delay loading.
-	    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	    byte[] buf = new byte[2048];
-	    int c;
-	    while ((c = in.read(buf)) > 0)
-		baos.write(buf, 0, c);
-	    laterBytes = baos.toByteArray();
-        } catch (IOException ioe) {
-	    throw new InvalidClassFormatException(makeErrorMsg(ioe));
-        }
-    }
-
-    private void finishLoading() {
-	if (laterBytes == null)
-	    return;
-        try {
-	    DataInputStream in = 
-		new DataInputStream(new ByteArrayInputStream(laterBytes));
             variables = Variable.loadFields(in, constantPool, this);
             methods = Method.loadMethods(in, constantPool, this, includeCode);
             attributes = AttributeMap.load(in, constantPool);
         } catch (IOException ioe) {
-	    throw new InternalError(makeErrorMsg(ioe));
-        } finally {
-	    laterBytes = null;
-	}
+	    throw new InvalidClassFormatException(makeErrorMsg(ioe));
+        }
     }
 
     private String makeErrorMsg(IOException ioe) {
@@ -270,7 +248,6 @@ public class ClassFile {
      * @return the variable,or null if no such variable in this class.
      */
     public final Variable getVariable(String name) {
-	finishLoading();
         int n = variables.length;
         for (int i = 0; i < n; i++) {
             Variable v = variables[i];
@@ -285,7 +262,6 @@ public class ClassFile {
      *         defined by this class.
      */    
     public final Collection getVariables() {
-	finishLoading();
         return Arrays.asList(variables);
     }
 
@@ -293,7 +269,6 @@ public class ClassFile {
      * @return the number of variables defined by this class.
      */    
     public final int getVariableCount() {
-	finishLoading();
         return variables.length;
     }
     
@@ -309,7 +284,6 @@ public class ClassFile {
      * @return the method, or null if no such method in this class.
      */
     public final Method getMethod(String name, String signature) {
-	finishLoading();
         int n = methods.length;
         for (int i = 0; i < n; i++) {
             Method m = methods[i];
@@ -324,7 +298,6 @@ public class ClassFile {
      *         defined by this class.
      */    
     public final Collection getMethods() {
-	finishLoading();
         return Arrays.asList(methods);
     }
     
@@ -332,7 +305,6 @@ public class ClassFile {
      * @return the number of methods defined by this class.
      */    
     public final int getMethodCount() {
-	finishLoading();
         return methods.length;
     }
     
@@ -340,7 +312,6 @@ public class ClassFile {
      * @return the name of the source file the compiler used to create this class.
      */    
     public final String getSourceFileName() {
-	finishLoading();
 	if (sourceFileName == null) {
 	    DataInputStream in = attributes.getStream("SourceFile"); // NOI18N
 	    if (in != null) {
@@ -358,12 +329,10 @@ public class ClassFile {
     }
     
     public final boolean isDeprecated() {
-	finishLoading();
 	return attributes.get("Deprecated") != null;
     }
 
     public final boolean isSynthetic() {
-	finishLoading();
         return (classAccess & Access.SYNTHETIC) == Access.SYNTHETIC ||
 	    attributes.get("Synthetic") != null;
     }
@@ -391,12 +360,10 @@ public class ClassFile {
      * @see org.netbeans.modules.classfile.Field#getAttributes
      */
     public final AttributeMap getAttributes(){
-	finishLoading();
         return attributes;
     }
     
     public final Collection getInnerClasses(){
-	finishLoading();
 	if (innerClasses == null) {
 	    DataInputStream in = attributes.getStream("InnerClasses"); // NOI18N
 	    if (in != null) {
@@ -433,7 +400,6 @@ public class ClassFile {
      * is returned.
      */
     public String getTypeSignature() {
-	finishLoading();
 	if (typeSignature == null) {
 	    DataInputStream in = attributes.getStream("Signature"); // NOI18N
 	    if (in != null) {
@@ -458,7 +424,6 @@ public class ClassFile {
      * null is returned.
      */
     public EnclosingMethod getEnclosingMethod() {
-	finishLoading();
 	if (enclosingMethod == null) {
 	    DataInputStream in = 
 		attributes.getStream("EnclosingMethod"); // NOI18N
@@ -484,7 +449,6 @@ public class ClassFile {
     }
 
     private void loadAnnotations() {
-	finishLoading();
 	if (annotations == null)
 	    annotations = buildAnnotationMap(constantPool, attributes);
     }
