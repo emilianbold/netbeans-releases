@@ -107,8 +107,54 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         
     /** Creates new form JUnitCfgOfCreate */
     private JUnitCfgOfCreate() {
+        // init components
         initComponents();
+        // add mnemonics (this has to be here, because of I18N and inability of the form editor
+        addMnemonics();
+        
         cmdMount.addActionListener(new JUnitCfgOfCreate.CmdMountListener());
+    }
+    
+    
+    private static char getMnemonics(ResourceBundle rb, String key) {
+        return rb.getString(key).charAt(0);
+    }
+    
+    private static int getMnemonicsIndex(ResourceBundle rb, String key) {
+        String mnemonicsValue = rb.getString(key);
+        try {            
+            return Integer.parseInt(mnemonicsValue);
+        } catch (NumberFormatException nfe) {
+            // oops, there was a problem -> error message
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, nfe);
+            // and return no mnemonics
+            return -1;
+        }
+    }
+        
+    private void addMnemonics() {
+        
+        // check boxes
+        this.chkPublic.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkPublic.mne"));
+        this.chkProtected.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkProtected.mne"));
+        this.chkPackage.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkPackage.mne"));
+        this.chkExceptions.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkExceptions.mne"));
+        this.chkRegenerateSuite.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkRegenerateSuite.mne"));
+        this.chkComments.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkComments.mne"));
+        this.chkContent.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkContent.mne"));
+        this.chkJavaDoc.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkJavaDoc.mne"));
+        this.chkAbstractImpl.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkAbstractImpl.mne"));
+        this.chkEnabled.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkEnabled.mne"));
+        
+        // buttons
+        this.cmdMount.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.cmdMount.mne"));
+        
+        // labels
+        /*
+        this.lblFileSystem.setDisplayedMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.lblFileSystem.mne"));
+        this.lblSuiteClass.setDisplayedMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.lblSuiteClass.mne"));
+        this.lblTestClass.setDisplayedMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.lblTestClass.mne"));
+         */
     }
     
     public static final ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.junit.Bundle");
@@ -290,24 +336,23 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
 
         setMaximumSize(new java.awt.Dimension(500, 320));
         setMinimumSize(new java.awt.Dimension(500, 320));
-        setName("null");
         setPreferredSize(new java.awt.Dimension(500, 320));
         lblFileSystem.setText(bundle.getString("JUnitCfgOfCreate.lblFileSystem.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 6);
         add(lblFileSystem, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 2, 2, 2);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 2, 2, 2);
         add(cboFileSystem, gridBagConstraints);
 
         cmdMount.setText(bundle.getString("JUnitCfgOfCreate.cmdMount.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 2);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 2);
         add(cmdMount, gridBagConstraints);
 
         jpTemplates.setLayout(new java.awt.GridBagLayout());
@@ -322,16 +367,16 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 2);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 2);
         jpTemplates.add(lblTestClass, gridBagConstraints);
 
         cboSuiteClass.setMinimumSize(new java.awt.Dimension(200, 26));
         cboSuiteClass.setPreferredSize(new java.awt.Dimension(200, 26));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(4, 2, 4, 2);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 2, 4, 2);
         jpTemplates.add(cboSuiteClass, gridBagConstraints);
 
         cboTestClass.setMinimumSize(new java.awt.Dimension(200, 26));
@@ -339,9 +384,9 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(4, 2, 4, 2);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 2, 4, 2);
         jpTemplates.add(cboTestClass, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -350,8 +395,8 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         add(jpTemplates, gridBagConstraints);
 
         jpCodeGen.setLayout(new java.awt.GridBagLayout());
@@ -419,7 +464,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         jpCodeGen.add(chkAbstractImpl, gridBagConstraints);
 
-        chkRegenerateSuite.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/junit/Bundle").getString("JUnitCfgOfCreate.regenerateSuiteMethod.text"));
+        chkRegenerateSuite.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/junit/Bundle").getString("JUnitCfgOfCreate.chkRegenerateSuite.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -442,9 +487,9 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 13, 2, 2);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1000.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 13, 2, 2);
         add(chkEnabled, gridBagConstraints);
 
     }//GEN-END:initComponents

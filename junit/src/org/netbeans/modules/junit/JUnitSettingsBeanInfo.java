@@ -88,11 +88,16 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
             propCfgConfigEnabled.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_cfgcreate_enabled"));
             propCfgConfigEnabled.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_cfgcreate_enabled"));
 
+            // !-- CONFIGURE Test Execution is not yet supported
+            /*
             PropertyDescriptor propCfgExecEnabled = new PropertyDescriptor ("CfgExecEnabled", JUnitSettings.class);
             propCfgExecEnabled.setPropertyEditorClass(BoolPropEd.class);
             propCfgExecEnabled.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_cfgexec_enabled"));
-            propCfgExecEnabled.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_cfgexec_enabled"));
-
+            propCfgExecEnabled.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_cfgexec_enabled"));            
+             */
+            // CONFIGURE Test Execution is not yet supported --!
+            
+            
             PropertyDescriptor propInternalExecutor = new PropertyDescriptor ("ExecutorType", JUnitSettings.class);
             propInternalExecutor.setPropertyEditorClass(ExecutorPropEd.class);
             propInternalExecutor.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_executor_type"));
@@ -133,7 +138,7 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
 
             return new PropertyDescriptor[] { propFileSystem, propSuiteTemplate, propClassTemplate,
               propMembersPublic, propMembersProtected, propMembersPackage, propBodyComments, propBodyContent, 
-              propJavaDoc, propCfgConfigEnabled, propCfgExecEnabled, propInternalExecutor, 
+              propJavaDoc, propCfgConfigEnabled, propInternalExecutor, 
               propGenerateExceptionClasses, propGenerateAbstractImpl,  
               propRegenerateSuiteMethod, propTestRunner, propProperties };
         }
