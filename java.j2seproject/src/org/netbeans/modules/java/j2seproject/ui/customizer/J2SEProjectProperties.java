@@ -95,6 +95,7 @@ public class J2SEProjectProperties {
     public static final String JAVADOC_VERSION="javadoc.version"; // NOI18N
     public static final String JAVADOC_WINDOW_TITLE="javadoc.windowtitle"; // NOI18N
     public static final String JAVADOC_ENCODING="javadoc.encoding"; // NOI18N
+    public static final String JAVADOC_ADDITIONALPARAM="javadoc.additionalparam"; // NOI18N
                 
     // Properties stored in the PRIVATE.PROPERTIES
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
@@ -162,6 +163,7 @@ public class J2SEProjectProperties {
     ButtonModel JAVADOC_VERSION_MODEL;
     Document JAVADOC_WINDOW_TITLE_MODEL;
     ButtonModel JAVADOC_PREVIEW_MODEL; 
+    Document JAVADOC_ADDITIONALPARAM_MODEL;
 
     // CustomizerRun
     Document MAIN_CLASS_MODEL;
@@ -240,7 +242,7 @@ public class J2SEProjectProperties {
         JAVADOC_VERSION_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_VERSION );
         JAVADOC_WINDOW_TITLE_MODEL = projectGroup.createStringDocument( evaluator, JAVADOC_WINDOW_TITLE );
         JAVADOC_PREVIEW_MODEL = privateGroup.createToggleButtonModel( evaluator, JAVADOC_PREVIEW );
-        
+        JAVADOC_ADDITIONALPARAM_MODEL = privateGroup.createStringDocument( evaluator, JAVADOC_ADDITIONALPARAM );
         // CustomizerRun
         MAIN_CLASS_MODEL = projectGroup.createStringDocument( evaluator, MAIN_CLASS ); 
         APPLICATION_ARGS_MODEL = privateGroup.createStringDocument( evaluator, APPLICATION_ARGS );

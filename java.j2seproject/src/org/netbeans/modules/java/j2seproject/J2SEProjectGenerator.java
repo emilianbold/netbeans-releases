@@ -244,6 +244,8 @@ public class J2SEProjectGenerator {
         ep.setProperty(J2SEProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
         ep.setProperty(J2SEProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
         ep.setProperty(J2SEProjectProperties.JAVADOC_ENCODING, ""); // NOI18N
+        ep.setProperty(J2SEProjectProperties.JAVADOC_ADDITIONALPARAM, ""); // NOI18N
+        
         if (manifestFile != null) {
             ep.setProperty("manifest.file", manifestFile); // NOI18N
         }

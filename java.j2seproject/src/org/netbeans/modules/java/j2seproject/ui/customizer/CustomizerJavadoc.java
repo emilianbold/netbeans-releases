@@ -38,6 +38,7 @@ public class CustomizerJavadoc extends JPanel implements HelpCtx.Provider {
         jCheckBoxVersion.setModel( uiProperties.JAVADOC_VERSION_MODEL );
         jTextFieldWinTitle.setDocument( uiProperties.JAVADOC_WINDOW_TITLE_MODEL );
         jCheckBoxPreview.setModel( uiProperties.JAVADOC_PREVIEW_MODEL ); 
+        jTextFieldAddOptions.setDocument( uiProperties.JAVADOC_ADDITIONALPARAM_MODEL );
 
         reenableSplitIndex( null );
         
@@ -82,12 +83,16 @@ public class CustomizerJavadoc extends JPanel implements HelpCtx.Provider {
         jTextFieldWinTitle = new javax.swing.JTextField();
         jLabelEncoding = new javax.swing.JLabel();
         jTextFieldEncoding = new javax.swing.JTextField();
+        jPanel2 = new javax.swing.JPanel();
+        jLabelAddOptions = new javax.swing.JLabel();
+        jTextFieldAddOptions = new javax.swing.JTextField();
+        jLabelAddOptionsInfo = new javax.swing.JLabel();
         jCheckBoxPreview = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabelPackage.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Package_JLabel"));
         jLabelPackage.setLabelFor(jTextFieldPackage);
+        jLabelPackage.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Package_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 12);
@@ -212,8 +217,8 @@ public class CustomizerJavadoc extends JPanel implements HelpCtx.Provider {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelWinTitle, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_WinTitle_JLabel"));
         jLabelWinTitle.setLabelFor(jTextFieldWinTitle);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelWinTitle, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_WinTitle_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
@@ -247,7 +252,37 @@ public class CustomizerJavadoc extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jPanel1, gridBagConstraints);
+
+        jPanel2.setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelAddOptions, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_AddOptions_JLabel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        jPanel2.add(jLabelAddOptions, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        jPanel2.add(jTextFieldAddOptions, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelAddOptionsInfo, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_AddOptionsInfo_JLabel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        jPanel2.add(jLabelAddOptionsInfo, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        add(jPanel2, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxPreview, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Preview_JCheckBox"));
         jCheckBoxPreview.setMargin(new java.awt.Insets(0, 0, 0, 2));
@@ -278,12 +313,16 @@ public class CustomizerJavadoc extends JPanel implements HelpCtx.Provider {
     private javax.swing.JCheckBox jCheckBoxTree;
     private javax.swing.JCheckBox jCheckBoxUsages;
     private javax.swing.JCheckBox jCheckBoxVersion;
+    private javax.swing.JLabel jLabelAddOptions;
+    private javax.swing.JLabel jLabelAddOptionsInfo;
     private javax.swing.JLabel jLabelEncoding;
     private javax.swing.JLabel jLabelGenerate;
     private javax.swing.JLabel jLabelPackage;
     private javax.swing.JLabel jLabelTags;
     private javax.swing.JLabel jLabelWinTitle;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JTextField jTextFieldAddOptions;
     private javax.swing.JTextField jTextFieldEncoding;
     private javax.swing.JTextField jTextFieldPackage;
     private javax.swing.JTextField jTextFieldWinTitle;
