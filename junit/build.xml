@@ -16,6 +16,8 @@ Microsystems, Inc. All Rights Reserved.
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
 
+  <property name="binroot" value=".." />
+
   <target name="compile-deprec">
     <javac srcdir="src" destdir="src" deprecation="on">
       <classpath>
@@ -23,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
+	<pathelement location="${binroot}/core/release/lib/ext/junit.jar"/>
       </classpath>
     </javac>
   </target>
@@ -34,6 +37,7 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
+	<pathelement location="${binroot}/core/release/lib/ext/junit.jar"/>
       </classpath>
     </javac>
   </target>
@@ -59,9 +63,6 @@ Microsystems, Inc. All Rights Reserved.
 	     homepage="http://junit.netbeans.org/"
 	     distribution="http://www.netbeans.org/download/nbms/40/junit.nbm">
       <license file="../nbbuild/standard-nbm-license.txt"/>
-      <description>
-        JUnit module allows you to create and execute test classes suitable for JUnit framework.
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
     </makenbm>
   </target>
