@@ -300,7 +300,7 @@ public class KeyBindings extends JDialogOperator {
         TextFieldProperty tfp=new TextFieldProperty(psto, ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("PROP_KeyBindings"));
         tfp.openEditor();
         KeyBindings ret=new KeyBindings();
-        //options.close();
+        options.close();
         return ret;
     }
     
