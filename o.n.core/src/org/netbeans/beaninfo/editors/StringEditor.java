@@ -50,7 +50,7 @@ public class StringEditor extends PropertyEditorSupport implements ExPropertyEdi
     }
 
     public boolean supportsCustomEditor () {
-        return true;
+        return customEd;
     }
 
     public java.awt.Component getCustomEditor () {
@@ -59,7 +59,7 @@ public class StringEditor extends PropertyEditorSupport implements ExPropertyEdi
         if (val != null) {
             s = val.toString();
         }
-        return new StringCustomEditor (s, isEditable()); // NOI18N
+        return new StringCustomEditor (s, isEditable(), oneline, instructions); // NOI18N
     }
 
     private static String toAscii(String str) {
@@ -91,12 +91,20 @@ public class StringEditor extends PropertyEditorSupport implements ExPropertyEdi
         return buf.toString();
     }
     
+    private String instructions=null;
+    private boolean oneline=false;
+    private boolean customEd=true;
     // bugfix# 9219 added attachEnv() method checking if the user canWrite in text box 
     public void attachEnv(PropertyEnv env) {        
         FeatureDescriptor desc = env.getFeatureDescriptor();
         if (desc instanceof Node.Property){
             Node.Property prop = (Node.Property)desc;
             editable = prop.canWrite();
+            //enh 29294 - support one-line editor & suppression of custom
+            //editor
+            instructions = (String) prop.getValue ("instructions"); //NOI18N
+            oneline = Boolean.TRUE.equals (prop.getValue ("oneline")); //NOI18N
+            customEd = !Boolean.TRUE.equals (prop.getValue ("suppressCustomEditor"));
         }
     }
 }
