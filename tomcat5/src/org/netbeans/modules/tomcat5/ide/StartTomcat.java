@@ -38,7 +38,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FileDeploymentLayout;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ModuleUrlResolver;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentPlanSplitter;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.WebContextResolver;
 import org.netbeans.modules.tomcat5.TomcatFactory;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.TomcatManagerImpl;
@@ -65,7 +64,7 @@ import org.netbeans.modules.debugger.jpda.RemoteDebuggerInfo;
  *
  * @author Radim Kubacki
  */
-public final class StartTomcat implements StartServer, Runnable, ProgressObject, IncrementalDeployment, FileDeploymentLayout, ModuleUrlResolver, DeploymentPlanSplitter, WebContextResolver
+public final class StartTomcat implements StartServer, Runnable, ProgressObject, IncrementalDeployment, FileDeploymentLayout, ModuleUrlResolver, DeploymentPlanSplitter
 {
     private static StartTomcat instance;
     
@@ -671,14 +670,6 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
     
     public String toString () {
         return "StartTomcat [" + tm + "]";
-    }
-    
-    public String getWebContext (DeploymentConfiguration config) {
-        return ((WebappConfiguration)config).getPath ();
-    }
-    
-    public void setWebContext (DeploymentConfiguration config, String webContext) {
-        ((WebappConfiguration)config).setPath (webContext);
     }
     
     private static class P implements ProgressObject {

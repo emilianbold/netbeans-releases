@@ -72,6 +72,7 @@ Microsystems, Inc. All Rights Reserved.
       <echo message="generating bean graph for Tomcat 5 Context configuration file" />
 	<schema2beans schema="${tomcat5_dir}/resources/tomcat5_context.dtd"
 	  mddFile="tomcat5.mdd"
+          attrProp="true"
 	  package="org.netbeans.modules.tomcat5.config"
 	  rootDir="src"/>
   </target>
