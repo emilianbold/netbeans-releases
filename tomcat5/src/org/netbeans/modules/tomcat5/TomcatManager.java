@@ -1065,7 +1065,6 @@ public class TomcatManager implements DeploymentManager {
             String passwd = readPassword();
             if (passwd == null) {
                 passwd = TomcatInstallUtil.generatePassword(8);
-                storePassword(passwd);
             }
             this.setPassword(passwd);
             String [] patternTo = new String [] { 
@@ -1155,28 +1154,7 @@ public class TomcatManager implements DeploymentManager {
             }
         }
     }
-    
-    private void storePassword(String password) {
-        FileWriter pwdFile = null;
-        try {
-            pwdFile = new FileWriter(System.getProperty("netbeans.user")+System.getProperty("file.separator") + PWD_FILENAME);
-            if (pwdFile == null) {
-                return;
-            }
-            pwdFile.write(password);
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ioe.toString());
-        } finally {
-            if (pwdFile != null) {
-                try {
-                    pwdFile.close();
-                } catch (IOException ioe) {
-                    // just ignore
-                }
-            }
-        }
-    }
-    
+        
     /** Copies server.xml file and patches appBase="webapps" to
      * appBase="$CATALINA_HOME/webapps" during the copy.
      * @return success status.
