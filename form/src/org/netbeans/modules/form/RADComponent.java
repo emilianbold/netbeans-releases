@@ -950,9 +950,14 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
             public void componentRemoved(FormModelEvent e) {
                 try {
                     Object currentGroup = getValue();
-                    Object deletedComp = e.getComponent();
-                    if (currentGroup == deletedComp)
+                    RADComponent deletedComp = e.getComponent();
+                    RADComponent thisComp = getRADComponent();
+
+                    if (deletedComp == currentGroup)
                         setValue(null);
+                    else if (deletedComp == thisComp
+                             || deletedComp.isParentComponent(thisComp))
+                        thisComp.getFormModel().removeFormModelListener(listener);
                 }
                 catch (Exception ex) {} // getValue()/setValue() should not fail
             }
