@@ -176,6 +176,16 @@ final class ColorUtil {
         if (noAntialias) return;
         ((Graphics2D) g).addRenderingHints(getHints());
     }
+    
+    private static Boolean gtkAA = null;
+    public static final boolean gtkShouldAntialias() {
+        if (gtkAA == null) {
+            Object o = Toolkit.getDefaultToolkit().getDesktopProperty("gnome.Xft/Antialias"); //NOI18N
+            gtkAA = new Integer(1).equals(o) ? Boolean.TRUE : Boolean.FALSE;
+            
+        }
+        return gtkAA.booleanValue();
+    }
 
     //**************Some static utility methods for color manipulation**********
     public static boolean isBrighter(Color a, Color b) {
