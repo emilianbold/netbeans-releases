@@ -67,7 +67,11 @@ class CmpRelationshipsTableModel extends InnerTableModel {
     }
 
     public void removeRow(int row) {
-        ejbJar.getSingleRelationships().removeEjbRelation(ejbJar.getSingleRelationships().getEjbRelation(row));
+        final Relationships relationships = ejbJar.getSingleRelationships();
+        relationships.removeEjbRelation(relationships.getEjbRelation(row));
+        if (relationships.getEjbRelation().length == 0) {
+            ejbJar.setRelationships(null);
+        }
         modelUpdatedFromUI();
     }
 
