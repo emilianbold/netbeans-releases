@@ -582,7 +582,16 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
 
     /** Sets the active state of the displayer to match that of the container */
     private void updateActiveState() {
-        tabDisplayer.setActive(container.isActive());
+        //#45630 - more of a hack than a fix.
+        //apparently uninstallUI() was called before the the ContainerPropertyChangeListener instance was removed in 
+        //ContainerHierarchyListener's hierarchyChanged method.
+        // for such case the property change should be a noop.
+        TabDisplayer displ = tabDisplayer;
+        TabbedContainer cont = container;
+        if (displ != null && cont != null) {
+            displ.setActive(cont.isActive());
+        }
+        
     }
 
     public Rectangle getTabRect(int tab, Rectangle r) {
