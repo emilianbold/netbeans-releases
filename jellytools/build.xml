@@ -46,9 +46,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="all" depends="jars,zipsrc,javadoc,javadocWithJemmy" description="Create jars, source zip and javadoc zip">
     </target>
 
-    <target name="netbeans" depends="jars">
-    </target>
-
     <target name="compile" depends="buildJemmy,buildNbJUnit">
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
           <classpath>
@@ -107,9 +104,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="javadoc" description="Javadoc for jellytools">
-        <delete dir="javadoc"/>
-        <mkdir dir="javadoc"/>
-        <javadoc destdir="javadoc" packagenames="org.netbeans.test.oo.*" Windowtitle="Jellytools API">
+        <mkdir dir="javadoc/jelly-nb-javadoc"/>
+        <javadoc destdir="javadoc/jelly-nb-javadoc" packagenames="org.netbeans.test.oo.*" Windowtitle="Jellytools API">
             <sourcepath>
                 <pathelement location="src"/>
             </sourcepath>
@@ -117,11 +113,10 @@ Microsystems, Inc. All Rights Reserved.
                 <path refid="jellytools.classpath"/>
             </classpath>
         </javadoc>
-        <zip zipfile="jelly-nb-javadoc.zip" basedir="javadoc" includes="**"/>
-        <delete dir="javadoc"/>
-        <mkdir dir="javadoc"/>
+        <zip zipfile="javadoc/jelly-nb-javadoc.zip" basedir="javadoc/jelly-nb-javadoc" includes="**"/>
+        <mkdir dir="javadoc/jelly2-nb-javadoc"/>
         <!-- Javadoc for jelly2 -->
-        <javadoc destdir="javadoc" packagenames="org.netbeans.jellytools.*" Windowtitle="Jellytools API">
+        <javadoc destdir="javadoc/jelly2-nb-javadoc" packagenames="org.netbeans.jellytools.*" Windowtitle="Jellytools API">
             <sourcepath>
                 <pathelement location="src"/>
             </sourcepath>
@@ -129,13 +124,13 @@ Microsystems, Inc. All Rights Reserved.
                 <path refid="jellytools.classpath"/>
             </classpath>
         </javadoc>
-        <zip zipfile="jelly2-nb-javadoc.zip" basedir="javadoc" includes="**"/>
+        <zip zipfile="javadoc/jelly2-nb-javadoc.zip" basedir="javadoc/jelly2-nb-javadoc" includes="**"/>
     </target>
 
     <target name="javadocWithJemmy" description="Javadoc for Jellytools and Jemmy">
-        <mkdir dir="javadoc"/>
+        <mkdir dir="javadoc/jemmy-jelly2-nb-javadoc"/>
         <!-- Javadoc both for Jelly2 and Jemmy-->
-        <javadoc destdir="javadoc" packagenames="org.netbeans.jellytools.*, org.netbeans.jemmy.*" Windowtitle="Jellytools and Jemmy API" Protected="yes">
+        <javadoc destdir="javadoc/jemmy-jelly2-nb-javadoc" packagenames="org.netbeans.jellytools.*, org.netbeans.jemmy.*" Windowtitle="Jellytools and Jemmy API" Protected="yes">
             <sourcepath>
                 <pathelement location="src"/>
                 <pathelement location="../jemmy/src"/>
@@ -144,7 +139,7 @@ Microsystems, Inc. All Rights Reserved.
                 <path refid="jellytools.classpath"/>
             </classpath>
         </javadoc>
-        <zip zipfile="jemmy-jelly2-nb-javadoc.zip" basedir="javadoc" includes="**"/>
+        <zip zipfile="javadoc/jemmy-jelly2-nb-javadoc.zip" basedir="javadoc/jemmy-jelly2-nb-javadoc" includes="**"/>
     </target>
 
     <target  name="clean" description="Clean all build products">
@@ -161,13 +156,22 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="javadoc"/>
         <delete dir="netbeans/docs"/>
         <delete dir="netbeans/modules"/>
+        <delete file="netbeans/system/ParserDB/Jelly.jcb"/>
+        <delete file="netbeans/system/ParserDB/Jelly.jcs"/>
         <delete dir="Info"/>
     </target>
 
-  <target name="nbm" depends="javadoc,jars">
+  <target name="netbeans" depends="release"/>
+
+  <target name="parser-db">
+      <taskdef name="makeparserdb" classname="org.netbeans.nbbuild.MakeParserDB" classpath="../nbbuild/nbantext.jar"/>
+      <mkdir dir="netbeans/system/ParserDB"/>
+      <makeparserdb db="netbeans/system/ParserDB/Jelly" sources="src" nbroot=".."/>
+  </target>
+
+  <target name="release" depends="jars,javadoc,parser-db">
     <property file="src/org/netbeans/jellytools/version_info"/>
-    <filter token="MAJOR_VERSION_SUBST" value="${Jellytools-MajorVersion}"/>
-    <filter token="MINOR_VERSION_SUBST" value="${Jellytools-MinorVersion}"/>
+    <filter token="MODULE_VERSION_SUBST" value="${Jellytools-MajorVersion}.${Jellytools-MinorVersion}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="module-manifest.mf" tofile="module-manifest-subst.mf" filtering="on"/>
     <mkdir dir="netbeans/modules"/>
@@ -182,9 +186,11 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="jelly-nb.jar" tofile="netbeans/modules/ext/jelly-nb.jar" filtering="off"/>
     <copy file="jelly2-nb.jar" tofile="netbeans/modules/ext/jelly2-nb.jar" filtering="off"/>
     <mkdir dir="netbeans/docs"/>
-    <copy file="jelly-nb-javadoc.zip" tofile="netbeans/docs/jelly-nb-javadoc.zip" filtering="off"/>
-    <copy file="jelly2-nb-javadoc.zip" tofile="netbeans/docs/jelly2-nb-javadoc.zip" filtering="off"/>
+    <copy file="javadoc/jelly-nb-javadoc.zip" tofile="netbeans/docs/jelly-nb-javadoc.zip" filtering="off"/>
+    <copy file="javadoc/jelly2-nb-javadoc.zip" tofile="netbeans/docs/jelly2-nb-javadoc.zip" filtering="off"/>
+  </target>
 
+  <target name="nbm" depends="release">
     <makenbm file="jellytools.nbm"
              topdir="."
              module="netbeans/modules/jellytools.jar"
