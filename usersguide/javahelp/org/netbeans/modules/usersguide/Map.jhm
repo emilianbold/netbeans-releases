@@ -449,6 +449,7 @@
 <mapID target="webmod_addcompapplet" url="web/webmod/mod_addcompapplet.html" />
 <mapID target="webmod_addapplet" url="web/webmod/mod_addapplet.html" />
 <mapID target="webmod_addtagf" url="web/webmod/mod_tagf_add.html" />
+<mapID target="webmod_abouttagf" url="web/webmod/mod_tagf_about.html" />
 <mapID target="war_delete" url="web/warpkg/war_delete.html" />
 <mapID target="war_editprop" url="web/warpkg/war_editprop.html" />
 <mapID target="war_unpack" url="web/warpkg/war_unpack.html" />
