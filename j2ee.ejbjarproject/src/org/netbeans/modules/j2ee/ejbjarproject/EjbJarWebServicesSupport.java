@@ -310,6 +310,8 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         for(int i = 0; i < sessionBeans.length; i++) {
             Session sessionBean = sessionBeans[i];
             if(sessionBean.getEjbName().equals(linkName)) {
+                EjbJarProvider pwm = (EjbJarProvider) project.getLookup().lookup(EjbJarProvider.class);
+                pwm.getConfigSupport().ensureConfigurationReady();
                 beans.removeSession(sessionBean);
                 break;
             }
