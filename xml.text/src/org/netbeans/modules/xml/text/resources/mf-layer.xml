@@ -48,7 +48,10 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="text">
             <folder name="xml-external-parsed-entity">
-                &xml-editor;
+<!-- It reuses kit only                &xml-editor;-->
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.text.syntax.XMLKit"/>
+                </file>
             </folder>
         </folder>
     </folder>
