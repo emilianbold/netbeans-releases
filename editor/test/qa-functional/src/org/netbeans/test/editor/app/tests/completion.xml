@@ -27,7 +27,7 @@
       <TestLogAction Name="insert-break" Command="\0C" />
       <TestStringAction Name="string10" String="\0Cindex);" />
     </TestStep>
-    <TestCallAction Name="FooClass" Call="fooClassStep" Set="javaSettings" Enable="true" Repeat="1" Delay="50">
+    <TestCallAction Name="FooClass" Call="fooClassStep" Set="javaSettings" Enable="true" Repeat="1" Delay="400">
       <Input>
         <![CDATA[""]]>
       </Input>
@@ -162,7 +162,7 @@
       <TestLogAction Name="insert-break" Command="\0C" />
       <TestStringAction Name="string33" String="\0C" />
     </TestStep>
-    <TestCallAction Name="ObjectMethods" Call="objectStep" Set="javaSettings" Enable="true" Repeat="1" Delay="50">
+    <TestCallAction Name="ObjectMethods" Call="objectStep" Set="javaSettings" Enable="true" Repeat="1" Delay="400">
       <Input>
         <![CDATA[""]]>
       </Input>
@@ -222,7 +222,7 @@ o.wait(time, nanos);
       <TestLogAction Name="insert-break" Command="\0C" />
       <TestStringAction Name="string43" String="\0C" />
     </TestStep>
-    <TestCallAction Name="RetypeClass" Call="retypeClassStep" Set="javaSettings" Enable="true" Repeat="1" Delay="50">
+    <TestCallAction Name="RetypeClass" Call="retypeClassStep" Set="javaSettings" Enable="true" Repeat="1" Delay="400">
       <Input>
         <![CDATA[""]]>
       </Input>
@@ -302,7 +302,7 @@ v.add("Hi!");
       <TestLogAction Name="insert-break" Command="\0C" />
       <TestStringAction Name="string49" String="\0C" />
     </TestStep>
-    <TestCallAction Name="StayInvoked" Call="stayInvokedActions" Set="javaSettings" Enable="true" Repeat="1" Delay="50">
+    <TestCallAction Name="StayInvoked" Call="stayInvokedActions" Set="javaSettings" Enable="true" Repeat="1" Delay="400">
       <Input>
         <![CDATA[""]]>
       </Input>
@@ -367,7 +367,7 @@ java.io.FileFilter;
       <TestStringAction Name="string27" String=";" />
       <TestLogAction Name="insert-break" Command="28" />
     </TestStep>
-    <TestCallAction Name="CaseInsensitive" Call="CaseInsensisitveActions" Set="CaseInsensitiveSettings" Enable="true" Repeat="1" Delay="100">
+    <TestCallAction Name="CaseInsensitive" Call="CaseInsensisitveActions" Set="CaseInsensitiveSettings" Enable="true" Repeat="1" Delay="400">
       <Input>
         <![CDATA[""]]>
       </Input>
@@ -481,7 +481,7 @@ java.util.jar.Manifest;
       <TestLogAction Name="insert-break" Command="\0C" />
       <TestStringAction Name="string23" String="\0C1);" />
     </TestStep>
-    <TestCallAction Name="CCAfterMethods" Call="CCAfterMethodsActions" Set="Settings1" Enable="true" Repeat="1" Delay="50">
+    <TestCallAction Name="CCAfterMethods" Call="CCAfterMethodsActions" Set="Settings1" Enable="true" Repeat="1" Delay="400">
       <Input>
         <![CDATA[""]]>
       </Input>
@@ -536,7 +536,7 @@ java.util.jar.Manifest;
       <TestLogAction Name="insert-break" Command="\0C" />
       <TestStringAction Name="string15" String="\0Cnull);" />
     </TestStep>
-    <TestCallAction Name="Repository" Call="RepositoryActions" Set="Settings1" Enable="true" Repeat="1" Delay="50">
+    <TestCallAction Name="Repository" Call="RepositoryActions" Set="Settings1" Enable="true" Repeat="1" Delay="400">
       <Input>
         <![CDATA[""]]>
       </Input>
@@ -590,7 +590,6 @@ class Foo {
       <TestLogAction Name="completion-show" Command=" " />
       <TestStringAction Name="string11" String="a" />
       <TestLogAction Name="shift-insert-break" Command="\0C" />
-      <TestStringAction Name="string12" String="\0C" />
       <TestCompletionAction Name="completion-action" Command="completion-down" />
       <TestCompletionAction Name="completion-action" Command="completion-down" />
       <TestLogAction Name="shift-insert-break" Command="\0C" />
@@ -605,7 +604,7 @@ class Foo {
       <TestStringAction Name="string17" String="Text.&lt;/" />
       <TestLogAction Name="completion-show" Command=" " />
     </TestStep>
-    <TestCallAction Name="BasicHTML" Call="HTMLActions" Set="HTMLEditorSettings" Enable="true" Repeat="1" Delay="50">
+    <TestCallAction Name="BasicHTML" Call="HTMLActions" Set="HTMLEditorSettings" Enable="true" Repeat="1" Delay="400">
       <Input>
         <![CDATA[""]]>
       </Input>

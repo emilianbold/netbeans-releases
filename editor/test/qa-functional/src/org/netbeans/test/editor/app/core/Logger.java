@@ -254,11 +254,6 @@ public class Logger implements Serializable {
     }
     
     public void performAction(TestCompletionAction act) {
-        if (!editor.getCompletion().isPaneVisible()) {
-            System.err.println("Warrning: Logger cannot perform Completion action: Completion isn't visible.");
-            System.err.println("          I'll try to show it.");
-            editor.getCompletion().setPaneVisible(true);
-        }        
         String c=act.getCommand();
         Action a=editor.getCompletion().getJDCPopupPanel().getActionMap().get(c);
         if (a == null) return;
@@ -276,13 +271,21 @@ public class Logger implements Serializable {
     }
     ////////////////////////////////////////////////////////////////////////////
     private void performAction(int index) {
-/*	Action a = (Action)editor.namesToActions.get((String)actions.get(index));
-        ActionEvent evt = (ActionEvent)events.get(index);
-        editor.grabFocus();
-        if (evt.getSource() != editor) {
-            throw new IllegalArgumentException("evt.getSource() != editor!");
-        }
-        a.actionPerformed(evt);*/
+       /* if (index+1 < testActions.size() && testActions.get(index) instanceof TestCompletionAction &&
+        testActions.get(index) instanceof TestCompletionAction) {
+            new Thread() {
+                int time=20;
+                public void run() {
+                    try {
+                        sleep(50);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                    System.err.println("CC has index: "+editor.getCompletion().getView().getSelectedIndex());
+                }
+            }.start();
+        }*/
+        
         if (editor != Main.frame.getEditor()) {
             System.err.println("Logger Editor isn't same as in MainFrame.");
         }
@@ -313,15 +316,16 @@ public class Logger implements Serializable {
                 for( int i=0; i < testActions.size(); i++ ) {
                     final int cntr = i;
                     final boolean isLast = (cntr + 1) == testActions.size();
+                    try {
+                        sleep(delay);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
                     
                     Scheduler.getDefault().addTask(new Thread() {
                         private boolean last = isLast;
                         
                         public void run() {
-                            try {
-                                sleep(delay);
-                            } catch (InterruptedException ex) {
-                            }
                             if (!master.isPerforming())
                                 return;
                             performAction(cntr);
