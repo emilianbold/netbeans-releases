@@ -42,10 +42,8 @@ Microsystems, Inc. All Rights Reserved.
                 urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
 	  <attr name="SystemFileSystem.localizingBundle"
 		      stringvalue="org.netbeans.modules.web.core.Bundle"/>
-<!--
-	  <attr name="templateWizardIterator" 
-                methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createJspIterator"/>
--->
+          <attr name="templateWizardIterator" 
+                methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>
         </file>
 
 	<!--  JSP Document --> 
@@ -55,10 +53,8 @@ Microsystems, Inc. All Rights Reserved.
                 urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPDoc.html"/>
           <attr name="SystemFileSystem.localizingBundle" 
                 stringvalue="org.netbeans.modules.web.core.Bundle"/>
-<!--
           <attr name="templateWizardIterator" 
-                methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createJspDocIterator"/>
--->
+                methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>
         </file>
 
         <!--  JSP Segment --> 
@@ -68,16 +64,16 @@ Microsystems, Inc. All Rights Reserved.
                 urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPF.html"/>
           <attr name="SystemFileSystem.localizingBundle"
                 stringvalue="org.netbeans.modules.web.core.Bundle"/>
-<!--
           <attr name="templateWizardIterator" 
-                methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createJspfIterator"/>
--->
+                methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>
         </file>
       <!-- Tag File --> 
         <file name="TagFile.tag" url="templates/TagFile.template">
           <attr name="template" boolvalue="true"/>
           <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/TagFile.html"/>
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+          <attr name="templateWizardIterator" 
+                methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createTagIterator"/>
         </file>
       </folder> 
      
