@@ -229,6 +229,14 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         }
     }//GEN-LAST:event_cancelButtonActionPerformed
     
+    protected void componentClosed() {
+        synchronized (this) {
+            try {
+                fireVetoableChange(PROP_ALL_CANCELLED, null, null);
+            } catch (PropertyVetoException pvex) {}
+        }
+    }
+    
     /** @return Preferred size of editor top component  */
     public Dimension getPreferredSize() {
         Rectangle bounds = org.openide.TopManager.getDefault().getWindowManager().getCurrentWorkspace().getBounds();
