@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Services">
-        <file name="antsettings.settings">
+        <file name="formsettings.settings">
         <![CDATA[<?xml version="1.0"?>
             <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
             <settings version="1.0">
