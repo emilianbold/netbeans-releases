@@ -1,0 +1,551 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>Connecting Help in NetBeans: From Help Set Installation to Hooking up Context-Sensitive Help</title>
+<link rel="stylesheet" href="../../../../../open-apis.css" type="text/css"/>
+</head>
+
+<body>
+<p align="right"><a href="../package-summary.html"><b>Overview</b></a></p>
+
+<h1>Connecting Help in NetBeans: From Help Set Installation to Hooking up Context-Sensitive Help</h1>
+
+<p>This document is designed to help NetBeans module writers with correctly setting 
+  up context-sensitive help for their modules. The document covers the following 
+  topics:</p>
+
+<ul>
+  <li><a href="#intro">Introduction</a></li>
+  <li><a href="#adding">Adding Help to GUI components</a><br>
+    <ul>
+      <li> <a href="#nodes">Explorer Nodes</a> </li>
+      <li><a href="#wizards">Wizards</a> </li>
+      <li><a href="#dialogs">Dialogs</a> </li>
+      <li><a href="#propsheets">Property Sheets</a> <br>
+      </li>
+      <li><a href="#tabpropsheets">Tabbed Property Sheets</a> <br>
+      </li>
+      <li><a href="#props">Individual Properties</a> <br>
+      </li>
+      <li><a href="#propeditor">Custom Property Editors</a><br>
+      </li>
+      <li><a href="#tabpropeditors">Tabbed Custom Property Editors</a> <br>
+      </li>
+      <li><a href="#servicetypes">Service Types and System Options</a> <br>
+      </li>
+    </ul>
+  </li>
+  <li><a href="#makeknown">Making the Help Set Known to the IDE</a><br>
+    <ul>
+      <li> <a href="#manifest">Manifest File</a> <br>
+      </li>
+      <li><a href="#layer">Layer File</a> <br>
+      </li>
+    </ul>
+  </li>
+  <li><a href="#putfiles">Where to Put Help Files in the Module Source</a> <br>
+  </li>
+  <li><a href="#building">Building the Help Set</a> <br>
+  </li>
+  <li><a href="#notes">Additional Notes</a> <br>
+    <ul>
+      <li> <a href="#helpids">Making Help IDs Unique</a> <br>
+      </li>
+      <li><a href="#i18n">I18N of Help IDs</a><br>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<h2><a name="intro">Introduction</a></h2>
+<p>The IDE's architecture enables you to:</p>
+<ul>
+  <li> Create separate help sets and associate them with given modules</li>
+  <li> Speficy the order in which the help set is displayed in the Help | Help 
+    Sets menu relative to another installed help set</li>
+  <li> Speficy the order in which the help set is displayed in the help window 
+    (after the user chooses Help | Contents - the merged help sets view) relative 
+    to another installed help set</li>
+  <li> Associate an IDE component with a specific help topic by means of a help 
+    ID for the component. When the user presses F1 or a Help button on the component, 
+    the help is displayed in the JavaHelp viewer.</li>
+</ul>
+<p>In order to take advantage of these help features, a NetBeans module writer 
+  must be aware of different aspects of the NetBeans help system, specifically: 
+</p>
+
+<ul>
+  <li> How to programmatically specify which help text to display for GUI components 
+  </li>
+  <li> How to declare the help set for the module so it will be found at runtime 
+  </li>
+  <li> Where to include help related files in the module source so it can be checked 
+    into the CVS repository </li>
+  <li> How to specify how the help set is built during the S1S build process </li>
+</ul>
+
+<h2><a name="adding">Adding Help to GUI components</a></h2>
+There is an overview of adding help to various GUI NetBeans components in <a href="@OPENIDE@/org/openide/modules/doc-files/api.html#helpctx-context-help"> 
+the NetBeans Module Document</a>. This section expands a bit on the information 
+provided there. 
+
+<h3><a name="nodes">Explorer Nodes</a></h3>
+<p>If your node extends <code>AbstractNode</code> or one of its subclasses, you should 
+  implement the <code>getHelpCtx</code> method to return a <a href="@OPENIDE@/org/openide/util/HelpCtx.html"> 
+  <code>HelpCtx</code></a> for the node. The <code>HelpCtx</code> includes the specific 
+  Help ID for the help topic for this node. If the node is selected in the explorer 
+  and the user hits the F1 key, then the help associated with this node will be 
+  displayed. </p>
+
+<pre>
+<span class="keyword">public</span> <span class="keyword">class</span> <span class="type">MyNode</span> <span class="keyword">extends</span> <span class="type">AbstractNode</span>{
+    <span class="keyword">public</span> <span class="type">HelpCtx</span> <span class="function-name">getHelpCtx</span>() {
+        <span class="keyword">return</span> <span class="keyword">new</span> <span class="type">HelpCtx</span>(<span class="string">"org.netbeans.modules.xml.tree.nodes.XMLDataNode"</span>);   
+    }
+    <span class="comment">// other methods...
+</span>}
+</pre>
+
+<h3><a name="wizards">Wizards</a></h3>
+<p>Wizards are basically a series of Swing Components that are displayed via a 
+  <a href="@OPENIDE@/org/openide/WizardDescriptor.Iterator.html"> 
+  <code>WizardDescriptor.Iterator</code></a> object. The object that the developer 
+  creates must implement the <a href="@OPENIDE@/org/openide/WizardDescriptor.Panel.html"> 
+  <code>WizardDescriptor.Panel</code></a> interface which includes a method that the 
+  developer implements to return the actual Swing Component that is to be displayed 
+  (usually a <code>JPanel</code> is returned). Additionally, the developer must implement 
+  the <code>getHelp</code> method and return a <code>HelpCtx</code> for this particular 
+  wizard step. By default, the <i>Help</i> button is displayed on the resulting 
+  <code>JDialog</code> and when the user selects this <i>Help</i> button, the <code>getHelp</code> 
+  method is called for the currently displayed <code>WizardDescriptor.Panel</code> 
+  object. </p>
+
+<pre>
+<span class="keyword">public</span> <span class="keyword">class</span> <span class="type">MyWizardPanel</span> <span class="keyword">implements</span> <span class="type">WizardDescriptor.Panel</span> {
+    <span class="keyword">private</span> <span class="type">JPanel</span> <span class="variable-name">p</span>;
+    <span class="keyword">public</span> <span class="type">Component</span> <span class="function-name">getComponent</span>() {
+	<span class="keyword">if</span> (p == <span class="constant">null</span>) {
+	    p = <span class="keyword">new</span> <span class="type">JPanel</span>();
+            p.setLayout(<span class="keyword">new</span> <span class="type">BorderLayout</span>());
+            p.add(<span class="comment">/* etc. */</span>);
+        }
+	<span class="keyword">return</span> p;
+    }
+    <span class="keyword">public</span> <span class="type">HelpCtx</span> <span class="function-name">getHelp</span>() {
+        <span class="keyword">return</span> <span class="keyword">new</span> <span class="type">HelpCtx</span>(<span class="string">"org.netbeans.modules.xml.core.wizard.DocumentPanel"</span>);  
+    }
+    <span class="comment">// other methods...
+</span>}
+</pre>
+
+<h3><a name="dialogs">Dialogs</a></h3>
+<p>There are two different ways in which you can set help on a NetBeans dialog. 
+  If you wish to display a dialog of some sort, you typically create the Swing 
+  components you wish to display and then create a <a href="@OPENIDE@/org/openide/DialogDescriptor.html"> 
+  <code>DialogDescriptor</code></a> object which is a NetBeans object that is used 
+  to describe the behavior or the dialog. To display help: </p>
+<ol>
+  <li> Specify the help on the <code>DialogDescriptor</code> object - As a rule, setting 
+    the help ID on the <code>DialogDescriptor</code> is the preferred way to set a 
+    help ID for a dialog. There are a couple of ways to do this: 
+    <ul>
+      <li> Use one of the
+          <a href="@OPENIDE@/org/openide/DialogDescriptor.html#DialogDescriptor(java.lang.Object,%20java.lang.String,%20boolean,%20int,%20java.lang.Object,%20int,%20org.openide.util.HelpCtx,%20java.awt.event.ActionListener)"><code>DialogDescriptor</code> constructors</a>
+          that includes
+        a <code>HelpCtx</code>.
+      </li>
+      <li> Call <code>setHelpCtx</code> on the previously created <code>DialogDescriptor</code>: 
+
+<pre>
+<span class="type">DialogDescriptor</span> <span class="variable-name">dd</span> = <span class="keyword">new</span> <span class="type">DialogDescriptor</span>(...);
+dd.setHelpCtx(<span class="keyword">new</span> <span class="type">HelpCtx</span>(<span class="string">"dialog_help_id"</span>));    
+</pre>
+
+      </li>
+    </ul>
+  </li>
+  <li> Set the help ID string on the displayed Swing Component - You'll notice 
+    that the <code>DialogDescriptor</code> constructor takes an <code>Object</code> which 
+    is typically the Swing Component to display in the <code>JDialog</code>. If you 
+    set the help ID string property on the Swing component, then this help id 
+    will be used as the help id for the <code>JDialog</code> and the corresponding 
+    help will be displayed if the user selects the <i>Help</i> button. 
+
+<pre>
+<span class="type">JPanel</span> <span class="variable-name">p</span> = <span class="keyword">new</span> <span class="type">JPanel</span>();
+<span class="comment">// ...add Swing components to p ...
+</span>HelpCtx.setHelpIDString(p, <span class="string">"panel_help_id"</span>);   
+<span class="type">DialogDescriptor</span> <span class="variable-name">dd</span> = <span class="keyword">new</span> <span class="type">DialogDescriptor</span>(p, <span class="string">"Dialog Title"</span>);
+</pre>
+
+  </li>
+</ol>
+If you do not supply a <code>HelpCtx</code> object for the <code>DialogDescriptor</code> 
+or set the help ID string for the displayed Swing Component, then no <i>Help</i> 
+button will be displayed on the <code>JDialog</code> that is displayed for this <code>DialogDescriptor</code>. 
+<h3><a name="propsheets"></a>Property Sheet</b>s </h3>
+<p>When creating a Property Sheet, the developer creates a <a href="@OPENIDE@/org/openide/nodes/Sheet.Set.html"> 
+  <code>Sheet.Set</code></a> object. To populate the <code>Sheet.Set</code> the developer 
+  creates and adds a number of <a href="@OPENIDE@/org/openide/nodes/Node.Property.html"> 
+  <code>Node.Property</code></a> objects. To display help for the Property Sheet, 
+  you must call the <code>setValue</code> method and set the <code>helpID</code> property: 
+</p>
+
+<pre>
+<span class="type">Sheet</span> <span class="variable-name">sheet</span> = Sheet.createDefault();
+<span class="type">Sheet.Set</span> <span class="variable-name">ps</span> = sheet.get(Sheet.PROPERTIES);
+ps.setValue(<span class="string">"helpID"</span>, <span class="string">"org.netbeans.modules.xml.tree.nodes.XMLDataNode.Properties"</span>);  
+</pre>
+
+<h3><a name="tabpropsheets">Tabbed Property Sheets</a></h3>
+<p> Property sheets can actually contain multiple tabs, each having their own 
+  help associated with them. The method described above to set the help id of 
+  a Property Sheet still applies, the only difference is the way in which the 
+  additional Property Sheet is created: </p>
+
+<pre>
+<span class="type">Sheet</span> <span class="variable-name">sheet</span> = Sheet.createDefault();
+<span class="type">Sheet.Set</span> <span class="variable-name">referenceTab</span> = <span class="keyword">new</span> <span class="type">Sheet.Set</span>();
+referenceTab.setValue(<span class="string">"helpID"</span>, <span class="string">"org.netbeans.modules.xml.tree.nodes.XMLDataNode.ReferenceProperties"</span>);  
+referenceTab.setName(<span class="string">"referenceTab"</span>); <span class="comment">// NOI18N
+</span>sheet.put(referenceTab);
+</pre>
+
+<h3><a name="props">Individual Properties</a></h3>
+<p> You can also set an individual help ID for each property (<code>Node.Property</code>) 
+  in a property sheet. Presently S1S and NetBeans help is not provided on a per-property 
+  basis - help on individual properties is provided in the form of a tooltip. 
+</p>
+<h3><a name="propeditor"></a>Custom Property Editor</b>s </h3>
+<p>Some Properties displayed on a Property Sheet require a custom editor. The 
+  user accesses the editor by selecting the "..." button on an entry for a specific 
+  Property when the user selects that Property. The developer of the custom editor 
+  provides a Swing Component (typically a JPanel) which is ultimately displayed 
+  in a <code>JDialog</code>. If Help is to be supplied on the resulting <code>JDialog</code>, 
+  then the help ID string of the supplied Swing Component must be set. </p>
+
+<pre>
+<span class="keyword">public</span> <span class="type">MyPropertyEditor</span> <span class="keyword">extends</span> <span class="type">PropertyEditorSupport</span>{
+    <span class="keyword">public</span> <span class="type">Component</span> <span class="type">TreeNodeFilterCustomEditor</span>() {
+	<span class="type">JPanel</span> <span class="variable-name">p</span> = <span class="keyword">new</span> <span class="type">JPanel</span>();
+	<span class="comment">// ...add Swing components to p...
+</span>	HelpCtx.setHelpIDString(p, <span class="string">"org.netbeans.modules.xml.tax.beans.editor.TreeNodeFilterCustomEditor"</span>);   
+	<span class="keyword">return</span> p;
+    }
+    <span class="comment">// other methods...
+</span>}
+</pre>
+
+<h3><a name="tabpropeditors"><b>Tabbed Custom Property Editor</b>s</a></h3>
+<p>Some Custom Property Editors display a number of tabs. Depending on the tab 
+  that is displayed, different Help may need to be displayed. In this case, you 
+  should set the help ID on the property editor's JTabbedPane. If you want the 
+  help ID to change when the user switches tabs, then you should listen for changes 
+  in the selected tab, and change the ID on the JTabbedPane each time. 
+<p>For NetBeans 3.4 and earlier, you can set help IDs on tabs as shown in this example:
+<p>
+
+<pre>
+<span class="keyword">class</span> <span class="type">MyTabPane</span> <span class="keyword">extends</span> <span class="type">JTabbedPane</span> <span class="keyword">implements</span> <span class="type">ChangeListener</span> {
+    <span class="keyword">private</span> <span class="type">HelpCtx</span>[] <span class="variable-name">helps</span> = <span class="keyword">new</span> <span class="type">HelpCtx</span>[3];
+    <span class="keyword">public</span> <span class="type">MyTabPane</span>() {
+        add(<span class="keyword">new</span> <span class="type">Panel1</span>());
+        helps[0] = <span class="keyword">new</span> <span class="type">HelpCtx</span>(<span class="string">"help_1"</span>);
+        <span class="comment">// etc.
+</span>        stateChanged(<span class="constant">null</span>);
+        addChangeListener(<span class="keyword">this</span>);
+    }
+    <span class="keyword">public</span> <span class="type">void</span> <span class="function-name">stateChanged</span>(<span class="type">ChangeEvent</span> <span class="variable-name">ignore</span>) {
+        HelpCtx.setHelpIDString(<span class="keyword">this</span>, helps[getSelectedIndex()]);
+    }
+}
+</pre>
+
+<p>In NetBeans releases later than 3.4, you can use the <code>HelpCtx.Provider</code> to simplify 
+  the process, as shown in the following example:</p>
+
+<pre>
+<span class="keyword">class</span> <span class="type">MyTabPane</span> <span class="keyword">extends</span> <span class="type">JTabbedPane</span> <span class="keyword">implements</span> <span class="type">HelpCtx.Provider</span> {
+    <span class="keyword">private</span> <span class="type">HelpCtx</span>[] <span class="variable-name">helps</span> = <span class="keyword">new</span> <span class="type">HelpCtx</span>[3];
+    <span class="keyword">public</span> <span class="type">MyTabPane</span>() {
+        add(<span class="keyword">new</span> <span class="type">Panel1</span>());
+        helps[0] = <span class="keyword">new</span> <span class="type">HelpCtx</span>(<span class="string">"help_1"</span>);
+	<span class="comment">// etc.
+</span>    }
+    <span class="keyword">public</span> <span class="type">HelpCtx</span> <span class="function-name">getHelpCtx</span>() {
+	<span class="keyword">return</span> helps[getSelectedIndex()];
+    }
+}
+</pre>
+
+<h3><a name="servicetypes">Service Types and System Options</a></h3>
+<p>Many modules define their own Service Types such as Ant Compilation. Additionally, 
+  many define their own System Options such as the UDDI Registries. In both cases, 
+  developers extend either the <code>ServiceType</code> or the <code>SystemOption</code> 
+  abstract class. Defined in each class is the <code>getHelpCtx</code> method. If 
+  you wish to display help for your Service Type or System Option, implement the 
+  method: </p>
+
+<pre>
+<span class="keyword">public</span> <span class="keyword">class</span> <span class="type">AntCompilerType</span> <span class="keyword">extends</span> <span class="type">CompilerType</span> {
+    <span class="keyword">public</span> <span class="type">HelpCtx</span> <span class="function-name">getHelpCtx</span>() {
+        <span class="keyword">return</span> <span class="keyword">new</span> <span class="type">HelpCtx</span>(<span class="string">"org.apache.tools.ant.module.run.AntCompilerType"</span>);   
+    }
+    <span class="comment">// other methods...
+</span>}
+</pre>
+
+Note that the <code>CompilerType</code> class extends the <code>ServiceType</code> class. 
+
+<h2><a name="makeknown">Making the Help Set Known to the IDE</a></h2>
+In order to use the result help set within the IDE at runtime, a couple of things 
+need to be added to various files associated with the module. These are outlined 
+in part in the <a href="@OPENIDE@/org/openide/modules/doc-files/api.html#helpctx"> 
+the NetBeans Module Document</a>.
+
+<h3><a name="manifest">Manifest File</a></h3>
+<p>There are two lines you need to add to your module's manifest file in order 
+  for your help set to be used at runtime: </p>
+<ul>
+  <li> <samp>OpenIDE-Module-Requires: org.netbeans.api.javahelp.Help</samp> <br>
+  </li>
+  <li> <samp>Class-Path: docs/modulename.jar</samp> <br>
+    As a result of the build process for a module that includes a help set, two 
+    JAR files will be produced: one for the module class files and another for 
+    the module help set. The will both have the same name, but will be installed 
+    into different directories. The module with the class files is installed into 
+    <samp><i>s1s-install</i>/modules</samp> and its corresponding help set jar is 
+    installed into <samp><i>s1s-install</i>/modules/docs</samp>. The <code>Class-Path</code> 
+    entry above is required so that the help set jar can be found at runtime when 
+    the corresponding class file module is loaded. </li>
+</ul>
+
+<h3><a name="layer">Layer File</a></h3>
+<p>A module's help set must be defined in the <samp>JavaHelp</samp> folder and this 
+  is specified in its Layer file. Layer files are typically called
+  <samp>mf-layer.xml</samp>, <samp>layer.xml</samp>, or <samp><i>Module</i>Layer.xml</samp>.
+  You can find the name of your module's layer file in the module JAR's manifest.
+  The following was taken from the HTTP Monitor 
+  Module <samp>mf-layer.xml</samp> file:
+</p>
+
+<pre>
+&lt;<span class="function-name">filesystem</span>&gt;
+  &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Menu"</span>&gt;
+    &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Help"</span>&gt;
+      &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"HelpShortcuts"</span>&gt;
+        <span class="comment">&lt;!-- Insert help set under the separator line below the Usersguide help --&gt;</span>
+        &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-usersguide-sep.instance/org-netbeans-modules-web-monitor-mainpage.xml"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
+        <span class="comment">&lt;!-- Insert help set under JSP/Servlet Help --&gt;</span>
+        &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-ie-mainpage.xml/org-netbeans-modules-web-monitor-mainpage.xml"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
+        &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-monitor-mainpage.xml"</span> <span class="variable-name">url</span>=<span class="string">"help-main-ref.xml"</span>&gt;
+          &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"SystemFileSystem.localizingBundle"</span> <span class="variable-name">stringvalue</span>=<span class="string">"org.netbeans.modules.web.monitor.Bundle"</span>/&gt;
+          &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"SystemFileSystem.icon"</span> <span class="variable-name">urlvalue</span>=<span class="string">"nbresloc:/org/netbeans/modules/web/monitor/resources/blank.gif"</span>/&gt;
+        &lt;/<span class="function-name">file</span>&gt;
+        <span class="comment">&lt;!-- Insert help set above the separator line separating 3rd party help --&gt;</span>
+        &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-monitor-mainpage.xml/org-netbeans-modules-usersguide-second-sep.instance"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
+      &lt;/<span class="function-name">folder</span>&gt;
+    &lt;/<span class="function-name">folder</span>&gt;
+  &lt;/<span class="function-name">folder</span>&gt;
+
+  &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Actions"</span>&gt;
+    &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Help"</span>&gt;
+      &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-monitor-mainpage.xml"</span> <span class="variable-name">url</span>=<span class="string">"help-main-ref.xml"</span>&gt;
+        &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"SystemFileSystem.localizingBundle"</span> <span class="variable-name">stringvalue</span>=<span class="string">"org.netbeans.modules.web.monitor.Bundle"</span>/&gt;
+        &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"SystemFileSystem.icon"</span> <span class="variable-name">urlvalue</span>=<span class="string">"nbresloc:/org/netbeans/modules/web/monitor/resources/blank.gif"</span>/&gt;
+      &lt;/<span class="function-name">file</span>&gt;
+    &lt;/<span class="function-name">folder</span>&gt;
+  &lt;/<span class="function-name">folder</span>&gt;
+
+  &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Services"</span>&gt; 
+    &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"JavaHelp"</span>&gt;
+      <span class="comment">&lt;!-- Merge after Core IDE Help: --&gt;</span>
+      &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-web-monitor-resources-helpset.xml"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
+      <span class="comment">&lt;!-- Merge after JSP/Servlet Help: --&gt;</span>
+      &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-ie-helpset.xml/org-netbeans-modules-web-monitor-resources-helpset.xml"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
+      &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-monitor-resources-helpset.xml"</span> <span class="variable-name">url</span>=<span class="string">"helpset-decl.xml"</span>/&gt;
+      <span class="comment">&lt;!-- Merge before 3rd party help: --&gt;</span>
+      &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-monitor-resources-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
+    &lt;/<span class="function-name">folder</span>&gt;
+  &lt;/<span class="function-name">folder</span>&gt;
+&lt;/<span class="function-name">filesystem</span>&gt;
+</pre>
+
+<p><b>Menu Folder -</b> Use the <samp>Menu</samp> folder to place the shortcut to 
+  the help set in the IDE's Help | Help Sets menu. Notice that in standard NetBeans 
+  releases this submenu contains two separators. One is below the Core IDE Help 
+  shortcut, the other is above all third-party help sets like the Ant manual. 
+  (If you do not have the Ant Documentation module installed, this second separator 
+  doesn't appear. Sun One Studio or third-party releases may have additional separators 
+  between the Core IDE Help and 3rd party help.) 
+<p>The shortcuts to all module help sets should appear between these two separators. Thus the layer
+file should always specify the following:</p>
+
+<pre>
+<span class="comment">&lt;!-- Insert help set under the separator line below the Usersguide help --&gt;</span>
+&lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-usersguide-sep.instance/org-netbeans-modules-web-monitor-mainpage.xml"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
+<span class="comment">&lt;!-- Set the location of the help set by specifying which help set it should follow --&gt;</span>
+&lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-ie-mainpage.xml/org-netbeans-modules-web-monitor-mainpage.xml"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
+<span class="comment">&lt;!-- Insert help set above the separator line separating 3rd party help --&gt;</span>
+&lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-monitor-mainpage.xml/org-netbeans-modules-usersguide-second-sep.instance"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
+</pre>
+
+<p>The <samp>Menu</samp> folder also lets you set the icon that precedes the shortcut 
+  in the Help menu. The Core IDE Help should be the only help set that has an 
+  icon. Every other help set should be preceded by a blank 16x16 pixels icons, 
+  like so:</p>
+
+<pre>
+&lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"SystemFileSystem.icon"</span> <span class="variable-name">urlvalue</span>=<span class="string">"nbresloc:/org/netbeans/modules/web/monitor/resources/blank.gif"</span>/&gt;
+</pre>
+
+
+<p><b>Actions Folder -</b> Provides the general action that opens the HTTP Monitor 
+  help set in the IDE's help viewer. By default this action displays in the Help 
+  | Help Sets menu, but it can also be configured in Tools | Options.</p>
+<p><b>Services Folder - </b>Use the <samp>Services</samp> folder to merge the help 
+  set into the IDE's JavaHelp viewer. This folder also specifies the order in 
+  which the help sets appear in the table of contents and index. As with the shortcuts 
+  in the Help menu, all module help sets should be located between the Core IDE 
+  Help and third party help. You can specify this by with the following:</p>
+
+<pre>
+<span class="comment">&lt;!-- Merge after Core IDE Help: --&gt;</span>
+&lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-web-monitor-resources-helpset.xml"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
+<span class="comment">&lt;!-- Set the location of the help set by specifying which help set it should follow: --&gt;</span>
+&lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-ie-helpset.xml/org-netbeans-modules-web-monitor-resources-helpset.xml"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
+<span class="comment">&lt;!-- Merge before 3rd party help: --&gt;</span>
+&lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-monitor-resources-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
+</pre>
+
+<p>If you have any questions about this, please <a href="mailto:paul.fussell@sun.com">send 
+  e-mail to Paul Fussell</a> as he is the one who added this to the various Layer 
+  files and understands it. </p>
+
+<h2><a name="putfiles">Where to Put Help Files in the Module Source</a></h2>
+<p>Typically, the Help files are added under a <samp>javahelp</samp> subdirectory 
+  off of the module root directory. Like source code, all JavaHelp documentation 
+  must be placed into a globally unique package to avoid conflicts. If two modules 
+  put help files into the same package, it will result in broken links. Therefore, 
+  the <samp>javahelp</samp> subdirectories should mirror the package structure of 
+  the <samp>src</samp> directory where the java source is located. While this is not 
+  a hard requirement and Help files can be put anywhere, this is the best way 
+  to avoid conflicts between module help sets. </p>
+<p>For example, the structure of the module source and documentation of the EJB 
+  module in Sun<tt><sup>TM</sup></tt> ONE Studio 4, Enterprise Edition for Java<tt><sup>TM</sup></tt> 
+  is as follows:</p>
+
+<pre>    ejb (module root directory)
+     |
+     src/com/sun/forte4j/j2ee/ejb/ (several subdirectories of source files)
+     |
+     javahelp/com/sun/forte4j/j2ee/ejb/docs/ (several subdirectories of documentation files)
+</pre>
+
+Wherever you choose to place your documentation files, your <samp>build.xml</samp> 
+file must correctly that specify where the Help files are located so that the 
+module build process can find them and build the help set. 
+
+<h2><a name="building">Building the Help Set</a></h2>
+In order to build the module help set, the <code>javahelp</code> target must be specified 
+in the module's <samp>build.xml</samp> file. Additionally the <code>netbeans</code> target 
+must depend on the <code>javahelp</code> target since that is the target that is built 
+during a full build of the source. Here is a sample from the EJB <samp>build.xml</samp> 
+in Sun ONE Studio 4, Enterprise Edition:
+
+<pre>
+&lt;<span class="function-name">target</span> <span class="variable-name">name</span>=<span class="string">"netbeans"</span> <span class="variable-name">depends</span>=<span class="string">"jars,javahelp"</span>&gt;
+  &lt;<span class="function-name">genlist</span> <span class="variable-name">targetname</span>=<span class="string">"nbm"</span> <span class="variable-name">outputfiledir</span>=<span class="string">"netbeans"</span>/&gt;
+&lt;/<span class="function-name">target</span>&gt;
+
+&lt;<span class="function-name">target</span> <span class="variable-name">name</span>=<span class="string">"javahelp"</span>&gt;
+  &lt;<span class="function-name">mkdir</span> <span class="variable-name">dir</span>=<span class="string">"javahelp/com/sun/forte4j/j2ee/ejb/docs/JavaHelpSearch2"</span>/&gt;
+  &lt;<span class="function-name">jhindexer</span> <span class="variable-name">basedir</span>=<span class="string">"javahelp/com/sun/forte4j/j2ee/ejb/docs/"</span>
+             <span class="variable-name">db</span>=<span class="string">"javahelp/com/sun/forte4j/j2ee/ejb/docs/JavaHelpSearch2"</span>
+             <span class="variable-name">jhall</span>=<span class="string">"${nbroot}/nbbuild/external/jhall-1.1.2_02.jar"</span>&gt;
+    &lt;<span class="function-name">include</span> <span class="variable-name">name</span>=<span class="string">"**/*.html"</span>/&gt;
+    &lt;<span class="function-name">include</span> <span class="variable-name">name</span>=<span class="string">"**/*.htm"</span>/&gt;
+    &lt;<span class="function-name">exclude</span> <span class="variable-name">name</span>=<span class="string">"JavaHelpSearch2/"</span>/&gt;
+    &lt;<span class="function-name">exclude</span> <span class="variable-name">name</span>=<span class="string">"ja/"</span>/&gt;
+    &lt;<span class="function-name">exclude</span> <span class="variable-name">name</span>=<span class="string">"credits.html"</span>/&gt;
+  &lt;/<span class="function-name">jhindexer</span>&gt;
+  &lt;<span class="function-name">mkdir</span> <span class="variable-name">dir</span>=<span class="string">"javahelp/com/sun/forte4j/j2ee/ejb/docs/ja/JavaHelpSearch2"</span>/&gt;
+  &lt;<span class="function-name">jhindexer</span> <span class="variable-name">basedir</span>=<span class="string">"javahelp/com/sun/forte4j/j2ee/ejb/docs/"</span>
+             <span class="variable-name">db</span>=<span class="string">"javahelp/com/sun/forte4j/j2ee/ejb/docs/ja/JavaHelpSearch2"</span>
+             <span class="variable-name">locale</span>=<span class="string">"ja"</span>
+             <span class="variable-name">jhall</span>=<span class="string">"${nbroot}/nbbuild/external/jhall-1.1.2_02.jar"</span>&gt;
+    &lt;<span class="function-name">include</span> <span class="variable-name">name</span>=<span class="string">"ja/**/*.html"</span>/&gt;
+    &lt;<span class="function-name">include</span> <span class="variable-name">name</span>=<span class="string">"ja/**/*.htm"</span>/&gt;
+    &lt;<span class="function-name">exclude</span> <span class="variable-name">name</span>=<span class="string">"ja/JavaHelpSearch2/"</span>/&gt;
+    &lt;<span class="function-name">exclude</span> <span class="variable-name">name</span>=<span class="string">"ja/credits.html"</span>/&gt;
+  &lt;/<span class="function-name">jhindexer</span>&gt;
+  &lt;<span class="function-name">mkdir</span> <span class="variable-name">dir</span>=<span class="string">"netbeans/modules/docs"</span>/&gt;
+  &lt;<span class="function-name">locjar</span> <span class="variable-name">jarfile</span>=<span class="string">"netbeans/modules/docs/ejb.jar"</span>
+          <span class="variable-name">compress</span>=<span class="string">"true"</span>&gt;
+    &lt;<span class="function-name">fileset</span> <span class="variable-name">dir</span>=<span class="string">"javahelp"</span> <span class="variable-name">excludesfile</span>=<span class="string">"${nbroot}/nbbuild/standard-jar-excludes.txt"</span>/&gt;
+    &lt;<span class="function-name">locale</span> <span class="variable-name">name</span>=<span class="string">"ja"</span>/&gt;
+  &lt;/<span class="function-name">locjar</span>&gt;
+&lt;/<span class="function-name">target</span>&gt;
+</pre>
+
+<p>The path to the javahelp sources above follows the standard NetBeans pattern 
+  of matching documentation package hierarchies to source package heirarchies 
+  as described above. If you want to use a different directory structure, you 
+  must alter the entries in the <code>javahelp</code> target to correctly locate the 
+  directory where the files are located.</p>
+<p><i>Note: The details of how build scripts work may vary from release to release. 
+  You should always compare against existing scripts in case of problems.</i> 
+</p>
+
+<h2><a name="notes">Additional Notes</a></h2>
+This section includes any additional comments or issues regarding Help for IDE 
+modules. 
+<ul>
+
+  <li><a name="helpids"></a> <b>Making Help IDs Unique</b> - When a Help request 
+    is initiated with a specific Help ID, the code that looks for the corresponding 
+    html file to display starts checking the help sets that have been loaded. As 
+    soon as a match is made, the html file is loaded in the JavaHelp viewer. There 
+    is no checking to see if the help set matches the module from which the request 
+    was made. So, for example, if you define a Help ID such as <samp>node_help</samp> and 
+    include that in two different help sets, when this Help is requested the first 
+    help set in which this ID is found will be used as the source for the corresponding 
+    html file. 
+    <p>It is therefore necessary for all Help IDs to be unique. The best way to 
+      avoid collisions to preface all Help IDs with the standard package name 
+      of the module it comes from. Thus for the Execution tabs of the property 
+      sheet for a form object node, you should set the help ID to
+      <samp>org.netbeans.modules.form.FormDataObject.executionTabProperties</samp>
+      or similar.
+      <br>
+      <br>
+  </li>
+
+  <li><a name="i18n"></a><b>I18N of Help IDs -</b> All of the <code>HelpCtx</code> 
+    methods that take strings as parameters are included in the IDE's list of 
+    NOI18N patterns and therefore are not internationalized. You do not need to 
+    add <samp>//&nbsp;NOI18N</samp> to lines containing these strings.
+  </li>
+
+</ul>
+
+<p>
+Questions or comments? Send to nbdev.
+</p>
+
+<hr>
+@FOOTER@
+</body>
+</html>
