@@ -498,7 +498,14 @@ public class DataViewWindow extends TopComponent {
                 int cols = mdata.getColumnCount();
                 coldef = new Vector(cols);
                 for(int column = 1; column <= cols; column++) {
-                    ColDef cd = new ColDef(mdata.getColumnLabel(column), mdata.isWritable(column));
+                    boolean writable;
+                    try {
+                        writable = mdata.isWritable(column);
+                    } catch (SQLException exc) {
+                        //patch for FireBirdSQL (isWritable has not been implemented yet)
+                        writable = false;
+                    }
+                    ColDef cd = new ColDef(mdata.getColumnLabel(column), writable);
                     cd.setDataType(mdata.getColumnType(column));
                     coldef.add(cd);
                 }
