@@ -390,6 +390,8 @@
 <!-- Csh page for Code Completion Data Manager -->
 <mapID target="editing.completion.manager" url="editing/parserdatabase_customizer.html" />
 
+<!-- Csh page for Java Code Folding dialog box -->
+<mapID target="editing.codefolding" url="editing/editor_folding.html" />
 
 <mapID target="debug.toolbar" url="debug/environment/toolbar.html" />
 <mapID target="debug.menu" url="debug/environment/debug_menu.html" />
@@ -1462,11 +1464,15 @@
   <mapID target="general_about_the_j2eeserver_module_html" url="j2eeserver/general/about_the_j2eeserver_module.html" />
   <mapID target="glossary_deploymentdesc_html" url="j2eeserver/glossary/deploymentdesc.html" />
   <mapID target="glossary_webserverdef_html" url="j2eeserver/glossary/webserverdef.html" />
+
+<!--nodes removed in NB 3.6  
   <mapID target="nodes_default_servers_node_html" url="j2eeserver/nodes/default_servers_node.html" />
   <mapID target="nodes_installed_servers_node_html" url="j2eeserver/nodes/installed_servers_node.html" />
-  <mapID target="nodes_j2ee_applications_defsrv_node_html" url="pending.html" />
-  <mapID target="nodes_server_registry_node_html" url="j2eeserver/nodes/server_registry_node.html" />
   <mapID target="nodes_web_applications_defsrv_node_html" url="j2eeserver/nodes/web_applications_defsrv_node.html" />
+  <mapID target="nodes_j2ee_applications_defsrv_node_html" url="pending.html" />
+
+-->  
+  <mapID target="nodes_server_registry_node_html" url="j2eeserver/nodes/server_registry_node.html" />
 
   <mapID target="org.netbeans.modules.j2ee.impl.InstalledServersPanel" url="j2eeserver/nodes/server_registry_node.html" />
   <mapID target="org.netbeans.modules.j2ee.impl.ServerExecutor" url="run/j2ee_executor.html" />

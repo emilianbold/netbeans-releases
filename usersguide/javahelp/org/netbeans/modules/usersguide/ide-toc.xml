@@ -508,11 +508,7 @@
 
   <tocitem text="Web Server Integration">
     <tocitem text="About" target="general_about_the_j2eeserver_module_html"/>
-    <tocitem text="About the Web Server Integration Module" target="general_about_the_j2eeserver_module_html" />
-    <tocitem text="Setting the Default Web Server" target="nodes_web_applications_defsrv_node_html" />
     <tocitem text="Server Registry Node" target="nodes_server_registry_node_html" />
-    <tocitem text="Default Servers Node" target="nodes_default_servers_node_html" />
-    <tocitem text="Installed Servers Node" target="nodes_installed_servers_node_html" />
   </tocitem>
 
   <tocitem text="Configuring the Environment" >
