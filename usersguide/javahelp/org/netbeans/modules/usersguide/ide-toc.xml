@@ -10,7 +10,8 @@
 
 <toc version="2.0">
 
-<tocitem text="Welcome to the IDE" target="ide.welcome" >
+<tocitem text="IDE Online Help" >
+<tocitem text="Welcome to the IDE" target="ide.welcome" />
 
 
 <tocitem text="Legal Notices" target="ide.credits" />

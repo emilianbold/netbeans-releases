@@ -9,7 +9,7 @@
 <toc version="2.0">
 
 <!-- last updated 11feb02 -->
-<tocitem text="Welcome to the IDE" target="ide.welcome" >
+<tocitem text="IDE Online Help" >
 
 <tocitem text="HTTP Monitor Help" target="ctx_monitorintro"> 
 	<tocitem text="Viewing HTTP Monitor Data Records" target="monitor_view" /> 
