@@ -30,6 +30,11 @@ public class MacroInputPanel extends javax.swing.JPanel {
     /** Creates new form MacrosInputPanel */
     public MacroInputPanel() {
         initComponents ();
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MIP")); // NOI18N
+        macroLabel.setDisplayedMnemonic(bundle.getString("MIP_Macro_Mnemonic").charAt(0)); // NOI18N
+        expandLabel.setDisplayedMnemonic(bundle.getString("MIP_Expand_Mnemonic").charAt(0)); // NOI18N
+        macroField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MIP_Macro")); // NOI18N
+        expandTextArea.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MIP_Expand")); // NOI18N
         Dimension dim = getPreferredSize();
         dim.width = 4*dim.width;
         dim.height = 4*dim.height;
@@ -48,61 +53,64 @@ public class MacroInputPanel extends javax.swing.JPanel {
 
 
     private void initComponents() {//GEN-BEGIN:initComponents
+        java.awt.GridBagConstraints gridBagConstraints;
+
         macroLabel = new javax.swing.JLabel();
         macroField = new javax.swing.JTextField();
         expandLabel = new javax.swing.JLabel();
         expandScrollPane = new javax.swing.JScrollPane();
         expandTextArea = new javax.swing.JTextArea();
-        
+
         setLayout(new java.awt.GridBagLayout());
-        java.awt.GridBagConstraints gridBagConstraints1;
-        
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
+
+        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 11, 11)));
         macroLabel.setText(bundle.getString( "MIP_Macro" ));
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 0;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 0, 8, 8);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        add(macroLabel, gridBagConstraints1);
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 0;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 0, 8, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        add(macroField, gridBagConstraints1);
-        
+        macroLabel.setLabelFor(macroField);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 12);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(macroLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        add(macroField, gridBagConstraints);
+
         expandLabel.setText(bundle.getString( "MIP_Expand" ));
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 1;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 0, 0, 8);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        add(expandLabel, gridBagConstraints1);
-        
+        expandLabel.setLabelFor(expandTextArea);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 12);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        add(expandLabel, gridBagConstraints);
+
         expandScrollPane.setViewportView(expandTextArea);
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 1;
-        gridBagConstraints1.gridheight = 2;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints1.weightx = 1.0;
-        gridBagConstraints1.weighty = 1.0;
-        add(expandScrollPane, gridBagConstraints1);
-        
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(expandScrollPane, gridBagConstraints);
+
     }//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextArea expandTextArea;
     private javax.swing.JLabel macroLabel;
     private javax.swing.JTextField macroField;
-    private javax.swing.JLabel expandLabel;
     private javax.swing.JScrollPane expandScrollPane;
-    private javax.swing.JTextArea expandTextArea;
+    private javax.swing.JLabel expandLabel;
     // End of variables declaration//GEN-END:variables
 
 }

@@ -30,6 +30,13 @@ public class AbbrevInputPanel extends javax.swing.JPanel {
     /** Creates new form AbbrevsInputPanel */
     public AbbrevInputPanel() {
         initComponents ();
+        
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AIP")); // NOI18N
+        abbrevLabel.setDisplayedMnemonic(bundle.getString("AIP_Abbrev_Mnemonic").charAt (0)); // NOI18N
+        expandLabel.setDisplayedMnemonic(bundle.getString("AIP_Expand_Mnemonic").charAt (0)); // NOI18N
+        abbrevField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AIP_Abbrev")); // NOI18N
+        expandTextArea.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AIP_Expand")); // NOI18N
+        
         Dimension dim = getPreferredSize();
         dim.width = 4*dim.width;
         dim.height = 4*dim.height;
@@ -47,70 +54,65 @@ public class AbbrevInputPanel extends javax.swing.JPanel {
     }
 
 
-    private void initComponents () {//GEN-BEGIN:initComponents
-        abbrevLabel = new javax.swing.JLabel ();
-        abbrevField = new javax.swing.JTextField ();
-        expandLabel = new javax.swing.JLabel ();
-        expandScrollPane = new javax.swing.JScrollPane ();
-        expandTextArea = new javax.swing.JTextArea ();
-        setLayout (new java.awt.GridBagLayout ());
-        java.awt.GridBagConstraints gridBagConstraints1;
-        setBorder (new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
+    private void initComponents() {//GEN-BEGIN:initComponents
+        java.awt.GridBagConstraints gridBagConstraints;
 
-        abbrevLabel.setText (bundle.getString( "AIP_Abbrev" ));
+        abbrevLabel = new javax.swing.JLabel();
+        abbrevField = new javax.swing.JTextField();
+        expandLabel = new javax.swing.JLabel();
+        expandScrollPane = new javax.swing.JScrollPane();
+        expandTextArea = new javax.swing.JTextArea();
 
+        setLayout(new java.awt.GridBagLayout());
 
-        gridBagConstraints1 = new java.awt.GridBagConstraints ();
-        gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 0;
-        gridBagConstraints1.insets = new java.awt.Insets (0, 0, 8, 8);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        add (abbrevLabel, gridBagConstraints1);
+        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 11, 11)));
+        abbrevLabel.setText(bundle.getString( "AIP_Abbrev" ));
+        abbrevLabel.setLabelFor(abbrevField);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(abbrevLabel, gridBagConstraints);
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(abbrevField, gridBagConstraints);
 
+        expandLabel.setText(bundle.getString( "AIP_Expand" ));
+        expandLabel.setLabelFor(expandTextArea);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(14, 0, 0, 12);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        add(expandLabel, gridBagConstraints);
 
-        gridBagConstraints1 = new java.awt.GridBagConstraints ();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 0;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets (0, 0, 8, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        add (abbrevField, gridBagConstraints1);
+        expandScrollPane.setViewportView(expandTextArea);
 
-        expandLabel.setText (bundle.getString( "AIP_Expand" ));
-
-
-        gridBagConstraints1 = new java.awt.GridBagConstraints ();
-        gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 1;
-        gridBagConstraints1.insets = new java.awt.Insets (0, 0, 0, 8);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        add (expandLabel, gridBagConstraints1);
-
-
-
-        expandScrollPane.setViewportView (expandTextArea);
-
-
-        gridBagConstraints1 = new java.awt.GridBagConstraints ();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 1;
-        gridBagConstraints1.gridheight = 2;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints1.weightx = 1.0;
-        gridBagConstraints1.weighty = 1.0;
-        add (expandScrollPane, gridBagConstraints1);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(expandScrollPane, gridBagConstraints);
 
     }//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextArea expandTextArea;
     private javax.swing.JLabel abbrevLabel;
     private javax.swing.JTextField abbrevField;
-    private javax.swing.JLabel expandLabel;
     private javax.swing.JScrollPane expandScrollPane;
-    private javax.swing.JTextArea expandTextArea;
+    private javax.swing.JLabel expandLabel;
     // End of variables declaration//GEN-END:variables
 
 }

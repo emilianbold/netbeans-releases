@@ -77,6 +77,10 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
 
         initComponents ();
 
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CAEP_Panel")); // NOI18N
+        syntaxLabel.setDisplayedMnemonic (bundle.getString("CAEP_SyntaxLabel").charAt (0)); // NOI18N
+        syntaxList.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CAEP_Syntax")); // NOI18N
+        
         coloringModel = new PropertyModelSupport( ColoringBean.class, ColoringEditor.class);
         coloringModel.addPropertyChangeListener( new PropertyChangeListener() {
                     public void propertyChange( PropertyChangeEvent evt ) {
@@ -182,49 +186,61 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
 
     /** This method is called from within the constructor to initialize the form. */
     private void initComponents() {//GEN-BEGIN:initComponents
+        java.awt.GridBagConstraints gridBagConstraints;
+
         detailPanel = new javax.swing.JPanel();
         masterPanel = new javax.swing.JPanel();
+        syntaxLabel = new javax.swing.JLabel();
         syntaxScroll = new javax.swing.JScrollPane();
         syntaxList = new javax.swing.JList();
+
         setLayout(new java.awt.GridBagLayout());
-        java.awt.GridBagConstraints gridBagConstraints1;
-        
+
         detailPanel.setLayout(new java.awt.GridLayout(1, 1));
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 1;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 0, 0, 8);
-        gridBagConstraints1.weightx = 1.0;
-        gridBagConstraints1.weighty = 1.0;
-        add(detailPanel, gridBagConstraints1);
-        
-        
-        masterPanel.setLayout(new java.awt.GridLayout(1, 1));
-        masterPanel.setBorder(new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CAEP_SyntaxLabel" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8))));
-        
-        
-          syntaxList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-                public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                    syntaxListValueChanged(evt);
-                }
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 11, 11);
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(detailPanel, gridBagConstraints);
+
+        masterPanel.setLayout(new java.awt.GridBagLayout());
+
+        syntaxLabel.setText(bundle.getString("CAEP_SyntaxLabel"));
+        syntaxLabel.setLabelFor(syntaxList);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        masterPanel.add(syntaxLabel, gridBagConstraints);
+
+        syntaxList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                syntaxListValueChanged(evt);
             }
-            );
-            syntaxScroll.setViewportView(syntaxList);
-            
-            masterPanel.add(syntaxScroll);
-          
-          
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 1;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.insets = new java.awt.Insets(8, 8, 8, 8);
-        gridBagConstraints1.weightx = 1.0;
-        gridBagConstraints1.weighty = 1.0;
-        add(masterPanel, gridBagConstraints1);
-        
+        });
+
+        syntaxScroll.setViewportView(syntaxList);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        masterPanel.add(syntaxScroll, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 12);
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(masterPanel, gridBagConstraints);
+
     }//GEN-END:initComponents
 
     private void syntaxListValueChanged (javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_syntaxListValueChanged
@@ -234,10 +250,11 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel detailPanel;
     private javax.swing.JPanel masterPanel;
+    private javax.swing.JLabel syntaxLabel;
     private javax.swing.JScrollPane syntaxScroll;
     private javax.swing.JList syntaxList;
+    private javax.swing.JPanel detailPanel;
     // End of variables declaration//GEN-END:variables
 
     private class PropertyModelSupport implements PropertyModel {

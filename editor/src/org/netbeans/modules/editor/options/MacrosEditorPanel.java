@@ -47,6 +47,15 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
         this.editor = editor;
         model = new PairStringModel();
         initComponents ();
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MEP")); // NOI18N
+        macrosTable.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_MEP_Table")); // NOI18N
+        macrosTable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MEP_Table")); // NOI18N
+        addButton.setMnemonic(bundle.getString("MEP_Add_Mnemonic").charAt(0)); // NOI18N
+        editButton.setMnemonic(bundle.getString("MEP_Edit_Mnemonic").charAt(0)); // NOI18N
+        removeButton.setMnemonic(bundle.getString("MEP_Remove_Mnemonic").charAt(0)); // NOI18N
+        addButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MEP_Add")); // NOI18N
+        editButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MEP_Edit")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MEP_Remove")); // NOI18N
     }
 
     /**
@@ -80,16 +89,17 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
 
 
     private void initComponents() {//GEN-BEGIN:initComponents
+        java.awt.GridBagConstraints gridBagConstraints;
+
         macrosPane = new javax.swing.JScrollPane();
         macrosTable = new javax.swing.JTable();
         addButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
-        
+
         setLayout(new java.awt.GridBagLayout());
-        java.awt.GridBagConstraints gridBagConstraints1;
-        
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
+
+        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 11, 11)));
         macrosTable.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
         macrosTable.setModel(model);
         macrosTable.setShowVerticalLines(false);
@@ -102,54 +112,54 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
         col.getColumn( 1 ).setMaxWidth( 7000 );
         col.getColumn( 1 ).setPreferredWidth( 70 );
         macrosPane.setViewportView(macrosTable);
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridheight = 4;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 0, 0, 8);
-        gridBagConstraints1.weightx = 1.0;
-        gridBagConstraints1.weighty = 1.0;
-        add(macrosPane, gridBagConstraints1);
-        
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridheight = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        add(macrosPane, gridBagConstraints);
+
         addButton.setText(bundle.getString( "MEP_Add" ));
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(addButton, gridBagConstraints1);
-        
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        add(addButton, gridBagConstraints);
+
         editButton.setText(bundle.getString( "MEP_Edit" ));
         editButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editButtonActionPerformed(evt);
             }
         });
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 1;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(editButton, gridBagConstraints1);
-        
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        add(editButton, gridBagConstraints);
+
         removeButton.setText(bundle.getString( "MEP_Remove" ));
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
             }
         });
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 2;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        add(removeButton, gridBagConstraints1);
-        
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(removeButton, gridBagConstraints);
+
     }//GEN-END:initComponents
 
     private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
@@ -211,10 +221,10 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane macrosPane;
-    private javax.swing.JTable macrosTable;
     private javax.swing.JButton addButton;
+    private javax.swing.JTable macrosTable;
     private javax.swing.JButton editButton;
+    private javax.swing.JScrollPane macrosPane;
     private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
 

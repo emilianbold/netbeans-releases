@@ -19,6 +19,7 @@ import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.accessibility.*;
 
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.explorer.propertysheet.PropertyModel;
@@ -67,11 +68,15 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
 
         GridBagConstraints gridBagConstraints1 = new java.awt.GridBagConstraints ();
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.insets = new java.awt.Insets (8, 8, 0, 8);
+        gridBagConstraints1.insets = new java.awt.Insets (0, 0, 0, 0);
         gridBagConstraints1.weightx = 1.0;
         gridBagConstraints1.weighty = 0.3;
         fontPanel = new PropWithDefaultPanel( Font.class, FontEditor.class,
-                                              bundle.getString( "CEP_FontTitle" ), bundle.getString( "CEP_FontTrans" ) );  // NOI18N
+                                              bundle.getString("CEP_FontTitle"),        // NOI18N
+                                              bundle.getString("ACSD_CEP_Font"),        // NOI18N
+                                              bundle.getString("CEP_FontTrans"),        // NOI18N
+                                              bundle.getString("CEP_FontTrans_Mnemonic").charAt(0),  // NOI18N
+                                              bundle.getString("ACSD_CEP_FontTrans")); // NOI18N
         fontPanel.addPropertyChangeListener( new PropertyChangeListener() {
                                                  public void propertyChange( PropertyChangeEvent evt ) {
                                                      if( PropWithDefaultPanel.PROP_VALUE.equals( evt.getPropertyName() ) ) {
@@ -86,10 +91,14 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 1;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets (0, 8, 0, 8);
+        gridBagConstraints1.insets = new java.awt.Insets (12, 0, 0, 0);
         gridBagConstraints1.weightx = 1.0;
         fgColorPanel = new PropWithDefaultPanel( Color.class, ColorEditor.class,
-                       bundle.getString( "CEP_FgTitle" ), bundle.getString( "CEP_FgTrans" ) );    // NOI18N
+                       bundle.getString("CEP_FgTitle"),       // NOI18N
+                       bundle.getString("ACSD_CEP_Fg"),       // NOI18N
+                       bundle.getString("CEP_FgTrans"),       // NOI18N
+                       bundle.getString("CEP_FgTrans_Mnemonic").charAt(0),  // NOI18N
+                       bundle.getString("ACSD_CEP_FgTrans")); // NOI18N
         fgColorPanel.addPropertyChangeListener( new PropertyChangeListener() {
                                                     public void propertyChange( PropertyChangeEvent evt ) {
                                                         if( PropWithDefaultPanel.PROP_VALUE.equals( evt.getPropertyName() ) ) {
@@ -104,10 +113,15 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 2;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets (0, 8, 0, 8);
+        gridBagConstraints1.insets = new java.awt.Insets (12, 0, 0, 0);
         gridBagConstraints1.weightx = 1.0;
         bgColorPanel = new PropWithDefaultPanel( Color.class, ColorEditor.class,
-                       bundle.getString( "CEP_BgTitle" ), bundle.getString( "CEP_BgTrans" ) );    // NOI18N
+                       bundle.getString("CEP_BgTitle"),       // NOI18N
+                       bundle.getString("ACSD_CEP_Bg"),       // NOI18N
+                       bundle.getString("CEP_BgTrans"),       // NOI18N
+                       bundle.getString("CEP_BgTrans_Mnemonic").charAt(0),  // NOI18N
+                       bundle.getString("ACSD_CEP_BgTrans")); // NOI18N
+
         bgColorPanel.addPropertyChangeListener( new PropertyChangeListener() {
                                                     public void propertyChange( PropertyChangeEvent evt ) {
                                                         if( PropWithDefaultPanel.PROP_VALUE.equals( evt.getPropertyName() ) ) {
@@ -122,16 +136,18 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 3;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.insets = new java.awt.Insets (0, 8, 8, 8);
+        gridBagConstraints1.insets = new java.awt.Insets (12, 0, 0, 0);
         gridBagConstraints1.weightx = 1.0;
         gridBagConstraints1.weighty = 1.0;
         JPanel previewPanel = new JPanel( new BorderLayout () );
         previewPanel.setBorder( new CompoundBorder(
                                     new TitledBorder( bundle.getString( "CEP_PreviewTitle" ) ), // NOI18N
-                                    new EmptyBorder( new Insets( 8, 8, 8, 8 ) )
+                                    new EmptyBorder( new Insets( 9, 12, 11, 11) )
                                 ) );
 
         preview = new ColoringPreview();
+        preview.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CEP_Preview"));
+        preview.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CEP_Preview"));
         previewPanel.add( preview );
         add( previewPanel, gridBagConstraints1 );
 
@@ -199,9 +215,9 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
     }
 
 
-    private void initComponents () {//GEN-BEGIN:initComponents
-        setLayout (new java.awt.GridBagLayout ());
-        java.awt.GridBagConstraints gridBagConstraints1;
+    private void initComponents() {//GEN-BEGIN:initComponents
+
+        setLayout(new java.awt.GridBagLayout());
 
     }//GEN-END:initComponents
 
@@ -212,7 +228,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
 
     //----------------------------------------------------------------
 
-    private class ColoringPreview extends javax.swing.JComponent {
+    private class ColoringPreview extends javax.swing.JComponent implements Accessible {
         ColoringBean value;
 
         void setValue( ColoringBean c ) {
@@ -239,6 +255,18 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
                 g.drawString(value.example, x, y);
             }
         }
+        
+        public AccessibleContext getAccessibleContext () {
+            if (accessibleContext == null) {
+                accessibleContext = new AccessibleJComponent() {
+                    public AccessibleRole getAccessibleRole() {
+                        return AccessibleRole.PANEL;
+                    }
+                };
+            }
+            return accessibleContext;
+        }
+        
     }
 
     //-------------------------------------------------
@@ -252,11 +280,12 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         PropertyModel model;
         JCheckBox defaultCheckBox;
 
-        public PropWithDefaultPanel( Class propertyClass, Class propertyEditorClass, String title, String checkBoxTitle ) {
+        public PropWithDefaultPanel( Class propertyClass, Class propertyEditorClass, String title, String description,
+                                     String checkBoxTitle, char checkBoxMnemonic, String checkBoxDescription) {
 
-            setLayout( new java.awt.BorderLayout() );
+            setLayout( new java.awt.BorderLayout());
             setBorder( new CompoundBorder( new TitledBorder( title ),
-                                           new EmptyBorder( new Insets( 8, 8, 8, 8 ) ) ) );
+                                           new EmptyBorder( new Insets( 8, 12, 6, 11) ) ) );
 
             model = new PropertyModelSupport( propertyClass, propertyEditorClass );
             model.addPropertyChangeListener( new PropertyChangeListener() {
@@ -281,11 +310,16 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
                                                      }
                                                  }
                                              } );
-
-            add( new PropertyPanel( model, 0 ), BorderLayout.CENTER );
+            PropertyPanel pp = new PropertyPanel (model, 0);
+            pp.getAccessibleContext().setAccessibleName(title);
+            pp.getAccessibleContext().setAccessibleDescription(description);
+            add (pp, BorderLayout.CENTER);
+            
 
             defaultCheckBox = new JCheckBox();
-            defaultCheckBox.setText( checkBoxTitle );
+            defaultCheckBox.setText(checkBoxTitle);
+            defaultCheckBox.setMnemonic(checkBoxMnemonic);
+            defaultCheckBox.getAccessibleContext().setAccessibleDescription(checkBoxDescription);
             defaultCheckBox.addActionListener( new ActionListener() {
                                                    public void actionPerformed( ActionEvent evt ) {
                                                        if( !defaultCheckBox.isSelected() ) { // unchecked - set real value
