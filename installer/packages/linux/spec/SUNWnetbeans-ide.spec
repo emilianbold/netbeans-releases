@@ -7,15 +7,15 @@ NetBeans IDE
 
 %files
 
-%erpm_map /usr/netbeans nb_destdir
+%erpm_map /usr/lib/netbeans nb_destdir
 
-%dir /usr/netbeans
+%dir /usr/lib/netbeans
 
-/usr/netbeans/nb4.0
+/usr/lib/netbeans/nb4.0
 
-%dir /usr/netbeans/bin
+%dir /usr/lib/netbeans/bin
 
-/usr/netbeans/bin/netbeans
+/usr/lib/netbeans/bin/netbeans
 
 %erpm_map /usr/share nb_destdir
 
@@ -31,4 +31,4 @@ NetBeans IDE
 %erpm_unmap
 # %dir /usr/bin
 
-%erpm_ln_s /usr/netbeans/bin/netbeans /usr/bin/netbeans
+%erpm_ln_s /usr/lib/netbeans/bin/netbeans /usr/bin/netbeans

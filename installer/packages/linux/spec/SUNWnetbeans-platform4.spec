@@ -1,13 +1,14 @@
 Name: sun-netbeans-platform4
 Summary: NetBeans Platform
+Requires: j2sdk >= 1.4.2
 
 %description
 NetBeans Platform
 
 %files
 
-%erpm_map /usr/netbeans nb_destdir
+%erpm_map /usr/lib/netbeans nb_destdir
 
-%dir /usr/netbeans
+%dir /usr/lib/netbeans
 
-/usr/netbeans/platform4
+/usr/lib/netbeans/platform4

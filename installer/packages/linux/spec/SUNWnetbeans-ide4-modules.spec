@@ -7,9 +7,9 @@ NetBeans IDE modules
 
 %files
 
-%erpm_map /usr/netbeans nb_destdir
+%erpm_map /usr/lib/netbeans nb_destdir
 
-%dir /usr/netbeans
+%dir /usr/lib/netbeans
 
-/usr/netbeans/ide4
+/usr/lib/netbeans/ide4
 

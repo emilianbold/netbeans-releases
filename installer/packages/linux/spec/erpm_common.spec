@@ -9,7 +9,7 @@
 # same for EA and FCS, then the Release should be incremented for FCS.
 %define global_product_release 1
 
-%define _prefix /usr
+%define _prefix /usr/lib
 
 Version: %{global_product_version}
 Release: %{global_product_release}
