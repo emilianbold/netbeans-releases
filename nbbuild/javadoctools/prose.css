@@ -6,17 +6,13 @@
 /* ... with just these changes: */
 
 /* XXX should these things really be overridden?
-PRE {
+pre {
   background-color: #FFF0F0;
   }
 
-SAMP {
+samp {
   background-color: #FFF0F0;
   }
-
-dt {
-  font-weight: bold;
-}
 */
 
 p.overviewlink {
