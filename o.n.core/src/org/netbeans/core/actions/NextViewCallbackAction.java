@@ -40,5 +40,9 @@ public class NextViewCallbackAction extends CallbackSystemAction {
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
+
+    protected boolean asynchronous() {
+        return false;
+    }
     
 }
