@@ -47,6 +47,8 @@ import com.netbeans.developer.modules.text.java.JCStorage;
 public class EditorModule extends ModuleInstall {
 
   private static final String DB_DIR = "ParserDB";
+  private static final String JDK12 = "jdk12";
+  private static final String JCS_EXT = "jcs";
   private static final String JDK12_JAR
       = "/com/netbeans/developer/modules/text/java/jdk12.jar";
 
@@ -101,22 +103,26 @@ public class EditorModule extends ModuleInstall {
     // Java Completion support
     FileSystem rfs = TopManager.getDefault().getRepository().getDefaultFileSystem();
     FileObject rootFolder = rfs.getRoot();
-    FileObject fo = rootFolder.getFileObject(DB_DIR);
-    if (fo == null) {
-//      System.out.println("EditorModule.java:104 FO not found");
+    FileObject dbFolder = rootFolder.getFileObject(DB_DIR);
+    if (dbFolder == null) {
       try {
-        fo = rootFolder.createFolder(DB_DIR);
-//        System.out.println("EditorModule.java:112 created dir=" + fo);
-        if (fo != null) {
+        dbFolder = rootFolder.createFolder(DB_DIR);
+      } catch (IOException e) {
+        // probably exists or cannot be created
+      }
+    }
+
+    if (dbFolder != null) {
+      FileObject jdkFO = dbFolder.getFileObject(JDK12, JCS_EXT);
+      if (jdkFO == null) { // jdk12 database doesn't exist
+        try {
           InputStream is = this.getClass().getResourceAsStream(JDK12_JAR);
           if (is != null) {
-//            System.out.println("EditorModule.java:114 extracting jar");
-            FileUtil.extractJar(fo, is);
+            FileUtil.extractJar(dbFolder, is);
           }
+        } catch (IOException e) {
+          e.printStackTrace();
         }
-      } catch (IOException e) {
-        e.printStackTrace();
-        // creation failed
       }
     }
 
@@ -182,6 +188,7 @@ public class EditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  31   Gandalf   1.30        10/10/99 Miloslav Metelka 
  *  30   Gandalf   1.29        10/1/99  Petr Hrebejk    org.openide.modules.ModuleInstall
  *        changed to class + some methods added
  *  29   Gandalf   1.28        9/30/99  Miloslav Metelka 
