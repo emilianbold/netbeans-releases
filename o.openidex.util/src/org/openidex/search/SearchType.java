@@ -112,24 +112,30 @@ public abstract class SearchType extends ServiceType implements Cloneable {
     protected abstract boolean testObject(Object searchObject);
 
     /**
-     * Gets details for object satisfied the search.
-     * Subclasses should override the method to get detail nodes for the
-     * specified result object.
+     * Creates nodes representing matches found within the specified object.
+     * <p>
+     * This is a dummy implementation, subclasses should provide a real
+     * implementation.
      *
-     * @param resultObject object which has satisfied this search type
-     * @return <code>null</code>
+     * @param  resultObject  object to create the nodes for
+     * @return  <code>null</code> (subclasses should return the created nodes)
      */
     public Node[] getDetails(Object resultObject) {
         return null;
     }
     
     /**
-     * Gets details for node which represents one result node.
-     * Subclasses should override the method to get detail nodes for the
-     * specified result object.
+     * Creates nodes representing matches found withing an object
+     * represented by the specified node.
+     * <p>
+     * This is a dummy implementation, subclasses should provide a real
+     * implementation. The typical implementation is that the node is validated,
+     * an object is extracted from it and passed to method
+     * {@link #getDetails(Object)}.
      *
-     * @param node which represents object which has satisfied this search type
-     * @return <code>null</code>
+     * @param  node  node representing object with matches
+     * @return <code>null</code> (subclasses should return the created nodes)
+     * @see  #getDetails(Object)
      */
     public Node[] getDetails(Node node) {
         return null;
