@@ -329,8 +329,11 @@ Microsystems, Inc. All Rights Reserved.
 	    <attr name="instanceClass" stringvalue="org.openide.actions.PrintAction"/>
 	</file>
 
-        <file name="S-F10.instance">
-	    <attr name="instanceClass" stringvalue="org.openide.actions.PopupAction"/>
+        <file name="S-F10.shadow">
+	    <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PopupAction.instance"/>
+	</file>
+        <file name="CONTEXT_MENU.shadow">
+	    <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PopupAction.instance"/>
 	</file>
         <file name="DS-7.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.core.actions.GlobalPropertiesAction"/>
