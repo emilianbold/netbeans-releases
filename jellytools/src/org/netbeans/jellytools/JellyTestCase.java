@@ -78,8 +78,7 @@ public class JellyTestCase extends NbTestCase {
      */
     protected void initEnvironment() {
         // register NbInternalFrameDriver
-        DriverManager.setWindowDriver(new NbInternalFrameDriver());
-        DriverManager.setFrameDriver(new NbInternalFrameDriver());
+        NbInternalFrameDriver.register();
         // redirect log messages from jemmy to jemmy.log file in workdir
         PrintStream jemmyLog = getLog("jemmy.log");
         JemmyProperties.setCurrentOutput(new TestOut(System.in, jemmyLog, jemmyLog));
