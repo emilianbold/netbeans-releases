@@ -53,6 +53,7 @@ import org.openide.execution.ExecutionEngine;
 import org.openide.compiler.CompilationEngine;
 
 import org.netbeans.core.actions.*;
+import org.netbeans.core.lookup.InstanceLookup;
 import org.netbeans.core.output.OutputTab;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.compiler.CompilationEngineImpl;
@@ -269,14 +270,19 @@ public abstract class NbTopManager extends TopManager {
      * @param obj source
      * @param conv convertor which postponing an instantiation
      */
-    public final void register(Object obj, org.netbeans.core.lookup.InstanceLookup.Convertor conv) {
+    public final void register(Object obj, InstanceLookup.Convertor conv) {
         getInstanceLookup().add(obj, conv);
     }
     
     /** Unregisters the service.
      */
     public final void unregister (Object obj) {
-        getInstanceLookup ().remove (obj);
+        unregister(obj, null);
+    }
+    /** Unregisters the service registered with a convertor.
+     */
+    public final void unregister (Object obj, InstanceLookup.Convertor conv) {
+        getInstanceLookup ().remove (obj, conv);
     }
     
     /** Private get instance lookup.
