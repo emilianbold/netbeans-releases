@@ -19,7 +19,6 @@ import com.sun.forte4j.modules.dd.*;
 import java.beans.*;
 import java.util.*;
 import java.io.*;
-import com.sun.xml.tree.*;
 import org.netbeans.modules.web.monitor.client.TransactionNode;
 
 public class MonitorData extends BaseBean {
@@ -323,9 +322,9 @@ public class MonitorData extends BaseBean {
 					  boolean validate) throws IOException {
 	try {
 	    InputSource insource = new InputSource(reader);
-	    insource.setEncoding("UTF-8");
-	    XmlDocument doc = 
-		XmlDocument.createXmlDocument(insource, validate);
+	    insource.setEncoding("UTF-8"); // NO18N
+	    Document doc = 
+		GraphManager.createXmlDocument(insource, validate);
 	    return MonitorData.createGraph(doc);
 	}
 	catch (Throwable t) {
@@ -345,16 +344,7 @@ public class MonitorData extends BaseBean {
     }
     
     public void write(Writer writer) throws IOException {
-	
-	if(this.graphManager != null) {
-	    Document document = this.graphManager.getXmlDocument();
-	    if(document == null)
-		throw new NullPointerException(); 
-	    if (document instanceof com.sun.xml.tree.XmlDocument) 
-		((com.sun.xml.tree.XmlDocument)document).write(writer,
-							       "UTF-8"); // NOI18N
-	    else throw new IOException();
-	}
+	this.write(writer, "UTF-8"); // NOI18N
     }
     
     // Dump the content of this bean returning it as a String

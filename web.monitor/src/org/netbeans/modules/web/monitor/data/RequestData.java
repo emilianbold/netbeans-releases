@@ -18,7 +18,6 @@ import com.sun.forte4j.modules.dd.*;
 import java.beans.*;
 import java.util.*;
 import java.io.*;
-import com.sun.xml.tree.*;
 
 public class RequestData extends BaseBean {
 
@@ -243,7 +242,7 @@ public class RequestData extends BaseBean {
 
     public static RequestData createGraph(InputStream in, boolean validate) {
 	try {
-	    XmlDocument doc = XmlDocument.createXmlDocument(in, validate);
+	    Document doc = GraphManager.createXmlDocument(in, validate);
 	    return RequestData.createGraph(doc);
 	}
 	catch (Throwable t) {

@@ -113,8 +113,6 @@ Microsystems, Inc. All Rights Reserved.
          <pathelement location="${binroot}/httpserver/servletapi/release/modules/ext/servlet-2.2.jar"/> 
 
          <pathelement location="${f4jroot}/dd2beans/netbeans/modules/dd2beans.jar"/>
- 	 <pathelement location="${f4jroot}/core/release/lib/ext/parser.jar"/>
-
       </classpath>
      </javac>
   </target>
@@ -130,7 +128,6 @@ Microsystems, Inc. All Rights Reserved.
          <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
          <pathelement location="${nbroot}/httpserver/netbeans/modules/httpserver.jar"/>
          <pathelement location="${f4jroot}/dd2beans/netbeans/modules/dd2beans.jar"/>
- 	 <pathelement location="${f4jroot}/core/release/lib/ext/parser.jar"/>
          <pathelement location="${binroot}/httpserver/servletapi/release/modules/ext/servlet-2.2.jar"/> 
          <pathelement location="${nbroot}/web/core/netbeans/modules/jsp.jar"/>
        </classpath>
