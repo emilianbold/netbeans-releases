@@ -18,6 +18,8 @@ import java.io.InputStreamReader;
 import java.io.FileReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,6 +31,7 @@ import javax.swing.JFileChooser;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileStateInvalidException;
@@ -108,11 +111,16 @@ public class PatchAction extends NodeAction {
                 return ;
             }
             /*
-            System.out.println("Have diffs = "+diffs+", length = "+diffs.length);
-            for (int i = 0; i < diffs.length; i++) {
-                System.out.println(" Difference "+i+" : "+diffs[i]);
+            System.out.println("Have diffs = "+fileDiffs+", length = "+fileDiffs.length);
+            for (int i = 0; i < fileDiffs.length; i++) {
+                System.out.println(" Difference "+i+" : "+fileDiffs[i]);
+                Difference[] diffs = fileDiffs[i].getDifferences();
+                for (int j = 0; j < diffs.length; j++) {
+                    System.out.println("  Diff["+j+"] = "+diffs[j]);
+                    System.out.println("TEXT1 = \n"+diffs[j].getFirstText()+"TEXT2 = \n"+diffs[j].getSecondText()+"");
+                }
             }
-             */
+            */
             applyFileDiffs(fileDiffs, fo);
             //createFileBackup(fo);
             //applyDiffsTo(diffs, fo);
@@ -153,6 +161,7 @@ public class PatchAction extends NodeAction {
                 if (applyDiffsTo(fileDiffs[i].getDifferences(), file)) {
                     appliedFiles.add(file);
                     backups.put(file, backup);
+                    file.refresh(true);
                 }
             }
         }
@@ -195,15 +204,24 @@ public class PatchAction extends NodeAction {
     
     private FileObject createFileBackup(FileObject fo) {
         FileObject parent = fo.getParent();
+        FileLock lock = null;
+        InputStream in = null;
+        OutputStream out = null;
         try {
             FileObject orig = parent.getFileObject(fo.getNameExt(), "orig");
             if (orig == null) {
                 orig = parent.createData(fo.getNameExt(), "orig");
             }
-            FileUtil.copy(fo.getInputStream(), orig.getOutputStream(orig.lock()));
+            FileUtil.copy(in = fo.getInputStream(), out = orig.getOutputStream(lock = orig.lock()));
             return orig;
         } catch (IOException ioex) {
             return null;
+        } finally {
+            if (lock != null) lock.releaseLock();
+            try {
+                if (in != null) in.close();
+                if (out != null) out.close();
+            } catch (IOException ioex) {}
         }
     }
     
@@ -217,22 +235,38 @@ public class PatchAction extends NodeAction {
             return false;
         }
         tmp.deleteOnExit();
+        InputStream in = null;
+        OutputStream out = null;
         try {
             Reader patched = Patch.apply(diffs, new InputStreamReader(fo.getInputStream()));
-            FileUtil.copy(new ReaderInputStream(patched), new FileOutputStream(tmp));
+            FileUtil.copy(in = new ReaderInputStream(patched), out = new FileOutputStream(tmp));
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(ioex,
                 NbBundle.getMessage(PatchAction.class, "EXC_PatchApplicationFailed", ioex.getLocalizedMessage(), fo.getNameExt())));
             tmp.delete();
             return false;
+        } finally {
+            try {
+                if (in != null) in.close();
+                if (out != null) out.close();
+            } catch (IOException ioex) {}
         }
+        FileLock lock = null;
         try {
-            FileUtil.copy(new FileInputStream(tmp), fo.getOutputStream(fo.lock()));
+            FileUtil.copy(in = new FileInputStream(tmp), out = fo.getOutputStream(lock = fo.lock()));
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(ioex,
                 NbBundle.getMessage(PatchAction.class, "EXC_CopyOfAppliedPatchFailed",
                                     fo.getNameExt())));
             return false;
+        } finally {
+            if (lock != null) {
+                lock.releaseLock();
+            }
+            try {
+                if (in != null) in.close();
+                if (out != null) out.close();
+            } catch (IOException ioex) {}
         }
         tmp.delete();
         return true;

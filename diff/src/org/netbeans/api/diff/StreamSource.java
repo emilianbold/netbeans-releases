@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.IOException;
@@ -122,7 +124,14 @@ public abstract class StreamSource extends Object {
             tmp = File.createTempFile("ss", "tmp");
             tmp.deleteOnExit();
             tmp.createNewFile();
-            org.openide.filesystems.FileUtil.copy(new ReaderInputStream(r), new FileOutputStream(tmp));
+            InputStream in = null;
+            OutputStream out = null;
+            try {
+                org.openide.filesystems.FileUtil.copy(in = new ReaderInputStream(r), out = new FileOutputStream(tmp));
+            } finally {
+                if (in != null) in.close();
+                if (out != null) out.close();
+            }
             return tmp;
         }
         
