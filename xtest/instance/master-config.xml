@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<testconfig>
+
+  <config name="config-1">
+      <module name="core" testtypes="unit" attributes="stable"/>
+      <module name="openide" testtypes="unit" attributes="stable"/>
+      <module name="java" testtypes="unit" attributes="stable"/>
+      <module name="openidex" testtypes="unit" attributes="stable"/>
+  </config>
+  
+  <config name="config-2">
+      <module name="core" testtypes="junitgrr,backward" attributes="stable"/>
+      <module name="projects" testtypes="compatibility" attributes="compatibility"/>
+      <testtype name="unit" modules="core,openide,java,mdr" attributes="stable,pilsen"/>
+  </config>
+  
+  <config name="config-3">
+      <module name="openide" testtypes="unit" attributes="unstable"/>
+  </config>
+  
+  <config name="config-4"
+          modules="openide,core,java"
+          testtypes="unit,perf,compatible,jaja"
+          attributes="release32,stable,code"/>
+  
+  <config name="config-5">
+      <module name="openide" testtypes="unit" attributes="stable"/>
+  </config>
+  
+  <config name="config-6">
+      <module name="openide" testtypes="unit" attributes="stable,ide"/>
+  </config>
+  
+  <config name="config-7">
+      <module name="openide" testtypes="unit" attributes="stable,code"/>
+  </config>
+  
+  <config name="config-validation">
+      <module name="openide" testtypes="validation" attributes="stable,code"/>
+  </config>
+  
+</testconfig>
+
