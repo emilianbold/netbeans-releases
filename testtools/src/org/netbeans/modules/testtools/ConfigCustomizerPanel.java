@@ -29,18 +29,34 @@ import java.awt.event.KeyEvent;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowListener;
 import java.beans.BeanInfo;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
+import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.StyledDocument;
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.XMLDataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.io.ReaderInputStream;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -88,44 +104,96 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
     JPopupMenu popup;
 
     static class MyCellRenderer extends DefaultTreeCellRenderer {
-        public MyCellRenderer() {
-            super();
-        }
-
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
             if (value instanceof Unknown) {
-                super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row,hasFocus);
+                super.getTreeCellRendererComponent(tree, value.toString().length()==0?"<html><i>&lt;noname&gt;":value, sel, expanded, leaf, row,hasFocus);
                 String msg=((Unknown)value).errorMessage();
                 Icon i=null;
                 if (msg.length()==0) {
                     setToolTipText(null);
                     i=((Unknown)value).getIcon();
                 } else {
-                    if (msg.endsWith(", ")) msg=msg.substring(0, msg.length()-2);
-                    setToolTipText(msg);
+                    if (msg.endsWith("<br>")) msg=msg.substring(0, msg.length()-3);
+                    setToolTipText("<html>"+msg);
                     i=((Unknown)value).getErrorIcon();
                 }
-                if (i!=null) setIcon(i);
+                if (i!=null) {
+                    setIcon(i);
+                }
             } else super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row,hasFocus);
             return this;
         }
-
     }
+    static class MyCellEditor extends DefaultTreeCellEditor {
+        public MyCellEditor(JTree tree) {
+            super(tree, (MyCellRenderer)tree.getCellRenderer());
+        }
+        public Component getTreeCellEditorComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row) {
+            if (value instanceof Unknown) {
+                String msg=((Unknown)value).errorMessage();
+                Icon i=(msg.length()==0)?((Unknown)value).getIcon():((Unknown)value).getErrorIcon();
+                if (i!=null) {
+                    if(leaf)
+                        renderer.setLeafIcon(i);
+                    else if(expanded)
+                        renderer.setOpenIcon(i);
+                    else
+                        renderer.setClosedIcon(i);
+                }
+            }
+            return super.getTreeCellEditorComponent(tree, value, sel, expanded, leaf, row);
+        }
+        public boolean isCellEditable(EventObject event) {
+            if (event instanceof MouseEvent) {
+                Object o=tree.getPathForLocation(((MouseEvent)event).getX(), ((MouseEvent)event).getY()).getLastPathComponent();
+                return  ((o instanceof Include)||(o instanceof TestSet))&&super.isCellEditable(event);
+            }
+            return super.isCellEditable(event);
+        }
+    }
+    
+    private boolean modified=false;
+    DataObject dob;
+    Document doc;
     
     /** Creates new form ComponentsEditorPanel
      * @param gen ComponentGenerator instance */
-    public ConfigCustomizerPanel(XMLDataObject dob) throws IOException, SAXException {
-        TreeNode rootNode=createNode(dob.getDocument().getDocumentElement());
-        initComponents();
-        MyCellRenderer rend = new MyCellRenderer();
-        tree.setCellRenderer(rend);
-        tree.getSelectionModel().setSelectionMode(javax.swing.tree.TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION); 
-        tree.setModel(new DefaultTreeModel(rootNode));
-        tree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
-            public void valueChanged(TreeSelectionEvent e) {
-                nodeChanged(tree.getSelectionPaths());
-            }
-        });
+    public ConfigCustomizerPanel(XMLDataObject dob) {
+        try {
+            this.dob=dob;
+            StyledDocument stdoc=((EditorCookie)dob.getCookie(EditorCookie.class)).openDocument();
+            this.doc=DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new ReaderInputStream(new StringReader(stdoc.getText(0, stdoc.getLength()))));
+            TreeNode rootNode=createNode(doc.getDocumentElement());
+            initComponents();
+            MyCellRenderer rend = new MyCellRenderer();
+            tree.setCellRenderer(rend);
+            tree.setCellEditor(new MyCellEditor(tree));
+            tree.getSelectionModel().setSelectionMode(javax.swing.tree.TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION); 
+            tree.setModel(new DefaultTreeModel(rootNode));
+            tree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
+                public void valueChanged(TreeSelectionEvent e) {
+                    nodeChanged(tree.getSelectionPaths());
+                }
+            });
+            for (int i=0; i<tree.getRowCount(); i++) tree.expandRow(i);
+            tree.setEditable(true);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    protected void setModified() {
+        if (!modified) {
+            SwingUtilities.getWindowAncestor(this).addWindowListener(new WindowAdapter() {
+                public void windowClosing(java.awt.event.WindowEvent evt)  {
+                    try {
+                        closeDialog();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+        } else modified=true;
     }
     
     void nodeChanged(TreePath paths[]) {
@@ -191,25 +259,36 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
 
     private void treeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_treeKeyReleased
         if ((evt.getKeyCode()==KeyEvent.VK_DELETE)&&(evt.getModifiers()==0)&&(tree.getSelectionCount()>0)&&!tree.isRowSelected(0)) {
-            DeleteActionPerformed();
+            TreePath paths[]=tree.getSelectionPaths();
+            for (int i=0; i<paths.length; i++)
+                ((Unknown)paths[i].getLastPathComponent()).delete();
         }
     }//GEN-LAST:event_treeKeyReleased
 
     private void treeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_treeMouseClicked
-        if ((evt.getModifiers()==evt.BUTTON3_MASK)&&(tree.getSelectionCount()>0)) {
+        TreePath tp;
+        if ((evt.getModifiers()==evt.BUTTON3_MASK)&&((tp=tree.getPathForLocation(evt.getX(), evt.getY()))!=null)) {
+            if (!tree.isPathSelected(tp)) {
+                tree.clearSelection();
+                tree.addSelectionPath(tp);
+            }
             if (tree.getSelectionCount()==1) {
-                popup=((Unknown)tree.getSelectionPath().getLastPathComponent()).getPopupMenu();
+                Unknown u=(Unknown)tree.getSelectionPath().getLastPathComponent();
+                popup=u.getPopupMenu();
+                if ((u instanceof Include)||(u instanceof TestSet)) {
+                    if (popup.getComponentCount()>0) popup.add(new JSeparator());
+                    popup.add(new JMenuItem("Rename")).addActionListener(u);
+                }
             } else {
                 popup=new JPopupMenu();
             }
             if (!tree.isRowSelected(0)) {
                 JMenuItem del=new JMenuItem("Delete");
                 del.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
-                del.addActionListener(new java.awt.event.ActionListener() { // NOI18N
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        DeleteActionPerformed();
-                    }
-                });
+                TreePath paths[]=tree.getSelectionPaths();
+                for (int i=0; i<paths.length; i++)
+                    del.addActionListener((Unknown)paths[i].getLastPathComponent());
+                if (popup.getComponentCount()>0) popup.add(new JSeparator());
                 popup.add(del);
             }
             popup.show(tree,evt.getX(),evt.getY());
@@ -218,13 +297,7 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
         }
     }//GEN-LAST:event_treeMouseClicked
     
-    void DeleteActionPerformed() {
-        TreePath paths[]=tree.getSelectionPaths();
-        for (int i=0; paths!=null&&i<paths.length; i++) {
-            ((Unknown)paths[i].getLastPathComponent()).delete();
-        }
-    }
-    
+   
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSplitPane splitPane;
     private javax.swing.JTree tree;
@@ -285,6 +358,7 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
             return ((Element)getUserObject()).getAttribute(name);
         }
         protected void setAttribute(String name, String value) {
+            setModified();
             if (value==null || value.length()<1) {
                 ((Element)getUserObject()).removeAttribute(name);
             } else {
@@ -293,9 +367,11 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
             ((DefaultTreeModel)tree.getModel()).nodeChanged(this);
         }
         public String toString() {
-            return className()+" "+getAttribute("name");
+            //return className()+" "+getAttribute("name");
+            return getAttribute("name");
         }
         public void delete() {
+            setModified();
             Element e=((Element)getUserObject());
             e.getParentNode().removeChild(e);
             ((DefaultTreeModel)tree.getModel()).removeNodeFromParent(this);
@@ -316,12 +392,20 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
             popupMenu.add(it);
         }
         public void actionPerformed(ActionEvent ae) {
-            Element el=(Element)getUserObject();
-            Unknown node=createNode((Element)el.appendChild(createElement(el, ae.getActionCommand())));
-            ((DefaultTreeModel)tree.getModel()).insertNodeInto(node, this, getChildCount());
+            if (ae.getActionCommand().startsWith("Add ")) {
+                setModified();
+                Element el=(Element)getUserObject();
+                Unknown node=createNode((Element)el.appendChild(createElement(el, ae.getActionCommand())));
+                ((DefaultTreeModel)tree.getModel()).insertNodeInto(node, this, getChildCount());
+            } else if (ae.getActionCommand().equals("Delete")) {
+                delete();
+            } else if (ae.getActionCommand().equals("Rename")) {
+                System.out.println("rename");
+                tree.startEditingAtPath(tree.getSelectionPath());
+            }
         }
         public String errorMessage() {
-            return "unknown element type";
+            return "unknown element type: "+((Element)getUserObject()).getNodeName();
         }
         protected boolean containsChild(Class clazz) {
             Enumeration ch=children();
@@ -335,6 +419,10 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
         public Icon getErrorIcon() {
             return unknownIcon;
         }
+        public void setUserObject(Object o) {
+            setObject(o);
+        }
+        protected void setObject(Object o) {}
     }
 
     public class TestBag extends Include {
@@ -385,8 +473,8 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
         }
         
         public String errorMessage() {
-            return super.errorMessage()+(getTestAttributes().length()==0?"testAttributes are required, ":"")+(containsChild(TestSet.class)?"":"TestSet element is required, ")+
-            (findElement("executor",getExecutor())?"":"wrong Executor name, ")+(getCompiler().length()==0||findElement("compiler",getCompiler())?"":"wrong Compiler name, ")+(findElement("resultsprocessor",getResultsProcessor())?"":"wrong ResultsProcessor name");
+            return super.errorMessage()+(getTestAttributes().length()==0?"testAttributes are required<br>":"")+(containsChild(TestSet.class)?"":"TestSet element is required<br>")+
+            (findElement("executor",getExecutor())?"":"wrong Executor name<br>")+(getCompiler().length()==0||findElement("compiler",getCompiler())?"":"wrong Compiler name<br>")+(findElement("resultsprocessor",getResultsProcessor())?"":"wrong ResultsProcessor name");
         }
         public Icon getIcon() {
             return testbagIcon;
@@ -428,13 +516,14 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
             setAttribute("dir", value);
         }
         public String toString() {
-            return className()+" "+getDirectory();
+            //return className()+" "+getDirectory();
+            return getDirectory();
         }
         protected void createPopupMenu() {
             addMenuItem("PatternSet");
         }
         public String errorMessage() {
-            return getDirectory().length()==0?"directory attribute is required":"";
+            return toString().length()==0?"directory attribute is required":"";
         }
         public Icon getIcon() {
             return testsetIcon;
@@ -442,14 +531,20 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
         public Icon getErrorIcon() {
             return testsetErrIcon;
         }
+        protected void setObject(Object o) {
+            setAttribute("dir", o.toString());
+            nodeChanged(tree.getSelectionPaths());
+        }
     }
     
     public class PatternSet extends Unknown {
+        
         public PatternSet(Element e) {
             super(e);
         }
         public String toString() {
-            return className();
+            //return className();
+            return "<html><i>PatternSet";
         }
         protected void createPopupMenu() {
             addMenuItem("Include");
@@ -464,6 +559,7 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
         public Icon getErrorIcon() {
             return patternsetIcon;
         }
+        
     }
     
     public class Include extends Unknown {
@@ -477,13 +573,17 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
             setAttribute("name", value);
         }
         public String errorMessage() {
-            return getName().length()==0?"name is required, ":"";
+            return getName().length()==0?"name is required<br>":"";
         }
         public Icon getIcon() {
             return includeIcon;
         }
         public Icon getErrorIcon() {
             return includeErrIcon;
+        }
+        protected void setObject(Object o) {
+            setName(o.toString());
+            nodeChanged(tree.getSelectionPaths());
         }
     }
     
@@ -510,7 +610,7 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
             addMenuItem("ResultProcessor");
         }
         public String errorMessage() {
-            return super.errorMessage()+(containsChild(TestBag.class)?"":"TestBag element is required, ")+(containsChild(Executor.class)?"":"Executor element is required, ")+(containsChild(ResultsProcessor.class)?"":"ResultsProcessor element is required");
+            return super.errorMessage()+(containsChild(TestBag.class)?"":"TestBag element is required<br>")+(containsChild(Executor.class)?"":"Executor element is required<br>")+(containsChild(ResultsProcessor.class)?"":"ResultsProcessor element is required");
         }
         public Icon getIcon() {
             return configIcon;
@@ -597,13 +697,23 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
         
     }
     
+    public void closeDialog() throws Exception {
+        EditorCookie cookie=(EditorCookie)dob.getCookie(EditorCookie.class);
+        StringWriter sw=new StringWriter();
+        XMLSerializer ser=new XMLSerializer(sw, new OutputFormat("xml","UTF-8",true));
+        ser.serialize(doc);
+        sw.close();
+        StyledDocument stdoc=cookie.openDocument();
+        stdoc.remove(0, stdoc.getLength());
+        stdoc.insertString(0, sw.toString(), null);
+    }
     
     
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
-        XMLDataObject dob=(XMLDataObject)DataObject.find(Repository.getDefault().findResource("cfg-unit.xml"));
+        XMLDataObject dob=(XMLDataObject)DataObject.find(Repository.getDefault().findResource("results/htmlresults/cfg-unit.xml"));
         JDialog d=new JDialog();
         d.getContentPane().add(new ConfigCustomizerPanel(dob));
         d.show();

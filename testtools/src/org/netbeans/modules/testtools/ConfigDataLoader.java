@@ -129,14 +129,17 @@ public class ConfigDataLoader extends UniFileLoader {
         }
         
         protected Node createNodeDelegate() {
-            return new ConfigDataNode(super.createNodeDelegate());
+            return new ConfigDataNode(super.createNodeDelegate(), this);
         }
     }
     
     public static class ConfigDataNode  extends FilterNode {
 
-        public ConfigDataNode(Node n) {
+        ConfigDataObject dob;
+        
+        public ConfigDataNode(Node n, ConfigDataObject dob) {
             super(n);
+            this.dob=dob;
         }
         
         public boolean hasCustomizer() {
@@ -144,21 +147,7 @@ public class ConfigDataLoader extends UniFileLoader {
         }
         
         public Component getCustomizer() {
-            return new JLabel("Ahoj");
-/*
-        XMLDataObject dob=(XMLDataObject)DataObject.find(Repository.getDefault().findResource("cfg-qa-functional.xml"));
-        Document doc=dob.getDocument();
-        Document doc2=dob.getDocument();
-        doc.getDocumentElement().setAttribute("ahoj","cau");
-        EditorCookie cookie=(EditorCookie)dob.getCookie(EditorCookie.class);
-        StringWriter sw=new StringWriter();
-        XMLSerializer ser=new XMLSerializer(sw, new OutputFormat("xml","UTF-8",true));
-        ser.serialize(doc);
-        sw.close();
-        StyledDocument stdoc=cookie.openDocument();
-        stdoc.remove(0, stdoc.getLength());
-        stdoc.insertString(0, sw.toString(), null);
-*/
+            return new ConfigCustomizerPanel(dob);
         }
 
         public HelpCtx getHelpCtx() {
