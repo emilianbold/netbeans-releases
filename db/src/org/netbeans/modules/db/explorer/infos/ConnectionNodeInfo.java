@@ -51,7 +51,6 @@ implements ConnectionOperations
 		} catch (DatabaseProductNotFoundException e) {
 			throw new DatabaseException("database "+e.getDatabaseProductName()+" is not supported by system");	
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new DatabaseException(e.getMessage());	
 		}
 	}
