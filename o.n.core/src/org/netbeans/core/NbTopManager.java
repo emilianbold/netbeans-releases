@@ -276,8 +276,8 @@ public class NbTopManager extends TopManager {
   * @param name is a name of the writer
   * @return new OutputWriter with given name
   */
-  public InputOutput getIO(String name) {
-    return OutputTab.getIO (name);
+  public InputOutput getIO(String name, boolean newIO) {
+    return OutputTab.getIO (name, newIO);
   }
 
 
