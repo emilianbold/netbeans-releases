@@ -25,16 +25,16 @@ import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.QueueTool;
 
 import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 import org.netbeans.jemmy.drivers.ListDriver;
-import org.netbeans.jemmy.drivers.SupportiveDriver;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 
-public class JTabMouseDriver extends SupportiveDriver implements ListDriver {
+public class JTabMouseDriver extends LightSupportiveDriver implements ListDriver {
     private QueueTool queueTool;
     public JTabMouseDriver() {
-	super(new Class[] {JTabbedPaneOperator.class});
+	super(new String[] {"org.netbeans.jemmy.operators.JTabbedPaneOperator"});
         queueTool = new QueueTool();
     }
     public void selectItem(final ComponentOperator oper, final int index) {

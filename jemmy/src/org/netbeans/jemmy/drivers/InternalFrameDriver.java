@@ -17,28 +17,13 @@
 
 package org.netbeans.jemmy.drivers;
 
+import java.awt.Component;
+
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 /**
- * Defines how to work with buttons.
+ * Defines the way to get a title pane.
  */
-public interface ButtonDriver {
-
-    /**
-     * Presses a button.
-     * @param oper Button operator.
-     */
-    public void press(ComponentOperator oper);
-
-    /**
-     * Releases a button.
-     * @param oper Button operator.
-     */
-    public void release(ComponentOperator oper);
-
-    /**
-     * Pushes a button.
-     * @param oper Button operator.
-     */
-    public void push(ComponentOperator oper);
+public interface InternalFrameDriver {
+    public Component getTitlePane(ComponentOperator oper);
 }

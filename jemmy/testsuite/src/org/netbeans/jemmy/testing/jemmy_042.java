@@ -11,6 +11,7 @@ import java.awt.*;
 import javax.swing.*;
 
 public class jemmy_042 extends JemmyTest {
+    JMenuBarOperator mbo;
     public int runIt(Object obj) {
 
 	try {
@@ -23,9 +24,19 @@ public class jemmy_042 extends JemmyTest {
             getOutput().printLine("Using driver:");
             getOutput().printLine(DriverManager.getMenuDriver(JMenuBarOperator.class).getClass().getName());
 
-            JMenuBarOperator mbo = new JMenuBarOperator(wino);
-            if(mbo.showMenuItems("", "|").length != 2) {
-                getOutput().printError("Wrong menu count.");
+            mbo = new JMenuBarOperator(wino);
+            getOutput().print("Checking root contents");
+            if(!checkItems("", new String[] {"menu0", "menu1"})) {
+                finalize();
+                return(1);
+            }
+            getOutput().print("Checking menu0 contents");
+            if(!checkItems("menu0", new String[] {"submenu00", "submenu01"})) {
+                finalize();
+                return(1);
+            }
+            getOutput().print("Checking menu0|submenu00 contents");
+            if(!checkItems("menu0|submenu00", new String[] {"item00"})) {
                 finalize();
                 return(1);
             }
@@ -51,6 +62,22 @@ public class jemmy_042 extends JemmyTest {
 	finalize();
 
 	return(0);
+    }
+
+    boolean checkItems(String path, String[] itemTexts) {
+        JMenuItemOperator[] items = mbo.showMenuItems(path, "|");
+        if(items.length != itemTexts.length) {
+            getOutput().printError("Wrong items count.");
+            return(false);
+        }
+        for(int i = 0; i < itemTexts.length; i++) {
+            if(!items[i].getText().equals(itemTexts[i])) {
+                getOutput().printError("Wrong " + i + "`th item: " + items[i].getText());
+                getOutput().printError("Expected:                " + itemTexts[i]);
+                return(false);
+            }
+        }
+        return(true);
     }
 
 }

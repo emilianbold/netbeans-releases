@@ -23,6 +23,7 @@ import org.netbeans.jemmy.demo.Demonstrator;
 
 import org.netbeans.jemmy.util.DefaultVisualizer;
 import org.netbeans.jemmy.util.Dumper;
+import org.netbeans.jemmy.util.NameComponentChooser;
 
 public class jemmy_001 extends JemmyTest {
     public int runIt(Object obj) {
@@ -83,12 +84,15 @@ public class jemmy_001 extends JemmyTest {
 
 	    JComboBoxOperator operator_10 = new JComboBoxOperator(fo);
 	    JComboBoxOperator operator_11 = new JComboBoxOperator(fo, "editable_one");
+	    JComboBoxOperator operator_12 = new JComboBoxOperator(fo, new NameComponentChooser("editable"));
 	    if(operator_10.getSource() != operator_1.getSource() ||
-	       operator_11.getSource() != operator_1.getSource()) {
+	       operator_11.getSource() != operator_1.getSource() ||
+	       operator_12.getSource() != operator_1.getSource()) {
 		getOutput().printError("Wrong");
 		getOutput().printErrLine(operator_1.getSource().toString());
 		getOutput().printErrLine(operator_10.getSource().toString());
 		getOutput().printErrLine(operator_11.getSource().toString());
+		getOutput().printErrLine(operator_12.getSource().toString());
 		finalize();
 		return(1);
 	    }
@@ -109,12 +113,15 @@ public class jemmy_001 extends JemmyTest {
 	    lo0.clickOnItem("two");
 	    JListOperator lo1 = new JListOperator(fo, "two", 1, 0);
 	    JListOperator lo2 = new JListOperator(fo, "two");
+	    JListOperator lo3 = new JListOperator(fo, new NameComponentChooser("list"));
 	    if(lo1.getSource() != lo0.getSource() ||
-	       lo2.getSource() != lo0.getSource()) {
+	       lo2.getSource() != lo0.getSource() ||
+	       lo3.getSource() != lo0.getSource()) {
 		getOutput().printError("Wrong");
 		getOutput().printErrLine(lo0.getSource().toString());
 		getOutput().printErrLine(lo1.getSource().toString());
 		getOutput().printErrLine(lo2.getSource().toString());
+		getOutput().printErrLine(lo3.getSource().toString());
 		finalize();
 		return(1);
 	    }
@@ -212,6 +219,26 @@ public class jemmy_001 extends JemmyTest {
 
 	    operator_2.selectItem(2);
 	    JComboBoxOperator.waitJComboBox(win, "non_editable_three", true, true, -1);
+
+	    JComboBoxOperator operator_00 = new JComboBoxOperator(fo, new NameComponentChooser("non_editable"));
+	    JComboBoxOperator operator_01 = new JComboBoxOperator(fo, new NameComponentChooser("on_e", new Operator.DefaultStringComparator(false, false)));
+	    if(operator_00.getSource() != operator_01.getSource()) {
+		getOutput().printError("Wrong");
+		getOutput().printErrLine(operator_00.getSource().toString());
+		getOutput().printErrLine(operator_01.getSource().toString());
+		finalize();
+		return(1);
+	    }
+
+            fo.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+            try {
+                new JComboBoxOperator(fo, new NameComponentChooser("non_edit"));
+		getOutput().printError("Found by subname!");
+		finalize();
+		return(1);
+            } catch(Exception ee) {
+            }
+
 
 	    if(!testComponent(operator_1)) {
 		finalize();

@@ -29,6 +29,7 @@ import org.netbeans.jemmy.Timeouts;
 
 import org.netbeans.jemmy.drivers.DriverManager;
 import org.netbeans.jemmy.drivers.FrameDriver;
+import org.netbeans.jemmy.drivers.InternalFrameDriver;
 import org.netbeans.jemmy.drivers.WindowDriver;
 
 
@@ -95,6 +96,7 @@ public class JInternalFrameOperator extends JComponentOperator
 
     WindowDriver wDriver;
     FrameDriver  fDriver;
+    InternalFrameDriver  iDriver;
 
     /**
      * Constructor.
@@ -103,6 +105,7 @@ public class JInternalFrameOperator extends JComponentOperator
 	super(b);
 	wDriver = DriverManager.getWindowDriver(getClass());
 	fDriver = DriverManager.getFrameDriver(getClass());
+	iDriver = DriverManager.getInternalFrameDriver(getClass());
     }
 
     public JInternalFrameOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
@@ -944,21 +947,7 @@ public class JInternalFrameOperator extends JComponentOperator
     ////////////////////////////////////////////////////////
 
     protected Container findTitlePane() {
-	ComponentSearcher cs = new ComponentSearcher((Container)getSource());
-	cs.setOutput(output.createErrorOutput());
-	return((Container)
-	       cs.findComponent(new ComponentChooser() {
-					public boolean checkComponent(Component comp) {
-					    if(System.getProperty("java.version").startsWith("1.2")) {
-						return(comp.getClass().getName().endsWith("InternalFrameTitlePane"));
-					    } else {
-						return(comp instanceof BasicInternalFrameTitlePane);
-					    }
-					}
-					public String getDescription() {
-					    return("Title pane");
-					}
-				    }));
+        return((Container)iDriver.getTitlePane(this));
     }
 
     /**

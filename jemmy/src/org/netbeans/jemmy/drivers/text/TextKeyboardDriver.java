@@ -27,15 +27,13 @@ import org.netbeans.jemmy.Timeout;
 
 import org.netbeans.jemmy.drivers.DriverManager;
 import org.netbeans.jemmy.drivers.KeyDriver;
-import org.netbeans.jemmy.drivers.SupportiveDriver;
+import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 import org.netbeans.jemmy.drivers.TextDriver;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JTextComponentOperator;
-import org.netbeans.jemmy.operators.TextComponentOperator;
 
-public abstract class TextKeyboardDriver extends SupportiveDriver implements TextDriver {
-    public TextKeyboardDriver(Class[] supported) {
+public abstract class TextKeyboardDriver extends LightSupportiveDriver implements TextDriver {
+    public TextKeyboardDriver(String[] supported) {
 	super(supported);
     }
     public void changeCaretPosition(ComponentOperator oper, int position) {

@@ -34,9 +34,9 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 
 import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 import org.netbeans.jemmy.drivers.MouseDriver;
 import org.netbeans.jemmy.drivers.PathChooser;
-import org.netbeans.jemmy.drivers.SupportiveDriver;
 import org.netbeans.jemmy.drivers.TextDriver;
 import org.netbeans.jemmy.drivers.TreeDriver;
 
@@ -45,10 +45,10 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 
-public class JTreeMouseDriver extends SupportiveDriver implements TreeDriver {
+public class JTreeMouseDriver extends LightSupportiveDriver implements TreeDriver {
     QueueTool queueTool;
     public JTreeMouseDriver() {
-	super(new Class[] {JTreeOperator.class});
+	super(new String[] {"org.netbeans.jemmy.operators.JTreeOperator"});
 	queueTool = new QueueTool();
     }
     public void selectItem(ComponentOperator oper, int index) {

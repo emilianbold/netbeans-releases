@@ -19,8 +19,8 @@ package org.netbeans.jemmy.drivers;
 
 public class ArrayDriverInstaller {
     String[] ids;
-    Driver[] drivers;
-    public ArrayDriverInstaller(String[] ids, Driver[] drivers) {
+    Object[] drivers;
+    public ArrayDriverInstaller(String[] ids, Object[] drivers) {
 	this.ids = ids;
 	this.drivers = drivers;
     }

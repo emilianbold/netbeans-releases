@@ -26,7 +26,7 @@ import javax.swing.tree.TreePath;
 import org.netbeans.jemmy.Timeout;
 
 import org.netbeans.jemmy.drivers.DriverManager;
-import org.netbeans.jemmy.drivers.SupportiveDriver;
+import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 import org.netbeans.jemmy.drivers.TextDriver;
 import org.netbeans.jemmy.drivers.TreeDriver;
 
@@ -34,9 +34,9 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
-public class JTreeAPIDriver extends SupportiveDriver implements TreeDriver {
+public class JTreeAPIDriver extends LightSupportiveDriver implements TreeDriver {
     public JTreeAPIDriver() {
-	super(new Class[] {JTreeOperator.class});
+	super(new String[] {"org.netbeans.jemmy.operators.JTreeOperator"});
     }
     public void selectItem(ComponentOperator oper, int index) {
 	selectItems(oper, new int[] {index});

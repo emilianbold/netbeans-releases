@@ -23,8 +23,8 @@ import org.netbeans.jemmy.QueueTool;
 
 import org.netbeans.jemmy.drivers.DriverManager;
 import org.netbeans.jemmy.drivers.FocusDriver;
+import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 import org.netbeans.jemmy.drivers.MouseDriver;
-import org.netbeans.jemmy.drivers.SupportiveDriver;
 
 import org.netbeans.jemmy.drivers.input.EventDriver;
 
@@ -41,21 +41,21 @@ import org.netbeans.jemmy.operators.TextAreaOperator;
 import org.netbeans.jemmy.operators.TextComponentOperator;
 import org.netbeans.jemmy.operators.TextFieldOperator;
 
-public class MouseFocusDriver extends SupportiveDriver implements FocusDriver {
+public class MouseFocusDriver extends LightSupportiveDriver implements FocusDriver {
     private QueueTool queueTool;
     public MouseFocusDriver() {
-	super(new Class[] {
-		JListOperator.class, 
-		JScrollBarOperator.class, 
-		JSliderOperator.class, 
-		JTableOperator.class, 
-		JTextComponentOperator.class, 
-		JTreeOperator.class, 
-		ListOperator.class, 
-		ScrollbarOperator.class, 
-		TextAreaOperator.class, 
-		TextComponentOperator.class, 
-		TextFieldOperator.class});
+	super(new String[] {
+		"org.netbeans.jemmy.operators.JListOperator", 
+		"org.netbeans.jemmy.operators.JScrollBarOperator", 
+		"org.netbeans.jemmy.operators.JSliderOperator", 
+		"org.netbeans.jemmy.operators.JTableOperator", 
+		"org.netbeans.jemmy.operators.JTextComponentOperator", 
+		"org.netbeans.jemmy.operators.JTreeOperator", 
+		"org.netbeans.jemmy.operators.ListOperator", 
+		"org.netbeans.jemmy.operators.ScrollbarOperator", 
+		"org.netbeans.jemmy.operators.TextAreaOperator", 
+		"org.netbeans.jemmy.operators.TextComponentOperator", 
+		"org.netbeans.jemmy.operators.TextFieldOperator"});
         queueTool = new QueueTool();
     }
     public void giveFocus(final ComponentOperator oper) {

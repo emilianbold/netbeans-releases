@@ -82,6 +82,10 @@ public class DriverManager {
      */
     public static final String FRAME_DRIVER_ID = DRIVER_ID + "frame";
     /**
+     * Symbolic constant for window drivers.
+     */
+    public static final String INTERNAL_FRAME_DRIVER_ID = DRIVER_ID + "internal_frame";
+    /**
      * Symbolic constant for frame drivers.
      */
     public static final String FOCUS_DRIVER_ID = DRIVER_ID + "focus";
@@ -100,8 +104,8 @@ public class DriverManager {
      * @param operatorClass Class to get an driver for.
      * @param JemmyProperties Instance to get driver from.
      */ 
-    public static Driver getDriver(String id, Class operatorClass, JemmyProperties props) {
-	Driver result = getADriver(id, operatorClass, props);
+    public static Object getDriver(String id, Class operatorClass, JemmyProperties props) {
+	Object result = getADriver(id, operatorClass, props);
 	if(result == null) {
 	    return(getDriver(id, operatorClass));
 	} else {
@@ -115,7 +119,7 @@ public class DriverManager {
      * @param id Driver type id.
      * @param operator Operator to get an driver for.
      */ 
-    public static Driver getDriver(String id, ComponentOperator operator) {
+    public static Object getDriver(String id, ComponentOperator operator) {
 	return(getDriver(id, operator.getClass(), operator.getProperties()));
     }
 
@@ -125,8 +129,8 @@ public class DriverManager {
      * @param id Driver type id.
      * @param operatorClass Class to get an driver for.
      */ 
-    public static Driver getDriver(String id, Class operatorClass) {
-	Driver result = getADriver(id, operatorClass, JemmyProperties.getProperties());
+    public static Object getDriver(String id, Class operatorClass) {
+	Object result = getADriver(id, operatorClass, JemmyProperties.getProperties());
 	if(result == null) {
 	    throw(new JemmyException("No \"" + id + "\" driver registered for " +
 				     operatorClass.getName() + " class!"));
@@ -141,7 +145,7 @@ public class DriverManager {
      * @param driver 
      * @param operatorClass Class to set driver for.
      */
-    public static void setDriver(String id, Driver driver, Class operatorClass) {
+    public static void setDriver(String id, Object driver, Class operatorClass) {
 	JemmyProperties.
 	    setCurrentProperty(makeID(id, operatorClass), driver);
 	if(Boolean.getBoolean(DRIVER_ID + "trace_output")) {
@@ -149,6 +153,18 @@ public class DriverManager {
 							 driver.getClass().getName() +
 							 " drifer for " +
 							 operatorClass.getName() +
+							 " operators.");
+	}
+    }
+
+    public static void setDriver(String id, Object driver, String operatorClassName) {
+	JemmyProperties.
+	    setCurrentProperty(makeID(id, operatorClassName), driver);
+	if(Boolean.getBoolean(DRIVER_ID + "trace_output")) {
+	    JemmyProperties.getCurrentOutput().printLine("Installing " +
+							 driver.getClass().getName() +
+							 " drifer for " +
+							 operatorClassName +
 							 " operators.");
 	}
     }
@@ -167,6 +183,19 @@ public class DriverManager {
     }
 
     /**
+     * Sets driver for all classes supported by driver.
+     * @param id Driver type id.
+     * @param driver 
+     * @param operatorClass Class to set driver for.
+     */
+    public static void setDriver(String id, LightDriver driver) {
+	String[] supported = driver.getSupported();
+	for(int i = 0; i < supported.length; i++) {
+            setDriver(id, driver, supported[i]);
+	}
+    }
+
+    /**
      * Removes driver for operator class.
      * @param id Driver type to remove.
      * @param operatorClass Class to remove driver for.
@@ -181,6 +210,16 @@ public class DriverManager {
 	}
     }
 
+    public static void removeDriver(String id, String operatorClassName) {
+	JemmyProperties.
+	    removeCurrentProperty(makeID(id, operatorClassName));
+	if(Boolean.getBoolean(DRIVER_ID + "trace_output")) {
+	    JemmyProperties.getCurrentOutput().printLine("Uninstalling a drifer for " +
+							 operatorClassName +
+							 " operators.");
+	}
+    }
+
     /**
      * Removes driver for operator classes.
      * @param id Driver type to remove.
@@ -189,6 +228,12 @@ public class DriverManager {
     public static void removeDriver(String id, Class[] operatorClasses) {
 	for(int i = 0; i < operatorClasses.length; i++) {
 	    removeDriver(id, operatorClasses[i]);
+	}
+    }
+
+    public static void removeDriver(String id, String[] operatorClassNames) {
+	for(int i = 0; i < operatorClassNames.length; i++) {
+	    removeDriver(id, operatorClassNames[i]);
 	}
     }
 
@@ -459,6 +504,27 @@ public class DriverManager {
 	setDriver(FRAME_DRIVER_ID, driver);
     }
     /**
+     * Returns <code>INTERNAL_FRAME_DRIVER_ID</code> driver
+     * @param operatorClass Class to find driver for.
+     */
+    public static InternalFrameDriver getInternalFrameDriver(Class operatorClass) {
+	return((InternalFrameDriver)getDriver(INTERNAL_FRAME_DRIVER_ID, operatorClass));
+    }
+    /**
+     * Returns <code>INTERNAL_FRAME_DRIVER_ID</code> driver
+     * @param operator Operator to find driver for.
+     */
+    public static InternalFrameDriver getInternalFrameDriver(ComponentOperator operator) {
+	return((InternalFrameDriver)getDriver(INTERNAL_FRAME_DRIVER_ID, operator.getClass()));
+    }
+    /**
+     * Defines <code>INTERNAL_FRAME_DRIVER_ID</code> driver
+     * @param driver
+     */
+    public static void setInternalFrameDriver(InternalFrameDriver driver) {
+	setDriver(INTERNAL_FRAME_DRIVER_ID, driver);
+    }
+    /**
      * Returns <code>FOCUS_DRIVER_ID</code> driver
      * @param operatorClass Class to find driver for.
      */
@@ -501,17 +567,32 @@ public class DriverManager {
 	setDriver(MENU_DRIVER_ID, driver);
     }
 
+    static void setDriver(String id, Object driver) {
+        if(driver instanceof Driver) {
+            setDriver(id, (Driver)driver);
+        } else if(driver instanceof LightDriver) {
+            setDriver(id, (LightDriver)driver);
+        } else {
+            throw(new JemmyException("Driver is neither Driver nor LightDriver " + 
+                                     driver.toString()));
+        }
+    }
+
     //creates driver id
     private static String makeID(String id, Class operatorClass) {
-	return(id + "." + operatorClass.getName());
+	return(makeID(id, operatorClass.getName()));
+    }
+
+    private static String makeID(String id, String operatorClassName) {
+	return(id + "." + operatorClassName);
     }
 
     //returns a driver
-    private static Driver getADriver(String id, Class operatorClass, JemmyProperties props) {
+    private static Object getADriver(String id, Class operatorClass, JemmyProperties props) {
 	Class superClass = operatorClass;
-	Driver drvr;
+	Object drvr;
 	do {
-	    drvr = (Driver)props.
+	    drvr = props.
 		getProperty(makeID(id, superClass));
 	    if(drvr != null) {
 		return(drvr);

@@ -22,7 +22,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 /**
  * Defines how to manage focus.
  */
-public interface FocusDriver extends Driver {
+public interface FocusDriver {
 
     /**
      * Makes a compoennt having focus.

@@ -838,12 +838,17 @@ public class ComponentOperator extends Operator
      * Searches a container.
      */
     public Container getContainer(ComponentChooser chooser) {
-	Container[] conts = getContainers();
-	for(int i = 0; i < conts.length; i++) {
-	    if(chooser.checkComponent(conts[i])) {
-		return(conts[i]);
-	    }
+	int counter = 0;
+	Container cont = getSource().getParent();
+	if(cont == null) {
+	    return(null);
 	}
+	do {
+	    if(chooser.checkComponent(cont)) {
+		return(cont);
+	    }
+	    counter++;
+	} while((cont = cont.getParent()) != null);
 	return(null);
     }
 

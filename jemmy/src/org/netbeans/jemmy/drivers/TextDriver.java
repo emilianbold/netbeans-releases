@@ -22,7 +22,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 /**
  * Defines how to work with text components.
  */
-public interface TextDriver extends Driver {
+public interface TextDriver {
 
     /**
      * Moves caret.

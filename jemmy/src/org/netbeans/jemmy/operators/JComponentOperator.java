@@ -34,6 +34,7 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Window;
 
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -45,6 +46,7 @@ import java.util.Hashtable;
 import javax.accessibility.AccessibleContext;
 
 import javax.swing.JComponent;
+import javax.swing.JInternalFrame;
 import javax.swing.JRootPane;
 import javax.swing.JToolTip;
 import javax.swing.KeyStroke;
@@ -333,6 +335,31 @@ public class JComponentOperator extends ContainerOperator
 	    output.printStackTrace(e);
 	    return(null);
 	}
+    }
+
+    public ContainerOperator getWindowContainerOperator() {
+        Component resultComp;
+        if(getSource() instanceof Window) {
+            resultComp = getSource();
+        } else {
+            resultComp = getContainer(new ComponentChooser() {
+                    public boolean checkComponent(Component comp) {
+                        return(comp instanceof Window ||
+                               comp instanceof JInternalFrame);
+                    }
+                    public String getDescription() {
+                        return("");
+                    }
+                });
+        }
+        ContainerOperator result;
+        if(resultComp instanceof Window) {
+            result = new WindowOperator((Window)resultComp);
+        } else {
+            result = new ContainerOperator((Container)resultComp);
+        }
+        result.copyEnvironment(this);
+        return(result);
     }
 
     public Hashtable getDump() {

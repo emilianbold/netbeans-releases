@@ -171,6 +171,7 @@ public class TestSuite extends Task {
 			      start);
 	}
 	runDir.mkdirs();
+        System.out.println("Java: " + System.getProperty("java.version"));
 	System.out.println("Run directory: " + runDir.getAbsolutePath());
 	if(testsLocation == null) {
 	    setTestsLocation(runDir);

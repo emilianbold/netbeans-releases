@@ -17,28 +17,13 @@
 
 package org.netbeans.jemmy.drivers;
 
-import org.netbeans.jemmy.operators.ComponentOperator;
-
 /**
- * Defines how to work with buttons.
+ * Drifines interface for all drivers.
  */
-public interface ButtonDriver {
+public interface LightDriver {
 
     /**
-     * Presses a button.
-     * @param oper Button operator.
+     * Returns array of operator classes which are supported by this driver.
      */
-    public void press(ComponentOperator oper);
-
-    /**
-     * Releases a button.
-     * @param oper Button operator.
-     */
-    public void release(ComponentOperator oper);
-
-    /**
-     * Pushes a button.
-     * @param oper Button operator.
-     */
-    public void push(ComponentOperator oper);
+    public String[] getSupported();
 }

@@ -22,7 +22,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 /**
  * Defines how to work with windows.
  */
-public interface WindowDriver extends Driver {
+public interface WindowDriver {
 
     /**
      * Activates a window.

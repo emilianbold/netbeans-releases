@@ -29,17 +29,17 @@ import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.Timeout;
 
-import org.netbeans.jemmy.drivers.SupportiveDriver;
+import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.ScrollPaneOperator;
 
-public class RobotDriver extends SupportiveDriver {
+public class RobotDriver extends LightSupportiveDriver {
 
     protected ClassReference robotReference = null;
     protected QueueTool qtool;
 
-    public RobotDriver(Timeout autoDelay, Class[] supported) {
+    public RobotDriver(Timeout autoDelay, String[] supported) {
 	super(supported);
 	qtool = new QueueTool();
 	qtool.setOutput(TestOut.getNullOutput());
@@ -67,7 +67,7 @@ public class RobotDriver extends SupportiveDriver {
     }
 
     public RobotDriver(Timeout autoDelay) {
-	this(autoDelay, new Class[] {ComponentOperator.class});
+	this(autoDelay, new String[] {"org.netbeans.jemmy.operators.ComponentOperator"});
     }
 
     /**

@@ -22,7 +22,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 /**
  * Defines how to work with tables.
  */
-public interface TableDriver extends Driver {
+public interface TableDriver {
 
     /**
      * Selects a cell.

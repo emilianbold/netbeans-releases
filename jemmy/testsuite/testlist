@@ -1,15 +1,10 @@
 org.netbeans.jemmy.testing.jemmy_001
-#org.netbeans.jemmy.testing.jemmy_030
-#org.netbeans.jemmy.testing.jemmy_015
 org.netbeans.jemmy.testing.jemmy_002
 org.netbeans.jemmy.testing.jemmy_003
 org.netbeans.jemmy.testing.jemmy_004
 org.netbeans.jemmy.testing.jemmy_005
 org.netbeans.jemmy.testing.jemmy_006
 org.netbeans.jemmy.testing.jemmy_007
-org.netbeans.jemmy.testing.jemmy_008
-org.netbeans.jemmy.testing.jemmy_009
-org.netbeans.jemmy.testing.jemmy_010
 org.netbeans.jemmy.testing.jemmy_011
 org.netbeans.jemmy.testing.jemmy_012
 org.netbeans.jemmy.testing.jemmy_013
@@ -24,7 +19,6 @@ org.netbeans.jemmy.testing.jemmy_022
 org.netbeans.jemmy.testing.jemmy_023
 org.netbeans.jemmy.testing.jemmy_024
 org.netbeans.jemmy.testing.jemmy_025
-org.netbeans.jemmy.testing.jemmy_026
 org.netbeans.jemmy.testing.jemmy_027
 org.netbeans.jemmy.testing.jemmy_028
 org.netbeans.jemmy.testing.jemmy_029

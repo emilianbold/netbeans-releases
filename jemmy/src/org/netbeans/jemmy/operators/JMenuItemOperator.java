@@ -448,6 +448,7 @@ implements Timeoutable, Outputable{
             if(elements[i] instanceof JMenuItem) {
                 result[index] = new JMenuItemOperator((JMenuItem)elements[i]);
                 result[index].copyEnvironment(env);
+                index++;
             }
         }
         return(result);

@@ -22,7 +22,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 /**
  * Defines how to work with frames.
  */
-public interface FrameDriver extends Driver {
+public interface FrameDriver {
 
     /**
      * Iconifies a frame.

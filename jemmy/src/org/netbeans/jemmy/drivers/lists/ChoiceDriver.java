@@ -25,16 +25,16 @@ import org.netbeans.jemmy.Timeout;
 
 import org.netbeans.jemmy.drivers.DriverManager;
 import org.netbeans.jemmy.drivers.KeyDriver;
+import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 import org.netbeans.jemmy.drivers.ListDriver;
-import org.netbeans.jemmy.drivers.SupportiveDriver;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.ChoiceOperator;
 
-public class ChoiceDriver extends SupportiveDriver implements ListDriver {
+public class ChoiceDriver extends LightSupportiveDriver implements ListDriver {
     private final static int RIGHT_INDENT = 10;
     public ChoiceDriver() {
-	super(new Class[] {ChoiceOperator.class});
+	super(new String[] {"org.netbeans.jemmy.operators.ChoiceOperator"});
     }
     public void selectItem(ComponentOperator oper, int index) {
         ChoiceOperator coper = (ChoiceOperator)oper;

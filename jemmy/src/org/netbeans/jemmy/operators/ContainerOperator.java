@@ -268,9 +268,11 @@ public class ContainerOperator extends ComponentOperator
     public Component waitSubComponent(final ComponentChooser chooser, final int index) {
         getOutput().printLine("Waiting for \"" + chooser.getDescription() +
                               "\" subcomponent");
+        final ComponentSearcher searcher = new ComponentSearcher((Container)getSource());
+        searcher.setOutput(getOutput().createErrorOutput());
 	Waiter waiter = new Waiter(new Waitable() {
 		public Object actionProduced(Object obj) {
-		    return(findSubComponent(chooser, index));
+                    return(searcher.findComponent(chooser, index));
 		}
 		public String getDescription() {
 		    return("Wait for \"" + chooser.getDescription() +

@@ -43,7 +43,7 @@ public class JScrollBarDriver extends AbstractScrollDriver {
     private QueueTool queueTool;
 
     public JScrollBarDriver() {
-	super(new Class[] {JScrollBarOperator.class});
+	super(new String[] {"org.netbeans.jemmy.operators.JScrollBarOperator"});
         queueTool = new QueueTool();
     }
     public void scrollToMinimum(ComponentOperator oper, int orientation) {

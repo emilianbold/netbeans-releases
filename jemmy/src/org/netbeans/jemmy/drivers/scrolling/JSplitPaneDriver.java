@@ -24,17 +24,17 @@ import org.netbeans.jemmy.ComponentSearcher;
 
 import org.netbeans.jemmy.drivers.ButtonDriver;
 import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 import org.netbeans.jemmy.drivers.ScrollDriver;
-import org.netbeans.jemmy.drivers.SupportiveDriver;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JSplitPaneOperator;
 
-public class JSplitPaneDriver extends SupportiveDriver implements ScrollDriver {
+public class JSplitPaneDriver extends LightSupportiveDriver implements ScrollDriver {
     public JSplitPaneDriver() {
-	super(new Class[] {JSplitPaneOperator.class});
+	super(new String[] {"org.netbeans.jemmy.operators.JSplitPaneOperator"});
     }
     public void scroll(ComponentOperator oper, ScrollAdjuster adj) {
 	moveDividerTo((JSplitPaneOperator)oper, adj);

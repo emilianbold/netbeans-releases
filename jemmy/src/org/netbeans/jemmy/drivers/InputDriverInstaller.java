@@ -63,8 +63,8 @@ public class InputDriverInstaller {
     }
     public void install() {
 	if(useEventDrivers) {
-	    Driver keyE = new KeyEventDriver();
-	    Driver mouseE = new MouseEventDriver();
+	    LightDriver keyE = new KeyEventDriver();
+	    LightDriver mouseE = new MouseEventDriver();
 	    DriverManager.removeDriver(DriverManager.KEY_DRIVER_ID,
 				       keyE.getSupported());
 	    DriverManager.removeDriver(DriverManager.MOUSE_DRIVER_ID,
@@ -72,21 +72,21 @@ public class InputDriverInstaller {
 	    DriverManager.setDriver(DriverManager.KEY_DRIVER_ID, keyE);
 	    DriverManager.setDriver(DriverManager.MOUSE_DRIVER_ID, mouseE);
 	    try {
-		Class[] awtOperators = 
+		String[] awtOperators = 
 		    {
-			ButtonOperator.class,
-			CheckboxOperator.class,
-			ChoiceOperator.class,
-			LabelOperator.class,
-			ListOperator.class,
-			ScrollPaneOperator.class,
-			ScrollbarOperator.class,
-			TextAreaOperator.class,
-			TextComponentOperator.class,
-			TextFieldOperator.class
+			"org.netbeans.jemmy.operators.ButtonOperator",
+			"org.netbeans.jemmy.operators.CheckboxOperator",
+			"org.netbeans.jemmy.operators.ChoiceOperator",
+			"org.netbeans.jemmy.operators.LabelOperator",
+			"org.netbeans.jemmy.operators.ListOperator",
+			"org.netbeans.jemmy.operators.ScrollPaneOperator",
+			"org.netbeans.jemmy.operators.ScrollbarOperator",
+			"org.netbeans.jemmy.operators.TextAreaOperator",
+			"org.netbeans.jemmy.operators.TextComponentOperator",
+			"org.netbeans.jemmy.operators.TextFieldOperator"
 		    };
-		Driver keyR = new KeyRobotDriver(robotAutoDelay, awtOperators);
-		Driver mouseR = new MouseRobotDriver(robotAutoDelay, awtOperators);
+		LightDriver keyR = new KeyRobotDriver(robotAutoDelay, awtOperators);
+		LightDriver mouseR = new MouseRobotDriver(robotAutoDelay, awtOperators);
 		DriverManager.removeDriver(DriverManager.KEY_DRIVER_ID,
 					   keyR.getSupported());
 		DriverManager.removeDriver(DriverManager.MOUSE_DRIVER_ID,
@@ -99,8 +99,8 @@ public class InputDriverInstaller {
 		}
 	    }
 	} else {
-	    Driver keyR = new KeyRobotDriver(robotAutoDelay);
-	    Driver mouseR = new MouseRobotDriver(robotAutoDelay);
+	    LightDriver keyR = new KeyRobotDriver(robotAutoDelay);
+	    LightDriver mouseR = new MouseRobotDriver(robotAutoDelay);
 	    DriverManager.removeDriver(DriverManager.KEY_DRIVER_ID,
 				       keyR.getSupported());
 	    DriverManager.removeDriver(DriverManager.MOUSE_DRIVER_ID,

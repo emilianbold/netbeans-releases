@@ -30,7 +30,7 @@ import org.netbeans.jemmy.operators.ScrollPaneOperator;
 public class ScrollPaneDriver extends AWTScrollDriver {
     private static final int CLICK_OFFSET = 5;
     public ScrollPaneDriver() {
-	super(new Class[] {ScrollPaneOperator.class});
+	super(new String[] {"org.netbeans.jemmy.operators.ScrollPaneOperator"});
     }
     public void scrollToMinimum(ComponentOperator oper, final int orientation) {
 	final Adjustable adj = 

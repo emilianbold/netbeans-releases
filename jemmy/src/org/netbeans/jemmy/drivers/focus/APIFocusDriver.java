@@ -20,16 +20,16 @@ package org.netbeans.jemmy.drivers.focus;
 import java.awt.event.FocusEvent;
 
 import org.netbeans.jemmy.drivers.FocusDriver;
-import org.netbeans.jemmy.drivers.SupportiveDriver;
+import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 
 import org.netbeans.jemmy.drivers.input.EventDriver;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
-public class APIFocusDriver extends SupportiveDriver implements FocusDriver {
+public class APIFocusDriver extends LightSupportiveDriver implements FocusDriver {
     EventDriver eDriver;
     public APIFocusDriver() {
-	super(new Class[] {ComponentOperator.class});
+	super(new String[] {"org.netbeans.jemmy.operators.ComponentOperator"});
 	eDriver = new EventDriver();
     }
     public void giveFocus(ComponentOperator operator) {

@@ -147,6 +147,11 @@ public class JMenuBarOperator extends JComponentOperator
 	return((JMenuBar)findComponent(cont, new JMenuBarFinder()));
     }
 
+    static {
+        //necessary to init timeouts
+        JMenuOperator.class.getName();
+    }
+
     /**
      * Defines print output streams or writers.
      * @param out Identify the streams or writers used for print output.

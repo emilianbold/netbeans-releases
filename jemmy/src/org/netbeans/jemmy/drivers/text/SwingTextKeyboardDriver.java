@@ -32,7 +32,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
 
 public class SwingTextKeyboardDriver extends TextKeyboardDriver {
     public SwingTextKeyboardDriver() {
-	super(new Class[] {JTextComponentOperator.class});
+	super(new String[] {"org.netbeans.jemmy.operators.JTextComponentOperator"});
     }
     public void clearText(ComponentOperator oper) {
 	if(oper instanceof JTextAreaOperator ||

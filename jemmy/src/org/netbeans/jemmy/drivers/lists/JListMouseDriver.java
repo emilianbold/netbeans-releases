@@ -25,16 +25,16 @@ import java.awt.event.InputEvent;
 import org.netbeans.jemmy.QueueTool;
 
 import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 import org.netbeans.jemmy.drivers.MultiSelListDriver;
-import org.netbeans.jemmy.drivers.SupportiveDriver;
 
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
-public class JListMouseDriver extends SupportiveDriver implements MultiSelListDriver {
+public class JListMouseDriver extends LightSupportiveDriver implements MultiSelListDriver {
     QueueTool queueTool;
     public JListMouseDriver() {
-	super(new Class[] {JListOperator.class});
+	super(new String[] {"org.netbeans.jemmy.operators.JListOperator"});
 	queueTool = new QueueTool();
     }
     public void selectItem(ComponentOperator oper, int index) {

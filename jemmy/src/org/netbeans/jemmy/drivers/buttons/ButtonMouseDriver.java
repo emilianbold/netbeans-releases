@@ -19,14 +19,14 @@ package org.netbeans.jemmy.drivers.buttons;
 
 import org.netbeans.jemmy.drivers.ButtonDriver;
 import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 import org.netbeans.jemmy.drivers.MouseDriver;
-import org.netbeans.jemmy.drivers.SupportiveDriver;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
-public class ButtonMouseDriver extends SupportiveDriver implements ButtonDriver {
+public class ButtonMouseDriver extends LightSupportiveDriver implements ButtonDriver {
     public ButtonMouseDriver() {
-	super(new Class[] {ComponentOperator.class});
+	super(new String[] {"org.netbeans.jemmy.operators.ComponentOperator"});
     }
     public void press(ComponentOperator oper) {
 	MouseDriver mdriver = DriverManager.getMouseDriver(oper);

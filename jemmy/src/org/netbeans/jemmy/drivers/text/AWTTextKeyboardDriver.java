@@ -28,7 +28,7 @@ import org.netbeans.jemmy.operators.TextComponentOperator;
 
 public class AWTTextKeyboardDriver extends TextKeyboardDriver {
     public AWTTextKeyboardDriver() {
-	super(new Class[] {TextComponentOperator.class});
+	super(new String[] {"org.netbeans.jemmy.operators.TextComponentOperator"});
     }
     public String getText(ComponentOperator oper) {
 	return(((TextComponentOperator)oper).getText());

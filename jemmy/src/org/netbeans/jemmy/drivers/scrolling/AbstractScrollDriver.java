@@ -23,13 +23,13 @@ import java.awt.Point;
 import org.netbeans.jemmy.Timeout;
 
 import org.netbeans.jemmy.drivers.ScrollDriver;
-import org.netbeans.jemmy.drivers.SupportiveDriver;
+import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
-public abstract class AbstractScrollDriver extends SupportiveDriver implements ScrollDriver {
+public abstract class AbstractScrollDriver extends LightSupportiveDriver implements ScrollDriver {
     public static final int ADJUST_CLICK_COUNT = 10;
-    public AbstractScrollDriver(Class[] supported) {
+    public AbstractScrollDriver(String[] supported) {
 	super(supported);
     }
     public void scroll(ComponentOperator oper, ScrollAdjuster adj) {

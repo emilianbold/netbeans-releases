@@ -25,7 +25,7 @@ import org.netbeans.jemmy.drivers.scrolling.ScrollAdjuster;
  * Defines how to work with scrollable components such as
  * <code>javax.swing.JScrollBar</code>, <code>javax.swing.JScrollPane</code>, <code>javax.swing.JSlider</code>, ...
  */
-public interface ScrollDriver extends Driver {
+public interface ScrollDriver {
 
     /**
      * Changes value to a minimum.

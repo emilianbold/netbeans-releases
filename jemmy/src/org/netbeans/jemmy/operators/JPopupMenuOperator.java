@@ -332,6 +332,11 @@ implements Outputable, Timeoutable {
 	return(callPopup(comp, getPopupMouseButton()));
     }
 
+    static {
+        //necessary to init timeouts
+        JMenuOperator.class.getName();
+    }
+
     /**
      * Defines print output streams or writers.
      * @param out Identify the streams or writers used for print output.

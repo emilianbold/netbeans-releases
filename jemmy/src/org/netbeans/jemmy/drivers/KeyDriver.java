@@ -24,7 +24,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 /**
  * Defines how to simulate keyboard operations.
  */
-public interface KeyDriver extends Driver {
+public interface KeyDriver {
 
     /**
      * Presses a key.

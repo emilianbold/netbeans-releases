@@ -32,7 +32,7 @@ public class MouseRobotDriver extends RobotDriver implements MouseDriver {
     public MouseRobotDriver(Timeout autoDelay) {
 	super(autoDelay);
     }
-    public MouseRobotDriver(Timeout autoDelay, Class[] supported) {
+    public MouseRobotDriver(Timeout autoDelay, String[] supported) {
 	super(autoDelay, supported);
     }
     public void pressMouse(ComponentOperator oper, int x, int y, int mouseButton, int modifiers) {

@@ -47,4 +47,16 @@ public class UnsupportedOperatorException extends JemmyException {
 	}
 	throw(new UnsupportedOperatorException(driver, operator));
     }
+
+    public static void checkSupported(Class driver, String[] supported, Class operator) {
+        Class opClass = operator;
+        do {
+            for(int i = 0; i < supported.length; i++) {
+                if(opClass.getName().equals(supported[i])) {
+                    return;
+                }
+            }
+        } while((opClass = opClass.getSuperclass()) != null);
+	throw(new UnsupportedOperatorException(driver, operator));
+    }
 }

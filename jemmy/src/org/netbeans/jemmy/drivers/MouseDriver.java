@@ -24,7 +24,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 /**
  * Defines how to simulate mouse operations.
  */
-public interface MouseDriver extends Driver {
+public interface MouseDriver {
 
     /**
      * Presses mouse.

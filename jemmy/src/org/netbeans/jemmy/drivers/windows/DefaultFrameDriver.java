@@ -27,15 +27,15 @@ import java.awt.event.WindowEvent;
 import org.netbeans.jemmy.operators.FrameOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
-import org.netbeans.jemmy.drivers.SupportiveDriver;
 import org.netbeans.jemmy.drivers.FrameDriver;
+import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 
 import org.netbeans.jemmy.drivers.input.EventDriver;
 
-public class DefaultFrameDriver extends SupportiveDriver implements FrameDriver {
+public class DefaultFrameDriver extends LightSupportiveDriver implements FrameDriver {
     EventDriver eDriver;
     public DefaultFrameDriver() {
-	super(new Class[] {FrameOperator.class});
+	super(new String[] {"org.netbeans.jemmy.operators.FrameOperator"});
 	eDriver = new EventDriver();
     }
     public void iconify(ComponentOperator oper) {

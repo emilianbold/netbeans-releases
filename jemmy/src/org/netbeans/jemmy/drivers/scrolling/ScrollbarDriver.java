@@ -30,7 +30,7 @@ import org.netbeans.jemmy.operators.ScrollbarOperator;
 public class ScrollbarDriver extends AWTScrollDriver {
     private static final int CLICK_OFFSET = 5;
     public ScrollbarDriver() {
-	super(new Class[] {ScrollbarOperator.class});
+	super(new String[] {"org.netbeans.jemmy.operators.ScrollbarOperator"});
     }
     public void scrollToMinimum(final ComponentOperator oper, final int orientation) {
 	scroll(oper, 

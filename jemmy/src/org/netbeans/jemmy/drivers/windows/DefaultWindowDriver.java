@@ -28,15 +28,15 @@ import java.awt.event.WindowEvent;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.WindowOperator;
 
-import org.netbeans.jemmy.drivers.SupportiveDriver;
+import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 import org.netbeans.jemmy.drivers.WindowDriver;
 
 import org.netbeans.jemmy.drivers.input.EventDriver;
 
-public class DefaultWindowDriver extends SupportiveDriver implements WindowDriver {
+public class DefaultWindowDriver extends LightSupportiveDriver implements WindowDriver {
     EventDriver eDriver;
     public DefaultWindowDriver() {
-	super(new Class[] {WindowOperator.class});
+	super(new String[] {"org.netbeans.jemmy.operators.WindowOperator"});
 	eDriver = new EventDriver();
     }
     public void activate(ComponentOperator oper) {

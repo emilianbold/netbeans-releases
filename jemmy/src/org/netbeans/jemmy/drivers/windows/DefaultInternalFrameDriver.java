@@ -17,26 +17,34 @@
 
 package org.netbeans.jemmy.drivers.windows;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.Window;
 
 import java.awt.event.WindowEvent;
 
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
+
+import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.ComponentSearcher;
+
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JInternalFrameOperator;
 
 import org.netbeans.jemmy.drivers.FrameDriver;
-import org.netbeans.jemmy.drivers.SupportiveDriver;
+import org.netbeans.jemmy.drivers.InternalFrameDriver;
+import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 import org.netbeans.jemmy.drivers.WindowDriver;
 
 import org.netbeans.jemmy.drivers.input.EventDriver;
 
-public class DefaultInternalFrameDriver extends SupportiveDriver 
-    implements WindowDriver, FrameDriver {
+public class DefaultInternalFrameDriver extends LightSupportiveDriver 
+    implements WindowDriver, FrameDriver, InternalFrameDriver {
     public DefaultInternalFrameDriver() {
-	super(new Class[] {JInternalFrameOperator.class});
+	super(new String[] {"org.netbeans.jemmy.operators.JInternalFrameOperator"});
     }
     public void activate(ComponentOperator oper) {
 	checkSupported(oper);
@@ -89,5 +97,21 @@ public class DefaultInternalFrameDriver extends SupportiveDriver
 	    }
 	    ((JInternalFrameOperator)oper).getMaximizeButton().push();
 	}
+    }
+    public Component getTitlePane(ComponentOperator operator) {
+	ComponentSearcher cs = new ComponentSearcher((Container)operator.getSource());
+	cs.setOutput(operator.getOutput().createErrorOutput());
+	return(cs.findComponent(new ComponentChooser() {
+					public boolean checkComponent(Component comp) {
+					    if(System.getProperty("java.version").startsWith("1.2")) {
+						return(comp.getClass().getName().endsWith("InternalFrameTitlePane"));
+					    } else {
+						return(comp instanceof BasicInternalFrameTitlePane);
+					    }
+					}
+					public String getDescription() {
+					    return("Title pane");
+					}
+				    }));
     }
 }

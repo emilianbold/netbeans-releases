@@ -27,7 +27,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.jemmy.QueueTool;
 
 import org.netbeans.jemmy.drivers.DriverManager;
-import org.netbeans.jemmy.drivers.SupportiveDriver;
+import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 import org.netbeans.jemmy.drivers.TableDriver;
 import org.netbeans.jemmy.drivers.TextDriver;
 
@@ -35,10 +35,10 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 
-public class JTableMouseDriver extends SupportiveDriver implements TableDriver {
+public class JTableMouseDriver extends LightSupportiveDriver implements TableDriver {
     QueueTool queueTool;
     public JTableMouseDriver() {
-	super(new Class[] {JTableOperator.class});;
+	super(new String[] {"org.netbeans.jemmy.operators.JTableOperator"});;
 	queueTool = new QueueTool();
     }
     public void selectCell(ComponentOperator oper, int row, int column) {

@@ -74,14 +74,15 @@ public class DefaultDriverInstaller extends ArrayDriverInstaller {
 	      DriverManager.FRAME_DRIVER_ID,
 	      DriverManager.WINDOW_DRIVER_ID,
 	      DriverManager.FRAME_DRIVER_ID,
+	      DriverManager.INTERNAL_FRAME_DRIVER_ID,
 	      DriverManager.WINDOW_DRIVER_ID,
 	      DriverManager.FOCUS_DRIVER_ID,
 	      DriverManager.FOCUS_DRIVER_ID,
 	      DriverManager.MENU_DRIVER_ID,
 	      DriverManager.ORDEREDLIST_DRIVER_ID},
-	      new Driver[] {
+	      new Object[] {
 	      new JTreeMouseDriver(),
-	      new JTreeMouseDriver(),
+              new JTreeMouseDriver(),
 	      new JTreeMouseDriver(),
 	      new AWTTextKeyboardDriver(),
 	      new SwingTextKeyboardDriver(),
@@ -102,9 +103,10 @@ public class DefaultDriverInstaller extends ArrayDriverInstaller {
 	      new DefaultWindowDriver(),
 	      new DefaultInternalFrameDriver(),
 	      new DefaultInternalFrameDriver(),
+	      new DefaultInternalFrameDriver(),
 	      new APIFocusDriver(),
 	      new MouseFocusDriver(),
-              (shortcutEvents ? ((Driver)new QueueJMenuDriver()) : ((Driver)new DefaultJMenuDriver())),
+              (shortcutEvents ? ((Object)new QueueJMenuDriver()) : ((Object)new DefaultJMenuDriver())),
 	      new JTableHeaderDriver()});
     }
     public DefaultDriverInstaller() {

@@ -29,7 +29,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 public class MouseEventDriver extends EventDriver implements MouseDriver {
-    public MouseEventDriver(Class[] supported) {
+    public MouseEventDriver(String[] supported) {
 	super(supported);
     }
     public MouseEventDriver() {

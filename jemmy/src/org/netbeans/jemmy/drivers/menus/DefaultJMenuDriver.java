@@ -31,11 +31,11 @@ import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 
+import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 import org.netbeans.jemmy.drivers.MenuDriver;
 import org.netbeans.jemmy.drivers.MouseDriver;
-import org.netbeans.jemmy.drivers.DriverManager;
 import org.netbeans.jemmy.drivers.PathChooser;
-import org.netbeans.jemmy.drivers.SupportiveDriver;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
@@ -43,9 +43,11 @@ import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JMenuOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
-public class DefaultJMenuDriver extends SupportiveDriver implements MenuDriver {
+public class DefaultJMenuDriver extends LightSupportiveDriver implements MenuDriver {
     public DefaultJMenuDriver() {
-	super(new Class[] {JMenuOperator.class, JMenuBarOperator.class, JPopupMenuOperator.class});
+	super(new String[] {"org.netbeans.jemmy.operators.JMenuOperator", 
+                            "org.netbeans.jemmy.operators.JMenuBarOperator", 
+                            "org.netbeans.jemmy.operators.JPopupMenuOperator"});
     }
     public Object pushMenu(ComponentOperator oper, PathChooser chooser) {
 	checkSupported(oper);

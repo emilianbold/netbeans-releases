@@ -22,7 +22,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 /**
  * Defines how to work with manus.
  */
-public interface MenuDriver extends Driver {
+public interface MenuDriver {
 
     /**
      * Pushes menu.

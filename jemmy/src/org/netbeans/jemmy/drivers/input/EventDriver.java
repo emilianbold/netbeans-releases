@@ -29,20 +29,20 @@ import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.Timeout;
 
 import org.netbeans.jemmy.drivers.KeyDriver;
-import org.netbeans.jemmy.drivers.SupportiveDriver;
+import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JComponentOperator;
 
-public class EventDriver extends SupportiveDriver {
+public class EventDriver extends LightSupportiveDriver {
     QueueTool queueTool;
-    public EventDriver(Class[] supported) {
+    public EventDriver(String[] supported) {
 	super(supported);
 	queueTool = new QueueTool();
     }
     public EventDriver() {
-	this(new Class[] {ComponentOperator.class});
+	this(new String[] {"org.netbeans.jemmy.operators.ComponentOperator"});
     }
     public void dispatchEvent(Component comp, AWTEvent event) {
         checkVisibility(comp);

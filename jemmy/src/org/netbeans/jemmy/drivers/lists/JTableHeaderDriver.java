@@ -24,16 +24,16 @@ import java.awt.event.InputEvent;
 import org.netbeans.jemmy.QueueTool;
 
 import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 import org.netbeans.jemmy.drivers.OrderedListDriver;
-import org.netbeans.jemmy.drivers.SupportiveDriver;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTableHeaderOperator;
 
-public class JTableHeaderDriver extends SupportiveDriver implements OrderedListDriver {
+public class JTableHeaderDriver extends LightSupportiveDriver implements OrderedListDriver {
     private QueueTool queueTool;
     public JTableHeaderDriver() {
-	super(new Class[] {JTableHeaderOperator.class});
+	super(new String[] {"org.netbeans.jemmy.operators.JTableHeaderOperator"});
         queueTool = new QueueTool();
     }
     public void selectItem(ComponentOperator oper, int index) {

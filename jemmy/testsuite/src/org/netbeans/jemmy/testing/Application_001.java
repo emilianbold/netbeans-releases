@@ -32,6 +32,7 @@ public class Application_001 extends TestDialog {
 		editableModel.addElement(editable.getEditor().getItem());
 	    }
 	});
+        editable.setName("editable");
 
 	c.fill = GridBagConstraints.CENTER;
 	c.gridwidth = GridBagConstraints.REMAINDER;
@@ -42,6 +43,7 @@ public class Application_001 extends TestDialog {
 	
 	String[] list_contents = {"list_one", "list_two", "list_three", "list_four"};
 	JList list = new JList(list_contents);
+        list.setName("list");
 
 	c.gridwidth = GridBagConstraints.REMAINDER;
 	c.gridheight = 2;
@@ -52,6 +54,7 @@ public class Application_001 extends TestDialog {
 	String[] non_editable_contents = {"non_editable_one", "non_editable_two", "non_editable_three", "non_editable_four"};
 	JComboBox non_editable = new JComboBox(non_editable_contents);
 	non_editable.setEditable(false);
+        non_editable.setName("non_editable");
 
 	c.gridwidth = GridBagConstraints.REMAINDER;
 	c.gridheight = 1;

@@ -22,7 +22,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 /**
  * Defines how to work with lists.
  */
-public interface ListDriver extends Driver {
+public interface ListDriver {
 
     /**
      * Selects an item.

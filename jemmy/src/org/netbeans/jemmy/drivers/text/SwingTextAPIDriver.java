@@ -23,12 +23,11 @@ import java.awt.event.KeyEvent;
 import org.netbeans.jemmy.Timeout;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JTextAreaOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 
 public class SwingTextAPIDriver extends TextAPIDriver {
     public SwingTextAPIDriver() {
-	super(new Class[] {JTextComponentOperator.class});
+	super(new String[] {"org.netbeans.jemmy.operators.JTextComponentOperator"});
     }
     public String getText(ComponentOperator oper) {
 	return(((JTextComponentOperator)oper).getDisplayedText());
