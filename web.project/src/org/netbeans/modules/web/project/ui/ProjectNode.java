@@ -17,14 +17,16 @@ import java.awt.Component;
 import java.awt.Image;
 import java.awt.Panel;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.io.File;
-import java.util.ArrayList;
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -43,18 +45,16 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.NodeAction;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
-import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.web.project.UpdateHelper;
+import org.openide.util.Lookup;
 
 
 
@@ -69,21 +69,21 @@ class ProjectNode extends AbstractNode {
     private static final String PROJECT_ICON = "org/netbeans/modules/web/project/ui/resources/projectDependencies.gif";    //NOI18N
     private static final Component CONVERTOR_COMPONENT = new Panel();
 
-    private final Project project;
+    private final AntArtifact antArtifact;
+    private final URI artifactLocation;
     private Image cachedIcon;
 
-    ProjectNode (Project project, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId, String webModuleElementName) {
-        super (Children.LEAF, Lookups.fixed(new Object[] {
-            project,
-            new JavadocProvider(project),
-            new Removable(helper, eval, refHelper, classPathId, entryId, webModuleElementName)}));
-        this.project = project;
+    ProjectNode (AntArtifact antArtifact, URI artifactLocation, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId, String webModuleElementName) {
+        super (Children.LEAF, createLookup (antArtifact, artifactLocation, helper, eval, refHelper, classPathId, entryId, webModuleElementName));
+        this.antArtifact = antArtifact;
+        this.artifactLocation = artifactLocation;
     }
 
-    public String getDisplayName () {
-        ProjectInformation info = (ProjectInformation) this.project.getLookup().lookup(ProjectInformation.class);
+    public String getDisplayName () {        
+        ProjectInformation info = getProjectInformation();        
         if (info != null) {
-            return info.getDisplayName();
+            return MessageFormat.format(NbBundle.getMessage(ProjectNode.class,"TXT_ProjectArtifactFormat"),
+                    new Object[] {info.getDisplayName(), artifactLocation.toString()});
         }
         else {
             return NbBundle.getMessage (ProjectNode.class,"TXT_UnknownProjectName");
@@ -96,7 +96,7 @@ class ProjectNode extends AbstractNode {
 
     public Image getIcon(int type) {
         if (cachedIcon == null) {
-            ProjectInformation info = (ProjectInformation) this.project.getLookup().lookup(ProjectInformation.class);
+            ProjectInformation info = getProjectInformation();
             if (info != null) {
                 Icon icon = info.getIcon();
                 //XXX: There should be an API for Icon -> Image conversion,
@@ -137,64 +137,79 @@ class ProjectNode extends AbstractNode {
     public Action getPreferredAction () {
         return getActions(false)[0];
     }
+    
+    private ProjectInformation getProjectInformation () {
+        Project p = this.antArtifact.getProject();
+        if (p != null) {
+            return (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
+        }
+        return null;
+    }
+    
+    private static Lookup createLookup (AntArtifact antArtifact, URI artifactLocation, 
+            UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, 
+            String classPathId, String entryId, String webModuleElementName) {
+        Project p = antArtifact.getProject();
+        Object[] content;
+        if (p == null) {
+            content = new Object[1];
+        }
+        else {
+            content = new Object[3];
+            content[1] = new JavadocProvider(antArtifact, artifactLocation);
+            content[2] = p;
+        }
+        content[0] = new Removable(helper, eval, refHelper, classPathId, entryId, webModuleElementName);        
+        Lookup lkp = Lookups.fixed(content);
+        return lkp;
+    }
 
     private static class JavadocProvider implements ShowJavadocAction.JavadocProvider {
 
-        private final Project project;
-
-        JavadocProvider (Project project) {
-            this.project = project;
+        private final AntArtifact antArtifact;
+        private final URI artifactLocation;
+        
+        JavadocProvider (AntArtifact antArtifact, URI artifactLocation) {
+            this.antArtifact = antArtifact;
+            this.artifactLocation = artifactLocation;
         }
 
 
         public boolean hasJavadoc() {
-            try {
-                AntArtifactProvider provider = (AntArtifactProvider) project.getLookup().lookup(AntArtifactProvider.class);
-                if (provider == null) {
-                    return false;
-                }
-                AntArtifact[] artifacts = provider.getBuildArtifacts();
-                if (artifacts.length==0) {
-                    return false;
-                }
-                URI artifactLocation = artifacts[0].getArtifactLocation();
-                File scriptLocation = artifacts[0].getScriptLocation();
-                URL artifactURL = scriptLocation.toURI().resolve(artifactLocation).normalize().toURL();
-                if (FileUtil.isArchiveFile(artifactURL)) {
-                    artifactURL = FileUtil.getArchiveRoot(artifactURL);
-                }
-                URL[] urls = JavadocForBinaryQuery.findJavadoc(artifactURL).getRoots();
-                return urls.length>0;
-            } catch (MalformedURLException mue) {
-                return false;
-            }
+            return findJavadoc().size() > 0;
         }
 
         public void showJavadoc() {
+            Set us = findJavadoc();
+            URL[] urls = (URL[])us.toArray(new URL[us.size()]);
+            URL pageURL = ShowJavadocAction.findJavadoc("overview-summary.html",urls);
+            if (pageURL == null) {
+                pageURL = ShowJavadocAction.findJavadoc("index.html",urls);
+            }
+            ProjectInformation info = null;
+            Project p = this.antArtifact.getProject ();
+            if (p != null) {
+                info = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
+            }
+            ShowJavadocAction.showJavaDoc (pageURL, info == null ?
+                NbBundle.getMessage (ProjectNode.class,"TXT_UnknownProjectName") : info.getDisplayName());
+        }
+        
+        private Set findJavadoc() {            
+            File scriptLocation = this.antArtifact.getScriptLocation();            
+            Set urls = new HashSet();
             try {
-                AntArtifactProvider provider = (AntArtifactProvider) project.getLookup().lookup(AntArtifactProvider.class);
-                AntArtifact[] artifacts = provider.getBuildArtifacts();
-                //XXX: WebProject has a single artifact, if changed must return FileObject[]
-                URI artifactLocation = artifacts[0].getArtifactLocation();
-                File scriptLocation = artifacts[0].getScriptLocation();
-                URL artifactURL = scriptLocation.toURI().resolve(artifactLocation).normalize().toURL();
+                URL artifactURL = scriptLocation.toURI().resolve(this.artifactLocation).normalize().toURL();
                 if (FileUtil.isArchiveFile(artifactURL)) {
                     artifactURL = FileUtil.getArchiveRoot(artifactURL);
                 }
-                URL[] urls = JavadocForBinaryQuery.findJavadoc(artifactURL).getRoots();
-                ProjectInformation info = (ProjectInformation) project.getLookup().lookup(ProjectInformation.class);
-                
-                URL pageURL = ShowJavadocAction.findJavadoc("overview-summary.html",urls);
-                if (pageURL == null) {
-                    pageURL = ShowJavadocAction.findJavadoc("index.html",urls);
-                }
-                ShowJavadocAction.showJavaDoc (pageURL, info == null ?
-                    NbBundle.getMessage (ProjectNode.class,"TXT_UnknownProjectName") : info.getDisplayName());
+                urls.addAll(Arrays.asList(JavadocForBinaryQuery.findJavadoc(artifactURL).getRoots()));                
             } catch (MalformedURLException mue) {
-                ErrorManager.getDefault().notify (mue);
-            }
+                ErrorManager.getDefault().notify (mue);                
+            }                                    
+            return urls;
         }
-
+        
     }
 
     private static class OpenProjectAction extends NodeAction {
@@ -287,7 +302,7 @@ class ProjectNode extends AbstractNode {
                 if (!RemoveClassPathRootAction.isReferenced (new EditableProperties[] {
                     props,
                     helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH)}, ref)) {
-                    refHelper.destroyForeignFileReference (ref);
+                    refHelper.destroyReference(ref);
                 }
 
                 return FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
