@@ -352,9 +352,6 @@ public class VisualReplicator {
                 FakePeerSupport.attachFakePeer((Component)clone);
                 if (clone instanceof Container)
                     FakePeerSupport.attachFakePeerRecursively((Container)clone);
-//                boolean attached = FakePeerSupport.attachFakePeer((Component)clone);
-//                if (attached && clone instanceof Container)
-//                    FakePeerSupport.attachFakePeerRecursively((Container)clone);
             }
             if ((restrictions & DISABLE_FOCUSING) != 0
                     && clone instanceof JComponent) {
@@ -365,8 +362,8 @@ public class VisualReplicator {
 
         if (metacomp instanceof RADVisualContainer) {
             RADVisualContainer metacont = (RADVisualContainer) metacomp;
-            Container cont = (Container) clone;
-            Container contDelegate = metacont.getContainerDelegate(cont);
+            final Container cont = (Container) clone;
+            final Container contDelegate = metacont.getContainerDelegate(cont);
 
             // copy menu
             RADMenuComponent menuComp = metacont.getContainerMenu();
@@ -376,17 +373,27 @@ public class VisualReplicator {
             }
 
             // set layout
-            LayoutSupportManager laysup = metacont.getLayoutSupport();
+            final LayoutSupportManager laysup = metacont.getLayoutSupport();
             laysup.setLayoutToContainer(cont, contDelegate);
 
             // copy subcomponents
             RADVisualComponent[] metacomps = metacont.getSubComponents();
-            Component[] comps = new Component[metacomps.length];
+            final Component[] comps = new Component[metacomps.length];
             for (int i = 0; i < metacomps.length; i++)
                 comps[i] = (Component) cloneComponent(metacomps[i],
                                                       relativeProperties);
 
-            laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
+            // add cloned subcomponents to container
+            if (!(clone instanceof JToolBar))
+                laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
+            else { // a L&F workaround for JToolBar (MetalToobarUI)
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        laysup.addComponentsToContainer(cont, contDelegate,
+                                                        comps, 0);
+                    }
+                });
+            }
 
             if (laysup.supportsArranging())
                 laysup.arrangeContainer(cont, contDelegate);
