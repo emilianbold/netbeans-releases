@@ -780,6 +780,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                       }
                       //Rebuild toolbars
                       rebuildPanel();
+                      rebuildMenu();
                   }
               }
         });
