@@ -13,7 +13,7 @@
   <folder name="ServiceTemplates">
     <folder name="Browsers">
       <file name="Simple External Browser[org-netbeans-modules-extbrowser-SimpleExtBrowser].instance">
-        <attr name="isTemplate" boolvalue="true"/>
+        <attr name="template" boolvalue="true"/>
       </file>
     </folder>
   </folder>
