@@ -74,7 +74,7 @@ public class CheckActionsListPerformer extends JellyTestCase {
     }
     
     public void tearDown() throws Exception {
-        log("Starting check Key Bindings actions test.");
+        log("Ending check Key Bindings actions test.");
         File ref=new File(getWorkDir(),editorName+" actions.ref");
         assertFile("Some actions aren't same as before the split.", getGoldenFile(editorName+" actions.pass"), ref, new File(getWorkDir(),editorName+" actions.diff"), new LineDiff(false));
         ref.delete();
