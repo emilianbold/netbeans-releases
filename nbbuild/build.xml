@@ -412,7 +412,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../j2eeserver/deprecated" target="netbeans"/>
   </target>
   -->
-  <target name="all-j2eeserver" depends="all-openide,all-schema2beans,all-debuggercore,all-debuggerjpda,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-j2eeserver/j2eeapis">
+  <target name="all-j2eeserver" depends="all-openide,all-schema2beans,all-debuggercore,all-debuggerjpda,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-j2eeserver/j2eeapis,all-xml/api">
     <echo message="Building module j2eeserver..."/>
     <ant dir="../j2eeserver" target="netbeans"/>
   </target>
