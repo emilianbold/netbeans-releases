@@ -322,7 +322,7 @@ public class Node {
         int indexInt[]= new int[indexStr.length];
         for (int i=0; i<indexStr.length; i++)
             indexInt[i]=Integer.parseInt(indexStr[i]);
-        return o.findPath(new Node.StringArraySubPathChooser(getTreePath(), o.parseString(subPath, delimiter), indexInt, o.getDefaultStringComparator()));
+        return o.findPath(new Node.StringArraySubPathChooser(getTreePath(), o.parseString(subPath, delimiter), indexInt, o.getComparator()));
     }
     
     /** Expands current node to see children */    

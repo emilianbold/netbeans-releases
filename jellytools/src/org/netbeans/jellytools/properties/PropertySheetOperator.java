@@ -118,6 +118,7 @@ public class PropertySheetOperator extends TopComponentOperator {
      */
     public PropertySheetOperator(ContainerOperator contOper) {
         super((JComponent)waitPropertySheet(contOper));
+        copyEnvironment(contOper);
     }
     
     /** Invokes properties by default action on currently selected object.

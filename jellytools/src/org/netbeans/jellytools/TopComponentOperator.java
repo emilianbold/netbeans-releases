@@ -75,7 +75,8 @@ public class TopComponentOperator extends JComponentOperator {
      * @param index index of TopComponent to be find
      */
     public TopComponentOperator(ContainerOperator contOper, String topComponentName, int index) {
-        super((JComponent)waitComponent(contOper, new TopComponentChooser(topComponentName), index));
+        super((JComponent)waitComponent(contOper, new TopComponentChooser(topComponentName, contOper.getComparator()), index));
+        copyEnvironment(contOper);
     }
     
     /** Waits for TopComponent with given name in specified container.
@@ -179,7 +180,7 @@ public class TopComponentOperator extends JComponentOperator {
      */
     protected static TopComponent findTopComponent(String name, int index) {
         Iterator it=TopComponent.getRegistry().getOpened().iterator();
-        ComponentChooser chooser=new TopComponentChooser(name);
+        ComponentChooser chooser=new TopComponentChooser(name, Operator.getDefaultStringComparator());
         TopComponent c;
         while (it.hasNext()) {
             c=(TopComponent)it.next();
@@ -229,9 +230,9 @@ public class TopComponentOperator extends JComponentOperator {
         private String _name;
         private StringComparator _comparator;
         
-        public TopComponentChooser(String name) {
+        public TopComponentChooser(String name, StringComparator comparator) {
             _name=name;
-            _comparator= Operator.getDefaultStringComparator();
+            _comparator = comparator;
         }
         
         public boolean checkComponent(Component comp) {

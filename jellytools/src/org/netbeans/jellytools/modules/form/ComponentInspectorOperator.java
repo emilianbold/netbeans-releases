@@ -38,6 +38,7 @@ public class ComponentInspectorOperator extends TopComponentOperator {
      */
     public ComponentInspectorOperator(ContainerOperator contOper) {
         super((TopComponent)contOper.waitSubComponent(new ComponentInspectorChooser()));
+        copyEnvironment(contOper);
     }
     
     /** Getter for component tree.

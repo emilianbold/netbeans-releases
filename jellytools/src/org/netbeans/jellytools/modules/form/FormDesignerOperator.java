@@ -41,6 +41,7 @@ public class FormDesignerOperator extends TopComponentOperator {
      */
     public FormDesignerOperator(ContainerOperator contOper) {
         super((TopComponent)contOper.waitSubComponent(new FormDesignerChooser()));
+        copyEnvironment(contOper);
     }
 
     /** Returns component which actually handles all events happening

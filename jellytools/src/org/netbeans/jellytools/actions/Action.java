@@ -74,7 +74,7 @@ public class Action {
                                              {API_MODE, POPUP_MODE, MENU_MODE, SHORTCUT_MODE},
                                              {SHORTCUT_MODE, POPUP_MODE, MENU_MODE, API_MODE}};
 
-                                             /** menu path of current action or null when MENU_MODE is not supported */                                             
+    /** menu path of current action or null when MENU_MODE is not supported */                                             
     protected String menuPath;
     /** popup menu path of current action or null when POPUP_MODE is not supported */    
     protected String popupPath;
@@ -82,7 +82,12 @@ public class Action {
     protected Class systemActionClass;
     /** array of shortcuts of current action or null when SHORTCUT_MODE is not supported */    
     protected Shortcut[] shortcuts;
-    
+
+    /** Comparator used as default for all Action instances. It is set in static clause. */
+    private static Operator.StringComparator defaultComparator;
+    /** Comparator used for this action instance. */
+    private Operator.StringComparator comparator;
+
     /** creates new Action instance without API_MODE and SHORTCUT_MODE support
      * @param menuPath action path in main menu (use null value if menu mode is not supported)
      * @param popupPath action path in popup menu (use null value if popup mode shell is not supported) */    
@@ -145,6 +150,9 @@ public class Action {
         if (JemmyProperties.getCurrentProperty("Action.DefaultMode")==null)
             JemmyProperties.setCurrentProperty("Action.DefaultMode", new Integer(POPUP_MODE));
         Timeouts.initDefault("Action.WaitAfterShortcutTimeout", WAIT_AFTER_SHORTCUT_TIMEOUT);
+        // Set not-exact and case sensitive comparator as default because of 
+        // very often clash between Cut and Execute menu items.
+        defaultComparator = new Operator.DefaultStringComparator(false, true);
     }
     
     private void perform(int mode) {
@@ -332,7 +340,7 @@ public class Action {
         if(oldVisualizer != null) {
             Operator.setDefaultComponentVisualizer(oldVisualizer);
         }
-        popup.setComparator(new Operator.DefaultStringComparator(false, true));
+        popup.setComparator(getComparator());
         popup.pushMenu(popupPath, "|");
         try {
             Thread.sleep(AFTER_ACTION_WAIT_TIME);
@@ -353,7 +361,7 @@ public class Action {
         new EventTool().waitNoEvent(500);
         component.clickForPopup();
         JPopupMenuOperator popup=new JPopupMenuOperator(component);
-        popup.setComparator(new Operator.DefaultStringComparator(false, true));
+        popup.setComparator(getComparator());
         popup.pushMenu(popupPath, "|");
         try {
             Thread.sleep(AFTER_ACTION_WAIT_TIME);
@@ -517,6 +525,27 @@ public class Action {
         }
         JemmyProperties.setCurrentProperty("Action.DefaultMode", new Integer(mode));
         return oldMode;
+    }
+    
+    
+    /** Sets comparator fot this action. Comparator is used for all actions
+     * after this method is called.
+     * @param comparator new comparator to be set (e.g. 
+     *                   new Operator.DefaultStringComparator(true, true);
+     *                   to search string item exactly and case sensitive)
+     */
+    public void setComparator(Operator.StringComparator comparator) {
+        this.comparator = comparator;
+    }
+
+    /** Gets comparator set for this action instance.
+     * @returns comparator set for this action instance.
+     */
+    public Operator.StringComparator getComparator() {
+        if(comparator == null) {
+            comparator = defaultComparator;
+        }
+        return comparator;
     }
     
     /** This class defines keyboard shortcut for action execution */    
