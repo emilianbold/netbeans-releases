@@ -54,8 +54,6 @@ public class EditorModule implements ModuleInstall {
   private static final String MIME_JAVA = "text/x-java";
   private static final String MIME_HTML = "text/html";
   private static final String MIME_IDL = "text/x-idl";
-  private static final String MIME_XML = "text/xml";
-  private static final String MIME_DTD = "text/x-dtd";
   private static final String MIME_PROPERTIES = "text/x-properties";
   private static final String MIME_JSP = "text/x-jsp";
 
@@ -65,8 +63,6 @@ public class EditorModule implements ModuleInstall {
     new KitInfo(MIME_JAVA, "com.netbeans.developer.modules.text.NbEditorJavaKit"),
     new KitInfo(MIME_HTML, "com.netbeans.developer.modules.text.NbEditorHTMLKit"),
     new KitInfo(MIME_IDL, "com.netbeans.developer.modules.text.NbEditorIDLKit"),
-    new KitInfo(MIME_XML, "com.netbeans.developer.modules.text.NbEditorXMLKit"),
-    new KitInfo(MIME_DTD, "com.netbeans.developer.modules.text.NbEditorDTDKit"),
     new KitInfo(MIME_PROPERTIES, "com.netbeans.developer.modules.text.NbEditorPropertiesKit"),
     new KitInfo(MIME_JSP, "com.netbeans.developer.modules.text.NbEditorJSPKit")
   };
@@ -202,6 +198,8 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  27   Gandalf   1.26        9/2/99   Libor Kramolis  Remove XML and DTD 
+ *       settings from editor module
  *  26   Gandalf   1.25        8/17/99  Miloslav Metelka 
  *  25   Gandalf   1.24        8/4/99   Petr Jiricka    Added editor kits for 
  *       text/x-jsp and text/x-properties
