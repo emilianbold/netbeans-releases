@@ -239,11 +239,14 @@ public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
     }
     
     public Node getFirstChild() {
+        NodeList list = getChildNodes();
+        if (list.getLength() == 0) return null;
         return getChildNodes().item(0);
     }
     
     public Node getLastChild() {
         NodeList list = getChildNodes();
+        if (list.getLength() == 0) return null;
         return list.item(list.getLength());
     }
     

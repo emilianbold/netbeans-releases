@@ -106,6 +106,9 @@ public abstract class SyntaxElement {
                 if( next != null ) {
                     next.previous = this;
                     if (next.first.getOffset() == first.getOffset()) {
+
+                        // TODO see #43297 for causes and try to relax them
+
                         Exception ex = new IllegalStateException("Next cannot be the same as current element at offset " + first.getOffset() + " " + first.getImage());
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                         return null;
