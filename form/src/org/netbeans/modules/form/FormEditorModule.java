@@ -14,11 +14,15 @@
 package com.netbeans.developer.modules.loaders.form;
 
 import com.netbeans.ide.TopManager;
+import com.netbeans.ide.NotifyDescriptor;
 import com.netbeans.ide.filesystems.FileObject;
 import com.netbeans.ide.loaders.DataObject;
 import com.netbeans.ide.loaders.DataFolder;
-import com.netbeans.developer.impl.IDESettings;
+import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.modules.ModuleInstall;
+
+// [PENDING]
+import com.netbeans.developer.impl.IDESettings;
 
 /**
 * Module installation class for Form Editor
@@ -26,6 +30,13 @@ import com.netbeans.ide.modules.ModuleInstall;
 * @author Ian Formanek
 */
 public class FormEditorModule implements ModuleInstall {
+
+  private static final String AWT_CATEGORY_NAME = "AWT";
+  private static final String SWING_CATEGORY_NAME = "Swing";
+  private static final String SWING2_CATEGORY_NAME = "Swing2";
+  private static final String BEANS_CATEGORY_NAME = "Beans";
+  private static final String LAYOUTS_CATEGORY_NAME = "Layouts";
+  private static final String BORDERS_CATEGORY_NAME = "Borders";
 
   /** Module installed for the first time. */
   public void installed () {
@@ -76,7 +87,7 @@ public class FormEditorModule implements ModuleInstall {
       try {
         paletteFolder = root.createFolder ("Palette");
       } catch (java.io.IOException e) {
-        e.printStackTrace ();
+        TopManager.getDefault ().notify (new NotifyDescriptor.Message (NbBundle.getBundle (FormEditorModule.class).getString ("ERR_CreatingPalette"), NotifyDescriptor.ERROR_MESSAGE));
         return;
       }
     }
@@ -89,80 +100,93 @@ public class FormEditorModule implements ModuleInstall {
     FileObject layoutsCategory = null; DataFolder layoutsFolder;
     FileObject bordersCategory = null; DataFolder bordersFolder;
 
+    java.util.ArrayList categoryErrors = new java.util.ArrayList ();
+    java.util.ArrayList componentErrors = new java.util.ArrayList ();
+
     // -----------------------------------------------------------------------------
     // Create AWT Category and components
     try {
-      if ((awtCategory = paletteFolder.getFileObject ("AWT")) == null) awtCategory = paletteFolder.createFolder ("AWT");
-      createInstances (awtCategory, defaultAWTComponents);
+      if ((awtCategory = paletteFolder.getFileObject (AWT_CATEGORY_NAME)) == null) 
+        awtCategory = paletteFolder.createFolder (AWT_CATEGORY_NAME);
+      createInstances (awtCategory, defaultAWTComponents, componentErrors);
     } catch (java.io.IOException e) {
-      e.printStackTrace ();
+      categoryErrors.add (AWT_CATEGORY_NAME);
     }
     awtFolder = DataFolder.findFolder (awtCategory);
     
     // -----------------------------------------------------------------------------
     // Create Swing Category and components
     try {
-      if ((swingCategory = paletteFolder.getFileObject ("Swing")) == null) swingCategory = paletteFolder.createFolder ("Swing");
-      createInstances (swingCategory, defaultSwingComponents);
+      if ((swingCategory = paletteFolder.getFileObject (SWING_CATEGORY_NAME)) == null) 
+        swingCategory = paletteFolder.createFolder (SWING_CATEGORY_NAME);
+      createInstances (swingCategory, defaultSwingComponents, componentErrors);
     } catch (java.io.IOException e) {
-      e.printStackTrace ();
+      categoryErrors.add (SWING_CATEGORY_NAME);
     }
     swingFolder = DataFolder.findFolder (swingCategory);
 
     // -----------------------------------------------------------------------------
     // Create Swing2 Category and components
     try {
-      if ((swing2Category = paletteFolder.getFileObject ("Swing2")) == null) swing2Category = paletteFolder.createFolder ("Swing2");
-      createInstances (swing2Category, defaultSwing2Components);
+      if ((swing2Category = paletteFolder.getFileObject (SWING2_CATEGORY_NAME)) == null) 
+        swing2Category = paletteFolder.createFolder (SWING2_CATEGORY_NAME);
+      createInstances (swing2Category, defaultSwing2Components, componentErrors);
     } catch (java.io.IOException e) {
-      e.printStackTrace ();
+      categoryErrors.add (SWING2_CATEGORY_NAME);
     }
     swing2Folder = DataFolder.findFolder (swing2Category);
 
     // -----------------------------------------------------------------------------
     // Create Beans Category and components
     try {
-      if ((beansCategory = paletteFolder.getFileObject ("Beans")) == null) beansCategory = paletteFolder.createFolder ("Beans");
-      createInstances (beansCategory, defaultBeansComponents);
+      if ((beansCategory = paletteFolder.getFileObject (BEANS_CATEGORY_NAME)) == null) 
+        beansCategory = paletteFolder.createFolder (BEANS_CATEGORY_NAME);
+      createInstances (beansCategory, defaultBeansComponents, componentErrors);
     } catch (java.io.IOException e) {
-      e.printStackTrace ();
+      categoryErrors.add (BEANS_CATEGORY_NAME);
     }
     beansFolder = DataFolder.findFolder (beansCategory);
 
     // -----------------------------------------------------------------------------
     // Create Layouts Category and components
     try {
-      if ((layoutsCategory = paletteFolder.getFileObject ("Layouts")) == null) layoutsCategory = paletteFolder.createFolder ("Layouts");
-      createInstances (layoutsCategory, defaultLayoutsComponents);
+      if ((layoutsCategory = paletteFolder.getFileObject (LAYOUTS_CATEGORY_NAME)) == null) 
+        layoutsCategory = paletteFolder.createFolder (LAYOUTS_CATEGORY_NAME);
+      createInstances (layoutsCategory, defaultLayoutsComponents, componentErrors);
     } catch (java.io.IOException e) {
-      e.printStackTrace ();
+      categoryErrors.add (LAYOUTS_CATEGORY_NAME);
     }
     layoutsFolder = DataFolder.findFolder (layoutsCategory);
 
     // -----------------------------------------------------------------------------
     // Create Borders Category and components
     try {
-      if ((bordersCategory = paletteFolder.getFileObject ("Borders")) == null) bordersCategory = paletteFolder.createFolder ("Borders");
-      createInstances (bordersCategory, defaultBorders);
+      if ((bordersCategory = paletteFolder.getFileObject (BORDERS_CATEGORY_NAME)) == null) 
+        bordersCategory = paletteFolder.createFolder (BORDERS_CATEGORY_NAME);
+      createInstances (bordersCategory, defaultBorders, componentErrors);
     } catch (java.io.IOException e) {
-      e.printStackTrace ();
+      categoryErrors.add (BORDERS_CATEGORY_NAME);
     }
     bordersFolder = DataFolder.findFolder (bordersCategory);
 
     try {
       paletteDataFolder.setOrder (new DataObject[] { awtFolder, swingFolder, swing2Folder, beansFolder, layoutsFolder, bordersFolder } );
     } catch (java.io.IOException e) {
-      e.printStackTrace ();
+    }
+
+    if ((categoryErrors.size () != 0) || (componentErrors.size () != 0)) {
+      TopManager.getDefault ().notify (new NotifyDescriptor.Message (NbBundle.getBundle (FormEditorModule.class).getString ("ERR_ProblemsCreatingPalette"), NotifyDescriptor.WARNING_MESSAGE));
     }
   }
 
-  private void createInstances (FileObject folder, String[] classNames) {
+  private void createInstances (FileObject folder, String[] classNames, java.util.Collection componentErrors) {
     for (int i = 0; i < classNames.length; i++) {
       String fileName = formatName (classNames[i]);
       try {
-        folder.createData (fileName, "instance");
+        if (folder.getFileObject (fileName+".instance") == null)
+          folder.createData (fileName, "instance");
       } catch (java.io.IOException e) {
-        e.printStackTrace ();
+        componentErrors.add (fileName);
       }
     }
   }
@@ -266,6 +290,10 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  8    Gandalf   1.7         3/31/99  Ian Formanek    
+ *  7    Gandalf   1.6         3/31/99  Ian Formanek    Fixed bug 1410 - Many 
+ *       exceptions (see attachment) are thrown only during first startup after 
+ *       installing.
  *  6    Gandalf   1.5         3/30/99  Ian Formanek    Creates default palette 
  *       on first installation
  *  5    Gandalf   1.4         3/30/99  Ian Formanek    
