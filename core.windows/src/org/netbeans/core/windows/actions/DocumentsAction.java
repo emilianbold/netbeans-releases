@@ -13,21 +13,16 @@
 
 package org.netbeans.core.windows.actions;
 
-import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ui.DocumentsDlg;
 
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
@@ -69,24 +64,7 @@ public class DocumentsAction extends AbstractAction implements Runnable {
     
     /** Display Documents dialog in AWT thread. */
     public void run () {
-        JPanel panel = new DocumentsDlg();
-        JButton closeButton = new JButton(NbBundle.getMessage(DocumentsAction.class, "CTL_Close"));
-        closeButton.setMnemonic(NbBundle.getMessage(DocumentsAction.class, "CTL_Close_Mnemonic").charAt(0));
-        closeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsAction.class, "ACSD_Close"));
-        
-        DialogDescriptor dlgDesc = new DialogDescriptor(
-            panel,
-            NbBundle.getMessage(DocumentsAction.class, "CTL_DocumentsTitle"),
-            true,
-            new Object[] {closeButton},
-            closeButton,
-            DialogDescriptor.DEFAULT_ALIGN,
-            null,
-            null);
-                                //final HelpCtx helpCtx,
-                                //final ActionListener bl
-        Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
-        dlg.show();
+        DocumentsDlg.showDocumentsDialog();
     }
     
     private void updateState() {

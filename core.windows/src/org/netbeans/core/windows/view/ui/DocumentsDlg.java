@@ -14,21 +14,28 @@
 package org.netbeans.core.windows.view.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicBorders;
 
+
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.explorer.view.ListView;
 import org.openide.explorer.ExplorerPanel;
@@ -55,10 +62,14 @@ import org.netbeans.core.windows.WindowManagerImpl;
 public class DocumentsDlg extends javax.swing.JPanel
 implements HelpCtx.Provider, PropertyChangeListener {
     
+    private static DocumentsDlg defaultInstance;
+    
+    private static Reference dlgRef = new SoftReference(null);
+    
     private ExplorerPanel explorer;
     
     /** Creates new form DocumentsDlg */
-    public DocumentsDlg () {
+    private DocumentsDlg () {
         initComponents();
         
         // Internationalize.
@@ -76,6 +87,13 @@ implements HelpCtx.Provider, PropertyChangeListener {
     }
     
 
+    private static DocumentsDlg getDefault() {
+        if(defaultInstance == null) {
+            defaultInstance = new DocumentsDlg();
+        }
+        return defaultInstance;
+    }
+    
     /** Gets <code>HelpCtx</code>. Implements <code>HelpCtx.Provider</code>. */
     public HelpCtx getHelpCtx() {
         // PENDING replace by id string.
@@ -278,22 +296,57 @@ implements HelpCtx.Provider, PropertyChangeListener {
         super.removeNotify();
         explorer.getExplorerManager().removePropertyChangeListener(this);
     }
+
+
+    public static void showDocumentsDialog() {
+         Dialog dlg = (Dialog)dlgRef.get();
+
+         if(dlg == null) {
+             JPanel documentsPanel = getDefault();
+             JButton closeButton = new JButton(NbBundle.getMessage(DocumentsDlg.class, "CTL_Close"));
+             closeButton.setMnemonic(NbBundle.getMessage(DocumentsDlg.class, "CTL_Close_Mnemonic").charAt(0));
+             closeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_Close"));
+             DialogDescriptor dlgDesc = new DialogDescriptor(
+             documentsPanel,
+             NbBundle.getMessage(DocumentsDlg.class, "CTL_DocumentsTitle"),
+             true, // is modal!!
+             new Object[] {closeButton},
+             closeButton,
+             DialogDescriptor.DEFAULT_ALIGN,
+             null,
+             null);
+             dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
+             dlgRef = new SoftReference(dlg);
+         }
+
+         getDefault().updateNodes();
+         dlg.setVisible(true);
+         getDefault().clearNodes();
+    }
     
     private JPanel createListView () {
         JPanel panel = new JPanel();
+        // Defined size in #36907.
+        panel.setPreferredSize(new Dimension(540, 400));
         panel.setLayout(new BorderLayout());
         ListView view = new ListView();
         // proper border for the view
         view.setBorder((Border)UIManager.get("Netbeans.ScrollPane.border")); // NOI18N
-        view.setPreferredSize(new Dimension(200, 400));
         view.setPopupAllowed(false);
         //view.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         explorer = new ExplorerPanel();
+        explorer.add(view);
+        panel.add(explorer, BorderLayout.CENTER);
+        
+        return panel;
+    }
+    
+    private void updateNodes() {
         //Create nodes for TopComponents
         Children.Array nodeArray = new Children.Array();
         
         List tcList = getOpenedDocuments();
-        List tcNodes = new ArrayList(tcList.size());       
+        List tcNodes = new ArrayList(tcList.size());
         for (int i = 0; i < tcList.size(); i++) {
             TopComponent tc = (TopComponent) tcList.get(i);
             tcNodes.add(new TopComponentNode(tc));
@@ -304,10 +357,10 @@ implements HelpCtx.Provider, PropertyChangeListener {
         
         Node root = new AbstractNode(nodeArray);
         explorer.getExplorerManager().setRootContext(root);
-        explorer.add(view);
-        panel.add(explorer, BorderLayout.CENTER);
-        
-        return panel;
+    }
+    
+    private void clearNodes() {
+        explorer.getExplorerManager().setRootContext(Node.EMPTY);
     }
     
     private static List getOpenedDocuments() {
