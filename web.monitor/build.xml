@@ -108,9 +108,9 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="release" if="have-catalina" depends="compile-catalina-check">
-    <copy file="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" tofile="${nb_root}/tomcatint/tomcat40/netbeans/tomcat401/lib/schema2beans.jar"/>
-    <copy file="netbeans/modules/ext/httpmonitor.jar"                      tofile="${nb_root}/tomcatint/tomcat40/netbeans/tomcat401/lib/httpmonitor.jar"/>
-    <copy file="netbeans/modules/ext/monitor-valve.jar"                    tofile="${nb_root}/tomcatint/tomcat40/netbeans/tomcat401/server/lib/monior-valve.jar"/>
+    <copy file="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" tofile="${nb_root}/tomcatint/tomcat40/netbeans/tomcat404/lib/schema2beans.jar"/>
+    <copy file="netbeans/modules/ext/httpmonitor.jar"                      tofile="${nb_root}/tomcatint/tomcat40/netbeans/tomcat404/lib/httpmonitor.jar"/>
+    <copy file="netbeans/modules/ext/monitor-valve.jar"                    tofile="${nb_root}/tomcatint/tomcat40/netbeans/tomcat404/server/lib/monior-valve.jar"/>
   </target>
 
 
@@ -152,7 +152,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="compile-catalina-check">
-    <available property="have-catalina" file="${nb_root}/tomcatint/tomcat40/netbeans/tomcat401/server/lib/catalina.jar"/>
+    <available property="have-catalina" file="${nb_root}/tomcatint/tomcat40/netbeans/tomcat404/server/lib/catalina.jar"/>
   </target>
 
   <target name="compile-catalina" if="have-catalina" depends="compile-server,compile-catalina-check">
@@ -163,7 +163,7 @@ Microsystems, Inc. All Rights Reserved.
 	 includes="**/monitor/catalina/**">
        <classpath>
           <pathelement location="${servlet23}"/>
-          <pathelement location="${nb_root}/tomcatint/tomcat40/netbeans/tomcat401/server/lib/catalina.jar"/> 
+          <pathelement location="${nb_root}/tomcatint/tomcat40/netbeans/tomcat404/server/lib/catalina.jar"/> 
        </classpath>
      </javac>
   </target>
