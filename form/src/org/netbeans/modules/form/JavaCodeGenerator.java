@@ -1256,6 +1256,10 @@ class JavaCodeGenerator extends CodeGenerator {
 
         while (it.hasNext()) {
             CodeVariable var = (CodeVariable) it.next();
+
+            if (var.getDeclaredType() == org.netbeans.modules.form.Separator.class)
+                continue; // treat AWT Separator specially - it is not a component
+
             variablesWriter.write(
                 var.getDeclaration().getJavaCodeString(null, null));
             variablesWriter.write("\n"); // NOI18N
