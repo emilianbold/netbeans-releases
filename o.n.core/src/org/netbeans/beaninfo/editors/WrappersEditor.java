@@ -99,6 +99,8 @@ public abstract class WrappersEditor implements PropertyEditor {
      * @param text  The string to be parsed.
      */
     public void setAsText(String text) throws IllegalArgumentException {
+        if ( "null".equals( text ) )    // NOI18N
+            return;
         pe.setAsText(text);
     }
     
