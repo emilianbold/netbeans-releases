@@ -38,4 +38,8 @@ public class SectionContainerNode extends org.openide.nodes.AbstractNode {
             }
         });
     }
+    
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return new org.openide.util.HelpCtx(getName());
+    }
 }

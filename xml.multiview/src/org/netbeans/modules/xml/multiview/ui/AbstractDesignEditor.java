@@ -26,6 +26,8 @@ import org.openide.explorer.ExplorerUtils;
 import org.openide.windows.TopComponent;
 import org.openide.util.HelpCtx;
 import org.openide.actions.SaveAction;
+import java.lang.reflect.Method;
+import org.openide.util.Lookup;
 
 /**
  * The ComponentPanel three pane editor. This is basically a container that implements the ExplorerManager
@@ -37,9 +39,10 @@ import org.openide.actions.SaveAction;
 
 public abstract class AbstractDesignEditor extends TopComponent implements ExplorerManager.Provider {
     
+    private static final String ACTION_INVOKE_HELP = "invokeHelp"; //NOI18N
     protected JComponent structureView;
     protected PanelView contentView;
-    
+    protected javax.swing.Action helpAction;
     private ExplorerManager manager;
     
     /** The icon for ComponentInspector */
@@ -49,12 +52,17 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
     
     public AbstractDesignEditor() {
         manager = new ExplorerManager();
-        initSaveAction();
         initComponents();
+        helpAction = new HelpAction();
+        final ActionMap map = AbstractDesignEditor.this.getActionMap();
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+            KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F1, 0), ACTION_INVOKE_HELP);
+        map.put(ACTION_INVOKE_HELP, helpAction);
+        initSaveAction(map);
     }
 
-    private void initSaveAction() {
-        ActionMap map = AbstractDesignEditor.this.getActionMap();
+    private void initSaveAction(final ActionMap map) {
+        
         SaveAction act = (SaveAction) SaveAction.findObject(SaveAction.class);
         if (act != null) {
             KeyStroke stroke = (KeyStroke) act.getValue(Action.ACCELERATOR_KEY);
@@ -66,7 +74,7 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
             // let's try it later
             org.openide.util.RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    initSaveAction();
+                    initSaveAction(map);
                 }
             }, 500);
         }
@@ -180,4 +188,58 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
         }
     }
     
+    final class HelpAction extends javax.swing.AbstractAction {
+        HelpCtx.Provider provider = null;
+        public HelpAction() {
+            super(org.openide.util.NbBundle.getMessage(AbstractDesignEditor.class,"CTL_Help"),
+                  new javax.swing.ImageIcon (
+                      AbstractDesignEditor.this.getClass().getResource("/org/netbeans/modules/xml/multiview/resources/help.gif"))); //NOI18N
+        }
+        
+        public boolean isEnabled() {
+            return getContext() != null;
+        }
+        
+        public void actionPerformed(java.awt.event.ActionEvent e) {
+            HelpCtx ctx = getContext();
+            if (ctx == null) {
+                java.awt.Toolkit.getDefaultToolkit().beep();
+                return;
+            }
+            
+            try {
+                //Copied from original property sheet implementation
+                Class c = ((ClassLoader)Lookup.getDefault().lookup(
+                ClassLoader.class)).loadClass(
+                "org.netbeans.api.javahelp.Help"); // NOI18N
+                
+                Object o = Lookup.getDefault().lookup(c);
+                if (o != null) {
+                    Method m = c.getMethod("showHelp", // NOI18N
+                    new Class[] {HelpCtx.class});
+
+                    if (m != null) { //Unit tests
+                        m.invoke(o, new Object[] {ctx});
+                    }
+                    return;
+                }
+            } catch (ClassNotFoundException cnfe) {
+                // ignore - maybe javahelp module is not installed, not so strange
+            } catch (Exception ee) {
+                // potentially more serious
+                org.openide.ErrorManager.getDefault().notify(
+                    org.openide.ErrorManager.INFORMATIONAL, ee);
+            }
+            // Did not work.
+            java.awt.Toolkit.getDefaultToolkit().beep();
+        }
+        
+        private HelpCtx getContext() {
+            Node[] selectedNodes = getExplorerManager().getSelectedNodes();
+            if (selectedNodes!=null && selectedNodes.length>0)
+                return selectedNodes[0].getHelpCtx();
+            else 
+                return null;
+        }
+    }
 }

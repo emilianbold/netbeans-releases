@@ -110,16 +110,18 @@ public class ToolBarDesignEditor extends AbstractDesignEditor {
      */
     
     public JComponent createStructureComponent() {
-        JToolBar toolbar = new ToolBarView(getExplorerManager(),getContentView().getRoot());
+        JToolBar toolbar = new ToolBarView(getExplorerManager(),getContentView().getRoot(), helpAction);
         return toolbar;
     }
  
     private static class ToolBarView extends JToolBar implements ExplorerManager.Provider, Lookup.Provider {
         private ExplorerManager manager;
         private Lookup lookup;
-        ToolBarView(final ExplorerManager manager, org.openide.nodes.Node root) {
+        private javax.swing.Action helpAction;
+        ToolBarView(final ExplorerManager manager, org.openide.nodes.Node root, javax.swing.Action helpAction) {
             super();
             this.manager=manager;
+            this.helpAction=helpAction;
             // same as before...
             
             setLayout(new java.awt.GridBagLayout());
@@ -144,6 +146,17 @@ public class ToolBarDesignEditor extends AbstractDesignEditor {
             gridBagConstraints.weightx = 1.0;
             JPanel filler = new JPanel();
             add(filler,gridBagConstraints);
+            
+            javax.swing.JButton helpButton = new javax.swing.JButton(helpAction);
+            helpButton.setText("");
+            helpButton.setContentAreaFilled(false);
+            helpButton.setFocusPainted(false);
+            helpButton.setBorderPainted(false);
+            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 2;
+            gridBagConstraints.gridy = 0;
+            //gridBagConstraints.weightx = 1.0;
+            add(helpButton,gridBagConstraints);
         }
         // ...method as before and getLookup
         public ExplorerManager getExplorerManager() {
@@ -180,4 +193,5 @@ public class ToolBarDesignEditor extends AbstractDesignEditor {
             throws PropertyVetoException {
         super.fireVetoableChange(propertyName, oldValue, newValue);
     }
+    
 }
