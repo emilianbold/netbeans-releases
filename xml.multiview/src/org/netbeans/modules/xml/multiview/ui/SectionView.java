@@ -18,6 +18,7 @@ import java.awt.*;
 
 import org.openide.nodes.Node;
 import org.netbeans.modules.xml.multiview.cookies.SectionFocusCookie;
+import org.netbeans.modules.xml.multiview.Utils;
 /**
  *
  * @author mkuchtiak
@@ -215,7 +216,7 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         }
         if (nodes!=null && nodes.length>0) {
          final Node n = nodes[0];
-         javax.swing.SwingUtilities.invokeLater(new Runnable () {
+         Utils.runInAwtDispatchThread(new Runnable () {
              public void run() {
                  openSection(n);
              }
