@@ -39,6 +39,7 @@ final class FreeformSources implements Sources, AntProjectListener {
     public FreeformSources(FreeformProject project) {
         this.project = project;
         project.helper().addAntProjectListener(this);
+        // XXX should probably listen to project.evaluator also?
     }
     
     private Sources delegate;

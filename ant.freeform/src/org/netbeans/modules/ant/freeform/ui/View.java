@@ -13,11 +13,16 @@
 
 package org.netbeans.modules.ant.freeform.ui;
 
-import org.netbeans.api.queries.VisibilityQuery;
-import org.openide.util.Utilities;
+import java.awt.Image;
 import java.util.Collections;
+import javax.swing.Action;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.ant.freeform.Actions;
+import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.FreeformProjectType;
 import org.netbeans.modules.ant.freeform.Util;
 import org.netbeans.spi.java.project.support.ui.PackageView;
@@ -26,23 +31,18 @@ import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.lookup.Lookups;
-import org.w3c.dom.Element;
 import org.openide.loaders.ChangeableDataFilter;
-import org.openide.loaders.DataFolder;
-import org.openide.nodes.FilterNode;
-import javax.swing.Action;
-import java.awt.Image;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.EventListenerList;
-import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.openide.loaders.DataFilter;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
+import org.w3c.dom.Element;
 
 /**
  * Logical view of a freeform project.
@@ -80,6 +80,7 @@ public final class View implements LogicalViewProvider {
             super.addNotify();
             updateKeys();
             p.helper().addAntProjectListener(this);
+            // XXX should probably listen to project.evaluator also?
         }
         
         protected void removeNotify() {
