@@ -22,6 +22,7 @@ import com.netbeans.ide.util.NotImplementedException;
 import com.netbeans.ide.nodes.*;
 import com.netbeans.ide.util.NbBundle;
 import com.netbeans.developer.impl.workspace.WorkspacePoolContext;
+import com.netbeans.developer.impl.execution.ExecutionEngine;
 
 /** Important places in the system.
 *
@@ -130,6 +131,13 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     return EnvironmentNode.getDefault ();
   }
 
+  /** Get the Executors node.
+  * @return the node
+  */
+  public Node executors () {
+    return ExecutionEngine.getNode ();
+  }
+
   /** Session node */
   public Node session () {
     return NbPlaces.session;
@@ -224,6 +232,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  19   Gandalf   1.18        5/27/99  Jaroslav Tulach Executors rearanged.
 *  18   Gandalf   1.17        5/7/99   Jan Jancura     Places.Nodes.packages () 
 *       method added
 *  17   Gandalf   1.16        3/29/99  Jaroslav Tulach places ().nodes 
