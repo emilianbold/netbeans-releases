@@ -17,14 +17,12 @@
   can validate the XML document to check its contents for syntax errors.</p>
 <p>If your XML document's DTD is located on a remote machine,  ensure that
 the IDE's proxy is correctly configured  and you have access to the DTD. </p>
-<table>
-  <tr> 
-    <td valign=top><img src="../images/tip.gif" alt="tip"></td>
-    <td valign=top align=left>If the IDE cannot access the DTD, it returns a
+
+  <ul class="note"> 
+    <li>If the IDE cannot access the DTD, it returns a
       single error message listing the DOCTYPE declaration. If the IDE cannot
-      access the XML schema, it displays <tt>Failed to read schema document</tt>.</td>
-  </tr>
-</table>
+      access the XML schema, it displays <tt>Failed to read schema document</tt>.</li>
+  </ul>
   
 <h4>To validate an XML document:</h4>
 <ol>
@@ -32,14 +30,12 @@ the IDE's proxy is correctly configured  and you have access to the DTD. </p>
   <li>Choose Validate XML.<p>The Output window lists any errors along with the line number where the error
   was detected. </li>
 </ol>
-<table>
-  <tr>
-    <td valign="top"><img src="../images/tip.gif" alt="Note"></td>
-    <td valign=top align=left>This location is not necessarily the line where
+
+  <ul class="note">
+    <li>This location is not necessarily the line where
       the error occurred. You can double-click any error message to go to the
-    line in the XML file where the error was detected.</td>
-  </tr>
-</table>
+    line in the XML file where the error was detected.</li>
+  </ul>
 
 <h3>Common Error Messages</h3>
 <p>Some common error messages generated during DTD validation include: </p>

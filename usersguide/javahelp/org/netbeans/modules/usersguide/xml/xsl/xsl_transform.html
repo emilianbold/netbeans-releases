@@ -33,16 +33,19 @@
     If you chose the XSL Transformation command on an XSL stylesheet, this value 
     is already filled in and is read-only. You can type the full path to the XSL 
     stylesheet or use the Browse button to select the script. 
-  <li>Specify the output of the transformation in the Output combo box. By default, 
+  <li>Specify the output of the transformation in the Output combo box. <p>By default, 
     the IDE generates an HTML file with the same name as the XML document. If 
     the XSL stylesheet creates a different type of output, it is automatically 
-    specified in the Output combo box. 
-  <p> You can change the name and location of the output path by typing a relative 
-    path and file name in the Output combo box. You can also select Preview in 
-    the combo box to preview the output in the IDE's default browser without creating 
-    an output file. </li>
+    specified in the Output combo box.</li>
+  <li>
+  	<p>If you want to change the name and location of the output path,  type
+	the relative  path and file name in the Output combo box. 
+  <ul>
+  	<li>If you want  to preview the output in the IDE's
+	default browser without creating an output file,			select Preview
+  		in the combo box.   </li>
   <li>If you want the transformation to overwrite any files created by earlier 
-    transformations, select Overwrite Output.</li>
+    transformations, select Overwrite Output.</ul></li>
   <li>Specify how you want the IDE to handle the output file in the Process Output 
     combo box. You have the following choices: 
     <ul>
@@ -58,20 +61,17 @@
     line in the source where the error occurred.</li>
 </ol>
 
-<table>
-  <tr> 
-    <td valign=top><img src="../../images/tip.gif" alt="tip"></td>
-    <td valign=top align=left>You can also run XSL Transformation on more than
+  <ul class="note"> 
+    <li>You can also run XSL Transformation on more than
       one XML document at a time by pressing the Control key while selecting
       document nodes. Then right-click any of the selected documents and choose
       XSL Transformation. The IDE displays a separate XSL Transformation dialog
-    box for each XML document. </td>
-  </tr>
-</table>
+    box for each XML document. </li>
+  </ul>
 
 <p>The IDE uses the Apache XALAN 2.3.1 XSL processor. For more information about 
   XSL transformations, see: </p>
-<p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
     <param name="content" value="http://www.w3.org/TR/xsl/">
     <param name="text" value="<html><u>http://www.w3.org/TR/xsl/</u></html>">
     <param name="textFontSize" value="medium">
