@@ -36,9 +36,10 @@ import org.openide.util.WeakSet;
  * @author Pet Hrebejk 
  */
 class ActionsUtil {
-     
-    
+         
     public static final ShortcutsManager SHORCUTS_MANAGER = new ShortcutsManager();
+    
+    public static HashMap /*<String,MessageFormat>*/ pattern2format = new HashMap(); 
     
     /** Registers property change listener on given lookup. (Or on the default
      *  lookup (if the paramater is null). The listener is notified when the
@@ -164,15 +165,31 @@ class ActionsUtil {
     /** Good for formating names of actions with some two parameter pattern
      * {0} nuber of objects (e.g. Projects or files ) and {1} name of one
      * or first object (e.g. Project or file) or null if the number is == 0
+     * {2} whats the type of the name 0 == normal, 1 == menu, 2 == popup
      */  
     public static String formatName( String namePattern, int numberOfObjects, String firstObjectName ) {
         
-        return MessageFormat.format( 
-            namePattern, 
+        MessageFormat mf = null;
+        
+        synchronized ( pattern2format ) {
+            mf = (MessageFormat)pattern2format.get( namePattern );
+            if ( mf == null ) {
+                mf = new MessageFormat( namePattern );
+                pattern2format.put( namePattern, mf );
+            }
+        }
+                
+        StringBuffer result = new StringBuffer();
+        
+        mf.format( 
             new Object[] {
                 new Integer( numberOfObjects ),
                 firstObjectName == null ? "" : firstObjectName,
-            });            
+            }, 
+            result, 
+            null );            
+            
+        return result.toString();
     }
       
     
