@@ -47,7 +47,7 @@ workspaceswitcher
   </target>
 
   <target name="firststart-params" if="nogui">
-    <property name="firststart.args.additorial" value="-nogui -nosplash"/>
+    <property name="firststart.args.additional" value="-nogui -nosplash"/>
   </target>
 
   <target name="setup-jdkhome-1">
@@ -75,9 +75,9 @@ workspaceswitcher
     <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc" classpath="nbantext.jar"/>
     <!-- Overridable. Note: need not necessarily be a number at all): -->
     <property name="buildnumber" value="dev-000"/>
-    <property name="firststart.args.additorial" value=""/>
+    <property name="firststart.args.additional" value=""/>
     <!-- Best to leave this alone, though, unless you know what you are doing: -->
-    <property name="firststart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true -single ${firststart.args.additorial}"/>
+    <property name="firststart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true -single ${firststart.args.additional}"/>
     <!-- But this it is OK to change: -->
     <property name="tryme.args" value=" -J-Dnetbeans.debug.exceptions=true -single"/>
     <!-- Override this with the Ant command, e.g. -Dmoduleconfig=superslim -->
