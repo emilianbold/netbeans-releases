@@ -456,11 +456,13 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-ExLocalFileSystem.settings" url="ExLocalFileSystem.settings">
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/localFS.gif" />
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.core.ui.MountNode.createIterator" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/core/resources/templatesLocalFS.html"/>
             </file>
             <file name="org-netbeans-core-ExJarFileSystem.settings" url="ExJarFileSystem.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/jarFS.gif" />
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.core.ui.MountNode.createIterator" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/core/resources/templatesJarFS.html"/>
