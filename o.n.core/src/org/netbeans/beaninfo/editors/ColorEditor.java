@@ -30,7 +30,6 @@ import java.beans.PropertyEditor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -118,6 +117,8 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     /** Swing colors used in Swing Palette. */
     private static Color swingColors[];
 
+    
+    // static initializer .........................................
     static {
         UIManager.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -141,7 +142,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
 
 
     /** Gets <code>staticChooser</code> instance. */
-    public static JColorChooser getStaticChooser () {
+    public static JColorChooser getStaticChooser(ColorEditor ce) {
         if (staticChooser == null) {
             staticChooser = new JColorChooser () {
                                 public void setColor (Color c) {
@@ -151,16 +152,16 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
                             };
             staticChooser.addChooserPanel (
                 new NbColorChooserPanel (AWT_PALETTE, getAWTColorNames(), awtColors,
-                                         getString ("CTL_AWTPalette"))
+                                         getString ("CTL_AWTPalette"), ce)
             );
             initSwingConstants();
             staticChooser.addChooserPanel (
                 new NbColorChooserPanel (SWING_PALETTE, swingColorNames, swingColors,
-                                         getString ("CTL_SwingPalette"))
+                                         getString ("CTL_SwingPalette"), ce)
             );
             staticChooser.addChooserPanel (
                 new NbColorChooserPanel (SYSTEM_PALETTE, getSystemColorNames(), systemColors,
-                                         getString ("CTL_SystemPalette"))
+                                         getString ("CTL_SystemPalette"), ce)
             );
         }
         return staticChooser;
@@ -179,8 +180,10 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     /** Gets value. Implements <code>PropertyEditor</code> interface.
      * @return <code>Color</code> value or <code>null</code> */
     public Object getValue () {
-        if (color == null) return null;
-        return new Color(color.getRGB());
+        if (color instanceof Color)
+            return color;
+        else
+            return null;
     }
 
     /** Sets value. Implements <code>PropertyEditor</code> interface.
@@ -196,13 +199,14 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         } else {
             color = null;
         }
-        
+
         support.firePropertyChange ("", null, null); // NOI18N
     }
 
     /** Gets value as text. Implements <code>PropertyEditor</code> interface. */
     public String getAsText () {
-        if (color == null) return "null"; // NOI18N
+        if (color == null)
+            return "null"; // NOI18N
         return color.getAsText ();
     }
 
@@ -268,9 +272,10 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
 
     /** Gets java inititalization string. Implements <code>PropertyEditor</code> interface. */
     public String getJavaInitializationString () {
-        if (color == null) return "null"; // NOI18N
+        if (color == null)
+            return "null"; // NOI18N
         if (color.getID () == null)
-            return "new java.awt.Color (" + color.getRed () + ", " + color.getGreen () + // NOI18N
+            return "new java.awt.Color(" + color.getRed () + ", " + color.getGreen () + // NOI18N
                    ", " + color.getBlue () + ")"; // NOI18N
 
         switch (color.getPalette ()) {
@@ -282,9 +287,9 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         case SWING_PALETTE:
             initSwingConstants();
             int i = getIndex (swingColorNames, color.getID ());
-            if (i < 0) return "new java.awt.Color (" + color.getRed () + ", " + color.getGreen () + // NOI18N
+            if (i < 0) return "new java.awt.Color(" + color.getRed () + ", " + color.getGreen () + // NOI18N
                                   ", " + color.getBlue () + ")"; // NOI18N
-            return "(java.awt.Color) javax.swing.UIManager.getDefaults ().get (\"" + // NOI18N
+            return "(java.awt.Color) javax.swing.UIManager.getDefaults().get(\"" + // NOI18N
                    color.getID () + "\")"; // NOI18N
         }
     }
@@ -339,7 +344,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     /** Gets custom editor. Implements <code>PropertyEditor</code> interface.
      * *return <code>NbColorChooser</code> instance */
     public Component getCustomEditor () {
-        return new NbColorChooser (this, getStaticChooser ());
+        return new NbColorChooser (this, getStaticChooser(this));
     }
 
     /** Adds property change listener. */
@@ -437,7 +442,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         UIDefaults def = UIManager.getDefaults ();
         Enumeration e = def.keys ();
         
-        List names = new ArrayList(def.size());
+        java.util.TreeSet names = new java.util.TreeSet();
         
         while (e.hasMoreElements ()) {
             Object k = e.nextElement ();
@@ -449,14 +454,10 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
             names.add((String)k);
         }
         
-        Collections.sort(names);
-
         swingColorNames = new String [names.size ()];
-        
         names.toArray(swingColorNames);
-        
-        //    QuickSorter.STRING.sort (swingColorNames);
         swingColors = new Color [swingColorNames.length];
+        
         int i, k = swingColorNames.length;
         for (i = 0; i < k; i++)
             swingColors [i] = (Color) def.get (swingColorNames [i]);
@@ -533,6 +534,23 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
             this.palette = palette;
         }
 
+        /** Overrides the equals(Object obj) method of java.awt.Color */
+        public boolean equals(Object obj) {
+            boolean superEquals = super.equals(obj);
+            String objID = null;
+            int objPalette = -1;
+            
+            if (obj instanceof SuperColor) {
+                objID = ((SuperColor)obj).getID();
+                objPalette = ((SuperColor)obj).getPalette();
+            }
+            
+            if (objID != null)
+                return superEquals && objID.equals(getID()) && objPalette == getPalette();
+            else
+                return superEquals;
+        }
+
         /** Gets ID of this color. */
         private String getID () {
             return id;
@@ -562,10 +580,10 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         private String [] names;
         /** Arraay of colors. */
         private Color [] colors;
-        /** Selected color. */
-        private Color color;
         /** Palette type. */
         private int palette;
+        /** Current ColorEditor. */
+        private ColorEditor ce;
         
         /** Name for display of this chooser panel. */
         private String displayName;
@@ -574,11 +592,12 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         /** Constructs our chooser panel with specified
         * palette, names and colors to be shown in the list */
         NbColorChooserPanel (final int palette, final String[] names,
-                             final Color[] colors, final String displayName) {
+                             final Color[] colors, final String displayName, final ColorEditor ce) {
             this.names = names;
             this.colors = colors;
             this.palette = palette;
             this.displayName = displayName;
+            this.ce = ce;
         }
 
         /** Builds - creates a chooser */
@@ -592,11 +611,16 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
 
         /** Get called when state of selected color changes */
         public void updateChooser () {
-            Color c = color;
+            Color c = null;
+            Object value = ce.getValue();
+            if (value instanceof Color)
+                c = (Color)value;
+            
             if ((c instanceof SuperColor) && (palette == ((SuperColor)c).getPalette ())) {
                 int i = getIndex (names, ((SuperColor)c).getID ());
                 list.setSelectedIndex (i);
-            } else list.clearSelection ();
+            } else 
+                list.clearSelection ();
         }
 
         /** @return display name of the chooser */
