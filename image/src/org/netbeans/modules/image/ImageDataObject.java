@@ -128,12 +128,17 @@ public class ImageDataObject extends MultiDataObject {
     
     /** Initializes cookie set. */
     private synchronized void initCookieSet() {
-        if (cookiesInitialized) {
+        if(cookiesInitialized) {
             return;
         }
         CookieSet cookies = super.getCookieSet();
-        cookies.add(new ImageOpenSupport (getPrimaryEntry ()));
+        
+        // Necessary to set flag before add cookieSet method, cause
+        // it fires property event change and some Cookie action in its
+        // enable method could call initCookieSet again. 
+        
         cookiesInitialized = true;
+        cookies.add(new ImageOpenSupport(getPrimaryEntry()));
     }
     
 }
