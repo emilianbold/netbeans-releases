@@ -20,6 +20,7 @@ import java.io.*;
 import java.util.*;
 import java.lang.reflect.Method;
 import javax.swing.JComponent;
+import javax.swing.border.TitledBorder;
 import java.text.MessageFormat;
 import java.security.*;
 
@@ -440,8 +441,27 @@ public class FormUtils
             return o; // no need to change reference
         }
 
-        if (o.getClass() == Font.class)
-            return Font.getFont(((Font)o).getAttributes());
+        if (o.getClass() == Font.class) {
+            // Issue 49973
+            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                Font font = (Font)o;
+                return new Font(font.getName(), font.getStyle(), font.getSize());
+            } else {
+                return Font.getFont(((Font)o).getAttributes());
+            }
+        }
+        // Issue 49973
+        if ((o.getClass() == TitledBorder.class)
+            && (Utilities.getOperatingSystem() == Utilities.OS_MAC)) {
+            TitledBorder border = (TitledBorder)o;
+            return new TitledBorder(
+                border.getBorder(),
+                border.getTitle(),
+                border.getTitleJustification(),
+                border.getTitlePosition(),
+                border.getTitleFont(),
+                border.getTitleColor());
+        }
         if (o.getClass() == Color.class)
             return new Color(((Color)o).getRGB());
         if (o instanceof Dimension)
