@@ -47,9 +47,9 @@ import org.openide.filesystems.FileUtil;
 
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
-import org.openide.util.WeakListener;
 import org.openide.windows.*;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
@@ -154,7 +154,7 @@ public class ImageViewer extends CloneableTopComponent {
             }
         };
         
-        obj.addPropertyChangeListener(WeakListener.propertyChange(nameChangeL, obj));
+        obj.addPropertyChangeListener(WeakListeners.propertyChange(nameChangeL, obj));
     }
     
     /**
