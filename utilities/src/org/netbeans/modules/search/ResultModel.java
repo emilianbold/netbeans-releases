@@ -111,6 +111,7 @@ public final class ResultModel {
      */
     synchronized boolean objectFound(Object object) {
         assert limitReached == false;
+        assert observer != null;
         
         if ((observer != null) && observer.objectFound(object)) {
             limitReached = (++size >= COUNT_LIMIT);

@@ -7,13 +7,15 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.search;
 
+import java.awt.EventQueue;
 import java.lang.ref.Reference;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.openide.ErrorManager;
 import org.openide.util.Mutex;
@@ -115,8 +117,10 @@ final class Manager {
     /**
      */
     void scheduleSearchTask(SearchTask task) {
+        assert EventQueue.isDispatchThread();
+        
         synchronized (lock) {
-            callOnWindowFromAWT("setResultModel", null);                //NOI18N
+            ResultView.getInstance().setResultModel(null);
             if (currentSearchTask != null) {
                 currentSearchTask.stop(false);
             }
@@ -272,7 +276,7 @@ final class Manager {
      */
     private void callOnWindowFromAWT(final Method method,
                                      final Object[] params) {
-        Mutex.EVENT.writeAccess(new Runnable() {
+        Runnable runnable = new Runnable() {
             public void run() {
                 final ResultView resultViewInstance = ResultView.getInstance();
                 try {
@@ -281,7 +285,18 @@ final class Manager {
                     ErrorManager.getDefault().notify(ex);
                 }
             }
-        });
+        };
+        if (EventQueue.isDispatchThread()) {
+            runnable.run();
+        } else {
+            try {
+                EventQueue.invokeAndWait(runnable);
+            } catch (InvocationTargetException ex1) {
+                ErrorManager.getDefault().notify(ex1);
+            } catch (Exception ex2) {
+                ErrorManager.getDefault().notify(ErrorManager.ERROR, ex2);
+            }
+        }
     }
     
     /**
@@ -295,6 +310,8 @@ final class Manager {
     /**
      */
     void searchWindowClosed() {
+        assert EventQueue.isDispatchThread();
+        
         synchronized (lock) {
             searchWindowOpen = false;
             
@@ -302,7 +319,7 @@ final class Manager {
                 return;
             }
             
-            callOnWindowFromAWT("setResultModel", null);                //NOI18N
+            ResultView.getInstance().setResultModel(null);
             if (currentSearchTask != null) {
                 currentSearchTask.stop(false);
             }

@@ -21,6 +21,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -194,7 +195,6 @@ final class ResultView extends TopComponent
         btnStop.addActionListener(buttonListener);
         
         initAccessibility();
-
     }
     
     /**
@@ -429,6 +429,8 @@ final class ResultView extends TopComponent
      * @see  Manager#PRINTING_DETAILS
      */
     void notifySearchPending(final int blockingTask) {
+        assert EventQueue.isDispatchThread();
+        
         String msgKey = null;
         switch (blockingTask) {
             case Manager.SEARCHING:
@@ -443,10 +445,10 @@ final class ResultView extends TopComponent
             default:
                 assert false;
         }
-        setRootNodeText(NbBundle.getMessage(ResultView.class, msgKey));
-        setStateFromAWT(btnStop, true);
-        setStateFromAWT(sortButton, false);
-        setStateFromAWT(unsortButton, false);
+        root.setDisplayName(NbBundle.getMessage(ResultView.class, msgKey));
+        btnStop.setEnabled(true);
+        sortButton.setEnabled(false);
+        unsortButton.setEnabled(false);
     }
     
     /**
@@ -473,25 +475,31 @@ final class ResultView extends TopComponent
     /**
      */
     void showAllDetailsFinished() {
+        assert EventQueue.isDispatchThread();
+        
         updateShowAllDetailsBtn();
     }
     
     /**
      */
     private void searchStarted() {
-        setRootNodeText(NbBundle.getMessage(ResultView.class,
-                                            "TEXT_SEARCHING___"));      //NOI18N
+        assert EventQueue.isDispatchThread();
+        
+        root.setDisplayName(NbBundle.getMessage(ResultView.class,
+                                                "TEXT_SEARCHING___"));  //NOI18N
         
         searchInProgress = true;
         updateShowAllDetailsBtn();
         updateSortUnsortBtns();
-        setStateFromAWT(btnModifySearch, true);
-        setStateFromAWT(btnStop, true);
+        btnModifySearch.setEnabled(true);
+        btnStop.setEnabled(true);
     }
     
     /**
      */
     private void searchFinished() {
+        assert EventQueue.isDispatchThread();
+        
         setFinalRootNodeText();
         
         searchInProgress = false;
@@ -499,34 +507,40 @@ final class ResultView extends TopComponent
                                         : false;
         updateShowAllDetailsBtn();
         updateSortUnsortBtns();
-        setStateFromAWT(btnStop, false);
+        btnStop.setEnabled(false);
     }
     
     /**
      */
     private void searchInterrupted() {
+        assert EventQueue.isDispatchThread();
+        
         searchFinished();
     }
     
     /**
      */
     private void searchCancelled() {
-        setRootNodeText(NbBundle.getMessage(ResultView.class,
-                                            "TEXT_TASK_CANCELLED"));    //NOI18N
+        assert EventQueue.isDispatchThread();
+        
+        root.setDisplayName(NbBundle.getMessage(ResultView.class,
+                                                "TEXT_TASK_CANCELLED"));//NOI18N
         
         searchInProgress = true;
         updateShowAllDetailsBtn();
         updateSortUnsortBtns();
-        setStateFromAWT(btnStop, false);
+        btnStop.setEnabled(false);
     }
     
     /**
      */
     private void setFinalRootNodeText() {
+        assert EventQueue.isDispatchThread();
+        
         int resultSize = resultModel.size();
         
         if (resultModel.wasLimitReached()) {
-            setRootNodeText(
+            root.setDisplayName(
                     NbBundle.getMessage(ResultView.class,
                                         "TEXT_MSG_FOUND_X_NODES_LIMIT", //NOI18N
                                         new Integer(resultSize)));
@@ -548,25 +562,27 @@ final class ResultView extends TopComponent
         String exMsg = resultModel.getExceptionMsg();
         String msg = exMsg == null ? baseMsg
                                    : baseMsg + " (" + exMsg + ")";      //NOI18N
-        setRootNodeText(msg);
+        root.setDisplayName(msg);
     }
     
     /**
      */
     private void updateShowAllDetailsBtn() {
-        setStateFromAWT(btnShowDetails, hasResults
-                                        &&
-                                        !searchInProgress
-                                        &&
-                                        hasDetails);
+        assert EventQueue.isDispatchThread();
+        
+        btnShowDetails.setEnabled(hasResults
+                                  && !searchInProgress
+                                  && hasDetails);
     }
     
     /**
      */
     private void updateSortUnsortBtns() {
+        assert EventQueue.isDispatchThread();
+        
         boolean enabled = hasResults && !searchInProgress;
-        setStateFromAWT(sortButton, enabled);
-        setStateFromAWT(unsortButton, enabled);
+        sortButton.setEnabled(enabled);
+        unsortButton.setEnabled(enabled);
     }
     
     
@@ -583,6 +599,8 @@ final class ResultView extends TopComponent
 
     /** Set new model. */
     void setResultModel(final ResultModel resultModel) {
+        assert EventQueue.isDispatchThread();
+        
         if ((this.resultModel == null) && (resultModel == null)) {
             return;
         }
@@ -605,22 +623,17 @@ final class ResultView extends TopComponent
             setChildren(Children.LEAF);
         }
         
-        Mutex.EVENT.writeAccess(new Runnable() {
-            public void run() {
-                selectAndActivateNode(root);
-                
-                updateShowAllDetailsBtn();
-                updateSortUnsortBtns();
-                if (children != null) {
-                    if (children.isSorted()) {
-                        sortButton.setSelected(true);
-                    } else {
-                        unsortButton.setSelected(true);
-                    }
-                }
+        selectAndActivateNode(root);
+
+        updateShowAllDetailsBtn();
+        updateSortUnsortBtns();
+        if (children != null) {
+            if (children.isSorted()) {
+                sortButton.setSelected(true);
+            } else {
+                unsortButton.setSelected(true);
             }
-        });
-        
+        }
     }
     
     /**
@@ -634,78 +647,30 @@ final class ResultView extends TopComponent
      * Updates the number of found nodes in the name of the root node.
      */
     private void updateRootDisplayName() {
+        assert !EventQueue.isDispatchThread();
+        
         int count = children.getSize();
-        setRootNodeText(NbBundle.getMessage(ResultModel.class,
-                                            "TXT_RootSearchedNodes",    //NOI18N
-                                            Integer.toString(count)));
+        final String display = NbBundle.getMessage(
+                                       ResultModel.class,
+                                       "TXT_RootSearchedNodes",   //NOI18N
+                                       Integer.toString(count));
+        try {
+            EventQueue.invokeAndWait(new Runnable() {
+                public void run() {
+                    root.setDisplayName(display);
+                }
+            });
+        } catch (InvocationTargetException ex1) {
+            ErrorManager.getDefault().notify(ex1);
+        } catch (Exception ex2) {
+            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex2);
+        }
     }
     
-    /**
-     */
-    private void setRootNodeText(String txt) {
-        Method method;
-        try {
-            method = root.getClass().getMethod("setDisplayName",        //NOI18N
-                                               new Class[] {String.class});
-        } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
-            return;
-        }
-        callFromAWT(method, root, txt);
-    }
-            
     /**
      */
     private void setChildren(final Children children) {
-        Method method;
-        try {
-            method = root.getClass().getDeclaredMethod(
-                                             "changeChildren",          //NOI18N
-                                             new Class[] {Children.class});
-        } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
-            return;
-        }
-        callFromAWT(method, root, children);
-    }
-    
-    /**
-     */
-    private void setStateFromAWT(AbstractButton button,
-                                 boolean enabled) {
-        Method method;
-        try {
-            method = button.getClass().getMethod("setEnabled",          //NOI18N
-                                                 new Class[] {Boolean.TYPE});
-        } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
-            return;
-        }
-        callFromAWT(method, button, Boolean.valueOf(enabled));
-    }
-    
-    /**
-     */
-    private void callFromAWT(final Method method,
-                             final Object object,
-                             final Object param) {
-        final Runnable routine = new Runnable() {
-                public void run() {
-                    try {
-                        method.invoke(object, new Object[] {param});
-                    } catch (Exception ex) {
-                        ErrorManager.getDefault().notify(ex);
-                    }
-                }};
-        if (EventQueue.isDispatchThread()) {
-            routine.run();
-        } else {
-            try {
-                EventQueue.invokeAndWait(routine);
-            } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-        }
+        root.changeChildren(children);
     }
     
     /* Implements interface ExplorerManager.Provider */
@@ -733,6 +698,8 @@ final class ResultView extends TopComponent
     
     /** (Re)open the dialog window for entering (new) search criteria. */
     private void customizeCriteria() {
+        assert EventQueue.isDispatchThread();
+        
         Node[] nodesToSearch;
         List searchTypes;
         
