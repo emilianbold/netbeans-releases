@@ -300,6 +300,7 @@ public class PropertyPanel extends JPanel {
                                                         I18nUtil.getReplaceFormatItems(),
                                                         I18nUtil.getReplaceHelpItems(),
                                                         I18nUtil.getBundle().getString("LBL_ReplaceCodeFormat"),
+                                                        Util.getChar("LBL_ReplaceCodeFormat_mne"),
                                                         I18nUtil.PE_REPLACE_CODE_HELP_ID);
 
         DialogDescriptor dd = new DialogDescriptor(

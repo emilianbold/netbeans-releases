@@ -118,9 +118,9 @@ public class HardStringWizardPanel extends JPanel {
     /** Adds additional init of components. */
     private void postInitComponents() {
         sourceLabel.setLabelFor(sourceCombo);
-        sourceLabel.setDisplayedMnemonic(NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Source").charAt(0));
+        sourceLabel.setDisplayedMnemonic(Util.getString("LBL_Source_Mnem").charAt(0));
         hardStringLabel.setLabelFor(hardStringTable);
-        hardStringLabel.setDisplayedMnemonic(NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_FoundStrings_Mnem").charAt(0));
+        hardStringLabel.setDisplayedMnemonic(Util.getString("LBL_FoundStrings_Mnem").charAt(0));
     }
 
     /** Getter for <code>resources</code> property. */

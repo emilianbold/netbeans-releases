@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.i18n.wizard;
+package org.netbeans.modules.i18n;
 
 import org.openide.util.*;
 

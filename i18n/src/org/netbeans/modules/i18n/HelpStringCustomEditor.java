@@ -44,7 +44,7 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
      * @param items for sleecteing in combo box
      * @param help patterns described in list
      */
-    public HelpStringCustomEditor(String value, List items, List helpItems, String comboText, String helpID) {
+    public HelpStringCustomEditor(String value, List items, List helpItems, String comboText, char comboMnemonic, String helpID) {
         initComponents();
         
         combo.setModel(new DefaultComboBoxModel(items.toArray()));
@@ -54,7 +54,7 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
         list.setBackground(new Color(SystemColor.window.getRGB()));
         
         comboLabel.setText(comboText);
-        comboLabel.setDisplayedMnemonic(comboText.charAt((0))); // so ugly...        
+        comboLabel.setDisplayedMnemonic(comboMnemonic);
         listLabel.setText(I18nUtil.getBundle().getString("LBL_Arguments"));
         listLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Arguments_Mnem")).charAt(0));
         
@@ -127,15 +127,15 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 11, 11);
         add(scrollPane, gridBagConstraints);
 
-        comboLabel.setText("comboLabel");
         comboLabel.setLabelFor(combo);
+        comboLabel.setText("comboLabel");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(comboLabel, gridBagConstraints);
 
-        listLabel.setText("listLabel");
         listLabel.setLabelFor(list);
+        listLabel.setText("listLabel");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -179,11 +179,11 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane scrollPane;
     private javax.swing.JLabel listLabel;
+    private javax.swing.JList list;
+    private javax.swing.JScrollPane scrollPane;
     private javax.swing.JComboBox combo;
     private javax.swing.JLabel comboLabel;
-    private javax.swing.JList list;
     // End of variables declaration//GEN-END:variables
 
     /** Nested class. <code>PropertyEditor</code>. 
@@ -196,6 +196,7 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
                 I18nUtil.getInitFormatItems(), 
                 I18nUtil.getInitHelpItems(),
                 I18nUtil.getBundle().getString("LBL_InitCodeFormat"),
+                Util.getChar("LBL_InitCodeFormat_mne"),
                 I18nUtil.PE_BUNDLE_CODE_HELP_ID
             );
         }
@@ -211,6 +212,7 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
                 I18nUtil.getReplaceFormatItems(),
                 I18nUtil.getReplaceHelpItems(),
                 I18nUtil.getBundle().getString("LBL_ReplaceCodeFormat"),
+                Util.getChar("LBL_ReplaceCodeFormat_mne"),
                 I18nUtil.PE_REPLACE_CODE_HELP_ID
             );
         }
@@ -226,6 +228,7 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
                 I18nUtil.getRegExpItems(),
                 I18nUtil.getRegExpHelpItems(),
                 I18nUtil.getBundle().getString("LBL_NonI18nRegExpFormat"),
+                Util.getChar("LBL_NonI18nRegExpFormat_mne"),
                 I18nUtil.PE_I18N_REGEXP_HELP_ID
             );
         }
@@ -241,6 +244,7 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
                 I18nUtil.getI18nRegExpItems(), 
                 I18nUtil.getRegExpHelpItems(),
                 I18nUtil.getBundle().getString("LBL_I18nRegExpFormat"),
+                Util.getChar("LBL_I18nRegExpFormat_mne"),
                 I18nUtil.PE_TEST_REGEXP_HELP_ID
             );
         }
