@@ -1,14 +1,27 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 
-<title>XML Tools Cookies API</title>
+<html>
+
+<head><title>XML Tools Cookies API</title></head>
+
+<body>
   
 <h2>XML Tools Cookies APIs</h2>
+Currently we propose two common cookies. 
 
-Currently we propose two common cookies. Once a MDR will be ready we can add
-model access APIs if not covered by MDR itself.
+<h3>CheckXMLCookie vs. ValidateXMLCookie</h3>
+Both cookies are supported because it mimics users requests for separating
+fast syntax level check actions and accurate semantics level actions.
 
 <h3>No UI Interaction Rule</h3>
-We are proposing here to use <b>No UI inetraction rule</b> for all cookie interfaces.
-It means that a cookie specification should state that implementation
-cannot change state of UI. Rather it should provide a UI hook that can be plugged
-in by a cookie user (that is responsible for UI interaction).
+We are proposing here to use <b>No UI intaraction rule</b> contrain for most
+cookie interfaces. It means that a cookie specification should state that
+implementation cannot change UI state. Rather the cookie interface should
+provide a UI hook that can be plugged in by a cookie client (that is responsible
+for UI interaction).
+
+<h2>Plans</h2>
+Once a MDR will be ready we can add model access cookies if not covered by 
+MDR integration module.
+
+</body></html>

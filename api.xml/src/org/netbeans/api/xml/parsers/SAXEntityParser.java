@@ -18,10 +18,10 @@ import java.io.*;
 import org.xml.sax.*;
 
 /**
- * SAX parser wrapper allowing to parse XML entities (including DTDs) for 
+ * SAX parser wrapper allowing to parse parsed XML entities (including DTDs) for 
  * wellformedness.
  * <p>
- * Default implementation cannot be used for parsing of XML documents!
+ * Default implementation cannot be used for parsing of XML document entities!
  * It wraps client's parser that it actually used for performing the parsing task.
  * <p>
  * <b>Primary use case (parse general entity):</b>

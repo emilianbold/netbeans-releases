@@ -16,7 +16,11 @@ package org.netbeans.api.xml.cookies;
 import org.openide.nodes.Node;
 
 /**
- * Cookie used for XML entity syntax checking. It must not have any UI.
+ * Check XML parsed entity syntax.
+ * <p>Implemenmtation must
+ * fulfill <a href="http://www.w3.org/TR/REC-xml#proc-types">XML 1.0</a>
+ * specification for non-validating processors. It is allowed to extend the
+ * contract to support parsed entities. It must not change UI state.
  *
  * @author  Petr Kuzel
  * @deprecated XML tools API candidate
@@ -24,10 +28,10 @@ import org.openide.nodes.Node;
 public interface CheckXMLCookie extends Node.Cookie {
     
     /**
-     * Check XML entity for syntax wellformedness.
+     * Check XML parsed entity for syntax wellformedness.
      * @param report optional listener (<code>null</code> allowed)
-     *               giving judgement details
-     * @return true if syntax check passes
+     *               giving judgement details.
+     * @return <code>true</code> if syntax check passes
      */
     boolean checkXML(ProcessorListener l);
     
