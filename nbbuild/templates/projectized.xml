@@ -140,7 +140,9 @@ Microsystems, Inc. All Rights Reserved.
     <target name="jar-no-module-deps" unless="module.dependencies">
         <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
             <!-- XXX it seems that using <manifest> forces the JAR to be recreated each time -->
+            <!-- (presumably due to the variable OIDE-M-I-V) -->
             <!-- so might have to use e.g. <manifest> task (created in build/ somewhere)? -->
+            <!-- Cf: http://issues.apache.org/bugzilla/show_bug.cgi?id=29085 -->
             <manifest>
                 <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
                 <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
