@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+                Sun Public License Notice
+
+ The contents of this file are subject to the Sun Public License
+ Version 1.0 (the "License"). You may not use this file except in
+ compliance with the License. A copy of the License is available at
+ http://www.sun.com/
+
+ The Original Code is NetBeans. The Initial Developer of the Original
+ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+
+<project name="Run tests for all supported databases" basedir="." default="info">
+
+    <target name="info">
+        <echo message="use 'ant -buildfile run-all-tests.xml all'"/>
+    </target>
+
+    <target name="all">
+        <!-- -->
+        <ant antfile="build.xml" target="runtests">
+            <!--property name="xtest.userdata|active_driver" value="pointbase"/-->
+            <property name="xtest.attribs" value="stable,pointbase"/>
+        </ant>
+        <!-- -->
+
+        <!-- -->
+        <ant antfile="build.xml" target="runtests">
+            <property name="xtest.attribs" value="stable,oracle"/>
+        </ant>
+        <!-- -->
+
+        <!-- -->
+        <ant antfile="build.xml" target="runtests">
+            <property name="xtest.attribs" value="stable,db2"/>
+        </ant>
+        <!-- -->
+    </target>
+
+</project>

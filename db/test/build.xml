@@ -1,311 +1,96 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <!--
-                Sun Public License Notice
+Sun Public License Notice
 
- The contents of this file are subject to the Sun Public License
- Version 1.0 (the "License"). You may not use this file except in
- compliance with the License. A copy of the License is available at
- http://www.sun.com/
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
 
- The Original Code is NetBeans. The Initial Developer of the Original
- Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
- Microsystems, Inc. All Rights Reserved.
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
 -->
 
-
 <project name="Database Explorer tests" basedir="." default="all">
-        <property name="ffj.cvs.workdir"    location="../.." />
-        <property name="xtest.ide.winsys"   value="sdi" />
-        <property name="build.sysclasspath" value="ignore" />
-        
-        <property name="netbeans.home"      location="../../../nb_all/nbbuild/netbeans" />
-        <property name="nbextra.home"       location="../../../nbextra"/>
-        <property name="netbeans.test.home" value="${netbeans.home}" />
-        
-        <property name="xtest.source.location" value="ide" />
-        <property name="xtest.module"          value="db explorer" />
-        <property name="xtest.home"            location="../../../nb_all/xtest" />
-        <property name="xtest.testtype"        value="qa-functional" />
-        <property name="xtest.attribs"         value="stable,pointbase" />
-        <property name="xtest.includes"        value="" />
-        <property name="xtest.excludes"        value="" />
-        
-        <property name="xtest.module_harness.antfile" location="${xtest.home}/lib/module_harness.xml" />
-	<property name="xtest.userdata.propertyfile" location="${nbextra.home}/qa/db/data/database.properties" />
-        
-   	<target name="init" depends="prepare-compile-classpath,prepare-codetest-classpath">
-                <property name="jemmy.home" location="../../jemmy/builds"/>
-                <property name="jelly.home" location="../../jellytools/builds"/>
-                <property name="xtest.extra.jars.path" location="${jemmy.home};${jelly.home};${netbeans.home}/modules;${netbeans.home}/lib;${netbeans.home}/lib/ext"/>
-		
-                <property name="xtest.extra.jars.ide" value="jemmy.jar;jelly-nb.jar;jelly2-nb.jar"/>
-	    	<property name="compile.srcdir" value="qa-functional/src" />
-	    	<property name="xtest.ide.commandline.suffix" value="" />
-	    	<property name="compiletest.classpath" refid="compiletest.classpath" />
-	    	<property name="codetest.classpath" refid="codetest.classpath" />
-                
-                <copy todir="${netbeans.home}/lib/ext">
-                	<!--fileset dir="./qa-functional/src/data"-->
-                        <fileset dir="${nbextra.home}/qa/db/lib/ext">
-                		<include name="**/*.jar"/>
-				<include name="**/*.zip"/>
-                        </fileset>
-                </copy>
-                
-        </target>
-        
-        
-   	<target name="all" depends="runtests" />
-        
-        
-   	<!--
-   	<target name="buildtests" depends="init">
-        	<ant dir="." antfile="${xtest.module_harness.antfile}" target="buildtests" />
-   	</target>
-   	-->
-	
-	
-	<!--
-	<target name="scratchpad" depends="init">
-		<copy todir="${xtest.userdata|rio.workdir}/scratchpad">
-			<fileset dir="qa-functional/data/scratchpad"/>
-		</copy>
-		
-		<copy todir="work_jp/sys/scratchpad">
-			<fileset dir="qa-functional/data/scratchpad"/>
-		</copy>
-	</target>
-	-->
-	
-        
-        <target name="cleantests">
-        	<ant dir="." antfile="${xtest.module_harness.antfile}" target="cleantests" />
-        </target>
-        
-        
-        <target name="runtests" depends="buildtests">
-        	<echo message="Module: Running tests for ${xtest.module}, testtype ${xtest.testtype}, attribs=${xtest.attribs}" />
-                <ant dir="." antfile="${xtest.module_harness.antfile}" target="runtests" />
-        </target>
-        
-        
-        <target name="runidetest" depends="init">
-        	<ant dir="." antfile="${xtest.module_harness.antfile}" target="test">
-                	<property name="xtest.exectype" value="ide" />
-                </ant>
-        </target>
-        
-        
-        <!-- -->
-        <target name="runidetest-pointbase" depends="init">
-                <parallel>
-                	<ant dir="${basedir}" antfile="pointbase-server.xml" inheritAll="true" target="start" />
-                        <sequential>
-                		<antcall target="runidetest" />
-                		<ant dir="${basedir}" antfile="pointbase-server.xml" inheritAll="true" target="stop" />
-                        </sequential>
-                </parallel>
-        </target>
-        <!-- -->
-	
-        <target name="test-pb">
-	   <parallel>
-	      <ant dir="${basedir}" antfile="pointbase-server.xml" inheritAll="true" target="info" />
-	      <ant dir="${basedir}" antfile="pointbase-server.xml" inheritAll="true" target="start" />
-	      <ant dir="${basedir}" antfile="pointbase-server.xml" inheritAll="true" target="stop" />
-	   </parallel>
-	</target>
+<!-- Local user properties can override default prop. values -->
+<property file="xtest.properties"/>
+<property file="${user.home}/xtest.properties"/>
 
-        <target name="run-pb">
-	      <ant dir="${basedir}" antfile="pointbase-server.xml" inheritAll="true" target="start" />
-	</target>
-	
-        <target name="stop-pb">
-	      <ant dir="${basedir}" antfile="pointbase-server.xml" inheritAll="true" target="stop" />
-	</target>
+<!-- Points to directory with IDE to test-->
+<property name="netbeans.home" location="../../nbbuild/netbeans"/>
+
+<!-- Name of tested module -->
+<property name="xtest.module" value="db explorer"/>
+
+<!-- Home of XTest -->
+<property name="xtest.home" location="../../xtest"/>
+
+<!-- default testtypes, attributes used when no value is supplied from command line -->
+<property name="xtest.testtype" value="qa-functional"/>
+<property name="xtest.attribs" value="stable,pointbase"/>
+<property name="nbextra.home" value="../../../nbextra"/>
+<property name="xtest.userdata.propertyfile" location="${nbextra.home}/qa/db/data/database.properties"/>
+
+<!--
+*****************************************************
+** You should not change anything after this comment,
+**    unless you really know what you do
+******************************************************
+-->
+
+<!-- Ant property. Value 'ignore' means that system classpath is ignored
+and only classpath specified in build file is used. -->
+<property name="build.sysclasspath" value="ignore"/>
+
+<!-- Points to antfile with module's harness.
+Targets from that antfile is called from this build.xml -->
+<property name="xtest.module_harness.antfile" location="${xtest.home}/lib/module_harness.xml"/>
 
 
-        <target name="runcodetest" depends="init">
-        	<ant dir="." antfile="${xtest.module_harness.antfile}" target="test">
-        		<property name="xtest.exectype" value="code" />
-        	</ant>
-        </target>
-        
-        
-        <target name="test_report">
-        	<ant dir="." antfile="${xtest.module_harness.antfile}" target="test_report" />
-        </target>
-        
-        
-        <target name="cleanresults">
-        	<ant dir="." antfile="${xtest.module_harness.antfile}" target="cleanresults" />
-        </target>
-        
-        
-        <target name="realclean" depends="cleantests,cleanresults">
-        	<ant dir="." antfile="${xtest.module_harness.antfile}" target="realclean" />
-        </target>
-        
-        
-        <target name="printconfig">
-        	<echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}." />
-		<echo message="xtetest.userdata.propertyfile = ${xtest.userdata.propertyfile}"/>
-        </target>
-        
-        
-        <target name="which-classpath">
-        	<condition property="jarcode.classpath">
-                	<equals arg1="${xtest.source.location}" arg2="jar" />
-                </condition>
-                
-                <condition property="srccode.classpath">
-                	<equals arg1="${xtest.source.location}" arg2="src" />
-                </condition>
-                
-                <condition property="idecode.classpath">
-                	<equals arg1="${xtest.source.location}" arg2="ide" />
-                </condition>
-        </target>
-        
-        
-        <target name="prepare-compile-classpath" depends="jarcompile-classpath,srccompile-classpath,idecompile-classpath" />
-        
-        
-        <target name="jarcompile-classpath" depends="which-classpath" if="jarcode.classpath">
-        	<echo message="Using jars classpath for compilation." />
-                <path id="compiletest.classpath">
-                </path>
-        </target>
-        
-        
-        <target name="srccompile-classpath" depends="which-classpath" if="srccode.classpath">
-        	<echo message="Using srcs classpath for compilation." />
-                <path id="compiletest.classpath">
-                </path>
-        </target>
-	
-        
-        <target name="idecompile-classpath" depends="which-classpath" if="idecode.classpath">
-        	<echo message="Using IDE classpath for compilation." />
-                <path id="compiletest.classpath">
-                	<pathelement location="${netbeans.home}/lib/openide.jar" />
-                </path>
-        </target>
-        
-        
-        <target name="prepare-codetest-classpath" depends="jartest-classpath,srctest-classpath,idetest-classpath" />
-        
-        
-        <target name="jartest-classpath" depends="which-classpath" if="jarcode.classpath">
-        	<echo message="Using jars classpath." />
-                <path id="codetest.classpath">
-                </path>
-        </target>
-        
-        
-        <target name="srctest-classpath" depends="which-classpath" if="srccode.classpath">
-        	<echo message="Using srcs classpath." />
-                <path id="codetest.classpath">
-                </path>
-        </target>
-        
-        
-        <target name="idetest-classpath" depends="which-classpath" if="idecode.classpath">
-        	<echo message="Using IDE classpath." />
-                <path id="codetest.classpath">
-                </path>
-        </target>
-        
-        
-	<!-- ========= -->
-        <!-- Compilers -->
-        <!-- ========= -->
-        
-        <target name="default-compiler" depends="set_classpath">
-        	<ant dir="." antfile="${xtest.module_harness.antfile}" target="buildtests">
-                	<!--
-                        	This property contains directories to compile.
-                        	These directories will be compiled separately.
-                                example: <property name="compile.srcdir" value="unit/src1;unit/src2"/>
-                        -->
-                        <property name="compile.srcdir" value="${xtest.testtype}/src"/>
-                        
-                        <!-- You can define files which should be excluded during compilation -->
-                        <property name="compile.excludes" value="data/**"/>
-                </ant>
-        </target>
-        
-        
-        <target name="set_classpath" depends="prepare-compile-classpath,prepare-codetest-classpath">
-        
-        	<!--
-                	During filling classpathes remember that only <module>/test
-                	is checked out during automated test execution so <module>/src
-                	or <module>/netbeans isn't available. If you need to add something
-                	from <module>/src or <module>/netbeans to classpath,
-                	look below to "setting advanced claspathes" part of this target.
-                -->
-                
-                <!-- List of directories where jars will be searched. -->
-                <property name="jemmy.home" location="../../jemmy/builds"/>
-                <property name="jelly.home" location="../../jellytools/builds"/>
-                <property name="xtest.extra.jars.path" location="${jemmy.home};${jelly.home};${netbeans.home}/modules;${netbeans.home}/lib;${netbeans.home}/lib/ext"/>
-                
-                <!--
-                	This jars is used for compilation, execution codetests and also for
-                	execution ide tests (it means this classpath will be mounted in repository).
-                        You can also write only name of jar or zip file, not in which directory it is and
-                        this file will be searched in directories specified by property xtest.extra.jars.path
-                        example: <property name="xtest.extra.jars" value="jemmy.jar;jelly.jar"/>
-                -->
-                <property name="xtest.extra.jars" value=""/>
-                
-                <!--
-                	These jars will be copied to directory ${netebans.home}/lib/ext.
-                	Again you can write only name of jar or zip file, not in which directory it is and
-                        this file will be searched in directories specified by property xtest.extra.jars.path
-                        example: <property name="xtest.extra.jars.ide" value="jdbc_driver1.zip;jdbcd_river2.jar"/>
-                -->
-                <property name="xtest.extra.jars.ide" value="jemmy.jar;jelly-nb.jar;jelly2-nb.jar"/>
-                
-                <!--
-                	Arguments which will be added into commandline of starting IDE.
-                	example: <property name="xtest.ide.commandline.suffix" value="-J-Dxtest.useclassloader=org.openidex.util"/>
-                -->
-                <property name="xtest.ide.commandline.suffix" value=""/>
-		
-                
-                <!-- =========================== -->
-                <!-- Setting avanced classpathes -->
-                <!-- =========================== -->
-                
-                <!--
-                	If you need to add something from <module>/src or <module>/netbeans
-                	to classpath use target prepare-compile-classpath or prepare-codetest-classpath
-                        which fills path according to property xtest.source.location. This property
-                        can have values "src" (compilation and execution against sources), "jar" (compil.
-                        and execut. against jars) or "ide" (compil. and execut. against installed IDE).
-                        "ide" mode is used during automated test execution so it has to be always supported.
-                -->
-                
-                <!--
-                	This classpath is beside jars in xtest.extra.jars also used for compilation,
-                	but it depends on property xtest.source.location which classpath will be used.
-                        Fill apropriate classpathes in targets "${xtest.source.location}compile-classath".
-                -->
-                <property name="compiletest.classpath" refid="compiletest.classpath"/>
-                
-                <!--
-                	This classpath is beside jars in xtest.extra.jars also used for execution codetests,
-                	but it depends on property xtest.source.location which classpath will be used.
-                        Fill apropriate classpathes in targets "${xtest.source.location}test-classath".
-                -->
-                <property name="codetest.classpath" refid="codetest.classpath"/>
-                
-        </target>
-        
-	<target name="buildtests">
-        	<ant dir="." antfile="${xtest.module_harness.antfile}" target="compiler-launcher"/>
-        </target>
-        
+<!-- ============ -->
+<!-- Main targets -->
+<!-- ============ -->
+
+<target name="all" depends="runtests"/>
+
+<!-- This calls target which will call compilers according to cfg file.
+You should not change this target unless you realy know what you are doing -->
+<target name="buildtests">
+  <ant dir="." antfile="${xtest.module_harness.antfile}" target="compiler-launcher"/>
+</target>
+
+<!-- This calls common clean process. -->
+<!-- You can write your own if you need something special -->
+<target name="cleantests">
+  <ant dir="." antfile="${xtest.module_harness.antfile}" target="cleantests"/>
+</target>
+
+<!-- This target runs tests. You should not change this -->
+<!-- target unless you realy know what you are doing -->
+<target name="runtests" depends="buildtests">
+  <echo message="Module: Running tests for ${xtest.module}, testtype ${xtest.testtype}, attribs=${xtest.attribs}"/>
+  <ant dir="." antfile="${xtest.module_harness.antfile}" target="runtests"/>
+</target>
+
+<!-- This target is executed from test-executor in newly created Project -->
+<!-- Name of this task is defined in cfg-xxx.xml -->
+<target name="test_report">
+  <ant dir="." antfile="${xtest.module_harness.antfile}" target="test_report"/>
+</target>
+
+<target name="cleanresults">
+  <ant dir="." antfile="${xtest.module_harness.antfile}" target="cleanresults"/>
+</target>
+
+<target name="realclean" depends="cleantests,cleanresults">
+  <ant dir="." antfile="${xtest.module_harness.antfile}" target="realclean"/>
+</target>
+
+<target name="printconfig">
+  <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
+</target>
+
 </project>
+
+
