@@ -83,7 +83,7 @@ public class AddComponents_SWING extends JellyTestCase {
     public void testAddAndCompile() {
 
         String categoryName_1 = "Swing";
-        String categoryName_2 = "Swing (Other)";
+//        String categoryName_2 = "Swing (Other)";
         
         
         FormNode formnode = new FormNode("src|" + packageName + "|" + fileName);
@@ -104,27 +104,25 @@ public class AddComponents_SWING extends JellyTestCase {
         PaletteUtil paletteUtil = new PaletteUtil(palette);        
         
         JListOperator list = palette.selectPage(categoryName_1);
-        for (int i=0;i<list.getModel().getSize();i++) {
+        for (int i=0;i<16;i++) {
             org.netbeans.modules.form.palette.PaletteItemNode comp =
                 (org.netbeans.modules.form.palette.PaletteItemNode)(list.getModel().getElementAt(i));
             String component = comp.getDisplayName();
             System.out.println("component: " + component);
             sleep(1000);
-            //formeditor.addComponent(categoryName_1, component, formDesigner.componentLayer().getSource());            
             palette.selectPage(categoryName_1);
             palette.selectComponent(component);
             formDesigner.clickOnComponent(formDesigner.componentLayer().getSource(), new Point(20,100));
         }        
         
-        list = palette.selectPage(categoryName_2);
-        for (int i=0;i<list.getModel().getSize();i++) {
+        list = palette.selectPage(categoryName_1);
+        for (int i=16;i<list.getModel().getSize();i++) {
             org.netbeans.modules.form.palette.PaletteItemNode comp =
                 (org.netbeans.modules.form.palette.PaletteItemNode)(list.getModel().getElementAt(i));
             String component = comp.getDisplayName();
             System.out.println("component: " + component);
             sleep(1000);
-            //formeditor.addComponent(categoryName_2, component, formDesigner.componentLayer().getSource());            
-            palette.selectPage(categoryName_2);
+            palette.selectPage(categoryName_1);
             palette.selectComponent(component);
             formDesigner.clickOnComponent(formDesigner.componentLayer().getSource(), new Point(20,100));
         }        
