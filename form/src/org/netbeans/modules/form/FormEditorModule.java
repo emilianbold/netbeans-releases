@@ -39,57 +39,11 @@ public class FormEditorModule extends ModuleInstall
 
     private static RepositoryListener repositoryListener = null;
 
-    // XXX(-tdt) hack around failure of loading TimerBean caused by package
-    // renaming com.netbeans => org.netbeans AND the need to preserve user's
-    // system settings
-    
-    private static void timerBeanHack() {
-        if (repositoryListener == null) {
-            repositoryListener = new RepositoryListener() {
-                public void fileSystemRemoved (RepositoryEvent ev) {}
-                public void fileSystemPoolReordered(RepositoryReorderedEvent ev) {}
-
-                public void fileSystemAdded (RepositoryEvent ev) {
-                    FileSystem fs = ev.getFileSystem();
-                    if (! (fs instanceof JarFileSystem))
-                        return;
-                    JarFileSystem jarfs = (JarFileSystem) fs;
-
-                    try {
-                        // XXX this should never happen, but sometimes it kdjf
-                        // does. WHY?
-                        if (null == jarfs.getJarFile())
-                            return;
-                        
-                        String jarpath = jarfs.getJarFile().getCanonicalPath();
-                        if (! jarpath.endsWith(File.separator + "beans"
-                                               + File.separator + "TimerBean.jar"))
-                            return;
-
-                        File timerbean = InstalledFileLocator.getDefault().locate(
-                            "beans/TimerBean.jar", "org.netbeans.modules.form", false); // NOI18N
-                        if (jarpath.equals(timerbean.getCanonicalPath()))
-                            return;
-                        
-                        jarfs.setJarFile(timerbean);
-                   }
-                    catch (java.io.IOException ex) { /* ignore */ }
-                    catch (PropertyVetoException ex) { /* ignore */ }
-                }
-            };
-
-            TopManager.getDefault().getRepository()
-                .addRepositoryListener(repositoryListener);
-        }
-    }
-
     /** Module installed again. */
     
     public void restored() {
         Beans.setDesignTime(true);
 
-        timerBeanHack();
-        
         FormPropertyEditorManager.registerEditor(
             javax.swing.KeyStroke.class,
             org.netbeans.modules.form.editors.KeyStrokeEditor.class);
