@@ -351,7 +351,7 @@ public class MakeNBM extends MatchingTask {
 
     File file;
     String rootDir = getProject ().getProperty ("nbm.target.dir");
-    if (rootDir != null) {
+    if (rootDir != null && !rootDir.equals ("")) {
         file = new File (rootDir, this.file.getName ());
     } else {
         file = this.file;
