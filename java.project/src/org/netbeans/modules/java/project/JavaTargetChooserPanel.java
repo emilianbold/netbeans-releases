@@ -53,13 +53,8 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
     private Project project;
     private SourceGroup folders[];
     private boolean isPackage;
-    private boolean isValidPackageRequired;
     
     public JavaTargetChooserPanel( Project project, SourceGroup folders[], WizardDescriptor.Panel bottomPanel, boolean isPackage ) {
-        this(project, folders, bottomPanel, isPackage, false);
-    }
-    
-    public JavaTargetChooserPanel( Project project, SourceGroup folders[], WizardDescriptor.Panel bottomPanel, boolean isPackage, boolean isValidPackageRequired ) {
         this.project = project;
         this.folders = folders;
         this.bottomPanel = bottomPanel;
@@ -67,7 +62,6 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
         if ( bottomPanel != null ) {
             bottomPanel.addChangeListener( this );
         }
-        this.isValidPackageRequired = isValidPackageRequired;
     }
 
     public Component getComponent() {
@@ -135,14 +129,9 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
            if (!bottomPanel.isValid())
                return false;
         }
-        
-        if (!isPackage && returnValue && gui.getPackageName().length() == 0 && specVersion != null && JDK_14.compareTo(specVersion)<=0) { 
-            if(isValidPackageRequired){
-                setErrorMessage( "ERR_JavaTargetChooser_CantUseDefaultPackage" );
-                return false;
-            }
-            //Only warning, display it only if everything else is OK.
-            setErrorMessage( "ERR_JavaTargetChooser_DefaultPackage" );            
+        //Only warning, display it only if everything else id OK.
+        if (!isPackage && returnValue && gui.getPackageName().length() == 0 && specVersion != null && JDK_14.compareTo(specVersion)<=0) {                
+                setErrorMessage( "ERR_JavaTargetChooser_DefaultPackage" );            
         }
         String templateSrcLev = (String) template.getAttribute("javac.source"); // NOI18N
         //Only warning, display it only if everything else id OK.
