@@ -1,5 +1,6 @@
 OpenIDE-Module: org.netbeans.modules.i18n/1
 OpenIDE-Module-Name: Internationalization
+OpenIDE-Module-Display-Category: Tools
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.properties/1
 OpenIDE-Module-Specification-Version: 1.5
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@

@@ -1,6 +1,7 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.apache.tools.ant.module
 OpenIDE-Module-Name: Ant
+OpenIDE-Module-Display-Category: Tools
 OpenIDE-Module-Specification-Version: 1.5
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Install: org/apache/tools/ant/module/AntModule.class

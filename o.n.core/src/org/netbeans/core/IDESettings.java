@@ -68,6 +68,7 @@ public class IDESettings extends SystemOption {
     public static final int MODULES_SORT_CODENAME = 2;
     public static final int MODULES_SORT_ENABLED = 3;
     public static final int MODULES_SORT_URL = 4;
+    public static final int MODULES_SORT_CATEGORY = 5;
 
     // ------------------------------------------
     // properties
@@ -75,7 +76,7 @@ public class IDESettings extends SystemOption {
     private static boolean showTips = true;
     private static int lastTip = 1;
     private static boolean confirmDelete = true;
-    private static int modulesSortMode = MODULES_SORT_UNSORTED;
+    private static int modulesSortMode = MODULES_SORT_CATEGORY;
 
     private static Hashtable alreadyLoadedBeans = new Hashtable();
 

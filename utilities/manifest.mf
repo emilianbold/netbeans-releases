@@ -1,5 +1,6 @@
 OpenIDE-Module: org.netbeans.modules.utilities/1
 OpenIDE-Module-Name: User Utilities
+OpenIDE-Module-Display-Category: Infrastructure
 OpenIDE-Module-Specification-Version: 1.5
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Install: org/netbeans/modules/utilities/Installer.class

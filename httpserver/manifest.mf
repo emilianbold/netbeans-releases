@@ -1,5 +1,6 @@
 OpenIDE-Module: org.netbeans.modules.httpserver/1
 OpenIDE-Module-Name: HTTP Server
+OpenIDE-Module-Display-Category: Web
 OpenIDE-Module-Install: org/netbeans/modules/httpserver/HttpServerModule.class
 OpenIDE-Module-Specification-Version: 1.5
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
