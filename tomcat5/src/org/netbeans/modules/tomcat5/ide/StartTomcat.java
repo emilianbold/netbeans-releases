@@ -372,9 +372,14 @@ public final class StartTomcat extends StartServer implements ProgressObject
                     );
                 }        
             }
-            while ((command == CommandType.START && !URLWait.waitForStartup (tm, 1000)) ||  //still no feedback when starting
-                   (command == CommandType.STOP && URLWait.waitForStartup (tm, 1000))) {    //still getting feedback when stopping
+            boolean isRunning = isRunning();
+            while ((command == CommandType.START && !isRunning) ||  //still no feedback when starting
+                   (command == CommandType.STOP && isRunning)) {    //still getting feedback when stopping
                 pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, NbBundle.getMessage (StartTomcat.class, "MSG_waiting"), StateType.RUNNING));
+                try {
+                    Thread.sleep(500); // take a nap before next retry
+                } catch(InterruptedException ie) {}
+                isRunning = isRunning();
             }
 /*            running = command.equals (CommandType.START);
             if (debug) {
