@@ -76,7 +76,9 @@ Microsystems, Inc. All Rights Reserved.
 	     but it depends on property xtest.source.location which classpath will be used.
 	     Fill apropriate classpathes in targets "${xtest.source.location}test-classath". -->
 	<property name="codetest.classpath" refid="codetest.classpath"/>
-        <property name="xtest.extra.ide.mounts" value="work/sys/ide/sampledir"/>
+	<echo message="nbxxx home ${xtest.workdir}/sys/ide "/>
+        <property name="xtest.extra.ide.mounts" value="${xtest.workdir}/sys/ide/sampledir;qa-fuctional/src/data"/>
+
     </target>
 
     <!-- ========= -->
