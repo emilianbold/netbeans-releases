@@ -133,7 +133,8 @@ public class WebProjectProperties {
     public static final String JAVADOC_VERSION="javadoc.version"; //NOI18N
     public static final String JAVADOC_WINDOW_TITLE="javadoc.windowtitle"; //NOI18N
     public static final String JAVADOC_ENCODING="javadoc.encoding"; //NOI18N
-    
+    public static final String JAVADOC_ADDITIONALPARAM="javadoc.additionalparam"; // NOI18N
+
     public static final String COMPILE_JSPS = "compile.jsps"; //NOI18N
     
     public static final String TAG_WEB_MODULE_LIBRARIES = "web-module-libraries"; // NOI18N
@@ -202,6 +203,7 @@ public class WebProjectProperties {
     ButtonModel JAVADOC_VERSION_MODEL;
     Document JAVADOC_WINDOW_TITLE_MODEL;
     ButtonModel JAVADOC_PREVIEW_MODEL; 
+    Document JAVADOC_ADDITIONALPARAM_MODEL;
 
     // CustomizerRun
     Document J2EE_PLATFORM_MODEL;
@@ -301,6 +303,7 @@ public class WebProjectProperties {
         JAVADOC_VERSION_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_VERSION );
         JAVADOC_WINDOW_TITLE_MODEL = projectGroup.createStringDocument( evaluator, JAVADOC_WINDOW_TITLE );
         JAVADOC_PREVIEW_MODEL = privateGroup.createToggleButtonModel( evaluator, JAVADOC_PREVIEW );
+        JAVADOC_ADDITIONALPARAM_MODEL = privateGroup.createStringDocument( evaluator, JAVADOC_ADDITIONALPARAM );
         
         // CustomizerRun
         J2EE_PLATFORM_MODEL = projectGroup.createStringDocument(evaluator, J2EE_PLATFORM);
