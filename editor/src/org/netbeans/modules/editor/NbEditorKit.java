@@ -80,6 +80,9 @@ public class NbEditorKit extends ExtKit {
     static final long serialVersionUID =4482122073483644089L;
     
     private static final Map contentTypeTable;
+    
+    /** Name of the action for generating of Go To popup menu*/
+    public static final String generateGoToPopupAction = "generate-goto-popup";
 
     static {
         contentTypeTable = new HashMap();
@@ -117,7 +120,8 @@ public class NbEditorKit extends ExtKit {
                                        new NbGotoNextBookmarkAction(BaseKit.gotoNextBookmarkAction, false),
                                        new NbBuildToolTipAction(),
                                        new NbToggleLineNumbersAction(),
-                                       new ToggleToolbarAction()
+                                       new ToggleToolbarAction(),
+                                       new NbGenerateGoToPopupAction()
                                    };
         return TextAction.augmentList(super.createActions(), nbEditorActions);
     }
@@ -511,6 +515,17 @@ public class NbEditorKit extends ExtKit {
         
     }
     
+    public static class NbGenerateGoToPopupAction extends BaseAction {
+
+        public NbGenerateGoToPopupAction() {
+            super(generateGoToPopupAction);
+        }
+
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        }
+
+    }
+
 
     public static class NbBuildToolTipAction extends BuildToolTipAction {
 

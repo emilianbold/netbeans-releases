@@ -225,13 +225,10 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="Separator3.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
-                    <attr name="Separator3.instance/goto-source" boolvalue="true"/>
+                    <attr name="Separator3.instance/generate-goto-popup" boolvalue="true"/>
 
-                    <file name="goto-source"/>
-                    <attr name="goto-source/goto-declaration" boolvalue="true"/>
-
-                    <file name="goto-declaration"/>
-                    <attr name="goto-declaration/Separator4.instance" boolvalue="true"/>
+                    <file name="generate-goto-popup"/>
+                    <attr name="generate-goto-popup/Separator4.instance" boolvalue="true"/>
 
                     <file name="Separator4.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
