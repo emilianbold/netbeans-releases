@@ -401,7 +401,7 @@ public final class DesktopImpl {
      * slided component along right edge.
      */
     private final class LayeredLayout implements LayoutManager {
-        
+        private Dimension lastSize;
         public void layoutContainer(Container parent) {
             Dimension size = parent.getSize();
             desktop.setBounds(0, 0, size.width, size.height);
@@ -419,16 +419,49 @@ public final class DesktopImpl {
 
                     if (Constants.LEFT.equals(side)) {
                         result.height = splitRootRect.height;
+                        if (lastSize != null && !lastSize.equals(size)) {
+                            int wid = curView.getSlideBounds().width;
+                            if (wid > (size.width - viewRect.width)) {
+                                // make sure we are not bigger than the current window..
+                                result.width = size.width - (size.width / 10);
+                            } else {
+                                result.width = wid;
+                            }
+                        }
                     } else if (Constants.RIGHT.equals(side)) {
-                        result.x = size.width - Math.max(viewRect.width, viewPrefSize.width) - result.width;
                         result.height = splitRootRect.height;
+                        if (lastSize != null && !lastSize.equals(size)) {
+                            int avail = size.width - Math.max(viewRect.width, viewPrefSize.width);
+                            int wid = curView.getSlideBounds().width;
+                            if (avail - wid < (wid /10)) {
+                                result.x = 0 + (wid / 10);
+                                result.width = avail - (wid / 10);
+                            } else {
+                                result.x = avail - result.width;
+                                result.width = wid;
+                            }
+                        }
                     } else if (Constants.BOTTOM.equals(side)) {
-                        result.y = size.height - Math.max(viewRect.height, viewPrefSize.height) - result.height;
                         result.width = splitRootRect.width;
+                        if (lastSize != null && !lastSize.equals(size)) {
+                            int avail = size.height - Math.max(viewRect.height, viewPrefSize.height);
+                            int hei = viewRect.height;
+                            if (hei < curView.getSlideBounds().height) {
+                                hei = curView.getSlideBounds().height;
+                            }
+                            if (avail - hei < (hei /10)) {
+                                result.y = 0 + (hei / 10);
+                                result.height = avail - (hei / 10);
+                            } else {
+                                result.y = avail - hei;
+                                result.height = hei;
+                            }
+                        }
                     }
                     slidedComp.setBounds(result);
                 }
             }
+            lastSize = size;
         }
         
         public Dimension minimumLayoutSize(Container parent) {

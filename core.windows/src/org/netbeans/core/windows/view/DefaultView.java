@@ -933,6 +933,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     }
     
     public void userResizedSlidingWindow(ModeView modeView, SlideOperation operation) {
+        ((SlidingView)modeView).setSlideBounds(modeView.getSelectedTopComponent().getBounds());
         hierarchy.performSlideResize(operation);
         ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
         ModeImpl mode = getModeForModeAccessor(modeAccessor);
