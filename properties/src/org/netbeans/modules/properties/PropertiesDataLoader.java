@@ -62,12 +62,14 @@ public final class PropertiesDataLoader extends UniFileLoader {
     }
 
     
-    /** Does initialization. Initializes display name and actions. */
-    protected void initialize () {
-        super.initialize();
-        setDisplayName(NbBundle.getBundle(PropertiesDataLoader.class).getString("PROP_PropertiesLoader_Name"));
-
-        setActions(new SystemAction[] {
+    /** Gets default display name. Overrides superclass method. */
+    protected String defaultDisplayName() {
+        return NbBundle.getBundle(PropertiesDataLoader.class).getString("PROP_PropertiesLoader_Name");
+    }
+    
+    /** Gets default system actions. Overrides superclass method. */
+    protected SystemAction[] defaultActions() {
+        return new SystemAction[] {
             SystemAction.get(OpenAction.class),
             SystemAction.get(EditAction.class),
             SystemAction.get(FileSystemAction.class),
@@ -84,7 +86,7 @@ public final class PropertiesDataLoader extends UniFileLoader {
             null,
             SystemAction.get(ToolsAction.class),
             SystemAction.get(PropertiesAction.class)
-        });
+        };
     }
 
     /** Creates new PropertiesDataObject for this FileObject.
