@@ -96,7 +96,9 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
     }
 
     public String getAsText () {
-        return null;
+        // bugfix #21981 can't return null
+        // due to getAccessibleName() from PropertyShow.AccessiblePropertyShow
+        return fontName;
     }
 
     public void setAsText (String string) {
