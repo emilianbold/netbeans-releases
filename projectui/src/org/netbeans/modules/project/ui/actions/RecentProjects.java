@@ -70,7 +70,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     private void createSubMenu() {
         if ( subMenu == null ) {
             subMenu = new JMenu(this);
-            //Mnemonics.setLocalizedText(menu, label);
+            subMenu.setMnemonic (NbBundle.getMessage(RecentProjects.class, "MNE_RecentProjectsAction_Name").charAt (0)); // NOI18N
         }
         
         subMenu.removeAll();

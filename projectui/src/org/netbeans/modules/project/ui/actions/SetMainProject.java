@@ -78,8 +78,8 @@ public class SetMainProject extends AbstractAction implements Presenter.Menu, Pr
         if ( subMenu == null ) {
             String label = NbBundle.getMessage( SetMainProject.class, "LBL_SetMainProjectAction_Name" ); // NOI18N
             subMenu = new JMenu( label );
+            subMenu.setMnemonic (NbBundle.getMessage (SetMainProject.class, "MNE_SetMainProjectAction_Name").charAt (0)); // NOI18N
             subMenu.setIcon( new ImageIcon( Utilities.loadImage( ICON ) ) );
-            //Mnemonics.setLocalizedText(menu, label);
         }
         
         subMenu.removeAll();
