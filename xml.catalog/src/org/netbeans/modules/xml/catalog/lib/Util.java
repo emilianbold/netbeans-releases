@@ -87,13 +87,13 @@ public class Util extends AbstractUtil {
      * @param takes a list of file extensions
      * @return filename or null if operation was cancelled.
      */
-    public static File selectCatalogFile(final String enum) {
+    public static File selectCatalogFile(final String enum2) {
         JFileChooser chooser = new JFileChooser();
 
         chooser.setFileFilter(new FileFilter() {
             public boolean accept(File f) {
                 if (f.isDirectory()) return true;
-                StringTokenizer token = new StringTokenizer(enum, " ");  // NOI18N
+                StringTokenizer token = new StringTokenizer(enum2, " ");  // NOI18N
                 while (token.hasMoreElements()) {
                     if (f.getName().endsWith(token.nextToken())) return true;
                 }
@@ -116,7 +116,7 @@ public class Util extends AbstractUtil {
             File f = chooser.getSelectedFile();
             lastDirectory = chooser.getCurrentDirectory();
             if (f != null && f.isFile()) {
-                StringTokenizer token = new StringTokenizer(enum, " ");  // NOI18N
+                StringTokenizer token = new StringTokenizer(enum2, " ");  // NOI18N
                 while (token.hasMoreElements()) {
                     if (f.getName().endsWith(token.nextToken())) return f;
                 }
