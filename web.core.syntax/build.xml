@@ -23,8 +23,6 @@ Microsystems, Inc. All Rights Reserved.
           <include name="${nb.docs.dir}/syntaxref20.zip"/>
           <include name="${nb.docs.dir}/jstl11-doc.zip"/>
           <include name="${nb.docs.dir}/jsf10-doc.zip"/>
-          <include name="${nb.docs.dir}/jsp20-docs.zip"/>
-          <include name="${nb.docs.dir}/servlet24-docs.zip"/>
       </patternset>
   </target>
 
