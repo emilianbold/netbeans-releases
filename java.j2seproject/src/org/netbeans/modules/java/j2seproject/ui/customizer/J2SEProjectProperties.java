@@ -223,6 +223,10 @@ public class J2SEProjectProperties {
         return subprojects;
     }
     
+    Project getProject() {
+        return project;
+    }
+    
     /** Gets all subprojects recursively
      */
     private void addSubprojects( Project project, List result ) {
