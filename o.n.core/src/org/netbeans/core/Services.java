@@ -95,6 +95,10 @@ final class Services extends ServiceType.Registry implements Comparator {
             sections.add (s);
             recomputeKinds ();
             supp.firePropertyChange (PROP_KINDS, null, null);
+            
+            // adds also default instance of this service
+            current.add (s.getServiceType());
+            supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
         }
     }
 
@@ -106,6 +110,11 @@ final class Services extends ServiceType.Registry implements Comparator {
             sections.remove (s);
             recomputeKinds ();
             supp.firePropertyChange (PROP_KINDS, null, null);
+            
+            // removes the default service, if present
+            if (current.remove (s.getServiceType())) {
+                supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
+            }
         }
     }
     
@@ -253,7 +262,7 @@ final class Services extends ServiceType.Registry implements Comparator {
                     Class instanceClass = ss.getServiceType ().getClass ();
                     if (clazz.isAssignableFrom(instanceClass) && !added.contains(instanceClass)) {
                       l.add (new NSNT (clazz, ss));
-                      added.add (clazz);
+                      added.add (instanceClass);
                     }
                 } catch (InstantiationException ex) {
                       TopManager.getDefault ().getErrorManager ().notify (
@@ -439,6 +448,14 @@ final class Services extends ServiceType.Registry implements Comparator {
 
 /*
 * $Log$
+* Revision 1.33  2000/07/04 08:28:29  jtulach
+* Merged with revision 1.32.2.1 of boston
+*
+* Revision 1.32.2.1  2000/07/04 08:21:16  jtulach
+* When a module with new service is installed
+* the service instance is added into the list
+* of services.
+*
 * Revision 1.32  2000/06/21 16:05:26  jtulach
 * NullPointer fixed.
 *
