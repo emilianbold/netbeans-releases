@@ -276,11 +276,14 @@ public final class BiNode extends AbstractNode {
                                 if (value instanceof BiIconEditor.BiImageIcon) {
                                     biAnalyser.setIconC16 ( ie.getSourceName() );
                                 }
+                                else{
+                                    biAnalyser.setIconC16( (String)value );
+                                }
                             }
                         } catch (ClassCastException e) {
                             throw new IllegalArgumentException ();
                         }
-                    }
+                    }                                
                 }
               );
         ps.put( new ImagePropertySupportRW (
@@ -306,6 +309,9 @@ public final class BiNode extends AbstractNode {
                             else {
                                 if (value instanceof BiIconEditor.BiImageIcon) {
                                     biAnalyser.setIconM16 ( ie.getSourceName() );
+                                }
+                                else{
+                                    biAnalyser.setIconM16( (String)value );
                                 }
                             }
                         } catch (ClassCastException e) {
@@ -339,6 +345,9 @@ public final class BiNode extends AbstractNode {
                                 if (value instanceof BiIconEditor.BiImageIcon) {
                                     biAnalyser.setIconC32 ( ie.getSourceName() );
                                 }
+                                else{
+                                    biAnalyser.setIconC32( (String)value );
+                                }
                             }
                         } catch (ClassCastException e) {
                             throw new IllegalArgumentException ();
@@ -370,6 +379,9 @@ public final class BiNode extends AbstractNode {
                             else {
                                 if (value instanceof BiIconEditor.BiImageIcon) {
                                     biAnalyser.setIconM32 ( ie.getSourceName() );
+                                }
+                                else{
+                                    biAnalyser.setIconM32( (String)value );
                                 }
                             }
                         } catch (ClassCastException e) {
@@ -558,7 +570,7 @@ public final class BiNode extends AbstractNode {
         ImagePropertySupportRW(String name, Class type,
                               String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
-            ie = new BiIconEditor();
+            ie = new BiIconEditor();            
         }
 
         public PropertyEditor getPropertyEditor() {
@@ -569,6 +581,11 @@ public final class BiNode extends AbstractNode {
                     
                 public boolean supportsCustomEditor() {
                     return true;
+                }
+                
+            public void setAsText(String text) throws java.lang.IllegalArgumentException {
+                    ie.setAsText(text);
+                    setValue(ie.getSourceName());
                 }
             };
         }

@@ -63,7 +63,7 @@ class BiIconEditor extends PropertyEditorSupport {
     
     // variables .................................................................................
     
-    private Icon icon;
+    //private Icon icon;
     
     // init .......................................................................................
     
@@ -82,30 +82,6 @@ class BiIconEditor extends PropertyEditorSupport {
             return null;
     }
     
-    // PropertyEditor methods .....................................................................
-    
-    /**
-     * @return The value of the property.  Builtin types such as "int" will
-     * be wrapped as the corresponding object type such as "java.lang.Integer".
-     */
-    public Object getValue() {
-        return icon;
-    }
-    
-    /**
-     * Set (or change) the object that is to be edited.  Builtin types such
-     * as "int" must be wrapped as the corresponding object type such as
-     * "java.lang.Integer".
-     *
-     * @param value The new target object to be edited.  Note that this
-     *     object should not be modified by the PropertyEditor, rather
-     *     the PropertyEditor should create a new object to hold any
-     *     modified value.
-     */
-    public void setValue(Object object) {
-        icon = (Icon) object;
-    }
-    
     /**
      * @return The property value as a human editable string.
      * <p>   Returns null if the value can't be expressed as an editable string.
@@ -113,8 +89,7 @@ class BiIconEditor extends PropertyEditorSupport {
      *       be prepared to parse that string back in setAsText().
      */
     public String getAsText() {
-        Object val = getValue();
-        
+        Object val = getValue();        
         if (val == null) return "null"; // NOI18N
         
         if (val instanceof BiImageIcon) {
@@ -309,7 +284,8 @@ class BiIconEditor extends PropertyEditorSupport {
                 public void actionPerformed(ActionEvent e) {
                     bSelect.setEnabled(false);
                     tfName.setEnabled(false);
-                    icon = null; //IconEditor.this.setValue(null);
+                    
+                    BiIconEditor.this.setValue(null);
                     updateIcon();
                 }
             });
@@ -385,12 +361,12 @@ class BiIconEditor extends PropertyEditorSupport {
             String val = tfName.getText();
             val.trim();
             if ("".equals(val)) { // NOI18N
-                icon = null;
+                BiIconEditor.this.setValue(null);
                 return;
             }
             
             try {
-                icon = iconFromText(val);
+                BiIconEditor.this.setValue(iconFromText(val));
             } catch (IllegalArgumentException ee) {
                 if (Boolean.getBoolean("netbeans.debug.exceptions")) ee.printStackTrace(); // NOI18N
             }
@@ -417,6 +393,7 @@ class BiIconEditor extends PropertyEditorSupport {
                 if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
                 throw new IllegalStateException(e.toString());
             }
+            BiIconEditor.this.setValue(ii);
             return ii;
         }
         
