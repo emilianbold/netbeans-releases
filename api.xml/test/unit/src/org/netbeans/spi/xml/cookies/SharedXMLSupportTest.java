@@ -28,6 +28,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 import org.netbeans.api.xml.cookies.*;
+import org.netbeans.api.xml.cookies.CookieObserver;
 import org.netbeans.api.xml.services.*;
 import org.netbeans.api.xml.parsers.*;
 
@@ -66,7 +67,8 @@ public class SharedXMLSupportTest extends TestCase {
         URL invalidEntity = getClass().getResource("data/InvalidEntity.ent");
         URL validDocument = getClass().getResource("data/ValidDocument.xml");
         URL wellformedDocument = getClass().getResource("data/WellformedDocument.xml");
-
+        URL namespacesDocument = getClass().getResource("data/NamespacesDocument.xml");
+        
         SharedXMLSupport support;
         support = new SharedXMLSupport(new InputSource(dtd.toExternalForm()), CheckXMLSupport.CHECK_PARAMETER_ENTITY_MODE);
         assertTrue("DTD check failed!", support.checkXML(null));
@@ -88,6 +90,11 @@ public class SharedXMLSupportTest extends TestCase {
 
         support = new SharedXMLSupport(new InputSource(wellformedDocument.toExternalForm()));
         assertTrue("Wellformed document must pass", support.checkXML(null));
+
+        Observer observer = new Observer();
+        support = new SharedXMLSupport(new InputSource(namespacesDocument.toExternalForm()));
+        assertTrue("Wellformed document with namespaces must pass", support.checkXML(observer));
+        assertTrue("Unexpected warnings!", observer.getWarnings() == 0);
         
     }
     
@@ -102,7 +109,9 @@ public class SharedXMLSupportTest extends TestCase {
         URL invalidEntity = getClass().getResource("data/InvalidEntity.ent");
         URL validDocument = getClass().getResource("data/ValidDocument.xml");
         URL wellformedDocument = getClass().getResource("data/WellformedDocument.xml");
-
+        URL validNamespacesDocument = getClass().getResource("data/ValidNamespacesDocument.xml");
+        URL conformingNamespacesDocument = getClass().getResource("data/ConformingNamespacesDocument.xml");
+        
         SharedXMLSupport support;
         support = new SharedXMLSupport(new InputSource(dtd.toExternalForm()));
         assertTrue("DTD validation must fail!", support.validateXML(null) == false);
@@ -124,7 +133,29 @@ public class SharedXMLSupportTest extends TestCase {
 
         support = new SharedXMLSupport(new InputSource(wellformedDocument.toExternalForm()));
         assertTrue("Wellformed document must not pass", support.validateXML(null) == false);
+
+        Observer observer = new Observer();
+        support = new SharedXMLSupport(new InputSource(validNamespacesDocument.toExternalForm()));
+        assertTrue("Valid document with namespaces must pass", support.validateXML(observer));
+        assertTrue("Unexpected warnings!", observer.getWarnings() == 0);
+
+        observer = new Observer();
+        support = new SharedXMLSupport(new InputSource(conformingNamespacesDocument.toExternalForm()));
+        assertTrue("Conforming document must pass", support.validateXML(observer));
+        assertTrue("Unexpected warnings!", observer.getWarnings() == 0);
         
     }
+    
+    private static class Observer implements CookieObserver {
+        private int warnings;
+        public void receive(CookieMessage msg) {
+            if (msg.getLevel() >= msg.WARNING_LEVEL) {
+                warnings++;
+            }
+        }
+        public int getWarnings() {
+            return warnings;
+        }
+    };
         
 }
