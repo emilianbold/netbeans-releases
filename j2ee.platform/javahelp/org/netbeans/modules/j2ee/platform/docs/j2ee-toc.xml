@@ -227,21 +227,22 @@
          <tocitem text="About Web Services" >
 		<tocitem text="About Web Services" target="about_web_service" />
 		<tocitem text="About Procedural Based Web Services" target="about_web_service_rpc" />
-	        <tocitem text="About Document Based Web Services" target="about_web_service_message" />
+		<tocitem text="About Document Based Web Services" target="about_web_service_message" />
+		<tocitem text="About the WSDL File" target="about_wsdl" />
 		<tocitem text="Working with Web Services" target="ws_process" />
 		<tocitem text="Web Service Tasks: Quick Reference" target="tbd" />
   	 </tocitem>
 	 <tocitem text="Creating and Editing Web Services" >
 	        <tocitem text="Creating a Project for a Web Service" target="create_ws_project" />
-		<tocitem text="Creating a Procedural Based Web Service" target="create_ws" />
-	        <tocitem text="Creating a Document Based Web Service" target="create_ws_message" />
+		<tocitem text="Creating a Web Service" target="create_ws" />
     	        <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
 	        <tocitem text="Adding a SOAP Message Handler" target="add_soap_message" />
 	        <tocitem text="Calling an Enterprise Bean" target="call_ejb" />
 	 	<tocitem text="Using a Database" target="use_a_database" />
 		<tocitem text="Sending a JMS Message" target="send_JMS_message" />
   	 </tocitem>
-         <tocitem text="Building and Exposing Web Services" >
+	 <tocitem text="Building and Exposing Web Services" >
+		 <tocitem text="Preconfiguring a WSDL File" target="about_wscompile" />
 		 <tocitem text="Building a Web Service" target="build_ws" />
                  <tocitem text="Exposing a Web Service" target="expose_ws" />
 	 </tocitem>
@@ -249,7 +250,7 @@
 		 <tocitem text="Testing a Web Service" target="test_ws" />
 	         <tocitem text="Creating a Web Service Client" target="create_wsc" />
 		 <tocitem text="Calling a Web Service Operation" target="call_ws_operation" />
-	         <tocitem text="Configuring a Web Service Client" target="create_ws_customize" />
+		 <tocitem text="Building a Web Service Client" target="build_wsc" />
 	 </tocitem>
 	
       </tocitem> <!-- Working With Web Service Clients -->
