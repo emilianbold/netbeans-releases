@@ -322,7 +322,8 @@ public class HTMLSyntax extends Syntax {
 
 
             case ISI_VAL:
-                if( !isWS( actChar ) ) break;  // Consume whole value
+                if( !isWS( actChar ) 
+                    && !(actChar == '/' || actChar == '>' || actChar == '<')) break;  // Consume whole value
                 state = ISP_TAG_X;
                 return HTMLTokenContext.VALUE;
 
