@@ -35,6 +35,7 @@ import java.util.List;
 public class LibrariesChooser extends javax.swing.JPanel {
     private Collection incompatibleLibs;
     private Collection alreadySelectedLibs;
+    private String j2eePlatform;
 
     /** Creates new form LibrariesChooser */
     public LibrariesChooser(Collection alreadySelectedLibs, String j2eePlatform) {
@@ -42,6 +43,7 @@ public class LibrariesChooser extends javax.swing.JPanel {
         jLabel2.setForeground(getErrorColor());
         jList1.setPrototypeCellValue("0123456789012345678901234");      //NOI18N
         jList1.setModel(new LibrariesListModel());
+        this.j2eePlatform = j2eePlatform;
         incompatibleLibs =
                 VisualClasspathSupport.getLibrarySet(WebProjectGenerator.getIncompatibleLibraries(j2eePlatform));
         jList1.setCellRenderer(new LibraryRenderer(incompatibleLibs));
@@ -134,10 +136,11 @@ public class LibrariesChooser extends javax.swing.JPanel {
         add(jScrollPane1, gridBagConstraints);
 
         jLabel2.setForeground(javax.swing.UIManager.getColor("nb.errorForeground"));
+        jLabel2.setPreferredSize(new java.awt.Dimension(50, 16));
         jLabel2.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -151,7 +154,7 @@ public class LibrariesChooser extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 12);
         add(edit, gridBagConstraints);
@@ -179,32 +182,16 @@ public class LibrariesChooser extends javax.swing.JPanel {
         if (evt.getValueIsAdjusting()) {
             return;
         }
-        StringBuffer sb = new StringBuffer();
         Object[] selected = this.jList1.getSelectedValues();
         for (int i = 0; i < selected.length; i++) {
             final Library lib = (Library) selected[i];
             if (incompatibleLibs.contains(lib)) {
-                addMessage(sb, "MSG_IncompatibleLibrary", lib);
+                jLabel2.setText(NbBundle.getMessage(LibrariesChooser.class, "MSG_IncompatibleLibrary", j2eePlatform));
+                return;
             }
         }
-        for (int i = 0; i < selected.length; i++) {
-            final Library lib = (Library) selected[i];
-            if (alreadySelectedLibs.contains(lib)) {
-                addMessage(sb, "MSG_LibraryAlreadyInProject", lib);
-            }
-        }
-        if(sb.length() > 0) {
-            sb.insert(0, "<html>");
-            sb.append("</html>");
-        }
-        jLabel2.setText(sb.toString());
-        doLayout();
+        jLabel2.setText("");
     }//GEN-LAST:event_jList1ValueChanged
-
-    private static void addMessage(StringBuffer sb, String msgId, final Library lib) {
-        String displayName = "<b>" + lib.getDisplayName() + "</b>";
-        sb.append(NbBundle.getMessage(LibrariesChooser.class, msgId, displayName) + "<br>");
-    }
 
     private void editLibraries(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editLibraries
         LibrariesListModel model = (LibrariesListModel) jList1.getModel ();
