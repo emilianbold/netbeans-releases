@@ -485,36 +485,37 @@ public class GandalfPersistenceManager extends PersistenceManager {
       );
 
       // 3.store Non-Visual Components
-      buf.append (ONE_INDENT); addElementOpen (buf, XML_NON_VISUAL_COMPONENTS);
       RADComponent[] nonVisuals = manager.getNonVisualComponents ();
-      for (int i = 0; i < nonVisuals.length; i++) {
-        String elementType;
-
-        if (nonVisuals[i] instanceof RADMenuComponent) elementType = XML_MENU_CONTAINER;
-        else if (nonVisuals[i] instanceof RADMenuItemComponent) elementType = XML_MENU_COMPONENT;
-        else if (nonVisuals[i] instanceof ComponentContainer) elementType = XML_CONTAINER;
-        else elementType = XML_COMPONENT;
-
-        buf.append (ONE_INDENT + ONE_INDENT); 
-        addElementOpenAttr (
-            buf, 
-            elementType, 
-            new String[] { ATTR_COMPONENT_CLASS, ATTR_COMPONENT_NAME }, 
-            new String[] { nonVisuals[i].getBeanClass ().getName (), nonVisuals[i].getName () }
-        );
-
-        if (nonVisuals[i] instanceof RADMenuItemComponent) {
-          saveMenuComponent ((RADMenuItemComponent)nonVisuals[i], buf, ONE_INDENT + ONE_INDENT + ONE_INDENT);
-        } else if (nonVisuals[i] instanceof ComponentContainer) {
-          saveContainer ((ComponentContainer)nonVisuals[i], buf, ONE_INDENT + ONE_INDENT + ONE_INDENT);
-        } else {
-          saveComponent (nonVisuals[i], buf, ONE_INDENT + ONE_INDENT + ONE_INDENT);
-        }
-
-        buf.append (ONE_INDENT + ONE_INDENT); addElementClose (buf, elementType);
-      }  
-      buf.append (ONE_INDENT); addElementClose (buf, XML_NON_VISUAL_COMPONENTS);
-
+      if (nonVisuals.length > 0) {
+        buf.append (ONE_INDENT); addElementOpen (buf, XML_NON_VISUAL_COMPONENTS);
+        for (int i = 0; i < nonVisuals.length; i++) {
+          String elementType;
+  
+          if (nonVisuals[i] instanceof RADMenuComponent) elementType = XML_MENU_CONTAINER;
+          else if (nonVisuals[i] instanceof RADMenuItemComponent) elementType = XML_MENU_COMPONENT;
+          else if (nonVisuals[i] instanceof ComponentContainer) elementType = XML_CONTAINER;
+          else elementType = XML_COMPONENT;
+  
+          buf.append (ONE_INDENT + ONE_INDENT); 
+          addElementOpenAttr (
+              buf, 
+              elementType, 
+              new String[] { ATTR_COMPONENT_CLASS, ATTR_COMPONENT_NAME }, 
+              new String[] { nonVisuals[i].getBeanClass ().getName (), nonVisuals[i].getName () }
+          );
+  
+          if (nonVisuals[i] instanceof RADMenuItemComponent) {
+            saveMenuComponent ((RADMenuItemComponent)nonVisuals[i], buf, ONE_INDENT + ONE_INDENT + ONE_INDENT);
+          } else if (nonVisuals[i] instanceof ComponentContainer) {
+            saveContainer ((ComponentContainer)nonVisuals[i], buf, ONE_INDENT + ONE_INDENT + ONE_INDENT);
+          } else {
+            saveComponent (nonVisuals[i], buf, ONE_INDENT + ONE_INDENT + ONE_INDENT);
+          }
+  
+          buf.append (ONE_INDENT + ONE_INDENT); addElementClose (buf, elementType);
+        }  
+        buf.append (ONE_INDENT); addElementClose (buf, XML_NON_VISUAL_COMPONENTS);
+      }
       // 4.store form and its visual components hierarchy
       saveContainer ((ComponentContainer)manager.getRADForm ().getTopLevelComponent (), buf, ONE_INDENT);
       addElementClose (buf, XML_FORM);
@@ -1267,6 +1268,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  24   Gandalf   1.23        8/2/99   Ian Formanek    NonVisuals element is 
+ *       not saved if empty
  *  23   Gandalf   1.22        8/2/99   Ian Formanek    Proper encoding of 
  *       special characters into XML (<, >, ", ', &)
  *  22   Gandalf   1.21        8/1/99   Ian Formanek    Really does what last 
