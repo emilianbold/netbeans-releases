@@ -15,27 +15,27 @@ package org.apache.tools.ant.module.nodes;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.text.Collator;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.JPopupMenu;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.apache.tools.ant.module.run.TargetExecutor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-
-
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-
 import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
@@ -57,7 +57,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
     }
 
     public HelpCtx getHelpCtx () {
-        return new HelpCtx ("org.apache.tools.ant.module.executing-target"); // NOI18N
+        return HelpCtx.DEFAULT_HELP;
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -111,84 +111,99 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
      * Create the submenu.
      */
     private static JMenu createMenu(AntProjectCookie project) {
-        // XXX for efficiency, could delay creation of the menu until it is shown...
-        // either using getPopupMenu, or HierarchyEvent.DISPLAYABILITY_CHANGED or
-        // .SHOWING_CHANGED or ButtonModel or something... tboudreau would know.
-        Set/*<TargetLister.Target>*/ allTargets;
-        try {
-            allTargets = TargetLister.getTargets(project);
-        } catch (IOException e) {
-            // XXX how to notify properly?
-            AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
-            allTargets = Collections.EMPTY_SET;
+        return new LazyMenu(project);
+    }
+    
+    private static final class LazyMenu extends JMenu {
+        
+        private final AntProjectCookie project;
+        private boolean initialized = false;
+        
+        public LazyMenu(AntProjectCookie project) {
+            super(SystemAction.get(RunTargetsAction.class).getName());
+            this.project = project;
         }
-        String defaultTarget = null;
-        SortedSet/*<String>*/ describedTargets = new TreeSet(Collator.getInstance());
-        SortedSet/*<String>*/ otherTargets = new TreeSet(Collator.getInstance());
-        Iterator it = allTargets.iterator();
-        while (it.hasNext()) {
-            TargetLister.Target t = (TargetLister.Target) it.next();
-            if (t.isOverridden()) {
-                // Cannot be called.
-                continue;
+        
+        public JPopupMenu getPopupMenu() {
+            if (!initialized) {
+                initialized = true;
+                Set/*<TargetLister.Target>*/ allTargets;
+                try {
+                    allTargets = TargetLister.getTargets(project);
+                } catch (IOException e) {
+                    // XXX how to notify properly?
+                    AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
+                    allTargets = Collections.EMPTY_SET;
+                }
+                String defaultTarget = null;
+                SortedSet/*<String>*/ describedTargets = new TreeSet(Collator.getInstance());
+                SortedSet/*<String>*/ otherTargets = new TreeSet(Collator.getInstance());
+                Iterator it = allTargets.iterator();
+                while (it.hasNext()) {
+                    TargetLister.Target t = (TargetLister.Target) it.next();
+                    if (t.isOverridden()) {
+                        // Cannot be called.
+                        continue;
+                    }
+                    if (t.isInternal()) {
+                        // Don't present in GUI.
+                        continue;
+                    }
+                    String name = t.getName();
+                    if (t.isDefault()) {
+                        defaultTarget = name;
+                    } else if (t.isDescribed()) {
+                        describedTargets.add(name);
+                    } else {
+                        otherTargets.add(name);
+                    }
+                }
+                boolean needsep = false;
+                if (defaultTarget != null) {
+                    needsep = true;
+                    JMenuItem menuitem = new JMenuItem(defaultTarget);
+                    menuitem.addActionListener(new TargetMenuItemHandler(project, defaultTarget));
+                    add(menuitem);
+                }
+                if (needsep) {
+                    needsep = false;
+                    addSeparator();
+                }
+                if (!describedTargets.isEmpty()) {
+                    needsep = true;
+                    it = describedTargets.iterator();
+                    while (it.hasNext()) {
+                        String target = (String) it.next();
+                        JMenuItem menuitem = new JMenuItem(target);
+                        menuitem.addActionListener(new TargetMenuItemHandler(project, target));
+                        add(menuitem);
+                    }
+                }
+                if (needsep) {
+                    needsep = false;
+                    addSeparator();
+                }
+                if (!otherTargets.isEmpty()) {
+                    needsep = true;
+                    JMenu submenu = new JMenu(NbBundle.getMessage(RunTargetsAction.class, "LBL_run_other_targets"));
+                    it = otherTargets.iterator();
+                    while (it.hasNext()) {
+                        String target = (String) it.next();
+                        JMenuItem menuitem = new JMenuItem(target);
+                        menuitem.addActionListener(new TargetMenuItemHandler(project, target));
+                        submenu.add(menuitem);
+                    }
+                    add(submenu);
+                }
+                if (needsep) {
+                    needsep = false;
+                    addSeparator();
+                }
+                add(new AdvancedAction(project, allTargets));
             }
-            if (t.isInternal()) {
-                // Don't present in GUI.
-                continue;
-            }
-            String name = t.getName();
-            if (t.isDefault()) {
-                defaultTarget = name;
-            } else if (t.isDescribed()) {
-                describedTargets.add(name);
-            } else {
-                otherTargets.add(name);
-            }
+            return super.getPopupMenu();
         }
-        JMenu menu = new JMenu(SystemAction.get(RunTargetsAction.class).getName());
-        boolean needsep = false;
-        if (defaultTarget != null) {
-            needsep = true;
-            JMenuItem menuitem = new JMenuItem(defaultTarget);
-            menuitem.addActionListener(new TargetMenuItemHandler(project, defaultTarget));
-            menu.add(menuitem);
-        }
-        if (needsep) {
-            needsep = false;
-            menu.addSeparator();
-        }
-        if (!describedTargets.isEmpty()) {
-            needsep = true;
-            it = describedTargets.iterator();
-            while (it.hasNext()) {
-                String target = (String) it.next();
-                JMenuItem menuitem = new JMenuItem(target);
-                menuitem.addActionListener(new TargetMenuItemHandler(project, target));
-                menu.add(menuitem);
-            }
-        }
-        if (needsep) {
-            needsep = false;
-            menu.addSeparator();
-        }
-        if (!otherTargets.isEmpty()) {
-            needsep = true;
-            JMenu submenu = new JMenu(NbBundle.getMessage(RunTargetsAction.class, "LBL_run_other_targets"));
-            it = otherTargets.iterator();
-            while (it.hasNext()) {
-                String target = (String) it.next();
-                JMenuItem menuitem = new JMenuItem(target);
-                menuitem.addActionListener(new TargetMenuItemHandler(project, target));
-                submenu.add(menuitem);
-            }
-            menu.add(submenu);
-        }
-        if (needsep) {
-            needsep = false;
-            menu.addSeparator();
-        }
-        menu.add(new AdvancedAction(project, allTargets));
-        return menu;
+        
     }
 
     /**
@@ -240,7 +255,6 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
             DialogDescriptor dd = new DialogDescriptor(panel, title);
             dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
             dd.setModal(true);
-            // XXX help?
             Object result = DialogDisplayer.getDefault().notify(dd);
             if (result.equals(NotifyDescriptor.OK_OPTION)) {
                 try {
