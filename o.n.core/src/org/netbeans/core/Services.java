@@ -124,9 +124,9 @@ final class Services extends ServiceType.Registry implements Comparator {
             
             // adds also default instance of this service
             current.add (s.getServiceType());
-            supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
-            servicesChangedNotify();
         }
+        supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
+        servicesChangedNotify();
     }
 
     /** Removes a section.
@@ -523,6 +523,9 @@ final class Services extends ServiceType.Registry implements Comparator {
 
 /*
 * $Log$
+* Revision 1.37  2000/11/30 10:46:22  anovak
+* #8671 - deadlock
+*
 * Revision 1.36  2000/11/23 13:50:45  anovak
 * improved method services(Class) - made faster
 *
