@@ -150,6 +150,13 @@ import org.openide.util.Mutex;
  */
 public abstract class TwoWaySupport {
     
+    /** logging support, may be null */
+    private static final ErrorManager err;
+    static {
+        ErrorManager _err = ErrorManager.getDefault().getInstance(TwoWaySupport.class.getName());
+        err = _err.isLoggable(ErrorManager.INFORMATIONAL) ? _err : null;
+    }
+    
     /** lock used for all static vars */
     private static final Object LOCK = new String("TwoWaySupport");
     
@@ -195,9 +202,6 @@ public abstract class TwoWaySupport {
     /** currently in doDerive() */
     private boolean deriving = false;
     
-    /** logging support, may be null */
-    private final ErrorManager err;
-    
     /**
      * Create an uninitialized support.
      * No derivation or recreation is scheduled initially.
@@ -207,8 +211,6 @@ public abstract class TwoWaySupport {
         if (mutex == Mutex.EVENT) throw new IllegalArgumentException("Mutex.EVENT can deadlock TwoWaySupport!");
         this.mutex = mutex;
         listeners = new ArrayList();
-        ErrorManager _err = ErrorManager.getDefault().getInstance(getClass().getName());
-        err = _err.isLoggable(ErrorManager.INFORMATIONAL) ? _err : null;
     }
     
     /**
@@ -352,11 +354,9 @@ public abstract class TwoWaySupport {
                     return o;
                 }
             } else if (problem != null) {
-                // XXX consider using a subclass of ITE that implements fillInStackTrace
-                // to do nothing - to make it more efficient to call this method checking
-                // for a bad value
                 if (err != null) err.log("gVB -> " + problem);
-                throw new InvocationTargetException(problem);
+                deactivate();
+                throw new InvocationTargetExceptionNoStackTrace(problem);
             }
             // Else we need to block for a value.
             old = (model != null) ? model.get() : null;
@@ -396,17 +396,31 @@ public abstract class TwoWaySupport {
                 if (newValue != null) {
                     setModel(newValue);
                 }
-                if (active) {
-                    // No longer need to run this.
-                    active = false;
-                    DeriveTask t = (DeriveTask)tasks.remove(this);
-                    assert t != null;
-                    toDerive.remove(t);
-                }
+                deactivate();
             }
         }
         fireChange(new TwoWayEvent.Derived(this, old, result.newValue, result.derivedDelta, underlyingDelta));
         return result.newValue;
+    }
+    
+    private void deactivate() {
+        assert Thread.holdsLock(LOCK);
+        if (active) {
+            // No longer need to run this.
+            active = false;
+            DeriveTask t = (DeriveTask)tasks.remove(this);
+            assert t != null;
+            toDerive.remove(t);
+        }
+    }
+    
+    private static final class InvocationTargetExceptionNoStackTrace extends InvocationTargetException {
+        public InvocationTargetExceptionNoStackTrace(Throwable problem) {
+            super(problem);
+        }
+        public Throwable fillInStackTrace() {
+            return this;
+        }
     }
     
     private void setModel(Object result) {
@@ -513,7 +527,7 @@ public abstract class TwoWaySupport {
     public final void invalidate(Object underlyingDelta) {
         if (underlyingDelta == null) throw new NullPointerException();
         assert mutex.canRead();
-        boolean oldFresh;
+        boolean wasInited;
         Object oldValue;
         synchronized (LOCK) {
             assertStateConsistent();
@@ -525,13 +539,14 @@ public abstract class TwoWaySupport {
             } else {
                 this.underlyingDelta = underlyingDelta;
             }
-            oldFresh = fresh;
+            wasInited = fresh || problem != null;
             if (fresh) {
                 fresh = false;
             }
             oldValue = (model != null) ? model.get() : null;
+            problem = null;
         }
-        if (oldFresh && oldValue != null) {
+        if (wasInited && oldValue != null) {
             fireChange(new TwoWayEvent.Invalidated(this, oldValue, underlyingDelta));
         }
     }
@@ -549,7 +564,7 @@ public abstract class TwoWaySupport {
             assertStateConsistent();
             if (!active && !fresh) {
                 Object oldValue = (model != null) ? model.get() : null;
-                DeriveTask t = new DeriveTask(this, oldValue != null);
+                DeriveTask t = new DeriveTask(this, oldValue != null || problem != null);
                 toDerive.add(t);
                 tasks.put(this, t);
                 active = true;
@@ -773,6 +788,7 @@ public abstract class TwoWaySupport {
                 final TwoWaySupport[] s = new TwoWaySupport[1];
                 synchronized (LOCK) {
                     while (toDerive.isEmpty()) {
+                        if (err != null) err.log("derivation thread waiting...");
                         try {
                             LOCK.wait();
                         } catch (InterruptedException e) {
@@ -782,6 +798,7 @@ public abstract class TwoWaySupport {
                     Iterator it = toDerive.iterator();
                     DeriveTask t = (DeriveTask)it.next();
                     s[0] = (TwoWaySupport)t.support.get();
+                    if (err != null) err.log("derivation thread found: " + s[0]);
                     if (s[0] == null) {
                         // Dead - support was collected before we got to it.
                         it.remove();
@@ -789,6 +806,7 @@ public abstract class TwoWaySupport {
                     }
                     long now = System.currentTimeMillis();
                     if (t.schedule > now) {
+                        if (err != null) err.log("derivation thread deferring: " + s[0] + " for " + (t.schedule - now) + "msec");
                         try {
                             LOCK.wait(t.schedule - now);
                         } catch (InterruptedException e) {
@@ -798,6 +816,7 @@ public abstract class TwoWaySupport {
                         continue;
                     }
                 }
+                if (err != null) err.log("derivation thread processing: " + s[0]);
                 // Out of synch block; we have a support to run.
                 s[0].getMutex().readAccess(new Mutex.Action() {
                     public Object run() {
