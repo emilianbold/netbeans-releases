@@ -171,7 +171,7 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         bClose.setMnemonic (
             NbBundle.getMessage (
                 BreakpointsActionsProvider.class,
-                "ACSD_CTL_Close" // NOI18N
+                "MN_CTL_Close" // NOI18N
             ).charAt (0)
         );
         descriptor.setClosingOptions (null);
