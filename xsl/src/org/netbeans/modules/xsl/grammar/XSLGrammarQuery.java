@@ -419,11 +419,7 @@ public class XSLGrammarQuery implements GrammarQuery{
             }
             
             // First we add the Result elements
-            System.out.println("resultGrammarQuery: " + resultGrammarQuery);
-            System.out.println("elements: " + elements);
-            System.out.println("contains: " + elements.contains(resultElements));
             if (elements != null && elements.contains(resultElements) && resultGrammarQuery != null) {
-            System.out.println("Add result elements");
                 ResultHintContext resultHintContext = new ResultHintContext(ctx, firstXslPrefixWithColon, null);
                 Enumeration resultEnum = resultGrammarQuery.queryElements(resultHintContext);
                 while (resultEnum.hasMoreElements()) {
@@ -523,7 +519,6 @@ public class XSLGrammarQuery implements GrammarQuery{
     }
 
     public Enumeration queryValues(HintContext ctx) {
-//        System.out.println("context: " + ctx);
         if (ctx.getNodeType() == Node.ATTRIBUTE_NODE) {
             if (prefixList.size() == 0) return EmptyEnumeration.EMPTY;
             String xslNamespacePrefix = prefixList.get(0) + ":";
@@ -568,10 +563,6 @@ public class XSLGrammarQuery implements GrammarQuery{
                     } else {
                         subRest = subExpression;
                     }
-
-                    System.out.println("subExpression=" + subExpression);
-                    System.out.println("subPre=" + subPre);
-                    System.out.println("subRest=" + subRest);
                     
                     Object selScenarioObj = scenarioCookie.getModel().getSelectedItem();
                     if (selScenarioObj instanceof XSLScenario) {
@@ -618,9 +609,7 @@ public class XSLGrammarQuery implements GrammarQuery{
                                 }
                                 combinedXPath += subPre;
                             }
-                            
-                            System.out.println("combinedXPath: " + combinedXPath);
-                            
+                                                        
                             try {
                                 NodeList nodeList = XPathAPI.selectNodeList(doc, combinedXPath + "child::*");
                                 for (int ind = 0; ind < nodeList.getLength(); ind++) {
@@ -804,7 +793,6 @@ public class XSLGrammarQuery implements GrammarQuery{
                 inputSource.setPublicId(publicId);
                 inputSource.setSystemId(systemId);
             } catch(IOException e) {
-//                System.out.println("setOutputDoctype.IOException: " + e.getMessage());
                 resultGrammarQuery = null;
                 return;
             }
