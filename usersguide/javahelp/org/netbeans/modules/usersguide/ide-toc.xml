@@ -449,6 +449,7 @@
     <tocitem text="Comparing File Revisions Visually" target="vcs.diffs" />
     <tocitem text="Adding a Binary File to a VCS Repository" target="vcs.binary" />         
     <tocitem text="Searching for a File by VCS Status" target="search.status" />
+    <tocitem text="VCS Profiles" target="vcsgeneric.newprofile" />
     <tocitem text="VCS Support on Windows 95, Windows 98, and Windows ME" target="vcs.cygwin" />
     <tocitem text="Configuring Version Control Settings" target="vcs.globalsettings" />
     <tocitem text="CVS Support" >
@@ -468,8 +469,7 @@
         <tocitem text="Global Arguments" target="args_global"/>
         <tocitem text="Log Arguments" target="args_log"/>
         <tocitem text="Remove Arguments" target="args_remove"/>
-<!--        <tocitem text="Status Arguments" target="args_status"/>-->
-        <tocitem text="Tag Arguments" target="args_tag"/>
+        <tocitem text="Add Tag Arguments" target="args_tag"/>
         <tocitem text="Update Arguments" target="args_update"/>
       </tocitem>
     </tocitem>  

@@ -552,19 +552,16 @@
 <mapID target="args_global" url="vcs-nb/cvs-nb/args/args_global.html"/>
 <mapID target="args_log" url="vcs-nb/cvs-nb/args/args_log.html"/>
 <mapID target="args_remove" url="vcs-nb/cvs-nb/args/args_remove.html"/>
-<!--<mapID target="args_status" url="vcs-nb/cvs-nb/args/args_status.html"/>-->
 <mapID target="args_tag" url="vcs-nb/cvs-nb/args/args_tag.html"/>
 <mapID target="args_update" url="vcs-nb/cvs-nb/args/args_update.html"/>
-<!--<mapID target="cvs_args_intro" url="vcs-nb/cvs-nb/args/cvs_args_intro.html"/>-->
-<mapID target="vcs.vcsgeneric" url="vcs-nb/vcsgeneric/vcs_vcsgeneric.html" />
 <mapID target="vcsgeneric.mounting" url="vcs-nb/vcsgeneric/vcsgeneric_mounting.html" />
 <mapID target="vcsgeneric.wizard" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />
 <mapID target="vcsgeneric.calling" url="vcs-nb/vcsgeneric/vcsgeneric_calling.html" />
-<!--<mapID target="vcsgeneric.command-opts" url="vcs-nb/vcsgeneric/vcsgeneric_command-opts.html" />-->
 <mapID target="vcsgeneric.custom-pvcs" url="vcs-nb/vcsgeneric/vcsgeneric_custom-pvcs.html" />
 <mapID target="vcsgeneric.custom-vss" url="vcs-nb/vcsgeneric/vcsgeneric_custom-vss.html" />
 <mapID target="vcsgeneric.custom-cvs" url="vcs-nb/vcsgeneric/vcsgeneric_custom-cvs.html" />
 <mapID target="vcsgeneric.filesystemproperties" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />
+<mapID target="vcsgeneric.newprofile" url="vcs-nb/vcsgeneric/vcsgeneric_newprofile.html" />
 <mapID target="vcs.revexplorer" url="vcs-nb/vcs_revexplorer.html" />
 
 
@@ -688,7 +685,7 @@
 
 <!-- To Do window help -->
 <mapID target="org.netbeans.modules.tasklist.core.TaskNode" url="editing/tasks_viewing.html" />
-<!--TODO To Do Options node CSH - org.openide.options.SystemOption  -->
+<mapID target="org.openide.options.SystemOption" url="editing/tasks_viewing.html" />
 
 <!-- Ant CSH -->
 
@@ -1323,10 +1320,8 @@
    <mapID target="org.netbeans.modules.vcscore.grouping.MainVcsGroupNode" url="vcs-nb/vcsgroups/vcs_groupsproperties.html" />
    <mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupSettings" url="vcs-nb/vcsgroups/vcs_groupsproperties.html" />
    <mapID target="org.netbeans.modules.vcscore.search.VcsSearchType" url="objects/search/search_status.html" />
-<!--TODO make new page to map these dialogs to
-   <mapID target="VCS_VariableEditor" url="vcs-nb/vcsgeneric/vcsgeneric_variables.html" />
-   <mapID target="VCS_CommandEditor" url="vcs-nb/vcsgeneric/vcsgeneric_command-props.html" /> -->
-   <!-- TODO need separate help IDs for each tab -->
+   <mapID target="VCS_VariableEditor" url="vcs-nb/vcsgeneric/vcsgeneric_newprofile.html" />
+   <mapID target="VCS_CommandEditor" url="vcs-nb/vcsgeneric/vcsgeneric_newprofile.html" />
    <mapID target="org.netbeans.modules.vcs.advanced.VcsCustomizer" url="vcs-nb/vcsgeneric/vcsgeneric_customizer.html" />
 
    <mapID target="org.netbeans.modules.vcs.RetrievingDialog" url="pending.html" />
@@ -1351,11 +1346,6 @@
    <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeFolderNode_properties" url="vcs-nb/vcs_commands_node.html" />
    <!--helpID for the properties sheet of Generic VCS commands on Runtime tab-->
    <mapID target="org.netbeans.modules.vcscore.runtime.VcsRuntimeCommand_properties" url="vcs-nb/vcs_commands_node.html" />
-   <!-- TODO See that the CVS Mount CSH is really gone
-   Mount CVS Wizard; Versioning | Mount CVS; on all wizard panes
-   <mapID target="org.netbeans.modules.vcscore.wizard.mountcvs.WDPanel" url="vcs-nb/cvs-nb/cvs_wizard.html" />
-   <mapID target="org.netbeans.modules.vcscore.wizard.mountcvs.LoginPanel" url="vcs-nb/cvs-nb/cvs_wizard.html" />
-   <mapID target="org.netbeans.modules.vcscore.wizard.mountcvs.CheckoutPanel" url="vcs-nb/cvs-nb/cvs_wizard.html" /> -->
    <!--csh for VCS Generic mount wizard-->
    <mapID target="org.netbeans.modules.vcs.advanced.wizard.mount.ProfilePanel" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />
    <mapID target="org.netbeans.modules.vcs.advanced.wizard.mount.AdvancedPanel" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />
@@ -1363,20 +1353,9 @@
    <!--csh for Verify VCS Group-->
    <mapID target="org.netbeans.modules.vcscore.ui.VerifyGroupPanel" url="vcs-nb/vcsgroups/vcs_groupsresolve.html" />
    <mapID target="org.netbeans.modules.diff.PatchAction" url="vcs-nb/vcs_diffs.html" />
-<!-- TODO see if these CSH are still active 
-   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JStatusCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
-   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JLogCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
-   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JAnnotateCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
-   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JCheckoutCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
-   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JImportCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
-   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JExportCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
-   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JTagCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
-   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JListModulesCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" /> -->
    <!--csh for filesystems-->
    <mapID target="org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />
    <!--csh for versioning menu items-->
-<!--   TODO see if org.netbeans.modules.cvsclient.CvsMenuAction is gone-->
-<!--   <mapID target="org.netbeans.modules.cvsclient.CvsMenuAction" url="vcs-nb/cvs-nb/cvs_calling.html" />-->
    <mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupMenuAction" url="vcs-nb/vcsgroups/vcs_groups.html" />
 
    <!--csh for java actions-->
