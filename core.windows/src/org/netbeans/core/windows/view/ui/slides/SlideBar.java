@@ -207,8 +207,10 @@ public final class SlideBar extends Box implements ComplexListDataListener,
             add(curButton);
             add(createStrut());
         }
-    }
 
+        commandMgr.syncWithModel();
+    }
+    
     /** Builds empty border around slide bar. Computes its correct size
      * based on given orientation
      */

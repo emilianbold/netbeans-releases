@@ -181,6 +181,9 @@ final class CommandManager implements ActionListener {
         comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "slideOut");
         comp.getActionMap().put("slideOut", escapeAction);
     }
+
+/***** dumping info about all registered Esc handlers, could be usable for
+ * debugging
     
     private void dumpEscHandlers (JComponent comp) {
         InputMap map = null;
@@ -215,12 +218,25 @@ final class CommandManager implements ActionListener {
             }
         }
     }
+ 
+ **********/
     
     /** @return true if some component is currently slided, it means visible
      * over another components in desktop, false otherwise
      */
     boolean isCompSlided() {
         return curSlidedComp != null;
+    }
+
+    /** Synchronizes its state with current state of data model. 
+     * Removes currently slided component if it is no longer present in the model.
+     */
+    void syncWithModel() {
+        if ((curSlidedComp != null) && !slideBar.containsComp(curSlidedComp)) {
+            // TBD - here should be closeSlide operation, which means
+            // just remove from desktop
+            slideOut(false);
+        }
     }
 
     /** Actually performs sliding related event by sending it to the 

@@ -210,7 +210,23 @@ public final class DesktopImpl {
         }
         slidingViews.remove(view);
         desktop.remove(view.getComponent());
+        checkCurSlide();
         layeredPane.revalidate();
+    }
+    
+    private void checkCurSlide() {
+        if (curSlideIn != null) {
+            SlidingView curView = null;
+            Component curSlideComp = curSlideIn.getComponent();
+            for (Iterator iter = slidingViews.iterator(); iter.hasNext(); ) {
+                curView = (SlidingView)iter.next();
+                if (curView.getTopComponents().contains(curSlideComp)) {
+                    return;
+                }
+            }
+            // currently slided component not found in view data, so remove
+            layeredPane.remove(curSlideComp);
+        }
     }
     
     public void performSlideIn(SlideOperation operation, Rectangle editorBounds) {
@@ -357,22 +373,26 @@ public final class DesktopImpl {
             // keep right bounds of slide in progress 
             if (curSlideIn != null) {
                 String side = curSlideIn.getSide();
-                Component slidedComp = curSlideIn.getComponent();
-                Rectangle result = slidedComp.getBounds();
-                Rectangle viewRect = findView(side).getComponent().getBounds();
-                Rectangle splitRootRect = viewComponent.getBounds();
-                
-                if (Constants.LEFT.equals(side)) {
-                    result.height = size.height;
-                } else if (Constants.RIGHT.equals(side)) {
-                    result.x = size.width - viewRect.width - result.width;
-                    result.height = size.height;
-                } else if (Constants.BOTTOM.equals(side)) {
-                    result.y = size.height - viewRect.height - result.height;
-                    result.width = size.width;
+                SlidingView curView = findView(side);
+                // #43865 - sliding wiew could be removed by closing
+                if (curView != null) {
+                    Component slidedComp = curSlideIn.getComponent();
+                    Rectangle result = slidedComp.getBounds();
+                    Rectangle viewRect = curView.getComponent().getBounds();
+                    Rectangle splitRootRect = viewComponent.getBounds();
+
+                    if (Constants.LEFT.equals(side)) {
+                        result.height = size.height;
+                    } else if (Constants.RIGHT.equals(side)) {
+                        result.x = size.width - viewRect.width - result.width;
+                        result.height = size.height;
+                    } else if (Constants.BOTTOM.equals(side)) {
+                        result.y = size.height - viewRect.height - result.height;
+                        result.width = size.width;
+                    }
+
+                    slidedComp.setBounds(result);
                 }
-                
-                slidedComp.setBounds(result);
             }
         }
         
