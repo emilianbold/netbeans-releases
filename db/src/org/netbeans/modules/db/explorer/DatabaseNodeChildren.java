@@ -16,8 +16,6 @@ package org.netbeans.modules.db.explorer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.ResourceBundle;
@@ -224,26 +222,4 @@ public class DatabaseNodeChildren extends Children.Array {
         return subnode;
     }
 
-    /** Creating the database connection to Pointbase SAMPLE database acording of setting PointbaseModule, if module is installed.
-     */
-    private void createPointbaseConnection() {
-        try {
-            // only test for PointBase module
-            Class.forName("com.sun.forte4j.pointbase.PointBaseSettings", false, this.getClass().getClassLoader()); // NOI18N
-
-            // load the method for creating connection
-            Class restore = Class.forName("com.sun.forte4j.pointbase.util.CreatorConnection", false, this.getClass().getClassLoader()); // NOI18N
-
-            Method addOrConnectMethod = restore.getMethod ("addOrConnectPointbase", null); // NOI18N
-
-            // call it
-            addOrConnectMethod.invoke (restore.newInstance(), null);
-        } catch (ClassNotFoundException e) {
-        } catch (NoSuchMethodException e) {
-        } catch (InvocationTargetException e) {
-        } catch (IllegalAccessException e) {
-        } catch (InstantiationException e) {
-        } catch (Exception e) {
-        }
-    }
 }
