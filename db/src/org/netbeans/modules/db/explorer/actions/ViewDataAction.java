@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -16,7 +16,6 @@ package org.netbeans.modules.db.explorer.actions;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Enumeration;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -32,9 +31,9 @@ import org.netbeans.modules.db.explorer.infos.ViewNodeInfo;
 
 public class ViewDataAction extends DatabaseAction {
     static final long serialVersionUID =-894644054833609687L;
-    
+
     private String quoteStr;
-    
+
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes != null)
             if (activatedNodes.length == 1)
@@ -65,50 +64,39 @@ public class ViewDataAction extends DatabaseAction {
         StringBuffer cols = new StringBuffer();
         Node node;
 
-        if (activatedNodes != null && activatedNodes.length>0) {
+        if (activatedNodes != null && activatedNodes.length > 0) {
             try {
                 node = activatedNodes[0];
-                DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-                
+                DatabaseNodeInfo info = (DatabaseNodeInfo) node.getCookie(DatabaseNodeInfo.class);
+
                 DatabaseMetaData dmd = info.getConnection().getMetaData();
                 quoteStr = dmd.getIdentifierQuoteString();
                 if (quoteStr == null)
                     quoteStr = ""; //NOI18N
                 else
                     quoteStr.trim();
-                
+
                 String schema = info.getSchema();
                 if (schema == null)
                     schema = ""; //NOI18N
                 else
                     schema = schema.trim();
-                
+
                 String onome;
                 if (info instanceof TableNodeInfo || info instanceof ViewNodeInfo) {
                     onome = quote(info.getName());
                     if (!schema.equals("")) //NOI18N
                         onome = quote(schema) + "." + onome; //NOI18N
-                    
-                    Enumeration enum = info.getChildren().elements();
-                    while (enum.hasMoreElements()) {
-                        DatabaseNodeInfo nfo = (DatabaseNodeInfo)enum.nextElement();
-                        if (nfo instanceof ColumnNodeInfo || nfo instanceof ViewColumnNodeInfo) {
-                            if (cols.length() > 0)
-                                cols.append(", "); //NOI18N
-                            cols.append(quote(nfo.getName()));
-                        }
-                    }
 
-                    expression = "select " + cols.toString() + " from " + onome; //NOI18N
-
+                    expression = "select * from " + onome; //NOI18N
                 } else if (info instanceof ColumnNodeInfo || info instanceof ViewColumnNodeInfo) {
                     onome = quote((info instanceof ViewColumnNodeInfo) ? info.getView() : info.getTable());
                     if (!schema.equals("")) //NOI18N
                         onome = quote(schema) + "." + onome; //NOI18N
-                    
-                    for (int i = 0; i<activatedNodes.length; i++) {
+
+                    for (int i = 0; i < activatedNodes.length; i++) {
                         node = activatedNodes[i];
-                        info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+                        info = (DatabaseNodeInfo) node.getCookie(DatabaseNodeInfo.class);
                         if (info instanceof ColumnNodeInfo || info instanceof ViewColumnNodeInfo) {
                             if (cols.length() > 0)
                                 cols.append(", "); //NOI18N
@@ -117,11 +105,17 @@ public class ViewDataAction extends DatabaseAction {
                     }
 
                     expression = "select " + cols.toString() + " from " + onome; //NOI18N
-
                 }
 
                 final DataViewWindow win = new DataViewWindow(info, expression);
                 win.open();
+                while (!win.isOpened()) {
+                    try {
+                        Thread.sleep(60);
+                    } catch (InterruptedException e) {
+                        //PENDING
+                    }
+                }
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run () {
                         win.executeCommand();
@@ -135,7 +129,7 @@ public class ViewDataAction extends DatabaseAction {
             }
         }
     }
-    
+
     private String quote(String name) {
         return quoteStr + name + quoteStr;
     }

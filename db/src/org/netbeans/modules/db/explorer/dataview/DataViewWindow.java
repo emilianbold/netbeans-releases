@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -71,14 +71,12 @@ public class DataViewWindow extends TopComponent {
     private DataModel dbadaptor;
     private JComboBox rcmdscombo;
     private JLabel status;
-    private String schema;
     private ResourceBundle bundle;
     private Node node;
-    
+
     static final long serialVersionUID = 6855188441469780252L;
 
     public DataViewWindow(DatabaseNodeInfo info, String query) throws SQLException {
-        schema = info.getUser();
         node = info.getNode();
 
         try {
@@ -102,7 +100,7 @@ public class DataViewWindow extends TopComponent {
             GridBagLayout sublayout = new GridBagLayout();
             GridBagConstraints subcon = new GridBagConstraints ();
             subpane.setLayout(sublayout);
-            
+
             // query label
             subcon.fill = GridBagConstraints.HORIZONTAL;
             subcon.weightx = 0.0;
@@ -117,7 +115,7 @@ public class DataViewWindow extends TopComponent {
             queryLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewQueryLabelA11yDesc")); //NOI18N
             sublayout.setConstraints(queryLabel, subcon);
             subpane.add(queryLabel);
-            
+
             // query area
             subcon.fill = GridBagConstraints.BOTH;
             subcon.weightx = 1.0;
@@ -153,7 +151,7 @@ public class DataViewWindow extends TopComponent {
             comboLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewHistoryLabelA11yDesc")); //NOI18N
             sublayout.setConstraints(comboLabel, subcon);
             subpane.add(comboLabel);
-            
+
             // Combo recent commands
             subcon.fill = GridBagConstraints.HORIZONTAL;
             subcon.weightx = 1.0;
@@ -216,12 +214,12 @@ public class DataViewWindow extends TopComponent {
             status.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewStatusLabelA11yDesc")); //NOI18N
             sublayout.setConstraints(status, subcon);
             subpane.add(status);
-            
+
             JPanel subpane2 = new JPanel();
             GridBagLayout sublayout2 = new GridBagLayout();
             GridBagConstraints subcon2 = new GridBagConstraints ();
             subpane2.setLayout(sublayout2);
-            
+
             // table label
             subcon2.fill = GridBagConstraints.HORIZONTAL;
             subcon2.weightx = 0.0;
@@ -246,7 +244,7 @@ public class DataViewWindow extends TopComponent {
             jtable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             //    	sorter.addMouseListenerToHeaderInTable(table);
             tableLabel.setLabelFor(jtable);
-            
+
             scrollpane = new JScrollPane(jtable);
             subcon2.fill = GridBagConstraints.BOTH;
             subcon2.weightx = 1.0;
@@ -295,7 +293,7 @@ public class DataViewWindow extends TopComponent {
     public boolean executeCommand() {
         String command = queryarea.getText().trim();
         boolean ret;
-        
+
         try {
             status.setText(bundle.getString("CommandRunning")); //NOI18N
             dbadaptor.execute(command);
@@ -308,7 +306,7 @@ public class DataViewWindow extends TopComponent {
             status.setText(bundle.getString("CommandFailed")); //NOI18N
             org.openide.DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DataViewFetchErrorPrefix") + exc.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
         }
-        
+
         return ret;
     }
 
@@ -355,13 +353,13 @@ public class DataViewWindow extends TopComponent {
             bric = flag;
         }
     }
-    
-    static int tstrg = 0; 
+
+    static int tstrg = 0;
     static int gtcmd = 0;
 
     class RecentCommand {
         private String command;
-        
+
         /** The command with no new lines */
         private String shortCommand;
 
@@ -381,12 +379,12 @@ public class DataViewWindow extends TopComponent {
         public boolean equals(Object obj) {
             if (obj instanceof RecentCommand)
                 return ((RecentCommand)obj).getShortCommand().equals(shortCommand);
-            
+
             return super.equals(obj);
         }
-        
+
         /**
-         * Gets the command String for display in the JComboBox without 
+         * Gets the command String for display in the JComboBox without
          * new lines.
          *
          * @return the command for display in the JComboBox
@@ -394,7 +392,7 @@ public class DataViewWindow extends TopComponent {
          private String getShortCommand()  {
             StringTokenizer tokenizer = new StringTokenizer(command);
             StringBuffer buffer = new StringBuffer();
-            while (tokenizer.hasMoreElements()) { 
+            while (tokenizer.hasMoreElements()) {
                 buffer.append(tokenizer.nextElement());
                 buffer.append(" ");
             }
@@ -478,11 +476,11 @@ public class DataViewWindow extends TopComponent {
             Node n = NodeTransfer.node(t, NodeTransfer.MOVE);
             if (n != null)
                 return (ColumnNodeInfo)n.getCookie(ColumnNodeInfo.class);
-            
+
             n = NodeTransfer.node(t, NodeTransfer.COPY);
             if (n != null)
                 return (ColumnNodeInfo)n.getCookie(ColumnNodeInfo.class);
-            
+
             return null;
         }
 
@@ -539,8 +537,8 @@ public class DataViewWindow extends TopComponent {
 
     class DataModel extends AbstractTableModel {
         DatabaseNodeInfo node_info;
-        Vector coldef;
-        Vector data;
+        Vector coldef = new Vector();
+        Vector data = new Vector();
         boolean editable = false;
 
         static final long serialVersionUID =7729426847826999963L;
@@ -575,7 +573,7 @@ public class DataViewWindow extends TopComponent {
                 ResultSetMetaData mdata = rs.getMetaData();
 
                 int cols = mdata.getColumnCount();
-                coldef = new Vector(cols);
+                coldef.clear();
                 for(int column = 1; column <= cols; column++) {
                     boolean writable;
                     try {
@@ -594,7 +592,7 @@ public class DataViewWindow extends TopComponent {
                 int rcounter = 0;
                 int limit = RootNode.getOption().getFetchLimit();
                 int step = RootNode.getOption().getFetchStep();
-                data = new Vector();
+                data.clear();
                 while (rs.next()) {
                     Vector row = new Vector(cols);
                     for (int column = 1; column <= cols; column++)
@@ -622,22 +620,6 @@ public class DataViewWindow extends TopComponent {
                                 break;
                     }
                 }
-                /*
-                        // Get best row identifier for update
-                        DatabaseMetaData dmd = con.getMetaData();
-                        rs = dmd.getBestRowIdentifier(con.getCatalog(), schema, mdata.getTableName(), DatabaseMetaData.bestRowSession, false);
-                        while (rs.next()) {
-                          String col = rs.getString("COLUMN_NAME");
-                          Enumeration enu = coldef.elements();
-                          while (enu.hasMoreElements()) {
-                            ColDef cd = (ColDef)enu.nextElement();
-                            if (cd.getName().equals(col)) {
-                              cd.setBestRowIdentifierColumn(true);
-                              break;
-                            }
-                          }
-                        }
-                */
                 rs.close();
                 fireTableChanged(null);
             } else {
@@ -661,85 +643,91 @@ public class DataViewWindow extends TopComponent {
         /** Returns column name
         * @param column Column index
         */
-        synchronized public String getColumnName(int column) {
-            if (column < coldef.size()) {
-                String cname = ((ColDef)coldef.elementAt(column)).getName();
-                return cname;
-            }
+        public String getColumnName(int column) {
+            synchronized (coldef) {
+                if (column < coldef.size()) {
+                    String cname = ((ColDef)coldef.elementAt(column)).getName();
+                    return cname;
+                }
 
-            return ""; //NOI18N
+                return ""; //NOI18N
+            }
         }
 
         /** Returns column renderer/editor class
         * @param column Column index
         */
-        synchronized public Class getColumnClass(int column) {
-            if (column < coldef.size()) {
-                int coltype = ((ColDef)coldef.elementAt(column)).getDataType();
-                switch (coltype) {
-                    case Types.CHAR:
-                    case Types.VARCHAR:
-                    case Types.LONGVARCHAR: return String.class;
-                    case Types.BIT: return Boolean.class;
-                    case Types.TINYINT:
-                    case Types.SMALLINT:
-                    case Types.INTEGER: return Integer.class;
-                    case Types.BIGINT: return Long.class;
-                    case Types.FLOAT:
-                    case Types.DOUBLE: return Double.class;
-                    case Types.DATE: return java.sql.Date.class;
+        public Class getColumnClass(int column) {
+            synchronized (coldef) {
+                if (column < coldef.size()) {
+                    int coltype = ((ColDef)coldef.elementAt(column)).getDataType();
+                    switch (coltype) {
+                        case Types.CHAR:
+                        case Types.VARCHAR:
+                        case Types.LONGVARCHAR: return String.class;
+                        case Types.BIT: return Boolean.class;
+                        case Types.TINYINT:
+                        case Types.SMALLINT:
+                        case Types.INTEGER: return Integer.class;
+                        case Types.BIGINT: return Long.class;
+                        case Types.FLOAT:
+                        case Types.DOUBLE: return Double.class;
+                        case Types.DATE: return java.sql.Date.class;
+                    }
                 }
-            }
 
-            return Object.class;
+                return Object.class;
+            }
         }
 
         /** Returns true, if cell is editable
         */
-        synchronized public boolean isCellEditable(int row, int column) {
-            if (!editable)
+        public boolean isCellEditable(int row, int column) {
+            synchronized (coldef) {
+                if (!editable)
+                    return false;
+
+                if (column < coldef.size())
+                    return ((ColDef)coldef.elementAt(column)).isWritable();
+
                 return false;
-            
-            if (column < coldef.size())
-                return ((ColDef)coldef.elementAt(column)).isWritable();
-            
-            return false;
+            }
         }
 
         /** Returns colun count
         */
-        synchronized public int getColumnCount() {
-            if (coldef == null)
-                return 0;
-            
-            return coldef.size();
+        public int getColumnCount() {
+            synchronized (coldef) {
+                return coldef.size();
+            }
         }
 
         /** Returns row count
         */
-        synchronized public int getRowCount() {
-            if (data == null)
-                return 0;
-            
-            return data.size();
+        public int getRowCount() {
+            synchronized (data) {
+                return data.size();
+            }
         }
 
         /** Returns value at specified position
         */
-        synchronized public Object getValueAt(int aRow, int aColumn) {
-            Vector row = null;
-            if (aRow < data.size())
-                row = (Vector)data.elementAt(aRow);
-            if (row != null && aColumn<row.size())
-                return row.elementAt(aColumn);
-            
-            return null;
+        public Object getValueAt(int aRow, int aColumn) {
+            synchronized (data) {
+                Vector row = new Vector();
+                if (aRow < data.size())
+                    row = (Vector) data.elementAt(aRow);
+                if (row != null && aColumn < row.size())
+                    return row.elementAt(aColumn);
+
+                return null;
+            }
         }
 
         private String format(Object value, int type) {
             if (value == null)
                 return "null"; //NOI18N
-            
+
             switch(type) {
                 case Types.INTEGER:
                 case Types.DOUBLE:
@@ -750,24 +738,26 @@ public class DataViewWindow extends TopComponent {
             }
         }
 
-        synchronized public void setValueAt(Object value, int row, int column) {
-            int enucol = 0;
-            StringBuffer where = new StringBuffer();
-            Enumeration enu = coldef.elements();
-            while (enu.hasMoreElements()) {
-                ColDef cd = (ColDef)enu.nextElement();
-                if (cd.isBestRowIdentifierColumn()) {
-                    String key = cd.getName();
-                    String val = format(getValueAt(row,enucol), cd.getDataType());
-                    if (where.length()>0)
-                        where.append(" and "); //NOI18N
-                    where.append(key+" = "+val); //NOI18N
+        public void setValueAt(Object value, int row, int column) {
+            synchronized (coldef) {
+                int enucol = 0;
+                StringBuffer where = new StringBuffer();
+                Enumeration enu = coldef.elements();
+                while (enu.hasMoreElements()) {
+                    ColDef cd = (ColDef)enu.nextElement();
+                    if (cd.isBestRowIdentifierColumn()) {
+                        String key = cd.getName();
+                        String val = format(getValueAt(row,enucol), cd.getDataType());
+                        if (where.length()>0)
+                            where.append(" and "); //NOI18N
+                        where.append(key+" = "+val); //NOI18N
+                    }
+                    enucol++;
                 }
-                enucol++;
             }
         }
     }
-    
+
     protected Object writeReplace() throws ObjectStreamException {
         return null;
     }
