@@ -868,6 +868,10 @@ public abstract class NbTopManager extends TopManager {
         */
         public NbBrowser () {
             super (((IDESettings)IDESettings.findObject (IDESettings.class, true)).getWWWBrowser (), true, true);
+            
+            putClientProperty(WindowManagerImpl.TopComponentManager.TAB_POLICY, 
+                WindowManagerImpl.TopComponentManager.HIDE_WHEN_ALONE);
+            
             setListener ();
         }
         
