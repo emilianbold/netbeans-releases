@@ -4,7 +4,7 @@ OpenIDE-Module-Install: com/netbeans/developer/modules/javadoc/JavadocModule.cla
 OpenIDE-Module-Module-Dependencies: com.netbeans.developer.modules.loaders.java/1
 OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Implementation-Version: 1.0
-OpenIDE-Module-Update-Location: update.netbeans.com/eap/developer30/updateInfoEAP.xml
+OpenIDE-Module-Update-Location: http://update.netbeans.com/eap/developer30/updateInfoEAP.xml
 
 Name: com/netbeans/developer/modules/javadoc/settings/DocumentationSettings.class
 OpenIDE-Module-Class: Option
