@@ -16,6 +16,8 @@
    xmlns:java="java">
 
 <xsl:param name="truncated"/>
+<xsl:param name="pesConfig" select="string('default')"/>
+<xsl:param name="projectGroupDescription" select="string('current')"/>
 
 <xsl:include href="../library.xsl"/>
 
@@ -46,7 +48,7 @@
 <xsl:template name="MakeProjectsTestsSummaryTable">
 	
 	<H1>XTest Overall Results:</H1>	
-	
+	<H3>group of <xsl:value-of select="$projectGroupDescription"/> results</H3>	
 	<P>	
 		<UL>
 			<LI>This page was generated at: <xsl:value-of select="java:util.Date.new()"/></LI>
@@ -148,6 +150,22 @@
 	<BR/>
 	<HR width="90%"/>
 
+	<xsl:if test="$pesConfig!=string('default')">
+	
+		<BR/>
+		<H2>Results gtom other projects:</H2>    				
+		<UL>
+			<xsl:if test="$projectGroupDescription!=string('current')">
+				<LI><A HREF="index.html">Currently tested projects</A></LI>
+			</xsl:if>
+    		<xsl:for-each select="document($pesConfig,/*)/PESConfig/PESProjects/PESProjectGroup">    		    		
+    			<xsl:if test="$projectGroupDescription!=@description">
+	    			<LI><A HREF="group-{@name}.html"><xsl:value-of select="@description"/></A></LI>
+	    		</xsl:if>
+			</xsl:for-each>
+		</UL>
+	</xsl:if>
+	
 
 </xsl:template>
 

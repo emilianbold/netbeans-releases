@@ -62,7 +62,11 @@ public class TransformXMLTask extends Task{
     private File inputDir;
     private File outputDir;
 
+    
+    // is this short report ?
     private static boolean truncated = false;
+    
+    
     
     //private File suiteXSL;
     
