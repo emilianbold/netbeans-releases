@@ -127,7 +127,19 @@ public final class ProjectManager {
     /**
      * Find an open project corresponding to a given project directory.
      * Will be created in memory if necessary.
-     * <p>Acquires read access.
+     * <p>
+     * Acquires read access.
+     * </p>
+     * <p>
+     * It is <em>not</em> guaranteed that the returned instance will be identical
+     * to that which is created by the appropriate {@link ProjectFactory}. In
+     * particular, the project manager is free to return only wrapper <code>Project</code>
+     * instances which delegate to the factory's implementation. If you know your
+     * factory created a particular project, you cannot safely cast the return value
+     * of this method to your project type implementation class; you should instead
+     * place an implementation of some suitable private interface into your project's
+     * lookup, which would be safely proxied.
+     * </p>
      * @param projectDirectory the project top directory
      * @return the project (object identity may or may not vary between calls)
      *         or null if the directory is not recognized as a project by any
