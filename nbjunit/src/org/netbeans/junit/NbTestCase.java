@@ -761,7 +761,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             }
             System.gc();
             System.runFinalization();
-            alloc.add (new byte[size *= 2]);
+            alloc.add (new byte[size]);
+            size = (int)(((double)size) * 1.3);
         }
         fail(text + " " + ref.get());
     }
