@@ -79,13 +79,16 @@ public class ExportHtmlAction extends CookieAction {
             p.setFileName (folderName+File.separatorChar+
                     ((DataObject)bdoc.getProperty (Document.StreamDescriptionProperty)).getPrimaryFile().getName()+HTML_EXT);
             Boolean bool = (Boolean)EditorState.get(SHOW_LINES_HIST);
-            p.setShowLines ((bool != null ? bool : (Boolean)SettingsUtil.getValue (bdoc.getKitClass(),SettingsNames.LINE_NUMBER_VISIBLE,
-                    Boolean.FALSE)).booleanValue());
+            boolean showLineNumbers = (bool != null ? bool : (Boolean)SettingsUtil.getValue (bdoc.getKitClass(),SettingsNames.LINE_NUMBER_VISIBLE,
+                    Boolean.FALSE)).booleanValue();
+            p.setShowLines (showLineNumbers);
             bool = (Boolean)EditorState.get(SELECTION_HIST);
             p.setSelectionActive (jtc != null && jtc.getSelectionStart()!=jtc.getSelectionEnd());
-            p.setSelection ((jtc != null && jtc.getSelectionStart()!=jtc.getSelectionEnd()) && (bool != null ? bool.booleanValue() : true));
+            boolean selection = (jtc != null && jtc.getSelectionStart()!=jtc.getSelectionEnd()) && (bool != null ? bool.booleanValue() : true);
+            p.setSelection (selection);
             bool = (Boolean)EditorState.get(OPEN_HTML_HIST);
-            p.setOpenHtml(bool != null ? bool.booleanValue() : false);
+            boolean setOpen = bool != null ? bool.booleanValue() : false;
+            p.setOpenHtml(setOpen);
             DialogDescriptor dd = new DialogDescriptor (p, NbBundle.getMessage(ExportHtmlAction.class, "CTL_ExportHtml"));
             boolean overwrite = true;
             dlg = DialogDisplayer.getDefault().createDialog (dd);            
@@ -111,16 +114,22 @@ public class ExportHtmlAction extends CookieAction {
             dlg.dispose();
             dlg = null;
             if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-                boolean selection = p.isSelection();
-                EditorState.put(SELECTION_HIST, selection ? Boolean.TRUE : Boolean.FALSE);
+                if (selection != p.isSelection()) {
+                    selection = p.isSelection();
+                    EditorState.put(SELECTION_HIST, selection ? Boolean.TRUE : Boolean.FALSE);
+                }
                 final String file = p.getFileName();
                 int idx = file.lastIndexOf(File.separatorChar);
                 if (idx != -1)
                     EditorState.put(FOLDER_NAME_HIST, file.substring(0, idx));
                 final boolean lineNumbers = p.isShowLines();
-                EditorState.put(SHOW_LINES_HIST, lineNumbers ? Boolean.TRUE : Boolean.FALSE);
+                if (showLineNumbers != lineNumbers) {
+                    EditorState.put(SHOW_LINES_HIST, lineNumbers ? Boolean.TRUE : Boolean.FALSE);
+                }
                 final boolean open = p.isOpenHtml();
-                EditorState.put(OPEN_HTML_HIST, open ? Boolean.TRUE : Boolean.FALSE);
+                if (setOpen != open) {
+                    EditorState.put(OPEN_HTML_HIST, open ? Boolean.TRUE : Boolean.FALSE);
+                }
                 final int selectionStart = selection ? jtc.getSelectionStart() : 0;
                 final int selectionEnd = selection ? jtc.getSelectionEnd() : bdoc.getLength();
                 RequestProcessor.getDefault().post(
