@@ -40,6 +40,8 @@ public class XTestActionTask extends Task {
     private static final String ACTION_CLEAN_RESULTS = "cleanResults";
     private static final String ACTION_CLEAN_ALL = "cleanAll";
     private static final String ACTION_VERSION = "version";
+    private static final String ACTION_GENERATE_FAILED_CONFIG = "generateFailedConfig";
+    private static final String ACTION_GENERATE_EXCLUDED_CONFIG = "generateExcludedConfig";
     
     // this is not public action
     private static final String ACTION_PREPARE_TESTS ="prepare-tests";
@@ -56,6 +58,8 @@ public class XTestActionTask extends Task {
     private static final String TARGET_CLEAN_RESULTS = "cleanresults";
     private static final String TARGET_CLEAN_ALL    = "realclean";
     private static final String TARGET_VERSION      = "version";
+    private static final String TARGET_GENERATE_FAILED_CONFIG = "generateFailedConfig";
+    private static final String TARGET_GENERATE_EXCLUDED_CONFIG = "generateExcludedConfig";
     
     // non-public target
     private static final String TARGET_PREPARE_TESTS      = "prepare-tests";
@@ -68,6 +72,8 @@ public class XTestActionTask extends Task {
         {ACTION_CLEAN_ALL, TARGET_CLEAN_ALL},
         {ACTION_VERSION, TARGET_VERSION},
         {ACTION_PREPARE_TESTS, TARGET_PREPARE_TESTS},
+        {ACTION_GENERATE_FAILED_CONFIG, TARGET_GENERATE_FAILED_CONFIG},
+        {ACTION_GENERATE_EXCLUDED_CONFIG, TARGET_GENERATE_EXCLUDED_CONFIG}
     };
     
     
