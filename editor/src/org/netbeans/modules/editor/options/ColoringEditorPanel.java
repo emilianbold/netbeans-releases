@@ -57,6 +57,10 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
   private PropertyPanel fgEditPanel;
   private PropertyPanel bgEditPanel;
   
+  private boolean fontSetting;
+  private boolean fgSetting;
+  private boolean bgSetting;
+  
   /** Component for preview actual coloring composed of value and defaultColoring
    */
   private ColoringPreview preview;
@@ -79,9 +83,6 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         Font newFont = null;
         Font actFont = value.coloring.getFont();
 
-        // ShortHand if editor is only showing inherited value, ignore changes
-        if( actFont == null ) return;
-
         // Request the value currenly displayed
         try {
           newFont = (Font)fontEditor.getValue();
@@ -90,6 +91,12 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         }
 
         if( newFont == null ) return;
+
+        if( actFont == null && newFont.equals( value.defaultColoring.getFont() ) ) {
+//System.err.println("Font editor is only showing, but fires, clearing inherit" );
+          fontCheckBox.setSelected( false );
+        }
+
         
         // If displayed value is different, user have changed it, not setValue
         if( ! newFont.equals( actFont ) ) {
@@ -108,9 +115,6 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         Color newColor = null;        
         Color foreColor = value.coloring.getForeColor();
 
-        // ShortHand if editor is only showing inherited value
-        if( foreColor == null ) return;
-
         // Request the value currenly displayed
         try {
           newColor = (Color)fgColorEditor.getValue();
@@ -119,6 +123,13 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         }
 
         if( newColor == null ) return;  // Yep; editor is able to send us null color
+
+        
+        if( foreColor == null && !newColor.equals( value.defaultColoring.getForeColor() ) ) {
+//System.err.println("ForeColor editor is only showing, but fires, clearing inherit" );
+          fgCheckBox.setSelected( false );
+        }
+
         
         // If displayed value is different, user have changed it, not setValue
         if( ! newColor.equals( foreColor ) )
@@ -134,9 +145,6 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         Color newColor = null;
         Color backColor = value.coloring.getBackColor();
 
-        // ShortHand if editor is only showing inherited value
-        if( backColor == null ) return;
-
         // Request the value currenly displayed
         try {
           newColor = (Color)bgColorEditor.getValue();
@@ -145,6 +153,11 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         }
 
         if( newColor == null ) return; // Yep; editor is able to send us null color
+
+        if( backColor == null && !newColor.equals( value.defaultColoring.getBackColor() ) ) {
+//System.err.println("BackColor editor is only showing, but fires, clearing inherit" );
+          bgCheckBox.setSelected( false );
+        }
         
         // If displayed value is different, user have changed it, not setValue
         if( ! newColor.equals( backColor ) ) {
@@ -230,29 +243,29 @@ updateUI();
       // default coloring can't inherit values from itself
       fontCheckBox.setSelected( false );
       fontCheckBox.setEnabled( false ); // don't inherit
-      fontEditPanel.setPreferences( 0 );  // is editable
+//      fontEditPanel.setPreferences( 0 );  // is editable
 
       fgCheckBox.setSelected( false );
       fgCheckBox.setEnabled( false );
-      fgEditPanel.setPreferences( 0 );
+//      fgEditPanel.setPreferences( 0 );
 
       bgCheckBox.setSelected( false );
       bgCheckBox.setEnabled( false );      
-      bgEditPanel.setPreferences( 0 );
+//      bgEditPanel.setPreferences( 0 );
 
     } else {
       // non-default coloring - can inherit, some fields set to inherited
       fontCheckBox.setSelected( fontInherit );
       fontCheckBox.setEnabled( true );
-      fontEditPanel.setPreferences( fontInherit ? PropertyPanel.PREF_READ_ONLY : 0 );
+//      fontEditPanel.setPreferences( fontInherit ? PropertyPanel.PREF_READ_ONLY : 0 );
       
       fgCheckBox.setSelected( fgInherit );
       fgCheckBox.setEnabled( true );
-      fgEditPanel.setPreferences( fgInherit ? PropertyPanel.PREF_READ_ONLY : 0 );
+//      fgEditPanel.setPreferences( fgInherit ? PropertyPanel.PREF_READ_ONLY : 0 );
 
       bgCheckBox.setSelected( bgInherit );
       bgCheckBox.setEnabled( true );      
-      bgEditPanel.setPreferences( bgInherit ? PropertyPanel.PREF_READ_ONLY : 0 );
+//      bgEditPanel.setPreferences( bgInherit ? PropertyPanel.PREF_READ_ONLY : 0 );
     }      
     
   }
@@ -295,9 +308,9 @@ updateUI();
     java.awt.GridBagConstraints gridBagConstraints1;
 
     fontPanel.setLayout (new java.awt.BorderLayout ());
-    fontPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_FontTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)))); // NOI18N
+    fontPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_FontTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8))));
 
-      fontCheckBox.setText (bundle.getString("CEP_FontTrans")); // NOI18N
+      fontCheckBox.setText (bundle.getString("CEP_FontTrans"));
       fontCheckBox.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           fontCheckBoxActionPerformed (evt);
@@ -316,9 +329,9 @@ updateUI();
     add (fontPanel, gridBagConstraints1);
 
     fgColorPanel.setLayout (new java.awt.BorderLayout ());
-    fgColorPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_FgTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)))); // NOI18N
+    fgColorPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_FgTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8))));
 
-      fgCheckBox.setText (bundle.getString("CEP_FgTrans")); // NOI18N
+      fgCheckBox.setText (bundle.getString("CEP_FgTrans"));
       fgCheckBox.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           fgCheckBoxActionPerformed (evt);
@@ -338,9 +351,9 @@ updateUI();
     add (fgColorPanel, gridBagConstraints1);
 
     bgColorPanel.setLayout (new java.awt.BorderLayout ());
-    bgColorPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_BgTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)))); // NOI18N
+    bgColorPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_BgTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8))));
 
-      bgCheckBox.setText (bundle.getString("CEP_BgTrans")); // NOI18N
+      bgCheckBox.setText (bundle.getString("CEP_BgTrans"));
       bgCheckBox.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           bgCheckBoxActionPerformed (evt);
@@ -360,7 +373,7 @@ updateUI();
     add (bgColorPanel, gridBagConstraints1);
 
     previewPanel.setLayout (new java.awt.BorderLayout ());
-    previewPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_PreviewTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)))); // NOI18N
+    previewPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_PreviewTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8))));
 
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
@@ -390,9 +403,11 @@ private void bgCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-F
     } catch( InvocationTargetException e ) {
       if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
     }
+
+value = value.changeColoring( Coloring.changeBackColor( value.coloring, valueColor ) ) ;
     
     // reset editable state
-    bgEditPanel.setPreferences( bgCheckBox.isSelected() ? PropertyPanel.PREF_READ_ONLY : 0 );
+//    bgEditPanel.setPreferences( bgCheckBox.isSelected() ? PropertyPanel.PREF_READ_ONLY : 0 );
     // update preview and fire change
     setValueImpl( value.coloring );
   }//GEN-LAST:event_bgCheckBoxActionPerformed
@@ -413,9 +428,11 @@ private void fgCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-F
     } catch( InvocationTargetException e ) {
       if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
     }
+
+value = value.changeColoring( Coloring.changeForeColor( value.coloring, valueColor ) );
     
     // reset editable state
-    fgEditPanel.setPreferences( fgCheckBox.isSelected() ? PropertyPanel.PREF_READ_ONLY : 0 );
+//    fgEditPanel.setPreferences( fgCheckBox.isSelected() ? PropertyPanel.PREF_READ_ONLY : 0 );
     // update preview and fire change
     setValueImpl( value.coloring );
   }//GEN-LAST:event_fgCheckBoxActionPerformed
@@ -436,9 +453,11 @@ private void fontCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN
     } catch( InvocationTargetException e ) {
       if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
     }
-    
+
+value = value.changeColoring( Coloring.changeFont( value.coloring, valueFont ) );
+
     // reset editable state
-    fontEditPanel.setPreferences( fontCheckBox.isSelected() ? PropertyPanel.PREF_READ_ONLY : 0 );
+//    fontEditPanel.setPreferences( fontCheckBox.isSelected() ? PropertyPanel.PREF_READ_ONLY : 0 );
     // update preview and fire change
     setValueImpl( value.coloring );
   }//GEN-LAST:event_fontCheckBoxActionPerformed
