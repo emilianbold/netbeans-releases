@@ -101,6 +101,7 @@ public class NoMainProjectWarning extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
+        setPreferredSize(new java.awt.Dimension(380, 300));
         jLabel1.setText(org.openide.util.NbBundle.getMessage(NoMainProjectWarning.class, "LBL_NoMainProjectWarning_jLabel1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -109,7 +110,7 @@ public class NoMainProjectWarning extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 6, 12);
         add(jLabel1, gridBagConstraints);
 
         jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(NoMainProjectWarning.class, "MNE_NoMainProjectWarning_jLabel2").charAt(0));
@@ -121,7 +122,7 @@ public class NoMainProjectWarning extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 2, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 2, 12);
         add(jLabel2, gridBagConstraints);
 
         jScrollPane2.setMinimumSize(new java.awt.Dimension(100, 200));
@@ -137,7 +138,7 @@ public class NoMainProjectWarning extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 12);
         add(jScrollPane2, gridBagConstraints);
 
     }//GEN-END:initComponents
