@@ -26,6 +26,7 @@ import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.io.SafeException;
 import org.openide.xml.XMLUtil;
 
 import org.apache.tools.ant.module.AntModule;
@@ -72,6 +73,16 @@ public class AntProjectDataLoader extends UniFileLoader {
             SystemAction.get (PropertiesAction.class),
         });
 
+    }
+
+    // BuildProjectAction etc. were removed. Ignore SafeException.
+    public void readExternal (ObjectInput oi) throws IOException, ClassNotFoundException {
+        try {
+            super.readExternal (oi);
+        } catch (SafeException se) {
+            AntModule.err.annotate (se, ErrorManager.INFORMATIONAL, "Reading AntProjectDataLoader: resetting action list to default", null, null, null);
+            AntModule.err.notify (ErrorManager.INFORMATIONAL, se);
+        }
     }
   
     private static class ResolvedThrow extends SAXException {
