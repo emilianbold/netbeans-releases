@@ -47,17 +47,7 @@ cause it to fail.
 
     <!-- javadoc -->
     
-    <target name="copy-netbeans.css">
-        <!-- Note: this will indeed modify working sources if there is a change. -->
-        <!-- That is as desired: want an up-to-date copy of this file. -->
-        <!-- Note also that if www or testwww are not checked out, nothing happens; use CVS copy. -->
-        <copy file="../../testwww/www/netbeans.css" tofile="netbeans.css" failonerror="false"/>
-        <copy file="../../www/www/netbeans.css" tofile="netbeans.css" failonerror="false"/>
-        <copy file="../../testwww/www/nb_special.css" tofile="netbeans-lite.css" failonerror="false"/>
-        <copy file="../../www/www/nb_special.css" tofile="netbeans-lite.css" failonerror="false"/>
-    </target>
-
-    <target name="javadoc-init" depends="copy-netbeans.css">
+    <target name="javadoc-init" >
         <!-- Output dir (will create ${javadoc.name}/ and ${javadoc.name}.zip beneath this): -->
         <property name="javadoc.out" location="${javadoc.base}/javadoc"/>
         <property name="javadoc.out.dir" location="${javadoc.out}/${javadoc.name}"/>
