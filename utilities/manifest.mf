@@ -16,6 +16,9 @@ OpenIDE-Module-Class: Service
 Name: com/netbeans/developer/modules/search/types/ModificationDateType.class
 OpenIDE-Module-Class: Service
 
+Name: com/netbeans/developer/modules/search/types/ObjectTypeType.class
+OpenIDE-Module-Class: Service
+
 Name: com/netbeans/developer/modules/openfile/Settings.class
 OpenIDE-Module-Class: Option
 
