@@ -33,8 +33,6 @@ import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.view.ListView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.modules.ModuleInstall;
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -61,11 +59,6 @@ public class Install extends ModuleInstall {
         TopSecurityManager.register(SecMan.DEFAULT);
         // load neccessary SystemOptions because of ExecuteAction setup
         SharedClassObject.findObject (ExecutionSettings.class, true);
-        // run classes int Startup folder
-        FileObject startup = Repository.getDefault().getDefaultFileSystem().findResource("Startup"); // NOI18N
-        if (startup != null && startup.getChildren().length > 0) {
-            startFolder(DataFolder.findFolder(startup));
-        }
 
         // Add beaninfo search path.
         String[] sp = Introspector.getBeanInfoSearchPath();
@@ -124,28 +117,6 @@ public class Install extends ModuleInstall {
         return showPendingTasks();
     }
     
-    // From NonGui
-    
-    /** Starts a folder by executing all of its executable children
-    * @param f the folder
-    */
-    private static void startFolder(DataFolder f) {
-        DataObject[] obj = f.getChildren();
-        if (obj.length == 0) return;
-        ErrorManager err = ErrorManager.getDefault();
-        if (err.isLoggable(ErrorManager.WARNING)) {
-            StringBuffer b = new StringBuffer("Warning - using the Startup folder is deprecated. Found objects:"); // NOI18N
-            for (int i = 0; i < obj.length; i++) {
-                b.append(' '); // NOI18N
-                b.append(obj[i].getPrimaryFile().getPath());
-            }
-            err.log(ErrorManager.WARNING, b.toString());
-        }
-        /*
-        ExecuteAction.execute(obj, true);
-         */
-    }
-
     // A class that server as a pending dialog manager.
     // It closes the dialog if there are no more pending tasks
     // and also servers as the action listener for killing the tasks.
