@@ -77,6 +77,8 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
        </delete>
        -->
+        <echo message='Deleting "qa-functional/src"'/>
+        <delete dir="qa-functional/src" quiet="true"/>
         <ant antfile="${xtest.module_harness.antfile}" dir="." target="cleantests"/>
     </target> 
 
