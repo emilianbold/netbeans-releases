@@ -48,10 +48,15 @@ public class RecurrentSuiteFactory {
             });
             debug("RecurrentSuiteFactory");
             debug("Projects dir: " + projectsDir);
-            debug("Pojects: " + projects);
             if (projects != null) {
                 for(int i = 0; i < projects.length; i++) {
+                    debug("Prj Folder: " + projects[i].getName());
                     Project project = (Project) ProjectSupport.openProject(projects[i]);
+                    // not a project
+                    if (project == null) {
+                        debug("WW: Not a project!!!");
+                        continue;
+                    }
                     ProjectInformation projectInfo =  ProjectUtils.getInformation(project);
                     // find recursively all test.*[.jsp|.jspx|.jspf|.html] files in
                     // the web/ folder
@@ -78,6 +83,7 @@ public class RecurrentSuiteFactory {
     }
     
     private static void debug(Object msg) {
+        if (!debug) return;
         System.err.println("[debug] " + msg);
     }
 }
