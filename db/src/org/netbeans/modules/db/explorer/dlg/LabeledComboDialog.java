@@ -20,23 +20,20 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 import org.netbeans.modules.db.explorer.*;
 
 /**
-* xxx
-*
 * @author Slavek Psenicka
 */
-public class LabeledComboDialog
-{
+public class LabeledComboDialog {
     boolean result = false;
     Dialog dialog = null;
     Object combosel = null;
     JComboBox combo;
 
-    public LabeledComboDialog(String title, String lab, Collection items)
-    {
+    public LabeledComboDialog(String title, String lab, Collection items) {
         try {
             JPanel pane = new JPanel();
             pane.setBorder(new EmptyBorder(new Insets(5,5,5,5)));
@@ -44,6 +41,10 @@ public class LabeledComboDialog
             GridBagConstraints con = new GridBagConstraints ();
             pane.setLayout (layout);
 
+            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+
+            pane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddToIndexDialogA11yDesc")); //NOI18N
+            
             // Title
 
             JLabel label = new JLabel(lab);
@@ -62,23 +63,28 @@ public class LabeledComboDialog
             con.gridy = 0;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             combo = new JComboBox((items instanceof Vector) ? (Vector)items : new Vector(items));
+            combo.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddToIndexComboA11yName")); //NOI18N
+            combo.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddToIndexComboA11yDesc")); //NOI18N
+            combo.setToolTipText(bundle.getString("ACS_AddToIndexComboA11yDesc")); //NOI18N
             layout.setConstraints(combo, con);
             pane.add(combo);
 
             ActionListener listener = new ActionListener() {
-                                          public void actionPerformed(ActionEvent event) {
-                                              boolean dispcond = true;
-                                              if (event.getSource() == DialogDescriptor.OK_OPTION) {
-                                                  result = true;
-                                                  combosel = combo.getSelectedItem();
-                                              } else result = false;
+                public void actionPerformed(ActionEvent event) {
+                    boolean dispcond = true;
+                    if (event.getSource() == DialogDescriptor.OK_OPTION) {
+                        result = true;
+                        combosel = combo.getSelectedItem();
+                    } else
+                        result = false;
 
-                                              if (dispcond) {
-                                                  dialog.setVisible(false);
-                                                  dialog.dispose();
-                                              } else Toolkit.getDefaultToolkit().beep();
-                                          }
-                                      };
+                    if (dispcond) {
+                        dialog.setVisible(false);
+                        dialog.dispose();
+                    } else
+                        Toolkit.getDefaultToolkit().beep();
+                }
+            };
 
             DialogDescriptor descriptor = new DialogDescriptor(pane, title, true, listener);
             dialog = DialogDisplayer.getDefault().createDialog(descriptor);
@@ -88,25 +94,14 @@ public class LabeledComboDialog
         }
     }
 
-    public boolean run()
-    {
-        if (dialog != null) dialog.setVisible(true);
+    public boolean run() {
+        if (dialog != null)
+            dialog.setVisible(true);
+        
         return result;
     }
 
-    public Object getSelectedItem()
-    {
+    public Object getSelectedItem() {
         return combosel;
     }
 }
-/*
- * <<Log>>
- *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  4    Gandalf   1.3         9/8/99   Slavek Psenicka adaptor changes
- *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         5/14/99  Slavek Psenicka 
- * $
- */
