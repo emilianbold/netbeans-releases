@@ -166,7 +166,7 @@ public class Operator {
     }
     
     public void destroy () {
-        thread.stop ();
+        //thread.stop ();
         thread = null;
     }
 
