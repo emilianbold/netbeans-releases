@@ -291,6 +291,11 @@ class DataFolderPanel extends TopComponent implements
                 return;
             }
             if (arr.length == 1) {
+                if (!isValid ()) {
+                    setTargetFolder (null);
+                    implSetDataFolder (null);
+                    return ;
+                }
                 DataFolder df = (DataFolder)arr[0].getCookie (DataFolder.class);
                 if (df != null) {
                     setTargetFolder (df);
@@ -299,7 +304,8 @@ class DataFolderPanel extends TopComponent implements
                     return;
                 }
             }
-            setTargetFolder ((DataFolder)null);
+            setTargetFolder (null);
+            implSetDataFolder (null);
         }
     }
 
@@ -475,9 +481,9 @@ class DataFolderPanel extends TopComponent implements
                 FileSystem fs = fo.getFileSystem ();
 
                 if (fo.isRoot ()) {
-                    // Fix 8492
-                    //name = ""; // NOI18N
-                    name = packageName.getText().trim();
+                    name = ""; // NOI18N
+                    // Fix 8492 (new it works corect w/o this change)
+                    //name = packageName.getText().trim();
                 }
 
                 system = new WeakReference (fs);
@@ -751,27 +757,35 @@ class DataFolderPanel extends TopComponent implements
             }
         }
     }
+    
+    // bugfix #29401, correct notify all changes in data folders
+    private void implSetDataFolder (DataFolder df) {
+        if (editor != null) {
+            if (!isValid ()) {
+                editor.setDataFolder (null);
+            } else {
+                if (df == null && system != null && system.get () != null) {
+                    df = DataFolder.findFolder (((FileSystem)system.get ()).getRoot ());
+                }
+                String name = df.getPrimaryFile ().getPath ();
+                if (name.equals(packageName.getText())) {
+                    editor.setDataFolder (df);
+                } else {
+                    editor.setDataFolder (null);
+                }
+            }
+        }
+    }
 
     /** Updates associated editor by calling setDataFolder(...) . */
     private void updatePropertyEditor() {
-        if (editor != null) {
-            try {
-                DataFolder newF = getTargetFolder(false);
-                //fix for issue 31434, DataFolder may be null if
-                //user used the search popup in the target folder tree
-                if (newF == null) {
-                    editor.setDataFolder (null);
-                    return;
-                }
-                String name = newF.getPrimaryFile ().getPath ();
-                if (name.equals(packageName.getText())) {
-                    editor.setDataFolder(df);
-                } else {
-                    editor.setDataFolder(null);
-                }
-            } catch (IOException ex) {
-                 ErrorManager.getDefault().notify(ex);
-            }
+        try {
+            DataFolder newF = getTargetFolder(false);
+            //fix for issue 31434, DataFolder may be null if
+            //user used the search popup in the target folder tree
+            implSetDataFolder (newF);
+        } catch (IOException ex) {
+             ErrorManager.getDefault().notify(ex);
         }
     }
     
