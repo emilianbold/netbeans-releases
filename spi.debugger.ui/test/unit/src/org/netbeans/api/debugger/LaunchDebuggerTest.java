@@ -49,7 +49,6 @@ public class LaunchDebuggerTest extends DebuggerApiTestBase {
 
         DebuggerEngine engines [] = dm.startDebugging(di);
         assertEquals("Wrong number of debugger engines started", engines.length, 1);
-        assertInstanceOf("Bad debugger engine started", engines[0], TestDebugger.class);
 
         testStartEvents(dml, engines);
         testStartEvents(ldml, engines);

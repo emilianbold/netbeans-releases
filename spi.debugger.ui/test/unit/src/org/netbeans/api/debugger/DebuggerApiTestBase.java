@@ -31,7 +31,7 @@ public abstract class DebuggerApiTestBase extends NbTestCase {
     }
 
     protected void assertInstanceOf(String msg, Object obj, Class aClass) {
-        if (obj.getClass().isAssignableFrom(aClass))
+        if (!obj.getClass().isAssignableFrom(aClass))
         {
             fail(msg);
         }
