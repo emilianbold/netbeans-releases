@@ -71,7 +71,7 @@ public class TomcatFactory implements DeploymentFactory {
     public DeploymentManager getDeploymentManager(String uri, String uname, String passwd) 
     throws DeploymentManagerCreationException {
         if (!handlesURI (uri)) {
-            throw new DeploymentManagerCreationException ("Invalid URI");
+            throw new DeploymentManagerCreationException ("Invalid URI:" + uri);
         }
         return new TomcatManager (true, uri.substring (tomcatUriPrefix.length ()), uname, passwd);
     }
@@ -79,7 +79,7 @@ public class TomcatFactory implements DeploymentFactory {
     public DeploymentManager getDisconnectedDeploymentManager(String uri) 
     throws DeploymentManagerCreationException {
         if (!handlesURI (uri)) {
-            throw new DeploymentManagerCreationException ("Invalid URI");
+            throw new DeploymentManagerCreationException ("Invalid URI:" + uri);
         }
         // PENDING parse to get home and base dirs
         
