@@ -494,6 +494,7 @@ public class BaseOptions extends OptionSupport {
             }
 
         }
+        Settings.setValue(getKitClass(), NbEditorDocument.INDENT_ENGINE, eng);
         Settings.setValue(getKitClass(), NbEditorDocument.FORMATTER, f);
     }
 
