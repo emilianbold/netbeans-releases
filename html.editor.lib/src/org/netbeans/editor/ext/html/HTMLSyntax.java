@@ -565,6 +565,7 @@ public class HTMLSyntax extends Syntax {
                 return HTMLTokenContext.BLOCK_COMMENT;
 
             case ISI_TAG:
+                return HTMLTokenContext.TAG_OPEN;
             case ISI_ENDTAG:
                 return HTMLTokenContext.TAG_CLOSE;
 
