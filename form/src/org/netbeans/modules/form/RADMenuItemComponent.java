@@ -79,6 +79,10 @@ public class RADMenuItemComponent extends RADComponent {
     else return super.createSyntheticProperties ();
   }
   
+  public RADMenuComponent getParentMenu () {
+    return parent;
+  }
+  
 // -----------------------------------------------------------------------------
 // Public interface
 
@@ -138,6 +142,8 @@ public class RADMenuItemComponent extends RADComponent {
 
 /*
  * Log
+ *  5    Gandalf   1.4         10/9/99  Ian Formanek    Fixed bug 4411 - Delete 
+ *       of a jMenuItem does not work. (No action is performed.)
  *  4    Gandalf   1.3         9/6/99   Ian Formanek    Correctly works with 
  *       separators - fixes bug 3703 - When a new separator is created usng New 
  *       > Separator in a menu, an exception is thrown.

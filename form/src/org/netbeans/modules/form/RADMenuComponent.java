@@ -112,6 +112,9 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
   }
 
   public void remove (RADComponent comp) {
+    if (!(comp instanceof RADMenuItemComponent)) throw new IllegalArgumentException ();
+    removeVisualMenu ((RADMenuItemComponent)comp);
+    subComponents.remove (comp);
     ((RADChildren)getNodeReference ().getChildren ()).updateKeys ();
   }
 
@@ -151,6 +154,43 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
           ((JPopupMenu)o).addSeparator();
         } else {
           ((JPopupMenu)o).add((JMenuItem)m);
+        }
+        break;
+    }
+  }
+  
+  /**  Removes the menu represented by the node */
+  private void removeVisualMenu (RADMenuItemComponent comp) {
+    Object o = getBeanInstance();
+    Object m = comp.getBeanInstance();
+
+    switch (getMenuItemType ()) {
+      case T_MENUBAR:
+        ((MenuBar)o).remove((Menu)m);
+        break;
+      case T_MENU:
+      case T_POPUPMENU:
+        if (comp.getMenuItemType () == T_SEPARATOR) {
+          // [PENDING]
+        } else {
+          ((Menu)o).remove((MenuItem)m);
+        }
+        break;
+      case T_JMENUBAR:
+        ((JMenuBar)o).remove((JMenu)m);
+        break;
+      case T_JMENU:
+        if (comp.getMenuItemType () == T_JSEPARATOR) {
+          // [PENDING]
+        } else {
+          ((JMenu)o).remove((JMenuItem)m);
+        }
+        break;
+      case T_JPOPUPMENU:
+        if (comp.getMenuItemType () == T_JSEPARATOR) {
+          // [PENDING]
+        } else {
+          ((JPopupMenu)o).remove((JMenuItem)m);
         }
         break;
     }
@@ -265,6 +305,8 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
 
 /*
  * Log
+ *  6    Gandalf   1.5         10/9/99  Ian Formanek    Fixed bug 4411 - Delete 
+ *       of a jMenuItem does not work. (No action is performed.)
  *  5    Gandalf   1.4         9/6/99   Ian Formanek    Correctly works with 
  *       separators - fixes bug 3703 - When a new separator is created usng New 
  *       > Separator in a menu, an exception is thrown.
