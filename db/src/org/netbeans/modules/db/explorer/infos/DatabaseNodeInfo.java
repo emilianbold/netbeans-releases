@@ -41,6 +41,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 	public static final String DBDRIVER = "dbdriver";
 	public static final String DATABASE = "db";
 	public static final String URL = "url";
+	public static final String PREFIX = "prefix";
 	public static final String CONNECTION = "connection";
 	public static final String CODE = "code";
 	public static final String NODE = "node";
@@ -240,6 +241,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 			driverpcsKeys = new HashSet();
 			driverpcsKeys.add(NAME);
 			driverpcsKeys.add(URL);
+			driverpcsKeys.add(PREFIX);
 		}
 		
 		return driverpcsKeys;
@@ -343,8 +345,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 
 	public DBConnection getDatabaseConnection()
 	{
-		DatabaseConnection con = new DatabaseConnection(getDriver(), getDatabase(), getUser(), getPassword());		
-		if (get(REMEMBER_PWD) != null) con.setRememberPassword(true);
+		DatabaseConnection con = new DatabaseConnection(getDriver(), getDatabase(), getUser(), getPassword());		con.setRememberPassword(((Boolean)get(REMEMBER_PWD)).booleanValue());
 		return con;
 	}
 
@@ -360,7 +361,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 		put(DATABASE, cinfo.getDatabase());
 		put(USER, cinfo.getUser());
 		if (pwd != null) put(PASSWORD, pwd);
-		if (cinfo.rememberPassword()) put(REMEMBER_PWD, new Boolean(true));
+		put(REMEMBER_PWD, (cinfo.rememberPassword() ? new Boolean(true) : new Boolean(false)));
 	}
 
 	public String getCode()
@@ -375,11 +376,13 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 
 	public String getName()
 	{
+		System.out.println("Get name "+get(NAME));
 		return (String)get(NAME);
 	}
 
 	public void setName(String nam)
 	{
+		System.out.println("Set name to info "+nam);
 		put(NAME, nam);
 	}
 
@@ -435,11 +438,13 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 
 	public String getDisplayname()
 	{
+		System.out.println("Get displayname "+get("displayname"));
 		return (String)get("displayname");
 	}
 
 	public void setDisplayname(String name)
 	{
+		System.out.println("Set displayname "+name);
 		put("displayname", name);
 	}
 
@@ -570,14 +575,11 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 	
 	public boolean isDebugMode()
 	{
-		DBSpecFactory fac = (DBSpecFactory)get(SPECIFICATION_FACTORY);
-		return fac.isDebugMode();
+		return RootNode.getOption().getDebugMode();
 	}
 	
 	public void setDebugMode(boolean mode)
 	{
-		DBSpecFactory fac = (DBSpecFactory)get(SPECIFICATION_FACTORY);
-		fac.setDebugMode(mode);
-		System.out.println("Debugging is "+(mode ? "on" : "off"));
+		RootNode.getOption().setDebugMode(mode);
 	}
 }

@@ -38,7 +38,6 @@ implements ConnectionOwnerOperations
 					ninfo.setUser(cinfo.getUser());
 					ninfo.setDatabase(cinfo.getDatabase());
 					ninfo.setDatabaseConnection(cinfo);
-					if (cinfo.rememberPassword()) ninfo.put(DatabaseNodeInfo.REMEMBER_PWD, Boolean.TRUE);
 					children.add(ninfo);
 				}
 			}
@@ -46,43 +45,30 @@ implements ConnectionOwnerOperations
 			throw new DatabaseException(e.getMessage());	
 		}
 	}
-		
 	
 	public void addConnection(DBConnection cinfo)
 	throws DatabaseException
 	{
 		getChildren(); // force restore
 		Vector cons = RootNode.getOption().getConnections();
+		String usr = cinfo.getUser();
+		String pwd = cinfo.getPassword();
 		if (cons.contains(cinfo)) throw new DatabaseException("connection already exists");
 		try {
 			DatabaseNode node = getNode();
 			DatabaseNodeChildren children = (DatabaseNodeChildren)node.getChildren();
 			ConnectionNodeInfo ninfo = (ConnectionNodeInfo)createNodeInfo(this, DatabaseNode.CONNECTION);
+			ninfo.setName(cinfo.getDatabase());
 			ninfo.setUser(cinfo.getUser());
 			ninfo.setDatabase(cinfo.getDatabase());
 			ninfo.setDatabaseConnection(cinfo);
 			cons.add(cinfo);
 			DatabaseNode cnode = children.createSubnode(ninfo, true);
-			if (cinfo.getPassword() != null) ((ConnectionNodeInfo)cnode.getInfo()).connect();
+			if (usr != null && usr.length() > 0 && pwd != null && pwd.length() > 0) {
+				((ConnectionNodeInfo)cnode.getInfo()).connect();
+			}
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());
 		}
 	}
-/*
-	public void removeConnection(DBConnection cinfo, DatabaseNode xnode)
-	throws DatabaseException
-	{
-		DatabaseNode node = getNode();
-		Vector cons = RootNode.getOption().getConnections();
-		if (!cons.contains(cinfo)) throw new DatabaseException("connection does not exist");
-		if (xnode == null) throw new DatabaseException("finding node not implemented yet");	
-		try {
-			DatabaseNodeChildren chld = (DatabaseNodeChildren)node.getChildren();
-			cons.remove(cinfo);
-			chld.remove(new Node[]{xnode});
-		} catch (Exception e) {
-			throw new DatabaseException(e.getMessage());
-		}
-	}
-*/
 }
