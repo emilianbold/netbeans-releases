@@ -92,7 +92,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     
     /** Sets MIME type for this support. */
     public void initialize() {
-        setMIMEType (PropertiesDataObject.MIME_PROPERTIES);
+        setMIMEType (PropertiesDataObject.MIME_PROPERTIES);        
     }
     
     /** 
@@ -150,6 +150,17 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         // Set dataobject to stream desc property.
         document.putProperty(Document.StreamDescriptionProperty, myEntry.getDataObject());
         
+        // hook the document to listen for any changes to update changes by
+        // reparsing the document
+        document.addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { changed();}
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { changed();}            
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { changed();}
+            private void changed() {
+                myEntry.getHandler().autoParse();                
+            }
+        });
+        
         return document;
     }
 
@@ -205,7 +216,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     protected boolean notifyModified () {
         // Reparse file.
         myEntry.getHandler().autoParse();
-        
+
         if (super.notifyModified()) {
             ((Environment)env).addSaveCookie();
             
