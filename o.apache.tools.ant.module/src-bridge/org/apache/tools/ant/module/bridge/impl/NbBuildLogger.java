@@ -560,6 +560,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         OutputWriter ow = error ? err : out;
         try {
             if (listener != null) {
+                // XXX factor out into AntLogger API!
                 boolean important = (message.indexOf("[deprecation]") == -1 && 
                                      message.indexOf("warning") == -1 && 
                                      message.indexOf("stopped") == -1);
