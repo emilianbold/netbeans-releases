@@ -216,7 +216,12 @@
         <xsl:param name="group" />
         
     
-        <h5>Group of <xsl:value-of select="$group"/> interfaces</h5>
+        <a>
+            <xsl:attribute name="name" >
+                <xsl:text>group-</xsl:text><xsl:value-of select="$group" />
+            </xsl:attribute>
+            <h5>Group of <xsl:value-of select="$group"/> interfaces</h5>
+        </a>
         
         <xsl:variable name="all_interfaces" select="//api[@group=$group]" />
         <table border="1" width="100%" >   

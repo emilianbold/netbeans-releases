@@ -230,6 +230,18 @@ public class Arch extends Task implements ErrorHandler {
             if (footer != null) {
                 t.setParameter("arch.footer", footer);
             }
+            
+            String archTarget = output.toString();
+            int slash = archTarget.lastIndexOf('/');
+            if (slash > 0) {
+                archTarget = archTarget.substring (slash + 1);
+            }
+            String archPref = getProject ().getProperty ("arch.target");
+            if (archPref != null) {
+                archTarget = archPref + File.separatorChar + archTarget;
+            }
+            
+            t.setParameter("arch.target", archTarget);
 
             t.transform(s, r);
         } catch (javax.xml.transform.TransformerConfigurationException ex) {
