@@ -646,8 +646,20 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
      * @return popup menu to be displayed
      */
     public JPopupMenu getContextMenu () {
-        JPopupMenu menu = new JPopupMenuPlus ();
+        JPopupMenu menu = new JPopupMenuPlus();
+        fillToolbarsMenu(menu);
+        return menu;
+    }
 
+    /** Fills given menu with toolbars and configurations items and returns
+     * filled menu. */ 
+    public JMenu getToolbarsMenu (JMenu menu) {
+        fillToolbarsMenu(menu);
+        return menu;
+    }
+
+    /** Fills given menu instance with list of toolbars and configurations */
+    private void fillToolbarsMenu (JComponent menu) {
         // generate list of available toolbars
         Iterator it = Arrays.asList (ToolbarPool.getDefault ().getToolbars ()).iterator ();
         while (it.hasNext()) {
@@ -728,7 +740,6 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                               });
         menu.add (mi);
 
-        return menu;
     } // getContextMenu
 
     /** Make toolbar visible/invisible in this configuration

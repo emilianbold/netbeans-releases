@@ -53,6 +53,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-windows-actions-DocumentsAction.instance"/>
             <file name="org-netbeans-core-windows-actions-NextTabAction.instance"/>
             <file name="org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-ToolbarsListAction.instance"/>
             <file name="org-openide-actions-UndockAction.instance"/>
         </folder>    
     </folder>
@@ -63,6 +64,14 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="Edit/View" boolvalue="true" />
         <folder name="View">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <file name="ToolbarsListAction.shadow" >
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-ToolbarsListAction.instance" />
+            </file>
+            <attr name="ToolbarsListAction.shadow/Separator1.instance" boolvalue="true" />
+            <file name="Separator1.instance">
+	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+	    </file>
+            <attr name="Separator1.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true" />
             <attr name="org-netbeans-core-actions-HTMLViewAction.instance/Separator2.instance" boolvalue="true" />
         </folder>
 
