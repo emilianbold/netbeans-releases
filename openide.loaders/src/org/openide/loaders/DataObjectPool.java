@@ -33,7 +33,10 @@ import org.openide.util.Lookup;
 */
 final class DataObjectPool extends Object
 implements ChangeListener, RepositoryListener, PropertyChangeListener {
-    /** set to non null if the constructor is called from somewhere else than DataObject.find */
+    /** set to null if the constructor is called from somewhere else than DataObject.find 
+     * Otherwise contains Collection<Item> that have just been created in this thread and
+     * shall be notified.
+     */
     private static final ThreadLocal FIND = new ThreadLocal ();
     /** validator */
     private static final Validator VALIDATOR = new Validator ();
@@ -74,6 +77,25 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
         return POOL;
     }
     
+    /** Allows DataObject constructors to be called.
+     * @return a key to pass to exitAllowConstructor
+     */
+    private static Collection enterAllowContructor () {
+        Collection prev = (Collection)FIND.get ();
+        FIND.set (new ArrayList ());
+        return prev;
+    }
+    
+    /** Disallows DataObject constructors to be called and notifies 
+     * all created DataObjects.
+     */
+    private static void exitAllowConstructor (Collection previous) {
+        List l = (List)FIND.get ();
+        FIND.set (previous);
+        
+        getPOOL ().notifyCreationAll(l);
+    }
+    
     /** Calls into one loader. Setups security condition to allow DataObject ocnstructor
      * to succeed.
      */
@@ -81,21 +103,14 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     throws java.io.IOException {
         DataObject ret;
         
-        Object prev = FIND.get ();
+        Collection prev = enterAllowContructor ();
         try {
             // make sure this thread is allowed to recognize
             getPOOL ().enterRecognition(fo);
             
-            FIND.set (loader);
-            
             ret = loader.handleFindDataObject (fo, rec);
         } finally {
-            FIND.set (prev);
-        }
-        
-        // notify it
-        if (ret != null) {
-            DataObjectPool.getPOOL().notifyCreation (ret);
+            exitAllowConstructor (prev);
         }
         
         return ret;
@@ -107,18 +122,11 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     throws java.io.IOException {
         MultiDataObject ret;
         
-        Object prev = FIND.get ();
+        Collection prev = enterAllowContructor ();
         try {
-            FIND.set (loader);
-            
             ret = loader.createMultiObject (fo);
         } finally {
-            FIND.set (prev);
-        }
-        
-        // notify it
-        if (ret != null) {
-            DataObjectPool.getPOOL().notifyCreation (ret);
+            exitAllowConstructor (prev);
         }
         
         return ret;
@@ -130,18 +138,11 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     public static MultiDataObject createMultiObject(DataLoaderPool$FolderLoader loader, FileObject fo, DataFolder original) throws java.io.IOException {
         MultiDataObject ret;
         
-        Object prev = FIND.get ();
+        Collection prev = enterAllowContructor ();
         try {
-            FIND.set (loader);
-            
             ret = loader.createMultiObject (fo, original);
         } finally {
-            FIND.set (prev);
-        }
-        
-        // notify it
-        if (ret != null) {
-            DataObjectPool.getPOOL().notifyCreation (ret);
+            exitAllowConstructor (prev);
         }
         
         return ret;
@@ -153,13 +154,11 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
      */
     public void runAtomicActionSimple (FileObject fo, FileSystem.AtomicAction action) 
     throws java.io.IOException {
-        Object prev = FIND.get ();
+        Collection prev = enterAllowContructor ();
         try {
-            FIND.set (fo);
             fo.getFileSystem ().runAtomicAction(action);
         } finally {
-            FIND.set (prev);
-            notifyCreationAll ();
+            exitAllowConstructor (prev);
         }
     }
     
@@ -184,18 +183,16 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
             blocked = target;
         }
         
-        Object findPrev = FIND.get ();
+        Collection findPrev = enterAllowContructor ();
         try {
-            FIND.set (target);
             target.getFileSystem ().runAtomicAction(action);
         } finally {
-            FIND.set (findPrev);
             synchronized (this) {
                 atomic = prev;
                 blocked = prevBlocked;
                 notifyAll ();
-                notifyCreationAll ();
             }
+            exitAllowConstructor (findPrev);
         }
     }
     
@@ -274,32 +271,6 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     */
     private HashSet toNotify = new HashSet();
     
-    /** A special hack to work around code like:
-     * <pre>
-     *  MyDataObject (FileObject fo) { // constructor of a data object
-     *      super (fo);
-     *
-     *      DataObject.find (fo);
-     * </pre>
-     * which is very common (MultiDataObject.secondaryEntries ()) and which 
-     * waits SAFE_NOTIFY_DELAY in waitNotified method.
-     *
-     *
-     * <P>
-     * This variable holds the reference to DataObject that was created by each
-     * thread, so if the same thread calls back, it will not wait in waitNotified
-     * method.
-     * <P>
-     * Contais object of value Item
-     */
-    private ThreadLocal last = new ThreadLocal ();
-    
-    /** A delay to check the notify modified content. It is expected that
-     * in 500ms each constructor can finish, so 500ms after the registration
-     * of object in a toNotify map, it should be ready and initialized.
-     */
-    private static final int SAFE_NOTIFY_DELAY = 0;
-    
     private static final Integer ONE = new Integer(1);
     
     /** Constructor.
@@ -327,7 +298,8 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
                 // special test for data objects calling this method from 
                 // their own constructor, those are ok to be returned if
                 // they exist
-                if (last.get () != doh) {
+                List l = (List)FIND.get ();
+                if (l == null || !l.contains (doh)) {
                     return null;
                 }
             }
@@ -410,9 +382,14 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
      * @param obj the object that was created
     */
     public void notifyCreation (DataObject obj) {
+        notifyCreation (obj.item);
+    }
+    
+    /** Notifies the creation of an item*/
+    private void notifyCreation (Item item) {
         synchronized (this) {
             if (errLog) {
-                err.log (ErrorManager.INFORMATIONAL, "Notify created: " + obj.getPrimaryFile() + " by " + Thread.currentThread()); // NOI18N
+                err.log (ErrorManager.INFORMATIONAL, "Notify created: " + item + " by " + Thread.currentThread()); // NOI18N
             }
             
             if (toNotify.isEmpty()) {
@@ -422,7 +399,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
                 return;
             }
             
-            if (!toNotify.remove (obj.item)) {
+            if (!toNotify.remove (item)) {
                 if (errLog) {
                     err.log (ErrorManager.INFORMATIONAL, "  the item is not there: " + toNotify); // NOI18N
                 }
@@ -432,37 +409,26 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
             // if somebody is caught in waitNotified then wake him up
             notifyAll ();
         }
-
-        DataLoaderPool pool = (DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class);
-        pool.fireOperationEvent (
-            new OperationEvent (obj), OperationEvent.CREATE
-        );
+        
+        DataObject obj = item.getDataObjectOrNull ();
+        if (obj != null) {
+            DataLoaderPool pool = (DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class);
+            pool.fireOperationEvent (
+                new OperationEvent (obj), OperationEvent.CREATE
+            );
+        }
     }
     
-    private void notifyCreationAll () {
-        DataObjectPool.Item item = null;
-        Iterator iter = null;
-        synchronized (this) {
-            if (toNotify.isEmpty()) {
-                return;
-            }
+    /** Notifies all objects in the list */
+    private void notifyCreationAll (List l) {
+        if (l.isEmpty()) return;
+        
+        Iterator iter = l.iterator();
 
-            if (toNotify.size () == 1) {
-                item = (DataObjectPool.Item)toNotify.iterator().next ();
-            } else {
-                iter = new HashSet (toNotify).iterator();
-            }
-        }
-
-        if (item != null) {
-            // only one item
-            notifyCreation (item.getDataObjectOrNull());
-        } else {
-            // iter has a lot of objects
-            while (iter.hasNext ()) {
-                DataObjectPool.Item i = (DataObjectPool.Item)iter.next ();
-                notifyCreation (i.getDataObjectOrNull ());
-            }
+        // iter has a lot of objects
+        while (iter.hasNext ()) {
+            DataObjectPool.Item i = (DataObjectPool.Item)iter.next ();
+            notifyCreation (i);
         }
     }
     /** Wait till the data object will be notified. But wait limited amount
@@ -471,30 +437,34 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
      * @param obj data object to check
      */
     public void waitNotified (DataObject obj) {
-        try {
-            synchronized (this) {
-                enterRecognition (obj.getPrimaryFile().getParent());
-                
-                if (toNotify.isEmpty()) {
-                    return;
-                }
-                
-                if (obj.item == last.get ()) {
-                    return;
-                }
+        for (;;) {
+            try {
+                synchronized (this) {
+                    enterRecognition (obj.getPrimaryFile().getParent());
 
-                if (!toNotify.contains (obj.item)) {
-                    return;
-                }
-                
-                if (errLog) {
-                    err.log (ErrorManager.INFORMATIONAL, "waitTillNotified: " + Thread.currentThread()); // NOI18N
-                    err.log (ErrorManager.INFORMATIONAL, "      waitingFor: " + obj.getPrimaryFile()); // NOI18N
-                }
+                    if (toNotify.isEmpty()) {
+                        return;
+                    }
 
-                wait (SAFE_NOTIFY_DELAY);
+                    List l = (List)FIND.get ();
+                    if (l != null && l.contains (obj.item)) {
+                        return;
+                    }
+
+                    if (!toNotify.contains (obj.item)) {
+                        return;
+                    }
+
+                    if (errLog) {
+                        err.log (ErrorManager.INFORMATIONAL, "waitTillNotified: " + Thread.currentThread()); // NOI18N
+                        err.log (ErrorManager.INFORMATIONAL, "      waitingFor: " + obj.getPrimaryFile()); // NOI18N
+                    }
+
+                    wait ();
+                }
+            } catch (InterruptedException ex) {
+                // never mind
             }
-        } catch (InterruptedException ex) {
         }
     }
         
@@ -503,7 +473,8 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
      */
     private void notifyAdd (Item item) {
         toNotify.add (item);
-        last.set (item);
+        List l = (List)FIND.get ();
+        l.add (item);
     }
 
     
