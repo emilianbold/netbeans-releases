@@ -40,9 +40,6 @@ import org.openide.util.NbBundle;
  */
 public class ColoringArrayEditorPanel extends javax.swing.JPanel {
 
-    /** support for distributing change events. */
-    private PropertyChangeSupport support;
-
     /** Editor interface for visual editing of single coloring */
     PropertyModel coloringModel;
 
@@ -66,7 +63,6 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
 
     /** Creates new form ColoringArrayEditorPanel */
     public ColoringArrayEditorPanel() {
-        support = new PropertyChangeSupport(this);
         typeName = BaseOptions.BASE;
 
         value = new HashMap();
@@ -93,7 +89,7 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
                                 value.put( names[actValueIndex], newColoring );
                                 // Bug #18539 Hack to prevent changing selected  index by firePropertyChange fired below
                                 actValueIndex = newValueIndex;
-                                support.firePropertyChange( "value", null, null ); // NOI18N
+                                ColoringArrayEditorPanel.this.firePropertyChange( "value", null, null ); // NOI18N
                             }
                         } catch( InvocationTargetException e ) {
                             if( Boolean.getBoolean( "org.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
@@ -176,17 +172,6 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         } catch( java.lang.reflect.InvocationTargetException e ) {
             if( Boolean.getBoolean( "org.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
         }
-    }
-
-
-    /** Adds listener to change of the value. */
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        support.addPropertyChangeListener(l);
-    }
-
-    /** Removes listener to change of the value. */
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        support.removePropertyChangeListener(l);
     }
 
 
