@@ -89,9 +89,11 @@ Microsystems, Inc. All Rights Reserved.
     </folder> --><!-- Bookmarks -->
 
     <folder name="Actions">
+        <!--
         <folder name="Help">
             <file name="org-netbeans-modules-url-BookmarksAction.instance"/>
-        </folder> <!-- Help -->
+        </folder> < ! - - Help - - >
+        -->
 
         <folder name="System">
             <file name="org-netbeans-modules-url-OpenInNewWindowAction.instance"/>
@@ -268,12 +270,14 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="helpID" stringvalue="org.netbeans.modules.pdf.PDFSettings"/>
         </file>
 
-        <!-- Bookmarks Node -->
+        <!--
+        < ! - - Bookmarks Node - - >
         <file name="org-netbeans-modules-url-BookmarksNode.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.url.BookmarksNode" />
             <attr name="instanceCreate" newvalue="org.netbeans.modules.url.BookmarksNode" />
             <attr name="instanceOf" stringvalue="org.openide.nodes.Node, org.openide.nodes.AbstractNode, org.openide.loaders.DataNode, org.openide.loaders.DataFolder$FolderNode, org.netbeans.modules.url.BookmarksNode" />
         </file>
+        -->
 
         <!-- Project Settings [Search] -->
         <file name="org-netbeans-modules-search-SearchProjectSettings.settings" url="../search/res/SearchProjectSettings.settings">
@@ -321,11 +325,13 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
                 </folder> <!-- ServerAndExternalToolSettings -->
 
+                <!--
                 <folder name="System">
                     <file name="org-netbeans-modules-url-BookmarksNode.shadow">
                         <attr name="originalFile" stringvalue="Services/org-netbeans-modules-url-BookmarksNode.instance"/>
                     </file>
-                </folder> <!-- System -->
+                </folder> < ! - - System - - >
+                -->
 
             </folder> <!-- IDEConfiguration -->
         </folder> <!-- Services -->
