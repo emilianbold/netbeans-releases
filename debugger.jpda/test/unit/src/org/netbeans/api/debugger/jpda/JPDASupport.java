@@ -448,4 +448,11 @@ public class JPDASupport implements DebuggerManagerListener {
         }
     }
 
+    // TODO: Include check of these call in the test suite
+    public void engineAdded(DebuggerEngine engine) {
+    }
+
+    // TODO: Include check of these call in the test suite
+    public void engineRemoved(DebuggerEngine engine) {
+    }
 }

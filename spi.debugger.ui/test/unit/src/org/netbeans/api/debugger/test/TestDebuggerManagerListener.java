@@ -105,4 +105,12 @@ public class TestDebuggerManagerListener implements DebuggerManagerListener {
 
     public void initWatches() {
     }
+
+    // TODO: Include check of these call in the test suite
+    public void engineAdded(DebuggerEngine engine) {
+    }
+
+    // TODO: Include check of these call in the test suite
+    public void engineRemoved(DebuggerEngine engine) {
+    }
 }
