@@ -65,8 +65,8 @@ public class HtmlLoader extends UniFileLoader {
      */
     protected SystemAction[] defaultActions () {
         return new SystemAction[] {
-                        SystemAction.get (ViewAction.class),
                         SystemAction.get (OpenAction.class),
+                        SystemAction.get (ViewAction.class),
                         SystemAction.get (FileSystemAction.class),
                         null,
                         SystemAction.get (CutAction.class),
