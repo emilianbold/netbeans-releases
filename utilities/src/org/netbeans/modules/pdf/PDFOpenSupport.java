@@ -25,9 +25,16 @@ import org.openide.util.NbBundle;
  * Permits a PDF file to be opened in an external viewer.
  *
  * @author Jesse Glick
+ * @author Marian Petras
  */
 class PDFOpenSupport implements OpenCookie {
     
+    private static final String[] APP_DIRS = new String[] {
+            "/usr/bin", "/usr/local/bin" };                             //NOI18N
+    private static final String[] VIEWER_NAMES = new String[] {
+            "xpdf", "kghostview", "ggv", "acroread" };                  //NOI18N
+    private static final String FALLBACK_VIEWER_NAME = "acroread";      //NOI18N
+
     private File f;
     
     /**
@@ -43,14 +50,22 @@ class PDFOpenSupport implements OpenCookie {
         }
         this.f = f;
     }
-    
+
     public void open() {
         Settings sett = Settings.getDefault();
+        File viewer = sett.getPDFViewer();
+        final boolean viewerUnset = (viewer == null);
+        if (viewerUnset) {
+            viewer = findViewer();
+        }
         try {
             Process p = Runtime.getRuntime().exec(
-                    new String[] {sett.getPDFViewer().getAbsolutePath(),
+                    new String[] {viewer.getPath(),
                                   f.getAbsolutePath()
             });
+            if (viewerUnset) {
+                sett.setPDFViewer(viewer);
+            }
             // [PENDING] redirect p's output
         } catch (IOException ioe) {
             // Try to reconfigure.
@@ -73,7 +88,7 @@ class PDFOpenSupport implements OpenCookie {
             //TopManager.getDefault ().getNodeOperation ().explore (n);
              */
             DialogDescriptor d = new DialogDescriptor(
-                new ReconfigureReaderPanel(exceptionType, excmessage), // content pane
+                new ReconfigureReaderPanel(viewer, excmessage), // content pane
                 NbBundle.getMessage(PDFOpenSupport.class, "TITLE_pick_a_viewer"), // title
                 true, // modal
                 DialogDescriptor.OK_CANCEL_OPTION, // option type
@@ -87,5 +102,23 @@ class PDFOpenSupport implements OpenCookie {
             }
         }
     }
+
+    /**
+     */
+    private static File findViewer() {
+        File viewer;
+        for (int i = 0; i < APP_DIRS.length; i++) {
+            for (int j = 0; j < VIEWER_NAMES.length; j++) {
+                String viewerPath;
+                viewerPath = APP_DIRS[i] + File.separatorChar + VIEWER_NAMES[j];
+                viewer = new File(viewerPath);
+                if (viewer.exists()) {
+                    return viewer;
+                }
+            }
+        }
+        return new File(FALLBACK_VIEWER_NAME);
+    }
+
     
 }

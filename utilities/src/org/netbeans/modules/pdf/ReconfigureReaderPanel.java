@@ -26,10 +26,12 @@ import org.openide.util.NbBundle;
 public class ReconfigureReaderPanel extends javax.swing.JPanel {
 
     private Settings settings;
+    private final File defaultViewer;
     private ResourceBundle bundle = NbBundle.getBundle (ReconfigureReaderPanel.class);
     
-    public ReconfigureReaderPanel (String exceptionType, String exceptionMessage) {
+    public ReconfigureReaderPanel (File defaultViewer, String exceptionMessage) {
         settings = Settings.getDefault ();
+        this.defaultViewer = defaultViewer;
         initComponents ();
         initAccessibility ();            
     }
@@ -111,7 +113,7 @@ public class ReconfigureReaderPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_viewerFieldFocusGained
 
     private void chooseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseButtonActionPerformed
-        File dir = settings.getPDFViewer ().getParentFile ();
+        File dir = defaultViewer.getParentFile ();
         JFileChooser chooser = ((dir != null) ? new JFileChooser (dir) : new JFileChooser ());
         if (chooser.showDialog (this, bundle.getString ("LBL_select_viewer")) ==
                 JFileChooser.APPROVE_OPTION) {

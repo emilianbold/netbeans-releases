@@ -29,7 +29,6 @@ import org.openide.util.Lookup;
  */
 public class Settings {
     public static final String PROP_PDF_VIEWER = "PDFViewer";           //NOI18N
-    private static final String DEFAULT_VIEWER_NAME = "acroread";       //NOI18N
     private File viewer;
     private PropertyChangeSupport supp = new PropertyChangeSupport(this);
 
@@ -39,7 +38,7 @@ public class Settings {
     }
 
     public File getPDFViewer() {
-        return (viewer != null) ? viewer : new File(DEFAULT_VIEWER_NAME);
+        return viewer;
     }
 
     public void setPDFViewer(File viewer) {
