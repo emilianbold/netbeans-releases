@@ -3,5 +3,4 @@ OpenIDE-Module: org.netbeans.core.multiview/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/core/multiview/resources/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/core/multiview/resources/mf-layer.xml
 OpenIDE-Module-Specification-Version: 1.1
-OpenIDE-Module-Implementation-Version: TEST
 OpenIDE-Module-Public-Packages: org.netbeans.core.api.multiview.**, org.netbeans.core.spi.multiview.**
