@@ -134,6 +134,46 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     return subComponents.indexOf (comp);
   }
 
+  /**  Adds the menu represented by the node */
+  private void addVisualMenu (RADComponent comp) {
+    Object o = getBeanInstance();
+    if (comp instanceof RADMenuItemComponent) {
+      Object m = ((RADMenuItemComponent) comp).getBeanInstance();
+
+      switch (getMenuItemType ()) {
+        case T_MENUBAR:
+          ((MenuBar)o).add((Menu)m);
+          break;
+        case T_MENU:
+        case T_POPUPMENU:
+          ((Menu)o).add((MenuItem)m);
+          break;
+        case T_JMENUBAR:
+          ((JMenuBar)o).add((JMenu)m);
+          break;
+        case T_JMENU:
+          ((JMenu)o).add((JMenuItem)m);
+          break;
+        case T_JPOPUPMENU:
+          ((JPopupMenu)o).add((JMenuItem)m);
+          break;
+      }
+    } else {
+/*      switch (type) {
+        case T_MENU:
+        case T_POPUPMENU:
+          ((Menu)o).addSeparator();
+          break;
+        case T_JMENU:
+          ((JMenu)o).addSeparator();
+          break;
+        case T_JPOPUPMENU:
+          ((JPopupMenu)o).addSeparator();
+          break;
+      } */
+    }
+  }
+  
 // -----------------------------------------------------------------------------
 // Debug methods
 
@@ -230,6 +270,11 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
       }
       RADMenuComponent.this.getFormManager().addNonVisualComponent (newMenuComp, RADMenuComponent.this);
 
+      // for some components, we initialize their properties with some non-default values
+      // e.g. a label on buttons, checkboxes
+      FormEditor.defaultMenuInit (newMenuComp);
+      addVisualMenu (newMenuComp);
+      
       RADMenuComponent.this.getFormManager().selectComponent (newMenuComp, false);
     } 
   }
@@ -237,6 +282,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
 
 /*
  * Log
+ *  3    Gandalf   1.2         7/9/99   Ian Formanek    Menu editor improvements
  *  2    Gandalf   1.1         7/5/99   Ian Formanek    improved
  *  1    Gandalf   1.0         7/3/99   Ian Formanek    
  * $

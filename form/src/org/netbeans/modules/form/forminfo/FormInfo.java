@@ -46,6 +46,18 @@ public abstract class FormInfo {
   public abstract Container getTopContainer ();
 
 
+  /** Used to provide the container which is used during design-time as the top-level container for adding components.
+  * The container provided by this class should not be a Window, as it is added as a component to the
+  * FormTopComponent, rather a JPanel, Panel or JDesktopPane should be used according to the form type. 
+  * By returning a <code>null</code> value, the form info declares that it does not represent a "visual" form and the visual
+  * editing should not be used with it.
+  * The default implementation returns the same value as getTopContainer () method .
+  * @return the top level container which will be used during design-time or null if the form is not visual
+  */
+  public Container getTopAddContainer () {
+    return getTopContainer ();
+  }
+
   /** By overriding this method, the form info can specify a string which is used to add top-level
   * components - i.e. for java.awt.Frame, the default (empty string) implementation is used, while
   * for javax.swing.JFrame a <code>"getContentPane ()."</code> will be returned.
@@ -79,6 +91,7 @@ public abstract class FormInfo {
 
 /*
  * Log
+ *  6    Gandalf   1.5         7/9/99   Ian Formanek    Menu editor improvements
  *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  4    Gandalf   1.3         6/6/99   Ian Formanek    FormInfo design 

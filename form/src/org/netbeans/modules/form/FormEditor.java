@@ -250,16 +250,13 @@ final public class FormEditor extends Object {
         }
       }
     }
-    /*
-    if (propName != null)
-      node.firePropertyChangeHelper (propName, "", varName);
-      */ // [PENDING - try]
   }
 
-/*  public static void defaultMenuInit (RADMenuItemNode node) {
-    Object comp = node.getBean ();
-    String varName = node.getName ();
+  public static void defaultMenuInit (RADMenuItemComponent menuComp) {
+    Object comp = menuComp.getBeanInstance ();
+    String varName = menuComp.getName ();
     String propName = null;
+    Object propValue = null;
 
     if (comp instanceof MenuItem) {
       if ("".equals (((MenuItem)comp).getLabel ())) {
@@ -278,7 +275,7 @@ final public class FormEditor extends Object {
           value = formBundle.getString("FMT_LAB_MenuItem");
         }
 
-        ((MenuItem)comp).setLabel(MessageFormat.format(value, new Object[] { varName }));
+        propValue = MessageFormat.format(value, new Object[] { varName });
       }
     }
     else if (comp instanceof JMenuItem) {
@@ -298,13 +295,23 @@ final public class FormEditor extends Object {
           value = formBundle.getString("FMT_LAB_JMenuItem");
         }
 
-        ((JMenuItem)comp).setText(MessageFormat.format(value, new Object[] { varName }));
+        propValue = MessageFormat.format(value, new Object[] { varName });
       }
     }
-    if (propName != null)
-      node.firePropertyChangeHelper (propName, "", varName);
+    if (propName != null) {
+      Node.Property prop = menuComp.getPropertyByName (propName);
+      if (prop != null) {
+        try {
+          prop.setValue (propValue);
+        } catch (IllegalAccessException e) {
+          // never mind, ignore
+        } catch (java.lang.reflect.InvocationTargetException e) {
+          // never mind, ignore
+        }
+      }
+    }
   }
-*/
+
   public static boolean isNonReflectedProperty (Class clazz, PropertyDescriptor desc) {
     if ("visible".equals (desc.getName ())) return true;
     else {
@@ -611,6 +618,7 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  25   Gandalf   1.24        7/9/99   Ian Formanek    Menu editor improvements
  *  24   Gandalf   1.23        7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
  *        getComponentClass->getBeanClass
  *  23   Gandalf   1.22        6/25/99  Ian Formanek    Constants for default 
