@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+
+<mconfig name="core qa-performance test config">
+
+    <!-- testbag common for all suites to setup usedir -->
+    <testbag testattribs="measure_ui or measure_menus or measure_dialogs or measure_actions or measure_setup" prio="1"
+             executor="ide_perf_setup" name="Setup IDE for UI responsiveness">
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasuringSetup.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+
+    <!-- 1st round -->    
+    <testbag testattribs="measure_ui or measure_actions" prio="2"
+             executor="ide_performance" name="Measure UI responsiveness of actions" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasureActions.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    <testbag testattribs="measure_ui or measure_dialogs" prio="3"
+             executor="ide_performance" name="Measure UI responsiveness of dialogs" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasureDialogs.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    <testbag testattribs="measure_ui or measure_menus" prio="4"
+             executor="ide_performance" name="Measure UI responsiveness of menus" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasureMenus.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
+    <!-- 2nd round -->    
+    <testbag testattribs="(measure_ui or measure_actions) and NOT measure_once" prio="5"
+             executor="ide_performance" name="Measure UI responsiveness of actions" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasureActions.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    <testbag testattribs="(measure_ui or measure_dialogs) and NOT measure_once" prio="6"
+             executor="ide_performance" name="Measure UI responsiveness of dialogs" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasureDialogs.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    <testbag testattribs="(measure_ui or measure_menus) and NOT measure_once" prio="7"
+             executor="ide_performance" name="Measure UI responsiveness of menus" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasureMenus.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
+    <!-- 3rd round -->    
+    <testbag testattribs="(measure_ui or measure_actions) and NOT measure_once" prio="8"
+             executor="ide_performance" name="Measure UI responsiveness of actions" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasureActions.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    <testbag testattribs="(measure_ui or measure_dialogs) and NOT measure_once" prio="9"
+             executor="ide_performance" name="Measure UI responsiveness of dialogs" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasureDialogs.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    <testbag testattribs="(measure_ui or measure_menus) and NOT measure_once" prio="10"
+             executor="ide_performance" name="Measure UI responsiveness of menus" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasureMenus.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
+    <!-- 4th round -->    
+<!-- temporary
+    <testbag testattribs="(measure_ui or measure_actions) and NOT measure_once" prio="11"
+             executor="ide_performance" name="Measure UI responsiveness of actions" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasureActions.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    <testbag testattribs="(measure_ui or measure_dialogs) and NOT measure_once" prio="12"
+             executor="ide_performance" name="Measure UI responsiveness of dialogs" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasureDialogs.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    <testbag testattribs="(measure_ui or measure_menus) and NOT measure_once" prio="13"
+             executor="ide_performance" name="Measure UI responsiveness of menus" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasureMenus.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+-->    
+    <!-- 5th round -->    
+<!-- temporary
+    <testbag testattribs="(measure_ui or measure_actions) and NOT measure_once" prio="14"
+             executor="ide_performance" name="Measure UI responsiveness of actions" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasureActions.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    <testbag testattribs="(measure_ui or measure_dialogs) and NOT measure_once" prio="15"
+             executor="ide_performance" name="Measure UI responsiveness of dialogs" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasureDialogs.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    <testbag testattribs="(measure_ui or measure_menus) and NOT measure_once" prio="16"
+             executor="ide_performance" name="Measure UI responsiveness of menus" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasureMenus.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+-->    
+
+<!-- END Property Editors testbag -->
+    
+    <executor name="ide_perf_setup" antfile="build-qa-functional.xml" target="runidesetup"/>
+    <executor name="ide_performance" antfile="build-qa-functional.xml" target="runidetest"/>
+    
+    <compiler name="qa-performance-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
+    
+</mconfig>
