@@ -14,6 +14,7 @@
 package com.netbeans.developer.modules.loaders.form;
 
 import org.openide.explorer.propertysheet.editors.*;
+import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
@@ -1363,26 +1364,24 @@ public class RADComponent {
         return true;
       }
       
-      public java.awt.Component getCustomEditor () {        
-        EventCustomEditor ed = new EventCustomEditor (new javax.swing.JFrame (), true, EventProperty.this);
-        org.openidex.util.Utilities2.centerWindow (ed);
-        return ed;
-      }
-      
-      /**
-      * @return true if this property editor provides tagged values and
-      * a custom strings in the choice should be accepted too, false otherwise
-      */
-      public boolean supportsEditingTaggedValues () {
-        return false;
-      }
-    }
-  }
-
+      public java.awt.Component getCustomEditor () {
+        final EventCustomEditor ed = new EventCustomEditor (EventProperty.this);
+        DialogDescriptor dd = new DialogDescriptor (ed, "Handlers for " + event.getName (), true, 
+          new java.awt.event.ActionListener () {
+            public void actionPerformed (java.awt.event.ActionEvent evt) {
+              if (evt.getActionCommand ().equalsIgnoreCase ("ok")) {
+                ed.doChanges ();
+              }
+            }
+          }
+        );
+        return TopManager.getDefault ().createDialog (dd);
 }
 
 /*
  * Log
+ *  60   Gandalf   1.59        11/26/99 Pavel Buzek     EventCustomEditor 
+ *       changed to panel, displayed via DialogDescriptor
  *  59   Gandalf   1.58        11/25/99 Ian Formanek    Uses Utilities module
  *  58   Gandalf   1.57        11/25/99 Pavel Buzek     support for multiple 
  *       handlers for one event

@@ -16,21 +16,17 @@ package com.netbeans.developer.modules.loaders.form;
 import java.util.Vector;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
-
 /** 
  *
- * @author  Pavel Buzek
+ * @author  pbuzek
  * @version 
  */
-
-public class EventCustomEditor extends javax.swing.JDialog {
+public class EventCustomEditor extends javax.swing.JPanel {
 
   /** Creates new form EventCustomEditor */
-  public EventCustomEditor(java.awt.Frame parent, boolean modal, RADComponent.EventProperty eventProperty) {
-    super (parent, modal);
+  public EventCustomEditor(RADComponent.EventProperty eventProperty) {
     this.eventProperty = eventProperty;
     changes = eventProperty.new HandlerSetChange ();
-    setTitle ("Handlers for " + eventProperty.event.getName ());
     initComponents ();
   }
 
@@ -48,33 +44,27 @@ public class EventCustomEditor extends javax.swing.JDialog {
     handlersList.setModel (handlersModel);
     addButton = new javax.swing.JButton ();
     removeButton = new javax.swing.JButton ();
-    renameButton = new javax.swing.JButton ();
-    jPanel1 = new javax.swing.JPanel ();
-    okButton = new javax.swing.JButton ();
-    cancelButton = new javax.swing.JButton ();
-    getContentPane ().setLayout (new java.awt.GridBagLayout ());
+    editButton = new javax.swing.JButton ();
+    setLayout (new java.awt.GridBagLayout ());
     java.awt.GridBagConstraints gridBagConstraints1;
-    addWindowListener (new java.awt.event.WindowAdapter () {
-      public void windowClosing (java.awt.event.WindowEvent evt) {
-        closeDialog (evt);
-      }
-    }
-    );
+    setPreferredSize (new java.awt.Dimension(300, 300));
 
 
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
-    gridBagConstraints1.gridheight = 6;
+    gridBagConstraints1.gridheight = 4;
     gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
     gridBagConstraints1.insets = new java.awt.Insets (8, 8, 8, 8);
+    gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
     gridBagConstraints1.weightx = 0.9;
     gridBagConstraints1.weighty = 1.0;
-    getContentPane ().add (handlersList, gridBagConstraints1);
+    add (handlersList, gridBagConstraints1);
 
     addButton.setText ("Add");
+    addButton.setLabel ("Add...");
     addButton.addActionListener (new java.awt.event.ActionListener () {
       public void actionPerformed (java.awt.event.ActionEvent evt) {
-        jButton1ActionPerformed (evt);
+        addButtonActionPerformed (evt);
       }
     }
     );
@@ -85,13 +75,14 @@ public class EventCustomEditor extends javax.swing.JDialog {
     gridBagConstraints1.gridy = 0;
     gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints1.insets = new java.awt.Insets (8, 8, 0, 8);
+    gridBagConstraints1.anchor = java.awt.GridBagConstraints.EAST;
     gridBagConstraints1.weightx = 0.1;
-    getContentPane ().add (addButton, gridBagConstraints1);
+    add (addButton, gridBagConstraints1);
 
     removeButton.setText ("Remove");
     removeButton.addActionListener (new java.awt.event.ActionListener () {
       public void actionPerformed (java.awt.event.ActionEvent evt) {
-        jButton2ActionPerformed (evt);
+        removeButtonActionPerformed (evt);
       }
     }
     );
@@ -102,13 +93,15 @@ public class EventCustomEditor extends javax.swing.JDialog {
     gridBagConstraints1.gridy = 1;
     gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints1.insets = new java.awt.Insets (8, 8, 0, 8);
+    gridBagConstraints1.anchor = java.awt.GridBagConstraints.EAST;
     gridBagConstraints1.weightx = 0.1;
-    getContentPane ().add (removeButton, gridBagConstraints1);
+    add (removeButton, gridBagConstraints1);
 
-    renameButton.setText ("Rename");
-    renameButton.addActionListener (new java.awt.event.ActionListener () {
+    editButton.setText ("Rename");
+    editButton.setLabel ("Edit...");
+    editButton.addActionListener (new java.awt.event.ActionListener () {
       public void actionPerformed (java.awt.event.ActionEvent evt) {
-        jButton3ActionPerformed (evt);
+        editButtonActionPerformed (evt);
       }
     }
     );
@@ -119,60 +112,13 @@ public class EventCustomEditor extends javax.swing.JDialog {
     gridBagConstraints1.gridy = 2;
     gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints1.insets = new java.awt.Insets (8, 8, 0, 8);
-    gridBagConstraints1.weightx = 0.1;
-    getContentPane ().add (renameButton, gridBagConstraints1);
-
-
-      okButton.setText ("Ok");
-      okButton.addActionListener (new java.awt.event.ActionListener () {
-        public void actionPerformed (java.awt.event.ActionEvent evt) {
-          jButton6ActionPerformed (evt);
-        }
-      }
-      );
-  
-      jPanel1.add (okButton);
-  
-      cancelButton.setText ("Cancel");
-      cancelButton.addActionListener (new java.awt.event.ActionListener () {
-        public void actionPerformed (java.awt.event.ActionEvent evt) {
-          cancelButtonActionPerformed (evt);
-        }
-      }
-      );
-  
-      jPanel1.add (cancelButton);
-  
-
-    gridBagConstraints1 = new java.awt.GridBagConstraints ();
-    gridBagConstraints1.gridx = 0;
-    gridBagConstraints1.gridy = 6;
-    gridBagConstraints1.gridwidth = 2;
-    gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
     gridBagConstraints1.anchor = java.awt.GridBagConstraints.EAST;
-    getContentPane ().add (jPanel1, gridBagConstraints1);
+    gridBagConstraints1.weightx = 0.1;
+    add (editButton, gridBagConstraints1);
 
-    pack ();
   }//GEN-END:initComponents
 
-private void cancelButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-// Add your handling code here:
-  dispose ();
-  }//GEN-LAST:event_cancelButtonActionPerformed
-
-private void jButton6ActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
-// Add your handling code here:
-  try {
-    eventProperty.setValue (changes);
-  } catch (java.lang.reflect.InvocationTargetException e1) {
-    e1.printStackTrace();
-  } catch (IllegalAccessException e2) {
-    e2.printStackTrace();
-  }
-  dispose ();
-  }//GEN-LAST:event_jButton6ActionPerformed
-
-private void jButton3ActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+private void editButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
 // Add your handling code here:
   NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine ("New name for handler:", "Rename handler");
   Object[] handlers = handlersList.getSelectedValues();
@@ -186,50 +132,45 @@ private void jButton3ActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIR
       handlersModel.add(pos, nd.getInputText());
     }
   }  
-  }//GEN-LAST:event_jButton3ActionPerformed
+  }//GEN-LAST:event_editButtonActionPerformed
 
-private void jButton2ActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+private void removeButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
 // Add your handling code here:
   Object[] handlers = handlersList.getSelectedValues();
   for (int i=0, n=handlers.length; i<n; i++) {
     changes.getRemoved ().add (handlers[i]);
     handlersModel.removeElement(handlers[i]);
   }  
-  }//GEN-LAST:event_jButton2ActionPerformed
+  }//GEN-LAST:event_removeButtonActionPerformed
 
-private void jButton1ActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
 // Add your handling code here:
   NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine ("New handler name:", "Add handler");
   if (TopManager.getDefault().notify(nd).equals (NotifyDescriptor.OK_OPTION)) {
     changes.getAdded ().add (nd.getInputText());
     handlersModel.addElement(nd.getInputText());
   }  
-  }//GEN-LAST:event_jButton1ActionPerformed
+  }//GEN-LAST:event_addButtonActionPerformed
 
-  /** Closes the dialog */
-  private void closeDialog(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_closeDialog
-    setVisible (false);
-    dispose ();
-  }//GEN-LAST:event_closeDialog
-
+  public void doChanges () {
+    try {
+      eventProperty.setValue (changes);
+    } catch (java.lang.reflect.InvocationTargetException e1) {
+      e1.printStackTrace();
+    } catch (IllegalAccessException e2) {
+      e2.printStackTrace();
+    }
+  }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JList handlersList;
   private javax.swing.JButton addButton;
   private javax.swing.JButton removeButton;
-  private javax.swing.JButton renameButton;
-  private javax.swing.JPanel jPanel1;
-  private javax.swing.JButton okButton;
-  private javax.swing.JButton cancelButton;
+  private javax.swing.JButton editButton;
   // End of variables declaration//GEN-END:variables
+ 
   RADComponent.EventProperty eventProperty;
   javax.swing.DefaultListModel handlersModel = new javax.swing.DefaultListModel ();
   RADComponent.EventProperty.HandlerSetChange changes;
 
 }
-
-/*
- * Log
- *  1    Gandalf   1.0         11/25/99 Pavel Buzek     
- * $
- */
