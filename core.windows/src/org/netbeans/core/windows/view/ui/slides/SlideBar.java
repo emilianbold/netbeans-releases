@@ -447,7 +447,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
                 top = 2; left = 1; bottom = 1; right = 1; 
                 break;
             case SlideBarDataModel.EAST:
-                top = 1; left = 1; bottom = 1; right = 1; 
+                top = 1; left = 2; bottom = 1; right = 0; 
                 break;
         }
         return new EmptyBorder(top, left, bottom, right);
