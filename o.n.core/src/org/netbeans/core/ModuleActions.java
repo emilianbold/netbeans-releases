@@ -14,8 +14,7 @@
 package org.netbeans.core;
 
 import java.awt.event.ActionEvent;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
+import java.lang.ref.*;
 import java.util.*;
 import javax.swing.Action;
 import javax.swing.event.*;
@@ -23,8 +22,7 @@ import javax.swing.event.*;
 import org.openide.actions.ActionManager;
 import org.openide.modules.ManifestSection;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
+import org.openide.util.*;
 
 /** Holds list of all actions added by modules.
 *
@@ -39,8 +37,9 @@ class ModuleActions extends ActionManager
     /** current module */
     private static Object module;
 
-    /** */
-    private RequestProcessor requestProcessor;
+    private int rpCounter = 0;
+    /** pool of _unused_ processor threads */
+    private Set requestProcessors = new HashSet (4); // Set<Reference<RequestProcessor>>
     
     /** instance */
     static final ModuleActions INSTANCE = new ModuleActions ();
@@ -66,45 +65,44 @@ class ModuleActions extends ActionManager
      */
     public void invokeAction(final Action a, final ActionEvent e) {
     //    a.actionPerformed(e);
-        Task task = getRequestProcessor(a).post(new Runnable () {
-            public void run () {
-                a.actionPerformed(e);
-            }
-        });
+        //System.err.println ("invokeAction: " + a);
+        final RequestProcessor rp = findRequestProcessor ();
+        //System.err.println ("invokeAction -> run: rp=" + rp);
+        Runnable r = new Runnable () {
+                public void run () {
+                    //System.err.println ("invokeAction -> run: " + a);
+                    a.actionPerformed (e);
+                    //System.err.println ("invokeAction -> run done: " + a);
+                    releaseRequestProcessor (rp);
+                }
+            };
+        rp.post (r);
     }
 
-    /** Get the processor appropriate for some action. Most actions share a single processor.
-     * Transmodal ones have their own processor, as they must continue to function e.g. when some
-     * other action is running and is showing a dialog.
-     */
-    private RequestProcessor getRequestProcessor (Action a) {
-        if (Boolean.TRUE.equals (a.getValue ("OpenIDE-Transmodal-Action"))) { // NOI18N
-            String rpKey = "org.netbeans.core.ModuleActions.requestProcessor"; // NOI18N
-            Reference r = (Reference) a.getValue (rpKey);
-            if (r != null) {
+    private RequestProcessor findRequestProcessor () {
+        //System.err.println ("findRequestProcessor");
+        synchronized (requestProcessors) {
+            Iterator it = requestProcessors.iterator ();
+            if (it.hasNext ()) {
+                Reference r = (Reference) it.next ();
+                it.remove ();
                 RequestProcessor rp = (RequestProcessor) r.get ();
                 if (rp != null) {
+                    //System.err.println ("reuse existing");
                     return rp;
                 }
+                //System.err.println ("was collected");
             }
-            RequestProcessor rp = new RequestProcessor ("org.netbeans.core.ModuleActions: " + a); // NOI18N
-            a.putValue (rpKey, new WeakReference (rp));
-            return rp;
-        } else {
-            return getRequestProcessor ();
         }
+        //System.err.println ("make new");
+        return new RequestProcessor ("org.netbeans.core.ModuleActions-" + ++rpCounter); // NOI18N
     }
 
-    /** Keeps track of the one instance of the RequestPrecessor.*/
-    private RequestProcessor getRequestProcessor() {
-        if (requestProcessor == null) {
-            synchronized (this) {
-                if (requestProcessor == null) {
-                    requestProcessor = new RequestProcessor("org.netbeans.core.ModuleActions"); // NOI18N
-                }
-            }
+    private void releaseRequestProcessor (RequestProcessor rp) {
+        synchronized (requestProcessors) {
+            //System.err.println ("releasing: " + rp);
+            requestProcessors.add (new SoftReference (rp));
         }
-        return requestProcessor;
     }
     
     /** Listens on change of modules and if changed,

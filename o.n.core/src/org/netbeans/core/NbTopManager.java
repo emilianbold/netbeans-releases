@@ -336,7 +336,9 @@ public abstract class NbTopManager extends TopManager {
             htmlViewer.setURL (url);
             JDialog d1 = new JDialog (d);
             d1.getContentPane ().add ("Center", htmlViewer); // NOI18N
-            d1.setModal (true);
+            // [PENDING] if nonmodal, better for the dialog to be reused...
+            // (but better nonmodal than modal here)
+            d1.setModal (false);
             d1.setTitle (Main.getString ("CTL_Help"));
             d1.pack ();
             d1.show ();
@@ -492,33 +494,36 @@ public abstract class NbTopManager extends TopManager {
     * @param descriptor description that contains needed informations
     * @return the option that has been choosen in the notification
     */
-    public Object notify (NotifyDescriptor descriptor) {
-        Component focusOwner = null;
-        Component comp = org.openide.windows.TopComponent.getRegistry ().getActivated ();
-        Component win = comp;
-        while ((win != null) && (!(win instanceof Window))) win = win.getParent ();
-        if (win != null) focusOwner = ((Window)win).getFocusOwner ();
+    public Object notify (final NotifyDescriptor descriptor) {
+        return Mutex.EVENT.readAccess (new Mutex.Action () {
+                public Object run () {
+                    Component focusOwner = null;
+                    Component comp = org.openide.windows.TopComponent.getRegistry ().getActivated ();
+                    Component win = comp;
+                    while ((win != null) && (!(win instanceof Window))) win = win.getParent ();
+                    if (win != null) focusOwner = ((Window)win).getFocusOwner ();
 
-        // set different owner if some modal dialog now active
-        NbPresenter presenter = null;
-        if (NbPresenter.currentModalDialog != null) {
-            presenter = new NbPresenter(descriptor, NbPresenter.currentModalDialog, true);
-        } else {
-            presenter = new NbPresenter(
-                        descriptor,
-                        TopManager.getDefault().getWindowManager().getMainWindow(),
-                        true
-                    );
-        }
+                    // set different owner if some modal dialog now active
+                    NbPresenter presenter = null;
+                    if (NbPresenter.currentModalDialog != null) {
+                        presenter = new NbPresenter(descriptor, NbPresenter.currentModalDialog, true);
+                    } else {
+                        presenter = new NbPresenter
+                            (descriptor,
+                             TopManager.getDefault().getWindowManager().getMainWindow(),
+                             true);
+                    }
 
-        presenter.setVisible(true);
+                    presenter.setVisible(true);
 
-        if (focusOwner != null) { // if the focusOwner is null (meaning that MainWindow was focused before), the focus will be back on main window
-            win.requestFocus ();
-            comp.requestFocus ();
-            focusOwner.requestFocus ();
-        }
-        return descriptor.getValue();
+                    if (focusOwner != null) { // if the focusOwner is null (meaning that MainWindow was focused before), the focus will be back on main window
+                        win.requestFocus ();
+                        comp.requestFocus ();
+                        focusOwner.requestFocus ();
+                    }
+                    return descriptor.getValue();
+                }
+            });
     }
 
     /** Shows specified text in MainWindow's status line.
