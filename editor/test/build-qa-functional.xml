@@ -92,6 +92,7 @@ Microsystems, Inc. All Rights Reserved.
              -->
            <property name="compile.srcdir" value="qa-functional/src"/>
 	   <property name="compile.excludes" value="**/data/**" />
+           <property name="build.compiler" value="classic" />
        </ant>
     </target>
     
