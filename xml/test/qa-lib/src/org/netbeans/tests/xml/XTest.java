@@ -102,6 +102,14 @@ public abstract class XTest extends JellyTestCase {
         getLog().println(message);
     }
     
+    /** Simple and easy to use method for printing a message to a default log
+     * @param message meesage to log
+     */    
+    public void log(String message, Exception ex) {
+        getLog().println(message);
+        ex.printStackTrace(getLog());
+    }
+    
     /** Redirects log into console. @see #getLog() */
     public static void logIntoConsole(boolean console) {
         LOG_INTO_CONSOLE = console;
