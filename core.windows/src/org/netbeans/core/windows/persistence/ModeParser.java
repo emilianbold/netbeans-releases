@@ -25,7 +25,6 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
-import org.openide.xml.XMLUtil;
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -43,15 +42,15 @@ import java.util.List;
 
 class ModeParser {
     
-    private static final String INSTANCE_DTD_ID_1_0
+    public static final String INSTANCE_DTD_ID_1_0
         = "-//NetBeans//DTD Mode Properties 1.0//EN"; // NOI18N
-    private static final String INSTANCE_DTD_ID_1_1
+    public static final String INSTANCE_DTD_ID_1_1
         = "-//NetBeans//DTD Mode Properties 1.1//EN"; // NOI18N
-    private static final String INSTANCE_DTD_ID_1_2
+    public static final String INSTANCE_DTD_ID_1_2
         = "-//NetBeans//DTD Mode Properties 1.2//EN"; // NOI18N
-    private static final String INSTANCE_DTD_ID_2_0
+    public static final String INSTANCE_DTD_ID_2_0
         = "-//NetBeans//DTD Mode Properties 2.0//EN"; // NOI18N
-    private static final String INSTANCE_DTD_ID_2_1
+    public static final String INSTANCE_DTD_ID_2_1
         = "-//NetBeans//DTD Mode Properties 2.1//EN"; // NOI18N
     
     /** Name of extended attribute for order of children */
@@ -919,9 +918,6 @@ class ModeParser {
         /** List to store parsed path items */
         private List itemList = new ArrayList(10);
         
-        /** xml parser */
-        private XMLReader parser;
-        
         /** Lock to prevent mixing readData and writeData */
         private final Object RW_LOCK = new Object();
         
@@ -993,7 +989,7 @@ class ModeParser {
                     }*/
                     //DUMP END
                     
-                    getXMLParser().parse(new InputSource(cfgFOInput.getInputStream()));
+                    PersistenceManager.getDefault().getXMLParser(this).parse(new InputSource(cfgFOInput.getInputStream()));
                 }
             } catch (SAXException exc) {
                 //Turn into annotated IOException
@@ -1055,14 +1051,6 @@ class ModeParser {
         
         public void error(SAXParseException ex) throws SAXException  {
             throw ex;
-        }
-        
-        public void fatalError(SAXParseException ex) throws SAXException {
-            throw ex;
-        }
-        
-        public void warning(SAXParseException ex) throws SAXException {
-            // ignore
         }
         
         /** Reads element "mode" */
@@ -1428,43 +1416,6 @@ class ModeParser {
             }
         }
         
-        public void endDocument() throws org.xml.sax.SAXException {
-        }
-        
-        public void ignorableWhitespace(char[] values, int param, int param2) 
-        throws org.xml.sax.SAXException {
-        }
-        
-        public void endElement(java.lang.String str, java.lang.String str1, java.lang.String str2) 
-        throws org.xml.sax.SAXException {
-        }
-        
-        public void skippedEntity(java.lang.String str) 
-        throws org.xml.sax.SAXException {
-        }
-        
-        public void processingInstruction(java.lang.String str, java.lang.String str1) 
-        throws org.xml.sax.SAXException {
-        }
-                
-        public void endPrefixMapping(java.lang.String str) 
-        throws org.xml.sax.SAXException {
-        }
-        
-        public void startPrefixMapping(java.lang.String str, java.lang.String str1) 
-        throws org.xml.sax.SAXException {
-        }
-        
-        public void characters(char[] values, int param, int param2) 
-        throws org.xml.sax.SAXException {
-        }
-        
-        public void setDocumentLocator(org.xml.sax.Locator locator) {
-        }
-        
-        public void startDocument() throws org.xml.sax.SAXException {
-        }
-        
         /** Writes data from asociated mode to the xml representation */
         void writeData (ModeConfig mc, InternalConfig ic) throws IOException {
             final StringBuffer buff = fillBuffer(mc, ic);
@@ -1624,38 +1575,6 @@ class ModeParser {
             buff.append("    <empty-behavior permanent=\"").append(mc.permanent).append("\"/>\n"); // NOI18N
         }
         
-        /** @return Newly created parser with set content handler, errror handler
-         * and entity resolver
-         */
-        private XMLReader getXMLParser () throws SAXException {
-            if (parser == null) {
-                // get non validating, not namespace aware parser
-                parser = XMLUtil.createXMLReader();
-                parser.setContentHandler(this);
-                parser.setErrorHandler(this);
-                parser.setEntityResolver(this);
-            }
-            return parser;
-        }
-
-        /** Implementation of entity resolver. Points to the local DTD
-         * for our public ID */
-        public InputSource resolveEntity (String publicId, String systemId)
-        throws SAXException {
-            if (INSTANCE_DTD_ID_1_0.equals(publicId)
-             || INSTANCE_DTD_ID_1_1.equals(publicId)
-             || INSTANCE_DTD_ID_1_2.equals(publicId)
-             || INSTANCE_DTD_ID_2_0.equals(publicId)
-             || INSTANCE_DTD_ID_2_1.equals(publicId)) {
-                InputStream is = new ByteArrayInputStream(new byte[0]);
-                //getClass().getResourceAsStream(INSTANCE_DTD_LOCAL);
-//                if (is == null) {
-//                    throw new IllegalStateException ("Entity cannot be resolved."); // NOI18N
-//                }
-                return new InputSource(is);
-            }
-            return null; // i.e. follow advice of systemID
-        }
     }
     
 }

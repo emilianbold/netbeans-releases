@@ -13,10 +13,7 @@
 
 package org.netbeans.core.windows.persistence;
 
-import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
-import org.netbeans.core.windows.RegistryImpl;
-import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.SaveCookie;
@@ -36,12 +33,20 @@ import org.openide.windows.TopComponent;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InvalidObjectException;
 import java.io.NotSerializableException;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import org.openide.xml.XMLUtil;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 
 /** Manages persistent data of window system, currently stored in XML format.
@@ -132,8 +137,8 @@ public final class PersistenceManager implements PropertyChangeListener {
     /** Lock for synchronizing access to IDs. */
     private final Object LOCK_IDS = new Object();
     
-    /** true if we are saving just now, false otherwise */
-    private boolean isSaveInProgress;
+    /** xml parser */
+    private XMLReader parser;
     
     private static PersistenceManager defaultInstance;
     
@@ -533,14 +538,6 @@ public final class PersistenceManager implements PropertyChangeListener {
         }
     }
     
-    /** Destroys settings files of component with given string ID. */ 
-    private void deleteTopComponentFile(String stringId) throws IOException {
-        DataObject dob = findTopComponentDataObject(getComponentsLocalFolder(), stringId);
-        if(dob != null) {
-            dob.delete();
-        }
-    }
-
     /** Try to find the data object representing a top component ref in some folder.
      * Only the TC name is known, but we can guess at some likely filenames before
      * doing an exhaustive search. Produces either a FileObject or DataObject,
@@ -810,69 +807,6 @@ public final class PersistenceManager implements PropertyChangeListener {
         return srcName;
     }
     
-    /** Called during projects switch BEFORE new project is loaded and AFTER
-     * project layer is switched. */
-    public void resetAfterLayerSwitch() {
-        resetAllTCPairs();
-        resetWindowManagerParser();
-        copySettingsFiles();
-        restoreAllTCPairs();
-    }
-    
-    /** Must be called during Project switch */
-    private void resetAllTCPairs () {
-        synchronized(LOCK_IDS) {
-            invalidIds = new HashSet(topComponent2IDMap.values());
-            /*System.out.println("-- PM.resetAllTCPairs ENTER");
-            for (Iterator it = invalidIds.iterator(); it.hasNext(); ) {
-                System.out.println("-- item:" + it.next());
-            }*/
-            
-            id2TopComponentMap.clear();
-        }
-    }
-    
-    /** Must be called during Project switch */
-    private void restoreAllTCPairs () {
-        synchronized(LOCK_IDS) {
-            //System.out.println("-- PM.restoreAllTCPairs ENTER");
-            
-            for (Iterator it = topComponent2IDMap.keySet().iterator(); it.hasNext(); ) {
-                TopComponent tc = (TopComponent) it.next();
-                String id = (String) topComponent2IDMap.get(tc);
-                //System.out.println("-- PM.restoreAllTCPairs id:" + id);
-                if (isInvalidId(id)) {
-                    restorePair(tc, id);
-                }
-            }
-            
-            /*for (Iterator it = id2TopComponentMap.keySet().iterator(); it.hasNext(); ) {
-                System.out.println("-- item:" + it.next());
-            }*/
-            
-            Set toRemove = new HashSet();
-            for (Iterator it = topComponent2IDMap.keySet().iterator(); it.hasNext(); ) {
-                TopComponent tc = (TopComponent) it.next();
-                String id = (String) topComponent2IDMap.get(tc);
-                if (!id2TopComponentMap.containsKey(id)) {
-                    //System.out.println("-- PM.restoreAllTCPairs REMOVE tc:" + tc.getName());
-                    toRemove.add(tc);
-                } /*else {
-                    System.out.println("-- PM.restoreAllTCPairs KEEP tc:" + tc.getName());
-                }*/
-            }
-            
-            for (Iterator it = toRemove.iterator(); it.hasNext(); ) {
-                topComponent2IDMap.remove(it.next());
-            }
-            
-            /*System.out.println("-- PM.restoreAllTCPairs topComponent2IDMap.size:"
-            + topComponent2IDMap.size());
-            System.out.println("-- PM.restoreAllTCPairs id2TopComponentMap.size:"
-            + id2TopComponentMap.size());*/
-        }
-    }
-    
     /** Reuses existing settings files */
     private String restorePair (TopComponent tc, String id) {
         //System.out.println("++ PM.restorePair ENTER"
@@ -941,17 +875,6 @@ public final class PersistenceManager implements PropertyChangeListener {
         failedCompsMap = null;
     }
     
-    private void setSaveInProgress (boolean isSaveInProgress) {
-        this.isSaveInProgress = isSaveInProgress;
-    } // TEMP
-    
-    /** @return true if saving of window system is currently being processed,
-     * false otherwise. Used to disallow interferation of parsing and saving.
-     */
-    boolean isSaveInProgress () {
-        return isSaveInProgress;
-    } // TEMP
-    
     /** Accessor to WindowManagerParser instance. */
     public WindowManagerParser getWindowManagerParser () {
         if (windowManagerParser == null) {
@@ -960,9 +883,45 @@ public final class PersistenceManager implements PropertyChangeListener {
         return windowManagerParser;
     }
     
-    /** Reset WindowManagerParser instance. Called during project switch. */
-    private void resetWindowManagerParser() {
-        windowManagerParser = null;
+    /** Returns a XML parser. The same parser can be returned assuming that config files
+     * are parser sequentially.
+     *
+     * @return XML parser with set content handler, errror handler
+     * and entity resolver.
+     */
+    public XMLReader getXMLParser (DefaultHandler h) throws SAXException {
+        if (parser == null) {
+            // get non validating, not namespace aware parser
+            parser = XMLUtil.createXMLReader();
+            parser.setEntityResolver(new EntityResolver () {
+                /** Implementation of entity resolver. Points to the local DTD
+                 * for our public ID */
+                public InputSource resolveEntity (String publicId, String systemId)
+                throws SAXException {
+                    if (ModeParser.INSTANCE_DTD_ID_1_0.equals(publicId)
+                    || ModeParser.INSTANCE_DTD_ID_1_1.equals(publicId)
+                    || ModeParser.INSTANCE_DTD_ID_1_2.equals(publicId)
+                    || ModeParser.INSTANCE_DTD_ID_2_0.equals(publicId)
+                    || ModeParser.INSTANCE_DTD_ID_2_1.equals(publicId)
+                    || GroupParser.INSTANCE_DTD_ID_2_0.equals(publicId)
+                    || TCGroupParser.INSTANCE_DTD_ID_2_0.equals(publicId)
+                    || TCRefParser.INSTANCE_DTD_ID_1_0.equals(publicId)
+                    || TCRefParser.INSTANCE_DTD_ID_2_0.equals(publicId)
+                    || TCRefParser.INSTANCE_DTD_ID_2_1.equals(publicId)
+                    || WindowManagerParser.INSTANCE_DTD_ID_1_0.equals(publicId)
+                    || WindowManagerParser.INSTANCE_DTD_ID_1_1.equals(publicId)
+                    || WindowManagerParser.INSTANCE_DTD_ID_2_0.equals(publicId)
+                    || WindowManagerParser.INSTANCE_DTD_ID_2_1.equals(publicId)) {
+                        InputStream is = new ByteArrayInputStream(new byte[0]);
+                        return new InputSource(is);
+                    }
+                    return null; // i.e. follow advice of systemID
+                }
+            });
+        }
+        parser.setContentHandler(h);
+        parser.setErrorHandler(h);
+        return parser;
     }
     
     /** Adds TopComponent Id to set of used Ids. Called from ModeParser and
@@ -1024,7 +983,7 @@ public final class PersistenceManager implements PropertyChangeListener {
      * @return window system configuration
      */
     public WindowManagerConfig loadWindowSystem() {
-        //long start = System.currentTimeMillis();
+//        long start = System.currentTimeMillis();
         
         //Clear set of used tc_id
         synchronized (LOCK_IDS) {
@@ -1050,9 +1009,11 @@ public final class PersistenceManager implements PropertyChangeListener {
             changeHandler = new ModuleChangeHandler();
             changeHandler.startHandling();
         }
-        //long end = System.currentTimeMillis();
-        //long diff = end - start;
-        //System.out.println("Loading of window system takes " + diff + " ms");
+        parser = null; // clear the ref to XML parser
+        
+//        long end = System.currentTimeMillis();
+//        long diff = end - start;
+//        System.out.println("Loading of window system takes " + diff + " ms");
         return wmc;
     }
     
@@ -1245,7 +1206,6 @@ public final class PersistenceManager implements PropertyChangeListener {
             Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class));
         Collection infos = modulesResult.allInstances();
         ModuleInfo curInfo = null;
-        boolean equalsName = false;
         for (Iterator iter = infos.iterator(); iter.hasNext(); ) {
             curInfo = (ModuleInfo)iter.next();
             // search for equal base name and then compare release and

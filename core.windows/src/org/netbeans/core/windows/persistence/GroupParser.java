@@ -36,7 +36,7 @@ import java.util.*;
 
 class GroupParser {
     
-    private static final String INSTANCE_DTD_ID_2_0
+    public static final String INSTANCE_DTD_ID_2_0
         = "-//NetBeans//DTD Group Properties 2.0//EN"; // NOI18N
     
     private static final boolean DEBUG = Debug.isLoggable(GroupParser.class);
@@ -394,9 +394,6 @@ class GroupParser {
         /** Internal configuration data */
         private InternalConfig internalConfig = null;
         
-        /** xml parser */
-        private XMLReader parser;
-        
         /** Lock to prevent mixing readData and writeData */
         private final Object RW_LOCK = new Object();
         
@@ -466,7 +463,7 @@ class GroupParser {
                     if (DEBUG) Debug.log(GroupParser.class, s);*/
                     //DUMP END
                     
-                    getXMLParser().parse(new InputSource(cfgFOInput.getInputStream()));
+                    PersistenceManager.getDefault().getXMLParser(this).parse(new InputSource(cfgFOInput.getInputStream()));
                 }
             } catch (SAXException exc) {
                 //Turn into annotated IOException
@@ -504,14 +501,6 @@ class GroupParser {
         
         public void error(SAXParseException ex) throws SAXException  {
             throw ex;
-        }
-        
-        public void fatalError(SAXParseException ex) throws SAXException {
-            throw ex;
-        }
-        
-        public void warning(SAXParseException ex) throws SAXException {
-            // ignore
         }
         
         /** Reads element "group" */
@@ -606,41 +595,6 @@ class GroupParser {
             }
         }
         
-        public void endDocument() throws SAXException {
-        }
-        
-        public void ignorableWhitespace(char[] values, int param, int param2) 
-        throws SAXException {
-        }
-        
-        public void endElement(String str, String str1, String str2) 
-        throws SAXException {
-        }
-        
-        public void skippedEntity(String str) throws SAXException {
-        }
-        
-        public void processingInstruction(String str, String str1) 
-        throws SAXException {
-        }
-                
-        public void endPrefixMapping(String str) throws SAXException {
-        }
-        
-        public void startPrefixMapping(String str, String str1) 
-        throws SAXException {
-        }
-        
-        public void characters(char[] values, int param, int param2) 
-        throws SAXException {
-        }
-        
-        public void setDocumentLocator(org.xml.sax.Locator locator) {
-        }
-        
-        public void startDocument() throws SAXException {
-        }
-        
         /** Writes data from asociated group to the xml representation */
         void writeData (GroupConfig sc, InternalConfig ic) throws IOException {
             final StringBuffer buff = fillBuffer(sc, ic);
@@ -721,20 +675,6 @@ class GroupParser {
             buff.append(" />\n"); // NOI18N
         }
         
-        /** @return Newly created parser with group content handler, errror handler
-         * and entity resolver
-         */
-        private XMLReader getXMLParser () throws SAXException {
-            if (parser == null) {
-                // get non validating, not namespace aware parser
-                parser = XMLUtil.createXMLReader();
-                parser.setContentHandler(this);
-                parser.setErrorHandler(this);
-                parser.setEntityResolver(this);
-            }
-            return parser;
-        }
-
         /** Implementation of entity resolver. Points to the local DTD
          * for our public ID */
         public InputSource resolveEntity (String publicId, String systemId)

@@ -142,9 +142,6 @@ class TCRefParser {
         /** internal configuration data */
         private InternalConfig internalConfig = null;
         
-        /** xml parser */
-        private XMLReader parser;
-        
         /** Lock to prevent mixing readData and writeData */
         private final Object RW_LOCK = new Object();
         
@@ -212,7 +209,7 @@ class TCRefParser {
                     log(s);*/
                     //DUMP END
                     
-                    getXMLParser().parse(new InputSource(cfgFOInput.getInputStream()));
+                    PersistenceManager.getDefault().getXMLParser(this).parse(new InputSource(cfgFOInput.getInputStream()));
                 }
             } catch (SAXException exc) {
                 //Turn into annotated IOException
@@ -255,14 +252,6 @@ class TCRefParser {
             throw ex;
         }
 
-        public void fatalError(SAXParseException ex) throws SAXException {
-            throw ex;
-        }
-
-        public void warning(SAXParseException ex) throws SAXException {
-            // ignore
-        }
-        
         /** Reads element "tc-ref" */
         private void handleTCRef (Attributes attrs) {
             String version = attrs.getValue("version"); // NOI18N
@@ -381,41 +370,6 @@ class TCRefParser {
             }
         }
         
-        
-        public void endDocument() throws SAXException {
-        }
-        
-        public void ignorableWhitespace(char[] values, int param, int param2) 
-        throws SAXException {
-        }
-        
-        public void endElement(String str, String str1, String str2) 
-        throws SAXException {
-        }
-        
-        public void skippedEntity(String str) throws SAXException {
-        }
-        
-        public void processingInstruction(String str, String str1)
-        throws SAXException {
-        }
-                
-        public void endPrefixMapping(String str) throws SAXException {
-        }
-        
-        public void startPrefixMapping(String str, String str1) throws SAXException {
-        }
-        
-        public void characters(char[] values, int param, int param2) 
-        throws SAXException {
-        }
-        
-        public void setDocumentLocator(org.xml.sax.Locator locator) {
-        }
-        
-        public void startDocument() throws SAXException {
-        }
-        
         /** Writes data from asociated tcRef to the xml representation */
         void writeData (TCRefConfig tcRefCfg, InternalConfig ic) throws IOException {
             final StringBuffer buff = fillBuffer(tcRefCfg, ic);
@@ -506,36 +460,6 @@ class TCRefParser {
             buff.append("\" />\n"); // NOI18N
         }
 
-        /** @return Newly created parser with set content handler, errror handler
-         * and entity resolver
-         */
-        private XMLReader getXMLParser () throws SAXException {
-            if (parser == null) {
-                // get non validating, not namespace aware parser
-                parser = XMLUtil.createXMLReader();
-                parser.setContentHandler(this);
-                parser.setErrorHandler(this);
-                parser.setEntityResolver(this);
-            }
-            return parser;
-        }
-
-        /** Implementation of entity resolver. Points to the local DTD
-         * for our public ID */
-        public InputSource resolveEntity (String publicId, String systemId)
-        throws SAXException {
-            if (INSTANCE_DTD_ID_1_0.equals(publicId)
-             || INSTANCE_DTD_ID_2_0.equals(publicId)
-             || INSTANCE_DTD_ID_2_1.equals(publicId)) {
-                InputStream is = new ByteArrayInputStream(new byte[0]);
-                //getClass().getResourceAsStream(INSTANCE_DTD_LOCAL);
-//                if (is == null) {
-//                    throw new IllegalStateException ("Entity cannot be resolved."); // NOI18N
-//                }
-                return new InputSource(is);
-            }
-            return null; // i.e. follow advice of systemID
-        }
     }
     
 }

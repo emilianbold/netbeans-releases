@@ -40,13 +40,13 @@ import java.util.List;
 
 public class WindowManagerParser {
     
-    private static final String INSTANCE_DTD_ID_1_0
+    public static final String INSTANCE_DTD_ID_1_0
         = "-//NetBeans//DTD Window Manager Properties 1.0//EN"; // NOI18N
-    private static final String INSTANCE_DTD_ID_1_1
+    public static final String INSTANCE_DTD_ID_1_1
         = "-//NetBeans//DTD Window Manager Properties 1.1//EN"; // NOI18N
-    private static final String INSTANCE_DTD_ID_2_0
+    public static final String INSTANCE_DTD_ID_2_0
         = "-//NetBeans//DTD Window Manager Properties 2.0//EN"; // NOI18N
-    private static final String INSTANCE_DTD_ID_2_1
+    public static final String INSTANCE_DTD_ID_2_1
         = "-//NetBeans//DTD Window Manager Properties 2.1//EN"; // NOI18N
     
     private static final boolean DEBUG = Debug.isLoggable(WindowManagerParser.class);
@@ -733,9 +733,6 @@ public class WindowManagerParser {
         /** List to store parsed tc-ids */
         private List tcIdList = new ArrayList(10);
         
-        /** xml parser */
-        private XMLReader parser;
-        
         /** Lock to prevent mixing readData and writeData */
         private final Object RW_LOCK = new Object();
         
@@ -820,7 +817,7 @@ public class WindowManagerParser {
                     if (DEBUG) Debug.log(WindowManagerParser.class, s);*/
                     //DUMP END
 //                    long time = System.currentTimeMillis();
-                    getXMLParser().parse(new InputSource(cfgFOInput.getInputStream()));
+                    PersistenceManager.getDefault().getXMLParser(this).parse(new InputSource(cfgFOInput.getInputStream()));
 //                    System.out.println("WindowManagerParser.readData "+(System.currentTimeMillis()-time));
                 }
             } catch (SAXException exc) {
@@ -887,14 +884,6 @@ public class WindowManagerParser {
             throw ex;
         }
 
-        public void fatalError(SAXParseException ex) throws SAXException {
-            throw ex;
-        }
-
-        public void warning(SAXParseException ex) throws SAXException {
-            // ignore
-        }
-        
         /** Reads element "windowmanager" */
         private void handleWindowManager (Attributes attrs) {
             String version = attrs.getValue("version"); // NOI18N
@@ -1709,36 +1698,6 @@ public class WindowManagerParser {
             }
         }
         
-        public void endDocument() throws org.xml.sax.SAXException {
-        }
-        
-        public void ignorableWhitespace(char[] values, int param, int param2) throws org.xml.sax.SAXException {
-        }
-        
-        public void endElement(java.lang.String str, java.lang.String str1, java.lang.String str2) throws org.xml.sax.SAXException {
-        }
-        
-        public void skippedEntity(java.lang.String str) throws org.xml.sax.SAXException {
-        }
-        
-        public void processingInstruction(java.lang.String str, java.lang.String str1) throws org.xml.sax.SAXException {
-        }
-                
-        public void endPrefixMapping(java.lang.String str) throws org.xml.sax.SAXException {
-        }
-        
-        public void startPrefixMapping(java.lang.String str, java.lang.String str1) throws org.xml.sax.SAXException {
-        }
-        
-        public void characters(char[] values, int param, int param2) throws org.xml.sax.SAXException {
-        }
-        
-        public void setDocumentLocator(org.xml.sax.Locator locator) {
-        }
-        
-        public void startDocument() throws SAXException {
-        }
-        
         /** Writes data from asociated window manager to the xml representation */
         void writeData (WindowManagerConfig wmc) throws IOException {
             final StringBuffer buff = fillBuffer(wmc);
@@ -1893,37 +1852,6 @@ public class WindowManagerParser {
             buff.append("    </tc-list>\n"); // NOI18N
         }
         
-        /** @return Newly created parser with set content handler, errror handler
-         * and entity resolver
-         */
-        private XMLReader getXMLParser () throws SAXException {
-            if (parser == null) {
-                // get non validating, not namespace aware parser
-                parser = XMLUtil.createXMLReader();
-                parser.setContentHandler(this);
-                parser.setErrorHandler(this);
-                parser.setEntityResolver(this);
-            }
-            return parser;
-        }
-
-        /** Implementation of entity resolver. Points to the local DTD
-         * for our public ID */
-        public InputSource resolveEntity (String publicId, String systemId)
-        throws SAXException {
-            if (INSTANCE_DTD_ID_1_0.equals(publicId)
-             || INSTANCE_DTD_ID_1_1.equals(publicId)
-             || INSTANCE_DTD_ID_2_0.equals(publicId)
-             || INSTANCE_DTD_ID_2_1.equals(publicId)) {
-                InputStream is = new ByteArrayInputStream(new byte[0]);
-                //getClass().getResourceAsStream(INSTANCE_DTD_LOCAL);
-//                if (is == null) {
-//                    throw new IllegalStateException ("Entity cannot be resolved."); // NOI18N
-//                }
-                return new InputSource(is);
-            }
-            return null; // i.e. follow advice of systemID
-        }
     }
     
     /** Float.parseFloat() shows up as a startup hotspot (classloading?), so this uses a 
