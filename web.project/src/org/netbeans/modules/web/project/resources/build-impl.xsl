@@ -264,7 +264,7 @@ is divided into following sections:
             </target>
             
             <target name="init-taskdefs">
-                <taskdef name="copyfiles" classname="org.netbeans.modules.web.project.ant.CopyFiles" classpath="${{libs.copyfiles.classpath}}"/>
+                <taskdef name="copyfiles" classname="org.netbeans.modules.web.project.ant.CopyFiles" classpath="${{copyfiles.classpath}}"/>
             </target>
             
             <target name="init">
@@ -362,7 +362,7 @@ is divided into following sections:
                     <arg value="-d"/>
                     <arg file="${{basedir}}/${{build.generated.dir}}/src"/>
                     <arg value="-die1"/>
-                    <classpath path="${{java.home}}/../lib/tools.jar:${{libs.copyfiles.classpath}}:${{jspc.classpath}}"/> 
+                    <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspc.classpath}}"/> 
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
                 <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1"
@@ -388,7 +388,7 @@ is divided into following sections:
                     <arg value="-die1"/>
                     <arg value="-jspc.files"/>
                     <arg path="${{jsp.includes}}"/>
-                    <classpath path="${{java.home}}/../lib/tools.jar:${{libs.copyfiles.classpath}}:${{jspc.classpath}}"/> 
+                    <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspc.classpath}}"/> 
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
                 <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1"

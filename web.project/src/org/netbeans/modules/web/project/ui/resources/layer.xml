@@ -44,11 +44,6 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
-    <folder name="org-netbeans-api-project-libraries">
-        <folder name="Libraries">
-            <file name="copyfiles.xml" url="copyfiles.xml"/>
-        </folder>
-    </folder>
     <folder name="org-netbeans-modules-web-project">
         <file name="web-2.3.xml" url="web-2.3.xml"/>
         <file name="web-2.4.xml" url="web-2.4.xml"/>

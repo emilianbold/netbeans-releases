@@ -16,12 +16,17 @@ package org.netbeans.modules.web.project;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import javax.swing.Action;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataLoaderPool;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Lookup;
 import org.netbeans.spi.project.ActionProvider;
@@ -39,6 +44,8 @@ import org.openide.util.actions.SystemAction;
  * @author Martin Grebac
  */
 public class WebProjectModule extends ModuleInstall {
+    public static final String JSPC_CLASSPATH = "jspc.classpath"; //NOI18N
+    public static final String COPYFILES_CLASSPATH = "copyfiles.classpath"; //NOI18N
     
     public void restored() {
         // Hack JspDataLoader actions - not very nice - but copied from JavaProjectModule
@@ -77,6 +84,45 @@ public class WebProjectModule extends ModuleInstall {
             ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
         }
         
+        ProjectManager.mutex().postWriteRequest(
+                new Runnable () {
+                    public void run () {
+                        try {
+                            EditableProperties ep = PropertyUtils.getGlobalProperties();
+                            boolean changed = false;
+                            if (ep.getProperty(JSPC_CLASSPATH) == null) {
+                                // JSPC classpath
+                                StringBuffer sb = new StringBuffer();
+                                // Ant is needed in classpath if we are forking JspC into another process
+                                sb.append(InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false));
+                                sb.append(":"); // NOI18N
+                                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/servlet-api-2.4.jar", null, false));
+                                sb.append(":"); // NOI18N
+                                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jsp-api-2.0.jar", null, false));
+                                sb.append(":"); // NOI18N
+                                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.0.27.jar", null, false));
+                                sb.append(":"); // NOI18N
+                                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.0.27.jar", null, false));
+                                sb.append(":"); // NOI18N
+                                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-el.jar", null, false));
+                                sb.append(":"); // NOI18N
+                                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-logging-api.jar", null, false));
+                                ep.setProperty(JSPC_CLASSPATH, sb.toString());
+                                changed = true;
+                            }
+                            if (ep.getProperty(COPYFILES_CLASSPATH) == null) {
+                                ep.setProperty(COPYFILES_CLASSPATH, InstalledFileLocator.getDefault().locate("ant/extra/copyfiles.jar", null, false).toString());
+                                changed = true;
+                            }
+                            if (changed) {
+                                PropertyUtils.putGlobalProperties (ep);
+                            }
+                        } catch (IOException ioe) {
+                            ErrorManager.getDefault().notify (ioe);
+                        }
+                    }
+                }
+        );
     }
     
             

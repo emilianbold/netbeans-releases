@@ -117,7 +117,6 @@ public class WebProjectProperties {
     public static final String COMPILE_JSPS = "compile.jsps"; //NOI18N
     
     // Properties stored in the PRIVATE.PROPERTIES
-    public static final String JSPC_CLASSPATH = "jspc.classpath"; //NOI18N
     
     
     // Shortcuts 
@@ -141,7 +140,6 @@ public class WebProjectProperties {
         new PropertyDescriptor( DIST_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_WAR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVAC_CLASSPATH, PROJECT, PATH_PARSER ),
-        new PropertyDescriptor( JSPC_CLASSPATH, PRIVATE, PATH_PARSER ),
         new PropertyDescriptor( COMPILE_JSPS, PROJECT, BOOLEAN_PARSER ),
         //new PropertyDescriptor( JSP_COMPILER_CLASSPATH, PRIVATE, PATH_PARSER ),
         new PropertyDescriptor( DEBUG_CLASSPATH, PROJECT, PATH_PARSER ),
