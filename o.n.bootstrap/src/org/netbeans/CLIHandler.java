@@ -714,13 +714,10 @@ public abstract class CLIHandler extends Object {
         private static final class IS extends InputStream {
             private DataInputStream is;
             private DataOutputStream os;
-            /** serving requests only from this thread */
-            private Thread thread;
             
             public IS(DataInputStream is, DataOutputStream os) {
                 this.is = is;
                 this.os = os;
-                this.thread = Thread.currentThread();
             }
             
             public int read() throws IOException {
@@ -760,15 +757,10 @@ public abstract class CLIHandler extends Object {
         } // end of IS
         
         private static final class OS extends OutputStream {
-            private DataInputStream is;
             private DataOutputStream os;
-            /** serving requests only from this thread */
-            private Thread thread;
             
             public OS(DataInputStream is, DataOutputStream os) {
-                this.is = is;
                 this.os = os;
-                this.thread = Thread.currentThread();
             }
             
             public void write(int b) throws IOException {
