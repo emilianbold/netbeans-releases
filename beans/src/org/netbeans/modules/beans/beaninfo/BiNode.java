@@ -43,7 +43,7 @@ public final class BiNode extends AbstractNode {
 
     private static String ICON_BASE = "org/netbeans/modules/beans/resources/beanInfo"; // NOI18N
     private static String ICON_BASE_PATTERNS = "org/netbeans/modules/beans/resources/patternGroup"; // NOI18N
-    private static String WAIT_ICON_BASE = "org/openide/resources/src/wait"; // NOI18N
+    private static String WAIT_ICON_BASE = "org/openide/src/resources/wait"; // NOI18N
 
     private static String PROP_NULL_DESCRIPTOR = "nullDescriptor"; // NOI18N
     private static String PROP_NULL_PROPERTIES = "nullProperties"; // NOI18N
