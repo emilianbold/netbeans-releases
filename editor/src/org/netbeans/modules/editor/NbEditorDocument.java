@@ -174,6 +174,10 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.Annotatable {
     /** Removal of added annotation.
      * @param annotation annotation which is going to be removed */
     public void removeAnnotation(Annotation annotation) {
+        if (annotation == null) { // issue 14803
+            return; // can't do more as the rest of stacktrace is in openide and ant
+        }
+
         if (annotation.getAnnotationType() != null) {
             AnnotationDescDelegate a = (AnnotationDescDelegate)annoMap.get(annotation);
             try {
