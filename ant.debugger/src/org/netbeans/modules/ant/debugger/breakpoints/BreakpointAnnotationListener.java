@@ -7,9 +7,10 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Micro//S ystems, Inc. Portions Copyright 1997-2001 Sun
- * Micro//S ystems, Inc. All Rights Reserved.
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.ant.debugger.breakpoints;
 
 import java.beans.PropertyChangeEvent;

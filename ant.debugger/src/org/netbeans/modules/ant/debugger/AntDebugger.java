@@ -1,5 +1,15 @@
-
-
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
 
 package org.netbeans.modules.ant.debugger;
 
@@ -266,7 +276,7 @@ public class AntDebugger extends ActionsProviderSupport {
                  !watches.get (ws [j].getExpression ()).equals (value)
             ) {
                 callStack = new Object [jj - j];
-                //S ystem.arraycopy 
+                System.arraycopy 
                     (callStackInternal, j, callStack, 0, jj - j);
                 watches.put (
                     ws [j].getExpression (), 
@@ -301,7 +311,7 @@ public class AntDebugger extends ActionsProviderSupport {
                      )
                 ) {
                     callStack = new Object [jj - j];
-                    //S ystem.arraycopy 
+                    System.arraycopy 
                         (callStackInternal, j, callStack, 0, jj - j);
                     return true;
                 }
@@ -404,7 +414,7 @@ public class AntDebugger extends ActionsProviderSupport {
             callStack [0] = callStackInternal [callStackInternal.length - 1];
         } else {
             Object[] newStack = new Object [callStack.length - 1];
-            //S ystem.arraycopy (
+            System.arraycopy (
                 callStack, 
                 1,
                 newStack, 
@@ -419,7 +429,7 @@ public class AntDebugger extends ActionsProviderSupport {
     private void stepDown () {
         //S ystem.out.println("stepDown");
         callStack = new Object [callStack.length + 1];
-        //S ystem.arraycopy (
+        System.arraycopy (
             callStackInternal, 
             callStackInternal.length - callStack.length, 
             callStack, 
