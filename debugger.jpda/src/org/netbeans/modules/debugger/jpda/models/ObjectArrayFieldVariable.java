@@ -29,7 +29,6 @@ implements ObjectVariable {
     ObjectArrayFieldVariable (
         LocalsTreeModel model, 
         ObjectReference value,
-        String className,
         String declaredType,
         ArrayReference array,
         int index, 
@@ -38,7 +37,6 @@ implements ObjectVariable {
         super (
             model, 
             value, 
-            className,
             declaredType,
             array,
             index,

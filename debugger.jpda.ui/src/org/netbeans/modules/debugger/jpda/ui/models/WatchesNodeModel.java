@@ -19,7 +19,6 @@ import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.netbeans.modules.debugger.jpda.ui.FixedWatch;
 import org.openide.util.NbBundle;
 
 
@@ -30,8 +29,6 @@ public class WatchesNodeModel extends VariablesNodeModel {
 
     public static final String WATCH =
         "org/netbeans/modules/debugger/resources/watchesView/Watch";
-    public static final String FIXED_WATCH =
-        "org/netbeans/modules/debugger/resources/watchesView/FixedWatch";
 
 
     public WatchesNodeModel (ContextProvider lookupProvider) {
@@ -43,8 +40,6 @@ public class WatchesNodeModel extends VariablesNodeModel {
             return NbBundle.getBundle(WatchesNodeModel.class).getString("CTL_WatchesModel_Column_Name_Name");
         if (o instanceof JPDAWatch)
             return ((JPDAWatch) o).getExpression ();
-        if (o instanceof FixedWatch)
-            return ((FixedWatch) o).getName();
         return super.getDisplayName (o);
     }
     
@@ -67,10 +62,6 @@ public class WatchesNodeModel extends VariablesNodeModel {
                     return ex.getLocalizedMessage ();
                 }
         }
-        if (o instanceof FixedWatch) {
-            FixedWatch fw = (FixedWatch) o;
-            return fw.getName() + " = (" + fw.getType() + ") " + fw.getValue();
-        }
         return super.getShortDescription (o);
     }
     
@@ -79,8 +70,6 @@ public class WatchesNodeModel extends VariablesNodeModel {
             return WATCH;
         if (o instanceof JPDAWatch)
             return WATCH;
-        if (o instanceof FixedWatch)
-            return FIXED_WATCH;
         return super.getIconBase (o);
     }
 

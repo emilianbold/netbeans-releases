@@ -1,3 +1,4 @@
 org.netbeans.modules.debugger.jpda.ui.models.WatchesActionsProvider
 org.netbeans.modules.debugger.jpda.ui.FixedWatchesManager
+org.netbeans.modules.debugger.jpda.ui.models.VariablesActionsProvider
 org.netbeans.modules.debugger.jpda.ui.models.VariablesTreeModelFilterSI

@@ -455,15 +455,24 @@ public class AbstractVariable implements ObjectVariable {
             List l = ar.getValues();
             int i, k = l.size ();
             Field[] ch = new Field [k];
-            String className = ar.referenceType ().name ();
             for (i = 0; i < k; i++) {
                 Value v = (Value) l.get (i);
                 ch [i] = (v instanceof ObjectReference) ?
                     new ObjectArrayFieldVariable (
-                        this.getModel(), (ObjectReference) v, className, componentType, ar, i, parentID
+                        this.getModel (), 
+                        (ObjectReference) v, 
+                        componentType, 
+                        ar, 
+                        i, 
+                        parentID
                     ) :
                     new ArrayFieldVariable (
-                        this.getModel(), v, className, componentType, ar, i, parentID
+                        this.getModel (), 
+                        v, 
+                        componentType, 
+                        ar, 
+                        i, 
+                        parentID
                     );
             }
             this.fields = ch;
@@ -496,9 +505,12 @@ public class AbstractVariable implements ObjectVariable {
                     allInheretedFields.add(field);
             }
         }
-        this.fields = (Field[]) fields.toArray(new Field[fields.size()]);
-        this.inheritedFields = (Field[]) allInheretedFields.toArray(new Field[allInheretedFields.size()]);
-        this.staticFields = (Field[]) staticFields.toArray(new Field[staticFields.size()]);
+        this.fields = (Field[]) fields.toArray (new Field [fields.size ()]);
+        this.inheritedFields = (Field[]) allInheretedFields.toArray (
+            new Field [allInheretedFields.size ()]
+        );
+        this.staticFields = (Field[]) staticFields.toArray 
+            (new Field [staticFields.size ()]);
     }
     
     FieldVariable getField (

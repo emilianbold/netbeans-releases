@@ -13,7 +13,9 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.util.Vector;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
@@ -27,11 +29,24 @@ import org.openide.util.NbBundle;
  * @author   Jan Jancura
  */
 public class ThreadsTableModel implements TableModel, Constants {
+    
+    private Vector listeners = new Vector ();
+    
 
     public Object getValueAt (Object row, String columnID) throws 
     UnknownTypeException {
         if (row instanceof MonitorModel.ThreadWithBordel) 
             row = ((MonitorModel.ThreadWithBordel) row).originalThread;
+        if (row instanceof JPDAThreadGroup) {
+            if (columnID.equals (THREAD_STATE_COLUMN_ID)) 
+                return "";
+            if (columnID.equals (THREAD_SUSPENDED_COLUMN_ID)) {
+                JPDAThreadGroup group = (JPDAThreadGroup) row;
+                JPDAThread[] threads = group.getThreads ();
+                if (threads.length < 1) return Boolean.FALSE;
+                return new Boolean (threads [0].isSuspended ());
+            }
+        }
         if (row instanceof JPDAThread) {
             if (columnID.equals (THREAD_STATE_COLUMN_ID)) 
                 switch (((JPDAThread) row).getState ()) {
@@ -82,6 +97,12 @@ public class ThreadsTableModel implements TableModel, Constants {
     UnknownTypeException {
         if (row instanceof MonitorModel.ThreadWithBordel) 
             row = ((MonitorModel.ThreadWithBordel) row).originalThread;
+        if (row instanceof JPDAThreadGroup) {
+            if (columnID.equals (THREAD_STATE_COLUMN_ID)) 
+                return true;
+            if (columnID.equals (THREAD_SUSPENDED_COLUMN_ID)) 
+                return false;
+        }
         if (row instanceof JPDAThread) {
             if (columnID.equals (THREAD_STATE_COLUMN_ID))
                 return true;
@@ -96,6 +117,16 @@ public class ThreadsTableModel implements TableModel, Constants {
     throws UnknownTypeException {
         if (row instanceof MonitorModel.ThreadWithBordel) 
             row = ((MonitorModel.ThreadWithBordel) row).originalThread;
+        if (row instanceof JPDAThreadGroup) {
+            if (columnID.equals (THREAD_SUSPENDED_COLUMN_ID)) {
+                if (((Boolean) value).booleanValue ())
+                    ((JPDAThreadGroup) row).suspend ();
+                else
+                    ((JPDAThreadGroup) row).resume ();
+                refresh (row);
+                return;
+            }
+        }
         if (row instanceof JPDAThread) {
             if (columnID.equals (THREAD_SUSPENDED_COLUMN_ID)) {
                 if (value.equals (Boolean.TRUE))
@@ -114,6 +145,7 @@ public class ThreadsTableModel implements TableModel, Constants {
      * @param l the listener to add
      */
     public void addTreeModelListener (TreeModelListener l) {
+        listeners.add (l);
     }
 
     /** 
@@ -122,5 +154,13 @@ public class ThreadsTableModel implements TableModel, Constants {
      * @param l the listener to remove
      */
     public void removeTreeModelListener (TreeModelListener l) {
+        listeners.remove (l);
+    }
+    
+    private void refresh (Object node) {
+        Vector v = (Vector) listeners.clone ();
+        int i, k = v.size ();
+        for (i = 0; i < k; i++)
+            ((TreeModelListener) v.get (i)).treeNodeChanged (node);
     }
 }

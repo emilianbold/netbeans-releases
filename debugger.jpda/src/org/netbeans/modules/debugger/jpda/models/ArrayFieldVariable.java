@@ -26,12 +26,10 @@ org.netbeans.api.debugger.jpda.Field {
     private final ArrayReference array;
     private int index;
     private String declaredType;
-    private String className;
 
     ArrayFieldVariable (
         LocalsTreeModel model, 
         Value value,
-        String className,
         String declaredType,
         ArrayReference array,
         int index, 
@@ -45,7 +43,6 @@ org.netbeans.api.debugger.jpda.Field {
         );
         this.index = index;
         this.declaredType = declaredType;
-        this.className = className;
         this.array = array;
     }
 
@@ -68,7 +65,7 @@ org.netbeans.api.debugger.jpda.Field {
      * @return name of enclosing class
      */
     public String getClassName () {
-        return className;
+        return getType ();
     }
 
     /**
