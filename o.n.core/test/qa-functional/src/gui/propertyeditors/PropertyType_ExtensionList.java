@@ -13,9 +13,15 @@
 
 package gui.propertyeditors;
 
-import org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.StringArrayCustomizer;
+//import org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.StringArrayCustomizer;
+
+//import org.netbeans.test.oo.gui.jam.JamButton;
+import org.netbeans.test.oo.gui.jam.JamTextField;
+import org.netbeans.test.oo.gui.jam.JamList;
 
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.test.oo.gui.jello.JelloBundle;
+import org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.CustomizerContainer;
 
 
 
@@ -59,8 +65,6 @@ public class PropertyType_ExtensionList extends PropertyEditorsTest {
         suite.addTest(new PropertyType_ExtensionList("testCustomizerAdd"));
         suite.addTest(new PropertyType_ExtensionList("testCustomizerRemove"));
         suite.addTest(new PropertyType_ExtensionList("testCustomizerEdit"));
-        suite.addTest(new PropertyType_ExtensionList("testCustomizerUp"));
-//        suite.addTest(new PropertyType_ExtensionList("testCustomizerDown"));
         return suite;
     }
     
@@ -86,21 +90,6 @@ public class PropertyType_ExtensionList extends PropertyEditorsTest {
         setByCustomizerOk(propertyName_L, true);
     }
 
-    public void testCustomizerUp() {
-        propertyValue_L = UP + "png";
-        propertyValueExpectation_L = "java, jpg, newHtml, png";
-        waitDialog = false;
-        lastTest = true;
-        setByCustomizerOk(propertyName_L, true);
-    }
-    
-    public void testCustomizerDown() {
-        propertyValue_L = DOWN + "jpg";
-        propertyValueExpectation_L = "java, jpg, newHtml, png";
-        waitDialog = false;
-        setByCustomizerOk(propertyName_L, true);
-    }
-    
     public void testCustomizerCancel(){
         propertyValue_L = ADD + "cancel";
         propertyValueExpectation_L = propertyValue_L;
@@ -116,7 +105,7 @@ public class PropertyType_ExtensionList extends PropertyEditorsTest {
     }
     
     public void setCustomizerValue() {
-        StringArrayCustomizer customizer = new StringArrayCustomizer(propertyCustomizer);
+        ExtensionCustomizer customizer = new ExtensionCustomizer(propertyCustomizer);
         
         if(propertyValue_L.startsWith(ADD)){
             customizer.addItem(getItem(propertyValue_L,ADD));
@@ -128,14 +117,6 @@ public class PropertyType_ExtensionList extends PropertyEditorsTest {
         
         if(propertyValue_L.startsWith(EDIT)){
             customizer.editItem(getItem(propertyValue_L,EDIT), getItem(propertyValue_L,EE));
-        }
-        
-        if(propertyValue_L.startsWith(UP)){
-            customizer.moveUpItem(getItem(propertyValue_L,UP));
-        }
-        
-        if(propertyValue_L.startsWith(DOWN)){
-            customizer.moveDownItem(getItem(propertyValue_L,DOWN));
         }
         
     }
@@ -164,5 +145,52 @@ public class PropertyType_ExtensionList extends PropertyEditorsTest {
         junit.textui.TestRunner.run(suite());
     }
     
+}
+
+
+class ExtensionCustomizer extends CustomizerContainer {
     
+    public JamTextField textField;
+    public JamList itemList;
+    
+    public ExtensionCustomizer(org.netbeans.test.oo.gui.jelly.propertyEditors.PropertyCustomizer propertyCustomizer) {
+        super(propertyCustomizer);
+    }
+
+    /** Verify constitution of this customizer - container. */
+    public void verify(){
+        textField = getJamTextField(0);
+        itemList = getJamList(0);
+    }
+    
+    /** Add string.                                                                                                                                                    
+     * @param item string to be added */                                                                                                                               
+    public void addItem(String item){                                                                                                                                  
+        textField.setText(item);                                                                                                                                       
+        getJamButton(JelloBundle.getString(propertySheetEditorsBundle, "CTL_Add_StringArrayCustomEditor")).doClick();
+    }                                                                                                                                                                  
+                                                                                                                                                                       
+    /** Remove string.                                                                                                                                                 
+     * @param item string to be removed */                                                                                                                             
+    public void removeItem(String item) {                                                                                                                              
+        selectItem(item);                                                                                                                                              
+        getJamButton(JelloBundle.getString(propertySheetEditorsBundle, "CTL_Remove")).doClick();                                                                                                                                        
+    }                                                                                                                                                                  
+                                                                                                                                                                       
+    /** Edit string.                                                                                                                                                   
+     * @param item string to be edite                                                                                                                                  
+     * @param newValue new value of string */                                                                                                                          
+    public void editItem(String item, String newValue) {                                                                                                               
+        selectItem(item);                                                                                                                                              
+        textField.setText(newValue);                                                                                                                                   
+        getJamButton(JelloBundle.getString(propertySheetEditorsBundle, "CTL_Change_StringArrayCustomEditor")).doClick();                                                                                                                                          
+    }                                                                                                                                                                  
+
+   /** Select string.                                                                                                                                                 
+     * @param item string to be selected */                                                                                                                            
+    public void selectItem(String item) {                                                                                                                              
+        itemList.selectItem(item);                                                                                                                                     
+        org.netbeans.test.oo.gui.jam.JamUtilities.waitEventQueueEmpty(100);                                                                                            
+    }                                                                                                                                                                  
+     
 }
