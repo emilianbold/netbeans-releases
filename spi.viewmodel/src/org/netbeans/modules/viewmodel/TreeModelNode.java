@@ -55,6 +55,7 @@ public class TreeModelNode extends AbstractNode {
     private Object              object;
     
     private String              name;
+    private String              htmlDisplayName;
     private String              shortDescription;
     private Map                 properties = new HashMap ();
     private Map                 oldProperties = new HashMap ();
@@ -135,6 +136,10 @@ public class TreeModelNode extends AbstractNode {
             });
         }
         return shortDescription;
+    }
+    
+    public String getHtmlDisplayName () {
+        return htmlDisplayName;
     }
     
     public Action[] getActions (boolean context) {
@@ -225,7 +230,11 @@ public class TreeModelNode extends AbstractNode {
     void refresh () {
         
         // 1) empty cache
-        name = null;
+        if (name != null) {
+            htmlDisplayName = "<i>" + name + "</i>";
+            setDisplayName (name + "@");
+            name = null;
+        }
         shortDescription = null;
         oldProperties = properties;
         properties = new HashMap ();
@@ -240,7 +249,8 @@ public class TreeModelNode extends AbstractNode {
                             "Model: " + model + ".getDisplayName (" + object + 
                             ") = null!"
                         ).printStackTrace ();
-                    setName (name);
+                    htmlDisplayName = null;
+                    //setName (name);
                     setDisplayName (name);
                     String iconBase = model.getIconBase (object);
                     if (iconBase != null)
@@ -250,7 +260,8 @@ public class TreeModelNode extends AbstractNode {
                 } catch (UnknownTypeException e) {
                     if (object instanceof String) {
                         name = (String) object;
-                        setName (name);
+                        htmlDisplayName = null;
+                        //setName (name);
                         setDisplayName (name);
 //                        setIconBase ("org/openide/resources/actions/empty");
                     } else {
@@ -453,7 +464,9 @@ public class TreeModelNode extends AbstractNode {
                 public void run () {
                     try {
                         Object value = model.getValueAt (object, id);
-                        if (value != null)
+                        if ( (value != null) &&
+                             (getValueType ().equals (String.class))
+                        )
                             properties.put (id, value);
                         firePropertyChange (id, null, value);
                     } catch (UnknownTypeException e) {
@@ -467,10 +480,12 @@ public class TreeModelNode extends AbstractNode {
                 }
             });
             Object value = oldProperties.get (id);
-            if ( value == null &&
-                 columnModel.getType ().equals (String.class)
-            )
-                value = "";
+            if (columnModel.getType ().equals (String.class)) {
+                if (value == null)
+                    value = "";
+                else
+                    value = "<html><i>" + value + "</i></html>";
+            }
             return value;
         }
         
