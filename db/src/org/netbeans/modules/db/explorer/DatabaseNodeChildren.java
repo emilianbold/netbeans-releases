@@ -70,17 +70,15 @@ public class DatabaseNodeChildren extends Children.Array
                         && isPointbaseDriver ) {
 
                             // node reference to ConnectionNodeInfo is set
-                            ConnectionNodeInfo cinfo = (ConnectionNodeInfo)((DatabaseNode)snode).getInfo();
+                            final ConnectionNodeInfo cinfo = (ConnectionNodeInfo)((DatabaseNode)snode).getInfo();
 
                             // set password
                             cinfo.setPassword("public"); //NOI18N
                             cinfo.put(DatabaseNodeInfo.REMEMBER_PWD, new Boolean(true));
 
-                            // open connection
                             try {
-                                cinfo.connect();
-                            } catch(Exception ex) {
-                            }
+                                cinfo.connect(ConnectionNodeInfo.AUTOPBCONN);
+                            } catch(Exception ex) {}
                     }
                 }
                 else
@@ -101,7 +99,7 @@ public class DatabaseNodeChildren extends Children.Array
                 cni.setDatabase( "jdbc:pointbase://embedded/sample" ); //NOI18N
 
                 // create of node
-                // aware! in this method is clone of instance dni created
+                // aware! in this method is clone of instance cni created
                 Node cnode = createNode(cni);
 
                 // node reference to ConnectionNodeInfo is set
@@ -118,7 +116,7 @@ public class DatabaseNodeChildren extends Children.Array
 
                 // open connection
                 try {
-                    cinfo.connect();
+                    cinfo.connect(ConnectionNodeInfo.AUTOPBCONN);
                 } catch(Exception ex) {
                 }
 
