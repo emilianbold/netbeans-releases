@@ -783,16 +783,17 @@ final class ViewHierarchy {
         return sb.toString();
     }
 
-    private void setStateOfSeparateViews(int state) {
+    private void changeStateOfSeparateViews(boolean iconify) {
         if(editorAreaFrame != null) {
-            editorAreaFrame.setExtendedState(state);
+            editorAreaFrame.setVisible(!iconify);
         }
 
         for(Iterator it = separateModeViews.keySet().iterator(); it.hasNext(); ) {
             ModeView mv = (ModeView)it.next();
             Component comp = mv.getComponent();
             if(comp instanceof Frame) {
-                ((Frame)comp).setExtendedState(state);
+                Frame fr = (Frame)comp;
+                fr.setVisible(!iconify);
             }
         }
     }
@@ -823,10 +824,12 @@ final class ViewHierarchy {
             int newState = evt.getNewState();
             controller.userChangedFrameStateMainWindow(newState);
             
-            if(oldState == Frame.NORMAL && newState == Frame.ICONIFIED) {
-                hierarchy.setStateOfSeparateViews(Frame.ICONIFIED);
-            } else if(oldState == Frame.ICONIFIED && newState == Frame.NORMAL) {
-                hierarchy.setStateOfSeparateViews(Frame.NORMAL);
+            if (((oldState & Frame.ICONIFIED) == 0) &&
+                ((newState & Frame.ICONIFIED) == Frame.ICONIFIED)) {
+                hierarchy.changeStateOfSeparateViews(true);
+            } else if (((oldState & Frame.ICONIFIED) == Frame.ICONIFIED) && 
+                       ((newState & Frame.ICONIFIED) == 0 )) {
+                hierarchy.changeStateOfSeparateViews(false);
             }
         }
     } // End of main window listener.
