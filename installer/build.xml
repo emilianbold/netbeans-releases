@@ -23,8 +23,14 @@ Microsystems, Inc. All Rights Reserved.
     	<echo message="${product-key}"/>
         <fail message="You have to specify -Dproduct-key on commandline "/>
     </target>
-    
-    <target name="init" depends="check-buildnumber,check-nb-id" >        
+
+		<target name="init-modules">
+			<style destdir="." in="D:/builds/NETBEANS/unpacked/netbeans/update_tracking.xml" out="modulesDef.properties" style="modulesDef.xsl"/>
+			<filter filtersfile="modulesDef.properties" />
+			<copy file="src/org/netbeans/installer/actions/DetectAction.yava" toFile="src/org/netbeans/installer/actions/DetectAction.java" filtering="true" />
+		</target>
+																																		
+		<target name="init" depends="check-buildnumber,check-nb-id,init-modules" >        
         <property name="is-install-dir" location="C:/Program Files/InstallShield/MP45"/>          
         <property name="isje" value="com.installshield.isje.ISJE" />
         <!-- property name="buildfile" location="C:/NBNew/NB.xml" / -->
@@ -100,7 +106,9 @@ Microsystems, Inc. All Rights Reserved.
         </java>
     </target>
     <target name="build-init">
-        <delete file="NB-subst.xml" />
+				<delete file="NB-subst.xml" />
+				<delete file="src/org/netbeans/installer/actions/DetectAction.java" />
+				<delete file="modulesDef.properties" />
         <delete dir="default" />
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}" />
         <filter token="product-key" value="${product-key}" />
