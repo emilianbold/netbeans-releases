@@ -53,6 +53,7 @@ Microsystems, Inc. All Rights Reserved.
         <module name="web/webapi" testtypes="unit" attributes="stable"/>
         <module name="j2ee/refactoring" testtypes="unit" attributes="stable"/>
         <module name="extbrowser" testtypes="unit" attributes="stable"/>
+        <module name="html" testtypes="unit" attributes="stable"/>
 
         <!-- removed (not runnable): html, schema2beans -->
         <!-- hangs: core/execution -->
