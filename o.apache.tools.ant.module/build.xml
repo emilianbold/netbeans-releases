@@ -55,7 +55,6 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
   </target>
 
   <target name="javahelp">
-    <copy file="Ant_License" tofile="javahelp/org/apache/tools/ant/module/docs/LICENSE"/>
     <mkdir dir="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
     <unzip src="ant-docs.zip" dest="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
     <mkdir dir="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch2"/>
@@ -65,6 +64,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
       <include name="**/*.html"/>
       <exclude name="JavaHelpSearch2/"/>
       <exclude name="credits.html"/>
+      <exclude name="ant-docs/LICENSE"/>
     </jhindexer>
     <mkdir dir="netbeans"/>
     <copy todir="netbeans/docs" includeEmptyDirs="false">
@@ -125,7 +125,6 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <delete dir="netbeans"/>
     <delete dir="Info"/>
     <delete dir="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch2"/>
-    <delete file="javahelp/org/apache/tools/ant/module/docs/LICENSE"/>
     <delete dir="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
     <delete dir="test"/>
   </target>
