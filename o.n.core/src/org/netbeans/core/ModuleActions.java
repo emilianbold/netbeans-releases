@@ -13,6 +13,7 @@
 
 package com.netbeans.developer.impl;
 
+import java.beans.*;
 import java.util.*;
 import javax.swing.event.*;
 
@@ -24,7 +25,7 @@ import org.openide.util.actions.SystemAction;
 *
 * @author jtulach
 */
-class ModuleActions extends Object implements ToolsAction.Model {
+class ModuleActions extends Object implements ToolsAction.Model, PropertyChangeListener {
   /** array of all actions added by modules */
   private static SystemAction[] array;
   /** of (ModuleItem, List (SystemAction)) */
@@ -76,11 +77,6 @@ class ModuleActions extends Object implements ToolsAction.Model {
   * fires change to all listeners.
   */
   private static void fireChange () {
-    if (array != null) {
-      // no change
-      return;
-    }
-    
     Object[] obj = listeners.getListenerList ();
     if (obj.length == 0) return;
     
@@ -88,6 +84,14 @@ class ModuleActions extends Object implements ToolsAction.Model {
     for (int i = obj.length - 1; i >= 0; i -= 2) {
       ChangeListener l = (ChangeListener)obj[i];
       l.stateChanged (ev);
+    }
+  }
+
+  /** Change enabled property of an action
+  */
+  public void propertyChange (PropertyChangeEvent ev) {
+    if (SystemAction.PROP_ENABLED.equals (ev.getPropertyName ())) {
+      fireChange ();
     }
   }
   
@@ -110,6 +114,7 @@ class ModuleActions extends Object implements ToolsAction.Model {
       map.put (module, list);
     }
     list.add (as.getAction ());
+    as.getAction ().addPropertyChangeListener (INSTANCE);
     
     array = null;
     fireChange (); // PENDING this is too often
@@ -123,6 +128,7 @@ class ModuleActions extends Object implements ToolsAction.Model {
       return;
     }
     list.remove (as.getAction ());
+    as.getAction ().removePropertyChangeListener (INSTANCE);
     
     if (list.isEmpty ()) {
       map.remove (module);
@@ -157,6 +163,8 @@ class ModuleActions extends Object implements ToolsAction.Model {
 
 /*
 * Log
+*  5    Gandalf   1.4         8/5/99   Jaroslav Tulach Tools & New action in 
+*       editor.
 *  4    Gandalf   1.3         7/28/99  Jaroslav Tulach Additional manifest & 
 *       separation of actions by modules
 *  3    Gandalf   1.2         6/8/99   Ian Formanek    ---- Package Change To 
