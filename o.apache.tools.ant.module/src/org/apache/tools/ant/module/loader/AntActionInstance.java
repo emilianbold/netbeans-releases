@@ -39,6 +39,7 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.Presenter;
+import org.openide.util.RequestProcessor;
 
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
@@ -92,13 +93,18 @@ public class AntActionInstance implements
     // Action:
     
     public void actionPerformed (ActionEvent ignore) {
-        TargetExecutor exec = new TargetExecutor (proj, null);
-        exec.setSwitchWorkspace(true);
-        try {
-            exec.execute ();
-        } catch (IOException ioe) {
-            AntModule.err.notify (ioe);
-        }
+        // #21355 similar to fix of #16720 - don't do this in the event thread...
+        RequestProcessor.postRequest(new Runnable() {
+            public void run() {
+                TargetExecutor exec = new TargetExecutor (proj, null);
+                exec.setSwitchWorkspace(true);
+                try {
+                    exec.execute ();
+                } catch (IOException ioe) {
+                    AntModule.err.notify (ioe);
+                }
+            }
+        });
     }
     
     public boolean isEnabled () {
