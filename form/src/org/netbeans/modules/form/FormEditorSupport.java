@@ -1536,6 +1536,8 @@ public class FormEditorSupport extends JavaEditor
         }
 
         public void componentClosed() {
+            // Issue 52286 & 55818
+            super.canClose(null, true);
             super.componentClosed();
         }
 
@@ -1567,9 +1569,6 @@ public class FormEditorSupport extends JavaEditor
             // if this is not the last cloned java editor component, closing is OK
             if (!FormEditorSupport.isLastView(multiViewObserver.getTopComponent()))
                 return CloseOperationState.STATE_OK;
-
-            // Issue 52286
-            super.canClose(null, true);
             
             // return a placeholder state - to be sure our CloseHandler is called
             return MultiViewFactory.createUnsafeCloseState(
