@@ -1,5 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.j2eeapis/1
+OpenIDE-Module-Public-Packages: javax.ejb.**, javax.enterprise.deploy.**, javax.management.**, com.sun.jmx.**
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2eeapis/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
