@@ -28,6 +28,7 @@ import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassWarning;
@@ -53,19 +54,6 @@ import org.openide.util.lookup.Lookups;
  */
 class J2SEActionProvider implements ActionProvider {
     
-    // Definition of commands
-    private static final String COMMAND_COMPILE_SINGLE = "compile.single"; /*XXX define somewhere*/ // NOI18N
-    private static final String COMMAND_COMPILE_TEST_SINGLE = "compile.test.single"; /*XXX define somewhere*/ // NOI18N
-    private static final String COMMAND_RUN = "run"; /*XXX define somewhere*/ // NOI18N
-    private static final String COMMAND_RUN_SINGLE = "run.single"; /*XXX define somewhere*/ // NOI18N
-    private static final String COMMAND_DEBUG = "debug"; /*XXX define somewhere*/ // NOI18N
-    private static final String COMMAND_DEBUG_SINGLE = "debug.single"; /*XXX define somewhere*/ // NOI18N
-    private static final String COMMAND_JAVADOC = "javadoc"; /*XXX define somewhere*/ // NOI18N
-    private static final String COMMAND_TEST = "test"; /*XXX define somewhere*/ // NOI18N
-    private static final String COMMAND_TEST_SINGLE = "test.single"; /*XXX define somewhere*/ // NOI18N
-    private static final String COMMAND_DEBUG_TEST_SINGLE = "debug.test.single"; /*XXX define somewhere*/ // NOI18N
-    private static final String COMMAND_DEBUG_FIX = "debug.fix"; /*XXX define somewhere*/ // NOI18N
-        
     // Commands available from J2SE project
     private static final String[] supportedActions = {
         COMMAND_BUILD, 
@@ -76,11 +64,11 @@ class J2SEActionProvider implements ActionProvider {
         COMMAND_RUN_SINGLE, 
         COMMAND_DEBUG, 
         COMMAND_DEBUG_SINGLE,
-        COMMAND_JAVADOC, 
+        JavaProjectConstants.COMMAND_JAVADOC,         
         COMMAND_TEST, 
         COMMAND_TEST_SINGLE, 
         COMMAND_DEBUG_TEST_SINGLE, 
-        COMMAND_DEBUG_FIX       
+        JavaProjectConstants.COMMAND_DEBUG_FIX       
     };
     
     // Project
@@ -100,16 +88,16 @@ class J2SEActionProvider implements ActionProvider {
             commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
             commands.put(COMMAND_REBUILD, new String[] {"clean", "jar"}); // NOI18N
             commands.put(COMMAND_COMPILE_SINGLE, new String[] {"compile-single"}); // NOI18N
-            commands.put(COMMAND_COMPILE_TEST_SINGLE, new String[] {"compile-test-single"}); // NOI18N
+            // commands.put(COMMAND_COMPILE_TEST_SINGLE, new String[] {"compile-test-single"}); // NOI18N
             commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
             commands.put(COMMAND_RUN_SINGLE, new String[] {"run-single"}); // NOI18N
             commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
             commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug-single"}); // NOI18N
-            commands.put(COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
+            commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
             commands.put(COMMAND_TEST, new String[] {"test"}); // NOI18N
             commands.put(COMMAND_TEST_SINGLE, new String[] {"test-single"}); // NOI18N
             commands.put(COMMAND_DEBUG_TEST_SINGLE, new String[] {"debug-test"}); // NOI18N
-            commands.put(COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
+            commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
         
         this.antProjectHelper = antProjectHelper;
         this.project = project;
@@ -154,7 +142,7 @@ class J2SEActionProvider implements ActionProvider {
             p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
             targetNames = new String[] {"debug-test"}; // NOI18N
         } 
-        else if ( command.equals( COMMAND_DEBUG_FIX ) ) {
+        else if ( command.equals( JavaProjectConstants.COMMAND_DEBUG_FIX ) ) {
             FileObject[] files = findSources( context );
             String path = null;
             p = new Properties();
@@ -249,7 +237,7 @@ class J2SEActionProvider implements ActionProvider {
             FileObject[] files = findTestSources( context, true );
             return files != null && files.length == 1;
         }
-        else if ( command.equals( COMMAND_DEBUG_FIX ) ) {
+        else if ( command.equals( JavaProjectConstants.COMMAND_DEBUG_FIX ) ) {
             return findSources( context ) != null || findTestSources( context, false ) != null;
         } else if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_DEBUG_SINGLE)) {
             FileObject fos[] = findSources(context);
