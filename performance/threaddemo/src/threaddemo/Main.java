@@ -19,10 +19,9 @@ import java.awt.event.*;
 import java.io.File;
 import javax.swing.*;
 import threaddemo.apps.index.IndexApp;
+import threaddemo.apps.populate.Populate;
 import threaddemo.model.*;
 import threaddemo.views.PhadhailViews;
-
-// XXX parallel apps - some read only, some with write
 
 /**
  * Demonstrate various models and views for big data sets.
@@ -92,8 +91,15 @@ public final class Main extends JFrame {
                 showView();
             }
         });
+        JButton popB = new JButton("Populate Test Files");
+        popB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ev) {
+                Populate.run(Main.this.root);
+            }
+        });
         JPanel bPanel = new JPanel();
         bPanel.add(showB);
+        bPanel.add(popB);
         getContentPane().add(bPanel);
         getContentPane().add(new Monitor());
         getRootPane().setDefaultButton(showB);

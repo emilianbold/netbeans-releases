@@ -1,0 +1,154 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package threaddemo.apps.populate;
+
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.io.*;
+import javax.swing.*;
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.*;
+
+/**
+ * Simple app to populate a file tree with some test data.
+ * @author Jesse Glick
+ */
+public class Populate {
+    
+    /** Static usage only. */
+    private Populate() {}
+    
+    /**
+     * Run the app.
+     * @param root root of the phadhail tree to add test data to
+     */
+    public static void run(final File root) {
+        String msg = "How many files should I create?";
+        String title = "Choose Size of Test Data";
+        Integer[] sizes = new Integer[] {
+            new Integer(5),
+            new Integer(10),
+            new Integer(25),
+            new Integer(50),
+            new Integer(100),
+            new Integer(250),
+            new Integer(500),
+            new Integer(1000),
+            new Integer(2500),
+            new Integer(5000),
+            new Integer(10000),
+            new Integer(25000),
+        };
+        Integer def = new Integer(500);
+        final int val = ((Integer)JOptionPane.showInputDialog(null, msg, title,
+                                                        JOptionPane.QUESTION_MESSAGE,
+                                                        null, sizes, def)
+                                                       ).intValue();
+        final JProgressBar progress = new JProgressBar(0, val);
+        final JDialog dialog = new JDialog((Frame)null, "Creating test files...", true);
+        dialog.getContentPane().setLayout(new FlowLayout());
+        JLabel label = new JLabel("Creating files:");
+        label.setLabelFor(progress);
+        dialog.getContentPane().add(label);
+        dialog.getContentPane().add(progress);
+        dialog.pack();
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    create(root, val, progress.getModel());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                dialog.setVisible(false);
+            }
+        }).start();
+        dialog.show();
+    }
+    
+    private static void create(File root, int val, final BoundedRangeModel progress) throws IOException {
+        for (int i = 0; i < val; i++) {
+            final int progval = i;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    progress.setValue(progval);
+                }
+            });
+            boolean xml = i % 5 > 2;
+            String fname = "file" + i + (xml ? ".xml" : ".txt");
+            int bit = 0;
+            int x = i;
+            while (x > 0) {
+                if (x % 3 == 0) {
+                    fname = "dir" + bit + File.separatorChar + fname;
+                }
+                bit++;
+                x /= 3;
+            }
+            File tomake = new File(root, "test" + File.separatorChar + fname);
+            tomake.getParentFile().mkdirs();
+            if (tomake.createNewFile()) {
+                OutputStream os = new FileOutputStream(tomake);
+                try {
+                    if (xml) {
+                        Document doc = createXML(i);
+                        XMLSerializer ser = new XMLSerializer(os, new OutputFormat(doc, "UTF-8", true));
+                        ser.serialize(doc);
+                    } else {
+                        PrintStream ps = new PrintStream(os);
+                        ps.println("Sample data for file #" + i);
+                        ps.close();
+                    }
+                } finally {
+                    os.close();
+                }
+            }
+        }
+    }
+    
+    private static Document createXML(int n) {
+        Document doc = XMLUtil.createDocument("sample", null, null, null);
+        Element el = doc.createElement("file");
+        el.setAttribute("number", Integer.toString(n));
+        doc.getDocumentElement().appendChild(el);
+        int count = (int)Math.pow(n + 20, .85);
+        for (int i = 0; i < count; i++) {
+            el = doc.getDocumentElement();
+            int x = i;
+            int bit = 0;
+            while (x > 0) {
+                if (x % 3 == 0) {
+                    String tagname = "tag-" + bit;
+                    Element el2;
+                    NodeList nl = el.getElementsByTagName(tagname);
+                    if (nl.getLength() < 3) {
+                        el2 = doc.createElement("tag-" + bit);
+                        el.appendChild(el2);
+                    } else {
+                        el2 = (Element)nl.item(0);
+                    }
+                    el = el2;
+                }
+                bit++;
+                x /= 3;
+            }
+            Element el2 = doc.createElement("datum");
+            el2.setAttribute("number", Integer.toString(i));
+            el.appendChild(el2);
+        }
+        return doc;
+    }
+    
+}

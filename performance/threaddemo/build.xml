@@ -33,15 +33,15 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${openide.jar}"/>
         <pathelement location="${looks.jar}"/>
         <pathelement location="${Spin.jar}"/>
+        <fileset dir="${nbroot}/libs/external">
+            <include name="xerces*.jar"/>
+            <include name="xml-commons-dom-ranges*.jar"/>
+        </fileset>
     </path>
     
     <path id="run.cp">
         <path refid="build.cp"/>
         <pathelement location="threaddemo.jar"/>
-        <fileset dir="${nbroot}/libs/external">
-            <include name="xerces*.jar"/>
-            <include name="xml-commons-dom-ranges*.jar"/>
-        </fileset>
     </path>
     
     <target name="init">
