@@ -59,6 +59,7 @@ import org.openide.util.NbBundle;
 // case when provider does not associate with any server.
 
 public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
+    static public final File[] EMPTY_FILE_LIST = new File[0];
     private J2eeModuleProvider provider;
     private String webContextRootXpath;
     private String webContextRootPropName;
@@ -134,11 +135,11 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         try {
             FileObject fo = findPrimaryConfigurationFO();
             if (fo == null) {
-                getStorage();
-                return true;
+                ConfigurationStorage storage = getStorage();
+                return (storage != null);
             }
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         return false;
     }
@@ -210,7 +211,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
 
         // should not happen, new project should have ovrridden this method to return non-null.
         if (moduleFolder == null) {
-            throw new IllegalStateException("New J2eeProviderImplementation needs to override this method!"); //NOI18N
+            throw new IllegalStateException("J2eeModuleProvider implementation needs to override this method!"); //NOI18N
         }
         
         if (getProvider().useDirectoryPath()) {
@@ -231,11 +232,9 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             throw new IllegalStateException("New J2eeProviderImplementation needs to override this method!"); //NOI18N
         }
 	
-        String path = name;
-        if (getProvider().useDirectoryPath()) {
-            path = getContentRelativePath(name);
-            if (path == null)
-                path = name;
+        String path = getContentRelativePath(name);
+        if (path == null || ! getProvider().useDirectoryPath()) {
+            path = name;
         }
         FileObject configFO = moduleFolder.getFileObject(path);
         if (configFO == null)
@@ -356,7 +355,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             String msg = NbBundle.getMessage(ConfigSupportImpl.class, "MSG_ConfigStorageFailed",
             getServer (), getProvider().getJ2eeModule());
             ErrorManager.getDefault().annotate(ex, msg);
-            ErrorManager.getDefault().notify(ex);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } finally {
             if (lock != null) lock.releaseLock();
             try {
@@ -406,6 +405,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             return;
         
         String [] paths = server.getDeploymentPlanSplitter().getDeploymentPlanFileNames(getModuleType());
+        paths = (paths == null) ? new String[0] : paths;
         for (int i=0; i<paths.length; i++) {
             String name = paths[i].substring(paths[i].lastIndexOf("/")+1);
             map.put(name, paths[i]);
@@ -452,18 +452,33 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         String[] fnames;
         if (hasCustomSupport(dps, type)) {
             fnames = dps.getDeploymentPlanFileNames(type);
-        } else {
+        } else if (server.supportsModuleType(type)) {
             fnames = new String[] { ConfigDataLoader.getStandardDeploymentPlanName(server) };
+        } else {
+            return EMPTY_FILE_LIST;
         }
         
         File[] files = new File[fnames.length];
         for (int i = 0; i < fnames.length; i++) {
-            FileObject fo = provider.findDeploymentConfigurationFile(fnames[i]);
+            File path = new File(fnames[i]);
+            String fname = path.getName();
+            FileObject fo = provider.findDeploymentConfigurationFile(fname);
             if (fo == null) {
-                fo = provider.getDeploymentConfigurationFile(fnames[i]);
+                fo = provider.getDeploymentConfigurationFile(fname);
             }
             files[i] = FileUtil.toFile(fo);
         }
         return files;
+    }
+
+    public static void createInitialConfiguration(J2eeModuleProvider provider, ServerString server) {
+        try {
+            File[] files = getDeploymentConfigurationFiles(provider, server.getServer());
+            if (files != null && files.length > 0 && ! files[0].isFile()) {
+                new ConfigurationStorage(provider, server);
+            }
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
     }
 }

@@ -29,6 +29,8 @@ import org.openide.nodes.Node;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import java.util.*;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import javax.enterprise.deploy.shared.ModuleType;
 
 
 public class Server implements Node.Cookie {
@@ -289,5 +291,18 @@ public class Server implements Node.Cookie {
     
     public String toString () {
         return getShortName ();
+    }
+    
+    public boolean supportsModuleType(ModuleType type) {
+        if (J2eeModule.WAR.equals(type)) {
+            return this.canDeployWars();
+        } else if (J2eeModule.EJB.equals(type)) {
+            return this.canDeployEjbJars();
+        } else if (J2eeModule.EAR.equals(type)) {
+            return this.canDeployEars();
+        } else {
+            // PENDING, precise answer for other module types, for now assume true
+            return true;
+        }
     }
 }

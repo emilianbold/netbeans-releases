@@ -18,6 +18,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
+import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.openide.filesystems.FileObject;
 
@@ -173,13 +174,15 @@ public abstract class J2eeModuleProvider {
                 }
             } else {
                 J2eeModuleProvider.this.confSupp = null;
+                ServerString newServerString = new ServerString(newServer);
+                ConfigSupportImpl.createInitialConfiguration(this, newServerString);
             }
         }
     }
     
     private final class IL implements ServerRegistry.InstanceListener {
         
-        public void changeDefaultInstance (org.netbeans.modules.j2ee.deployment.impl.ServerString oldInstance, org.netbeans.modules.j2ee.deployment.impl.ServerString newInstance) {
+        public void changeDefaultInstance (ServerString oldInstance, ServerString newInstance) {
             if (useDefaultServer () && oldInstance == null || ((newInstance != null) && (oldInstance.getPlugin() != newInstance.getPlugin()))) {
                 if (J2eeModule.WAR.equals(getJ2eeModule().getModuleType())) {
                     String oldCtxPath = getConfigSupportImpl().getWebContextRoot();
@@ -190,6 +193,7 @@ public abstract class J2eeModuleProvider {
                     }
                 } else {
                     J2eeModuleProvider.this.confSupp = null;
+                    ConfigSupportImpl.createInitialConfiguration(J2eeModuleProvider.this, newInstance);
                 }
             }
         }
