@@ -16,7 +16,6 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
   <folder name="Services">
     <folder name="Browsers">
-      <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/webbrowsercateg.gif" />
 
       <file name="SimpleExtBrowser.ser" url="SimpleExtBrowser.ser">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
