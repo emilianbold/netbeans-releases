@@ -26,6 +26,7 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.text.EditorKit;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
@@ -369,9 +370,15 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             return this.manager;
         }
         
-        public void propertyChange (PropertyChangeEvent event) {
-            this.firePropertyChange(event.getPropertyName(),
-                event.getOldValue(), event.getNewValue());
+        public void propertyChange (final PropertyChangeEvent event) {
+            // workaround of issue 43502, update of Help button set back the focus
+            // to component which is active when this change starts
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    firePropertyChange(event.getPropertyName(),
+                        event.getOldValue(), event.getNewValue());                }
+            });
+
         }
         
         public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
