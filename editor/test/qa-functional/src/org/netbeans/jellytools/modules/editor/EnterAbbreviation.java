@@ -13,13 +13,13 @@ import org.netbeans.jemmy.operators.*;
  * @version 1.0
  */
 public class EnterAbbreviation extends JDialogOperator {
-
+    
     /** Creates new EnterAbbreviation that can handle it.
      */
     public EnterAbbreviation() {
         super("Enter Abbreviation");
     }
-
+    
     private JLabelOperator _lblAbbreviation;
     private JTextFieldOperator _txtAbbreviation;
     private JLabelOperator _lblExpansion;
@@ -27,12 +27,12 @@ public class EnterAbbreviation extends JDialogOperator {
     private JButtonOperator _btOK;
     private JButtonOperator _btCancel;
     private JButtonOperator _btHelp;
-
-
+    
+    
     //******************************
     // Subcomponents definition part
     //******************************
-
+    
     /** Tries to find "Abbreviation:" JLabel in this dialog.
      * @return JLabelOperator
      */
@@ -42,7 +42,7 @@ public class EnterAbbreviation extends JDialogOperator {
         }
         return _lblAbbreviation;
     }
-
+    
     /** Tries to find null JTextField in this dialog.
      * @return JTextFieldOperator
      */
@@ -52,7 +52,7 @@ public class EnterAbbreviation extends JDialogOperator {
         }
         return _txtAbbreviation;
     }
-
+    
     /** Tries to find "Expansion:" JLabel in this dialog.
      * @return JLabelOperator
      */
@@ -62,7 +62,7 @@ public class EnterAbbreviation extends JDialogOperator {
         }
         return _lblExpansion;
     }
-
+    
     /** Tries to find null JTextArea in this dialog.
      * @return JTextAreaOperator
      */
@@ -72,7 +72,7 @@ public class EnterAbbreviation extends JDialogOperator {
         }
         return _txtExpansion;
     }
-
+    
     /** Tries to find "OK" JButton in this dialog.
      * @return JButtonOperator
      */
@@ -82,7 +82,7 @@ public class EnterAbbreviation extends JDialogOperator {
         }
         return _btOK;
     }
-
+    
     /** Tries to find "Cancel" JButton in this dialog.
      * @return JButtonOperator
      */
@@ -92,7 +92,7 @@ public class EnterAbbreviation extends JDialogOperator {
         }
         return _btCancel;
     }
-
+    
     /** Tries to find "Help" JButton in this dialog.
      * @return JButtonOperator
      */
@@ -102,54 +102,54 @@ public class EnterAbbreviation extends JDialogOperator {
         }
         return _btHelp;
     }
-
-
+    
+    
     //****************************************
     // Low-level functionality definition part
     //****************************************
-
+    
     /** gets text for txtAbbreviation
      * @return String text
      */
     public String getAbbreviation() {
         return txtAbbreviation().getText();
     }
-
+    
     /** sets text for txtAbbreviation
      * @param text String text
      */
     public void setAbbreviation(String text) {
         txtAbbreviation().setText(text);
     }
-
+    
     /** types text for txtAbbreviation
      * @param text String text
      */
     public void typeAbbreviation(String text) {
         txtAbbreviation().typeText(text);
     }
-
+    
     /** gets text for txtExpansion
      * @return String text
      */
     public String getExpansion() {
         return txtExpansion().getText();
     }
-
+    
     /** sets text for txtExpansion
      * @param text String text
      */
     public void setExpansion(String text) {
         txtExpansion().setText(text);
     }
-
+    
     /** types text for txtExpansion
      * @param text String text
      */
     public void typeExpansion(String text) {
         txtExpansion().typeText(text);
     }
-
+    
     /** clicks on "OK" JButton
      */
     public void oK() {
@@ -161,24 +161,24 @@ public class EnterAbbreviation extends JDialogOperator {
             e.printStackTrace(System.err);
         }
     }
-
+    
     /** clicks on "Cancel" JButton
      */
     public void cancel() {
         btCancel().push();
     }
-
+    
     /** clicks on "Help" JButton
      */
     public void help() {
         btHelp().push();
     }
-
-
+    
+    
     //*****************************************
     // High-level functionality definition part
     //*****************************************
-
+    
     /** Performs verification of EnterAbbreviation by accessing all its components.
      */
     public void verify() {
@@ -200,10 +200,10 @@ public class EnterAbbreviation extends JDialogOperator {
             txtExpansion().clearText();
         typeExpansion(expansion);
     }
-
+    
     /** Performs simple test of EnterAbbreviation
-    * @param args the command line arguments
-    */
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         new EnterAbbreviation().verify();
         System.out.println("EnterAbbreviation verification finished.");

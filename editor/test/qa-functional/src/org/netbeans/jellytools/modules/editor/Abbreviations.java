@@ -5,8 +5,7 @@
  */
 package org.netbeans.jellytools.modules.editor;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import javax.swing.table.TableModel;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
@@ -19,13 +18,13 @@ import org.netbeans.jemmy.operators.*;
  * @version 1.0
  */
 public class Abbreviations extends JDialogOperator {
-
+    
     /** Creates new Abbreviations that can handle it.
      */
     public Abbreviations() {
         super("Abbreviations");
     }
-
+    
     private JTableOperator _tabAbbreviations;
     private JButtonOperator _btMetalScrollButton;
     private JButtonOperator _btMetalScrollButton2;
@@ -35,12 +34,12 @@ public class Abbreviations extends JDialogOperator {
     private JButtonOperator _btOK;
     private JButtonOperator _btCancel;
     private JButtonOperator _btHelp;
-
-
+    
+    
     //******************************
     // Subcomponents definition part
     //******************************
-
+    
     /** Tries to find null JTable in this dialog.
      * @return JTableOperator
      */
@@ -50,7 +49,7 @@ public class Abbreviations extends JDialogOperator {
         }
         return _tabAbbreviations;
     }
-
+    
     /** Tries to find "" MetalScrollButton in this dialog.
      * @return JButtonOperator
      */
@@ -60,7 +59,7 @@ public class Abbreviations extends JDialogOperator {
         }
         return _btMetalScrollButton;
     }
-
+    
     /** Tries to find "" MetalScrollButton in this dialog.
      * @return JButtonOperator
      */
@@ -70,7 +69,7 @@ public class Abbreviations extends JDialogOperator {
         }
         return _btMetalScrollButton2;
     }
-
+    
     /** Tries to find "Add..." JButton in this dialog.
      * @return JButtonOperator
      */
@@ -80,7 +79,7 @@ public class Abbreviations extends JDialogOperator {
         }
         return _btAdd;
     }
-
+    
     /** Tries to find "Edit..." JButton in this dialog.
      * @return JButtonOperator
      */
@@ -90,7 +89,7 @@ public class Abbreviations extends JDialogOperator {
         }
         return _btEdit;
     }
-
+    
     /** Tries to find "Remove" JButton in this dialog.
      * @return JButtonOperator
      */
@@ -100,7 +99,7 @@ public class Abbreviations extends JDialogOperator {
         }
         return _btRemove;
     }
-
+    
     /** Tries to find "OK" JButton in this dialog.
      * @return JButtonOperator
      */
@@ -110,7 +109,7 @@ public class Abbreviations extends JDialogOperator {
         }
         return _btOK;
     }
-
+    
     /** Tries to find "Cancel" JButton in this dialog.
      * @return JButtonOperator
      */
@@ -120,7 +119,7 @@ public class Abbreviations extends JDialogOperator {
         }
         return _btCancel;
     }
-
+    
     /** Tries to find "Help" JButton in this dialog.
      * @return JButtonOperator
      */
@@ -130,65 +129,65 @@ public class Abbreviations extends JDialogOperator {
         }
         return _btHelp;
     }
-
-
+    
+    
     //****************************************
     // Low-level functionality definition part
     //****************************************
-
+    
     /** clicks on "" MetalScrollButton
      */
     public void metalScrollButton() {
         btMetalScrollButton().push();
     }
-
+    
     /** clicks on "" MetalScrollButton
      */
     public void metalScrollButton2() {
         btMetalScrollButton2().push();
     }
-
+    
     /** clicks on "Add..." JButton
      */
     public void add() {
         btAdd().push();
     }
-
+    
     /** clicks on "Edit..." JButton
      */
     public void edit() {
         btEdit().push();
     }
-
+    
     /** clicks on "Remove" JButton
      */
     public void remove() {
         btRemove().push();
     }
-
+    
     /** clicks on "OK" JButton
      */
     public void oK() {
         btOK().push();
     }
-
+    
     /** clicks on "Cancel" JButton
      */
     public void cancel() {
         btCancel().push();
     }
-
+    
     /** clicks on "Help" JButton
      */
     public void help() {
         btHelp().push();
     }
-
-
+    
+    
     //*****************************************
     // High-level functionality definition part
     //*****************************************
-
+    
     /** Performs verification of Abbreviations by accessing all its components.
      */
     public void verify() {
@@ -235,8 +234,8 @@ public class Abbreviations extends JDialogOperator {
     }
     
     public boolean removeAbbreviation(String abbreviation) {
-        int row = tabAbbreviations().findCellRow(abbreviation, 
-                                                 new Operator.DefaultStringComparator(true, true));
+        int row = tabAbbreviations().findCellRow(abbreviation,
+        new Operator.DefaultStringComparator(true, true));
         
         if (row == (-1))
             return false;
@@ -262,17 +261,15 @@ public class Abbreviations extends JDialogOperator {
     public static Abbreviations invoke(String editorName) {
         OptionsOperator options = OptionsOperator.invoke();
         
-        options.selectOption("Editing|Editor Settings|" + editorName);
-        
+        options.selectOption(ResourceBundle.getBundle("org/netbeans/core/Bundle").getString("UI/Services/Editing")+
+        "|"+ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("OPTIONS_all")+
+        "|" + editorName);
         PropertySheetOperator property = new PropertySheetOperator(options);
-        
-        new TextFieldProperty(property, "Abbreviations").openEditor();
-        
+        new TextFieldProperty(property,ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("PROP_Abbreviations")).openEditor();
+
         Abbreviations abbs = new Abbreviations();
         
         options.close(); /*??? not sure whether this is assured to work*/
-        System.err.println("XXXXXXXX1");
-        System.err.flush();
         return abbs;
     }
     
@@ -282,7 +279,7 @@ public class Abbreviations extends JDialogOperator {
         instance.addAbbreviation(abbreviation, expansion);
         instance.oK();
     }
-
+    
     public static void addOrEditAbbreviation(String editorName, String abbreviationName, String newAbbreviationName, String newExpansion) {
         Abbreviations instance = invoke(editorName);
         
@@ -314,10 +311,10 @@ public class Abbreviations extends JDialogOperator {
         
         return result;
     }
-
+    
     /** Performs simple test of Abbreviations
-    * @param args the command line arguments
-    */
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         new Abbreviations().verify();
         System.out.println("Abbreviations verification finished.");

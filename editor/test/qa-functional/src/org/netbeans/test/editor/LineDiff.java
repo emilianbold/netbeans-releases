@@ -10,6 +10,10 @@ import org.netbeans.junit.diff.Diff;
 import java.io.File;
 import java.io.LineNumberReader;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 
 /**
  *
@@ -21,11 +25,27 @@ public class LineDiff implements Diff {
     
     /** Creates a new instance of LineDiff */
     public LineDiff(boolean ignoreCase) {
-	this.ignoreCase = ignoreCase;
+        this.ignoreCase = ignoreCase;
     }
     
     public boolean getIgnoreCase() {
-	return ignoreCase;
+        return ignoreCase;
+    }
+    
+    /**
+     * @param l1 first line to compare
+     * @param l2 second line to compare
+     * @return true if lines equal
+     */
+    private boolean compareLines(String l1,String l2) {
+        if (getIgnoreCase()) {
+            if (l1.equalsIgnoreCase(l2))
+                return true;
+        } else {
+            if (l1.equals(l2))
+                return true;
+        }
+        return false;
     }
     
     /**
@@ -48,27 +68,96 @@ public class LineDiff implements Diff {
      * @return true iff files differ
      */
     public boolean diff(java.io.File firstFile, java.io.File secondFile, java.io.File diffFile) throws java.io.IOException {
-	LineNumberReader first = new LineNumberReader(new FileReader(firstFile));
-	LineNumberReader second = new LineNumberReader(new FileReader(secondFile));
-	
-	while (true) {
-	    String firstLine = first.readLine();
-	    String secondLine = second.readLine();
-	    
-	    if ((firstLine == null) ^ (secondLine == null))
-		return true;
-	    
-	    if (secondLine == null)
-		return false;
-	    
-	    if (getIgnoreCase()) {
-		if (!secondLine.equalsIgnoreCase(firstLine))
-		    return true;
-	    } else {
-		if (!secondLine.equals(firstLine))
-		    return true;
-	    }
-	}
+        LineNumberReader first = new LineNumberReader(new FileReader(firstFile));
+        LineNumberReader second = new LineNumberReader(new FileReader(secondFile));
+        String firstLine;
+        String secondLine;
+        
+        if (diffFile == null) {
+            while ((firstLine = first.readLine()) != null) {
+                secondLine = second.readLine();
+                if (secondLine == null)
+                    return true;
+                
+                if (!compareLines(firstLine,secondLine)) {
+                    return true;
+                }
+            }
+        } else {
+            ArrayList a1,a2,newLines,missingLines;
+            
+            a1=new ArrayList();
+            while ((firstLine = first.readLine()) != null) {
+                a1.add(firstLine);
+            }
+            a2=new ArrayList();
+            while ((secondLine = second.readLine()) != null) {
+                a2.add(secondLine);
+            }
+            newLines=new ArrayList();
+            missingLines=new ArrayList();
+            
+            int j=0,bj;
+            boolean found;
+            
+            for (int i=0;i < a1.size();i++) {
+                if (j >= a2.size()) {
+                    for (int k=i;k < a1.size();k++) {
+                        missingLines.add(i+"> "+a1.get(k));
+                    }
+                    break;
+                }
+                firstLine=(String)(a1.get(i));
+                secondLine=(String)(a2.get(j));
+                if (!compareLines(firstLine,secondLine)) {
+                    found=false;
+                    for (int k=j;k < a2.size();k++) {
+                        secondLine = (String)(a2.get(k));
+                        if (compareLines(firstLine,secondLine)) {
+                            for (int l=j;l < k;l++) {
+                                newLines.add(l+"> "+a2.get(l));
+                            }
+                            found=true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        missingLines.add(i+"> "+firstLine);
+                        j--;
+                    }
+                }
+                j++;
+            }
+            
+            if (missingLines.size() > 0 || newLines.size() > 0) {
+                PrintStream pw=null;
+                //pw=new PrintStream(new FileOutputStream(diffFile));
+                pw=System.out;
+                if (missingLines.size() > 0) {
+                    pw.println("Missing Lines:");
+                    for (int i=0;i < missingLines.size();i++) {
+                        pw.println(missingLines.get(i));
+                    }
+                }
+                if (newLines.size() > 0) {
+                    pw.println("New Lines:");
+                    for (int i=0;i < newLines.size();i++) {
+                        pw.println(newLines.get(i));
+                    }
+                }
+                pw.close();
+                return true;
+            }
+        }
+        return false;
     }
     
+    public static void main(String[] argv) {
+        try {
+            LineDiff diff=new LineDiff(true);
+            diff.diff("/tmp/Java Editor actions.pass","/tmp/Java Editor actions.ref","/tmp/Java Editor actions.diff");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 }

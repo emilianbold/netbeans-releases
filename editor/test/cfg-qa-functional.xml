@@ -82,20 +82,22 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-
+    <!-- Key Bindings actions test - to compare state befor and after editor split-->
+    
+    <testbag testattribs="all,full" name="keybindings">
+        <testset dir="qa-functional/src">
+            <patternset>
+		<include name="org/netbeans/test/editor/suites/keybindings/*Performer.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    
     <!-- Experimental tests (not to be runned automaticaly): -->
     <testbag testattribs="all,exper" name="abbrev-gui">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/suites/abbrevs/*Performer.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-
-    <testbag testattribs="all,exper" name="keybindings">
-        <testset dir="qa-functional/src">
-            <patternset>
-		<include name="org/netbeans/test/editor/suites/keybindings/*Performer.class"/>
             </patternset>
         </testset>
     </testbag>
