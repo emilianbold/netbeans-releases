@@ -132,6 +132,8 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
         <xsd:restriction base="xsd:NMTOKEN">
             <xsd:enumeration value="absolute-path"/>
             <xsd:enumeration value="relative-path"/>
+            <xsd:enumeration value="absolute-path-noext"/>
+            <xsd:enumeration value="relative-path-noext"/>
             <xsd:enumeration value="java-name"/>
         </xsd:restriction>
     </xsd:simpleType>

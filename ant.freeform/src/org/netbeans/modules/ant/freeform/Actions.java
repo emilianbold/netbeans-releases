@@ -271,6 +271,25 @@ public final class Actions implements ActionProvider {
                     buf.append(f.getAbsolutePath());
                 } else if (format.equals("relative-path")) { // NOI18N
                     buf.append((String) entry.getKey());
+                } else if (format.equals("absolute-path-noext")) { // NOI18N
+                    File f = FileUtil.toFile((FileObject) entry.getValue());
+                    if (f == null) {
+                        // Not a disk file??
+                        return;
+                    }
+                    String path = f.getAbsolutePath();
+                    int dot = path.lastIndexOf('.');
+                    if (dot > path.lastIndexOf('/')) {
+                        path = path.substring(0, dot);
+                    }
+                    buf.append(path);
+                } else if (format.equals("relative-path-noext")) { // NOI18N
+                    String path = (String) entry.getKey();
+                    int dot = path.lastIndexOf('.');
+                    if (dot > path.lastIndexOf('/')) {
+                        path = path.substring(0, dot);
+                    }
+                    buf.append(path);
                 } else {
                     assert format.equals("java-name") : format;
                     String path = (String) entry.getKey();
