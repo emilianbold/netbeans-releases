@@ -192,6 +192,29 @@ is the proper place.
             </description>
             <class package="org.netbeans.modules.j2eeserver.plugins.api" name="ConfigurationSupport"/>
         </change>
+        <change id="Deprecating-DeploymentPlanSplitter.getDeploymentPlanFileNames">
+            <api name="plugins"/>
+            <summary>Deprecates DeploymentPlanSplitter.getDeploymentPlanFileNames</summary>
+            <version major="1" minor="5"/>
+            <date day="20" month="12" year="2004"/>
+            <author login="nnguyen"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    The reason for deprecating is that plugin SPI method 
+		    <code>DeploymentPlanSplitter.getDeploymentPlanFileNames</code>
+                    has become exact duplicate with layer.xml entries declaration: 
+                    <code>J2EE/DeploymentPlugins/plugin-name/DeploymentFileNames</code>
+                    J2EE Server Registry code has now been consolidated 
+		    and is no longer depends on this method call; 
+		    the require layer.xml entries are used instead.
+                </p>
+                <p>
+                    See Javadoc for details.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2eeserver.plugins.api" name="DeploymentPlanSplitter"/>
+        </change>
     </changes>
 
     <!-- Now the surrounding HTML text and document structure: -->
