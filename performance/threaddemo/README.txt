@@ -96,4 +96,7 @@ Major known problems:
 
 - Element index does not seem to give accurate tallies in all cases.
 
+- Refactoring while an XML file is expanded sometimes causes an infinite loop and
+  GUI freeze.
+
 -jglick@netbeans.org
