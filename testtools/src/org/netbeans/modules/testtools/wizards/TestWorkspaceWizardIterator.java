@@ -48,11 +48,18 @@ public class TestWorkspaceWizardIterator extends WizardIterator {
 
     public void initialize(TemplateWizard wizard) {
         this.wizard=wizard;
+        WizardSettings set=new WizardSettings();
+        set.workspaceTemplate=wizard.getTemplate();
+        Document doc=getDOM(set.workspaceTemplate);
+        set.defaultType=getProperty(doc, "xtest.testtype", "value");
+        set.defaultAttributes=getProperty(doc, "xtest.attribs", "value");
+        set.store(wizard);
         panels=new WizardDescriptor.Panel[] {
             wizard.targetChooser(),
             new TestWorkspaceSettingsPanel(),
             new TestTypeTemplatePanel(),
             new TestTypeSettingsPanel(),
+            new TestTypeAdvancedSettingsPanel(),
             new TestBagSettingsPanel(),
             new TestSuiteTargetPanel(),
             new TestCasesPanel()
@@ -62,6 +69,7 @@ public class TestWorkspaceWizardIterator extends WizardIterator {
             "Test Workspace Settings",
             "Test Type Name and Template",
             "Test Type Settings",
+            "Test Type Advanced Settings",
             "Test Bag Settings",
             "Test Suite Template and Target Location",
             "Create Test Cases"
@@ -73,18 +81,17 @@ public class TestWorkspaceWizardIterator extends WizardIterator {
         ((javax.swing.JComponent)panels[0]).putClientProperty("WizardPanel_contentData", names); 
         current=0;
         
-        Document doc=getDOM(wizard.getTemplate());
-        wizard.putProperty(TESTWORKSPACE_TYPE_PROPERTY ,getProperty(doc, "xtest.testtype", "value"));
-        wizard.putProperty(TESTWORKSPACE_ATTRIBUTES_PROPERTY ,getProperty(doc, "xtest.attribs", "value"));
-        wizard.putProperty(TESTWORKSPACE_SOURCE_PROPERTY ,getProperty(doc, "xtest.source.location", "value"));
 
     }
     
     public java.util.Set instantiate(TemplateWizard wizard) throws java.io.IOException {
-        wizard.putProperty(CREATE_TESTBAG_PROPERTY, new Boolean(current>3));
-        wizard.putProperty(CREATE_TESTTYPE_PROPERTY, new Boolean(current>2));
-        wizard.putProperty(CREATE_SUITE_PROPERTY, new Boolean(!hasNext()));
-        return instantiateTestWorkspace(wizard);
+        WizardSettings set=WizardSettings.get(wizard);
+        set.workspaceTarget=wizard.getTargetFolder();
+        set.workspaceName=wizard.getTargetName();
+        set.createType=current>3;
+        set.createBag=current>4;
+        set.createSuite=!hasNext();
+        return instantiateTestWorkspace(set);
     }
     
 }

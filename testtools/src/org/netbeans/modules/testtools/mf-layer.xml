@@ -89,17 +89,25 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestWorkspaceWizardIterator.singleton"/>
         <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/testtools/templates/workspace.html"/>
       </file>
-      <file name="build-.xml" url="templates/build-.xml.template">
-      </file>
-      <file name="cfg-.xml" url="templates/cfg-.xml.template">
-      </file>
+      <file name="unit__build-.xml" url="templates/unit__build-.xml.template"/>
+      <file name="unit__cfg-.xml" url="templates/unit__cfg-.xml.template"/>
+      <file name="functional__build-.xml" url="templates/functional__build-.xml.template"/>
+      <file name="functional__cfg-.xml" url="templates/functional__cfg-.xml.template"/>
       <file name="qa-functional.group" url="templates/qa-functional.group.template">
         <attr name="template" boolvalue="true"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestTypeWizardIterator.singleton"/>
-        <attr name="templatepattern" stringvalue="{0}{1}"/>
+        <attr name="templatepattern" stringvalue="{2}{1}"/>
         <attr name="usepattern" boolvalue="true"/>
         <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/testtools/templates/qa-functional.html"/>
+      </file>
+      <file name="unit.group" url="templates/unit.group.template">
+        <attr name="template" boolvalue="true"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
+        <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestTypeWizardIterator.singleton"/>
+        <attr name="templatepattern" stringvalue="{2}{1}"/>
+        <attr name="usepattern" boolvalue="true"/>
+        <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/testtools/templates/unit.html"/>
       </file>
       <file name="simpleTest.java" url="templates/simpleTest.java.template">
         <attr name="template" boolvalue="true"/>

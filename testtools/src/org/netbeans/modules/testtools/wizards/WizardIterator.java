@@ -66,28 +66,6 @@ import org.openide.cookies.EditorCookie;
  */
 public abstract class WizardIterator implements TemplateWizard.Iterator {
     
-    public static final String METHODS_PROPERTY = "METHODS";
-    public static final String TEMPLATE_METHODS_PROPERTY = "TEMPLATE_METHODS";
-    public static final String SUITE_NAME_PROPERTY = "SUITE_NAME";
-    public static final String SUITE_PACKAGE_PROPERTY = "SUITE_PACKAGE";
-    public static final String SUITE_TEMPLATE_PROPERTY = "SUITE_TEMPLATE";
-    public static final String SUITE_TARGET_PROPERTY = "SUITE_TARGET";
-    public static final String TESTTYPE_TARGET_PROPERTY = "TESTTYPE_TARGET";
-    public static final String TESTTYPE_NAME_PROPERTY = "TESTTYPE_NAME";
-    public static final String TESTTYPE_TEMPLATE_PROPERTY = "TESTTYPE_TEMPLATE";
-    public static final String CREATE_SUITE_PROPERTY = "CREATE_SUITE";
-    public static final String TESTWORKSPACE_TARGET_PROPERTY = "TESTWORKSPACE_TARGET";
-    public static final String TESTWORKSPACE_NAME_PROPERTY = "TESTWORKSPACE_NAME";
-    public static final String TESTWORKSPACE_TEMPLATE_PROPERTY = "TESTWORKSPACE_TEMPLATE";
-    public static final String TESTWORKSPACE_TYPE_PROPERTY = "TESTWORKSPACE_TYPE";
-    public static final String TESTWORKSPACE_ATTRIBUTES_PROPERTY = "TESTWORKSPACE_ATTRIBUTES";
-    public static final String TESTWORKSPACE_NETBEANS_PROPERTY = "TESTWORKSPACE_NETBEANS";
-    public static final String TESTWORKSPACE_XTEST_PROPERTY = "TESTWORKSPACE_XTEST";
-    public static final String TESTWORKSPACE_JEMMY_PROPERTY = "TESTWORKSPACE_JEMMY";
-    public static final String TESTWORKSPACE_JELLY_PROPERTY = "TESTWORKSPACE_JELLY";
-    public static final String TESTWORKSPACE_SOURCE_PROPERTY = "TESTWORKSPACE_SOURCE";
-    public static final String CREATE_TESTTYPE_PROPERTY = "CREATE_TESTTYPE";
-    public static final String CREATE_TESTBAG_PROPERTY = "CREATE_TESTBAG";
     
     public static class CaseElement extends Object {
         String name;
@@ -247,64 +225,54 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         return 0;
     }
     
-    protected static Set instantiateTestSuite(TemplateWizard wizard) throws IOException {
-        JavaDataObject template=(JavaDataObject)wizard.getProperty(SUITE_TEMPLATE_PROPERTY);
-        String targetName=(String)wizard.getProperty(SUITE_NAME_PROPERTY);
-        Vector methods=(Vector)wizard.getProperty(METHODS_PROPERTY);
-        MethodElement[] templates=(MethodElement[])wizard.getProperty(TEMPLATE_METHODS_PROPERTY);
-        DataFolder targetFolder=(DataFolder)wizard.getProperty(SUITE_TARGET_PROPERTY);
-
+    protected static Set instantiateTestSuite(WizardSettings set) throws IOException {
+        JavaDataObject suite;
         try {
-            template=(JavaDataObject)template.createFromTemplate(targetFolder, targetName);
+            suite=(JavaDataObject)set.suiteTemplate.createFromTemplate(set.suiteTarget, set.suiteName);
         } catch (IOException ioe) {
-            if (targetName==null)
-                targetName=template.getPrimaryFile().getName();
-            throw new IOException("Could not create Test Suite \""+targetName+"\" in package \""+targetFolder.getPrimaryFile().getPackageName('/')+"\". Reason is: "+ioe.getMessage());
+            if (set.suiteName==null)
+                set.suiteName=set.suiteTemplate.getPrimaryFile().getName();
+            throw new IOException("Could not create new Test Suite \""+set.suiteName+"\" in package \""+set.suiteTarget.getPrimaryFile().getPackageName('/')+"\". Reason is: "+ioe.getMessage());
         }
             
         try {
-            transformTemplateMethods(template, (CaseElement[])methods.toArray(new CaseElement[methods.size()]), templates);
+            transformTemplateMethods(suite, set.methods, set.templateMethods);
         } catch (SourceException se) {
             ErrorManager.getDefault().notify(se);
         }
-        HashSet set=new HashSet();
-        set.add(template);
-        return set;
+        HashSet res=new HashSet();
+        res.add(suite);
+        return res;
     }
 
-    protected static Set instantiateTestType(TemplateWizard wizard) throws IOException {
-        String name=(String)wizard.getProperty(TESTTYPE_NAME_PROPERTY);
-        DataFolder targetFolder=(DataFolder)wizard.getProperty(TESTTYPE_TARGET_PROPERTY);
-        DataObject template=(DataObject)wizard.getProperty(TESTTYPE_TEMPLATE_PROPERTY);
-
-        HashSet set=new HashSet();
+    protected static Set instantiateTestType(WizardSettings set) throws IOException {
+        HashSet res=new HashSet();
         DataObject dob=null;
         try {
-            dob=template.createFromTemplate(targetFolder, name);
+            dob=set.typeTemplate.createFromTemplate(set.typeTarget, set.typeName);
         } catch (IOException ioe) {
-            if (name==null)
-                name=template.getPrimaryFile().getName();
-            throw new IOException("Could not create Test Type \""+name+"\" in package \""+targetFolder.getPrimaryFile().getPackageName('/')+"\". Reason is: "+ioe.getMessage());
+            if (set.typeName==null)
+                set.typeName=set.typeTemplate.getPrimaryFile().getName();
+            throw new IOException("Could not create new Test Type \""+set.typeName+"\" in package \""+set.typeTarget.getPrimaryFile().getPackageName('/')+"\". Reason is: "+ioe.getMessage());
         }
-        set.add(dob);
+        res.add(dob);
         
-        if (name==null)
-            name=template.getPrimaryFile().getName();
-        DataFolder suiteTarget=DataFolder.create(targetFolder, name+"/src");
-        File root=FileUtil.toFile(suiteTarget.getPrimaryFile());
+        if (set.typeName==null)
+            set.typeName=set.typeTemplate.getPrimaryFile().getName();
+        set.suiteTarget=DataFolder.create(set.typeTarget, set.typeName+"/src");
+        File root=FileUtil.toFile(set.suiteTarget.getPrimaryFile());
         if (root!=null) try {
             LocalFileSystem lfs=new LocalFileSystem();
             lfs.setRootDirectory(root);
             Repository.getDefault().addFileSystem(lfs);
-            suiteTarget=DataFolder.findFolder(lfs.getRoot());
+            set.suiteTarget=DataFolder.findFolder(lfs.getRoot());
         } catch (Exception e) {}
         
-        if (((Boolean)wizard.getProperty(CREATE_SUITE_PROPERTY)).booleanValue()) {
-            suiteTarget=DataFolder.create(suiteTarget, (String)wizard.getProperty(SUITE_PACKAGE_PROPERTY));
-            wizard.putProperty(SUITE_TARGET_PROPERTY, suiteTarget);
-            set.addAll(instantiateTestSuite(wizard));
+        if (set.createSuite) {
+            set.suiteTarget=DataFolder.create(set.suiteTarget, set.suitePackage);
+            res.addAll(instantiateTestSuite(set));
         }
-        return set;
+        return res;
     }
     
     protected static Document getDOM(DataObject o) {
@@ -351,41 +319,36 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         return null;
     }
     
-    protected static Set instantiateTestWorkspace(TemplateWizard wizard) throws IOException {
-        HashSet set=new HashSet();
+    protected static Set instantiateTestWorkspace(WizardSettings set) throws IOException {
+        HashSet res=new HashSet();
         
-        DataFolder df=DataFolder.create(wizard.getTargetFolder(),"test");
-        wizard.putProperty(TESTTYPE_TARGET_PROPERTY, df);
+        set.typeTarget=DataFolder.create(set.workspaceTarget,"test");
         
-        DataObject buildScript=null;
         try {
-            buildScript=wizard.getTemplate().createFromTemplate(df, "build");
+            set.workspaceScript=set.workspaceTemplate.createFromTemplate(set.typeTarget, "build");
         } catch (IOException ioe) {
-            throw new IOException("Could not create Test Workspace in package \""+df.getPrimaryFile().getPackageName('/')+"\". Reason is: "+ioe.getMessage());
+            throw new IOException("Could not create new Test Workspace in package \""+set.typeTarget.getPrimaryFile().getPackageName('/')+"\". Reason is: "+ioe.getMessage());
         }
-        set.add(buildScript);
-        String name=wizard.getTargetName();
-        if (name==null) 
-            name=wizard.getTemplate().getPrimaryFile().getName();
+        res.add(set.workspaceScript);
         
-        Document doc=getDOM(buildScript);
-        setElement(doc, "project", "name", name+" XTest Workspace Script");
-        setProperty(doc, "netbeans.home", "location", wizard.getProperty(TESTWORKSPACE_NETBEANS_PROPERTY));
-        setProperty(doc, "xtest.home", "location", wizard.getProperty(TESTWORKSPACE_XTEST_PROPERTY));
-        setProperty(doc, "jemmy.home", "location", wizard.getProperty(TESTWORKSPACE_JEMMY_PROPERTY));
-        setProperty(doc, "jelly.home", "location", wizard.getProperty(TESTWORKSPACE_JELLY_PROPERTY));
-        setProperty(doc, "xtest.module", "value", name);
-        setProperty(doc, "xtest.testtype", "value", wizard.getProperty(TESTWORKSPACE_TYPE_PROPERTY));
-        setProperty(doc, "xtest.attribs", "value", wizard.getProperty(TESTWORKSPACE_ATTRIBUTES_PROPERTY));
-        setProperty(doc, "xtest.source.location", "value", wizard.getProperty(TESTWORKSPACE_SOURCE_PROPERTY));
+        if (set.workspaceName==null) 
+            set.workspaceName=set.workspaceTemplate.getPrimaryFile().getName();
+        
+        Document doc=getDOM(set.workspaceScript);
+        setElement(doc, "project", "name", set.workspaceName+" XTest Workspace Script");
+        setProperty(doc, "netbeans.home", "location", set.netbeansHome);
+        setProperty(doc, "xtest.home", "location", set.xtestHome);
+        setProperty(doc, "xtest.module", "value", set.workspaceName);
+        setProperty(doc, "xtest.testtype", "value", set.defaultType);
+        setProperty(doc, "xtest.attribs", "value", set.defaultAttributes);
 
-        ((EditorCookie)buildScript.getCookie(EditorCookie.class)).saveDocument();
+        ((EditorCookie)set.workspaceScript.getCookie(EditorCookie.class)).saveDocument();
         
-        if (((Boolean)wizard.getProperty(CREATE_TESTTYPE_PROPERTY)).booleanValue()) {
-            set.addAll(instantiateTestType(wizard));
+        if (set.createType) {
+            res.addAll(instantiateTestType(set));
         }
         
-        return set;
+        return res;
     }
     
     public static DataObject[] getSuiteTemplates() {

@@ -50,7 +50,11 @@ public class TestSuiteWizardIterator extends WizardIterator {
 
     public void initialize(TemplateWizard wizard) {
         this.wizard=wizard;
-        wizard.putProperty(TEMPLATE_METHODS_PROPERTY, getTemplateMethods((JavaDataObject)wizard.getTemplate()));
+        WizardSettings set=new WizardSettings();
+        set.suiteTemplate=wizard.getTemplate();
+        set.templateMethods=getTemplateMethods((JavaDataObject)set.suiteTemplate);
+        set.store(wizard);
+        
         panels=new WizardDescriptor.Panel[] {
             wizard.targetChooser(),
             new TestCasesPanel()
@@ -68,10 +72,10 @@ public class TestSuiteWizardIterator extends WizardIterator {
     }
     
     public java.util.Set instantiate(TemplateWizard wizard) throws java.io.IOException {
-        wizard.putProperty(SUITE_TARGET_PROPERTY, wizard.getTargetFolder());
-        wizard.putProperty(SUITE_NAME_PROPERTY, wizard.getTargetName());
-        wizard.putProperty(SUITE_TEMPLATE_PROPERTY, wizard.getTemplate());
-        return instantiateTestSuite(wizard);
+        WizardSettings set=WizardSettings.get(wizard);
+        set.suiteTarget=wizard.getTargetFolder();
+        set.suiteName=wizard.getTargetName();
+        return instantiateTestSuite(set);
     }
     
 }

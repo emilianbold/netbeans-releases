@@ -54,9 +54,13 @@ public class TestTypeWizardIterator extends WizardIterator {
 
     public void initialize(TemplateWizard wizard) {
         this.wizard=wizard;
+        WizardSettings set=new WizardSettings();
+        set.typeTemplate=wizard.getTemplate();
+        set.store(wizard);
         panels=new WizardDescriptor.Panel[] {
             wizard.targetChooser(),
             new TestTypeSettingsPanel(),
+            new TestTypeAdvancedSettingsPanel(),
             new TestBagSettingsPanel(),
             new TestSuiteTargetPanel(),
             new TestCasesPanel()
@@ -64,6 +68,7 @@ public class TestTypeWizardIterator extends WizardIterator {
         names = new String[] {
             "Test Type "+wizard.targetChooser().getComponent().getName(),
             "Test Type Settings",
+            "Test Type Advanced Settings",
             "Test Bag Settings",
             "Test Suite Template and Target Location",
             "Create Test Cases"
@@ -77,12 +82,12 @@ public class TestTypeWizardIterator extends WizardIterator {
     }
     
     public java.util.Set instantiate(TemplateWizard wizard) throws IOException {
-        wizard.putProperty(TESTTYPE_NAME_PROPERTY, wizard.getTargetName());
-        wizard.putProperty(TESTTYPE_TARGET_PROPERTY, wizard.getTargetFolder());
-        wizard.putProperty(TESTTYPE_TEMPLATE_PROPERTY, wizard.getTemplate());
-        wizard.putProperty(CREATE_TESTBAG_PROPERTY, new Boolean(current>1));
-        wizard.putProperty(CREATE_SUITE_PROPERTY, new Boolean(!hasNext()));
-        return instantiateTestType(wizard);
+        WizardSettings set=WizardSettings.get(wizard);
+        set.typeTarget=wizard.getTargetFolder();
+        set.typeName=wizard.getTargetName();
+        set.createBag=current>2;
+        set.createSuite=!hasNext();
+        return instantiateTestType(set);
     }
     
 }

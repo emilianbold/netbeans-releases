@@ -1,10 +1,18 @@
 <?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 
 <project name="MyModule XTest Workspace Script" basedir="." default="all">
-
-    <!-- Ant property. Value 'ignore' means that system classpath is ignored
-         and only classpath specified in build file is used. -->
-    <property name="build.sysclasspath" value="ignore"/>
 
     <!-- Points to directory with IDE to test-->
     <property name="netbeans.home" location="../../../nb_all/nbbuild/netbeans"/>
@@ -14,13 +22,7 @@
     
     <!-- Home of XTest -->
     <property name="xtest.home" location="../../../nb_all/xtest"/>
-   
-    <!-- Home of Jemmy -->
-    <property name="jemmy.home" location="../../../nbextra/jemmy"/>
-   
-    <!-- Home of Jelly -->
-    <property name="jelly.home" location="../../../nbextra/jemmy"/>
-   
+
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="qa-functional"/>
     <property name="xtest.attribs" value="all,ide"/>
@@ -28,13 +30,23 @@
     <!-- Points to antfile with module's harness. 
          Targets from that antfile is called from this build.xml -->
     <property name="xtest.module_harness.antfile" location="${xtest.home}/lib/module_harness.xml"/>
-
-    <!-- Says how to create classpath for compilation and for execution code tests by default.
-         Can have values src, jar, ide -->
-    <property name="xtest.source.location" value="ide"/>
+    
+    
+  
+  
+  
+  	<!--
+	******************************************************
+	** You should not change anything after this comment,
+	**    unless you really know what you do
+	******************************************************
+	-->
+    
+    <!-- Ant property. Value 'ignore' means that system classpath is ignored
+         and only classpath specified in build file is used. -->
+    <property name="build.sysclasspath" value="ignore"/>
 
     
- 
     <!-- ============ -->
     <!-- Main targets -->
     <!-- ============ -->
@@ -62,7 +74,7 @@
         <ant dir="." antfile="${xtest.module_harness.antfile}"
              target="runtests"/>
     </target>
-   
+    
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <target name="test_report">
@@ -84,6 +96,5 @@
         <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
     </target>
     
-   
 </project>
 

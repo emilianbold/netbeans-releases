@@ -38,6 +38,12 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="${nbroot}/java/netbeans/modules">
           <include name="java.jar" />
         </fileset>
+        <fileset dir="${nbroot}/ant/netbeans/modules">
+          <include name="ant.jar" />
+        </fileset>
+        <fileset dir="${nbroot}/utilities/netbeans/modules">
+          <include name="utilities.jar" />
+        </fileset>
         <!-- Hopefully set up by nbbuild/build.xml: -->
         <pathelement location="${jdkhome}/lib/tools.jar"/>
       </classpath>

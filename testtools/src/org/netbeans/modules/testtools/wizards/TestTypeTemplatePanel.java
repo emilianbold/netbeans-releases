@@ -50,6 +50,8 @@ public class TestTypeTemplatePanel extends javax.swing.JPanel implements WizardD
     public TestTypeTemplatePanel() {
         initComponents();
         templateCombo.setRenderer(new WizardIterator.MyCellRenderer());
+        templateCombo.setModel(new DefaultComboBoxModel(WizardIterator.getTestTypeTemplates()));
+        templateComboActionPerformed(null);
         DocumentListener list=new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {fireStateChanged();}
             public void removeUpdate(DocumentEvent e) {fireStateChanged();}
@@ -208,8 +210,6 @@ public class TestTypeTemplatePanel extends javax.swing.JPanel implements WizardD
     }
     
     public void readSettings(Object obj) {
-        templateCombo.setModel(new DefaultComboBoxModel(WizardIterator.getTestTypeTemplates()));
-        templateComboActionPerformed(null);
     }
     
     public void removeChangeListener(ChangeListener changeListener) {
@@ -217,13 +217,12 @@ public class TestTypeTemplatePanel extends javax.swing.JPanel implements WizardD
     }
     
     public void storeSettings(Object obj) {
-        TemplateWizard wizard=(TemplateWizard)obj;
+        WizardSettings set=WizardSettings.get(obj);
         String name=nameField.getText();
         if (DEFAULT_NAME.equals(name))
             name=null;
-        wizard.putProperty(WizardIterator.TESTTYPE_NAME_PROPERTY, name);
-        Object template=templateCombo.getSelectedItem();
-        wizard.putProperty(WizardIterator.TESTTYPE_TEMPLATE_PROPERTY, template);
+        set.typeName=name;
+        set.typeTemplate=(DataObject)templateCombo.getSelectedItem();
 
     }
 

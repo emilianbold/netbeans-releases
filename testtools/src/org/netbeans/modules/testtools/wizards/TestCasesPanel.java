@@ -305,7 +305,7 @@ public class TestCasesPanel extends javax.swing.JPanel implements WizardDescript
     }
     
     public void readSettings(Object obj) {
-        testCaseTypes.setModel(new DefaultComboBoxModel((Object[])((TemplateWizard)obj).getProperty(WizardIterator.TEMPLATE_METHODS_PROPERTY)));
+        testCaseTypes.setModel(new DefaultComboBoxModel(WizardSettings.get(obj).templateMethods));
         refreshAdd();
         refreshButtons();
     }
@@ -314,7 +314,7 @@ public class TestCasesPanel extends javax.swing.JPanel implements WizardDescript
     }
     
     public void storeSettings(Object obj) {
-        ((TemplateWizard)obj).putProperty(WizardIterator.METHODS_PROPERTY, listData);
+        WizardSettings.get(obj).methods=(WizardIterator.CaseElement[])listData.toArray(new WizardIterator.CaseElement[listData.size()]);
     }
 
     public boolean isValid() {
