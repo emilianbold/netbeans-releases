@@ -178,7 +178,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         chooser.getAccessibleContext().setAccessibleDescription(desc);
     }
     
-    /** Finds node by path from root node.
+    /** Finds node by path from root node. It can return null if node is not found.
      */
     private Node findNode (String path) {
         //Find node corresponding to given path
@@ -220,7 +220,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             }
         }
         //Check if node path corresponds to parameter path.
-        Node backNode = n;
+        /*Node backNode = n;
         StringBuffer nodePath = new StringBuffer(100);
         nodePath.append(backNode.getDisplayName().replace('/','#'));
         backNode = backNode.getParentNode();
@@ -229,7 +229,87 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             nodePath.insert(0, backNode.getDisplayName().replace('/','#'));
             backNode = backNode.getParentNode();
         }
-        /*if (!path.equals(nodePath.toString())) {
+        if (!path.equals(nodePath.toString())) {
+            System.out.println("#######################################");
+            System.out.println("ERROR PATH IS NOT EQUAL TO NODE PATH");
+            System.out.println("#######################################");
+        }*/
+        
+        //Check if node was found
+        if (!fileName.equals(n.getDisplayName())) {
+            return null;
+        }
+        return n;
+    }
+    
+    /** Creates node by path from root node. It either returns existing node as
+     * findNode does or creates instance of FakeNode. Created node is NOT added
+     * to node hierarchy.
+     */
+    private Node createNode (String path) {
+        //Find node corresponding to given path
+        Node n = rootNode;
+        Node parent = null;
+        String p = path;
+        String fileName;
+        int ind = p.indexOf('/');
+        if (ind != -1) {
+            fileName = p.substring(0, ind);
+            p = p.substring(ind + 1);
+        } else {
+            fileName = p;
+        }
+        fileName = fileName.replace('#','/');
+        
+        //Root node must correspond to root file
+        /*if (!fileName.equals(n.getDisplayName())) {
+            System.out.println("########### ERROR folder name and node display name does not match #########");
+            System.out.println("fileName:" + fileName
+            + " nodeName:" + n.getDisplayName());
+        }*/
+
+        while (ind != -1) {
+            Node [] nodes = n.getChildren().getNodes(true);
+            parent = n;
+            ind = p.indexOf('/');
+            if (ind != -1) {
+                fileName = p.substring(0, ind);
+                p = p.substring(ind + 1);
+            } else {
+                fileName = p;
+            }
+            fileName = fileName.replace('#','/');
+            //Find node with the same name
+            for (int i = 0; i < nodes.length; i++) {
+                if (fileName.equals(nodes[i].getDisplayName())) {
+                    n = nodes[i];
+                    break;
+                }
+            }
+        }
+        
+        if (!fileName.equals(n.getDisplayName())) {
+            //Create new node
+            n = new FakeNode(Children.LEAF);
+            n.setDisplayName(fileName.replace('#','/'));
+        }
+        
+        /*if (parent != null) {
+            System.out.println("ADD NODE TO PARENT");
+            parent.getChildren().add(new Node [] { n });
+        }*/
+        
+        //Check if node path corresponds to parameter path.
+        /*Node backNode = n;
+        StringBuffer nodePath = new StringBuffer(100);
+        nodePath.append(backNode.getDisplayName().replace('/','#'));
+        backNode = backNode.getParentNode();
+        while (backNode != null) {
+            nodePath.insert(0, "/");
+            nodePath.insert(0, backNode.getDisplayName().replace('/','#'));
+            backNode = backNode.getParentNode();
+        }
+        if (!path.equals(nodePath.toString())) {
             System.out.println("#######################################");
             System.out.println("ERROR PATH IS NOT EQUAL TO NODE PATH");
             System.out.println("#######################################");
@@ -269,6 +349,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         }
         return retValue;
     }
+    
     /**
      * Return the currently selected DataObject. 
      * @return The currently selected DataObject or null if there is no node seleted
@@ -381,10 +462,20 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         }
     }
     
+    /** Fake node used to create NodeFile for nonexisting node. JFileChooser calls
+     * FileSystemView.createFileObject() when renaming existing file.
+     */
+    private static class FakeNode extends AbstractNode {
+        
+        public FakeNode (Children children) {
+            super(children);
+        }
+    }
+    
     /** Used by JFileChooser to display File instances from our fake
      * file system representing node hierarchy.
      */
-    private static class NodeFile extends File {
+    private class NodeFile extends File {
         private Node n;
         
         NodeFile (String path, Node n) {
@@ -397,19 +488,46 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             this.n = n;
         }
         
+        public boolean canRead() {
+            return true;
+        }
+        
+        public boolean canWrite() {
+            return true;
+        }
+        
+        public boolean renameTo (File dest) {
+            DataObject dObj = (DataObject) n.getCookie(DataObject.class);
+            if (dObj != null) {
+                try {
+                    dObj.rename(dest.getName());
+                } catch (IOException exc) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                    return false;
+                }
+                return true;
+            } else {
+                return false;
+            }
+        }
+        
         public File[] listFiles () {
             Node [] nodes = n.getChildren().getNodes(true);
             NodeFile [] files = new NodeFile[nodes.length];
             for (int i = 0; i < nodes.length; i++) {
                 String name = nodes[i].getDisplayName();
                 name = name.replace('/','#');
-                files[i] = new NodeFile(getPath() + "/" + name, nodes[i]);
+                files[i] = new NodeFile(getPath() + "/" + name, nodes[i]); // NOI18N
             }
             return files;
         }
         
         public String getName () {
-            return n.getDisplayName();
+            if (n != null) {
+                return n.getDisplayName();
+            } else {
+                return super.getName();
+            }
         }
         
         public String getParent () {
@@ -422,6 +540,9 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             if (p == null) {
                 return null;
             }
+            if (n == null) {
+                return null;
+            }
             Node parent = n.getParentNode();
             if (parent == null) {
                 return null;
@@ -430,11 +551,37 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         }
         
         public boolean exists () {
-            //TODO something smarter eg.look at node hierarchy?
-            return true;
+            Node n = findNode(getPath());
+            if (n != null) {
+                if (n instanceof FakeNode) {
+                    return false;
+                } else {
+                    return true;
+                }
+            } else {
+                return false;
+            }
+        }
+        
+        public boolean isAbsolute () {
+            String p = getPath();
+            int ind = p.indexOf('/');
+            if (ind != -1) {
+                //Get root of path
+                p = p.substring(0, ind);
+            }
+            p = p.replace('#','/');
+            if (p.equals(rootNode.getDisplayName())) {
+                return true;
+            } else {
+                return false;
+            }
         }
         
         public boolean isDirectory () {
+            if (n == null) {
+                return false;
+            }
             DataObject dObj = (DataObject) n.getCookie(DataObject.class);
             if (dObj != null) {
                 if (dObj instanceof DataFolder) {
@@ -449,6 +596,9 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         }
         
         public boolean isFile () {
+            if (n == null) {
+                return true;
+            }
             DataObject dObj = (DataObject) n.getCookie(DataObject.class);
             if (dObj != null) {
                 if (dObj instanceof DataFolder) {
@@ -504,7 +654,11 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             } else {
                 //Try to locate corresponding node by path
                 Node n = findNode(f.getPath());
-                return n.getDisplayName();
+                if (n != null) {
+                    return n.getDisplayName();
+                } else {
+                    return null;
+                }
             }
         }
         
@@ -514,8 +668,12 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             } else {
                 //Try to locate corresponding node by path
                 Node n = findNode(f.getPath());
-                Icon icon = new ImageIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
-                return icon;
+                if (n != null) {
+                    Icon icon = new ImageIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
+                    return icon;
+                } else {
+                    return null;
+                }
             }
         }
     }
@@ -524,6 +682,8 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
      * file system representing node hierarchy.
      */
     private class NodeFileSystemView extends FileSystemView {
+        private final String newFolderString =
+                UIManager.getString("FileChooser.other.newFolder"); // NOI18N
         
         NodeFileSystemView () {
             super();
@@ -540,13 +700,40 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
          *
          */
         public File createNewFolder(File containingDir) throws IOException {
-            return null;
+            String path = containingDir.getPath() + "/" + newFolderString; // NOI18N
+            Node n = findNode(path);
+            if (n != null) {
+                NodeFile folder = new NodeFile(path, n);
+                return folder;
+            } else {
+                Node parent = findNode(containingDir.getPath());
+                if (parent == null) {
+                    return null;
+                }
+                DataObject dObj = (DataObject) parent.getCookie(DataObject.class);
+                if (dObj != null) {
+                    if (dObj instanceof DataFolder) {
+                        DataFolder.create((DataFolder) dObj, newFolderString);
+                    } else {
+                        return null;
+                    }
+                } else {
+                    return null;
+                }
+                n = createNode(path);
+                NodeFile folder = new NodeFile(path, n);
+                return folder;
+            }
         }
         
         public File createFileObject(File dir, String filename) {
+            filename = filename.replace('/','#');
             //Find node corresponding to given path
-            String path = dir.getPath() + filename;
+            String path = dir.getPath() + "/" + filename; // NOI18N
             Node n = findNode(path);
+            if (n == null) {
+                n = createNode(path);
+            }
             NodeFile file = new NodeFile(path, n);
             return file;
         }
@@ -557,6 +744,9 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         public File createFileObject(String path) {
             //Find node corresponding to given path
             Node n = findNode(path);
+            if (n == null) {
+                n = createNode(path);
+            }
             NodeFile file = new NodeFile(path, n);
             return file;
         }
