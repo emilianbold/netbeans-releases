@@ -20,7 +20,7 @@ package org.netbeans.spi.viewmodel;
  *
  * @author   Jan Jancura
  */
-public interface NodeModelFilter {
+public interface NodeModelFilter extends Model {
     
     /**
      * Returns filterred display name for given node. You should not 

@@ -103,6 +103,38 @@ Microsystems, Inc. All Rights Reserved.
         <class package="org.netbeans.spi.viewmodel" name="NoInformationException" />
         <issue number="53073"/>
     </change>
+    <change>
+        <api name="ViewModelAPI"/>
+        <summary>Access to tree node expansion added.</summary>
+        <date day="13" month="1" year="2005"/>
+        <author login="jjancura"/>
+        <compatibility binary="incompatible" source="incompatible" deletion="yes" addition="yes" modification="yes"/>
+        <description>
+                This change has been done to cover user requirement #46167.
+                List of changes:
+                    1) new TreeExpansionModel introduced
+                    2) new class Models.TreeFeatures contains tree expansion methods.
+                During implementation of this user requirement I have discovered important problem in ViewModel API. 
+                There is no possibility to add a new model to it. List of changes fixing this problem:
+                    1) Models.createView (...) and Models.setModelsToView (...) methods do not use fixed set of models as parameters,
+                       but they use Models.CompoundModel.
+                    2) Models.CompoundModel is final class implementing all currently supported models. The only way how to create
+                       a new instance of it is Models.createCompoundModel (List listOfModels). It allows future additions of new
+                       models.
+                    3) Methods Models.createCompoundTreeModel (...), Models.createCompoundNodeModel (...), 
+                       Models.createCompoundTableModel (...), Models.createCompoundNodeActionsProvider (...), and field
+                       Models.EMPTY_TREE_MODEL has been removed as useless.
+                How to update your code using these exceptions:
+                    No changes required for most of clients. You should change your code only if you are providing some 
+                    new view based on ViewModel. In this case you should put all your model instances to one list, 
+                    and call Models.createCompountModel (list), in place of calling create*Model* methods.
+        </description>
+        <class package="org.netbeans.spi.viewmodel" name="Models" />
+        <class package="org.netbeans.spi.viewmodel" name="Models.CompoundModel" />
+        <class package="org.netbeans.spi.viewmodel" name="Models.TreeFeatures" />
+        <class package="org.netbeans.spi.viewmodel" name="TreeExpansionModel" />
+        <issue number="46167"/>
+    </change>
 
 </changes>
 

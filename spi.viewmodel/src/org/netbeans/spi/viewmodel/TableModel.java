@@ -23,7 +23,7 @@ import javax.swing.table.TableCellRenderer;
  *
  * @author   Jan Jancura
  */
-public interface TableModel {
+public interface TableModel extends Model {
     
     
     /**

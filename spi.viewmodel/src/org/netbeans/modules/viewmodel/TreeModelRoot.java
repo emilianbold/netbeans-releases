@@ -18,12 +18,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.WeakHashMap;
 import javax.swing.SwingUtilities;
+import org.netbeans.spi.viewmodel.Models;
 
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -38,14 +40,20 @@ public class TreeModelRoot implements TreeModelListener {
     
     // variables ...............................................................
 
-    private CompoundModel model;
+    private Models.CompoundModel model;
     private TreeModelNode rootNode;
     private WeakHashMap objectToNode = new WeakHashMap ();
+    private TreeTable treeTable;
 
 
-    public TreeModelRoot (CompoundModel model) {
+    public TreeModelRoot (Models.CompoundModel model, TreeTable treeTable) {
         this.model = model;
+        this.treeTable = treeTable;
         model.addTreeModelListener (this);
+    }
+    
+    public TreeTable getTreeTable () {
+        return treeTable;
     }
 
     public TreeModelNode getRootNode () {
@@ -58,7 +66,7 @@ public class TreeModelRoot implements TreeModelListener {
         objectToNode.put (o, new WeakReference (n));
     }
     
-    private TreeModelNode findNode (Object o) {
+    TreeModelNode findNode (Object o) {
         WeakReference wr = (WeakReference) objectToNode.get (o);
         if (wr == null) return null;
         return (TreeModelNode) wr.get ();

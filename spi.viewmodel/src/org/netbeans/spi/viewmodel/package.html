@@ -5,7 +5,7 @@
  content="text/html; charset=iso-8859-1">
   <meta name="GENERATOR"
  content="Mozilla/4.76 [en] (Windows NT 5.0; U) [Netscape]">
-  <title>package</title>
+  <title>View Model API</title>
 <!--
   --                 Sun Public License Notice
   -- 
@@ -18,6 +18,7 @@
   -- Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
   -- Microsystems, Inc. All Rights Reserved.
   -->
+  <meta content="Jan Jancura" name="author">
 </head>
 <body style="color: rgb(0, 0, 0);" link="#0000ee" alink="#0000ee"
  vlink="#551a8b">
@@ -48,7 +49,7 @@ In the first step we should create plain tree model (TreeModel).<br>
  alt="Tree Model Example 1" style="width: 401px; height: 355px;"
  align="right"><br>    public Object getRoot () {<br>        return ROOT;<br>    }<br>    <br>    public Object[] getChildren (Object parent, int from, int to) {<br>        if (parent == ROOT)<br>            return File.listRoots ();<br>        return ((File) parent).listFiles ();<br>    }<br>    <br>    public boolean isLeaf (Object node) {<br>        if (node == ROOT)<br>            return false;<br>        return ((File) node).isFile ();<br>    }<br>}<br></pre>
 And create a TreeView for this model:
-<pre style="background-color: rgb(255, 255, 102);">    JComponent treeView = Models.createView (<br>        new TreeModelImpl (),      // TreeModel<br>        null,                      // NodeModel<br>        null,                      // TableModel<br>        null,                      // NodeActionsProvider<br>        new ArrayList ()           // list of ColumnModel s<br>    );</pre>
+<pre style="background-color: rgb(255, 255, 102);">    JComponent treeView = Models.createView (<br>        Models.createCompoundModel (<br>	    Arrays.asList (new Model[] {<br>                new TreeModelImpl (),      // TreeModel<br>                new ArrayList ()           // list of ColumnModel s<br>            })<br>        )<br>    );</pre>
 See <a href="../../../../examples/TreeModelExample1.java">TreeModelExample1</a>.<br>
 <h3>Step 2.</h3>
 NodeModel implementation can define name, icon and tooltip for tree
@@ -64,8 +65,10 @@ action..<br>
 <pre style="background-color: rgb(255, 255, 102);">public class NodeActionsProviderImpl implements NodeActionsProvider {<br><br>    public Action[] getActions (final Object node) {<br>        return new Action [] {<br>            new AbstractAction ("Open") {<br>                public void actionPerformed (ActionEvent e) {<br>                    performDefaultAction (node);<br>                }<br>            },<br>            new AbstractAction ("Delete") {<br>                public void actionPerformed (ActionEvent e) {<br>                    ((File) node).delete ();<br>                }<br>            }<br>        };<br>    }<br>    <br>    public void performDefaultAction (Object node) {<br>        try {<br>            JFrame f = new JFrame ("View");<br>            f.getContentPane ().add (new JEditorPane (((File) node).toURL ()));<br>            f.pack ();<br>            f.show ();<br>        } catch (Exception e) {<br>            e.printStackTrace();<br>        }<br>    }<br>}</pre>
 See <a href="../../../../examples/TreeModelExample3.java">TreeModelExample3</a>.<br>
 <br>
-<img src="../../../../examples/TreeModelExample3.JPG" title=""
+<div style="text-align: center;"><img
+ src="../../../../examples/TreeModelExample3.JPG" title=""
  alt="Tree Model Example 3" style="width: 642px; height: 438px;"><br>
+</div>
 <h3>Step 4.</h3>
 TableModel and ColumnModel adds support for additional columns to tree
 view.<br>
@@ -74,7 +77,7 @@ And initialization of columns looks like:<br>
 <pre style="background-color: rgb(255, 255, 102);">    ArrayList columns = new ArrayList ();<img
  src="../../../../examples/TreeModelExample4.JPG" title=""
  alt="Tree Model Example 4" style="width: 384px; height: 278px;"
- align="right"><br>    columns.add (new ColumnModel () {<br>        public String getID () { return "sizeID"; }<br>        public String getDisplayName () { return "size"; }<br>        public Class getType () { return String.class; }<br>    });<br>    JComponent treeTableView = Models.createView (<br>        new TreeModelImpl (),           // TreeModel<br>        new NodeModelImpl (),           // NodeModel<br>        new TableModelImpl (),          // TableModel<br>        new NodeActionsProviderImpl (), // NodeActionsProvider<br>        columns                         // list of ColumnModel s<br>    );<br><br></pre>
+ align="right"><br>    columns.add (new ColumnModel () {<br>        public String getID () { return "sizeID"; }<br>        public String getDisplayName () { return "size"; }<br>        public Class getType () { return String.class; }<br>    });<br>    JComponent treeTableView = Models.createView (<br>        Models.createCompoundModel (<br>            Arrays.asList (new Model[] {<br>                new TreeModelImpl (),           // TreeModel<br>                new NodeModelImpl (),           // NodeModel<br>                new TableModelImpl (),          // TableModel<br>                new NodeActionsProviderImpl (), // NodeActionsProvider<br>                columns                         // list of ColumnModel s<br>            })<br>        )<br>    );<br><br></pre>
 See <a href="../../../../examples/TreeModelExample4.java">TreeModelExample4</a>.<br>
 <br>
 <br>

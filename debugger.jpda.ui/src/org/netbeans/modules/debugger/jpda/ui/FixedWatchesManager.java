@@ -26,18 +26,20 @@ import javax.swing.*;
 import java.util.*;
 
 /**
- * Manages lifecycle and presentation of fixed watches. Should be registered as an action provider in both
+ * Manages lifecycle and presentation of fixed watches. Should be 
+ * registered as an action provider in both
  * locals and watches views and as a tree model filter in the watches view.
  *
  * @author Jan Jancura, Maros Sandor
  */
 public class FixedWatchesManager implements TreeModelFilter, 
-NodeActionsProvider, NodeActionsProviderFilter, TableModel, NodeModel {
+NodeActionsProviderFilter, NodeModelFilter {
             
     public static final String FIXED_WATCH =
         "org/netbeans/modules/debugger/resources/watchesView/FixedWatch";
     private final Action DELETE_ACTION = Models.createAction (
-        loc("CTL_DeleteFixedWatch_Label"),
+        NbBundle.getBundle (FixedWatchesManager.class).getString 
+            ("CTL_DeleteFixedWatch_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
@@ -58,7 +60,8 @@ NodeActionsProvider, NodeActionsProviderFilter, TableModel, NodeModel {
         );
     };
     private final Action CREATE_FIXED_WATCH_ACTION = Models.createAction (
-        loc("CTL_CreateFixedWatch_Label"),
+        NbBundle.getBundle (FixedWatchesManager.class).getString 
+            ("CTL_CreateFixedWatch_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
@@ -73,58 +76,13 @@ NodeActionsProvider, NodeActionsProviderFilter, TableModel, NodeModel {
     );
         
         
-    private List            fixedWatches;
+    private Map             fixedWatches = new HashMap ();
     private HashSet         listeners;
-    private ContextProvider  contextProvider; // not used at the moment
+    private ContextProvider contextProvider;
 
     
     public FixedWatchesManager (ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
-    }
-
-    private static String loc(String key) {
-        return NbBundle.getBundle(FixedWatchesManager.class).getString(key);
-    }
-    
-    // NodeActionsProvider .....................................................
-
-    public void performDefaultAction (Object node) throws UnknownTypeException {
-        if (!(node instanceof FixedWatch)) 
-            throw new UnknownTypeException (node);
-    }
-
-    public Action[] getActions (Object node) throws UnknownTypeException {
-        if (node instanceof FixedWatch) {
-            return new Action[] {
-                DELETE_ACTION
-            };
-        }
-        throw new UnknownTypeException(node);
-    }
-
-    
-    // NodeActionsProviderFilter ...............................................
-    
-    public void performDefaultAction (NodeActionsProvider original, Object node) 
-    throws UnknownTypeException {
-        original.performDefaultAction (node);
-    }
-
-    public Action[] getActions (NodeActionsProvider original, Object node) 
-    throws UnknownTypeException {
-        Action [] actions = original.getActions(node);
-        List myActions = new ArrayList();
-        if (node instanceof Variable) {
-            myActions.add (CREATE_FIXED_WATCH_ACTION);
-        } else if (node instanceof JPDAWatch) {
-            myActions.add (CREATE_FIXED_WATCH_ACTION);
-        } else if (node instanceof FixedWatch) {
-            myActions.add (DELETE_ACTION);
-        } else {
-            return actions;
-        }
-        myActions.addAll(Arrays.asList(actions));
-        return (Action[]) myActions.toArray(new Action[myActions.size()]);
     }
     
 
@@ -141,16 +99,15 @@ NodeActionsProvider, NodeActionsProviderFilter, TableModel, NodeModel {
         int to
     ) throws UnknownTypeException {
         if (parent == TreeModel.ROOT) {
-            if (fixedWatches == null || fixedWatches.size
-                () == 0) 
+            if (fixedWatches.size () == 0) 
                 return original.getChildren (parent, from, to);
 
-            int fixedSize = fixedWatches.size();
+            int fixedSize = fixedWatches.size ();
             int originalFrom = from - fixedSize;
             int originalTo = to - fixedSize;
             if (originalFrom < 0) originalFrom = 0;
 
-            Object [] children;
+            Object[] children;
             if (originalTo > originalFrom) {
                 children = original.getChildren
                     (parent, originalFrom, originalTo);
@@ -159,7 +116,7 @@ NodeActionsProvider, NodeActionsProviderFilter, TableModel, NodeModel {
             }
             Object [] allChildren = new Object [children.length + fixedSize];
 
-            fixedWatches.toArray (allChildren);
+            fixedWatches.keySet ().toArray (allChildren);
             System.arraycopy (
                 children, 
                 0, 
@@ -171,12 +128,6 @@ NodeActionsProvider, NodeActionsProviderFilter, TableModel, NodeModel {
             System.arraycopy (allChildren, from, fallChildren, 0, to - from);
             return fallChildren;
         }
-        if (parent instanceof FixedWatch) {
-            Variable v = ((FixedWatch) parent).getVariable ();
-            return (v != null) ? 
-                original.getChildren (v, from, to) : 
-                new Object [0];
-        }
         return original.getChildren (parent, from, to);
     }
 
@@ -186,24 +137,13 @@ NodeActionsProvider, NodeActionsProviderFilter, TableModel, NodeModel {
     ) throws UnknownTypeException {
         if (parent == TreeModel.ROOT) {
             int chc = original.getChildrenCount (parent);
-            if (fixedWatches == null) return chc;
             return chc + fixedWatches.size ();
-        }
-        if (parent instanceof FixedWatch) {
-            Variable v = ((FixedWatch) parent).getVariable ();
-            return (v != null) ? original.getChildrenCount (v) : 0;
         }
         return original.getChildrenCount (parent);
     }
 
     public boolean isLeaf (TreeModel original, Object node) 
     throws UnknownTypeException {
-        if (node instanceof FixedWatch) {
-            FixedWatch fw = (FixedWatch) node;
-            if (fw.getVariable () == null) 
-                return true;
-            return original.isLeaf (fw.getVariable ());
-        }
         return original.isLeaf (node);
     }
 
@@ -220,65 +160,63 @@ NodeActionsProvider, NodeActionsProviderFilter, TableModel, NodeModel {
         newListeners.remove (l);
         listeners = newListeners;
     }
+
     
-    
-    // TableModel ..............................................................
-    
-    public Object getValueAt (Object row, String columnID) throws 
-    UnknownTypeException {
-        if (row instanceof FixedWatch)
-            return getOriginalModel ().getValueAt (
-                ((FixedWatch) row).getVariable (),
-                columnID
-            );
-        throw new UnknownTypeException (row);
+    // NodeActionsProviderFilter ...............................................
+
+    public void performDefaultAction (
+        NodeActionsProvider original, 
+        Object node
+    ) throws UnknownTypeException {
+        original.performDefaultAction (node);
     }
-    
-    public boolean isReadOnly (Object row, String columnID) throws 
-    UnknownTypeException {
-        if (row instanceof FixedWatch)
-            return getOriginalModel ().isReadOnly (
-                ((FixedWatch) row).getVariable (),
-                columnID
-            );
-        throw new UnknownTypeException (row);
-    }
-    
-    public void setValueAt (Object row, String columnID, Object value) 
+
+    public Action[] getActions (NodeActionsProvider original, Object node) 
     throws UnknownTypeException {
-        if (row instanceof FixedWatch) {
-            getOriginalModel ().setValueAt (
-                ((FixedWatch) row).getVariable (),
-                columnID,
-                value
-            );
-            return;
+        Action [] actions = original.getActions (node);
+        List myActions = new ArrayList();
+        if (fixedWatches.containsKey (node)) {
+            return new Action[] {
+                DELETE_ACTION
+            };
         }
-        throw new UnknownTypeException (row);
+        if (node instanceof Variable) {
+            myActions.add (CREATE_FIXED_WATCH_ACTION);
+        } else 
+        if (node instanceof JPDAWatch) {
+            myActions.add (CREATE_FIXED_WATCH_ACTION);
+        } else 
+            return actions;
+        myActions.addAll (Arrays.asList (actions));
+        return (Action[]) myActions.toArray (new Action [myActions.size ()]);
     }
     
     
     // NodeModel ...............................................................
     
-    public String getDisplayName (Object o) throws UnknownTypeException {
-        if (o instanceof FixedWatch)
-            return ((FixedWatch) o).getName();
-        throw new UnknownTypeException (o);
+    public String getDisplayName (NodeModel original, Object node) 
+    throws UnknownTypeException {
+        if (fixedWatches.containsKey (node))
+            return (String) fixedWatches.get (node);
+        return original.getDisplayName (node);
     }
     
-    public String getShortDescription (Object o) throws UnknownTypeException {
-        if (o instanceof FixedWatch) {
-            FixedWatch fw = (FixedWatch) o;
-            return fw.getName () + " = (" + fw.getType () + ") " + 
-                fw.getValue ();
+    public String getShortDescription (NodeModel original, Object node) 
+    throws UnknownTypeException {
+        if (fixedWatches.containsKey (node)) {
+            Variable v = (Variable) node;
+            return ((String) fixedWatches.get (node)) + 
+                " = (" + v.getType () + ") " + 
+                v.getValue ();
         }
-        throw new UnknownTypeException (o);
+        return original.getShortDescription (node);
     }
     
-    public String getIconBase (Object node) throws UnknownTypeException {
-        if (node instanceof FixedWatch)
+    public String getIconBase (NodeModel original, Object node) 
+    throws UnknownTypeException {
+        if (fixedWatches.containsKey (node))
             return FIXED_WATCH;
-        throw new UnknownTypeException (node);
+        return original.getIconBase (node);
     }
     
     
@@ -287,7 +225,7 @@ NodeActionsProvider, NodeActionsProviderFilter, TableModel, NodeModel {
     private void createFixedWatch (Object node) {
         if (node instanceof JPDAWatch) {
             JPDAWatch jw = (JPDAWatch) node;
-            createFixedWatch (jw.getExpression (), jw);
+            addFixedWatch (jw.getExpression (), jw);
         } else {
             Variable variable = (Variable) node;
             String name = null;
@@ -302,15 +240,13 @@ NodeActionsProvider, NodeActionsProviderFilter, TableModel, NodeModel {
             } else {
                 name = "unnamed";
             }
-            createFixedWatch(name, variable);
+            addFixedWatch (name, variable);
         }
     }
 
-    private void createFixedWatch (String name, Variable variable) {
-        if (fixedWatches == null) fixedWatches = new ArrayList();
-        FixedWatch fw = new FixedWatch(name, variable);
-        fixedWatches.add(fw);
-        fireModelChanged();
+    private void addFixedWatch (String name, Variable variable) {
+        fixedWatches.put (variable, name);
+        fireModelChanged ();
     }
 
     private void fireModelChanged () {
@@ -319,17 +255,5 @@ NodeActionsProvider, NodeActionsProviderFilter, TableModel, NodeModel {
             TreeModelListener listener = (TreeModelListener) i.next();
             listener.treeChanged();;
         }
-    }
-    
-    private TableModel original;
-    private TableModel getOriginalModel () {
-        if (original == null)
-            original = Models.createCompoundTableModel (
-                Models.createCompoundTableModel (
-                    contextProvider.lookup ("WatchesView", TableModel.class)
-                ),
-                contextProvider.lookup ("WatchesView", TableModelFilter.class)
-            );
-        return original;
     }
 }

@@ -1,0 +1,5 @@
+org.netbeans.modules.debugger.jpda.ui.models.MonitorModel
+org.netbeans.modules.debugger.jpda.ui.models.ThreadsTableModel
+org.netbeans.modules.debugger.jpda.ui.models.ThreadsNodeModel
+org.netbeans.modules.debugger.jpda.ui.models.ThreadsTreeExpansionModel
+org.netbeans.modules.debugger.jpda.ui.models.ThreadsActionsProvider

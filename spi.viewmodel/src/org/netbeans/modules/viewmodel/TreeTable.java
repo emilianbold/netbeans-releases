@@ -23,6 +23,7 @@ import java.util.*;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeExpansionEvent;
@@ -35,6 +36,7 @@ import javax.swing.tree.TreeModel;
 
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
+import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.explorer.ExplorerActions;
 
 import org.openide.explorer.ExplorerManager;
@@ -61,13 +63,15 @@ import org.openide.windows.TopComponent;
  * @author   Jan Jancura
  */
 public class TreeTable extends JPanel implements 
-ExplorerManager.Provider, PropertyChangeListener {
+ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
     
     private ExplorerManager     explorerManager;
     private MyTreeTable         treeTable;
     private Node.Property[]     columns;
     private List                expandedPaths = new ArrayList ();
     private TreeModelRoot       currentTreeModelRoot;
+    private Models.CompoundModel model;
+    
     
     private ExplorerActions     explorerActions = new ExplorerActions ();
     {explorerActions.setConfirmDelete (false);}
@@ -83,9 +87,11 @@ ExplorerManager.Provider, PropertyChangeListener {
             treeTable.setHorizontalScrollBarPolicy 
                 (JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         add (treeTable, "Center");  //NOI18N
+        treeTable.getTree ().addTreeExpansionListener (this);
     }
     
-    public void setModel (CompoundModel model) {
+    public void setModel (Models.CompoundModel model) {
+        this.model = model;
         
         // 1) destroy old model
         if (currentTreeModelRoot != null) 
@@ -107,7 +113,8 @@ ExplorerManager.Provider, PropertyChangeListener {
         columns = createColumns (model);
         treeTable.setProperties (columns);
         
-        
+        treeTable.setToolTipText ("tttttttttttttttttttttttt");
+        setToolTipText ("aaaaaaaaaaaaaaaaaaaaa");
 //        try {
 //            treeTable.setToolTipText (model.getShortDescription (
 //                model.getRoot ()
@@ -118,7 +125,7 @@ ExplorerManager.Provider, PropertyChangeListener {
 //        }
         
         // 5) set root node for given model
-        currentTreeModelRoot = new TreeModelRoot (model);
+        currentTreeModelRoot = new TreeModelRoot (model, this);
         getExplorerManager ().setRootContext (
             currentTreeModelRoot.getRootNode ()
         );
@@ -127,10 +134,19 @@ ExplorerManager.Provider, PropertyChangeListener {
         updateColumnWidths ();
         treeTable.expandNodes (expandedPaths);
         // TODO: this is a workaround, we should find a better way later
-        final List backupPath = new ArrayList(expandedPaths);
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                treeTable.expandNodes (backupPath);
+        final List backupPath = new ArrayList (expandedPaths);
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                if (backupPath.size () == 0)
+                    try {
+                        expandDefault (
+                            TreeTable.this.model.getChildren 
+                            (TreeTable.this.model.getRoot (), 0, 0));
+                    } catch (UnknownTypeException ex) {
+                        
+                    }
+                else
+                    treeTable.expandNodes (backupPath);
             }
         });
         if (ep.size () > 0) expandedPaths = ep;
@@ -159,6 +175,24 @@ ExplorerManager.Provider, PropertyChangeListener {
         }
     }
     
+    /**
+      * Called whenever an item in the tree has been expanded.
+      */
+    public void treeExpanded (TreeExpansionEvent event) {
+        TreeModelNode tmn = (TreeModelNode) Visualizer.findNode 
+            (event.getPath ().getLastPathComponent ());
+        model.nodeExpanded (tmn.getObject ());
+    }
+
+    /**
+      * Called whenever an item in the tree has been collapsed.
+      */
+    public void treeCollapsed (TreeExpansionEvent event) {
+        TreeModelNode tmn = (TreeModelNode) Visualizer.findNode 
+            (event.getPath ().getLastPathComponent ());
+        model.nodeCollapsed (tmn.getObject ());
+    }
+    
     private boolean equalNodes () {
         Node[] ns1 = TopComponent.getRegistry ().getCurrentNodes ();
         Node[] ns2 = getExplorerManager ().getSelectedNodes ();
@@ -171,7 +205,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         return true;
     }
     
-    private Node.Property[] createColumns (CompoundModel model) {
+    private Node.Property[] createColumns (Models.CompoundModel model) {
         ColumnModel[] cs = model.getColumns ();
         int i, k = cs.length;
         Node.Property[] columns = new Column [k];
@@ -240,6 +274,16 @@ ExplorerManager.Provider, PropertyChangeListener {
         }
     }
     
+    private void expandDefault (Object[] nodes) {
+        int i, k = nodes.length;
+        for (i = 0; i < k; i++)
+            try {
+                if (model.isExpanded (nodes [i]))
+                    expandNode (nodes [i]);
+            } catch (UnknownTypeException ex) {
+            }
+    }
+    
     /** Requests focus for the tree component. Overrides superclass method. */
     public boolean requestFocusInWindow () {
         super.requestFocusInWindow ();
@@ -257,7 +301,21 @@ ExplorerManager.Provider, PropertyChangeListener {
         TopComponent.getRegistry ().removePropertyChangeListener (this);
         getExplorerManager ().removePropertyChangeListener (this);
     }
+    
+    public boolean isExpanded (Object node) {
+        Node n = currentTreeModelRoot.findNode (node);
+        return treeTable.isExpanded (n);
+    }
 
+    public void expandNode (Object node) {
+        Node n = currentTreeModelRoot.findNode (node);
+        treeTable.expandNode (n);
+    }
+
+    public void collapseNode (Object node) {
+        Node n = currentTreeModelRoot.findNode (node);
+        treeTable.collapseNode (n);
+    }
     
     private static class MyTreeTable extends TreeTableView {
         MyTreeTable () {
@@ -268,6 +326,10 @@ ExplorerManager.Provider, PropertyChangeListener {
         
         JTable getTable () {
             return treeTable;
+        }
+        
+        JTree getTree () {
+            return tree;
         }
 
         public List getExpandedPaths () {

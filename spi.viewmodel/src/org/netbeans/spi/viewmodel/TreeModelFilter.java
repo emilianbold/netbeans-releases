@@ -21,7 +21,7 @@ package org.netbeans.spi.viewmodel;
  *
  * @author   Jan Jancura
  */
-public interface TreeModelFilter {
+public interface TreeModelFilter extends Model {
     
 
     /** 

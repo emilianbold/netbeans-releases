@@ -27,7 +27,6 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
-import org.netbeans.modules.viewmodel.CompoundModel;
 import org.netbeans.modules.viewmodel.TreeModelNode;
 import org.netbeans.modules.viewmodel.TreeTable;
 
@@ -54,11 +53,12 @@ import org.openide.windows.TopComponent;
  */
 public final class Models {
 
-    public static final TreeModel EMPTY_TREE_MODEL = new EmptyTreeModel ();
-    public static final NodeModel EMPTY_NODE_MODEL = new EmptyNodeModel ();
-    public static final TableModel EMPTY_TABLE_MODEL = new EmptyTableModel ();
-    public static final NodeActionsProvider EMPTY_NODE_ACTIONS_PROVIDER = 
-        new EmptyNodeActionsProvider ();
+    /**
+     * Empty model - returns default root node with no children.
+     */
+    public static CompoundModel EMPTY_MODEL = createCompoundModel 
+        (new ArrayList ());
+    
     
     public static int MULTISELECTION_TYPE_EXACTLY_ONE = 1;
     public static int MULTISELECTION_TYPE_ALL = 2;
@@ -85,23 +85,10 @@ public final class Models {
      * @return new instance of complete model
      */
     public static JComponent createView (
-        TreeModel treeModel, 
-        NodeModel nodeModel, 
-        TableModel tableModel,
-        NodeActionsProvider nodeActionsProvider,
-        List columnModels
+        CompoundModel compoundModel
     ) {
         TreeTable tt = new TreeTable ();
-        if (treeModel != null) {
-            CompoundModel cm = new CompoundModel (
-                treeModel,
-                nodeModel,
-                nodeActionsProvider,
-                columnModels,
-                tableModel
-            );
-            tt.setModel (cm);
-        }
+        tt.setModel (compoundModel);
         return tt;
     }
     
@@ -117,244 +104,82 @@ public final class Models {
      */
     public static void setModelsToView (
         final JComponent view,
-        TreeModel treeModel, 
-        NodeModel nodeModel, 
-        TableModel tableModel,
-        NodeActionsProvider nodeActionsProvider,
-        List columnModels
+        final CompoundModel compoundModel
     ) {
-        if (verbose) {
-            System.out.println ("  TreeModel:");
-            if (treeModel instanceof CompoundTreeModel)
-                System.out.println (((CompoundTreeModel) treeModel).toString ("    "));
-            else
-                System.out.println ("    " + treeModel);
-            
-            System.out.println ("  NodeModel:");
-            if (nodeModel instanceof CompoundNodeModel)
-                System.out.println (((CompoundNodeModel) nodeModel).toString ("    "));
-            else
-            if (nodeModel instanceof DelegatingNodeModel)
-                System.out.println (((DelegatingNodeModel) nodeModel).toString ("    "));
-            else
-                System.out.println ("    " + nodeModel);
-            
-            System.out.println ("  NodeActionsProvider:");
-            if (nodeActionsProvider instanceof CompoundNodeActionsProvider)
-                System.out.println (((CompoundNodeActionsProvider) nodeActionsProvider).toString ("    "));
-            else
-            if (nodeActionsProvider instanceof DelegatingNodeActionsProvider)
-                System.out.println (((DelegatingNodeActionsProvider) nodeActionsProvider).toString ("    "));
-            else
-                System.out.println ("    " + nodeActionsProvider);
-
-            System.out.println ("  ColumnModels:");
-            int i, k = columnModels.size ();
-            for (i = 0; i < k; i++)
-                System.out.println ("    " + columnModels.get (i));
-            
-            System.out.println ("  TableModel:");
-            if (tableModel instanceof CompoundTableModel)
-                System.out.println (((CompoundTableModel) tableModel).toString ("    "));
-            else
-            if (tableModel instanceof DelegatingTableModel)
-                System.out.println (((DelegatingTableModel) tableModel).toString ("    "));
-            else
-                System.out.println ("    " + tableModel);
-        }
-        final CompoundModel cm = new CompoundModel (
-            treeModel,
-            nodeModel,
-            nodeActionsProvider,
-            columnModels,
-            tableModel
-        );
+        if (verbose)
+            System.out.println (compoundModel);
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
-                ((TreeTable) view).setModel (cm);
+                ((TreeTable) view).setModel (compoundModel);
             }
         });
     }
     
     /**
-     * Creates {@link org.netbeans.spi.viewmodel.TreeModel} for given TreeModel and
-     * {@link org.netbeans.spi.viewmodel.TreeModelFilter}.
+     * Creates one {@link CompoundModel} from given list of models.
      * 
-     * @param originalTreeModel a original tree model
-     * @param treeModelFilter a list of tree model filters
-     *
-     * @returns compund tree model
+     * @param models a list of models
+     * @return {@link CompoundModel} encapsulating given list of models
      */
-    public static TreeModel createCompoundTreeModel (
-        TreeModel originalTreeModel,
-        List treeModelFilters
-    ) {
-        TreeModel tm = originalTreeModel;
-        int i, k = treeModelFilters.size ();
-        for (i = 0; i < k; i++)
-            tm = new CompoundTreeModel (
-                tm,
-                (TreeModelFilter) treeModelFilters.get (i)
-            );
-        return tm;
-    }
-    
-    /**
-     * Creates {@link org.netbeans.spi.viewmodel.NodeModel} for given NodeModel and
-     * {@link org.netbeans.spi.viewmodel.NodeModelFilter}.
-     * 
-     * @param originalNodeModel a original node model
-     * @param nodeModelFilters a list of node model filters
-     *
-     * @returns compund tree model
-     */
-    public static NodeModel createCompoundNodeModel (
-        NodeModel originalNodeModel,
-        List treeNodeModelFilters
-    ) {
-        NodeModel nm = originalNodeModel;
-        int i, k = treeNodeModelFilters.size ();
-        for (i = 0; i < k; i++)
-            nm = new CompoundNodeModel (
-                nm,
-                (NodeModelFilter) treeNodeModelFilters.get (i)
-            );
-        return nm;
-    }
-    
-    /**
-     * Creates {@link org.netbeans.spi.viewmodel.TableModel} for given TableModel and
-     * {@link org.netbeans.spi.viewmodel.TableModelFilter}.
-     * 
-     * @param originalTableModel a original table model
-     * @param tableModelFilters a list of table model filters
-     *
-     * @returns compund table model
-     */
-    public static TableModel createCompoundTableModel (
-        TableModel originalTableModel,
-        List tableModelFilters
-    ) {
-        TableModel tm = originalTableModel;
-        int i, k = tableModelFilters.size ();
-        for (i = 0; i < k; i++)
-            tm = new CompoundTableModel (
-                tm,
-                (TableModelFilter) tableModelFilters.get (i)
-            );
-        return tm;
-    }
-    
-    /**
-     * Creates {@link org.netbeans.spi.viewmodel.NodeActionsProvider} for given NodeActionsProvider and
-     * {@link org.netbeans.spi.viewmodel.NodeActionsProviderFilter}.
-     * 
-     * @param originalNodeActionsProvider a original node actions provider
-     * @param nodeActionsProviderFilters a list of node actions provider filters
-     *
-     * @returns compund node actions provider
-     */
-    public static NodeActionsProvider createCompoundNodeActionsProvider (
-        NodeActionsProvider originalNodeActionsProvider,
-        List nodeActionsProviderFilters
-    ) {
-        NodeActionsProvider nap = originalNodeActionsProvider;
-        int i, k = nodeActionsProviderFilters.size ();
-        for (i = 0; i < k; i++)
-            nap = new CompoundNodeActionsProvider (
-                nap,
-                (NodeActionsProviderFilter) nodeActionsProviderFilters.get (i)
-            );
-        return nap;
-    }
-    
-//    /**
-//     * Creates one {@link org.netbeans.spi.viewmodel.TableModel}
-//     * from given array of TableModels. TableModel asks all underlaying 
-//     * models for each concrete parameter, and returns first returned value.
-//     *
-//     * @param originalTableModels a array of original table models
-//     */
-//    public static TableModel createCompoundTableModel (
-//        TableModel[] originalTableModels
-//    ) {
-//        return new DelegatingTableModel (
-//            originalTableModels
-//        );
-//    }
-    
-    /**
-     * Creates one {@link org.netbeans.spi.viewmodel.TableModel}
-     * from given list of TableModels. TableModel asks all underlaying 
-     * models for each concrete parameter, and returns first returned value.
-     *
-     * @param originalTableModels a list of original table models
-     */
-    public static TableModel createCompoundTableModel (
-        List originalTableModels
-    ) {
-        return new DelegatingTableModel (
-            originalTableModels
-        );
-    }
-    
-//    /**
-//     * Creates one {@link org.netbeans.spi.viewmodel.NodeModel}
-//     * from given array of NodeModels. NodeModel asks all underlaying 
-//     * models for each concrete parameter, and returns first returned value.
-//     *
-//     * @param originalNodeModels a array of original node models
-//     */
-//    public static NodeModel createCompoundNodeModel (
-//        NodeModel[] originalNodeModels
-//    ) {
-//        return new DelegatingNodeModel (
-//            originalNodeModels
-//        );
-//    }
-    
-    /**
-     * Creates one {@link org.netbeans.spi.viewmodel.NodeModel}
-     * from given list of NodeModels. NodeModel asks all underlaying 
-     * models for each concrete parameter, and returns first returned value.
-     *
-     * @param originalNodeModels a list of original node models
-     */
-    public static NodeModel createCompoundNodeModel (
-        List originalNodeModels
-    ) {
-        return new DelegatingNodeModel (
-            originalNodeModels
-        );
-    }
-    
-//    /**
-//     * Creates one {@link org.netbeans.spi.viewmodel.NodeActionsProvider}
-//     * from given array of NodeActionsProviders. NodeActionsProvider asks all underlaying 
-//     * models for each concrete parameter, and returns first returned value.
-//     *
-//     * @param originalNodeActionsProviders a array of original node action providers
-//     */
-//    public static NodeActionsProvider createCompoundNodeActionsProvider (
-//        NodeActionsProvider[] originalNodeActionsProviders
-//    ) {
-//        return new DelegatingNodeActionsProvider (
-//            originalNodeActionsProviders
-//        );
-//    }
-    
-    /**
-     * Creates one {@link org.netbeans.spi.viewmodel.NodeActionsProvider}
-     * from given list of NodeActionsProviders. NodeActionsProvider asks all underlaying 
-     * models for each concrete parameter, and returns first returned value.
-     *
-     * @param originalNodeActionsProviders a list of original node action providers
-     */
-    public static NodeActionsProvider createCompoundNodeActionsProvider (
-        List originalNodeActionsProviders
-    ) {
-        return new DelegatingNodeActionsProvider (
-            originalNodeActionsProviders
+    public static CompoundModel createCompoundModel (List models) {
+        List treeModels =           new ArrayList ();
+        List treeModelFilters =     new ArrayList ();
+        List treeExpansionModels =  new ArrayList ();
+        List nodeModels =           new ArrayList ();
+        List nodeModelFilters =     new ArrayList ();
+        List tableModels =          new ArrayList ();
+        List tableModelFilters =    new ArrayList ();
+        List nodeActionsProviders = new ArrayList ();
+        List nodeActionsProviderFilters = new ArrayList ();
+        List columnModels =         new ArrayList ();
+        
+        // 1) sort models
+        Iterator it = models.iterator ();
+        while (it.hasNext ()) {
+            Object model = it.next ();
+            if (model instanceof TreeModel)
+                treeModels.add (model);
+            if (model instanceof TreeModelFilter)
+                treeModelFilters.add (model);
+            if (model instanceof TreeExpansionModel)
+                treeExpansionModels.add (model);
+            if (model instanceof NodeModel)
+                nodeModels.add (model);
+            if (model instanceof NodeModelFilter)
+                nodeModelFilters.add (model);
+            if (model instanceof TableModel)
+                tableModels.add (model);
+            if (model instanceof TableModelFilter)
+                tableModelFilters.add (model);
+            if (model instanceof NodeActionsProvider)
+                nodeActionsProviders.add (model);
+            if (model instanceof NodeActionsProviderFilter)
+                nodeActionsProviderFilters.add (model);
+            if (model instanceof ColumnModel)
+                columnModels.add (model);
+        }
+        
+        if (treeModels.isEmpty ()) treeModels.add (new EmptyTreeModel ());
+        
+        return new CompoundModel (
+            createCompoundTreeModel (
+                new DelegatingTreeModel (treeModels),
+                treeModelFilters
+            ),
+            new DelegatingTreeExpansionModel (treeExpansionModels),
+            createCompoundNodeModel (
+                new DelegatingNodeModel (nodeModels),
+                nodeModelFilters
+            ),
+            createCompoundNodeActionsProvider (
+                new DelegatingNodeActionsProvider (nodeActionsProviders),
+                nodeActionsProviderFilters
+            ),
+            columnModels,
+            createCompoundTableModel (
+                new DelegatingTableModel (tableModels),
+                tableModelFilters
+            )
         );
     }
     
@@ -377,6 +202,114 @@ public final class Models {
             performer, 
             multiselectionType
         );
+    }
+    
+    /**
+     * Returns implementation of tree view features for given view.
+     *
+     * @param view a view created by this Models class
+     * @throws UnsupportedOperationException in the case that given 
+     *        view is not tree view
+     * @return implementation of tree view features
+     */
+    public static TreeFeatures treeFeatures (JComponent view) 
+    throws UnsupportedOperationException {
+        return new TreeFeatures (view);
+    }
+    
+    
+    // private methods .........................................................
+    
+    /**
+     * Creates {@link org.netbeans.spi.viewmodel.TreeModel} for given TreeModel and
+     * {@link org.netbeans.spi.viewmodel.TreeModelFilter}.
+     * 
+     * @param originalTreeModel a original tree model
+     * @param treeModelFilter a list of tree model filters
+     *
+     * @returns compund tree model
+     */
+    private static TreeModel createCompoundTreeModel (
+        TreeModel originalTreeModel,
+        List treeModelFilters
+    ) {
+        TreeModel tm = originalTreeModel;
+        int i, k = treeModelFilters.size ();
+        for (i = 0; i < k; i++)
+            tm = new CompoundTreeModel (
+                tm,
+                (TreeModelFilter) treeModelFilters.get (i)
+            );
+        return tm;
+    }
+    
+    /**
+     * Creates {@link org.netbeans.spi.viewmodel.NodeModel} for given NodeModel and
+     * {@link org.netbeans.spi.viewmodel.NodeModelFilter}.
+     * 
+     * @param originalNodeModel a original node model
+     * @param nodeModelFilters a list of node model filters
+     *
+     * @returns compund tree model
+     */
+    private static NodeModel createCompoundNodeModel (
+        NodeModel originalNodeModel,
+        List treeNodeModelFilters
+    ) {
+        NodeModel nm = originalNodeModel;
+        int i, k = treeNodeModelFilters.size ();
+        for (i = 0; i < k; i++)
+            nm = new CompoundNodeModel (
+                nm,
+                (NodeModelFilter) treeNodeModelFilters.get (i)
+            );
+        return nm;
+    }
+    
+    /**
+     * Creates {@link org.netbeans.spi.viewmodel.TableModel} for given TableModel and
+     * {@link org.netbeans.spi.viewmodel.TableModelFilter}.
+     * 
+     * @param originalTableModel a original table model
+     * @param tableModelFilters a list of table model filters
+     *
+     * @returns compund table model
+     */
+    private static TableModel createCompoundTableModel (
+        TableModel originalTableModel,
+        List tableModelFilters
+    ) {
+        TableModel tm = originalTableModel;
+        int i, k = tableModelFilters.size ();
+        for (i = 0; i < k; i++)
+            tm = new CompoundTableModel (
+                tm,
+                (TableModelFilter) tableModelFilters.get (i)
+            );
+        return tm;
+    }
+    
+    /**
+     * Creates {@link org.netbeans.spi.viewmodel.NodeActionsProvider} for given NodeActionsProvider and
+     * {@link org.netbeans.spi.viewmodel.NodeActionsProviderFilter}.
+     * 
+     * @param originalNodeActionsProvider a original node actions provider
+     * @param nodeActionsProviderFilters a list of node actions provider filters
+     *
+     * @returns compund node actions provider
+     */
+    private static NodeActionsProvider createCompoundNodeActionsProvider (
+        NodeActionsProvider originalNodeActionsProvider,
+        List nodeActionsProviderFilters
+    ) {
+        NodeActionsProvider nap = originalNodeActionsProvider;
+        int i, k = nodeActionsProviderFilters.size ();
+        for (i = 0; i < k; i++)
+            nap = new CompoundNodeActionsProvider (
+                nap,
+                (NodeActionsProviderFilter) nodeActionsProviderFilters.get (i)
+            );
+        return nap;
     }
     
     
@@ -809,6 +742,188 @@ public final class Models {
                    n + "  " + model;
         }
     }
+
+    /**
+     * Creates one {@link org.netbeans.spi.viewmodel.TreeModel}
+     * from given list of TreeModels. DelegatingTreeModel asks all underlaying 
+     * models for each concrete parameter, and returns first returned value.
+     *
+     * @author   Jan Jancura
+     */
+    final static class DelegatingTreeModel implements TreeModel {
+
+        private TreeModel[] models;
+        private HashMap classNameToModel = new HashMap ();
+
+
+        /**
+         * Creates new instance of DelegatingTreeModel for given list of 
+         * TableModels.
+         *
+         * @param models a list of TableModels
+         */
+        DelegatingTreeModel (List models) {
+            this (convert (models));
+        }
+
+        private static TreeModel[] convert (List l) {
+            TreeModel[] models = new TreeModel [l.size ()];
+            return (TreeModel[]) l.toArray (models);
+        }
+
+        /**
+         * Creates new instance of DelegatingTreeModel for given array of 
+         * TableModels.
+         *
+         * @param models a array of TreeModel
+         */
+        DelegatingTreeModel (TreeModel[] models) {
+            this.models = models;        
+        }
+        
+        /** 
+         * Returns the root node of the tree or null, if the tree is empty.
+         *
+         * @return the root node of the tree or null
+         */
+        public Object getRoot () {
+            return models [0].getRoot ();
+        }
+
+        /** 
+         * Returns children for given parent on given indexes.
+         *
+         * @param   parent a parent of returned nodes
+         * @param   from a start index
+         * @param   to a end index
+         *
+         * @throws  UnknownTypeException if this TreeModel implementation is not
+         *          able to resolve children for given node type
+         *
+         * @return  children for given parent on given indexes
+         */
+        public Object[] getChildren (Object node, int from, int to)
+        throws UnknownTypeException {
+            TreeModel model = (TreeModel) classNameToModel.get (
+                node.getClass ().getName ()
+            );
+            if (model != null) 
+                try {
+                    return model.getChildren (node, from, to);
+                } catch (UnknownTypeException e) {
+                }
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                try {
+                    Object[] v = models [i].getChildren (node, from, to);
+                    classNameToModel.put (node.getClass ().getName (), models [i]);
+                    return v;
+                } catch (UnknownTypeException e) {
+                }
+            }
+            throw new UnknownTypeException (node);
+        }    
+
+        /**
+         * Returns number of children for given node.
+         * 
+         * @param   node the parent node
+         * @throws  UnknownTypeException if this TreeModel implementation is not
+         *          able to resolve children for given node type
+         *
+         * @return  true if node is leaf
+         * @since 1.1
+         */
+        public int getChildrenCount (Object node) 
+        throws UnknownTypeException {
+            TreeModel model = (TreeModel) classNameToModel.get (
+                node.getClass ().getName ()
+            );
+            if (model != null) 
+                try {
+                    return model.getChildrenCount (node);
+                } catch (UnknownTypeException e) {
+                }
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                try {
+                    int result = models [i].getChildrenCount (node);
+                    classNameToModel.put (node.getClass ().getName (), models [i]);
+                    return result;
+                } catch (UnknownTypeException e) {
+                }
+            }
+            throw new UnknownTypeException (node);
+        }    
+
+        /**
+         * Returns true if node is leaf.
+         * 
+         * @throws  UnknownTypeException if this TreeModel implementation is not
+         *          able to resolve dchildren for given node type
+         * @return  true if node is leaf
+         */
+        public boolean isLeaf (Object node) throws UnknownTypeException {
+            TreeModel model = (TreeModel) classNameToModel.get (
+                node.getClass ().getName ()
+            );
+            if (model != null) 
+                try {
+                    return model.isLeaf (node);
+                } catch (UnknownTypeException e) {
+                }
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                try {
+                    boolean result = models [i].isLeaf (node);
+                    classNameToModel.put (node.getClass ().getName (), models [i]);
+                    return result;
+                } catch (UnknownTypeException e) {
+                }
+            }
+            throw new UnknownTypeException (node);
+        }    
+
+        /** 
+         * Registers given listener.
+         * 
+         * @param l the listener to add
+         */
+        public void addTreeModelListener (TreeModelListener l) {
+            int i, k = models.length;
+            for (i = 0; i < k; i++)
+                models [i].addTreeModelListener (l);
+        }
+
+        /** 
+         * Unregisters given listener.
+         *
+         * @param l the listener to remove
+         */
+        public void removeTreeModelListener (TreeModelListener l) {
+            int i, k = models.length;
+            for (i = 0; i < k; i++)
+                models [i].removeTreeModelListener (l);
+        }
+
+        public String toString () {
+            return super.toString () + "\n" + toString ("    ");
+        }
+        
+        public String toString (String n) {
+            int i, k = models.length - 1;
+            if (k == -1) return "";
+            StringBuffer sb = new StringBuffer ();
+            for (i = 0; i < k; i++) {
+                sb.append (n);
+                sb.append (models [i]);
+                sb.append ('\n');
+            }
+            sb.append (n);
+            sb.append (models [i]);
+            return new String (sb);
+        }
+    }
     
     /**
      * Creates {@link org.netbeans.spi.viewmodel.NodeActionsProvider} 
@@ -1065,6 +1180,118 @@ public final class Models {
             for (i = 0; i < k; i++)
                 models [i].removeTreeModelListener (l);
         }
+
+        public String toString () {
+            return super.toString () + "\n" + toString ("    ");
+        }
+        
+        public String toString (String n) {
+            int i, k = models.length - 1;
+            if (k == -1) return "";
+            StringBuffer sb = new StringBuffer ();
+            for (i = 0; i < k; i++) {
+                sb.append (n);
+                sb.append (models [i]);
+                sb.append ('\n');
+            }
+            sb.append (n);
+            sb.append (models [i]);
+            return new String (sb);
+        }
+    }
+
+    /**
+     * Creates one {@link org.netbeans.spi.viewmodel.TableModel}
+     * from given list of TableModels. DelegatingTableModel asks all underlaying 
+     * models for each concrete parameter, and returns first returned value.
+     *
+     * @author   Jan Jancura
+     */
+    final static class DelegatingTreeExpansionModel 
+    implements TreeExpansionModel {
+
+        private TreeExpansionModel[] models;
+        private HashMap classNameToModel = new HashMap ();
+
+
+        /**
+         * Creates new instance of DelegatingTableModel for given list of 
+         * TableModels.
+         *
+         * @param models a list of TableModels
+         */
+        DelegatingTreeExpansionModel (List models) {
+            this (convert (models));
+        }
+
+        private static TreeExpansionModel[] convert (List l) {
+            TreeExpansionModel[] models = new TreeExpansionModel [l.size ()];
+            return (TreeExpansionModel[]) l.toArray (models);
+        }
+
+        /**
+         * Creates new instance of DelegatingTableModel for given array of 
+         * TableModels.
+         *
+         * @param models a array of TableModels
+         */
+        DelegatingTreeExpansionModel (TreeExpansionModel[] models) {
+            this.models = models;        
+        }
+
+        /**
+         * Defines default state (collapsed, expanded) of given node.
+         *
+         * @param node a node
+         * @return default state (collapsed, expanded) of given node
+         */
+        public boolean isExpanded (Object node) 
+        throws UnknownTypeException {
+            TreeExpansionModel model = (TreeExpansionModel) 
+                classNameToModel.get (
+                    node.getClass ().getName ()
+                );
+            if (model != null) 
+                try {
+                    return model.isExpanded (node);
+                } catch (UnknownTypeException e) {
+                }
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                try {
+                    boolean result = models [i].isExpanded (node);
+                    classNameToModel.put (node.getClass ().getName (), models [i]);
+                    return result;
+                } catch (UnknownTypeException e) {
+                }
+            }
+            throw new UnknownTypeException (node);
+        }    
+
+
+        /**
+         * Called when given node is expanded.
+         *
+         * @param node a expanded node
+         */
+        public void nodeExpanded (Object node) {
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                models [i].nodeExpanded (node);
+            }
+        }    
+
+        /**
+         * Called when given node is collapsed.
+         *
+         * @param node a collapsed node
+         */
+        public void nodeCollapsed (Object node) {
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                models [i].nodeCollapsed (node);
+            }
+        }    
 
         public String toString () {
             return super.toString () + "\n" + toString ("    ");
@@ -1662,6 +1889,323 @@ public final class Models {
             int i, k = models.length;
             for (i = 0; i < k; i++)
                 models [i].removeTreeModelListener (l);
+        }
+    }
+    
+    /**
+     * Implements set of tree view features.
+     */
+    public static final class TreeFeatures {
+        
+        private JComponent view;
+        
+        private TreeFeatures (JComponent view) {
+            this.view = view;
+        }
+        
+        /**
+         * Returns <code>true</code> if given node is expanded in given view.
+         *
+         * @param view a view created by this Models class
+         * @param node a node to be checked
+         * @return <code>true</code> if given node is expanded in given view
+         */
+        public boolean isExpanded (
+            Object node
+        ) {
+            return ((TreeTable) view).isExpanded (node);
+        }
+
+        /**
+         * Expands given list of nodes in given view.
+         *
+         * @param view a view created by this Models class
+         * @param node a list of nodes to be expanded
+         */
+        public void expandNode (
+            Object node
+        ) {
+            ((TreeTable) view).expandNode (node);
+        }
+
+        /**
+         * Collapses given node in given view.
+         *
+         * @param view a view created by this Models class
+         * @param node a node to be expanded
+         */
+        public void collapseNode (
+            Object node
+        ) {
+            ((TreeTable) view).collapseNode (node);
+        }
+    }
+
+    /**
+     * This model encapsulates all currently supported models.
+     *
+     * @see Models#createCompoundModel
+     * @author   Jan Jancura
+     */
+    public static final class CompoundModel implements TreeModel, 
+    NodeModel, NodeActionsProvider, TableModel, TreeExpansionModel {
+
+        private TreeModel       treeModel;
+        private NodeModel       nodeModel;
+        private NodeActionsProvider nodeActionsProvider;
+        private ColumnModel[]   columnModels;
+        private TableModel      tableModel;
+        private TreeExpansionModel treeExpansionModel;
+
+
+        // init ....................................................................
+
+        /**
+         * Creates a new instance of {@link CompoundModel} for given models.
+         *
+         * @param treeModel a tree model to delegate on
+         * @param nodeModel a node model to delegate on
+         * @param nodeActionsProvider a node actions provider to delegate on
+         * @param nodeActionsProvider a columns modeol to delegate on
+         */
+        private CompoundModel (
+            TreeModel treeModel, 
+            TreeExpansionModel treeExpansionModel,
+            NodeModel nodeModel, 
+            NodeActionsProvider nodeActionsProvider,
+            List columnModels,
+            TableModel tableModel
+        ) {
+            if (treeModel == null) throw new NullPointerException ();
+            if (treeModel == null) throw new NullPointerException ();
+            if (nodeModel == null) throw new NullPointerException ();
+            if (tableModel == null) throw new NullPointerException ();
+            if (nodeActionsProvider == null) throw new NullPointerException ();
+
+            this.treeModel = treeModel;
+            this.treeExpansionModel = treeExpansionModel;
+            this.nodeModel = nodeModel;
+            this.tableModel = tableModel;
+            this.nodeActionsProvider = nodeActionsProvider;
+            this.columnModels = (ColumnModel[]) columnModels.toArray (
+                new ColumnModel [columnModels.size ()]
+            );
+        }
+
+
+        // TreeModel ...............................................................
+
+        /** 
+         * Returns the root node of the tree or null, if the tree is empty.
+         *
+         * @return the root node of the tree or null
+         */
+        public Object getRoot () {
+            return treeModel.getRoot ();
+        }
+
+        /** 
+         * Returns children for given parent on given indexes.
+         *
+         * @param   parent a parent of returned nodes
+         * @throws  UnknownTypeException if this TreeModel implementation is not
+         *          able to resolve dchildren for given node type
+         *
+         * @return  children for given parent on given indexes
+         */
+        public Object[] getChildren (Object parent, int from, int to) 
+        throws UnknownTypeException {
+            return treeModel.getChildren (parent, from, to);
+        }
+
+        /**
+         * Returns number of children for given node.
+         * 
+         * @param   node the parent node
+         * @throws  UnknownTypeException if this TreeModel implementation is not
+         *          able to resolve children for given node type
+         *
+         * @return  true if node is leaf
+         */
+        public int getChildrenCount (Object node) throws UnknownTypeException {
+            return treeModel.getChildrenCount (node);
+        }
+
+        /**
+         * Returns true if node is leaf.
+         * 
+         * @throws  UnknownTypeException if this TreeModel implementation is not
+         *          able to resolve dchildren for given node type
+         * @return  true if node is leaf
+         */
+        public boolean isLeaf (Object node) throws UnknownTypeException {
+            return treeModel.isLeaf (node);
+        }
+
+
+        // NodeModel ...............................................................
+
+        /**
+         * Returns display name for given node.
+         *
+         * @throws  UnknownTypeException if this NodeModel implementation is not
+         *          able to resolve display name for given node type
+         * @return  display name for given node
+         */
+        public String getDisplayName (Object node) throws UnknownTypeException {
+            return nodeModel.getDisplayName (node);
+        }
+
+        /**
+         * Returns tooltip for given node.
+         *
+         * @throws  UnknownTypeException if this NodeModel implementation is not
+         *          able to resolve tooltip for given node type
+         * @return  tooltip for given node
+         */
+        public String getShortDescription (Object node) 
+        throws UnknownTypeException {
+            return nodeModel.getShortDescription (node);
+        }
+
+        /**
+         * Returns icon for given node.
+         *
+         * @throws  ComputingException if the icon resolving process 
+         *          is time consuming, and the value will be updated later
+         * @throws  UnknownTypeException if this NodeModel implementation is not
+         *          able to resolve icon for given node type
+         * @return  icon for given node
+         */
+        public String getIconBase (Object node) 
+        throws UnknownTypeException {
+            return nodeModel.getIconBase (node);
+        }
+
+
+        // NodeActionsProvider .....................................................
+
+        /**
+         * Performs default action for given node.
+         *
+         * @throws  UnknownTypeException if this NodeActionsProvider implementation 
+         *          is not able to resolve actions for given node type
+         * @return  display name for given node
+         */
+        public void performDefaultAction (Object node) throws UnknownTypeException {
+            nodeActionsProvider.performDefaultAction (node);
+        }
+
+        /**
+         * Returns set of actions for given node.
+         *
+         * @throws  UnknownTypeException if this NodeActionsProvider implementation 
+         *          is not able to resolve actions for given node type
+         * @return  display name for given node
+         */
+        public Action[] getActions (Object node) throws UnknownTypeException {
+            return nodeActionsProvider.getActions (node);
+        }
+
+
+        // ColumnsModel ............................................................
+
+        /**
+         * Returns sorted array of 
+         * {@link org.netbeans.spi.viewmodel.ColumnModel}s.
+         *
+         * @return sorted array of ColumnModels
+         */
+        public ColumnModel[] getColumns () {
+            return columnModels;
+        }
+
+
+        // TableModel ..............................................................
+
+        public Object getValueAt (Object node, String columnID) throws 
+        UnknownTypeException {
+            return tableModel.getValueAt (node, columnID);
+        }
+
+        public boolean isReadOnly (Object node, String columnID) throws 
+        UnknownTypeException {
+            return tableModel.isReadOnly (node, columnID);
+        }
+
+        public void setValueAt (Object node, String columnID, Object value) throws 
+        UnknownTypeException {
+            tableModel.setValueAt (node, columnID, value);
+        }
+
+
+        // TreeExpansionModel ......................................................
+
+        /**
+         * Defines default state (collapsed, expanded) of given node.
+         *
+         * @param node a node
+         * @return default state (collapsed, expanded) of given node
+         */
+        public boolean isExpanded (Object node) throws UnknownTypeException {
+            if (treeExpansionModel == null) return false;
+            return treeExpansionModel.isExpanded (node);
+        }
+
+        /**
+         * Called when given node is expanded.
+         *
+         * @param node a expanded node
+         */
+        public void nodeExpanded (Object node) {
+            if (treeExpansionModel != null)
+                treeExpansionModel.nodeExpanded (node);
+        }
+
+        /**
+         * Called when given node is collapsed.
+         *
+         * @param node a collapsed node
+         */
+        public void nodeCollapsed (Object node) {
+            if (treeExpansionModel != null)
+                treeExpansionModel.nodeCollapsed (node);
+        }
+
+
+        // listeners ...............................................................
+
+        /** 
+         * Registers given listener.
+         * 
+         * @param l the listener to add
+         */
+        public void addTreeModelListener (TreeModelListener l) {
+            treeModel.addTreeModelListener (l);
+            nodeModel.addTreeModelListener (l);
+            nodeActionsProvider.addTreeModelListener (l);
+            tableModel.addTreeModelListener (l);
+        }
+
+        /** 
+         * Unregisters given listener.
+         *
+         * @param l the listener to remove
+         */
+        public void removeTreeModelListener (TreeModelListener l) {
+            treeModel.removeTreeModelListener (l);
+            nodeModel.removeTreeModelListener (l);
+            nodeActionsProvider.removeTreeModelListener (l);
+            tableModel.removeTreeModelListener (l);
+        }
+
+        public String toString () {
+            return super.toString () + 
+                   "\n  TreeModel = " + treeModel +
+                   "\n  NodeModel = " + nodeModel +
+                   "\n  TableModel = " + tableModel +
+                   "\n  NodeActionsProvider = " + nodeActionsProvider +
+                   "\n  ColumnsModel = " + columnModels;
         }
     }
 }

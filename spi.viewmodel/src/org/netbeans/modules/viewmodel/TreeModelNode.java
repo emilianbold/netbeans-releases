@@ -18,6 +18,7 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyEditor;
 import java.lang.IllegalAccessException;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,8 +26,10 @@ import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 
 import org.netbeans.spi.viewmodel.ColumnModel;
+import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.openide.nodes.AbstractNode;
@@ -47,7 +50,7 @@ public class TreeModelNode extends AbstractNode {
     
     // variables ...............................................................
 
-    private CompoundModel       model;
+    private Models.CompoundModel model;
     private TreeModelRoot       treeModelRoot;
     private Object              object;
     
@@ -63,9 +66,9 @@ public class TreeModelNode extends AbstractNode {
     * Creates root of call stack for given producer.
     */
     public TreeModelNode ( 
-        CompoundModel model, 
-        TreeModelRoot treeModelRoot,
-        Object object
+        final Models.CompoundModel model, 
+        final TreeModelRoot treeModelRoot,
+        final Object object
     ) {
         super (
             createChildren (model, treeModelRoot, object),
@@ -94,7 +97,7 @@ public class TreeModelNode extends AbstractNode {
     }
     
     private static Children createChildren (
-        CompoundModel model, 
+        Models.CompoundModel model, 
         TreeModelRoot treeModelRoot,
         Object object
     ) {
@@ -114,49 +117,9 @@ public class TreeModelNode extends AbstractNode {
         }
     }
     
-//    public String getName () {
-//        try {
-//            if (name == null) {
-//                name = model.getDisplayName (object);
-//                if (name == null) 
-//                    throw new NullPointerException (
-//                        "Model: " + model + ".getDisplayName (" + object + 
-//                        ") = null!"
-//                    );
-//            }
-//            return name;
-//        } catch (UnknownTypeException e) {
-//            e.printStackTrace ();
-//            System.out.println (model);
-//            System.out.println ();
-//            return object.toString ();
-//        } catch (final ComputingException ex) {
-//            name = "";
-//            RequestProcessor.getDefault ().post (new Runnable () {
-//                public void run () {
-//                    name = (String) ex.getValue ();
-//                    if (name == null) {
-//                        name = "?";
-//                        throw new NullPointerException (
-//                            "Model: " + model + ".getDisplayName (" + object + 
-//                            ") = null!"
-//                        );
-//                    }
-//                    setName (name);
-//                    setDisplayName (name);
-//                }
-//            });
-//            return "";
-//        }
-//    }
-//    
-//    public String getDisplayName () {
-//        return getName ();
-//    }
-    
     public String getShortDescription () {
         if (shortDescription == null) {
-            RequestProcessor.getDefault ().post (new Runnable () {
+            getRequestProcessor ().post (new Runnable () {
                 public void run () {
                     try {
                         shortDescription = model.getShortDescription (object);
@@ -268,7 +231,7 @@ public class TreeModelNode extends AbstractNode {
         properties = new HashMap ();
         
         // 2) refresh name, displayName and iconBase
-        RequestProcessor.getDefault ().post (new Runnable () {
+        getRequestProcessor ().post (new Runnable () {
             public void run () {
                 try {
                     name = model.getDisplayName (object);
@@ -289,7 +252,7 @@ public class TreeModelNode extends AbstractNode {
                         name = (String) object;
                         setName (name);
                         setDisplayName (name);
-                        setIconBase ("org/openide/resources/actions/empty");
+//                        setIconBase ("org/openide/resources/actions/empty");
                     } else {
                         e.printStackTrace ();
                         System.out.println (model);
@@ -304,6 +267,13 @@ public class TreeModelNode extends AbstractNode {
         if (ch instanceof TreeModelChildren)
             ((TreeModelChildren) ch).refreshChildren ();
     }
+    
+    private static RequestProcessor requestProcessor;
+    public static RequestProcessor getRequestProcessor () {
+        if (requestProcessor == null)
+            requestProcessor = new RequestProcessor ("TreeModel");
+        return requestProcessor;
+    }
 
     
     // innerclasses ............................................................
@@ -312,14 +282,14 @@ public class TreeModelNode extends AbstractNode {
     private static final class TreeModelChildren extends Children.Keys {
             
         private boolean             initialezed = false;
-        private CompoundModel       model;
+        private Models.CompoundModel model;
         private TreeModelRoot       treeModelRoot;
         private Object              object;
         private WeakHashMap         objectToNode = new WeakHashMap ();
         
         
         TreeModelChildren (
-            CompoundModel   model,
+            Models.CompoundModel model,
             TreeModelRoot   treeModelRoot,
             Object          object
         ) {
@@ -341,7 +311,7 @@ public class TreeModelNode extends AbstractNode {
         void refreshChildren () {
             if (!initialezed) return;
 
-            RequestProcessor.getDefault ().post (new Runnable () {
+            getRequestProcessor ().post (new Runnable () {
                 public void run () {
                     try {
                         refreshChildren (model.getChildrenCount (object));
@@ -352,6 +322,7 @@ public class TreeModelNode extends AbstractNode {
                             System.out.println ();
                         }
                         setKeys (new Object [0]);
+                        return;
                     }
                 }
             });
@@ -359,7 +330,7 @@ public class TreeModelNode extends AbstractNode {
         
         void refreshChildren (int count) {
             try {
-                Object[] ch = model.getChildren (
+                final Object[] ch = model.getChildren (
                     object, 
                     0, 
                     count
@@ -382,6 +353,18 @@ public class TreeModelNode extends AbstractNode {
                 }
                 objectToNode = newObjectToNode;
                 setKeys (ch);
+                
+                SwingUtilities.invokeLater (new Runnable () {
+                    public void run () {
+                        int i, k = ch.length;
+                        for (i = 0; i < k; i++)
+                            try {
+                                if (model.isExpanded (ch [i]))
+                                    treeModelRoot.getTreeTable ().expandNode (ch [i]);
+                            } catch (UnknownTypeException ex) {
+                            }
+                    }
+                });
             } catch (UnknownTypeException e) {
                 setKeys (new Object [0]);
                 if (!(object instanceof String)) {
@@ -466,7 +449,7 @@ public class TreeModelNode extends AbstractNode {
             if (properties.containsKey (id))
                 return properties.get (id);
             
-            RequestProcessor.getDefault ().post (new Runnable () {
+            getRequestProcessor ().post (new Runnable () {
                 public void run () {
                     try {
                         Object value = model.getValueAt (object, id);

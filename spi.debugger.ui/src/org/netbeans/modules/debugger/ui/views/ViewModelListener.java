@@ -27,6 +27,7 @@ import javax.swing.JComponent;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
@@ -35,6 +36,7 @@ import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.NodeModelFilter;
 import org.netbeans.spi.viewmodel.TableModel;
+import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.TreeModelListener;
@@ -76,11 +78,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         );
         Models.setModelsToView (
             view, 
-            Models.EMPTY_TREE_MODEL, 
-            Models.EMPTY_NODE_MODEL, 
-            Models.EMPTY_TABLE_MODEL, 
-            Models.EMPTY_NODE_ACTIONS_PROVIDER, 
-            Collections.EMPTY_LIST
+            Models.EMPTY_MODEL
         );
     }
 
@@ -89,67 +87,35 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     }
     
     private void updateModel () {
-        TreeModel tm = (TreeModel) loadModel (TreeModel.class);
-        if (tm == null)
-            tm = Models.EMPTY_TREE_MODEL;
-        List l = loadModels (NodeModel.class);
-        l.add (new EmptyModel ());
-        
-        if (verbose) {
-            System.out.println ("");
-            System.out.println (viewType + " models:");
+        DebuggerManager dm = DebuggerManager.getDebuggerManager ();
+        DebuggerEngine e = dm.getCurrentEngine ();
+        ArrayList l = new ArrayList ();
+        if (e != null) {
+            l.addAll (e.lookup (viewType, TreeModel.class));
+            l.addAll (e.lookup (viewType, TreeModelFilter.class));
+            l.addAll (e.lookup (viewType, TreeExpansionModel.class));
+            l.addAll (e.lookup (viewType, NodeModel.class));
+            l.addAll (e.lookup (viewType, NodeModelFilter.class));
+            l.addAll (e.lookup (viewType, TableModel.class));
+            l.addAll (e.lookup (viewType, TableModelFilter.class));
+            l.addAll (e.lookup (viewType, NodeActionsProvider.class));
+            l.addAll (e.lookup (viewType, NodeActionsProviderFilter.class));
+            l.addAll (e.lookup (viewType, ColumnModel.class));
+            l.addAll (e.lookup (viewType, Model.class));
         }
+        l.addAll (dm.lookup (viewType, TreeModel.class));
+        l.addAll (dm.lookup (viewType, TreeModelFilter.class));
+        l.addAll (dm.lookup (viewType, TreeExpansionModel.class));
+        l.addAll (dm.lookup (viewType, NodeModel.class));
+        l.addAll (dm.lookup (viewType, NodeModelFilter.class));
+        l.addAll (dm.lookup (viewType, TableModel.class));
+        l.addAll (dm.lookup (viewType, TableModelFilter.class));
+        l.addAll (dm.lookup (viewType, NodeActionsProvider.class));
+        l.addAll (dm.lookup (viewType, NodeActionsProviderFilter.class));
+        l.addAll (dm.lookup (viewType, ColumnModel.class));
+        l.addAll (dm.lookup (viewType, Model.class));
         
-        Models.setModelsToView (
-            view, 
-            Models.createCompoundTreeModel (
-                tm, 
-                loadModels (TreeModelFilter.class)
-            ),
-            Models.createCompoundNodeModel (
-                Models.createCompoundNodeModel (
-                    l
-                ),
-                loadModels (NodeModelFilter.class)
-            ),
-            Models.createCompoundTableModel (
-                Models.createCompoundTableModel (
-                    loadModels (TableModel.class)
-                ),
-                loadModels (TableModelFilter.class)
-            ),
-            Models.createCompoundNodeActionsProvider (
-                Models.createCompoundNodeActionsProvider (
-                    loadModels (NodeActionsProvider.class)
-                ),
-                loadModels (NodeActionsProviderFilter.class)
-            ),
-            loadModels (ColumnModel.class)
-        );
-                    
-    }
-    
-    private Object loadModel (Class modelType) {
-        DebuggerEngine e = DebuggerManager.getDebuggerManager ().
-            getCurrentEngine ();
-        Object m = null;
-        if (e != null)
-            m = e.lookupFirst (viewType, modelType);
-        if (m == null)
-            m = DebuggerManager.getDebuggerManager ().
-                lookupFirst (viewType, modelType);
-        return m;
-    }
-
-    private List loadModels (Class modelType) {
-        DebuggerEngine e = DebuggerManager.getDebuggerManager ().
-            getCurrentEngine ();
-        List l = new ArrayList ();
-        if (e != null)
-            l.addAll (e.lookup (viewType, modelType));
-        l.addAll (DebuggerManager.getDebuggerManager ().
-            lookup (viewType, modelType));
-        return l;
+        Models.setModelsToView (view, Models.createCompoundModel (l));
     }
 
     

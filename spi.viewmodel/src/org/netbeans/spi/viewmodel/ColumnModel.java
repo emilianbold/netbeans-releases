@@ -24,7 +24,7 @@ import javax.swing.table.TableCellRenderer;
  *
  * @author   Jan Jancura
  */
-public abstract class ColumnModel {
+public abstract class ColumnModel implements Model {
     
     
     /**

@@ -20,7 +20,7 @@ package org.netbeans.spi.viewmodel;
  *
  * @author   Jan Jancura
  */
-public interface NodeModel {
+public interface NodeModel extends Model {
     
     /**
      * Returns display name for given node.

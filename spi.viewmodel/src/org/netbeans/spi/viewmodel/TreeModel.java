@@ -20,7 +20,7 @@ package org.netbeans.spi.viewmodel;
  *
  * @author   Jan Jancura
  */
-public interface TreeModel {
+public interface TreeModel extends Model {
     
     /** 
      * Constant for root node. This root node should be used if root node

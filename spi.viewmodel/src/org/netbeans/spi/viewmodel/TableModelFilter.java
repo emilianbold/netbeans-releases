@@ -25,7 +25,7 @@ import javax.swing.table.TableCellRenderer;
  *
  * @author   Jan Jancura
  */
-public interface TableModelFilter {
+public interface TableModelFilter extends Model {
     
     
     /**

@@ -23,7 +23,7 @@ import javax.swing.Action;
  *
  * @author   Jan Jancura
  */
-public interface NodeActionsProviderFilter {
+public interface NodeActionsProviderFilter extends Model {
     
     
     /**

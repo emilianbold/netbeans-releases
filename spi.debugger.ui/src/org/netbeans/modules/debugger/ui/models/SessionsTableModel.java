@@ -36,12 +36,12 @@ PropertyChangeListener {
 
     
     public SessionsTableModel () {
-        Session session = DebuggerManager.getDebuggerManager ().
-            getCurrentSession ();
-        session.addPropertyChangeListener (
-            Session.PROP_CURRENT_LANGUAGE, 
-            this
-        );
+//        Session session = DebuggerManager.getDebuggerManager ().
+//            getCurrentSession ();
+//        session.addPropertyChangeListener (
+//            Session.PROP_CURRENT_LANGUAGE, 
+//            this
+//        );
     }
     
     public Object getValueAt (Object row, String columnID) throws 
