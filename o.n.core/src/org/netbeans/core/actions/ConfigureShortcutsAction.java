@@ -35,7 +35,16 @@ public class ConfigureShortcutsAction extends CallableSystemAction {
   public void performAction () {
     DialogDescriptor dd = new DialogDescriptor (new ShortcutsEditor (), NbBundle.getBundle (ConfigureShortcutsAction.class).getString("CTL_ConfigureShortcuts_Title"));
     TopManager.getDefault ().createDialog (dd).show ();
-    // [PENDING - if OK pressed, install shortcuts]
+    if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+      // [PENDING]
+      // 1. check whether preset is used
+      // 2. if yes => only update shortucts.properties file
+      // 3. if no:
+      // 3a. store current bindngs into UserDefined.keys
+      // 3b update Shortcuts.properties to point to UserDefined 
+    } else {
+      ShortcutsEditor.installCurrentBindings (); // Cancel the modifications performed in Configure Shortcuts dialog
+    }
   }
 
   /** URL to this action.
@@ -57,6 +66,7 @@ public class ConfigureShortcutsAction extends CallableSystemAction {
 
 /*
  * Log
+ *  3    Gandalf   1.2         12/1/99  Ian Formanek    
  *  2    Gandalf   1.1         11/30/99 Ian Formanek    
  *  1    Gandalf   1.0         11/30/99 Ian Formanek    
  * $
