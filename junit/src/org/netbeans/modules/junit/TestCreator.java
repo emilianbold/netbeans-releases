@@ -266,7 +266,7 @@ public class TestCreator extends java.lang.Object {
         Method ret = pkg.getMethod().createMethod();
         ret.setName("suite");
         ret.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
-        ret.setTypeName(TestUtil.getTypeReference(pkg,"Test"));
+        ret.setTypeName(TestUtil.getTypeReference(pkg,"junit.framework.Test"));
         return ret;
     }
 
@@ -283,7 +283,7 @@ public class TestCreator extends java.lang.Object {
         Method method = createSuiteMethod(pkg);
         
         StringBuffer body = new StringBuffer(1024);
-        body.append("\nTestSuite suite = new TestSuite(");
+        body.append("\njunit.framework.TestSuite suite = new junit.framework.TestSuite(");
         body.append(tgtClass.getSimpleName());
         body.append(".class);\n");
         
@@ -608,7 +608,7 @@ public class TestCreator extends java.lang.Object {
         body.append('\n');
         //body.append("//" + GENERATED_SUITE_BLOCK_START + "\n");
         //body.append(NbBundle.getMessage(TestCreator.class,"TestCreator.suiteMethod.suiteBlock.comment")+"\n");
-        body.append("TestSuite suite = new TestSuite(\"" + testName + "\");\n");
+        body.append("junit.framework.TestSuite suite = new junit.framework.TestSuite(\"" + testName + "\");\n");
         
         li = members.listIterator();
         
