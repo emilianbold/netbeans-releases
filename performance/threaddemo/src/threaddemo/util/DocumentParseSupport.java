@@ -24,7 +24,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.text.NbDocument;
 import org.openide.util.Mutex;
 
-// XXX also support direct parse from FileObject?
 // XXX helper methods to parse/rewrite an entire document atomically using Reader/Writer
 
 /**
@@ -39,7 +38,8 @@ import org.openide.util.Mutex;
 public abstract class DocumentParseSupport extends TwoWaySupport {
     
     private final EditorCookie.Observable edit;
-    
+
+    /** document loaded; may be null initially */
     private StyledDocument document = null;
     private int listenerCount = 0; // for assertions only
     private final Listener listener;
@@ -89,25 +89,30 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
     /**
      * Make sure the correct document is open, and that the correct listeners
      * are attached to it and not its predecessor.
+     * @param requireDocument if true, force a document to be loaded; if false,
+     *                        permit {@link #document} to remain null, but refresh
+     *                        it with a newer document if it has in fact changed
      */
-    private void refreshDocument() throws IOException {
+    private void refreshDocument(boolean requireDocument) throws IOException {
         System.err.println("rD begin");//XXX
         StyledDocument oldDocument = document;
         // XXX is openDocument safe to call from any thread? probably yes, for now...
         edit.removePropertyChangeListener(listener);
         try {
-            document = edit.openDocument();
+            document = requireDocument ? edit.openDocument() : edit.getDocument();
         } finally {
             edit.addPropertyChangeListener(listener);
         }
-        assert document != null;
+        assert !requireDocument || document != null;
         if (document != oldDocument) {
             if (oldDocument != null) {
                 oldDocument.removeDocumentListener(listener);
                 assert --listenerCount == 0;
             }
-            document.addDocumentListener(listener);
-            assert ++listenerCount == 1 : listenerCount;
+            if (document != null) {
+                document.addDocumentListener(listener);
+                assert ++listenerCount == 1 : listenerCount;
+            }
         }
         System.err.println("rD end");//XXX
     }
@@ -118,7 +123,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
      */
     protected final DerivationResult doDerive(final Object oldValue, Object underlyingDelta) throws Exception {
         if (document == null) {
-            refreshDocument();
+            refreshDocument(requiresUnmodifiedDocument());
         }
         final List documentEvents; // List<DocumentEvent>
         if (underlyingDelta instanceof List) {
@@ -128,7 +133,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
         }
         final DerivationResult[] val = new DerivationResult[1];
         final Exception[] exc = new Exception[1];
-        document.render(new Runnable() {
+        Runnable r = new Runnable() {
             public void run() {
                 try {
                     val[0] = doDerive(document, documentEvents, oldValue);
@@ -136,7 +141,12 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
                     exc[0] = e;
                 }
             }
-        });
+        };
+        if (document != null) {
+            document.render(r);
+        } else {
+            r.run();
+        }
         if (exc[0] != null) {
             throw exc[0];
         }
@@ -144,9 +154,33 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
     }
     
     /**
+     * Declare whether the support always requires a document object, even to
+     * parse an unmodified file.
+     * <p>If true, {@link #doDerive(Document,List,Object)} is always given a
+     * document; if the editor support had never been opened at all, it is
+     * nonetheless opened (invisibly) just to provide this document to parse.
+     * <p>If false, {@link #doDerive(Document,List,Object)} may be passed null for
+     * its <code>document</code> parameter, meaning that the editor support has
+     * not yet loaded a document. In this case the support is expected to run the
+     * parse from the editor cookie's underlying storage, e.g. a file. This style
+     * is potentially much more efficient when performing model reads from a large
+     * number of (unmodified) files.
+     * <p>Recreation always uses an open document regardless of this choice.
+     * <p>The default value is true, i.e. always open the document for parsing.
+     * @return true to always parse from a real document, or false to permit faster
+     *         parses from underlying storage
+     * @see EditorCookie#getDocument
+     * @see EditorCookie#openDocument
+     */
+    protected boolean requiresUnmodifiedDocument() {
+        return true;
+    }
+    
+    /**
      * Create the derived model from a text document.
      * Called with the read mutex and with read access to the document.
-     * @param document the text document to parse
+     * @param document the text document to parse, or may be null if
+     *                 {@link #requiresUnmodifiedDocument} if false
      * @param documentEvents a list of {@link DocumentEvent} that happened since
      *                       the last parse, or null if unknown (do a full reparse)
      * @param oldValue the last derived model value, or null
@@ -160,9 +194,8 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
      * Calls {@link #doRecreate(StyledDocument, Object, Object)}.
      */
     protected final Object doRecreate(final Object oldValue, final Object derivedDelta) throws Exception {
-        assert document != null || permitsClobbering();
         if (document == null) {
-            refreshDocument();
+            refreshDocument(true);
         }
         final Object[] val = new Object[1];
         final Exception[] exc = new Exception[1];
@@ -242,7 +275,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
             if (evt.getPropertyName().equals(EditorCookie.Observable.PROP_DOCUMENT)) {
                 System.err.println("DPS.pC<PROP_DOCUMENT>");//XXX
                 try {
-                    refreshDocument();
+                    refreshDocument(true);
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }

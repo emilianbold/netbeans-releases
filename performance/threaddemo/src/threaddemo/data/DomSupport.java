@@ -152,22 +152,33 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
         });
     }
     
+    protected boolean requiresUnmodifiedDocument() {
+        return false;
+    }
+    
     protected final DerivationResult doDerive(StyledDocument document, List documentEvents, Object oldValue) throws IOException {
         // ignoring documentEvents
         System.err.println("DS.doDerive");//XXX
         if (oldValue != null) {
             ((EventTarget)oldValue).removeEventListener("DOMSubtreeModified", this, false);
         }
-        String text;
-        try {
-            text = document.getText(0, document.getLength());
-        } catch (BadLocationException e) {
-            assert false : e;
-            text = "";
+        InputSource source;
+        if (document != null) {
+            String text;
+            try {
+                text = document.getText(0, document.getLength());
+            } catch (BadLocationException e) {
+                assert false : e;
+                text = "";
+            }
+            source = new InputSource(new StringReader(text));
+        } else {
+            // From disk.
+            source = new InputSource(ph.getInputStream());
         }
         Document newValue;
         try {
-            newValue = XMLUtil.parse(new InputSource(new StringReader(text)), false, false, this, this);
+            newValue = XMLUtil.parse(source, false, false, this, this);
         } catch (SAXException e) {
             throw (IOException)new IOException(e.toString()).initCause(e);
         }
