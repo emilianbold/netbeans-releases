@@ -27,44 +27,21 @@ import java.io.IOException;
  *
  * @author  Thomas Ball
  */
-public abstract class AnnotationComponent {
+public class AnnotationComponent {
     String name;
-    int tag;
+    ElementValue value;
 
     static AnnotationComponent load(DataInputStream in, ConstantPool pool) 
 	throws IOException {
 	int iName = in.readShort();
-	char tag = (char)in.readByte();
-	switch (tag) {
-	  case 'e': {
-	      int enumType = in.readShort();
-	      int enumConst = in.readShort();
-	      return new EnumAnnotation(pool, iName, tag, enumType, enumConst);
-	  }
-	  case 'c': {
-	      int classType = in.readShort();
-	      return new ClassAnnotation(pool, iName, tag, classType);
-	  }
-	  case '@': {
-	      AnnotationComponent value = AnnotationComponent.load(in, pool);
-	      return new NestedAnnotation(pool, iName, tag, value);
-	  }
-	  case '[': {
-	      AnnotationComponent[] values = 
-		  new AnnotationComponent[in.readShort()];
-	      for (int i = 0; i < values.length; i++)
-		  values[i] = AnnotationComponent.load(in, pool);
-	      return new ArrayAnnotation(pool, iName, tag, values);
-	  }
-	  default:
-	      assert "BCDFIJSZs".indexOf(tag) >= 0 : "invalid annotation tag";
-	      return new PrimitiveAnnotation(pool, iName, tag, in.readShort());
-	}
+	String name = ((CPName)pool.get(iName)).getName();
+	ElementValue value = ElementValue.load(in, pool);
+	return new AnnotationComponent(name, value);
     }
 
-    AnnotationComponent(ConstantPool pool, int iName, int tag) {
-	this.name = ((CPName)pool.get(iName)).getName();
-	this.tag = tag;
+    AnnotationComponent(String name, ElementValue value) {
+	this.name = name;
+	this.value = value;
     }
 
     /**
@@ -75,17 +52,13 @@ public abstract class AnnotationComponent {
     }
 
     /**
-     * Returns the type for this component.  Primitive types are 
-     * represented by their classtype letters:  'B', 'C', 'D', 'F',
-     * 'I', 'J', and 'Z'.  The other valid types are
-     * 'S' for String, 'e' for enum constant, 'c' for class, '@'
-     * for annotation type, and '[' for array.
+     * Returns the value for this component.
      */
-    public final int getTag() {
-	return tag;
+    public final ElementValue getValue() {
+	return value;
     }
 
     public String toString() {
-	return name + " tag=" + tag;
+	return "name=" + name + ", value=" + value;
     }
 }
