@@ -27,6 +27,24 @@ Microsystems, Inc. All Rights Reserved.
       </folder>
     </folder>
 
+    <folder name="Services">
+        <file name="antsettings.settings">
+        <![CDATA[<?xml version="1.0"?>
+            <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+            <settings version="1.0">
+                <module name="org.netbeans.modules.form" spec="1.7"/>
+                <instanceof class="org.netbeans.modules.form.FormLoaderSettings"/>
+                <instanceof class="org.openide.util.SharedClassObject"/>
+                <instanceof class="org.openide.options.SystemOption"/>
+                <instanceof class="java.io.Serializable"/>
+                <instanceof class="java.io.Externalizable"/>
+                <instanceof class="java.lang.Object"/>
+                <instance class="org.netbeans.modules.form.FormLoaderSettings"/>
+            </settings>
+        ]]>
+        </file>
+    </folder>
+
     <folder name="Actions">
         <folder name="Form">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
