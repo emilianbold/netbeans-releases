@@ -74,6 +74,7 @@ public class ServletUriPanel extends javax.swing.JPanel {
         jLabel1.setLabelFor(jComboBox1);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(ServletUriPanel.class, "LBL_setServletURI"));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jLabel1, gridBagConstraints);
