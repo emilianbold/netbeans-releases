@@ -190,7 +190,13 @@ public final class PropertiesLocaleNode extends FileEntryNode implements CookieS
                         DialogDescriptor.OK_CANCEL_OPTION,
                         DialogDescriptor.OK_OPTION,
                         new ActionListener() {
+                            private boolean bulkFlag = false;
                             public void actionPerformed(ActionEvent evt) {
+
+                                // prevent double notification #11364
+                                if (bulkFlag) return;
+                                bulkFlag =true;
+
                                 // OK pressed
                                 if(evt.getSource() == DialogDescriptor.OK_OPTION) {
                                     dialog[0].setVisible(false);

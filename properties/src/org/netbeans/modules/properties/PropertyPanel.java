@@ -16,12 +16,12 @@ package org.netbeans.modules.properties;
 
 
 import java.awt.event.KeyEvent;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
+import java.awt.event.ActionEvent;
+import javax.swing.*;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.DialogDescriptor;
 
 
 /**
@@ -179,8 +179,19 @@ public class PropertyPanel extends JPanel {
         valueTextHandler();
     }//GEN-LAST:event_valueTextFocusLost
 
+    private void workaround11364(ActionEvent evt) {
+        JRootPane root = getRootPane();
+        if (root != null) {
+            JButton defaultButton = root.getDefaultButton();
+            if (defaultButton != null) {
+                defaultButton.doClick();
+            }
+        }
+    }
+
     private void valueTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_valueTextActionPerformed
         valueTextHandler();
+        workaround11364(evt);
     }//GEN-LAST:event_valueTextActionPerformed
 
     
@@ -203,6 +214,7 @@ public class PropertyPanel extends JPanel {
 
     private void keyTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyTextActionPerformed
         keyTextHandler();
+        workaround11364(evt);
     }//GEN-LAST:event_keyTextActionPerformed
 
     /** Key text field event handler. */
@@ -216,6 +228,7 @@ public class PropertyPanel extends JPanel {
 
     private void commentTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_commentTextActionPerformed
         commentTextHandler();
+        workaround11364(evt);
     }//GEN-LAST:event_commentTextActionPerformed
 
     /** Comment text field event handler. */
