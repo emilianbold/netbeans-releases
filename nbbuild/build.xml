@@ -1367,7 +1367,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../tasklist/usertasks" target="netbeans"/>
   </target>
-  <target name="all-tasklist/suggestions" depends="init,all-tasklist/api,all-tasklist/core">
+  <target name="all-tasklist/suggestions" depends="init,all-tasklist/api,all-tasklist/core,all-projects/queries">
     <echo message="Building module tasklist/suggestions..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
