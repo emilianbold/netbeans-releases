@@ -67,19 +67,6 @@ public class HTMLNode extends Node {
         });
     }
     
-/*   protected static final Action[] javaActions = new Action[] {
-        cutAction,
-        copyAction,
-        deleteAction,
-        compileAction,
-        buildAction,
-        executeAction
-    };
-    
-    Action[] getActions() {
-        return javaActions;
-    }*/
-
     /** performs ViewAction with this node */    
     public void view() {
         viewAction.perform(this);

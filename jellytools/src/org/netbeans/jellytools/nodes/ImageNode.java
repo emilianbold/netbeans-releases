@@ -64,19 +64,6 @@ public class ImageNode extends Node {
             propertiesAction
         });
     }
-    
-/*   protected static final Action[] javaActions = new Action[] {
-        cutAction,
-        copyAction,
-        deleteAction,
-        compileAction,
-        buildAction,
-        executeAction
-    };
-    
-    Action[] getActions() {
-        return javaActions;
-    }*/
 
     /** performs OpenAction with this node */    
     public void open() {
