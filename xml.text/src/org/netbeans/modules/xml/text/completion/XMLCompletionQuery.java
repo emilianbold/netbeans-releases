@@ -121,7 +121,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
             int id = token.getTokenID().getNumericID();
             
             // determine last typed text, prefix text
-            
+
            if ( boundary == false ) {
                 
                 preText = token.getImage().substring( 0, offset - token.getOffset() );
@@ -165,6 +165,12 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
 
                 case XMLDefaultTokenContext.ARGUMENT_ID:
                     erase = preText.length() + eraseRight;
+                    break;
+                case XMLDefaultTokenContext.VALUE_ID:
+                    erase = preText.length();
+                    if (erase > 0 && (preText.charAt(0) == '\'' || preText.charAt(0) == '"')) {
+                        erase--; // Because of attribute values
+                    } else
                     break;
             }
 
