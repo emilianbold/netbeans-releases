@@ -390,7 +390,6 @@ the Options window:-->
 <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingWizardPanel" url="project/csh/proj_j2sefree_wiz2.html" />
 <mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersWizardPanel" url="project/csh/proj_j2sefree_wiz3.html" />
 <mapID target="org.netbeans.modules.java.freeform.ui.ClasspathWizardPanel" url="project/csh/proj_j2sefree_wiz4.html" />
-<mapID target="org.netbeans.modules.ant.freeform.ui.WebLocationsWizardPanel" url="project/csh/proj_j2sefree_wiz5.html" />
 
 <!-- Standard J2SE Project Properties dialog:-->
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerSources" url="project/csh/proj_j2sestand_props_sources.html" />
