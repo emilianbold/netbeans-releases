@@ -718,7 +718,7 @@ SystemFileSystem
     <!-- default workspaces, frames and their layout defined by core-->
     <folder name="Windows">
         <folder name="WindowManager">
-            <attr name="Visual/Running" boolvalue="true" />
+            <attr name="Visual/Debugging" boolvalue="true" />
             <file name="Visual.wswksp" url="windowmanager/Visual.wswksp" />
             <folder name="Visual">
                 <file name="explorer.wsmode" url="windowmanager/Visual/explorer.wsmode" />
@@ -756,13 +756,6 @@ SystemFileSystem
                 <folder name="Form">
                     <file name="ComponentInspector.wstcref" url="windowmanager/Debugging/Form/ComponentInspector.wstcref" />
                     <file name="ComponentPalette.wstcref" url="windowmanager/Debugging/Form/ComponentPalette.wstcref" />
-                </folder>
-            </folder>
-            <folder name="Running">
-                <file name="Form.wsmode" url="windowmanager/Running/Form.wsmode" />
-                <folder name="Form">
-                    <file name="ComponentInspector.wstcref" url="windowmanager/Running/Form/ComponentInspector.wstcref" />
-                    <file name="ComponentPalette.wstcref" url="windowmanager/Running/Form/ComponentPalette.wstcref" />
                 </folder>
             </folder>
         </folder>
