@@ -13,25 +13,20 @@
 
 package org.netbeans.modules.beans.beaninfo;
 
-import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.StringTokenizer;
-import java.util.ResourceBundle;
 
 import org.openide.src.MethodElement;
 import org.openide.src.ClassElement;
-import org.openide.src.Type;
 import org.openide.src.MethodParameter;
 import org.openide.nodes.Node;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 
 import org.netbeans.modules.beans.PatternAnalyser;
-import org.netbeans.modules.beans.Pattern;
 import org.netbeans.modules.beans.PropertyPattern;
 import org.netbeans.modules.beans.IdxPropertyPattern;
 import org.netbeans.modules.beans.EventSetPattern;
@@ -155,7 +150,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         // Try to find and analyse existing bean info
         bis = new BeanInfoSource( classElement );
         olderVersion = (bis.isNbBeanInfo() && bis.getMethodsSection() == null);
-        superClassVersion = (bis.isNbSuperclass() || !bis.exists()); //&& bis.getSuperclassSection() == null
+        superClassVersion = (bis.isNbSuperclass() || !bis.exists());
         
         // Fill Descriptor list (only in case we have new templates)
         descriptor = new ArrayList();
@@ -178,7 +173,6 @@ public class BiAnalyser extends Object implements Node.Cookie {
         it = col.iterator();
         while( it.hasNext() ) {
             PropertyPattern pp = (PropertyPattern)it.next();
-            //if ( pp.isPublic() )
             properties.add( new BiFeature.Property( pp ) );
             for (int i = 0; i < methods.size(); i ++) {
                 if ((index = getIndexOfMethod(methods, pp.getGetterMethod())) != -1) methods.remove(index);
@@ -193,14 +187,11 @@ public class BiAnalyser extends Object implements Node.Cookie {
         it = col.iterator();
         while( it.hasNext() ) {
             IdxPropertyPattern ipp = (IdxPropertyPattern)it.next();
-           //if ( ipp.isPublic() )
-
 
             if ( ipp.getType() != null && ( !ipp.getType().isArray() ||
                                             !ipp.getType().getElementType().equals( ipp.getIndexedType() ) ) ) {
                 continue;
             }
-
 
             idxProperties.add( new BiFeature.IdxProperty( ipp ) );
             if ((index = getIndexOfMethod(methods, ipp.getGetterMethod())) != -1) methods.remove(index);
@@ -216,7 +207,6 @@ public class BiAnalyser extends Object implements Node.Cookie {
         it = col.iterator();
         while( it.hasNext() ) {
             EventSetPattern esp = (EventSetPattern)it.next();
-            //if ( esp.isPublic() )
             eventSets.add( new BiFeature.EventSet( esp ) );
             if ((index = getIndexOfMethod(methods, esp.getRemoveListenerMethod())) != -1) methods.remove(index);
             if ((index = getIndexOfMethod(methods, esp.getAddListenerMethod())) != -1) methods.remove(index);
@@ -316,7 +306,6 @@ public class BiAnalyser extends Object implements Node.Cookie {
         this.useSuperClass = useSuperClass;
     }
     
-
     boolean isNullDescriptor() {
         return nullDescriptor;
     }
@@ -387,7 +376,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
             if ( !bis.isNbBeanInfo() ) {
                 
-                String mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoExists" );
+                String mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoExists" );  // NOI18N
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
                 TopManager.getDefault().notify( nd );
                 if ( !nd.getValue().equals ( NotifyDescriptor.YES_OPTION ) ) {
@@ -398,7 +387,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
                     bis.delete();
                 }
                 catch ( java.io.IOException e ) {
-                    mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoCantDelete" );
+                    mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoCantDelete" );  // NOI18N
                     nd = new NotifyDescriptor.Message ( mssg );
                     TopManager.getDefault().notify( nd );
                     return;
@@ -410,7 +399,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
                     bis.delete();
                 }
                 catch ( java.io.IOException e ) {
-                    String mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoCantDelete" );
+                    String mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoCantDelete" );  // NOI18N
                     NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
                     nd = new NotifyDescriptor.Message ( mssg );
                     TopManager.getDefault().notify( nd );
@@ -425,7 +414,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
                         bis.delete();
                     }
                     catch ( java.io.IOException e ) {
-                        String mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoCantDelete" );
+                        String mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoCantDelete" );  // NOI18N
                         NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
                         nd = new NotifyDescriptor.Message ( mssg );
                         TopManager.getDefault().notify( nd );
@@ -466,10 +455,9 @@ public class BiAnalyser extends Object implements Node.Cookie {
         int methodCount = 0;
                 
         if ( nullDescriptor ) {
-            sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_NullDescriptor" ) );
+            sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_NullDescriptor" ) );  // NOI18N
             sb.append( TAB + "private static BeanDescriptor beanDescriptor = null;\n" ); // NOI18N
-            sb.append( TAB  + "private static BeanDescriptor getBdescriptor(){\n\n");
-            //sb.append( TABx2+ "return beanDescriptor;\n" + TAB + "}\n\n" ); // NOI18N
+            sb.append( TAB  + "private static BeanDescriptor getBdescriptor(){\n\n");  // NOI18N
             bis.setDescriptorSection( sb.toString(), "\n" + TABx2+ "return beanDescriptor;\n" + TAB + "}\n\n" ); // NOI18N
             return;
         }
@@ -489,16 +477,15 @@ public class BiAnalyser extends Object implements Node.Cookie {
                     sb.append( bif.getCreationString() );
                     sb.append( ";\n\n" ); // NOI18N
 
-                    sb.append( TAB  + "private static BeanDescriptor getBdescriptor(){\n");
+                    sb.append( TAB  + "private static BeanDescriptor getBdescriptor(){\n");  // NOI18N
                     sb.append( TABx2+ "return beanDescriptor;\n" + TAB + "}\n\n" ); // NOI18N
 
                     sb.append( TAB + "static {\n" ); // NOI18N
                 }
                 else {
-                    //sb.append( TAB + "private static BeanDescriptor beanDescriptor = null /*lazy*/; \n\n");    // NOI18N                    
-                    sb.append( TAB + "/*lazy BeanDescriptor*/;\n");    // NOI18N
-                    sb.append( TAB  + "private static BeanDescriptor getBdescriptor(){\n");
-                    sb.append( TABx2+ "BeanDescriptor beanDescriptor = ");
+                    sb.append( TAB + "/*lazy BeanDescriptor*/\n");    // NOI18N
+                    sb.append( TAB  + "private static BeanDescriptor getBdescriptor(){\n");  // NOI18N
+                    sb.append( TABx2+ "BeanDescriptor beanDescriptor = ");  // NOI18N
                     sb.append( bif.getCreationString() );
                     sb.append( ";\n" ); // NOI18N
                 }
@@ -525,10 +512,9 @@ public class BiAnalyser extends Object implements Node.Cookie {
         int propertyCount = 0;
 
         if ( nullProperties ) {
-            sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_NullProperties" ) );
+            sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_NullProperties" ) );  // NOI18N
             sb.append( TAB + "private static PropertyDescriptor[] properties = null;\n" ); // NOI18N
-            sb.append( TAB  + "private static PropertyDescriptor[] getPdescriptor(){\n");
-            //sb.append( TABx2+ "return properties;\n" + TAB + "}\n\n" ); // NOI18N
+            sb.append( TAB  + "private static PropertyDescriptor[] getPdescriptor(){\n");  // NOI18N
             bis.setPropertiesSection( sb.toString(), TABx2+ "return properties;\n" + TAB + "}\n\n" ); // NOI18N
             return;
         }
@@ -538,7 +524,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         allProperties.addAll( getProperties() );
         allProperties.addAll( getIdxProperties() );
 
-        sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_PropertyIdentifiers" ) );
+        sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_PropertyIdentifiers" ) );  // NOI18N
 
         Iterator it = allProperties.iterator();
         while ( it.hasNext() ) {
@@ -552,19 +538,18 @@ public class BiAnalyser extends Object implements Node.Cookie {
             }
         }
 
-        sb.append( "\n" + TAB + GenerateBeanInfoAction.getString("COMMENT_PropertyArray" ));
+        sb.append( "\n" + TAB + GenerateBeanInfoAction.getString("COMMENT_PropertyArray" ));  // NOI18N
         if( !lazyProperties ){            
             sb.append( TAB + "private static PropertyDescriptor[] properties = new PropertyDescriptor[" + // NOI18N
                        propertyCount + "];\n\n" ); // NOI18N
-            sb.append( TAB  + "private static PropertyDescriptor[] getPdescriptor(){\n");
+            sb.append( TAB  + "private static PropertyDescriptor[] getPdescriptor(){\n");  // NOI18N
             sb.append( TABx2+ "return properties;\n" + TAB + "}\n\n" ); // NOI18N
         }
         else{
             //lazy init
-            //sb.append( TAB + "private static PropertyDescriptor[] properties = null /*lazy*/; \n\n"); // NOI18N
-            sb.append( TAB + "/*lazy PropertyDescriptor*/;\n");    // NOI18N
-            sb.append( TAB  + "private static PropertyDescriptor[] getPdescriptor(){\n");
-            sb.append( TABx2+ "PropertyDescriptor[] properties = new PropertyDescriptor[");
+            sb.append( TAB + "/*lazy PropertyDescriptor*/\n");    // NOI18N
+            sb.append( TAB  + "private static PropertyDescriptor[] getPdescriptor(){\n");   // NOI18N
+            sb.append( TABx2+ "PropertyDescriptor[] properties = new PropertyDescriptor[");  // NOI18N
             sb.append( propertyCount );
             sb.append( "];\n" ); // NOI18N
         }
@@ -612,10 +597,9 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
 
         if ( nullMethods ) {
-            sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_NullMethods" ) );
+            sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_NullMethods" ) );  // NOI18N
             sb.append( TAB + "private static MethodDescriptor[] methods = null;\n" ); // NOI18N
-            sb.append( TAB  + "private static MethodDescriptor[] getMdescriptor(){\n");
-            //sb.append( TABx2+ "return methods;\n" + TAB + "}\n\n" ); // NOI18N
+            sb.append( TAB  + "private static MethodDescriptor[] getMdescriptor(){\n");  // NOI18N
             bis.setMethodsSection( sb.toString(), TABx2+ "return methods;\n" + TAB + "}\n\n" ); // NOI18N
             return;
         }
@@ -624,7 +608,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         ArrayList allMethods = new ArrayList( getMethods().size());
         allMethods.addAll( getMethods() );
 
-        sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_MethodIdentifiers" ) );
+        sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_MethodIdentifiers" ) );  // NOI18N
 
         Iterator it = allMethods.iterator();
         while ( it.hasNext() ) {
@@ -638,19 +622,18 @@ public class BiAnalyser extends Object implements Node.Cookie {
             }
         }
 
-        sb.append( "\n" + TAB + GenerateBeanInfoAction.getString("COMMENT_MethodArray" ));
+        sb.append( "\n" + TAB + GenerateBeanInfoAction.getString("COMMENT_MethodArray" ));  // NOI18N
         if( !lazyMethods ){  
             sb.append( TAB + "private static MethodDescriptor[] methods = new MethodDescriptor[" + // NOI18N
                        methodCount + "];\n\n" ); // NOI18N
-            sb.append( TAB  + "private static MethodDescriptor[] getMdescriptor(){\n");
+            sb.append( TAB  + "private static MethodDescriptor[] getMdescriptor(){\n");  // NOI18N
             sb.append( TABx2+ "return methods;\n" + TAB + "}\n\n" ); // NOI18N
         }
         else{
             //lazy init
-            //sb.append( TAB + "private static MethodDescriptor[] methods = null /*lazy*/; \n\n"); // NOI18N
-            sb.append( TAB + "/*lazy MethodDescriptor*/;\n");    // NOI18N
-            sb.append( TAB  + "private static MethodDescriptor[] getMdescriptor(){\n");
-            sb.append( TABx2+ "MethodDescriptor[] methods = new MethodDescriptor[");
+            sb.append( TAB + "/*lazy MethodDescriptor*/\n");    // NOI18N
+            sb.append( TAB  + "private static MethodDescriptor[] getMdescriptor(){\n");  // NOI18N
+            sb.append( TABx2+ "MethodDescriptor[] methods = new MethodDescriptor[");  // NOI18N
             sb.append( methodCount );
             sb.append( "];\n" ); // NOI18N
         }
@@ -666,14 +649,12 @@ public class BiAnalyser extends Object implements Node.Cookie {
         }
 
         it = allMethods.iterator();
-        //int lCurMethodCount = 0;
         
         for ( int i = 0, lCurMethodCount = 0; it.hasNext(); ) {
             BiFeature bif = ( BiFeature )it.next();
 
             if ( bif.isIncluded() ) {
                 sb.append( TABx3 + "methods[METHOD_" ).append( bif.getName() ).append(lCurMethodCount++ + "] = "); // NOI18N
-                //sb.append( TABx3 + "methods[METHOD_" ).append( bif.getName() ).append(i + "] = "); // NOI18N
                 sb.append( bif.getCreationString() ).append(";\n"); // NOI18N
 
                 Collection cs = bif.getCustomizationStrings();
@@ -703,16 +684,14 @@ public class BiAnalyser extends Object implements Node.Cookie {
         int eventCount = 0;
 
         if ( nullEventSets ) {
-            sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_NullEventSets" ) );
+            sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_NullEventSets" ) );  // NOI18N
             sb.append( TAB + "private static EventSetDescriptor[] eventSets = null;\n" ); // NOI18N
-            sb.append( TAB  + "private static EventSetDescriptor[] getEdescriptor(){\n");
-            //sb.append( TABx2+ "return eventSets;\n" + TAB + "}\n\n" ); // NOI18N
+            sb.append( TAB  + "private static EventSetDescriptor[] getEdescriptor(){\n");  // NOI18N
             bis.setEventSetsSection( sb.toString(), TABx2+ "return eventSets;\n" + TAB + "}\n\n" ); // NOI18N
             return;
         }
 
-        sb.append( TAB + GenerateBeanInfoAction.getString("COMMENT_EventSetsIdentifiers") );
-
+        sb.append( TAB + GenerateBeanInfoAction.getString("COMMENT_EventSetsIdentifiers") );  // NOI18N
 
         Iterator it = eventSets.iterator();
         while ( it.hasNext() ) {
@@ -730,15 +709,14 @@ public class BiAnalyser extends Object implements Node.Cookie {
         if( !lazyEventSets ){            
             sb.append( TAB + "private static EventSetDescriptor[] eventSets = new EventSetDescriptor[" + // NOI18N
                        eventCount + "];\n\n" ); // NOI18N
-            sb.append( TAB  + "private static EventSetDescriptor[] getEdescriptor(){\n");
+            sb.append( TAB  + "private static EventSetDescriptor[] getEdescriptor(){\n");  // NOI18N
             sb.append( TABx2+ "return eventSets;\n" + TAB + "}\n\n" ); // NOI18N
         }
         else{
             //lazy init
-            //sb.append( TAB + "private static EventSetDescriptor[] eventSets = null /*lazy*/; \n\n"); // NOI18N
-            sb.append( TAB + "/*lazy EventSetDescriptor*/;\n");    // NOI18N
-            sb.append( TAB  + "private static EventSetDescriptor[] getEdescriptor(){\n");
-            sb.append( TABx2+ "EventSetDescriptor[] eventSets = new EventSetDescriptor[");
+            sb.append( TAB + "/*lazy EventSetDescriptor*/\n");    // NOI18N
+            sb.append( TAB  + "private static EventSetDescriptor[] getEdescriptor(){\n");  // NOI18N
+            sb.append( TABx2+ "EventSetDescriptor[] eventSets = new EventSetDescriptor[");  // NOI18N
             sb.append( eventCount );
             sb.append( "];\n" ); // NOI18N
         }
@@ -820,16 +798,16 @@ public class BiAnalyser extends Object implements Node.Cookie {
     private void regenerateSuperclass() {
         StringBuffer sb = new StringBuffer(100);
         if( this.isUseSuperClass() ){
-            sb.append( TAB + "public BeanInfo[] getAdditionalBeanInfo() {\n");
-            sb.append( TABx2 + "Class superclass = " + classElement.getName().getName() + ".class.getSuperclass();\n");
-            sb.append( TABx2 + "BeanInfo sbi = null;\n");
-            sb.append( TABx2 + "try {\n");
-            sb.append( TABx2 + TAB + "sbi = Introspector.getBeanInfo(superclass);\n");
+            sb.append( TAB + "public BeanInfo[] getAdditionalBeanInfo() {\n");  // NOI18N
+            sb.append( TABx2 + "Class superclass = " + classElement.getName().getName() + ".class.getSuperclass();\n");  // NOI18N
+            sb.append( TABx2 + "BeanInfo sbi = null;\n");  // NOI18N
+            sb.append( TABx2 + "try {\n");  // NOI18N
+            sb.append( TABx2 + TAB + "sbi = Introspector.getBeanInfo(superclass);\n");  // NOI18N
                           
             bis.setSuperclassSection( sb.toString(), TABx3 + "}\ncatch(IntrospectionException ex) {\n}\n\nreturn new BeanInfo[] { sbi };\n}\n"); // NOI18N
         }
         else{
-            bis.setSuperclassSection( "\n", "\n");
+            bis.setSuperclassSection( "\n", "\n");  // NOI18N
         }
     }
 
@@ -852,7 +830,6 @@ public class BiAnalyser extends Object implements Node.Cookie {
         nullDescriptor = setPropertiesFromBeanInfo( descriptor, code, "BeanDescriptor" ); // NOI18N
         if ( !nullDescriptor ){
             setLazyDescriptor( isLazy( code, "BeanDescriptor" ) ); // NOI18N
-            //setPropertiesFromBeanInfo( descriptor, code, "BeanDescriptor" ); // NOI18N
         }
         
         section = bis.getPropertiesSection();
@@ -865,7 +842,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         
         section = bis.getMethodsSection();
         if (section == null) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(GenerateBeanInfoAction.getString("MSG_Old_Version"), NotifyDescriptor.WARNING_MESSAGE));
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(GenerateBeanInfoAction.getString("MSG_Old_Version"), NotifyDescriptor.WARNING_MESSAGE));  // NOI18N
             nullMethods = true;
         } else {
             code = normalizeText(section);
@@ -892,7 +869,6 @@ public class BiAnalyser extends Object implements Node.Cookie {
      * @param code String containg the java source code
      * @returns Normalized code as collection of string.
      */
-
     static Collection normalizeText( String code ) {
 
         ArrayList result = new ArrayList();
@@ -970,7 +946,6 @@ public class BiAnalyser extends Object implements Node.Cookie {
     }
 
     static String[] getParameters( String command ) {
-        //ArrayList result = new ArrayList();
         String paramString;
 
         int beg = command.indexOf( '(' );
@@ -987,7 +962,6 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
         for ( int i = 0; strTok.hasMoreTokens(); i++ )
             resultStrs[i] = strTok.nextToken();
-
 
         return resultStrs;
     }
@@ -1024,15 +998,9 @@ public class BiAnalyser extends Object implements Node.Cookie {
         while( it.hasNext() ) {
             String statement = (String)it.next();
             if ( statement.indexOf( name ) != -1 ){
-                if( statement.indexOf( "/*lazy " + name + "*/" ) != -1 ){
+                if( statement.indexOf( "/*lazy " + name + "*/" ) != -1 ){  // NOI18N
                     return true;
                 }
-                //String initializer = getInitializer( statement );
-                //if( initializer != null )
-                //    return false;
-                //if ( initializer != null && initializer.indexOf( "/*lazy*/" ) != -1 ){ // NOI18N 
-                //    return true;
-                //}
             }
         }
         return false;
@@ -1045,7 +1013,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         while( it.hasNext() ) {
             String statement = (String)it.next();
             //System.out.println(statement);
-            if ( statement.indexOf( "public BeanInfo[]getAdditionalBeanInfo()" ) != -1 ){
+            if ( statement.indexOf( "public BeanInfo[]getAdditionalBeanInfo()" ) != -1 ){  // NOI18N
                     return true;
             }
         }
@@ -1153,25 +1121,3 @@ public class BiAnalyser extends Object implements Node.Cookie {
         }
     }
 }
-/*
- * Log
- *  11   Gandalf   1.10        1/13/00  Petr Hrebejk    i18n mk3
- *  10   Gandalf   1.9         1/12/00  Petr Hrebejk    i18n  
- *  9    Gandalf   1.8         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  8    Gandalf   1.7         10/11/99 Petr Hrebejk    JDK 
- *       IndexedPropertyDescriptor bug fix
- *  7    Gandalf   1.6         8/18/99  Petr Hrebejk    BeanInfo analyse moved 
- *       to separate thread
- *  6    Gandalf   1.5         8/9/99   Petr Hrebejk    BeanInfo for no 
- *       propertes & no events selected
- *  5    Gandalf   1.4         8/5/99   Petr Hrebejk    BeanInfo for Beans with 
- *       no Properties or no EventSets fixed
- *  4    Gandalf   1.3         7/29/99  Petr Hrebejk    Patterns in BeanInfo 
- *       show correctly only public fields and methods
- *  3    Gandalf   1.2         7/28/99  Petr Hrebejk    Property Mode change fix
- *  2    Gandalf   1.1         7/26/99  Petr Hrebejk    BeanInfo fix & Code 
- *       generation fix
- *  1    Gandalf   1.0         7/26/99  Petr Hrebejk    
- * $ 
- */ 
