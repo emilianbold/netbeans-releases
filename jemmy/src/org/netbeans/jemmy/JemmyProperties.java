@@ -23,13 +23,17 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.FileInputStream;
 
+import java.lang.reflect.InvocationTargetException;
+
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
+import org.netbeans.jemmy.drivers.APIDriverInstaller;
 import org.netbeans.jemmy.drivers.DefaultDriverInstaller;
+import org.netbeans.jemmy.drivers.DriverInstaller;
 import org.netbeans.jemmy.drivers.InputDriverInstaller;
 
 /**
@@ -698,6 +702,40 @@ public class JemmyProperties {
 	return(((Integer)getProperty("dispatching.model")).intValue());
     }
 
+    private static DriverInstaller getDriverInstaller(int model) {
+	String name = System.getProperty("jemmy.drivers.installer");
+	DriverInstaller installer = null;
+	try {
+	    if(name != null && !(name.length() == 0)) {
+		installer = (DriverInstaller)new ClassReference(name).newInstance(null, null);
+	    }
+	} catch(ClassNotFoundException e) {
+	    getCurrentOutput().printLine("Cannot init driver installer:");
+	    getCurrentOutput().printStackTrace(e);
+        } catch(IllegalAccessException e) {
+            getCurrentOutput().printLine("Cannot init driver installer:");
+            getCurrentOutput().printStackTrace(e);
+        } catch(NoSuchMethodException e) {
+            getCurrentOutput().printLine("Cannot init driver installer:");
+            getCurrentOutput().printStackTrace(e);
+        } catch(InstantiationException e) {
+            getCurrentOutput().printLine("Cannot init driver installer:");
+            getCurrentOutput().printStackTrace(e);
+        } catch(InvocationTargetException e) {
+            getCurrentOutput().printLine("Cannot init driver installer:");
+            getCurrentOutput().printStackTrace(e);
+	}
+	if(installer == null) {
+	    if(System.getProperty("os.name").startsWith("Mac OS X")) {
+		installer = new APIDriverInstaller((model & SHORTCUT_MODEL_MASK) != 0);
+	    } else {
+		installer = new DefaultDriverInstaller((model & SHORTCUT_MODEL_MASK) != 0);
+	    }
+	};
+	getCurrentOutput().printLine("Using " + installer.getClass().getName() + " driver installer");
+	return(installer);
+    }
+
     /**
      * Specifies the dispatching model value.
      * @param model New dispatching model value.
@@ -709,7 +747,7 @@ public class JemmyProperties {
      */
     public int setDispatchingModel(int model) {
 	new InputDriverInstaller((model & ROBOT_MODEL_MASK) == 0).install();
-	new DefaultDriverInstaller((model & SHORTCUT_MODEL_MASK) != 0).install();
+	getDriverInstaller(model).install();
 	return(((Integer)setProperty("dispatching.model", new Integer(model))).intValue());
     }
 

@@ -149,6 +149,14 @@ public class jemmy_005 extends JemmyTest {
                 Thread.sleep(100);
 	    }
 
+            pth = to.findPath(new String[] {"node", "node"},
+                              new int[]    {1,      1});
+            to.callPopupOnPath(pth);
+            pmo = JPopupMenuOperator.waitJPopupMenu("XXX");
+            pmo.pushMenu("XXX|submenu|subsubmenu|menuItem", "|", true, true);
+            (new Waiter(checker)).waitAction(new TreePath[] {pth});
+            Thread.sleep(100);
+
 	    new JCheckBoxOperator(new JFrameOperator(frm), "Huge Popup").changeSelection(false);
 
 	    for(int i = 0; i < strPaths.length; i++) {

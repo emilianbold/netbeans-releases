@@ -19,6 +19,8 @@ public class Application_005 extends TestFrame {
     public Application_005() {
 	super("Application_005");
 	
+	DefaultMutableTreeNode node_1 = new DefaultMutableTreeNode();
+	node_1.setUserObject("node-1");
 	DefaultMutableTreeNode node000 = new DefaultMutableTreeNode();
 	node000.setUserObject("node000");
 	DefaultMutableTreeNode node001 = new DefaultMutableTreeNode();
@@ -31,8 +33,9 @@ public class Application_005 extends TestFrame {
 	node01.setUserObject("node01");
 	DefaultMutableTreeNode node0 = new DefaultMutableTreeNode();
 	node0.setUserObject("node0");
-	node0.insert(node00, 0);
-	node0.insert(node01, 1);
+	node0.insert(node_1, 0);
+	node0.insert(node00, 1);
+	node0.insert(node01, 2);
 	
 	tree = new JTree(node0);
 	tree.setEditable(true);

@@ -1103,9 +1103,11 @@ public class JTreeOperator extends JComponentOperator
      * Clicks on the node.
      * @param path a path to click on.
      * @param clickCount a number of clicks
+     * @param mouseButton InputEvent.BUTTON1/2/3_MASK value
+     * @param modifiers Combination of InputEvent.*_MASK values
      * @throws TimeoutExpiredException
      */
-    public void clickOnPath(TreePath path, int clickCount) {
+    public void clickOnPath(TreePath path, int clickCount, int mouseButton, int modifiers) {
         if(path != null) {
             output.printLine("Click on \"" + path.toString() + 
                              "\" path");
@@ -1117,10 +1119,31 @@ public class JTreeOperator extends JComponentOperator
             makeVisible(path);
             scrollToPath(path);
             Point point = getPointToClick(path);
-            clickMouse((int)point.getX(), (int)point.getY(), clickCount);
+            clickMouse((int)point.getX(), (int)point.getY(), clickCount, mouseButton, modifiers);
         } else {
             throw(new NoSuchPathException());
         }
+    }
+
+    /** 
+     * Clicks on the node.
+     * @param path a path to click on.
+     * @param clickCount a number of clicks
+     * @param mouseButton InputEvent.BUTTON1/2/3_MASK value
+     * @throws TimeoutExpiredException
+     */
+    public void clickOnPath(TreePath path, int clickCount, int mouseButton) {
+        clickOnPath(path, clickCount, mouseButton, 0);
+    }
+
+    /** 
+     * Clicks on the node.
+     * @param path a path to click on.
+     * @param clickCount a number of clicks
+     * @throws TimeoutExpiredException
+     */
+    public void clickOnPath(TreePath path, int clickCount) {
+        clickOnPath(path, clickCount, getDefaultMouseButton());
     }
 
     /** 
@@ -1485,6 +1508,35 @@ public class JTreeOperator extends JComponentOperator
 	getOutput().printGolden("Wait \"" + rowText + " \" text in " +
 				Integer.toString(row) + "'th line");
 	waitState(new JTreeByItemFinder(rowText, row, getComparator()));
+    }
+
+    public Object chooseSubnode(Object parent, String text, int index, StringComparator comparator) {
+        int count = -1;
+        TreeModel model = getModel();
+        Object node;
+        for(int i = 0; i < model.getChildCount(parent); i++) {
+            node = model.getChild(parent, i);
+            if(comparator.equals(node.toString(),
+                                 text)) {
+                count++;
+                if(count == index) {
+                    return(node);
+                }
+            }
+        }
+        return(null);
+    }
+
+    public Object chooseSubnode(Object parent, String text, StringComparator comparator) {
+        return(chooseSubnode(parent, text, 0, comparator));
+    }
+
+    public Object chooseSubnode(Object parent, String text, int index) {
+        return(chooseSubnode(parent, text, index, getComparator()));
+    }
+
+    public Object chooseSubnode(Object parent, String text) {
+        return(chooseSubnode(parent, text, 0, getComparator()));
     }
 
     /**
@@ -2379,15 +2431,22 @@ public class JTreeOperator extends JComponentOperator
 	}
 	public boolean hasAsParent(TreePath path, int indexInParent) {
 	    Object[] comps = path.getPath();
+            Object node;
 	    for(int i = 1; i < comps.length; i++) {
 		if(arr.length < path.getPathCount() - 1) {
 		    return(false);
 		}
+                /*
 		if(!comparator.equals(comps[i].toString(), arr[i - 1])) {
 		    return(false);
 		}
-		if(indices.length >= path.getPathCount() - 1 &&
-		   indices[path.getPathCount() - 2] != indexInParent) {
+                */
+		if(indices.length >= path.getPathCount() - 1) {
+                    node = chooseSubnode(comps[i-1], arr[i - 1], indices[i - 1], comparator);
+                } else {
+                    node = chooseSubnode(comps[i-1], arr[i - 1], comparator);
+                }
+                if(node != comps[i]) {
 		    return(false);
 		}
 	    }

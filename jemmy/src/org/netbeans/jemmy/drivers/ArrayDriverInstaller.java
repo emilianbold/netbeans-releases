@@ -22,7 +22,7 @@ package org.netbeans.jemmy.drivers;
  *
  * @author Alexandre Iline (alexandre.iline@sun.com)
  */
-public class ArrayDriverInstaller {
+public class ArrayDriverInstaller implements DriverInstaller {
     String[] ids;
     Object[] drivers;
 
