@@ -5,7 +5,7 @@
 
 <helpset version="1.0">
 
- <title>NetBeans Help*</title>
+ <title>Netbeans - Help*</title>
 
   <maps>
      <homeID>ide.welcome</homeID>

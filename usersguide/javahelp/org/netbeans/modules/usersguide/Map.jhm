@@ -92,7 +92,6 @@
 <mapID target="gui.layouts.intro" url="gui/layouts/intro.html" />
 <mapID target="gui.layouts.setting" url="gui/layouts/setting.html" />
 <mapID target="gui.layouts.props" url="gui/layouts/props.html" />
-<mapID target="gui.layouts.constraints" url="gui/layouts/constraints.html" />
 <mapID target="gui.layouts.gbcustomizer" url="gui/layouts/gbcustomizer.html" />
 <mapID target="gui.layouts.custom_mgr" url="gui/layouts/custom_mgr.html" />
 <mapID target="gui.layouts.managers.intro" url="gui/layouts/managers/intro.html" />
@@ -155,15 +154,20 @@
 
 <mapID target="compile.jump" url="compile/compile.jump.html" />
 <mapID target="compile.program" url="compile/compile.html" />
+<mapID target="compile.file" url="compile/compile.file.html" />
 <mapID target="compile.error" url="compile/error.html" />
 <mapID target="compile.stop" url="compile/stop.html" />
 <mapID target="compile.disable" url="compile/disable.html" />
 <mapID target="compile.delete" url="compile/delete.html" />
-<mapID target="compile.configure" url="compile/configure.html" />
-<mapID target="compile.options" url="compile/options.html" />
-<mapID target="compile.new" url="compile/new.html" />
+<mapID target="compile.default" url="compile/default.html" />
+<mapID target="compile.default.file" url="compile/default.file.html" />
 <mapID target="compile.external" url="compile/external.html" />
 <mapID target="compile.internal" url="compile/internal.html" />
+<mapID target="compile.fastjavac" url="compile/fastjavac.html" />
+<mapID target="compile.new" url="compile/new.html" />
+<mapID target="compile.remove" url="compile/remove.html" />
+<mapID target="compile.explorer" url="compile/explorer.html" />
+<mapID target="compile.template" url="compile/template.html" />
 
 
 <mapID target="run.jump" url="run/run.jump.html" />
@@ -177,12 +181,13 @@
 <mapID target="run.executors" url="run/executors.html" />
 <mapID target="run.project.jump" url="run/project.jump.html" />
 <mapID target="run.project" url="run/project.html" />
+<mapID target="run.file" url="run/file.html" />
 <mapID target="run.external" url="run/external.html" />
 <mapID target="run.applet" url="run/applet.html" />
 <mapID target="run.jsp" url="run/jsp.html" />
 <mapID target="run.new" url="run/new.html" />
 <mapID target="run.remove" url="run/remove.html" />
-<mapID target="run.file" url="run/file.html" />
+<mapID target="run.explorer" url="run/explorer.html" />
 
 
 <mapID target="editing.intro" url="editing/intro.html" />
@@ -273,8 +278,8 @@
 <mapID target="workspace.dock" url="workspace/docking.html" />
 <mapID target="workspace.clone" url="workspace/clone.html" />
 
-
 <mapID target="configure" url="configure/configure.html" />
+<mapID target="configure.compiler" url="configure/compiler.html" />
 
 <mapID target="shortcuts.editor" url="shortcuts/editorcuts.html" />
 <mapID target="shortcuts.kybd" url="shortcuts/kybdshortcuts.html" />
@@ -817,7 +822,6 @@
    <mapID target="org.netbeans.core.ServicesNode$MakeDefaultAction" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.DebuggerTypeEditor$NoDebugger" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.ExecutorEditor$NoExecutor" url="pending.html" />
-
 
 </map>
 

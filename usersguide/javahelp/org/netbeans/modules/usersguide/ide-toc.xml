@@ -5,7 +5,7 @@
 
 <toc version="1.0">
 
-<tocitem text="Forte for Java - Help" >
+<tocitem text="Netbeans - Help" >
 
 <tocitem text="IDE" target="ide.welcome" /> 
 
@@ -123,7 +123,6 @@
   <tocitem text="Working With Layouts" target="gui.layouts.intro">
     <tocitem text="Setting the Layout Manager" target="gui.layouts.setting" />
     <tocitem text="Setting Layout Properties" target="gui.layouts.props" />
-    <tocitem text="Setting Layout Constraints" target="gui.layouts.constraints" />
     <tocitem text="Standard Layout Managers" target="gui.layouts.managers.intro">
       <tocitem text="Flow Layout" target="gui.layouts.managers.flow" />
       <tocitem text="Border Layout" target="gui.layouts.managers.border" />
@@ -196,14 +195,21 @@
 </tocitem>
 
 <tocitem text="Compiling a Program" target="compile.jump">
-  <tocitem text="Compiling a Program" target="compile.program" />
+  <tocitem text="Compiling a Project" target="compile.program" />
+  <tocitem text="Compiling a Package or File" target="compile.file" />
   <tocitem text="Correcting Errors in Source Code" target="compile.error" />
   <tocitem text="Stopping a Compile" target="compile.stop"/>
   <tocitem text="Disabling Compilation of a Single Source File" target="compile.disable"/>
   <tocitem text="Deleting .class Files" target="compile.delete"/>
-  <tocitem text="Specifying Which Compiler to Use" target="compile.configure"/>
-  <tocitem text="Setting Compiler Options for a Project" target="compile.options"/>
+  <tocitem text="Specifying the Default Compiler for  Project" target="compile.default"/>
+  <tocitem text="Specifying the Default Compiler for a File" target="compile.default.file" />
+  <tocitem text="Configuring the External Compiler" target="compile.external" />
+  <tocitem text="Configuring the fastjavac Compiler" target="compile.fastjavac" />
+  <tocitem text="Configuring the Internal Compiler" target="compile.internal" />
+  <tocitem text="Configuring a Compiler from the Explorer" target="compile.explorer" />
+  <tocitem text="Setting Compiler Types in Templates" target="compile.template" />
   <tocitem text="Defining a New Compiler Type" target="compile.new"/>
+  <tocitem text="Removing a Compiler" target="compile.remove"/>
 </tocitem>
 
 <tocitem text="Running a Program" target="run.jump">
@@ -215,15 +221,16 @@
   <tocitem text="Running Workspace" target="run.workspace" />
   <tocitem text="Setting Run-Time Options for the Environment" target="run.options" />
   <tocitem text="The Executors That Run Your Programs" target="run.executors" />
-  <tocitem text="Setting Executors at the Class Level" target="run.file" />
-  <tocitem text="Setting Executors at the Project Level" target="run.project.jump">
-    <tocitem text="Specifying the Default Executor for a Project" target="run.project" />
-    <tocitem text="Configuring the External Executor" target="run.external" />
-    <tocitem text="Configuring the Applet Executor" target="run.applet" />
-    <tocitem text="Configuring the JSP Executor" target="run.jsp" />
-     <tocitem text="Defining a New Executor" target="run.new" />
-    <tocitem text="Removing an Executor" target="run.remove" />
-  </tocitem>
+  <tocitem text="Specifying the Default Executor for a Project" target="run.project" />
+  <tocitem text="Specifying the Default Executor for a Class" target="run.file" />
+
+  <tocitem text="Configuring the External Executor" target="run.external" />
+  <tocitem text="Configuring the Applet Executor" target="run.applet" />
+  <tocitem text="Configuring the JSP Executor" target="run.jsp" />
+  <tocitem text="Configuring an Executor from the Explorer" target="run.explorer" />
+  <tocitem text="Setting Executor Types in Templates" target="pending" />
+  <tocitem text="Defining a New Executor" target="run.new" />
+  <tocitem text="Removing an Executor" target="run.remove" />
 </tocitem>
         
 <tocitem text="Debugging Applets and Applications" target="debug.overview">
@@ -293,7 +300,6 @@
   <tocitem text="Docking and Undocking Windows" target="workspace.dock"/>
   <tocitem text="Cloning the Source Editor or Web Browser" target="workspace.clone"/>
 </tocitem>
-
 
 <tocitem text="Configuring the IDE" target="configure"></tocitem>
 
