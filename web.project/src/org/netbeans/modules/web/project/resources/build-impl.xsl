@@ -764,9 +764,10 @@ is divided into following sections:
                         <xsl:attribute name="files"><xsl:value-of select="$included.prop.name"/></xsl:attribute>
                      </copyfiles>
                 </xsl:for-each>
-                <xsl:if test="//webproject2:library[webproject2:path-in-war]">
-                    <mkdir dir="${{build.web.dir.real}}/META-INF"/>
-                    <manifest file="${{build.web.dir.real}}/META-INF/MANIFEST.MF" mode="update">
+                
+                <mkdir dir="${{build.web.dir.real}}/META-INF"/>
+                <manifest file="${{build.web.dir.real}}/META-INF/MANIFEST.MF" mode="update">
+                    <xsl:if test="//webproject2:library[webproject2:path-in-war]">
                         <attribute>
                             <xsl:attribute name="name">Class-Path</xsl:attribute>
                             <xsl:attribute name="value">
@@ -779,8 +780,8 @@ is divided into following sections:
                                 </xsl:for-each>  
                             </xsl:attribute>
                          </attribute>
-                    </manifest>
-                </xsl:if>
+                     </xsl:if>
+                </manifest>
             </target>
             
             <target name="library-inclusion-in-archive" depends="init">
