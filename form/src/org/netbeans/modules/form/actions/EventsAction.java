@@ -116,10 +116,11 @@ public class EventsAction extends CookieAction {
           EventsList.EventSet[] setHandlers = em.getEventSets ();
          
           for (int i = 0; i < setHandlers.length; i++) {
-            String name = setHandlers[i].getName ();            
+            String name = setHandlers[i].getName ();
             JMenu m = new org.openide.awt.JMenuPlus (name.substring (0, 1).toUpperCase () + name.substring (1));
             HelpCtx.setHelpIDString (m, EventsAction.class.getName ());
             menu.add (m);
+            boolean eventSetHasHandlers = false;
             EventsList.Event[] events = setHandlers[i].getEvents();
             for (int j = 0; j < events.length; j++) {
               StringBuffer menuText = new StringBuffer(events[j].getName ());
@@ -130,6 +131,11 @@ public class EventsAction extends CookieAction {
               }
               JMenuItem jmi = new JMenuItem (menuText.toString ());
               HelpCtx.setHelpIDString (jmi, EventsAction.class.getName ());
+              if (events[j].getHandler () != null) {
+                eventSetHasHandlers = true;
+                Font jmiFont = jmi.getFont();
+                jmi.setFont(new Font (jmiFont.getFontName(), jmiFont.getStyle() + Font.BOLD, jmiFont.getSize()));
+              }
               m.add (jmi);
               mapping.put (jmi, events[j]);
               jmi.addActionListener (new ActionListener () {
@@ -144,6 +150,10 @@ public class EventsAction extends CookieAction {
                 }
               );
             }
+            if (eventSetHasHandlers) {
+              Font mFont = m.getFont();
+              m.setFont(new Font (mFont.getFontName(), mFont.getStyle() + Font.BOLD, mFont.getSize()));
+            }
           }
         }
         public void menuDeselected(MenuEvent e) {
@@ -157,6 +167,8 @@ public class EventsAction extends CookieAction {
 }
 /*
  * Log
+ *  10   Gandalf   1.9         11/1/99  Pavel Buzek     displying events and 
+ *       event groups that have some handler assigned in bold font
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  8    Gandalf   1.7         7/20/99  Jesse Glick     Context help.
