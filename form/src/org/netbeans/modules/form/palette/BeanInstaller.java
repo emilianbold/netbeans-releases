@@ -288,12 +288,16 @@ public final class BeanInstaller extends Object {
           dobj.getNodeDelegate ();
         }
       }
-    }
-    catch (java.io.IOException e) {
+    } catch (java.io.IOException e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
       /* ignore */
-    }
-    finally {
+    } catch (Throwable t) {
+      if (t instanceof ThreadDeath) {
+        throw (ThreadDeath)t;
+      } else {
+        t.printStackTrace ();
+      }
+    } finally {
       if (lock != null) {
         lock.releaseLock ();
       }
@@ -410,32 +414,57 @@ public final class BeanInstaller extends Object {
       /* ignore */ 
     }
     
-    autoLoadFolder(globalFolder);
-    if (!globalFolder.equals(localFolder))
-      autoLoadFolder(localFolder);
-
-    java.awt.EventQueue.invokeLater (
-      new Runnable () {
-        public void run () {
-          ComponentPalette.getDefault ().updatePalette ();
+    if (autoLoadFolders(globalFolder, localFolder)) {
+      java.awt.EventQueue.invokeLater (
+        new Runnable () {
+          public void run () {
+            ComponentPalette.getDefault ().updatePalette ();
+          }
         }
-      }
-    );
+      );
+    }
   }
 
   /** Loads the beans stored in the given folder.
   * @param folder - where to find jars
   */
-  private static void autoLoadFolder(File folder) {
-    if (!folder.exists())
-      return;
+  private static boolean autoLoadFolders(File globalFolder, File localFolder) {
+    if (!globalFolder.exists())
+      return false;
     
-    final String[] list = folder.list();
-    final String base = folder.getAbsolutePath() + File.separator;
+    boolean modified = false;
+    
+    final String localBase = localFolder.getAbsolutePath() + File.separator;
+    String globalBase = null; if (globalFolder != localFolder) globalBase = globalFolder.getAbsolutePath() + File.separator;
+    
+    File[] list = localFolder.listFiles ();
+    if (globalBase != null) {
+      File[] globalList = globalFolder.listFiles ();
+      if (globalList.length > 0) {
+        // add the list of jars in the global folder as well
+        File[] newList = new File[list.length + globalList.length];
+        System.arraycopy (list, 0, newList, 0, list.length);
+        System.arraycopy (globalList, 0, newList, list.length, globalList.length);
+        list = newList;
+      }
+    }
+    
+    // 1. load list of already installed beans
+    FileInputStream fis2 = null;
+    Properties alreadyInstalled = new Properties();
+    try {
+      alreadyInstalled.load(fis2 = new FileInputStream(localBase + "installed.properties"));
+    } catch (IOException e) {
+      /* ignore - the file just does not exist */
+    } finally {
+      if (fis2 != null) try { fis2.close (); } catch (IOException e) { /* ignore */ };
+    }
+
+    // 2. process local beans
     Properties details = new Properties();
     FileInputStream fis = null;
     try {
-      details.load(fis = new FileInputStream(base + "beans.properties"));
+      details.load(fis = new FileInputStream(localBase + "beans.properties"));
     } catch (IOException e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
       // ignore in this case
@@ -443,42 +472,57 @@ public final class BeanInstaller extends Object {
       if (fis != null) try { fis.close (); } catch (IOException e) { /* ignore */ };
     }
 
-    FileInputStream fis2 = null;
-    Properties alreadyInstalled = new Properties();
-    try {
-      alreadyInstalled.load(fis2 = new FileInputStream(base + "installed.properties"));
-    } catch (IOException e) {
-      /* ignore - the file just does not exist */
-    } finally {
-      if (fis2 != null) try { fis2.close (); } catch (IOException e) { /* ignore */ };
+    // 3. process global beans
+    if (globalBase != null) {
+      FileInputStream fis3 = null;
+      try {
+        Properties globalDetails = new Properties ();
+        globalDetails.load(fis3 = new FileInputStream(globalBase + "beans.properties"));
+        for (Enumeration e = globalDetails.propertyNames (); e.hasMoreElements (); ) {
+          String propName = (String)e.nextElement ();
+          if (details.get (propName) == null) { // if not present in the local list, copy the <name, value> to it
+            details.put (propName, globalDetails.get (propName));
+          }
+        }
+      } catch (IOException e) {
+        if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
+        // ignore in this case
+      } finally {
+        if (fis3 != null) try { fis3.close (); } catch (IOException e) { /* ignore */ };
+      }
     }
 
     String[] categories = ComponentPalette.getDefault ().getPaletteCategories();
     for (int i = 0; i < list.length; i++) {
-      if (list[i].endsWith(JAR_EXT)) {
-        if (alreadyInstalled.get(list[i]) == null) {
-          String withoutExt = list[i].substring(0, list[i].length() - JAR_EXT.length());
+      if (list[i].getName ().endsWith(JAR_EXT)) {
+        if (alreadyInstalled.get(list[i].getName ()) == null) {
+          modified = true;
+          String withoutExt = list[i].getName ().substring(0, list[i].getName ().length() - JAR_EXT.length());
           String categoryName = details.getProperty(withoutExt, withoutExt);
-          if (autoLoadJar(new File (base + list[i]), categoryName, details.getProperty(withoutExt + ".beans"))) {
-            alreadyInstalled.put(list[i], "true");
+          if (autoLoadJar(list[i], categoryName, details.getProperty(withoutExt + ".beans"))) {
+            alreadyInstalled.put(list[i].getName (), "true");
           }
         } else {
           // ensure, that the filesystems are present
-          addJarFileSystem (createJarForFile(new File (base + list[i])));
+          addJarFileSystem (createJarForFile(list[i]));
         }
       }
     }
 
-    FileOutputStream fos = null;
-    try {
-      fos = new FileOutputStream(base + "installed.properties");
-      alreadyInstalled.store(fos, "Installed Archives");
-    } catch (IOException e) {
-      if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
-      // ignore 
-    } finally {
-      if (fos != null) try { fos.close (); } catch (IOException e) { /* ignore */ };
+    if (modified) {
+      FileOutputStream fos = null;
+      try {
+        fos = new FileOutputStream(localBase + "installed.properties");
+        alreadyInstalled.store(fos, "Installed Archives");
+      } catch (IOException e) {
+        if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
+        // ignore 
+      } finally {
+        if (fos != null) try { fos.close (); } catch (IOException e) { /* ignore */ };
+      }
     }
+    
+    return modified;
 
   }
 
@@ -675,6 +719,8 @@ static final long serialVersionUID =-6038414545631774041L;
 
 /*
  * Log
+ *  20   Gandalf   1.19        10/10/99 Ian Formanek    Correctly works in 
+ *       multi-user installation
  *  19   Gandalf   1.18        10/5/99  Jaroslav Tulach Change in DataShadow.
  *  18   Gandalf   1.17        9/26/99  Ian Formanek    Fixed bug 4018 - If a 
  *       JAR archive is added to the beans folder, the beans are not 
