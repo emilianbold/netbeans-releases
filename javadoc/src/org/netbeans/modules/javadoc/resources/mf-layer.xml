@@ -156,7 +156,6 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="windowmanager">
             <folder name="Editing">
                 <folder name="explorer">
-                    <attr name="filesystems.wstcref/Javadoc.wstcref" boolvalue="true" />
                     <file name="Javadoc.wstcref" url="windowmanager/Editing/explorer/Javadoc.wstcref" />
                 </folder>
             </folder>
