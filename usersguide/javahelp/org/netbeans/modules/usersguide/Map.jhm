@@ -148,7 +148,7 @@
 <mapID target="editor.quickref" url="editing/editor_quickref.html" />
 <mapID target="editor.navigation" url="editing/editor_navigation.html" />
 <mapID target="editor.smart-brackets" url="editing/editor_smart-brackets.html" />
-<mapID target="editor.toolbar" url="editing/editor_toolbar.html" />
+<mapID target="editor.toolbar" url="editing/editing_toolbar.html" />
 <mapID target="editing.fontsandcolors" url="editing/configuring/fontsandcolors.html" />
 <mapID target="editing.keybindings" url="editing/configuring/keybindings.html" />
 
