@@ -45,7 +45,9 @@ import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.xml.core.actions.CollectSystemAction;
 
 /**
- *
+ * Editor settings defaults.
+ * It shoudl be replaced by layer based "Defaults" to simplify
+ * {@link TextEditorModuleInstall}.
  */
 public class XMLSettingsInitializer extends Settings.AbstractInitializer {
 
@@ -220,7 +222,8 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
     
     /** XML colorings */
     static class XMLTokenColoringInitializer
-    extends SettingsUtil.TokenColoringInitializer {
+    extends SettingsUtil.TokenColoringInitializer 
+    implements XMLTokenIDs {
 
         Font boldFont = SettingsDefaults.defaultFont.deriveFont(Font.BOLD);
         Font italicFont = SettingsDefaults.defaultFont.deriveFont(Font.ITALIC);
@@ -277,6 +280,9 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
                         
                     case XMLDefaultTokenContext.PI_CONTENT_ID:
                         return new Coloring(null, Color.blue.darker().darker(), null);
+                        
+                    case CDATA_SECTION_ID:
+                        return new Coloring(null, Color.orange.darker().darker(), null);
                 }
                 
                                 

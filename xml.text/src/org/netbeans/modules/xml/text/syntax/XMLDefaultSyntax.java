@@ -514,7 +514,8 @@ public class XMLDefaultSyntax extends Syntax {
                 case ISA_CDATA_BRBR:
                     if (actChar == '>') {
                         state = ISI_TEXT;           //It s allowed only in content
-                        break;
+                        offset++;
+                        return XMLTokenIDs.CDATA_SECTION;
                     } else {
                         state = ISI_CDATA;
                         break;
@@ -778,11 +779,11 @@ public class XMLDefaultSyntax extends Syntax {
                 case ISA_LTEXBRCDAT:
                 case ISA_LTEXBRCDATA:                    
                     return XMLDefaultTokenContext.TEXT;
+
                 case ISI_CDATA:                    
                 case ISA_CDATA_BR:
-                case ISA_CDATA_BRBR:
-                    //!!! we could introduce here CDATA token
-                    return XMLDefaultTokenContext.TEXT;
+                case ISA_CDATA_BRBR:                    
+                    return XMLTokenIDs.CDATA_SECTION;
 
                 case ISA_INIT_BR:
                     return XMLDefaultTokenContext.TEXT;

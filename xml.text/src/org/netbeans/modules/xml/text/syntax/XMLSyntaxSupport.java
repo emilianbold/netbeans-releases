@@ -34,7 +34,7 @@ import org.netbeans.modules.xml.text.syntax.dom.*;
  * @author  Petr Kuzel - use before strategy, use tokens whenever possible
  * @version 0.8
  */
-public class XMLSyntaxSupport extends ExtSyntaxSupport {
+public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
     
     private Reference reference = new SoftReference(null);  // cached helper
     private String systemId = null;  // cached refernce to DTD
@@ -114,10 +114,10 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport {
         TokenID id = item.getTokenID();
         TokenItem first = item;
         
-        // reference
+        // reference can be in attribute or in content
         
-        if( id == XMLDefaultTokenContext.CHARACTER ) {
-            while( id == XMLDefaultTokenContext.CHARACTER ) {                
+        if( id == CHARACTER ) {
+            while( id == CHARACTER ) {                
                 item = item.getPrevious();
                 if (item == null) break;
                 id = item.getTokenID();
@@ -125,7 +125,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport {
             }
             
             // now item is either XMLSyntax.VALUE or we're in text, or at BOF
-            if( id != XMLDefaultTokenContext.VALUE && id != XMLDefaultTokenContext.TEXT ) {
+            if( id != VALUE && id != TEXT && id != CDATA_SECTION ) {
                 return createElement( first );
             } // else ( for VALUE or TEXT ) fall through
         }
@@ -146,9 +146,9 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport {
             };
         }
                 
-        if( id == XMLDefaultTokenContext.TEXT ) {
+        if( id == TEXT || id == CDATA_SECTION) {
             
-            while( id == XMLDefaultTokenContext.TEXT || id == XMLDefaultTokenContext.CHARACTER ) {
+            while( id == TEXT || id == CHARACTER || id == CDATA_SECTION) {
                 first = item;
                 item = item.getPrevious();                
                 if (item == null)  break;                
@@ -267,12 +267,11 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport {
                 
                 return new SyntaxElement.Error( this, first, lastOffset);
         
-            case XMLDefaultTokenContext.TEXT_ID:
-            case XMLDefaultTokenContext.CHARACTER_ID:
+            case TEXT_ID:
+            case CHARACTER_ID:
+            case CDATA_SECTION_ID:    
                 
-                while( id == XMLDefaultTokenContext.TEXT 
-                    || id == XMLDefaultTokenContext.CHARACTER) 
-                {
+                while( id == TEXT || id == CHARACTER || id == CDATA_SECTION) {
                     lastOffset = getTokenEnd( item );
                     item = item.getNext();
                     if( item == null ) break; //EoD

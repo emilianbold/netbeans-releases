@@ -57,7 +57,7 @@ PARSER_BEGIN(DTDSyntax)
 package org.netbeans.modules.xml.text.syntax.javacc;
 
 import java.io.*;
-import org.netbeans.modules.xml.lib.jj.*;
+import org.netbeans.modules.xml.text.syntax.javacc.lib.*;
 
 /** This must be included for javacc joy. 
  *  We use just token manager.

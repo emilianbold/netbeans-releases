@@ -50,6 +50,8 @@ import org.openide.util.RequestProcessor;
 /**
  * Consults grammar and presents list of possible choices
  * in particular document context.
+ * <p>
+ * <b>Warning:</b> It is public for unit test purposes only!
  *
  * @author Petr Nejedly
  * @author Sandeep Randhawa
@@ -58,7 +60,7 @@ import org.openide.util.RequestProcessor;
  * @version 1.01
  */
 
-class XMLCompletionQuery implements CompletionQuery {
+public class XMLCompletionQuery implements CompletionQuery {
 
     // the name of a property indentifing cached query
     static final String DOCUMENT_GRAMMAR_BINDING_PROP = "doc-bind-query";

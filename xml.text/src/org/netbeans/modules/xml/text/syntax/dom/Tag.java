@@ -27,7 +27,7 @@ import org.netbeans.editor.*;
  * <code>equals</code>. The <code>equals</code> is used for syntax element
  * purposes.
  */
-public abstract class Tag extends SyntaxNode implements Element {
+public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
     
     NamedNodeMap domAttributes;
     
@@ -56,43 +56,50 @@ public abstract class Tag extends SyntaxNode implements Element {
      */
     public synchronized NamedNodeMap getAttributes() {
         
-        if (domAttributes == null) {
+        // cached results not implemented
+        if (domAttributes != null) return domAttributes;
             
-            Map map = new HashMap();
+        Map map = new HashMap(3);            
             
-            TokenItem next = first;
-            //                next = next.getNext();
-            //??? < is covered                assert(next.getTokenID().equals(XMLDefaultTokenContext.TAG));
-            scanning:
-                while (true) {
+SCAN_LOOP:
+        for (TokenItem next = first.getNext(); next != null; next = next.getNext()) {
+            TokenID id = next.getTokenID();
+            String name;
+            String value;
+            if (id == ARGUMENT) {
+                TokenItem attributeStart = next;
+                name = next.getImage();
+                while (next.getTokenID() != VALUE) {
                     next = next.getNext();
-                    if (next == null) break scanning;
-                    TokenID id = next.getTokenID();
-                    String name;
-                    String value;
-                    if (id.equals(XMLDefaultTokenContext.ARGUMENT)) {
-                        TokenItem attributeStart = next;
-                        name = next.getImage();
-                        while (next.getTokenID().equals(XMLDefaultTokenContext.VALUE) == false) {
-                            next = next.getNext();
-                            if (next == null) break scanning;
-                        }
-                        value = next.getImage();  //'"' or '"'
-                        next = next.getNext();                         //!!! handle fragmentation
-                        if (next == null) break scanning;
-                        value = next.getImage();
-                        next = next.getNext();   //'"' or '"'
-                        if (next == null) break scanning;
-                        map.put(name, new AttrImpl(support, attributeStart, this));
-                    } else if (id.equals(XMLDefaultTokenContext.WS)) {
-                        // just skip
-                    } else {
-                        break; // end of element markup
+                    if (next == null) break SCAN_LOOP;
+                }
+                
+                // fuzziness to relax minor tokenization changes
+                String image = next.getImage();
+                char test = image.charAt(0);
+                if (image.length() == 1) {                    
+                    if (test == '"' || test == '\'') {
+                        next = next.getNext();
                     }
                 }
-                domAttributes = new NamedNodeMapImpl(map);
+
+                if (next == null) break SCAN_LOOP;
+                value = next.getImage();
+
+                Object key = NamedNodeMapImpl.createKey(name);
+                map.put(key, new AttrImpl(support, attributeStart, this));
+                
+                next = Util.skipAttributeValue(next, test);
+                if (next == null) break SCAN_LOOP;
+            } else if (id == WS) {
+                // just skip
+            } else {
+                break; // end of element markup
+            }
         }
-        return domAttributes;
+        
+        // domAttributes = new NamedNodeMapImpl(map);
+        return new NamedNodeMapImpl(map);
     }
     
     public String getAttribute(String name) {

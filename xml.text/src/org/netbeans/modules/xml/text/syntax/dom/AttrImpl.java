@@ -28,7 +28,7 @@ import org.netbeans.editor.*;
  *
  * @author Petr Kuzel
  */
-public class AttrImpl extends AbstractNode implements Attr {
+public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
         
     private TokenItem first;
     
@@ -86,18 +86,24 @@ public class AttrImpl extends AbstractNode implements Attr {
  
     public Node getFirstChild() {
         TokenItem next = first;
-        while (next != null) {
-            if (next.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) {
-                next = next.getNext();
+        for (; next != null; next = next.getNext()) {
+            if (next.getTokenID() == VALUE) {
+                // fuzziness to relax minor tokenization changes
+                String image = next.getImage();
+                if (image.length() == 1) {
+                    char test = image.charAt(0);
+                    if (test == '"' || test == '\'') {
+                        next = next.getNext();
+                    }
+                }
                 break;  // we are after opening "'"
-            }
-            next = next.getNext();            
+            }            
         }
         if (next == null) return null;                
-        if (next.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) {
+        if (next.getTokenID() == VALUE) {
             return new TextImpl(syntax, first, this);  //!!! strip out ending "'", return standalone "'" token
         } else {
-            throw new RuntimeException("Not implemented yet");
+            throw new RuntimeException("Not recognized yet: " + next.getTokenID());
         }
     }
     
