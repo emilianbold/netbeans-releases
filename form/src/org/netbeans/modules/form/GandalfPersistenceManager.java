@@ -131,7 +131,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       return null;
     }
     try {
-      formInfo = (FormInfo)TopManager.getDefault ().systemClassLoader ().loadClass (infoClass).newInstance ();
+      formInfo = (FormInfo)TopManager.getDefault ().currentClassLoader ().loadClass (infoClass).newInstance ();
     } catch (Exception e) {
         e.printStackTrace ();
       throw new IOException (java.text.MessageFormat.format (
@@ -210,7 +210,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         String compName = findAttribute (node, ATTR_COMPONENT_NAME);
         Class compClass = null;
         try {
-          compClass = TopManager.getDefault ().systemClassLoader ().loadClass (className);
+          compClass = TopManager.getDefault ().currentClassLoader ().loadClass (className);
         } catch (Exception e) {
           FormEditor.fileError (java.text.MessageFormat.format (
             FormEditor.getFormBundle ().getString ("FMT_ERR_ClassNotFound"),
@@ -274,8 +274,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
           String cdName = findAttribute (constrNodes[i], ATTR_CONSTRAINT_VALUE);
           if ((layoutName != null) && (cdName != null)) {
             try {
-              Class layoutClass = TopManager.getDefault ().systemClassLoader ().loadClass (layoutName);
-              DesignLayout.ConstraintsDescription cd = (DesignLayout.ConstraintsDescription) TopManager.getDefault ().systemClassLoader ().loadClass (cdName).newInstance ();
+              Class layoutClass = TopManager.getDefault ().currentClassLoader ().loadClass (layoutName);
+              DesignLayout.ConstraintsDescription cd = (DesignLayout.ConstraintsDescription) TopManager.getDefault ().currentClassLoader ().loadClass (cdName).newInstance ();
               org.w3c.dom.NodeList children = constrNodes[i].getChildNodes ();
               if (children != null) {
                 for (int j = 0; j < children.getLength (); j++) {
@@ -356,7 +356,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       org.w3c.dom.Node layoutNode = findSubNode (node, XML_LAYOUT);
       String className = findAttribute (layoutNode, ATTR_LAYOUT_CLASS);
       try {
-        DesignLayout dl = (DesignLayout)TopManager.getDefault ().systemClassLoader ().loadClass (className).newInstance ();
+        DesignLayout dl = (DesignLayout)TopManager.getDefault ().currentClassLoader ().loadClass (className).newInstance ();
         org.w3c.dom.Node[] propNodes = findSubNodes (layoutNode, XML_PROPERTY);
         if (propNodes.length > 0) {
           HashMap propsMap = new HashMap (propNodes.length * 2);
@@ -393,7 +393,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
           String propertyEditor = findAttribute (propNodes[i], ATTR_PROPERTY_EDITOR);
           if (propertyEditor != null) {
             try {
-              Class editorClass = TopManager.getDefault ().systemClassLoader ().loadClass (propertyEditor);
+              Class editorClass = TopManager.getDefault ().currentClassLoader ().loadClass (propertyEditor);
               Class propertyClass = findPropertyType (propType);
               PropertyEditor ed = FormEditor.createPropertyEditor (editorClass, propertyClass, comp);
               ((RADComponent.RADProperty)prop).setCurrentEditor (ed);
@@ -919,7 +919,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
       PropertyEditor ed = null;
       if (editorNode != null) {
-        Class editorClass = TopManager.getDefault ().systemClassLoader ().loadClass (editorNode.getNodeValue ());
+        Class editorClass = TopManager.getDefault ().currentClassLoader ().loadClass (editorNode.getNodeValue ());
         ed = FormEditor.createPropertyEditor (editorClass, propertyType, radComponent);
       }
       Object value = null;
@@ -972,7 +972,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     else if ("boolean".equals (type)) return Boolean.TYPE;
     else if ("char".equals (type)) return Character.TYPE;
     else {
-      return TopManager.getDefault ().systemClassLoader ().loadClass (type);
+      return TopManager.getDefault ().currentClassLoader ().loadClass (type);
     }
   }
 
@@ -1005,7 +1005,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       return encoded;
     } else if (Class.class.isAssignableFrom (type)) {
       try {
-        return TopManager.getDefault ().systemClassLoader ().loadClass (encoded);
+        return TopManager.getDefault ().currentClassLoader ().loadClass (encoded);
       } catch (ClassNotFoundException e) {
         e.printStackTrace ();
         // will return null as the notification of failure
@@ -1274,6 +1274,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  27   Gandalf   1.26        8/9/99   Ian Formanek    Used currentClassLoader 
+ *       to fix problems with loading beans only present in repository
  *  26   Gandalf   1.25        8/6/99   Ian Formanek    Survives when storeToXML
  *       returns null
  *  25   Gandalf   1.24        8/6/99   Ian Formanek    displaying error log

@@ -61,7 +61,7 @@ public class FormEditorModule implements ModuleInstall {
   /** Module installed again. */
   public void restored () {
     try {
-      Class borderEd = TopManager.getDefault ().systemClassLoader ().loadClass ("com.netbeans.developer.explorer.propertysheet.editors.BorderEditor");
+      Class borderEd = TopManager.getDefault ().currentClassLoader ().loadClass ("com.netbeans.developer.explorer.propertysheet.editors.BorderEditor");
       FormPropertyEditorManager.registerEditor (javax.swing.border.Border.class, borderEd);
     } catch (Exception e) {
       // uses the border editor from impl, so we must survive when it is not present
@@ -522,6 +522,8 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  30   Gandalf   1.29        8/9/99   Ian Formanek    Used currentClassLoader 
+ *       to fix problems with loading beans only present in repository
  *  29   Gandalf   1.28        7/31/99  Ian Formanek    Fixed registration of 
  *       BorderEditor
  *  28   Gandalf   1.27        7/15/99  Ian Formanek    Better cleanup when 

@@ -84,7 +84,7 @@ final public class FormPropertyEditorManager extends Object {
     // 1. try adding "Editor" to the class name.
     String editorName = type.getName() + "Editor";
     try {
-      editorsList.add (Class.forName (editorName, true, TopManager.getDefault ().systemClassLoader ()));
+      editorsList.add (Class.forName (editorName, true, TopManager.getDefault ().currentClassLoader ()));
     } catch (Exception e) {
       // Silently ignore any not found editors.
     } 
@@ -99,7 +99,7 @@ final public class FormPropertyEditorManager extends Object {
     for (int i = 0; i < searchPath.length; i++) {
       String name = searchPath[i] + "." + editorName + "Editor";
       try {
-        Class editorClass = Class.forName (name, true, TopManager.getDefault ().systemClassLoader ());
+        Class editorClass = Class.forName (name, true, TopManager.getDefault ().currentClassLoader ());
         editorsList.add (editorClass);
         if (!allFromSearchPath) {
           break; // stop on first found editor if allFromSearchPath is false
@@ -116,7 +116,7 @@ final public class FormPropertyEditorManager extends Object {
         if (registered[i][0].equals (typeName)) {
           for (int j = 1; j < registered[i].length; j++) {
             try {
-              editorsList.add (Class.forName (registered[i][j], true, TopManager.getDefault ().systemClassLoader ()));
+              editorsList.add (Class.forName (registered[i][j], true, TopManager.getDefault ().currentClassLoader ()));
             } catch (Exception e) {
               // Silently ignore any errors.
               if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
@@ -170,6 +170,8 @@ final public class FormPropertyEditorManager extends Object {
 
 /*
  * Log
+ *  9    Gandalf   1.8         8/9/99   Ian Formanek    Used currentClassLoader 
+ *       to fix problems with loading beans only present in repository
  *  8    Gandalf   1.7         8/1/99   Ian Formanek    PropertyEditors from 
  *       search path are the first ones, as it is more likely that they consume 
  *       the standard value type (i.e. the type equal to the property type as 

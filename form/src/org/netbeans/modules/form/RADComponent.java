@@ -1004,7 +1004,7 @@ public class RADComponent {
     Class valueType = desc.getPropertyType ();
     if (valueType == null) {
       try {
-        valueType = org.openide.TopManager.getDefault ().systemClassLoader ().loadClass (
+        valueType = org.openide.TopManager.getDefault ().currentClassLoader ().loadClass (
           "[L" + desc.getIndexedPropertyType ().getName () + ";"
         );
       } catch (Exception e) {
@@ -1091,6 +1091,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  41   Gandalf   1.40        8/9/99   Ian Formanek    Used currentClassLoader 
+ *       to fix problems with loading beans only present in repository
  *  40   Gandalf   1.39        8/6/99   Ian Formanek    setComponent is public, 
  *       added method setInstance
  *  39   Gandalf   1.38        8/1/99   Ian Formanek    NodePropertyEditor 
