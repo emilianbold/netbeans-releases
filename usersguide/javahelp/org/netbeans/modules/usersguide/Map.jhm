@@ -611,6 +611,9 @@
 <mapID target="org.netbeans.modules.icebrowser.IceBrowser" url="webbrowser/webbrowser.html" />
 
 
+<mapID target="NetbeansDebuggerDebuggerNode" url="objects/objects_runtime.html" />
+<mapID target="NetbeansDebuggerSessionsRootNode" url="debug/environment/sessions_view.html" />
+
 <mapID target="NetbeansDebuggerSessionNode" url="debug/environment/sessions_view.html" />
 <mapID target="NetbeansDebuggerBreakpointsRootNode" url="debug/environment/breakpoints_view.html" />
 <mapID target="NetbeansDebuggerCallStackRootNode" url="debug/environment/callstack_view.html" />
@@ -792,9 +795,9 @@
    <mapID target="org.netbeans.core.actions.StatusLineAction" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.SystemExit.dialog" url="objects/objects_saving.html" /> 
    <mapID target="org.netbeans.core.execution.ExternalExecutionSettings" url="pending.html" /> 
-   <mapID target="org.netbeans.core.execution.ProcessNode" url="pending.html" /> 
-   <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="pending.html" /> 
-   <mapID target="org.netbeans.core.execution.ProcessNodeItem$TerminateProcessAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.execution.ProcessNode" url="objects/objects_runtime.html" /> 
+   <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="objects/objects_runtime.html" /> 
+   <mapID target="org.netbeans.core.execution.ProcessNodeItem$TerminateProcessAction" url="objects/objects_runtime.html" /> 
    <mapID target="org.netbeans.core.output.OutputSettings" url="configure/output.html" /> 
    <mapID target="org.netbeans.core.windows.nodes.WorkspaceContext" url="workspace/workspace_customize.html" /> 
    <mapID target="org.netbeans.core.windows.nodes.WorkspaceContext$TopFramePasteType" url="pending.html" /> 
@@ -864,6 +867,9 @@
    <mapID target="org.netbeans.modules.debugger.support.actions.SwitchOnAction.dialog" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.actions.DebuggerViewAction" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.DebuggerSettings" url="debug/environment/options.html" />
+   <mapID target="org.netbeans.modules.debugger.support.DebuggerContextSettings" url="debug/environment/options.html" />
+   <mapID target="org.netbeans.modules.debugger.support.java.JavaDebuggerSettings" url="debug/environment/java_options.html" />
+
    <mapID target="org.netbeans.modules.httpserver.HttpServerSettings" url="webbrowser/httpserver-options.html" />
    <mapID target="org.netbeans.modules.applet.AppletDebuggerType" url="debug/debugger/applet.html" />
    <mapID target="org.netbeans.modules.applet.AppletExecutor" url="run/applet.html" />
@@ -960,6 +966,9 @@
    <mapID target="org.netbeans.beaninfo.editors.CompilerTypeEditor$NoCompiler" url="pending.html" />
    <mapID target="org.netbeans.modules.javadoc.search.Jdk12SearchType" url="javadoc/jdk_search_engine.html" /> 
    <mapID target="org.netbeans.modules.javadoc.search.Jdk12SearchType_japan" url="javadoc/japanese_search_engine.html" /> 
+   <mapID target="org.netbeans.modules.javadoc.search.JavaDocSearchType" url="javadoc/searchengine.html" /> 
+   <mapID target="org.netbeans.modules.javadoc.JavaDocType" url="javadoc/executor.html" /> 
+   <mapID target="org.netbeans.modules.javadoc.StdDocletType" url="javadoc/doclet.html" /> 
 
    <mapID target="org.netbeans.modules.javadoc.search.IndexSearch" url="pending.html" /> 
    <mapID target="org.netbeans.modules.javadoc.comments.AutoCommentTopComponent" url="pending.html" />
