@@ -28,7 +28,7 @@ public class ClientData extends BaseBean {
     }
 
     public ClientData(int options) {
-	super(ClientData.comparators, new GenBeans.Version(1, 0, 6));
+	super(ClientData.comparators, new org.netbeans.modules.schema2beans.Version(1, 0, 6));
 	// Properties (see root bean comments for the bean graph)
 	this.initialize(options);
     }

@@ -61,7 +61,7 @@ public class RequestData extends BaseBean {
     }
 
     public RequestData(int options)	{
-	super(RequestData.comparators, new GenBeans.Version(1, 0, 6));
+	super(RequestData.comparators, new org.netbeans.modules.schema2beans.Version(1, 0, 6));
 	// Properties (see root bean comments for the bean graph)
 
 	this.createProperty("Headers", HEADERS, //NOI18N

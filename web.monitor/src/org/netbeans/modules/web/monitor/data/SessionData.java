@@ -30,7 +30,7 @@ public class SessionData extends BaseBean {
     }
 
     public SessionData(int options) {
-	super(SessionData.comparators, new GenBeans.Version(1, 0, 6));
+	super(SessionData.comparators, new org.netbeans.modules.schema2beans.Version(1, 0, 6));
 	// Properties (see root bean comments for the bean graph)
 	this.createProperty("SessionIn", SESSIONIN, //NOI18N
 			    Common.TYPE_1 | Common.TYPE_BEAN | Common.TYPE_KEY, 

@@ -29,7 +29,7 @@ public class Dispatches extends BaseBean {
     }
 
     public Dispatches(int options) {
-	super(comparators, new GenBeans.Version(1, 0, 8));
+	super(comparators, new org.netbeans.modules.schema2beans.Version(1, 0, 8));
 	// Properties (see root bean comments for the bean graph)
 	this.createProperty("DispatchData", 	// NOI18N
 			    DISPATCHDATA, 

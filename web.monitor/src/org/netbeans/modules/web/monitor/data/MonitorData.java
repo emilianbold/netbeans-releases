@@ -60,7 +60,7 @@ public class MonitorData extends BaseBean implements DataRecord {
     }
     
     public MonitorData(int options) {
-	super(MonitorData.comparators, new GenBeans.Version(1, 0, 6));
+	super(MonitorData.comparators, new org.netbeans.modules.schema2beans.Version(1, 0, 6));
 	// The graph manager is allocated in the bean root
 	this.graphManager = new GraphManager(this);
 

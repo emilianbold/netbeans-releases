@@ -42,7 +42,7 @@ public class SessionIn extends BaseBean {
     }
 
     public SessionIn(int options) {
-	super(SessionIn.comparators, new GenBeans.Version(1, 0, 6));
+	super(SessionIn.comparators, new org.netbeans.modules.schema2beans.Version(1, 0, 6));
 	// Properties (see root bean comments for the bean graph)
 	this.createProperty("Param", PARAM, //NOI18N
 			    Common.TYPE_0_N | Common.TYPE_BEAN | Common.TYPE_KEY, 

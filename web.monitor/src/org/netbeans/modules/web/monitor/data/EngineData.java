@@ -29,7 +29,7 @@ public class EngineData extends BaseBean {
 
 
     public EngineData(int options) {
-	super(EngineData.comparators, new GenBeans.Version(1, 0, 6));
+	super(EngineData.comparators, new org.netbeans.modules.schema2beans.Version(1, 0, 6));
 	// Properties (see root bean comments for the bean graph)
 	this.initialize(options);
     }

@@ -94,7 +94,7 @@ public class CookieOut extends BaseBean
 
     public CookieOut(int options)
     {
-	super(CookieOut.comparators, new GenBeans.Version(1, 0, 5));
+	super(CookieOut.comparators, new org.netbeans.modules.schema2beans.Version(1, 0, 5));
 	// Properties (see root bean comments for the bean graph)
 	this.initialize(options);
     }

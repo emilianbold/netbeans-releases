@@ -41,7 +41,7 @@ public class DispatchData extends BaseBean implements DataRecord {
     }
     
     public DispatchData(int options) {
-	super(comparators, new GenBeans.Version(1, 0, 6));
+	super(comparators, new org.netbeans.modules.schema2beans.Version(1, 0, 6));
 	this.createProperty("ClientData", CLIENTDATA,  // NOI18N
 			    Common.TYPE_1 | Common.TYPE_BEAN | Common.TYPE_KEY, 
 			    ClientData.class);

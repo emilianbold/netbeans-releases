@@ -39,7 +39,7 @@ public class CookieIn extends BaseBean {
     }
 
     public CookieIn(int options) {
-	super(CookieIn.comparators, new GenBeans.Version(1, 0, 6));
+	super(CookieIn.comparators, new org.netbeans.modules.schema2beans.Version(1, 0, 6));
 	// Properties (see root bean comments for the bean graph)
 	this.initialize(options);
     }

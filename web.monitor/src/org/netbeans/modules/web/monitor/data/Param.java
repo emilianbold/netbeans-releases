@@ -33,7 +33,7 @@ public class Param extends BaseBean {
     }
 
     public Param(int options) {
-	super(Param.comparators, new GenBeans.Version(1, 0, 6));
+	super(Param.comparators, new org.netbeans.modules.schema2beans.Version(1, 0, 6));
 	// Properties (see root bean comments for the bean graph)
 	this.initialize(options);
     }
