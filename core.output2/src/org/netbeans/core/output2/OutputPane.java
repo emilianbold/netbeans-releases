@@ -109,6 +109,10 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
     protected JEditorPane createTextView() {
         JEditorPane result = new JEditorPane();
         result.addComponentListener(this);
+        
+        // we don't want the background to be gray even though the text there is not editable
+        result.setDisabledTextColor(result.getBackground());
+        
         return result;
     }
 
