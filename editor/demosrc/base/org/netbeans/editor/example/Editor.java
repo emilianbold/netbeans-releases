@@ -208,7 +208,10 @@ public class Editor extends javax.swing.JFrame {
   
   private void closeItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeItemActionPerformed
       Component editor = tabPane.getSelectedComponent();
-      if( checkClose( editor ) ) tabPane.remove( editor );
+      if( checkClose( editor ) ) {
+          tabPane.remove( editor );
+          com2text.remove( editor );
+      }
   }//GEN-LAST:event_closeItemActionPerformed
   
   private void openItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openItemActionPerformed
@@ -314,6 +317,7 @@ public class Editor extends javax.swing.JFrame {
             Component editor = tabPane.getComponentAt( 0 );
             if( checkClose( editor ) ) {
                 tabPane.remove( editor );
+                com2text.remove( editor );
             } else {
                 System.err.println("keeping");
                 exit = false;
