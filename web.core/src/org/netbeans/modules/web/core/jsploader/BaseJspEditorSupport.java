@@ -48,8 +48,11 @@ import org.openide.util.TaskListener;
 import org.openide.util.Task;
 
 import org.netbeans.modules.web.core.jsploader.TagLibParseSupport;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 public class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, EditorCookie.Observable, OpenCookie, LineCookie, CloseCookie, PrintCookie {
     
@@ -60,6 +63,13 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     
     /** Cash of encoding of the file */
     private String encoding;
+    
+    /** When unsupported encoding is set for a jsp file, then defaulEncoding is used for loading
+     * and saving
+     */
+    private static String defaulEncoding = "UTF-8"; // NOI18N
+    
+    
     
     public BaseJspEditorSupport(JspDataObject obj) {
         super(obj, new BaseJspEnv(obj));
@@ -134,10 +144,31 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         }
     }
     
+    public void open(){
+        encoding = getObjectEncoding(false);
+        if (!java.nio.charset.Charset.isSupported(encoding)){
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage (BaseJspEditorSupport.class, "MSG_BadEncodingDuringLoad", //NOI18N
+                    new Object [] { getDataObject().getPrimaryFile().getNameExt(),
+                                    encoding, 
+                                    defaulEncoding} ), 
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;
+        }
+        super.open();
+    }
+    
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
+
         Reader reader = null;
+        encoding = getObjectEncoding(false);
+        if (!java.nio.charset.Charset.isSupported(encoding)){
+            encoding = defaulEncoding;
+        }
         try {
-            reader = new InputStreamReader(stream, getObjectEncoding(false));
+            reader = new InputStreamReader(stream, encoding);
             kit.read(reader, doc, 0);
         }
         finally {
@@ -149,6 +180,9 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
         Writer wr = null;
         try {
+            if (!java.nio.charset.Charset.isSupported(encoding)){
+                encoding = defaulEncoding;
+            }
             wr = new OutputStreamWriter(stream, encoding);
             kit.write(wr, doc, 0, doc.getLength());
         }
@@ -202,8 +236,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     }
     
     protected String getObjectEncoding(boolean useEditor) {
-        encoding =  ((JspDataObject)getDataObject()).getFileEncoding( useEditor);
-        return encoding;
+        return ((JspDataObject)getDataObject()).getFileEncoding( useEditor);
     }
     
     /** Save the document in this thread and start reparsing it.
@@ -228,7 +261,19 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
      */
     private void saveDocument(boolean parse, boolean forceSave) throws IOException {
         if (forceSave || isModified()) {
-            getObjectEncoding(true);
+            encoding = getObjectEncoding(true);
+            if (!java.nio.charset.Charset.isSupported(encoding)){
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage (BaseJspEditorSupport.class, "MSG_BadEncodingDuringSave", //NOI18N
+                    new Object [] { getDataObject().getPrimaryFile().getNameExt(),
+                                    encoding, 
+                                    defaulEncoding} ), 
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE);
+                nd.setValue(NotifyDescriptor.NO_OPTION);       
+                DialogDisplayer.getDefault().notify(nd);
+                if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;
+            }
             super.saveDocument();
             if (parse) {
                 TagLibParseSupport sup = (TagLibParseSupport)getDataObject().getCookie(TagLibParseSupport.class);
