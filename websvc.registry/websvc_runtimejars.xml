@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RuntimeJars>
+<Jar file="{appserv.home}/lib/j2ee.jar"/>
+
+<Jar file="{appserv.home}/lib/endorsed/xercesImpl.jar"/>
+<Jar file="{appserv.home}/lib/endorsed/dom.jar"/>
+<Jar file="{appserv.home}/lib/endorsed/xalan.jar"/>
+<!-- J2EE.JAR <Jar file="{appserv.home}/lib/jax-qname.jar"/> -->
+<Jar file="{appserv.home}/lib/mail.jar"/>
+<Jar file="{appserv.home}/lib/activation.jar"/>
+<Jar file="{appserv.home}/lib/xsdlib.jar"/>
+<Jar file="{appserv.home}/lib/relaxngDatatype.jar"/>
+<Jar file="{appserv.home}/lib/commons-logging.jar"/>
+<!-- JAXR-IMPL <Jar file="{appserv.home}/lib/namespace.jar"/> -->
+<Jar file="{appserv.home}/lib/jaxr-impl.jar"/>
+<!-- J2EE.JAR <Jar file="{appserv.home}/lib/jaxrpc-api.jar"/> -->
+<Jar file="{appserv.home}/lib/jaxrpc-impl.jar"/>
+<!-- JAXRPC-IMPL.JAR <Jar file="{appserv.home}/lib/jaxrpc-spi.jar"/> -->
+<!-- J2EE.JAR <Jar file="{appserv.home}/lib/saaj-api.jar"/> -->
+<Jar file="{appserv.home}/lib/saaj-impl.jar"/>
+
+</RuntimeJars>

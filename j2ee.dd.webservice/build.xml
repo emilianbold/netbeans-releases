@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="websvcddapi" default="netbeans" basedir=".">
+  <import file="../../nbbuild/templates/projectized.xml"/>
+
+  <property name="s2b_root_1_1" location="src/org/netbeans/modules/j2ee/dd/impl/webservices/model_1_1"/>
+  <property name="s2b_res_root" location="src/org/netbeans/modules/j2ee/dd/impl/resources"/>
+
+  <target name="s2binit" depends="build-init">
+	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
+	  <classpath>
+		<pathelement path="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar" />
+		<pathelement path="${schema2beans/dev.dir}/${nb.modules/autoload.dir}/schema2beansdev.jar" />
+		<pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
+	  </classpath>
+	</taskdef>
+  </target>
+  
+   <target name="dd2beansgen" depends="s2binit">
+     <echo message="generating code generation input file information" />
+
+	<schema2beans schema="${s2b_res_root}/j2ee_web_services_1_1.xsd"
+      readBeanGraph="src/org/netbeans/modules/j2ee/dd/impl/resources/beangraph.xml" 
+ 	  mddFile="${s2b_res_root}/j2ee_web_services_1_1.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.webservices.model_1_1"
+      schemaType="xmlschema"
+	  rootDir="src"
+	  validate="true"
+	  attrProp="true"
+	  generateHasChanged="true"
+	  outputType="javabeans"
+	  commonInterface="CommonBean"
+	  useInterfaces="true"
+	  extendBaseBean="true"
+	  finder="on /webservices find webservice-description by webservice-description-name,on /webservices/webservice-description/port-component find handler by handler-name,on /webservices/webservice-description/port-component/handler find init-param by param-name,on /webservices/webservice-description find port-component by port-component-name"/>
+  </target>
+
+  <target name="compile" depends="dd2beansgen, projectized.compile"/>
+  
+  <!--target name="release">
+    <copy todir="${cdp.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}">
+      <fileset dir="release/modules/autoload"/>
+    </copy>
+  </target-->
+
+
+  <target name="clean" depends="clean-ddgen-src, clean-javadoc, projectized.clean"/>
+
+  <target name="clean-ddgen-src">
+        <mkdir dir="${s2b_root_1_1}"/>
+        <delete>
+            <fileset dir="${s2b_root_1_1}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_1_1}"/>
+  </target>
+  
+  <target name="javadoc" depends="build-init" description="Build Javadoc."> 
+      <property name="_cp" refid="cp"/> 
+      <ant dir="${nb_all}/nbbuild/javadoctools" antfile="template.xml" target="javadoc"> 
+       <property name="javadoc.base" location="."/> 
+       <property name="javadoc.name" value="WEBSERVICES-DD-API"/> 
+       <property name="javadoc.title" value="WebServices Deployment Descriptor API"/> 
+       <property name="javadoc.packages" value="org.netbeans.j2ee.dd.api.*"/> 
+       <property name="javadoc.classpath" value="${_cp}"/> 
+       <property name="javadoc.arch" location="../arch/arch-DD-API.xml"/>
+       <property name="javadoc.overview" location="doc/overview.html"/>
+       <property name="javadoc.docfiles" location="doc"/>
+      </ant>
+      <mkdir dir="javadoc/WEBSERVICES-DD-API/arch"/>
+      <copy file="doc/ddapi_architecture.html" todir="javadoc/WEBSERVICES-DD-API/arch"/>
+      <copy file="doc/dd_api_schema.jpg" todir="javadoc/WEBSERVICES-DD-API/arch"/>
+      <copy file="doc/usage.html" todir="javadoc/WEBSERVICES-DD-API/arch"/>
+  </target>
+  
+  <target name="clean-javadoc">
+  	<delete dir="javadoc"/>
+  </target>
+
+</project>
+

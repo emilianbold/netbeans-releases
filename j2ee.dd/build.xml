@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="j2ee/ddapi" default="netbeans" basedir=".">
+  <import file="../../nbbuild/templates/projectized.xml"/>
+
+  <property name="s2b_root_1_1" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_1_1"/>
+  <property name="s2b_root_2_0" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_2_0"/>
+  <property name="s2b_root_2_1" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_2_1"/>
+  <property name="s2b_root_app_1_3" location="src/org/netbeans/modules/j2ee/dd/impl/application/model_1_3"/>
+  <property name="s2b_root_app_1_4" location="src/org/netbeans/modules/j2ee/dd/impl/application/model_1_4"/>
+  <property name="s2b_res_root" location="src/org/netbeans/modules/j2ee/dd/impl/resources"/>
+
+  <target name="build-init" depends="projectized.build-init"/>
+
+  <target name="s2binit" depends="build-init">
+	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
+	  <classpath>
+		<pathelement path="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar" />
+		<pathelement path="${schema2beans/dev.dir}/${nb.modules/autoload.dir}/schema2beansdev.jar" />
+		<pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
+	  </classpath>
+	</taskdef>
+  </target>
+
+   <target name="dd2beansgen" depends="s2binit">
+     <echo message="generating code generation input file information" />
+
+	<schema2beans schema="${s2b_res_root}/ejb-jar_1_1.dtd"
+ 	  mddFile="${s2b_res_root}/ejb-jar_1_1.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.ejb.model_1_1"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  rootDir="src"/>
+	<schema2beans schema="${s2b_res_root}/ejb-jar_2_0.dtd"
+ 	  mddFile="${s2b_res_root}/ejb-jar_2_0.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.ejb.model_2_0"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  rootDir="src"/>
+	<schema2beans schema="${s2b_res_root}/ejb-jar_2_1.xsd"
+ 	  mddFile="${s2b_res_root}/ejb-jar_2_1.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.ejb.model_2_1"
+	  schemaType="xmlschema"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+	  rootDir="src"/> 
+        <schema2beans schema="${s2b_res_root}/application_1_3.dtd"
+ 	  mddFile="${s2b_res_root}/application_1_3.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.application.model_1_3"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  rootDir="src"/> 
+        <schema2beans schema="${s2b_res_root}/application_1_4.xsd"
+ 	  mddFile="${s2b_res_root}/application_1_4.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.application.model_1_4"
+	  schemaType="xmlschema"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+	  rootDir="src"/>  
+	  <!--<delete file="${s2b_root_2_4}/WebAppType.java"/>-->
+
+  </target>
+
+  <target name="compile" depends="dd2beansgen, release, projectized.compile"/>
+  
+  <target name="release">
+    <!--copy todir="${cdp.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}">
+      <fileset dir="release/modules/autoload"/>
+    </copy-->
+  </target>
+
+
+  <target name="clean" depends="projectized.build-init, clean-ddgen-src, clean-javadoc, projectized.clean"/>
+
+  <target name="clean-ddgen-src">
+        <mkdir dir="${s2b_root_1_1}"/>
+        <mkdir dir="${s2b_root_2_0}"/>
+        <mkdir dir="${s2b_root_2_1}"/>
+        <mkdir dir="${s2b_root_app_1_3}"/>
+        <mkdir dir="${s2b_root_app_1_4}"/>
+        <delete>
+            <fileset dir="${s2b_root_1_1}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_1_1}"/>
+        <delete>
+            <fileset dir="${s2b_root_2_0}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_2_0}"/>
+        <delete>
+            <fileset dir="${s2b_root_2_1}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_2_1}"/>
+        <delete>
+            <fileset dir="${s2b_root_app_1_3}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_app_1_3}"/>
+        <delete>
+            <fileset dir="${s2b_root_app_1_4}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_app_1_4}"/>
+  </target>
+  
+  <target name="javadoc" depends="build-init" description="Build Javadoc."> 
+      <property name="_cp" refid="cp"/> 
+      <ant dir="${nb_all}/nbbuild/javadoctools" antfile="template.xml" target="javadoc"> 
+       <property name="javadoc.base" location="."/> 
+       <property name="javadoc.name" value="DD-API"/> 
+       <property name="javadoc.title" value="Deployment Descriptor API"/> 
+       <property name="javadoc.packages" value="org.netbeans.j2ee.dd.api.*"/> 
+       <property name="javadoc.classpath" value="${_cp}"/> 
+       <property name="javadoc.arch" location="../arch/arch-DD-API.xml"/>
+       <property name="javadoc.overview" location="doc/overview.html"/>
+       <property name="javadoc.docfiles" location="doc"/>
+      </ant>
+      <mkdir dir="javadoc/DD-API/arch"/>
+      <copy file="doc/ddapi_architecture.html" todir="javadoc/DD-API/arch"/>
+      <copy file="doc/dd_api_schema.jpg" todir="javadoc/DD-API/arch"/>
+      <copy file="doc/usage.html" todir="javadoc/DD-API/arch"/>
+  </target>
+  
+  <target name="clean-javadoc">
+  	<delete dir="javadoc"/>
+  </target>
+
+</project>
+

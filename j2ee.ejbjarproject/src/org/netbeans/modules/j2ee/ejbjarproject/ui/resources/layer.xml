@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Templates">
+        <folder name="J2EE">
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.Bundle"/>
+         <file name="Session">
+         <attr name="template" boolvalue="true"/>
+         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.session.SessionEJBWizard.create" />
+         <attr name="templateCategory" stringvalue="ejb-types"/>
+         <attr name="templateWizardURL"
+                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/SessionEJB.html"/>
+         <attr name="SystemFileSystem.localizingBundle"
+                      stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.session.Bundle"/>
+         <attr name="SystemFileSystem.icon"
+                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/EnterpriseJavaBean16.gif"/>
+            
+        </file>
+        </folder>
+    
+        <folder name="Project">
+            <attr name="J2EE/Standard" boolvalue="true"/>
+            <attr name="J2EE/Mobile" boolvalue="true"/>
+
+            <folder name="J2EE">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.Bundle"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjar.html"/>
+
+                <attr name="emptyEjbJar.xml/importEjbJar.xml" boolvalue="true"/>
+
+                <!-- Add template for the J2SE project -->
+                <file name="emptyEjbJar.xml">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.NewEjbJarProjectWizardIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/emptyProject.html"/>
+                </file>
+                <!-- 
+                <file name="importEjbJar.xml">
+                   <attr name="template" boolvalue="true"/>
+                   <attr name="templateWizardIterator" newvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.ImportEjbJarProjectWizardIterator"/>
+                   <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.Bundle"/>
+                   <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif"/>
+                   <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/importProject.html"/>
+                </file> -->
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-java">
+                <folder name="Popup">
+                   <attr name="generate-goto-popup/org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview-ejb-action-EJBActionGroup.instance" boolvalue="true"/> 
+                   <attr name="org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview-ejb-action-EJBActionGroup.instance/org-netbeans-modules-refactoring-ui-WhereUsedAction.instance" boolvalue="true"/>        
+                   <attr name="org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview-ejb-action-EJBActionGroup.instance/org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview-ejb-action-EnterpriseRefActionGroup.instance" boolvalue="true"/>        
+                   <attr name="org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview-ejb-action-EnterpriseRefActionGroup.instance/org-netbeans-modules-refactoring-ui-WhereUsedAction.instance" boolvalue="true"/>        
+                   <file name="org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview-ejb-action-EJBActionGroup.instance"/>
+                   <file name="org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview-ejb-action-EnterpriseRefActionGroup.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="NodeFactories">
+       <folder name="java">
+          <folder name="explorer">
+             <file name="org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview.ejb.session.BeanClassFactory.instance">
+             <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.session.BeanClassFactory.getDefault"/>
+             </file>
+          </folder>
+       </folder>
+       <folder name="clazz">
+          <folder name="explorer">
+             <file name="org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview.ejb.session.BeanClassFactory.instance">
+             <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.session.BeanClassFactory.getDefault"/>
+             </file>
+          </folder>
+       </folder>
+    </folder>
+
+    <folder name="org-netbeans-modules-j2ee-ejbjarproject">
+        <file name="ejb-jar-2.0.xml" url="ejb-jar-2.0.xml"/>
+        <file name="ejb-jar-2.1.xml" url="ejb-jar-2.1.xml"/>
+    </folder>
+</filesystem>

@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+      <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+          <file name="j2ee14.xml" url="j2ee14.xml"/>
+          <file name="jsf11.xml" url="jsf11.xml"/>
+          <file name="jaxrpc11.xml" url="jaxrpc11.xml"/>
+          <file name="jaxr10.xml" url="jaxr10.xml"/>
+          <file name="saaj12.xml" url="saaj12.xml"/>
+        </folder>
+      </folder>
+  
+      <folder name="Menu">
+        <folder name="Tools">
+            <attr name="org-netbeans-modules-form-actions-InstallBeanAction.instance/J2eePlatformsCustomizerAction.instance" boolvalue="true"/>
+            <attr name="J2eePlatformsCustomizerAction.instance/LibrariesCustomizerAction.instance" boolvalue="true"/>            
+            <file name="J2eePlatformsCustomizerAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.platform.ui.J2eePlatformsCustomizerAction"/>
+            </file>
+        </folder>
+    </folder>
+	<folder name="WarmUp">
+		<file name="org.netbeans.modules.j2ee.platform.QueryPlatformRoot.instance"/>
+	</folder>
+</filesystem>
