@@ -25,6 +25,7 @@ import org.openide.windows.*;
 
 import org.openide.NotifyDescriptor;
 
+import javax.swing.text.StyledDocument;
 import java.io.IOException;
 
 /**
@@ -49,7 +50,8 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
             XmlMultiViewEditorSupport.this.getDataObject().setModified(false);
         }
     };
-    
+    private StyledDocument document;
+
     /** Creates a new instance of XmlMultiviewEditorSupport */
     public XmlMultiViewEditorSupport(XmlMultiViewDataObject dObj) {
         super (dObj, new XmlEnv (dObj));
@@ -288,14 +290,18 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         if (xmlDocListener==null) {
             xmlDocListener = new XmlDocumentListener();
             try {
-                openDocument().addDocumentListener(xmlDocListener);
+                document = openDocument();
+                document.addDocumentListener(xmlDocListener);
             } catch (java.io.IOException ex){}
         }
     }
     
     void removeListener() {
-        getDocument().removeDocumentListener(xmlDocListener);
-        xmlDocListener=null;
+        if (xmlDocListener != null) {
+            document.removeDocumentListener(xmlDocListener);
+            document = null;
+            xmlDocListener = null;
+        }
     }
 
     private class XmlDocumentListener implements javax.swing.event.DocumentListener {
