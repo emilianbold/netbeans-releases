@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,8 +16,6 @@ package org.netbeans.modules.search;
 
 
 import java.awt.BorderLayout;
-import java.awt.ComponentOrientation;
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -26,102 +24,122 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
-import java.util.Locale;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.ResourceBundle;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.border.EtchedBorder;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
-import org.openide.awt.SplittedPanel;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.loaders.DataFilter;
+import org.openide.loaders.RepositoryNodeFactory;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 import org.openidex.search.SearchGroup;
 import org.openidex.search.SearchType;
 
 
 /**
  * Panel which displays search results in explorer like manner.
- * Use method {@link #createDialogDescriptor()} to access this panel.
+ * This panel is a singleton.
  *
- * @see  #createDialogDescriptor
+ * @see  #getInstance
  * @author Petr Kuzel, Jiri Mzourek, Peter Zavadsky
  * @author  Marian Petras
  */
-final class ResultView extends JPanel
+final class ResultView extends TopComponent
                        implements ChangeListener, ExplorerManager.Provider {
+                           
+    /** unique ID of <code>TopComponent</code> (singleton) */
+    private static final String ID = "search-results";                  //NOI18N
     
-    /** tree of found <code>DataObject</code>s */
-    private final ExplorerPanel explorerPanel;
+    /**
+     * instance/singleton of this class
+     *
+     * @see  #getInstance
+     */
+    private static ResultView instance = null;
+    
+    /** manages the tree of nodes representing found objects */
+    private final ExplorerManager explorerManager;
     /**
      * panel for displaying details about an object currently selected
      * in the tree of found objects
      */
     private final DetailsPanel detailsPanel;
-    /** button <em>Stop Search</em> */
-    private final JButton stopButton;
-    /** button <em>Show All Details</em> */
-    private final JButton outputButton;
-    /** button <em>Modify Search</em> */
-    private final JButton customizeButton;
-    /** button <em>Close</em> */
-    private final JButton closeButton;
+
+    /**
+     * tree view for displaying found objects
+     */
+    private final BeanTreeView treeView;
     
     /** Result data model. */
     private ResultModel resultModel = null;
-    /**
-     * whether to lay UI components from left to right (<code>true</code>)
-     * or right to left (<code>false</code>)
-     */
-    private boolean orientationLeftToRigth = true;
 
+
+    /**
+     * Returns a singleton of this class.
+     *
+     * @return  singleton of this <code>TopComponent</code>
+     */
+    static synchronized ResultView getInstance() {
+        if (instance == null) {
+            instance = (ResultView)
+                       WindowManager.getDefault().findTopComponent(ID);
+        }
+        return instance;
+    }
+    
+    /**
+     * Singleton accessor reserved for the window systemm only. The window
+     * system calls this method to create an instance of this
+     * <code>TopComponent</code> from a <code>.settings</code> file.
+     * <p>
+     * <em>This method should not be called anywhere except from the window
+     * system's code. </em>
+     *
+     * @return  singleton - instance of this class
+     */
+    public static synchronized ResultView getDefault() {
+        if (instance == null) {
+            instance = new ResultView();
+        }
+        return instance;
+    }
     
     /** Creates a new <code>ResultView</code>. */
-    ResultView() {
-        setupOrientation();
+    private ResultView() {
         initComponents();
+        setDisplayName(NbBundle.getMessage(ResultView.class,
+                                           "TITLE_SEARCH_RESULTS"));    //NOI18N
+        setIcon(Utilities.loadImage(
+                "org/netbeans/modules/search/res/find.gif"));           //NOI18N
+        
+        buttonsPanel.add(Box.createHorizontalGlue(), 2);
+        buttonsPanel.add(Box.createHorizontalStrut(5), 4);
+        buttonsPanel.add(Box.createHorizontalStrut(5), 6);
         
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(sortButton);
         buttonGroup.add(unsortButton);
         
-        stopButton = new JButton();
-        Mnemonics.setLocalizedText(
-                stopButton,
-                NbBundle.getMessage(ResultView.class,
-                                    "TEXT_BUTTON_STOP"));               //NOI18N
-        outputButton = new JButton();
-        Mnemonics.setLocalizedText(
-                outputButton,
-                NbBundle.getMessage(ResultView.class,
-                                    "TEXT_BUTTON_FILL"));               //NOI18N
-        customizeButton = new JButton();
-        Mnemonics.setLocalizedText(
-                customizeButton,
-                NbBundle.getMessage(ResultView.class,
-                                    "TEXT_BUTTON_CUSTOMIZE"));          //NOI18N
-        closeButton = new JButton();
-        Mnemonics.setLocalizedText(
-                closeButton,
-                NbBundle.getMessage(ResultView.class,
-                                    "TEXT_BUTTON_CANCEL"));             //NOI18N
-        
-        explorerPanel = new ExplorerPanel();
-        explorerPanel.setLayout(new BorderLayout());
-        explorerPanel.getExplorerManager().addPropertyChangeListener(
+        explorerManager = new ExplorerManager();
+        explorerManager.addPropertyChangeListener(
                 new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (ExplorerManager.PROP_SELECTED_NODES.equals(
@@ -131,46 +149,83 @@ final class ResultView extends JPanel
                     }
                 });
 
-        detailsPanel = new DetailsPanel();
-        
-        BeanTreeView treeView =  new BeanTreeView();
+        /* Create the left part of the window: */
+        treeView =  new BeanTreeView();
         treeView.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(ResultView.class,"ACS_TREEVIEW"));  //NOI18N
-        
-        treeView.setBorder(new EtchedBorder());
-        explorerPanel.add(treeView, BorderLayout.CENTER);
+                NbBundle.getMessage(ResultView.class, "ACS_TREEVIEW")); //NOI18N
+        treeView.setBorder(Utils.getExplorerViewBorder());
+        explorerManager.setRootContext(createTreeViewRoot());
 
-        resultLabel.setLabelFor(treeView);
+        /* Create the right part of the window: */
+        detailsPanel = new DetailsPanel();
+        detailsPanel.setBorder(BorderFactory.createEmptyBorder(6, 0, 0, 0));
         
-        splitPane.setLeftComponent(explorerPanel);
+        /* Put both parts into a split pane: */
+        splitPane.setLeftComponent(treeView);
         splitPane.setRightComponent(detailsPanel);
+        
+        /* Modify UI of the split pane: */
+        /* 1) remove the border around the whole split pane: */
+        splitPane.setBorder(BorderFactory.createEmptyBorder());
+        /* 2) remove decoration of the splitter: */
+        javax.swing.plaf.basic.BasicSplitPaneDivider divider = null;
+        java.awt.Component[] components = splitPane.getComponents();
+        for (int i = 0; i < components.length; i++) {
+            if (components[i] instanceof
+                    javax.swing.plaf.basic.BasicSplitPaneDivider) {
+                divider = (javax.swing.plaf.basic.BasicSplitPaneDivider)
+                          components[i];
+                break;
+            }
+        }
+        if (divider != null) {
+            divider.setBorder(BorderFactory.createEmptyBorder());
+        }
+        
+        /* initialize listening for buttons: */
+        ActionListener buttonListener = new ButtonListener();
+        sortButton.addActionListener(buttonListener);
+        unsortButton.addActionListener(buttonListener);
+        btnShowDetails.addActionListener(buttonListener);
+        btnModifySearch.addActionListener(buttonListener);
+        btnStop.addActionListener(buttonListener);
         
         initAccessibility();
     }
     
     /**
+     * Creates an initial node to be displayed in the left pane of this window.
+     *
+     * @return  the created node
      */
-    private void setupOrientation() {
-        Locale locale = Locale.getDefault();
-        ComponentOrientation orientation
-                = ComponentOrientation.getOrientation(locale);
-        
-        /* ResultView does not handle vertical orientation: */
-        orientationLeftToRigth = orientation.isLeftToRight()
-                                 || !orientation.isHorizontal();
+    private final Node createTreeViewRoot() {
+        AbstractNode node = new AbstractNode(Children.LEAF);
+        node.setName(NbBundle.getMessage(ResultView.class,
+                                         "TEXT_Search_in_filesystems"));//NOI18N
+        node.setIconBase("org/netbeans/modules/search/res/find");       //NOI18N
+        return node;
     }
-
+    
+    /**
+     * Resolves to the {@linkplain #getDefault default instance} of this class.
+     *
+     * This method is necessary for correct functinality of window system's
+     * mechanism of persistence of top components.
+     */
+    private Object readResolve() throws java.io.ObjectStreamException {
+        return ResultView.getDefault();
+    }
+    
     private void initAccessibility() {
         ResourceBundle bundle = NbBundle.getBundle(ResultView.class);
         getAccessibleContext ().setAccessibleName (bundle.getString ("ACSN_ResultViewTopComponent"));                   //NOI18N
         getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_ResultViewTopComponent"));            //NOI18N
 
         sortButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_TEXT_BUTTON_SORT"));           //NOI18N
-        stopButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_TEXT_BUTTON_STOP"));           //NOI18N
-        closeButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_TEXT_BUTTON_CANCEL"));        //NOI18N
-        customizeButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_TEXT_BUTTON_CUSTOMIZE")); //NOI18N
-        outputButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_TEXT_BUTTON_FILL"));         //NOI18N
         unsortButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_TEXT_BUTTON_UNSORT"));       //NOI18N
+        btnModifySearch.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_TEXT_BUTTON_CUSTOMIZE")); //NOI18N
+        btnShowDetails.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_TEXT_BUTTON_FILL"));         //NOI18N
+        btnStop.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_TEXT_BUTTON_STOP"));           //NOI18N
     }       
     
     /** This method is called from within the constructor to
@@ -179,109 +234,71 @@ final class ResultView extends JPanel
      * always regenerated by the Form Editor.
      */
     private void initComponents() {//GEN-BEGIN:initComponents
-        javax.swing.JPanel sortingPanel;
+        mainPanel = new javax.swing.JPanel();
+        buttonsPanel = new javax.swing.JPanel();
 
-        sortingPanel = new javax.swing.JPanel();
+        setLayout(new java.awt.BorderLayout());
 
-        setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.Y_AXIS));
+        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 5, 5)));
+        mainPanel.setLayout(new java.awt.BorderLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 0, 11)));
-        Mnemonics.setLocalizedText(resultLabel, NbBundle.getMessage(ResultView.class, "TEXT_LABEL_SEARCH_RESULTS"));   //NOI18N
-        resultLabel.setAlignmentX(orientationLeftToRigth ? 0.0f : 1.0f);
-        resultLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
-        add(resultLabel);
+        mainPanel.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 5, 5)));
+        splitPane.setDividerSize(5);
+        mainPanel.add(splitPane, java.awt.BorderLayout.CENTER);
 
-        splitPane.setAlignmentX(orientationLeftToRigth ? 0.0f : 1.0f);
-        add(splitPane);
+        buttonsPanel.setLayout(new javax.swing.BoxLayout(buttonsPanel, javax.swing.BoxLayout.X_AXIS));
 
-        sortingPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 11, 5));
-
-        add(Box.createVerticalStrut(11));
-        sortingPanel.setAlignmentX(orientationLeftToRigth ? 0.0f : 1.0f);
+        buttonsPanel.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 0, 0, 0)));
         Mnemonics.setLocalizedText(sortButton, NbBundle.getMessage(ResultView.class, "TEXT_BUTTON_SORT"));     //NOI18N
         sortButton.setEnabled(false);
-        sortButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sortButtonActionPerformed(evt);
-            }
-        });
-
-        sortingPanel.add(sortButton);
+        buttonsPanel.add(sortButton);
 
         unsortButton.setSelected(true);
         Mnemonics.setLocalizedText(unsortButton, NbBundle.getMessage(ResultView.class, "TEXT_BUTTON_UNSORT"));     //NOI18N
         unsortButton.setEnabled(false);
-        unsortButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sortButtonActionPerformed(evt);
-            }
-        });
+        buttonsPanel.add(unsortButton);
 
-        sortingPanel.add(unsortButton);
+        Mnemonics.setLocalizedText(
+            btnShowDetails,
+            NbBundle.getMessage(ResultView.class,
+                "TEXT_BUTTON_FILL"));               //NOI18N
+            btnShowDetails.setEnabled(false);
+            buttonsPanel.add(btnShowDetails);
 
-        add(sortingPanel);
-
-    }//GEN-END:initComponents
-
-    /**
-     * Creates a dialog containing this result view.
-     *
-     * @return  created dialog
-     */
-    Dialog createDialog() {
-        DialogDescriptor descriptor = new DialogDescriptor(
-                this,                               //inner pane
+            Mnemonics.setLocalizedText(
+                btnModifySearch,
                 NbBundle.getMessage(ResultView.class,
-                                    "TITLE_SEARCH_RESULTS"),            //NOI18N
-                false,                              //modal?
-                new Object[] {stopButton,
-                              outputButton,
-                              customizeButton,
-                              closeButton},
-                null,                               //no default button
-                DialogDescriptor.DEFAULT_ALIGN,
-                new HelpCtx(ResultView.class),
-                new ButtonListener());
-        descriptor.setClosingOptions(new Object[] {closeButton});
-        
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                stopSearching();
-                if (resultModel != null) {
-                    resultModel.removeChangeListener(ResultView.this);
-                }
-            }
-        });
-        
-        return dialog;
+                    "TEXT_BUTTON_CUSTOMIZE"));          //NOI18N
+                buttonsPanel.add(btnModifySearch);
+
+                Mnemonics.setLocalizedText(
+                    btnStop,
+                    NbBundle.getMessage(ResultView.class,
+                        "TEXT_BUTTON_STOP"));               //NOI18N
+                    btnStop.setEnabled(false);
+                    buttonsPanel.add(btnStop);
+
+                    mainPanel.add(buttonsPanel, java.awt.BorderLayout.SOUTH);
+
+                    add(mainPanel, java.awt.BorderLayout.CENTER);
+
+                }//GEN-END:initComponents
+
+    /* overridden */
+    protected void componentClosed() {
+        stopSearching();
+        if (resultModel != null) {
+            resultModel.removeChangeListener(ResultView.this);
+        }
     }
-
-            
-    private void sortButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortButtonActionPerformed
-        ExplorerManager explorerManager = null;
-        Node[] selectedNodes = null;
-        if ((explorerManager = explorerPanel.getExplorerManager()) != null) {
-            selectedNodes = explorerManager.getSelectedNodes();
-        }
-        
-        boolean sort = sortButton.isSelected();
-        sortNodes(sort);
-
-        if(selectedNodes!=null) {        
-            try {
-                explorerManager.setSelectedNodes(selectedNodes);
-            } catch(PropertyVetoException pve) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                                                 pve);
-                // OK it was vetoed.
-            }
-        }
-    }//GEN-LAST:event_sortButtonActionPerformed
             
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private final javax.swing.JLabel resultLabel = new javax.swing.JLabel();
+    private final javax.swing.JButton btnModifySearch = new javax.swing.JButton();
+    private final javax.swing.JButton btnShowDetails = new javax.swing.JButton();
+    private final javax.swing.JButton btnStop = new javax.swing.JButton();
+    private javax.swing.JPanel buttonsPanel;
+    private javax.swing.JPanel mainPanel;
     private final javax.swing.JRadioButton sortButton = new javax.swing.JRadioButton();
     private final javax.swing.JSplitPane splitPane = new javax.swing.JSplitPane();
     private final javax.swing.JRadioButton unsortButton = new javax.swing.JRadioButton();
@@ -295,38 +312,32 @@ final class ResultView extends JPanel
         }
         
         this.resultModel = resultModel;
-        Node root = resultModel.getRoot();
-
+        explorerManager.setRootContext(resultModel.getRoot());
+        
+        resultModel.addChangeListener(this);
+        
+        initButtons();
+        btnShowDetails.setEnabled(true);
+    }
+    
+    /** Set visibility of buttons &amp; others... */
+    private void initButtons() {
         if (resultModel.isSorted()) {
             sortButton.setSelected(true);
         } else {
             unsortButton.setSelected(true);
         }
-        explorerPanel.getExplorerManager().setRootContext(root);
-        resultModel.addChangeListener(this);
-        initButtons();
-    }
-    
-    /** Set visibility of buttons & others... */
-    private void initButtons() {
-        stopButton.setEnabled(!resultModel.isDone());
+        
+        btnStop.setEnabled(!resultModel.isDone());
         sortButton.setEnabled(resultModel.isDone());
         unsortButton.setEnabled(resultModel.isDone());
         
-        detailsPanel.showInfo(null);
+        showDetails(null);
     }
-    
-    /** Sorts nodes. */
-    private void sortNodes(boolean sort) {
-        Node root = resultModel.sortNodes(sort);
-        explorerPanel.getExplorerManager().setRootContext(root);
-        initButtons();
-    }
-    
     
     /* Implements interface ExplorerManager.Provider */
     public ExplorerManager getExplorerManager() {
-        return explorerPanel.getExplorerManager();
+        return explorerManager;
     }
     
     /**
@@ -335,29 +346,45 @@ final class ResultView extends JPanel
      * multiple nodes selected, clears the panel for displaying details.
      */
     private void nodeSelectionChanged() {
-        Node[] nodes = explorerPanel.getExplorerManager()
-                                    .getSelectedNodes();
+        Node[] nodes = explorerManager.getSelectedNodes();
         if (nodes != null && nodes.length == 1) {
             Node selectedNode = nodes[0];
-            detailsPanel.showInfo(selectedNode);
-            showDetails(selectedNode);
+            if (resultModel != null) {
+                showDetails(selectedNode);
+            }
         } else {
-            detailsPanel.showInfo(null);
             showDetails(null);
         }
     }
     
     /** (Re)open the dialog window for entering (new) search criteria. */
     private void customizeCriteria() {
-        SearchPanel searchPanel = new SearchPanel(resultModel.getEnabledSearchTypes(), true);
+        Node[] oldRoots;
+        List searchTypes;
+        if (resultModel != null) {
+            oldRoots = resultModel.getSearchGroup().getSearchRoots();
+            searchTypes = resultModel.getEnabledSearchTypes();
+        } else {
+            Node repositoryNode = RepositoryNodeFactory.getDefault()
+                                  .repository(DataFilter.ALL);
+            oldRoots = new Node[] {repositoryNode};
+            List types = SearchPerformer.getTypes(oldRoots);
+
+            /* Clone the list (deep copy): */
+            searchTypes = new ArrayList(types.size());
+            for (Iterator it = types.iterator(); it.hasNext(); ) {
+                searchTypes.add(((SearchType) it.next()).clone());
+            }
+        }
         
-        Node[] oldRoots = resultModel.getSearchGroup().getSearchRoots();
-        
+        SearchPanel searchPanel = new SearchPanel(searchTypes, true);
         searchPanel.showDialog();
         
         if (searchPanel.getReturnStatus() == SearchPanel.RET_OK) {
             //stop previous search
-            resultModel.stop();
+            if (resultModel != null) {
+                resultModel.stop();
+            }
             
             // Start a new search.
             SearchEngine searchEngine = new SearchEngine();
@@ -372,7 +399,7 @@ final class ResultView extends JPanel
                 searchGroup = groups[0];
             }
             
-            ResultModel newResultModel = new ResultModel(resultModel.getEnabledSearchTypes(), searchGroup);
+            ResultModel newResultModel = new ResultModel(searchTypes, searchGroup);
 
             SearchTask task = searchEngine.search(
                 //criteriaModel.getNodes(),
@@ -405,29 +432,43 @@ final class ResultView extends JPanel
      * @see  SearchType#getDetails(Node)
      */
     private void showDetails(Node node) {
-        Children children;
-        
         if (node == null) {
-            children = Children.LEAF;
+            detailsPanel.showInfo(null, null);
         } else {
-        
-            children = new Children.Array();
-
-            ArrayList listData = new ArrayList(20);
-
             SearchType[] searchTypes = resultModel.getSearchGroup()
                                                   .getSearchTypes();
-            
+            List allDetailNodes = new ArrayList();
             for (int i = 0; i < searchTypes.length; i++) {
                 Node[] detailNodes = searchTypes[i].getDetails(node);
-
-                if (detailNodes != null) {
-                    children.add(detailNodes);
+                if (detailNodes != null && detailNodes.length != 0) {
+                    allDetailNodes.addAll(Arrays.asList(detailNodes));
                 }
             }
+            detailsPanel.showInfo(node, allDetailNodes);
         }
-        
-        detailsPanel.setDetailsRoot(new AbstractNode(children));
+    }
+    
+    /**
+     * Sorts or unsorts the list nodes representing found objects.
+     *
+     * @param  sorted  <code>true</code> to sort the nodes,
+     *                 <code>false</code> to unsort the nodes
+     */
+    private void setNodesSorted(boolean sorted) {
+        Node[] selectedNodes = explorerManager.getSelectedNodes();
+        Node root = resultModel.sortNodes(sorted);
+        explorerManager.setRootContext(root);
+        initButtons();
+
+        if (selectedNodes != null) {        
+            try {
+                explorerManager.setSelectedNodes(selectedNodes);
+            } catch(PropertyVetoException pve) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                                 pve);
+                // OK it was vetoed.
+            }
+        }
     }
     
     /** Respond to result model state change. */
@@ -444,12 +485,16 @@ final class ResultView extends JPanel
     private class ButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             Object source = e.getSource();
-            if (source == stopButton) {
+            if (source == btnStop) {
                 stopSearching();
-            } else if (source == outputButton) {
-                resultModel.fillOutput();
-            } else if (source == customizeButton) {
+            } else if (source == btnModifySearch) {
                 customizeCriteria();
+            } else if (source == btnShowDetails) {
+                resultModel.fillOutput();
+            } else if (source == sortButton) {
+                setNodesSorted(true);
+            } else if (source == unsortButton) {
+                setNodesSorted(false);
             }
         }
     }

@@ -19,6 +19,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.BorderFactory;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import org.openide.util.Lookup;
 import org.openidex.search.SearchType;
 
@@ -121,6 +124,21 @@ final class Utils {
         return map;
     }
     
+    /**
+     * Returns a border for explorer views.
+     *
+     * @return  border to be used around explorer views
+     *          (<code>BeanTreeView</code>, <code>TreeTableView</code>,
+     *          <code>ListView</code>).
+     */
+    static final Border getExplorerViewBorder() {
+        Border border;
+        border = (Border) UIManager.get("Nb.ScrollPane.border");        //NOI18N
+        if (border == null) {
+            border = BorderFactory.createEtchedBorder();
+        }
+        return border;
+    }    
     
     
 }

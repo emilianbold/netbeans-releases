@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
@@ -102,6 +102,10 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Edit">
             <file name="org-netbeans-modules-search-RepositorySearchAction.instance"/>
         </folder> <!-- Edit -->
+
+        <folder name="Window">
+            <file name="org-netbeans-modules-search-ResultViewOpenAction.instance"/>
+        </folder> <!-- Window -->
     </folder> <!-- Actions -->
 
     <folder name="Menu">
@@ -119,6 +123,14 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="sep-before-reposearch.instance/org-netbeans-modules-search-RepositorySearchAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-search-RepositorySearchAction.instance"/>
         </folder> <!-- Edit -->
+
+        <folder name="Window">
+            <attr name="org-netbeans-core-output-OutputWindowAction.instance/ResultViewOpenAction.shadow" boolvalue="true"/>
+            <file name="ResultViewOpenAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-search-ResultViewOpenAction.instance"/>
+            </file>
+            <attr name="ResultViewOpenAction.shadow/org-netbeans-modules-web-monitor-client-MonitorAction.instance" boolvalue="true"/>
+        </folder> <!-- Window -->
 
         <folder name="Help">
             <attr name="Separator1.instance/netbeans-web-link.url" boolvalue="true"/>
@@ -158,6 +170,9 @@ Microsystems, Inc. All Rights Reserved.
         <file name="C-O.instance">
     	    <attr name="instanceClass" stringvalue="org.netbeans.modules.openfile.OpenFileAction"/>
 	</file>
+        <file name="CS-0.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-search-ResultViewOpenAction.instance"/>
+        </file>
     </folder> <!-- Shortcuts -->
 
     <folder name="xml">
@@ -282,6 +297,17 @@ Microsystems, Inc. All Rights Reserved.
             </folder> <!-- IDEConfiguration -->
         </folder> <!-- Services -->
     </folder> <!-- UI -->
+    
+    <folder name="Windows2">
+        <folder name="Modes">
+            <folder name="output">       <!-- "output" is defined in core/ui -->
+                <file name="search-results.wstcref" url="../search/res/search-results.wstcref"/>
+            </folder>
+        </folder>
+        <folder name="Components">
+            <file name="search-results.settings" url="../search/res/search-results.settings"/>
+        </folder>
+    </folder>
     
     <folder name="Editors">
         <folder name="AnnotationTypes">

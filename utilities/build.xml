@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -39,7 +39,11 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="compile-cli">
-    <javac srcdir="clisrc" destdir="clisrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+    <javac srcdir="clisrc"
+           destdir="clisrc"
+           deprecation="${build.compiler.deprecation}"
+           debug="${build.compiler.debug}"
+           source="1.4">
       <classpath>
         <!-- Compiles against org.netbeans.CLIHandler: -->
         <pathelement location="../core/netbeans/lib/ext/boot.jar"/>
@@ -49,7 +53,11 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="compile" depends="init,compile-cli">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+    <javac srcdir="src"
+           destdir="src"
+           deprecation="${build.compiler.deprecation}"
+           debug="${build.compiler.debug}"
+           source="1.4">
       <classpath refid="utilities-cp"/>
     </javac>
   </target>
@@ -143,7 +151,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="javadoc" description="Build utilities module API documentation."
           depends="init,prepare-javadoc-destdir">
     <tstamp/>
-    <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
+    <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2004 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
     <echo message="Build Utilities module API documentation..."/>
     <echo message="Destination directory: ${javadoc.destdir}"/>
     <javadoc destdir="${javadoc.destdir}"
@@ -157,6 +165,7 @@ Microsystems, Inc. All Rights Reserved.
              author="false"
              version="false"
              maxmemory="384m"
+             source="1.4"
              additionalparam="-breakiterator ${javadoc.extra.param}">
       <sourcepath>
         <pathelement location="src"/>
