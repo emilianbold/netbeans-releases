@@ -119,12 +119,14 @@ public final class FreeformProject implements Project {
     
     private Lookup initLookup() throws IOException {
         Classpaths cp = new Classpaths(this);
+        WebModules.ProjectWebModule wm = new WebModules.ProjectWebModule (this);
         return Lookups.fixed(new Object[] {
             new Info(), // ProjectInformation
             new SourcesProxy(), // Sources
             new Actions(this), // ActionProvider
             new View(this), // LogicalViewProvider
             cp, // ClassPathProvider
+            wm, //WebModule
             new ProjectCustomizerProvider(this, helper, eval), // CustomizerProvider
             new OpenHook(cp), // ProjectOpenedHook
             helper().createAuxiliaryConfiguration(), // AuxiliaryConfiguration
