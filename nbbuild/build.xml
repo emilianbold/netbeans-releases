@@ -513,6 +513,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module tasklist/javadoc..."/>
     <ant dir="../tasklist/javadoc" target="netbeans"/>
   </target>
+  <target name="all-tasklist/html" depends="all-openide,all-tasklist/api,all-tasklist/core,all-html,all-diff">
+    <echo message="Building module tasklist/html..."/>
+    <ant dir="../tasklist/html" target="netbeans"/>
+  </target>
 
   <target name="all-testtools" depends="all-openide,all-openide/compiler,all-openide/execution,all-openide/io,all-core,all-java,all-ant,all-jemmy,all-jemmysupport,all-jellytools">
     <echo message="Building module testtools..."/>
