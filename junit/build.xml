@@ -119,13 +119,11 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
-      <fileset dir="build">
-        <include name="**/*.class"/>
-      </fileset>
       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
         <patternset refID="junit.files"/>
       </fileset>
     </delete>
+    <delete dir="build"/>
     <delete file="manifest-subst.mf"/>
     <delete file="junit.nbm"/>
   </target>
