@@ -81,32 +81,7 @@ final public class FormPropertyEditorManager extends Object {
 
     String typeName = getTypeName (type);
 
-    // 1. use explicitly registered editors
-    String [][] registered = formSettings.getRegisteredEditors ();
-    for (int i = 0; i < registered.length; i++) {
-      if (registered[i].length > 0) {
-        if (registered[i][0].equals (typeName)) {
-          for (int j = 1; j < registered[i].length; j++) {
-            try {
-              editorsList.add (Class.forName (registered[i][j], true, TopManager.getDefault ().systemClassLoader ()));
-            } catch (Exception e) {
-              // Silently ignore any errors.
-              if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
-            }
-          }
-        }
-      }
-    }
-
-    // 2. use explicitly registered transient editors
-    Class[] explicite = (Class[]) expliciteEditors.get (typeName);
-    if (explicite != null) {
-      for (int i = 0; i < explicite.length; i++) {
-        editorsList.add (explicite[i]);
-      }
-    }
-
-    // 3. try adding "Editor" to the class name.
+    // 1. try adding "Editor" to the class name.
     String editorName = type.getName() + "Editor";
     try {
       editorsList.add (Class.forName (editorName, true, TopManager.getDefault ().systemClassLoader ()));
@@ -134,7 +109,32 @@ final public class FormPropertyEditorManager extends Object {
       }
     }
 
-    // Fourth add the RADConnectionPropertyEditor as the default editor for all values
+    // 2. use explicitly registered editors
+    String [][] registered = formSettings.getRegisteredEditors ();
+    for (int i = 0; i < registered.length; i++) {
+      if (registered[i].length > 0) {
+        if (registered[i][0].equals (typeName)) {
+          for (int j = 1; j < registered[i].length; j++) {
+            try {
+              editorsList.add (Class.forName (registered[i][j], true, TopManager.getDefault ().systemClassLoader ()));
+            } catch (Exception e) {
+              // Silently ignore any errors.
+              if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
+            }
+          }
+        }
+      }
+    }
+
+    // 3. use explicitly registered transient editors
+    Class[] explicite = (Class[]) expliciteEditors.get (typeName);
+    if (explicite != null) {
+      for (int i = 0; i < explicite.length; i++) {
+        editorsList.add (explicite[i]);
+      }
+    }
+
+    // 4. Fourth add the RADConnectionPropertyEditor as the default editor for all values
     editorsList.add (RADConnectionPropertyEditor.class);
 
     Class[] editorsArray = new Class[editorsList.size ()];
@@ -170,6 +170,10 @@ final public class FormPropertyEditorManager extends Object {
 
 /*
  * Log
+ *  8    Gandalf   1.7         8/1/99   Ian Formanek    PropertyEditors from 
+ *       search path are the first ones, as it is more likely that they consume 
+ *       the standard value type (i.e. the type equal to the property type as 
+ *       opposed to design values)
  *  7    Gandalf   1.6         7/23/99  Ian Formanek    Caching editor classes
  *  6    Gandalf   1.5         7/20/99  Ian Formanek    Fixed bug which 
  *       prevented some forms from opening when there was a bad property editor 
