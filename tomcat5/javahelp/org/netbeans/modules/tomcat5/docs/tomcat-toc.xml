@@ -26,13 +26,16 @@
 
     </tocitem>
     <tocitem text="Web Modules">
+      <tocitem text="Working With Web Servers"> 
+	    <tocitem text="Tomcat Context Descriptor Node" target="webmod_contextxml.html" />
+      </tocitem> 	
       <tocitem text="Running and Testing Web Modules" > 
         <tocitem text="Targeting Tomcat for Running Web Modules" target="tomcat_default" />       
-	<tocitem text="Setting a Web Module Context for the Tomcat Server" target="tomcat_context_add" />
+	    <tocitem text="Setting a Web Module Context for the Tomcat Server" target="tomcat_context_add" />
         <tocitem text="Running a Web Module Using Tomcat" target="webmod_singletest" />    
-	<tocitem text="Running JSP Files Using Tomcat" target="jsp_run" />
-	<tocitem text="Running Servlets Using Tomcat" target="servlet_run" />
-	<tocitem text="Removing a Web Module from the Tomcat Server" target="tomcat_context_delete" />       
+	    <tocitem text="Running JSP Files Using Tomcat" target="jsp_run" />
+	    <tocitem text="Running Servlets Using Tomcat" target="servlet_run" />
+	    <tocitem text="Removing a Web Module from the Tomcat Server" target="tomcat_context_delete" />       
      </tocitem>
    </tocitem>  
 </tocitem>
