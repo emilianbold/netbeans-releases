@@ -20,6 +20,7 @@ import org.netbeans.api.looks.*;
 import org.netbeans.spi.looks.*;
 import org.openide.actions.*;
 import org.openide.cookies.*;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
@@ -29,7 +30,7 @@ import threaddemo.model.*;
  * A look which wraps phadhails.
  * @author Jesse Glick
  */
-final class PhadhailLook extends DefaultLook implements PhadhailListener/*, PhadhailEditorSupport.Saver*/ {
+final class PhadhailLook extends DefaultLook implements PhadhailListener, PhadhailEditorSupport.Saver {
     
     PhadhailLook() {
         super("PhadhailLook");
@@ -114,18 +115,17 @@ final class PhadhailLook extends DefaultLook implements PhadhailListener/*, Phad
         }
     }
     
-    /* XXX phrebejk: uncomment if Look gets support for "poor man's Lookup":
     // cache of save cookies for unsaved phadhails
     private final Map saveCookies = new WeakHashMap(); // Map<Phadhail,SaveCookie>
     
     public void addSaveCookie(Phadhail ph, SaveCookie s) {
         saveCookies.put(ph, s);
-        fireLookupItemsChanged(ph);
+        fireLookupItemsChange(ph);
     }
     
     public void removeSaveCookie(Phadhail ph) {
         saveCookies.remove(ph);
-        fireLookupItemsChanged(ph);
+        fireLookupItemsChange(ph);
     }
     
     // cache of editor supports; need to retain identity since they have state
@@ -133,22 +133,73 @@ final class PhadhailLook extends DefaultLook implements PhadhailListener/*, Phad
     
     public Collection getLookupItems(Object o) {
         Phadhail ph = (Phadhail)o;
-        EditorCookie ec = (EditorCookie)editorCookies.get(ph);
-        if (ec == null) {
-            ec = new PhadhailEditorSupport(ph, this);
-            editorCookies.put(ph, ec);
-        }
         SaveCookie sc = (SaveCookie)saveCookies.get(ph);
         if (sc != null) {
             Collection c = new ArrayList(2);
-            c.add(ec);
-            c.add(sc);
+            c.add(new EditorCookieItem(ph));
+            c.add(new SimpleItem(sc));
             return c;
         } else {
-            return Collections.singleton(ec);
+            return Collections.singleton(new EditorCookieItem(ph));
         }
     }
-     */
+    
+    private final class EditorCookieItem extends Lookup.Item {
+        
+        private final Phadhail ph;
+        
+        public EditorCookieItem(Phadhail ph) {
+            this.ph = ph;
+        }
+        
+        public String getDisplayName() {
+            return getInstance().toString();
+        }
+        
+        public String getId() {
+            return getInstance().toString();
+        }
+        
+        public Object getInstance() {
+            PhadhailEditorSupport phes = (PhadhailEditorSupport)editorCookies.get(ph);
+            if (phes == null) {
+                phes = new PhadhailEditorSupport(ph, PhadhailLook.this);
+                editorCookies.put(ph, phes);
+            }
+            return phes;
+        }
+        
+        public Class getType() {
+            return PhadhailEditorSupport.class;
+        }
+        
+    }
+    
+    private static final class SimpleItem extends Lookup.Item {
+        
+        private final Object o;
+        
+        public SimpleItem(Object o) {
+            this.o = o;
+        }
+        
+        public String getDisplayName() {
+            return o.toString();
+        }
+        
+        public String getId() {
+            return o.toString();
+        }
+        
+        public Object getInstance() {
+            return o;
+        }
+        
+        public Class getType() {
+            return o.getClass();
+        }
+        
+    }
     
     public void childrenChanged(PhadhailEvent ev) {
         if (!java.awt.EventQueue.isDispatchThread()) Thread.dumpStack();//XXX
