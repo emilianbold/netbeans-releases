@@ -39,6 +39,7 @@ public class FactoriesTest extends NbTestCase {
         origDOM = DocumentBuilderFactory.newInstance();
         SAXFactoryImpl.install();
         DOMFactoryImpl.install();
+        System.setSecurityManager (new org.netbeans.TopSecurityManager ());
     }
     /** Creates a new instance of FactoriesTest */
     public FactoriesTest(String testName) {
@@ -133,6 +134,45 @@ public class FactoriesTest extends NbTestCase {
         }
         
         fail ("Created builder with unsupported feature");
+    }
+    
+    /** For cases the factories are not on classpath we fallback to 
+     * some implementation.
+     */
+    public void testFactoriesAreNotOnClassPath () throws Exception {
+        ClassLoader parent = SAXFactoryImpl.class.getClassLoader ();
+        assertNotNull ("We have a classloader", parent);
+        parent = parent.getParent ();
+        assertNotNull ("Still not null", parent);
+        
+        try {
+            Class l = parent.loadClass (SAXFactoryImpl.class.getName ());
+            fail ("The classloader " + parent + " should not be able to load: " + l);
+        } catch (ClassNotFoundException ex) {
+            // ok, satisfied
+        }
+        
+        CL loader = new CL (parent, FactoriesRunnableHid.class.getName (), getClass ().getResource ("FactoriesRunnableHid.class"));
+        Class runnableClass = loader.loadClass (FactoriesRunnableHid.class.getName ());
+        assertNotNull (runnableClass);
+        assertFalse ("Different class than our", FactoriesRunnableHid.class == runnableClass);
+        
+        Thread.currentThread ().setContextClassLoader (loader);
+        Runnable run = (Runnable)runnableClass.newInstance ();
+        run.run ();
+        
+        /** the runnable also implements map so we can get some values from it ;-) */
+        Map map = (Map)run;
+        
+        Object dom = map.get ("dom");
+        Object sax = map.get ("sax");
+        
+        assertNotNull ("Wants dom", dom);
+        assertNotNull ("Wants sax", sax);
+     
+        assertEquals ("We should use orignal sax", origSAX.getClass (), sax.getClass ());
+        assertEquals ("We should use orignal dom", origDOM.getClass (), dom.getClass ());
+        
     }
 
     
@@ -292,4 +332,32 @@ public class FactoriesTest extends NbTestCase {
         
     } // end of ErrManager
 
+    /** Our own classloader that loads FactoriesRunnableHid
+     */
+    public static final class CL extends ClassLoader {
+        private String name;
+        private URL url;
+        
+        public CL (ClassLoader parent, String className, URL url) {
+            super (parent);
+            this.name = className;
+            this.url = url;
+        } 
+
+        protected Class findClass(String str) throws ClassNotFoundException {
+            if (str.equals (name)) {
+                try {
+                    InputStream is = url.openStream ();
+                    byte[] arr = new byte[4096];
+                    int len = is.read (arr);
+                    return defineClass (name, arr, 0, len);
+                } catch (java.io.IOException ex) {
+                    throw new ClassNotFoundException (ex.getMessage ());
+                }
+            }
+            throw new ClassNotFoundException ();
+        }
+        
+        
+    } // end of CL
 }
