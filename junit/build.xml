@@ -54,7 +54,13 @@ Microsystems, Inc. All Rights Reserved.
     </jar>
   </target>
 
-  <target name="netbeans" depends="jars"/>
+  <target name="javahelp">
+    <copy todir="netbeans/docs">
+      <fileset dir="javahelp"/>
+    </copy>
+  </target>
+
+  <target name="netbeans" depends="jars,javahelp"/>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="junit.nbm"
