@@ -409,7 +409,7 @@ class WebActionProvider implements ActionProvider {
             
         //COMPILATION PART
         } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            FileObject[] files = findJavaSources( context );
+            FileObject[] files = findJavaSourcesAndPackages( context );
             p = new Properties();
             if (files != null) {
                 p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getSourceDirectory())); // NOI18N
@@ -582,7 +582,7 @@ class WebActionProvider implements ActionProvider {
             return findJavaSources(context) != null || findJsps(context) != null || findHtml(context) != null;
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            return findJavaSources( context ) != null || findJsps (context) != null;
+            return findJavaSourcesAndPackages( context ) != null || findJsps (context) != null;
         }
         if ( command.equals( COMMAND_RUN_SINGLE ) ) {
             // test for jsps
@@ -665,6 +665,24 @@ class WebActionProvider implements ActionProvider {
             files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true);
         }
         return files;
+    }
+    
+    private FileObject[] findJavaSourcesAndPackages (Lookup context) {
+        FileObject srcDir = project.getSourceDirectory();
+        if (srcDir != null) {
+            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, null, true); // NOI18N
+            //Check if files are either packages of java files
+            if (files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    if (!files[i].isFolder() && !"java".equals(files[i].getExt())) {
+                        return null;
+                    }
+                }
+            }
+            return files;
+        } else {
+            return null;
+        }
     }
     
     private FileObject[] findHtml(Lookup context) {
