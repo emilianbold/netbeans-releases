@@ -213,7 +213,8 @@
 	<mapID target="server_register" url="server/server_register.html" />
 	<mapID target="server_context" url="server/server_context.html" />
 	<mapID target="server_start" url="server/server_start.html" />
-
+	<mapID target="server_remove" url="server/server_remove.html" />
+	
 <!-- End of J2EE Server help -->
 	
 <!-- Start of Enterprise Application help -->
