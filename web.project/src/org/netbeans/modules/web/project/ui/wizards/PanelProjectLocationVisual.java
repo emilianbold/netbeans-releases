@@ -30,6 +30,7 @@ import org.openide.WizardValidationException;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
+import org.openide.filesystems.FileUtil;
 
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
     
@@ -144,6 +145,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         
         if ("BROWSE".equals(command)) { //NOI18N
             JFileChooser chooser = new JFileChooser();
+            FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setDialogTitle(getBundleResource("LBL_NWP1_SelectProjectLocation")); //NOI18N
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             String path = projectLocationTextField.getText();

@@ -412,6 +412,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     
     private static JFileChooser createChooser(String path) {
         JFileChooser chooser = new JFileChooser();
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, new File(path));
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setAcceptAllFileFilterUsed(false);
         
