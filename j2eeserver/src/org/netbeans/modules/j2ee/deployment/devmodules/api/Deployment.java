@@ -76,6 +76,7 @@ public final class Deployment {
             progress = (DeployProgressMonitor) progressMonitors.get(module);    
 
             if (progress != null) {
+                progress.setLogger(logger);
                 if (progress.getUI() != null) {
                     progress.getUI().toFront();
                 }
