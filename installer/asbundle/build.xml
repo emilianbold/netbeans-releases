@@ -223,7 +223,8 @@ Microsystems, Inc. All Rights Reserved.
         <path refid="ismp.cp"/>
       </classpath>
     </java>
-    <move file="build/disk1/setupMac.command" tofile="dist/${installer.basename}-macosx.command"/>
+    <!--<move file="build/disk1/setupMac.command" tofile="dist/${installer.basename}-macosx.command"/>-->
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-macosx.jar"/>
   </target>
  
   <target name="compile" depends="init, build-library" description="compile custom beans and panels">
