@@ -712,7 +712,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../treefs" target="netbeans"/>
   </target>
 
-  <target name="all-openidex/looks" depends="all-openide">
+  <target name="all-openidex/looks" depends="all-openide,all-core/naming">
       <echo message="Building module openidex/looks..."/>
       <ant dir="../openidex/looks" target="netbeans"/>
   </target>
