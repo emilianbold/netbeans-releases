@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,15 +19,11 @@
 
 package org.netbeans.xtest.xmlserializer;
 
-
-import org.netbeans.xtest.NestedException;
-
-
 /**
  *
  * @author  breh
  */
-public class MappingException extends NestedException {
+public class MappingException extends Exception {
     
 
     
@@ -47,8 +43,8 @@ public class MappingException extends NestedException {
     	super(msg);
     }
     
-    public MappingException(String msg, Throwable nestedException) {
-    	super(msg, nestedException);
+    public MappingException(String msg, Throwable cause) {
+    	super(msg, cause);
     }
 
 

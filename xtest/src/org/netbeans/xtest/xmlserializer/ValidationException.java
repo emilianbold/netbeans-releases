@@ -11,39 +11,36 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 /*
- * XMLBeanException.java
+ * ValidationException.java
  *
- * Created on September 9, 2002, 11:21 PM
+ * Created on August 28, 2003, 4:19 PM
  */
 
 package org.netbeans.xtest.xmlserializer;
 
-
 /**
- * XMLBean exception - when anything goes wrong with XMLBean
- * @author  breh
+ *
+ * @author  mb115822
  */
-public class XMLSerializeException extends Exception {
+public class ValidationException extends XMLSerializeException {
     
     /**
-     * Creates a new instance of <code>XMLBeanException</code> without detail message.
+     * Creates a new instance of <code>ValidationException</code> without detail message.
      */
-    public XMLSerializeException() {
-    	super();
+    public ValidationException() {
     }
     
     
     /**
-     * Constructs an instance of <code>XMLBeanException</code> with the specified detail message.
+     * Constructs an instance of <code>ValidationException</code> with the specified detail message.
      * @param msg the detail message.
      */
-    public XMLSerializeException(String msg) {
+    public ValidationException(String msg) {
         super(msg);
     }
     
-    public XMLSerializeException(String msg, Throwable cause) {
+    public  ValidationException(String msg, Throwable cause) {
     	super(msg, cause);
-    }
+    }    
 }

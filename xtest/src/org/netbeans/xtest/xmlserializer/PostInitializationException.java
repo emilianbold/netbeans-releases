@@ -11,39 +11,36 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 /*
- * XMLBeanException.java
+ * PostInitializationException.java
  *
- * Created on September 9, 2002, 11:21 PM
+ * Created on August 28, 2003, 4:38 PM
  */
 
 package org.netbeans.xtest.xmlserializer;
 
-
 /**
- * XMLBean exception - when anything goes wrong with XMLBean
- * @author  breh
+ *
+ * @author  mb115822
  */
-public class XMLSerializeException extends Exception {
+public class PostInitializationException extends XMLSerializeException {
     
     /**
-     * Creates a new instance of <code>XMLBeanException</code> without detail message.
+     * Creates a new instance of <code>PostInitializationException</code> without detail message.
      */
-    public XMLSerializeException() {
-    	super();
+    public PostInitializationException() {
     }
     
     
     /**
-     * Constructs an instance of <code>XMLBeanException</code> with the specified detail message.
+     * Constructs an instance of <code>PostInitializationException</code> with the specified detail message.
      * @param msg the detail message.
      */
-    public XMLSerializeException(String msg) {
+    public PostInitializationException(String msg) {
         super(msg);
     }
     
-    public XMLSerializeException(String msg, Throwable cause) {
-    	super(msg, cause);
-    }
+    public PostInitializationException(String msg, Throwable cause) {
+        super(msg, cause);
+    }    
 }
