@@ -136,7 +136,7 @@ public final class TransformPanel extends javax.swing.JPanel {
             if ( xmlHistory != null ) {
                 setOutput(xmlHistory.getLastXSLOutput());
             }
-            if ( ( data.output == null ) &&
+            if ( ( data.output == null || (data.output instanceof String && "".equals(data.output)) ) &&
             ( xslHistory != null ) ) {
                 setOutput(xslHistory.getLastXMLOutput());
             }
