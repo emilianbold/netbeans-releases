@@ -172,6 +172,7 @@ public final class NbProcessDescriptor extends Object implements java.io.Seriali
         
         if (envp != null && appendEnv) {
             // Take system properties Env-* and use them as defaults.
+            // XXX #4738465 requests a better way - supposedly fixed in Tiger...
             Map e = new HashMap (100); // Map<String,String>
             Iterator it = System.getProperties ().entrySet ().iterator ();
             while (it.hasNext ()) {
