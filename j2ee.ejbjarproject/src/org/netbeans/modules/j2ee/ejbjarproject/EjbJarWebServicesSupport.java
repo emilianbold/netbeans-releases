@@ -54,7 +54,6 @@ import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 import java.lang.reflect.Modifier;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.src.ClassElement;
 import org.openide.src.FieldElement;
 import org.openide.src.Identifier;
@@ -659,7 +658,10 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         String packageName = null;
         for (int i = 0; i < groups.length && packageName == null; i++) {
-            packageName = FileUtil.getRelativePath(groups [i].getRootFolder(), parent);
+            packageName = FileUtil.getRelativePath(groups[i].getRootFolder(), parent);
+            if (packageName != null) {
+                packageName = groups[i].getName() + "/" + packageName;
+            }
         }
         return packageName + "";
     }
