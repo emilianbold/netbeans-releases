@@ -64,9 +64,6 @@ Microsystems, Inc. All Rights Reserved.
 	     homepage="http://extbrowser.netbeans.org/"
 	     distribution="http://www.netbeans.org/download/nbms/40/extbrowser.nbm">
       <license file="../nbbuild/bcl-license.txt"/>
-      <description>
-        External HTML browser for viewing HTML and applets from the IDE.
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
     </makenbm>
   </target>
