@@ -110,7 +110,7 @@ public final class SettingChildren extends FilterNode.Children {
                 NbBundle.getMessage (FileStateProperty.class, "LBL_FSP_" + name), // NOI18N
                 NbBundle.getMessage (FileStateProperty.class, "LBL_FSP_Desc_" + name), // NOI18N
                 true, !readonly);
-
+            
             this.primaryFile = primaryFile;
             this.layer = layer;
 
@@ -312,8 +312,19 @@ public final class SettingChildren extends FilterNode.Children {
             FileObject pf = ((DataObject) getCookie (DataObject.class)).getPrimaryFile ();
             weakL = new FSL (this);
             FileStateManager.getDefault ().addFileStatusListener (weakL, pf);
+
+            specialProp (new IndicatorProperty (pf));
+            specialProp (new FileStateProperty (pf, FileStateManager.LAYER_PROJECT, PROP_LAYER_PROJECT, false));
+            specialProp (new FileStateProperty (pf, FileStateManager.LAYER_SESSION, PROP_LAYER_SESSION, false));
+            specialProp (new FileStateProperty (pf, FileStateManager.LAYER_MODULES, PROP_LAYER_MODULES, false));
         }
         
+        /** Registers special property.
+         */
+        private void specialProp (Node.Property p) {
+            setValue (p.getName (), p);
+        }
+     
         // #17920: Index cookie works only when equality works
         public boolean equals(Object o) {
             return this == o || getOriginal().equals(o) || (o != null && o.equals(getOriginal()));
@@ -321,45 +332,9 @@ public final class SettingChildren extends FilterNode.Children {
         public int hashCode() {
             return getOriginal().hashCode();
         }
-        
-        public PropertySet[] getPropertySets () {
-            if (sheet == null) {
-                sheet = cloneSheet (super.getPropertySets ());
-            }
-            return sheet.toArray ();
-        }
 
         protected NodeListener createNodeListener () {
             return new NA (this);
-        }
-        
-        private Sheet cloneSheet (PropertySet orig []) {
-            Sheet s = new Sheet ();
-            for (int i = 0; i < orig.length; i++) {
-                Sheet.Set ss = new Sheet.Set ();
-                ss.put (orig[i].getProperties ());
-                ss.setName (orig[i].getName ());
-                ss.setDisplayName (orig[i].getDisplayName ());
-                ss.setShortDescription (orig[i].getShortDescription ());
-                ss.setHidden (orig[i].isHidden ());
-                ss.setExpert (orig[i].isExpert ());
-                ss.setPreferred (orig[i].isPreferred ());
-                s.put (ss);
-            }
-
-            Sheet.Set hidden = new Sheet.Set ();
-            hidden.setName ("DFS layout"); // NOI18N
-            hidden.setHidden (!Boolean.getBoolean ("netbeans.options.sheet"));
-            s.put (hidden);
-
-            FileObject pf = ((DataObject) getCookie (DataObject.class)).getPrimaryFile ();
-            
-            hidden.put (new IndicatorProperty (pf));
-            hidden.put (new FileStateProperty (pf, FileStateManager.LAYER_PROJECT, PROP_LAYER_PROJECT, false));
-            hidden.put (new FileStateProperty (pf, FileStateManager.LAYER_SESSION, PROP_LAYER_SESSION, false));
-            hidden.put (new FileStateProperty (pf, FileStateManager.LAYER_MODULES, PROP_LAYER_MODULES, false));
-
-            return s;
         }
 
         private static class NA extends NodeAdapter {

@@ -39,6 +39,8 @@ import org.openide.explorer.view.TreeView;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeTableView;
 import org.openide.awt.SplittedPanel;
+import org.openide.explorer.view.NodeTableModel;
+import org.openide.windows.WindowManager;
 
 import org.netbeans.core.projects.SettingChildren;
 import org.netbeans.core.projects.SessionManager;
@@ -47,6 +49,7 @@ import org.openide.windows.Workspace;
 import org.openide.windows.Mode;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.PersistenceManager;
+import org.openide.explorer.view.NodeTableModel;
 import org.openide.windows.WindowManager;
 
 /** Action that opens explorer view which displays global
@@ -240,6 +243,29 @@ public class OptionsAction extends CallableSystemAction {
             return rc;
         }
 
+        
+        //
+        // Model to implement the special handling of SettingChildren.* properties
+        //
+        
+        /** Model that tries to extract properties from the node.getValue 
+         * instead of creating its getPropertySets.
+         */
+        private static class NTM extends NodeTableModel {
+            public NTM () {
+                super ();
+            }
+            
+            protected Node.Property getPropertyFor(Node node, Node.Property prop) {
+                Object value = node.getValue (prop.getName());
+                if (value instanceof Node.Property) {
+                    return (Node.Property)value;
+                }
+                
+                return null;
+            }
+        }
+
         private static class TTW extends TreeTableView implements MouseListener, PropertyChangeListener, java.awt.event.ActionListener {
             /** Project/Session indicator property */
             private final Node.Property indicator = new SettingChildren.IndicatorProperty ();
@@ -249,12 +275,15 @@ public class OptionsAction extends CallableSystemAction {
             private final Node.Property session = new SettingChildren.FileStateProperty (SettingChildren.PROP_LAYER_SESSION);
             /** Modules layer state indicator property */
             private final Node.Property modules = new SettingChildren.FileStateProperty (SettingChildren.PROP_LAYER_MODULES);
+            
             /** Active set of properties (columns) */
             private Node.Property active_set [] = null;
             PropertyChangeListener weakL = null;
 
             public TTW () {
-                super ();
+                super (new NTM ());
+                
+                
                 refreshColumns (true);
                 addMouseListener (this);
                 weakL = WeakListener.propertyChange (this, SessionManager.getDefault ());
