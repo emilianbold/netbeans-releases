@@ -685,6 +685,27 @@ public class DataViewWindow extends TopComponent {
                 int limit = RootNode.getOption().getFetchLimit();
                 int step = RootNode.getOption().getFetchStep();
                 data.clear();
+                
+                String cancel = bundle.getString("DataViewCancelButton"); //NOI18N
+                String nextset = bundle.getString("DataViewNextFetchButton"); //NOI18N
+                String allset = bundle.getString("DataViewAllFetchButton"); //NOI18N
+
+                JButton fetchNext = new JButton(nextset);
+                fetchNext.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewNextFetchButtonA11yDesc")); //NOI18N
+                fetchNext.setMnemonic(bundle.getString("FetchNextFetchButton_Mnemonic").charAt(0)); //NOI18N
+
+                JButton fetchAll = new JButton(allset);
+                fetchAll.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewAllFetchButtonA11yDesc")); //NOI18N
+                fetchAll.setMnemonic(bundle.getString("FetchAllFetchButton_Mnemonic").charAt(0)); //NOI18N
+
+                JButton no = new JButton(cancel);
+                no.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewCancelButtonA11yDesc")); //NOI18N
+                no.setMnemonic(bundle.getString("FetchCancelButton_Mnemonic").charAt(0)); //NOI18N
+                
+                String message;
+                NotifyDescriptor ndesc;
+                Object ret;
+                String retv;
                 while (rs.next()) {
                     Vector row = new Vector(cols);
                     for (int column = 1; column <= cols; column++)
@@ -698,27 +719,18 @@ public class DataViewWindow extends TopComponent {
                             (new Integer(step)).toString()
                         };
                         
-                        String cancel = bundle.getString("DataViewCancelButton"); //NOI18N
-                        String nextset = bundle.getString("DataViewNextFetchButton"); //NOI18N
-                        String allset = bundle.getString("DataViewAllFetchButton"); //NOI18N
+                        message = MessageFormat.format(bundle.getString("DataViewMessage"), arr); //NOI18N
+                        ndesc = new NotifyDescriptor(message, bundle.getString("FetchDataTitle"), NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, new Object[] {fetchNext, fetchAll, no}, NotifyDescriptor.CANCEL_OPTION); //NOI18N
                         
-                        JButton fetchNext = new JButton(nextset);
-                        fetchNext.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewNextFetchButtonA11yDesc")); //NOI18N
-                        fetchNext.setMnemonic(bundle.getString("FetchNextFetchButton_Mnemonic").charAt(0)); //NOI18N
-                        
-                        JButton fetchAll = new JButton(allset);
-                        fetchAll.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewAllFetchButtonA11yDesc")); //NOI18N
-                        fetchAll.setMnemonic(bundle.getString("FetchAllFetchButton_Mnemonic").charAt(0)); //NOI18N
-                        
-                        JButton no = new JButton(cancel);
-                        no.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewCancelButtonA11yDesc")); //NOI18N
-                        no.setMnemonic(bundle.getString("FetchCancelButton_Mnemonic").charAt(0)); //NOI18N
-
-                        
-                        String message = MessageFormat.format(bundle.getString("DataViewMessage"), arr); //NOI18N
-                        NotifyDescriptor ndesc = new NotifyDescriptor(message, bundle.getString("FetchDataTitle"), NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, new Object[] {fetchNext, fetchAll, no}, NotifyDescriptor.CANCEL_OPTION); //NOI18N
-                        
-                        String retv = ((JButton) DialogDisplayer.getDefault().notify(ndesc)).getText();
+                        ret = DialogDisplayer.getDefault().notify(ndesc);
+                        if (ret instanceof JButton)
+                            try {
+                                retv = ((JButton) DialogDisplayer.getDefault().notify(ndesc)).getText();
+                            } catch (ClassCastException exc) {
+                                retv = cancel; //window closed by close button or Esc key
+                            }
+                        else
+                            retv = cancel; //window closed by close button or Esc key
                         
                         if (retv.equals(allset))
                             limit = Integer.MAX_VALUE;
