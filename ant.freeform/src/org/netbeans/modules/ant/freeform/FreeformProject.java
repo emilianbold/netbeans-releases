@@ -42,6 +42,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -125,6 +126,7 @@ public final class FreeformProject implements Project {
             new OpenHook(cp), // ProjectOpenedHook
             helper().createAuxiliaryConfiguration(), // AuxiliaryConfiguration
             helper().createCacheDirectoryProvider(), // CacheDirectoryProvider
+            new PrivilegedTemplatesImpl(),           // List of templates in New action popup
         });
     }
     
@@ -345,6 +347,21 @@ public final class FreeformProject implements Project {
         
         public void propertiesChanged(AntProjectEvent ev) {
             // ignore
+        }
+        
+    }
+    
+    
+    private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates {
+        
+        private static final String[] PRIVILEGED_NAMES = new String[] {
+            "Templates/Classes/Class.java", // NOI18N
+            "Templates/Classes/Package", // NOI18N
+            "Templates/Classes/Interface.java", // NOI18N
+        };
+        
+        public String[] getPrivilegedTemplates() {
+            return PRIVILEGED_NAMES;
         }
         
     }
