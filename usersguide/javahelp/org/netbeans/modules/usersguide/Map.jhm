@@ -988,6 +988,7 @@
 
   
   
+   <mapID target="org.netbeans.modules.java.FastJavacCompilerType" url="compile/external.html" />
    <mapID target="org.netbeans.modules.java.gj.JavaCompilerType" url="compile/internal.html" />
    <mapID target="org.netbeans.modules.java.compilation.Jikes" url="compile/jikes.html" />
 
