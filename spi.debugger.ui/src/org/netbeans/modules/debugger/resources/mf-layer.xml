@@ -152,17 +152,22 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Services">
-        <file name="DebuggerSettings.settings" url="DebuggerSettings.settings"/>
-        <file name="DebuggerProjectSettings.settings" url="DebuggerProjectSettings.settings">
+        <file name="org-netbeans-modules-debugger-support-DebuggerSettings.settings" url="DebuggerSettings.settings"/>
+        
+        <file name="org-netbeans-modules-debugger-support-DebuggerProjectSettings.settings" url="DebuggerProjectSettings.settings">
             <attr name="hidden" boolvalue="true" />
         </file>
-        <file name="JavaProjectSettings.settings" url="JavaProjectSettings.settings">
+
+        <file name="org-netbeans-modules-debugger-support-java-JavaDebuggerSettings.settings" url="JavaDebuggerSettings.settings"/>
+        
+        <file name="org-netbeans-modules-debugger-support-java-JavaProjectSettings.settings" url="JavaProjectSettings.settings">
             <attr name="hidden" boolvalue="true" />
         </file>
         
         <folder name="DebuggerType">
             <file name="DefaultDebuggerType.settings" url="DefaultDebuggerType.settings"/>
         </folder>
+        
         <folder name="Executor">
             <file name="DebuggerExecutor.settings" url="DebuggerExecutor.settings"/>
         </folder>
