@@ -70,7 +70,7 @@ public class NbServletsInterceptor extends BaseInterceptor {
 
 	} catch (Exception e) {
             // PENDING: use ErrorManager to report this
-            String msg = "NbServletsInterceptor failed";
+            String msg = "NbServletsInterceptor failed"; // NOI18N
 	    System.out.println(msg);
 	}
 
