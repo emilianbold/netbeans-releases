@@ -449,16 +449,6 @@ implements OperationListener, Runnable, ExplorerManager.Provider {
             }
         }
 
-        if (obj.isValid ()) {
-            Node n = node.getChildren ().findChild (obj.getNodeDelegate ().getName ());
-            if (n != null) {
-                DataObject o = (DataObject) n.getCookie(DataObject.class);
-                if (o == obj) {
-                    return n;
-                }
-            }
-        }
-        
         return null;
     }
 
