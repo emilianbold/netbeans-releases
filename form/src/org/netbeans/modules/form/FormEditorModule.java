@@ -37,8 +37,6 @@ public class FormEditorModule extends ModuleInstall
     private static final String BEANINFO_PATH_AWT = "org.netbeans.modules.form.beaninfo.awt"; // NOI18N
     private static final String BEANINFO_PATH_SWING = "org.netbeans.modules.form.beaninfo.swing"; // NOI18N
 
-    private static RepositoryListener repositoryListener = null;
-
     /** Module installed again. */
     
     public void restored() {
@@ -64,11 +62,6 @@ public class FormEditorModule extends ModuleInstall
 
     public void uninstalled() {
         Repository rep = TopManager.getDefault().getRepository();
-
-        if (repositoryListener != null) {
-            rep.removeRepositoryListener(repositoryListener);
-            repositoryListener = null;
-        }
 
         java.util.Enumeration enum = rep.getFileSystems();
         while (enum.hasMoreElements()) {
