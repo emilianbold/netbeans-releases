@@ -86,6 +86,10 @@ public class MainClassChooser extends JPanel {
     // should be used some query to java sources
     private Object[] getAllMainClasses (FileObject sourcesRoot) {
         Set result = new HashSet ();
+        // bugfix #43507, check if the sourcesRoot is set
+        if (sourcesRoot == null) {
+            return new Object[0];
+        }
         Enumeration en = sourcesRoot.getChildren (true);
         while (en.hasMoreElements ()) {
             FileObject fo = (FileObject)en.nextElement ();
