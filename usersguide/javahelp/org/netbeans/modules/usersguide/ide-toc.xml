@@ -72,6 +72,7 @@
     <tocitem text="Specifying an Extension for a Text File" target="objects.specify-extension" />
     <tocitem text="Adding a File Extension to an Object Type" target="objects.file-extensions" />
     <tocitem text="Displaying File Extensions" target="objects.show-extensions" />
+    <tocitem text="Treating a File as a Text File" target="objects.treat-as-text" />
     <tocitem text="Configuring the Display Name Format of Java Elements" target="org.openide.src.nodes.SourceOptions" />
     <tocitem text="Templates" target="template.jump" >
       <tocitem text="Creating a Template" target="template.new"/>
