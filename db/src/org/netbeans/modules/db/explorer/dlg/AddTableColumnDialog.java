@@ -384,11 +384,12 @@ public class AddTableColumnDialog {
                                       col.setDecimalSize(citem.getScale());
                                       col.setNullAllowed(citem.allowsNull());
                                       if (citem.hasDefaultValue()) col.setDefaultValue(citem.getDefaultValue());
-                                      cbuff.add(cmd);
 
                                       if (citem.hasCheckConstraint()) {
-                                          cmd.createCheckConstraint(colname, citem.getCheckConstraint());
+                                          // add COLUMN constraint (without constraint name)
+                                          col.setCheckCondition(citem.getCheckConstraint());
                                       }
+                                      cbuff.add(cmd);
 
                                       if (use_idx) {
 
