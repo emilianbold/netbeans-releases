@@ -16,7 +16,7 @@ package org.netbeans.modules.web.project.ui.customizer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class CustomizerCompile extends javax.swing.JPanel implements WebCustomizer.Panel {
+public class CustomizerCompile extends javax.swing.JPanel implements WebCustomizer.Panel, HelpCtx.Provider {
 
     private VisualPropertySupport vps;
     private VisualClasspathSupport vcs;

@@ -25,7 +25,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.openide.util.HelpCtx;
 
-public class CustomizerRun extends JPanel implements WebCustomizer.Panel, DocumentListener {
+public class CustomizerRun extends JPanel implements WebCustomizer.Panel, DocumentListener, HelpCtx.Provider {
     
     // Helper for storing properties
     private VisualPropertySupport vps;

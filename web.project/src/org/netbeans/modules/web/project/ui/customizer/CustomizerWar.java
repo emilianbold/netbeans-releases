@@ -30,7 +30,7 @@ import org.openide.util.NbBundle;
 
 /** Customizer for WAR packaging.
  */
-public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSelectionListener {
+public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSelectionListener, HelpCtx.Provider {
         
     private Dialog dialog;
     private final AddFilter filterDlg = new AddFilter();

@@ -21,7 +21,7 @@ import org.openide.util.HelpCtx;
  *
  * @author  phrebejk
  */
-public class CustomizerJavadoc extends JPanel implements WebCustomizer.Panel {
+public class CustomizerJavadoc extends JPanel implements WebCustomizer.Panel, HelpCtx.Provider {
     
     private VisualPropertySupport vps;
         

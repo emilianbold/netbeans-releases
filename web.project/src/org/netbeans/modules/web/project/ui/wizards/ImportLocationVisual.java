@@ -29,7 +29,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Pavel Buzek, Radko Najman
  */
-public class ImportLocationVisual extends javax.swing.JPanel implements DocumentListener {
+public class ImportLocationVisual extends javax.swing.JPanel implements DocumentListener, HelpCtx.Provider {
     
     private ImportWebProjectWizardIterator.ThePanel panel;
     private Document moduleDocument;

@@ -21,7 +21,7 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class PanelConfigureProjectVisual extends JPanel {
+public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provider {
 
     private PanelConfigureProject panel;
 
