@@ -14,8 +14,7 @@
 package threaddemo;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.io.File;
 import javax.swing.*;
 import threaddemo.model.*;
@@ -33,6 +32,8 @@ import threaddemo.views.PhadhailViews;
  */
 public final class Main extends JFrame {
     
+    private static JFrame mainFrame;
+    
     public static void main(String[] args) {
         File root;
         if (args.length == 1) {
@@ -40,10 +41,11 @@ public final class Main extends JFrame {
         } else {
             root = File.listRoots()[0];
         }
-        JFrame frame = new Main(root);
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.show();
+        mainFrame = new Main(root);
+        mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        mainFrame.setLocation(0, 0);
+        mainFrame.pack();
+        mainFrame.show();
     }
     
     private final File root;
@@ -88,7 +90,10 @@ public final class Main extends JFrame {
                 showView();
             }
         });
-        getContentPane().add(b);
+        JPanel bPanel = new JPanel();
+        bPanel.add(b);
+        getContentPane().add(bPanel);
+        getContentPane().add(new Monitor());
     }
     
     private void showView() {
@@ -118,17 +123,28 @@ public final class Main extends JFrame {
         }
         final JFrame frame = new JFrame(model.getPath());
         // For the benefit of Swung model which will produce the root path asynch:
-        model.addPhadhailListener(new PhadhailListener() {
+        final PhadhailListener l = new PhadhailListener() {
             public void nameChanged(PhadhailNameEvent ev) {
                 frame.setTitle(model.getPath());
             }
             public void childrenChanged(PhadhailEvent ev) {}
-        });
+        };
+        model.addPhadhailListener(l);
         frame.getContentPane().add(view);
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent ev) {
+                model.removePhadhailListener(l);
+                // Just to make sure the view is collected:
+                frame.getContentPane().removeAll();
+            }
+        });
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.pack();
         frame.setSize(500, 500);
+        frame.setLocation(mainFrame.getX() + mainFrame.getWidth(), 0);
         // Clear caches first!
+        System.gc();
+        System.runFinalization();
         System.gc();
         frame.show();
     }
