@@ -277,6 +277,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     if (inh == null) {
       if (CompilerCookie.class.isAssignableFrom (type) || 
           SaveCookie.class.isAssignableFrom (type) || 
+          org.openide.loaders.DataObject.class.isAssignableFrom (type) || 
           ExecCookie.class.isAssignableFrom (type) || 
           DebuggerCookie.class.isAssignableFrom (type) || 
           CloseCookie.class.isAssignableFrom (type) || 
@@ -731,6 +732,8 @@ static final long serialVersionUID =3851021533468196849L;
 
 /*
  * Log
+ *  45   Gandalf   1.44        1/14/00  Pavel Buzek     #5363 fixed - DataObject
+ *       cookie added
  *  44   Gandalf   1.43        1/13/00  Ian Formanek    NOI18N #2
  *  43   Gandalf   1.42        1/12/00  Pavel Buzek     I18N
  *  42   Gandalf   1.41        1/10/00  Pavel Buzek     refreshing property sets
