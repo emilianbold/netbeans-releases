@@ -189,6 +189,7 @@ public class JMenuBarOperator extends JComponentOperator
      * @throws TimeoutExpiredException
      */
     public JMenuItem pushMenu(final ComponentChooser[] choosers) {
+        makeComponentVisible();
 	return((JMenuItem)produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
 		    return(driver.pushMenu(JMenuBarOperator.this, 
@@ -205,6 +206,7 @@ public class JMenuBarOperator extends JComponentOperator
      * @see #pushMenu(ComponentChooser[])
      */
     public void pushMenuNoBlock(final ComponentChooser[] choosers) {
+        makeComponentVisible();
 	produceNoBlocking(new NoBlockingAction("Menu pushing") {
 		public Object doAction(Object param) {
 		    return(driver.pushMenu(JMenuBarOperator.this, 

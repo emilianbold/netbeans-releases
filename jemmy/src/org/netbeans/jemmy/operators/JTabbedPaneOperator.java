@@ -324,11 +324,14 @@ public class JTabbedPaneOperator extends JComponentOperator
      * Selects tab.
      */
     public Component selectPage(int index) {
+	output.printLine("Selecting " + index + "'th page in tabbed pane\n    :" + getSource().toString());
+        makeComponentVisible();
 	driver.selectItem(this, index);
 	return(getComponentAt(index));
     }
 
     public Component selectPage(String label, StringComparator comparator) {
+	output.printLine("Selecting \"" + label + "\" page in tabbed pane\n    :" + getSource().toString());
 	int index = findPage(label, comparator);
 	if(index != -1) {
 	    return(selectPage(index));
@@ -678,7 +681,7 @@ public class JTabbedPaneOperator extends JComponentOperator
 	}
     }
 
-    private static class JTabbedPaneByItemFinder implements ComponentChooser {
+    public static class JTabbedPaneByItemFinder implements ComponentChooser {
 	String label;
 	int itemIndex;
 	StringComparator comparator;
@@ -713,7 +716,7 @@ public class JTabbedPaneOperator extends JComponentOperator
 	}
     }
 
-    private static class JTabbedPaneFinder implements ComponentChooser {
+    public static class JTabbedPaneFinder implements ComponentChooser {
 	ComponentChooser subFinder;
 	public JTabbedPaneFinder(ComponentChooser sf) {
 	    subFinder = sf;

@@ -265,7 +265,6 @@ public class GUIBrowser extends JFrame{
 
     public void show() {
 	super.show();
-	reload(0);
 	viewItem.setEnabled(false);
     }
 
@@ -546,13 +545,7 @@ public class GUIBrowser extends JFrame{
 	    for(int i = 0; i < wwns.size(); i++) {
 		wins[i] = (WindowNode)wwns.get(i); 
 	    }
-	    if       (win instanceof Frame) {
-		title = ((Frame)win).toString();
-	    } else if(win instanceof Dialog) {
-		title = ((Dialog)win).toString();
-	    } else {
-		title = "";
-	    }
+            title = win.toString();
 	    clss = win.getClass().getName();
 	}
 	public WindowNode[] getWindows() {
@@ -579,8 +572,19 @@ public class GUIBrowser extends JFrame{
 	    super();
 	    Window[] wns = Frame.getFrames();
 	    wins = new WindowNode[wns.length];
+            int count = 0;
 	    for(int i = 0; i < wns.length; i++) {
-		wins[i] = new WindowNode(wns[i]); 
+                if(propDialog.showAll || wns[i].isVisible()) {
+                    count++;
+                }
+            }
+ 	    wins = new WindowNode[count];
+            count = 0;
+ 	    for(int i = 0; i < wns.length; i++) {
+                if(propDialog.showAll || wns[i].isVisible()) {
+                    wins[count] = new WindowNode(wns[i]); 
+                    count++;
+                }
 	    }
 	}
     }

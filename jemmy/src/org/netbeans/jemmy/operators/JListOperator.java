@@ -422,12 +422,14 @@ public class JListOperator extends JComponentOperator
      * @param itemIndex Item index.
      * @param clickCount count click.
      * @return Click point or null if list does not contains itemIndex'th item.
+     * @throws NoSuchItemException
      */
     public Object clickOnItem(int itemIndex, int clickCount) {
 	output.printLine("Click " + Integer.toString(clickCount) +
 			 " times on JList\n    : " + getSource().toString());
 	output.printGolden("Click " + Integer.toString(clickCount) +
 			 " times on JList");
+        checkIndex(itemIndex);
 	try {
 	    scrollToItem(itemIndex);
 	} catch(TimeoutExpiredException e) {
@@ -522,11 +524,13 @@ public class JListOperator extends JComponentOperator
      * @param itemIndex
      * @see #scrollToItem(String, boolean, boolean)
      * @throws TimeoutExpiredException
+     * @throws NoSuchItemException
      */
     public void scrollToItem(int itemIndex) {
 	output.printTrace("Scroll JList to " + Integer.toString(itemIndex) + "'th item\n    : " +
 			  getSource().toString());
 	output.printGolden("Scroll JList to " + Integer.toString(itemIndex) + "'th item");
+        checkIndex(itemIndex);
 	makeComponentVisible();
 	//try to find JScrollPane under.
 	JScrollPane scroll = (JScrollPane)getContainer(new JScrollPaneOperator.
@@ -563,8 +567,12 @@ public class JListOperator extends JComponentOperator
 	scrollToItem(findItemIndex(item, ce, cc));
     }
 
+    /**
+     * @throws NoSuchItemException
+     */
     public void selectItem(int index) {
-	driver.selectItem(this, index);
+        checkIndex(index);
+        driver.selectItem(this, index);
     }
 
     public void selectItem(String item) {
@@ -572,6 +580,7 @@ public class JListOperator extends JComponentOperator
     }
 
     public void selectItems(int[] indices) {
+        checkIndices(indices);
 	driver.selectItems(this, indices);
     }
 
@@ -1036,6 +1045,17 @@ public class JListOperator extends JComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    private void checkIndex(int index) {
+        if(index < 0 ||
+           index >= getModel().getSize()) {
+            throw(new NoSuchItemException(index));
+        }
+    }
+    private void checkIndices(int[] indices) {
+        for(int i = 0; i < indices.length; i++) {
+            checkIndex(indices[i]);
+        }
+    }
     /**
      * Iterface to choose list item.
      */
@@ -1063,6 +1083,9 @@ public class JListOperator extends JComponentOperator
 	 */
 	public NoSuchItemException(String item) {
 	    super("No such item as \"" + item + "\"", getSource());
+	}
+	public NoSuchItemException(int index) {
+	    super("List does not contain " + index + "'th item", getSource());
 	}
     }
 
@@ -1098,7 +1121,7 @@ public class JListOperator extends JComponentOperator
 	}
     }
 
-    private static class JListByItemFinder implements ComponentChooser {
+    public static class JListByItemFinder implements ComponentChooser {
 	String label;
 	int itemIndex;
 	StringComparator comparator;
@@ -1109,16 +1132,16 @@ public class JListOperator extends JComponentOperator
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof JList) {
-		if(label == null) {
-		    return(true);
-		}
+                if(label == null) {
+                    return(true);
+                }
 		if(((JList)comp).getModel().getSize() > itemIndex) {
 		    int ii = itemIndex;
 		    if(ii == -1) {
-			ii = ((JList)comp).getSelectedIndex();
-			if(ii == -1) {
-			    return(false);
-			}
+                        ii = ((JList)comp).getSelectedIndex();
+                        if(ii == -1) {
+                            return(false);
+                        }
 		    }
 		    return(comparator.equals(((JList)comp).getModel().getElementAt(ii).toString(),
 					     label));
@@ -1132,7 +1155,7 @@ public class JListOperator extends JComponentOperator
 	}
     }
 
-    private static class JListFinder implements ComponentChooser {
+    public static class JListFinder implements ComponentChooser {
 	ComponentChooser subFinder;
 	public JListFinder(ComponentChooser sf) {
 	    subFinder = sf;

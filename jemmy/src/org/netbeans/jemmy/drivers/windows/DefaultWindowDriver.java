@@ -21,6 +21,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.Window;
 
+import java.awt.event.ComponentEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.WindowEvent;
 
@@ -64,5 +65,8 @@ public class DefaultWindowDriver extends SupportiveDriver implements WindowDrive
     public void resize(ComponentOperator oper, int width, int height) {
 	checkSupported(oper);
 	((WindowOperator)oper).setSize(width, height);
+ 	eDriver.dispatchEvent(oper.getSource(), 
+			      new ComponentEvent((Window)oper.getSource(),
+                                                 ComponentEvent.COMPONENT_RESIZED));
     }
 }

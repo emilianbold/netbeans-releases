@@ -17,12 +17,15 @@
 
 package org.netbeans.jemmy.drivers.menus;
 
+import java.awt.Component;
+
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.MenuElement;
 
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
@@ -83,13 +86,13 @@ public class DefaultJMenuDriver extends SupportiveDriver implements MenuDriver {
 	    return(oper.getSource());
 	}
 	MouseDriver mDriver = DriverManager.getMouseDriver(oper);
-	mDriver.enterMouse(oper);
+        mDriver.enterMouse(oper);
 	if(pressMouse && !((JMenuOperator)oper).isPopupMenuVisible()) {
 	    DriverManager.getButtonDriver(oper).push(oper);
 	}
 	oper.getTimeouts().sleep("JMenuOperator.WaitBeforePopupTimeout");
 	JMenuItem item = waitItem(oper, waitPopupMenu(oper), chooser, depth);
-	mDriver.exitMouse(oper);
+        mDriver.exitMouse(oper);
 	if(item instanceof JMenu) {
 	    JMenuOperator mo = new JMenuOperator((JMenu)item);
 	    mo.copyEnvironment(oper);
@@ -107,28 +110,14 @@ public class DefaultJMenuDriver extends SupportiveDriver implements MenuDriver {
 	}
     }
     private JPopupMenu waitPopupMenu(final ComponentOperator oper) {
-	try {
-	    Waiter waiter = (new Waiter(new Waitable() {
-		public Object actionProduced(Object obj) {
-		    JPopupMenu popup = ((JMenuOperator)oper).getPopupMenu();
-		    if(popup != null && popup.isShowing()) {
-			return(popup);
-		    } else {
-			return(null);
-		    }
-		}
-		public String getDescription() {
-		    return("Popup menu under " + ((JMenu)oper.getSource()).getText() + " menu");
-		}
-	    }));
-	    Timeouts times = oper.getTimeouts().cloneThis();
-	    times.setTimeout("Waiter.WaitingTime",
-			     times.getTimeout("JMenuOperator.WaitPopupTimeout"));
-	    waiter.setTimeouts(times);
-	    return((JPopupMenu)waiter.waitAction(null));
-	} catch (InterruptedException e) {
-	    return(null);
-	}
+        return((JPopupMenu)JPopupMenuOperator.waitJPopupMenu(new ComponentChooser() {
+                public boolean checkComponent(Component comp) {
+                    return(comp == ((JMenuOperator)oper).getPopupMenu());
+                }
+                public String getDescription() {
+                    return(((JMenuOperator)oper).getText() + "'s popup");
+                }
+            }).getSource());
     }
 
     private JMenuItem waitItem(ComponentOperator oper, MenuElement element, PathChooser chooser, int depth) {

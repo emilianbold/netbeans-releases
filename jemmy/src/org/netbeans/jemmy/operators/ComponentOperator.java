@@ -813,14 +813,17 @@ public class ComponentOperator extends Operator
      * Searches the window under component.
      */
     public Window getWindow() {
+        if(getSource() instanceof Window) {
+            return((Window)getSource());
+        }
 	Window window = (Window)getContainer(new ComponentChooser() {
-	    public boolean checkComponent(Component comp) {
-		return(comp instanceof Window);
-	    }
-	    public String getDescription() {
-		return("");
-	    }
-	});
+                public boolean checkComponent(Component comp) {
+                    return(comp instanceof Window);
+                }
+                public String getDescription() {
+                    return("");
+                }
+            });
 	if(window == null && getSource() instanceof Window) {
 	    return((Window)getSource());
 	} else {

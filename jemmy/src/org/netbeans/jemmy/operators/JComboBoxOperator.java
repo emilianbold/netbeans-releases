@@ -890,13 +890,16 @@ implements Timeoutable, Outputable {
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof JComboBox) {
+                if(label == null) {
+                    return(true);
+                }
 		if(((JComboBox)comp).getModel().getSize() > itemIndex) {
 		    int ii = itemIndex;
 		    if(ii == -1) {
-			ii = ((JComboBox)comp).getSelectedIndex();
-			if(ii == -1) {
-			    return(false);
-			}
+                        ii = ((JComboBox)comp).getSelectedIndex();
+                        if(ii == -1) {
+                            return(false);
+                        }
 		    }
 		    return(comparator.equals(((JComboBox)comp).getModel().getElementAt(ii).toString(),
 					     label));

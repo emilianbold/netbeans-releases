@@ -1236,7 +1236,7 @@ public class JTreeOperator extends JComponentOperator
 	Hashtable result = super.getDump();
 	Object root = ((JTree)getSource()).getModel().getRoot();
 	result.put("Root", root.toString());
-	addChildrenToDump(result, "Node", root);
+	addChildrenToDump(result, "Node", root, new TreePath(root));
 	int minSelection = ((JTree)getSource()).getMinSelectionRow();
 	if( minSelection >= 0) {
 	    Object minObject = ((JTree)getSource()).
@@ -2009,17 +2009,21 @@ public class JTreeOperator extends JComponentOperator
 	}
     }
 
-    private String[] addChildrenToDump(Hashtable table, String title, Object node) {
-	TreeModel model = ((JTree)getSource()).getModel();
-	Object[] subNodes = new Object[model.getChildCount(node)];
-	for(int i = 0; i < subNodes.length; i++) {
-	    subNodes[i] = model.getChild(node, i);
-	}
-	String[] names = addToDump(table, title, subNodes);
-	for(int i = 0; i < subNodes.length; i++) {
-	    addChildrenToDump(table, names[i], subNodes[i]);
-	}
-	return(names);
+    private String[] addChildrenToDump(Hashtable table, String title, Object node, TreePath path) {
+        if(((JTree)getSource()).isExpanded(path)) {
+            TreeModel model = ((JTree)getSource()).getModel();
+            Object[] subNodes = new Object[model.getChildCount(node)];
+            for(int i = 0; i < subNodes.length; i++) {
+                subNodes[i] = model.getChild(node, i);
+            }
+            String[] names = addToDump(table, title, subNodes);
+            for(int i = 0; i < subNodes.length; i++) {
+                addChildrenToDump(table, names[i], subNodes[i], path.pathByAddingChild(subNodes[i]));
+            }
+            return(names);
+        } else {
+            return(new String[0]);
+        }
     }
 
     /**
@@ -2112,7 +2116,7 @@ public class JTreeOperator extends JComponentOperator
 	}
     }
 
-    private static class JTreeFinder implements ComponentChooser {
+    public static class JTreeFinder implements ComponentChooser {
 	ComponentChooser subFinder;
 	public JTreeFinder(ComponentChooser sf) {
 	    subFinder = sf;
@@ -2128,7 +2132,7 @@ public class JTreeOperator extends JComponentOperator
 	}
     }
 
-    private static class JTreeByItemFinder implements ComponentChooser {
+    public static class JTreeByItemFinder implements ComponentChooser {
 	String label;
 	int rowIndex;
 	StringComparator comparator;
@@ -2139,18 +2143,18 @@ public class JTreeOperator extends JComponentOperator
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof JTree) {
-		if(label == null) {
-		    return(true);
-		}
+                if(label == null) {
+                    return(true);
+                }
 		if(((JTree)comp).getRowCount() > rowIndex) {
 		    int ii = rowIndex;
 		    if(ii == -1) {
-			int[] rows = ((JTree)comp).getSelectionRows();
-			if(rows != null && rows.length > 0) {
-			    ii = rows[0];
-			} else {
-			    return(false);
-			}
+                        int[] rows = ((JTree)comp).getSelectionRows();
+                        if(rows != null && rows.length > 0) {
+                            ii = rows[0];
+                        } else {
+                            return(false);
+                        }
 		    }
 		    TreePath path = ((JTree)comp).getPathForRow(ii);
 		    return(comparator.equals(path.getPathComponent(path.getPathCount() - 1).toString(),

@@ -165,11 +165,13 @@ public class jemmy_016 extends JemmyTest {
 
 	    Demonstrator.nextStep("Check that fourth item cannot be clicked");
 
-	    if(lo.clickOnItem(3, 1) != null) {
+            try {
+                lo.clickOnItem(3, 1);
 		output.printErrLine("3 was clicked");		
 		finalize();
 		return(1);
-	    }
+	    } catch(NoSuchItemException e) {
+            }
 
 	    Demonstrator.nextStep("Click 1 time on the \"two\" list item");
 

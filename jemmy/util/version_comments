@@ -534,3 +534,34 @@ All method containing two boolean parameters
 
 22726, 22953 fixes
 
+#VERSION 2.0.1
+
+23663 DefaultJMenuDriver.java
+        Subpopup is now searched by regular window/component searching - 
+        not by JMenu.getPopupMenu().
+      JMenuBarOperator.java
+	makeComponentVisible() before menu pushing
+	
+25020 ComponentOperator.java
+        getWindow() method modified as proposed in bug description.
+	
+25319 JComboBoxOperator.java
+        If no item selected, JComboBoxByItemFinder returns true.
+
+25134 JListOperator.java
+        NoSuchItemException is thrown for nonexistent item.
+	
+25303 JTabbedPaneOperator.java
+	makeComponentVisible() before tab selecting
+	
+GUIBrowser.java
+	One reload() removed, only showing windows showed.
+
+JTreeOperator.java
+	Adding only visible nodes to dump
+        It make GUI browser loading inside IDE twice faster.
+
+DefaultWindowDriver.java
+	COMPONENT_RESIZED is posted during resizing.
+
+

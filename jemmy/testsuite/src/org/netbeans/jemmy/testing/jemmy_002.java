@@ -90,12 +90,13 @@ public class jemmy_002 extends JemmyTest {
 		return(1);
             }
 
+            mbo.pushMenu("menu", "|");
+
             if(!mbo.showMenuItem("menu|submenu|subsubmenu", "|").getText().equals("subsubmenu")) {
 		finalize();
 		return(1);
             }
 
-            //            doSleep(500);
 
 	    mbo.pushMenu("menu|submenu|subsubmenu|menuItem", "|", true, true);
 	    JLabelOperator lbo = new JLabelOperator(JLabelOperator.waitJLabel(win, "Menu \"menu/menuItem\" has been pushed", false, true));
