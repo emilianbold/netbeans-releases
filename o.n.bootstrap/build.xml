@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans" depends="jar"/>
 
     <target name="nbm">
-        <fail>Not supported!</fail>
+        <echo>NBM build is not supported for core/bootstrap!</echo>
     </target>
 
     <target name="clean" depends="init">
