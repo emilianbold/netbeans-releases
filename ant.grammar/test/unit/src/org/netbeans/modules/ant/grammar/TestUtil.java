@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -54,6 +54,7 @@ final class TestUtil {
         }
         final File antHome = new File(antHomeS);
         final File antBridge = new File(System.getProperty("test.ant.bridge"));
+        final File antJar = new File(new File(antHome, "lib"), "ant.jar");
         FILE_LOCATOR = new InstalledFileLocator() {
             public File locate(String name, String module, boolean loc) {
                 if (name.equals("ant")) {
@@ -62,6 +63,8 @@ final class TestUtil {
                     return antBridge;
                 } else if (name.equals("ant/nblib")) {
                     return antBridge.getParentFile();
+                } else if (name.equals("ant/lib/ant.jar")) {
+                    return antJar;
                 } else {
                     return null;
                 }
