@@ -1,80 +1,11 @@
 /* stylesheet used for prose docs */
 
 @import "nb-docs.css";
-
-/* based on www/www/netbeans.css ... */
-
-BODY	{
-	font-family: Verdana, sans-serif, helvetica, arial;
-	font-size: 13px;
-	background-color: #FFFFFF;
-	}
-
-.default  {
-	font-family: Verdana, sans-serif, helvetica, arial;
-	font-size: 13px;
-	}
-
-TD	{
-	font-family: Verdana, sans-serif, helvetica, arial;
-	font-size: 13px;
-	}
-
-TH	{
-	font-family: helvetica, arial, sans-serif;
-	font-size: 12pt;
-	}
-
-A:link {
-	color: #001692;
-	}
-
-A:visited {
-	color: #001692;
-	}
-
-A:hover {
-	color: red;
-	}
-
-.leftmenu	{
-  font-family: Verdana, sans-serif, helvetica, arial;
-  font-size: 13px;
-  line-height: 1.3em;
-  }
-
-H1 {font-size: 18pt; font-weight : bold; color: #CC3333;}
-H2 {font-size: 14pt; font-weight: bold; color: #CC3333; }
-H3 {font-size: 10pt; font-weight: bold; color: #CC3333; }
-H4,H5,H6 {font-size: 10pt; font-weight: normal; color: #CC3333; }
-
-.h1 {font-size: 18pt; font-weight : bold; color: #CC3333;}
-.h2 {font-size: 14pt; font-weight: bold; color: #CC3333; }
-.h3 {font-size: 10pt; font-weight: bold; color: #CC3333; }
-.h4 {font-size: 10pt; font-weight: normal; color: #CC3333; }
-
-.smalltextbase {
-	font-family: Verdana, sans-serif, helvetica, arial;
-	font-size: 11px;
-	line-height: 1.2em;
-	}
-
-.smalltext {
-	font-size: 11px;
-	line-height: 1.2em;
-	}
-
-LI	{
-	list-style-type: circle;
-	line-height: 1.3em;
-	}
-
-PRE,SAMP,CODE,TT {
-  font-family: Courier New, Monospaced;
-  }
+@import "netbeans.css"; /* copied from http://www.netbeans.org/netbeans.css */
 
 /* ... with just these changes: */
 
+/* XXX should these things really be overridden?
 PRE {
   background-color: #FFF0F0;
   }
@@ -86,6 +17,7 @@ SAMP {
 dt {
   font-weight: bold;
 }
+*/
 
 p.overviewlink {
   font-weight: bold;
