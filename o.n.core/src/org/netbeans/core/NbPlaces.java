@@ -19,13 +19,15 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.*;
+import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.nodes.*;
+import org.openide.util.NbBundle;
 
-import org.netbeans.core.windows.nodes.WorkspacePoolContext;
 import org.netbeans.core.modules.ManifestSection;
 import org.netbeans.core.ui.MountNode;
 
@@ -90,7 +92,29 @@ public final class NbPlaces extends Object {
 
     /** Node with all workspaces */
     public Node workspaces () {
-        return WorkspacePoolContext.getDefault ();
+        FileSystem fs = Repository.getDefault().getDefaultFileSystem ();
+        // Not sure whether this is the right place for this node in layer.
+        FileObject fo = fs.findResource("UI/Services/IDEConfiguration/LookAndFeel/Workspace.instance"); // NOI18N
+        if(fo != null) {
+            try {
+                DataObject dob = DataObject.find(fo);
+                InstanceCookie ic = (InstanceCookie)dob.getCookie(InstanceCookie.class);
+                if(ic != null && Node.class.isAssignableFrom(ic.instanceClass())) {
+                    Node node = (Node)ic.instanceCreate();
+                    if(node != null) {
+                        return node;
+                    }
+                }
+            } catch(IOException ioe) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            } catch(ClassNotFoundException cnfe) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, cnfe);
+            }
+        }
+        
+        Node n = new AbstractNode(Children.LEAF);
+        n.setName(NbBundle.getMessage(NbPlaces.class, "CTL_NoWorkspaces"));
+        return n;
     }
 
     /** Repository settings */

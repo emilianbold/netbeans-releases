@@ -145,14 +145,6 @@ Microsystems, Inc. All Rights Reserved.
 
     	<!-- XMLDataObject.Info processors -->
     	<folder name="lookups">
-            <folder name="NetBeans_IDE">
-            	<!-- public ID defined by XMLDataObject -->
-            	<file name="DTD_toolbar.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.loaders.XMLDataObject$Processor"/>
-                    <attr name="instanceCreate" newvalue="org.netbeans.core.windows.toolbars.ToolbarProcessor" />
-            	</file>
-            </folder>
-
             <folder name="NetBeans">
             	<file name="Entity_Mapping_Registration_1_0.instance">
                     <attr name="instanceClass" stringvalue="org.openide.loaders.XMLDataObject$Processor"/>

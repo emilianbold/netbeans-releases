@@ -83,13 +83,13 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-actions-ViewFilesystemsTabAction.instance"/>
             <file name="org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
-            <file name="org-netbeans-core-actions-FocusPreviousWorkspaceAction.instance"/>            
-            <file name="org-netbeans-core-actions-PreviousWorkspaceAction.instance"/>
-            <file name="org-netbeans-core-actions-FocusNextWorkspaceAction.instance"/>
-            <file name="org-netbeans-core-actions-NextWorkspaceAction.instance"/>
-            <file name="org-netbeans-core-actions-WorkspaceExplorerAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-FocusPreviousWorkspaceAction.instance"/>            
+            <file name="org-netbeans-core-windows-actions-PreviousWorkspaceAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-FocusNextWorkspaceAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-NextWorkspaceAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-WorkspaceExplorerAction.instance"/>
             <file name="org-openide-actions-PropertiesAction.instance"/>
-            <file name="org-netbeans-core-actions-StatusLineAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-StatusLineAction.instance"/>
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
             <file name="org-openide-actions-WorkspaceSwitchAction.instance"/>
         </folder>        
@@ -281,14 +281,14 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="WorkspaceSwitcher">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-netbeans-core-windows-WorkspaceSwitcher.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.core.awt.TabControl" />
+                <attr name="instanceClass" stringvalue="org.netbeans.core.windows.awt.TabControl" />
                 <attr name="instanceCreate" methodvalue="org.netbeans.core.windows.WorkspaceSwitcher.createSwitcher" />
             </file>
         </folder>
         <folder name="StatusLine">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-netbeans-core-actions-StatusLineAction.instance">
-                 <attr name="instanceClass" stringvalue="org.netbeans.core.actions.StatusLineAction"/>
+            <file name="org-netbeans-core-windows-actions-StatusLineAction.instance">
+                 <attr name="instanceClass" stringvalue="org.netbeans.core.windows.actions.StatusLineAction"/>
             </file>
         </folder>
 
@@ -404,15 +404,15 @@ Microsystems, Inc. All Rights Reserved.
 	</file>
 
         <file name="CS-DOWN.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.core.actions.FocusNextWorkspaceAction"/>
+	    <attr name="instanceClass" stringvalue="org.netbeans.core.windows.actions.FocusNextWorkspaceAction"/>
 	</file>
 
         <file name="CS-UP.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.core.actions.FocusPreviousWorkspaceAction"/>
+	    <attr name="instanceClass" stringvalue="org.netbeans.core.windows.actions.FocusPreviousWorkspaceAction"/>
 	</file>
 
         <file name="CS-F12.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.core.actions.WorkspaceExplorerAction"/>
+	    <attr name="instanceClass" stringvalue="org.netbeans.core.windows.actions.WorkspaceExplorerAction"/>
 	</file>
     </folder>
     
@@ -428,7 +428,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="Services">
             <attr name="simple" boolvalue="false" />
-            <attr name="helpID" stringvalue="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeServices"/>
+            <attr name="helpID" stringvalue="org.netbeans.core.windows.actions.OptionsAction$TemplatesSubnodeServices"/>
             
             <folder name="Browsers">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/webbrowsercateg.gif" />
@@ -458,7 +458,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="simple" boolvalue="false" />
             <attr name="org-netbeans-core-ExLocalFileSystem.settings/org-netbeans-core-ExJarFileSystem.settings" boolvalue="true" />
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/core/resources/templatesFileSystems.html"/>
-            <attr name="helpID" stringvalue="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeFilesystems"/>
+            <attr name="helpID" stringvalue="org.netbeans.core.windows.actions.OptionsAction$TemplatesSubnodeFilesystems"/>
 
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/repository.gif" />
@@ -539,7 +539,7 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
 
                     <file name="Menu.instance">
-                        <attr name="instanceCreate" newvalue="org.netbeans.core.MenuFolderNode" />
+                        <attr name="instanceCreate" newvalue="org.netbeans.core.windows.MenuFolderNode" />
                         <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
                     </file>
 
@@ -552,7 +552,7 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
 
                     <file name="Toolbar.instance">
-                        <attr name="instanceCreate" newvalue="org.netbeans.core.ToolbarFolderNode" />
+                        <attr name="instanceCreate" newvalue="org.netbeans.core.windows.ToolbarFolderNode" />
                         <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
                     </file>
 

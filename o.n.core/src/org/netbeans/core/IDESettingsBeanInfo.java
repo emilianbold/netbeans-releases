@@ -16,12 +16,12 @@ package org.netbeans.core;
 import java.awt.Image;
 import java.beans.*;
 import java.util.ResourceBundle;
-import org.netbeans.core.windows.MiniStatusBar;
+import org.netbeans.core.MiniStatusBar;
 
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-import org.netbeans.core.windows.nodes.UIModePropertyEditor;
+import org.netbeans.core.UIModePropertyEditor;
 import org.openide.ErrorManager;
 
 /** A BeanInfo for global IDE settings.

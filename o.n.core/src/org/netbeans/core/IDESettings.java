@@ -37,7 +37,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-import org.netbeans.core.windows.UIModeManager;
 
 /** Global IDE settings.
 *
@@ -104,7 +103,7 @@ public class IDESettings extends SystemOption {
     private static String proxyHost = System.getProperty(KEY_PROXY_HOST, "");
     private static String proxyPort = System.getProperty(KEY_PROXY_PORT, "");
     
-    private static int uiMode = UIModeManager.MDI_MODE;
+    private static int uiMode = 2; // MDI default
 
     /** Getter for properties file with proxy properties. Installer provides
      * this file.*/

@@ -24,11 +24,23 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../nbbuild/nbantext.jar"/>
     <property name="xml-apis" value="xml-apis.jar"/>
 
-    <target name="jars">
-        <mkdir dir="netbeans/lib"/>
+
+    <target name="compile">
+        <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+            <classpath>
+                <pathelement location="../../openide/openide-13javac-workaround.jar"/>
+                <pathelement location="../../openide/netbeans/lib/openide.jar"/>
+                <pathelement location="../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
+                <pathelement location="../netbeans/lib/core.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="jars" depends="compile">
+        <mkdir dir="netbeans/modules"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="netbeans/lib/core-windows.jar"
+        <locjar jarfile="netbeans/modules/core-windows.jar"
                 basedir="src"
                 manifest="manifest-subst.mf"
                 excludesfile="../../nbbuild/standard-jar-excludes.txt"
@@ -44,7 +56,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="nbm" depends="netbeans">
         <makenbm file="core-windows.nbm"
                  topdir="."
-                 module="netbeans/lib/core-windows.jar"
+                 module="netbeans/modules/core-windows.jar"
                  homepage="http://core.${homepage.base}/"
                  distribution="http://${dist.base}/core-windows.nbm">
             <license file="${license.file}"/>

@@ -43,10 +43,7 @@ import org.netbeans.core.projects.SettingChildren;
 import org.netbeans.core.projects.SessionManager;
 import org.netbeans.core.NbMainExplorer;
 import org.netbeans.core.NbPlaces;
-import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.windows.WorkspaceImpl;
-import org.netbeans.core.windows.frames.WindowTypesManager;
+import org.openide.windows.Mode;
 import org.openide.ErrorManager;
 
 /** Action that opens explorer view which displays global
@@ -72,30 +69,24 @@ public class OptionsAction extends CallableSystemAction {
         // dock Options into its mode if needed
         final Workspace w = WindowManager.getDefault().getCurrentWorkspace();
         
-        ModeImpl m = (ModeImpl) w.findMode(singleton);
+        Mode m = w.findMode(singleton);
         boolean center = false;
         if (m == null) {
-            m = (ModeImpl) w.createMode(OptionsPanel.MODE_NAME,
-                                        singleton.getName(),
-                                        null);
+            m = w.createMode(OptionsPanel.MODE_NAME, singleton.getName(), null);
             //Center only new window
             center = true;
         }
         
         final OptionsPanel optionPanel = singleton;
-        final ModeImpl mo = m;
+        final Mode mo = m;
         final boolean centerLoc = center;
         Mutex.EVENT.readAccess(new Runnable() {
             public void run() {
                 //Center only TOP_FRAME
-                if ((centerLoc) && 
-                    WindowTypesManager.getDefaultFrame().equals(WindowTypesManager.TOP_FRAME)) {
-                    //Initialize gui to get correct preferred size
-                    ((WorkspaceImpl) w).addToShownTcs(optionPanel);
+                if (centerLoc ) {
                     mo.setBounds(Utilities.findCenterBounds(optionPanel.getPreferredSize()));
                 }
                 mo.dockInto(optionPanel);
-                mo.requestFocus();
 
                 optionPanel.open();
                 optionPanel.requestFocus();
@@ -139,10 +130,9 @@ public class OptionsAction extends CallableSystemAction {
         private OptionsPanel () {
             validateRootContext ();
             // show only name of top component is typical case
-            putClientProperty(ModeImpl.NAMING_TYPE, ModeImpl.BOTH_ONLY_COMP_NAME);
+            putClientProperty("NamingType", "BothOnlyCompName"); // NOI18N
             // Show without tab when alone in container cell.
-            putClientProperty(WindowManagerImpl.TopComponentManager.TAB_POLICY,
-                WindowManagerImpl.TopComponentManager.HIDE_WHEN_ALONE);
+            putClientProperty("TabPolicy", "HideWhenAlone"); // NOI18N
         }
         
         public HelpCtx getHelpCtx () {

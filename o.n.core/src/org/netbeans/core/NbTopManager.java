@@ -48,15 +48,11 @@ import org.openide.util.lookup.*;
 import org.openide.windows.WindowManager;
 
 import org.netbeans.core.actions.*;
-import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.TopSecurityManager;
 import org.netbeans.core.modules.Module;
 import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.modules.ModuleSystem;
 import org.netbeans.core.projects.TrivialProjectManager;
-import org.netbeans.core.windows.MainWindow;
-import org.netbeans.core.windows.PersistenceManager;
-import org.netbeans.core.windows.util.WindowUtils;
 import org.openide.modules.ModuleInfo;
 
 /** This class is a TopManager for Corona environment.
@@ -347,73 +343,6 @@ public abstract class NbTopManager /*extends TopManager*/ {
             + " http://www.netbeans.org/issues/show_bug.cgi?id=28804")); // NOI18N
     }
 
-    public static final class NbDialogDisplayer extends DialogDisplayer {
-
-    /** Creates new dialog.
-    */
-    public Dialog createDialog (final DialogDescriptor d) {
-        return (Dialog)Mutex.EVENT.readAccess (new Mutex.Action () {
-            public Object run () {
-                // if a modal dialog active use it as parent
-                // otherwise use the main window
-                if (NbPresenter.currentModalDialog != null) {
-                    return new NbDialog(d, NbPresenter.currentModalDialog);
-                }
-                else {
-                    return new NbDialog(d, MainWindow.getDefault());
-                }
-            }
-        });
-    }
-    
-    /** Notifies user by a dialog.
-    * @param descriptor description that contains needed informations
-    * @return the option that has been choosen in the notification
-    */
-    public Object notify (final NotifyDescriptor descriptor) {
-        return Mutex.EVENT.readAccess (new Mutex.Action () {
-                public Object run () {
-                    Component focusOwner = null;
-                    Component comp = org.openide.windows.TopComponent.getRegistry ().getActivated ();
-                    Component win = comp;
-                    while ((win != null) && (!(win instanceof Window))) win = win.getParent ();
-                    if (win != null) focusOwner = ((Window)win).getFocusOwner ();
-
-                    // if a modal dialog is active use it as parent
-                    // otherwise use the main window
-                    
-                    NbPresenter presenter = null;
-                    if (descriptor instanceof DialogDescriptor) {
-                        if (NbPresenter.currentModalDialog != null) {
-                            presenter = new NbDialog((DialogDescriptor) descriptor, NbPresenter.currentModalDialog);
-                        } else {
-                            presenter = new NbDialog((DialogDescriptor) descriptor, MainWindow.getDefault());
-                        }
-                    } else {
-                        if (NbPresenter.currentModalDialog != null) {
-                            presenter = new NbPresenter(descriptor, NbPresenter.currentModalDialog, true);
-                        } else {
-                            presenter = new NbPresenter(descriptor, MainWindow.getDefault(), true);
-                        }
-                    }
-
-                    //Bugfix #8551
-                    presenter.getRootPane().requestDefaultFocus();
-                    presenter.setVisible(true);
-
-                    // dialog is gone, restore the focus
-                    
-                    if (focusOwner != null) {
-                        win.requestFocus ();
-                        comp.requestFocus ();
-                        focusOwner.requestFocus ();
-                    }
-                    return descriptor.getValue();
-                }
-            });
-    }
-
-    }
 
     /** Opens specified project. Asks to save the previously opened project.
     * @exception IOException if error occurs accessing the project
@@ -499,6 +428,18 @@ public abstract class NbTopManager /*extends TopManager*/ {
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
             NbBundle.getBundle (NbTopManager.class).getString ("MSG_AllSaved"));
     }
+    
+    // XXX
+    /** Interface describing basic control over window system. 
+     * @since 1.15 */
+    public interface WindowSystem {
+        public void show();
+        public void hide();
+        public void load();
+        public void save();
+        // PENDING
+        public boolean isModalDialogPresent();
+    } // End of WindowSystem interface.
 
     private boolean doingExit=false;
     public void exit ( ) {
@@ -511,19 +452,24 @@ public abstract class NbTopManager /*extends TopManager*/ {
         // save all open files
         try {
             if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog(null) ) {
+                
+                final WindowSystem windowSystem = (WindowSystem)Lookup.getDefault().lookup(WindowSystem.class);
+                
                 // #29831: hide frames between closing() and close()
                 Runnable hideFrames = new Runnable() {
                     public void run() {
-                        WindowManagerImpl wmi = (WindowManagerImpl) WindowManager.getDefault();
-                        wmi.setExitingIDE(true);
+                        if(windowSystem != null) {
+                            //Need to check if save can be called before hide - due to subjective performance
+                            windowSystem.save();
+                            windowSystem.hide();
+                        }
                         if (Boolean.getBoolean("netbeans.close.when.invisible")) {
                             // hook to permit perf testing of time to *apparently* shut down
                             TopSecurityManager.exit(0);
                         }
-                        // hide windows explicitly, they are of no use during exit process
-                        WindowUtils.hideAllFrames();
                     }
                 };
+                
                 if (getModuleSystem().shutDown(hideFrames)) {
                     try {
                         try {
@@ -548,11 +494,9 @@ public abstract class NbTopManager /*extends TopManager*/ {
                         // save window system, [PENDING] remove this after the winsys will
                         // persist its state automaticaly
                         if (!isWinsysSaved) {
-                            try {
-                                //Winsys was not saved yet, save now
-                                PersistenceManager.getDefault().writeXMLWaiting ();
-                            } catch (IOException ioe) {
-                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                            if(windowSystem != null) {
+                                windowSystem.hide();
+                                windowSystem.save();
                             }
                         }
                         org.netbeans.core.projects.XMLSettingsHandler.saveOptions();
@@ -663,10 +607,7 @@ public abstract class NbTopManager /*extends TopManager*/ {
         */
         public NbBrowser () {
             super (((IDESettings)IDESettings.findObject (IDESettings.class, true)).getWWWBrowser (), true, true);
-            
-            putClientProperty(WindowManagerImpl.TopComponentManager.TAB_POLICY, 
-                WindowManagerImpl.TopComponentManager.HIDE_WHEN_ALONE);
-            
+            putClientProperty("TabPolicy", "HideWhenAlone"); // NOI18N
             setListener ();
         }
         
@@ -688,20 +629,21 @@ public abstract class NbTopManager /*extends TopManager*/ {
 	 */
 	private void showUrl (URL url) {
 	    if (Boolean.TRUE.equals (getClientProperty ("InternalBrowser"))) { // NOI18N
-		NbPresenter d = NbPresenter.currentModalDialog;
-		if (d != null) {
-                    HtmlBrowser htmlViewer = new HtmlBrowser ();
-                    htmlViewer.setURL (url);
-                    JDialog d1 = new JDialog (d);
-                    d1.getContentPane ().add ("Center", htmlViewer); // NOI18N
-                    // [PENDING] if nonmodal, better for the dialog to be reused...
-                    // (but better nonmodal than modal here)
-                    d1.setModal (false);
-                    d1.setTitle (Main.getString ("CTL_Help"));
-                    d1.pack ();
-                    d1.show ();
-                    return;
-		}
+                // PEMNDING ??? What a terrible hack., how is this used?
+//		NbPresenter d = NbPresenter.currentModalDialog;
+//		if (d != null) {
+//                    HtmlBrowser htmlViewer = new HtmlBrowser ();
+//                    htmlViewer.setURL (url);
+//                    JDialog d1 = new JDialog (d);
+//                    d1.getContentPane ().add ("Center", htmlViewer); // NOI18N
+//                    // [PENDING] if nonmodal, better for the dialog to be reused...
+//                    // (but better nonmodal than modal here)
+//                    d1.setModal (false);
+//                    d1.setTitle (Main.getString ("CTL_Help"));
+//                    d1.pack ();
+//                    d1.show ();
+//                    return;
+//		} // TEMP
 	    }
             open ();
             requestFocus ();

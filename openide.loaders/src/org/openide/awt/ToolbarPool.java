@@ -132,13 +132,18 @@ public final class ToolbarPool extends JComponent implements Accessible {
 
     /** Updates the default configuration. */
     private synchronized void updateDefault () {
-        JPanel tp = new JPanel (new FlowLayout (FlowLayout.LEFT));
-        Toolbar[] list = getToolbars ();
-        for (int i = 0; i < list.length; i++) {
-            tp.add (list[i]);
-        }
+        Toolbar[] toolbars = getToolbars ();
         name = ""; // NOI18N
-        revalidate (tp);
+        
+        if (toolbars.length == 1) {
+            revalidate(toolbars[0]);
+        } else {
+            JPanel tp = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+            for (int i = 0; i < toolbars.length; i++) {
+                tp.add(toolbars[i]);
+            }
+            revalidate(tp); 
+        }
     }
 
     /** Activates a configuration.

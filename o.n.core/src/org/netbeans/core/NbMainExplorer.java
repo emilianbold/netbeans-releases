@@ -43,11 +43,6 @@ import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Workspace;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
-
-import org.netbeans.core.windows.WellKnownModeNames;
-import org.netbeans.core.windows.DeferredPerformer;
-import org.netbeans.core.windows.MiniStatusBar;
-import org.netbeans.core.windows.ModeImpl;
 import org.openide.windows.WindowManager;
 
 /** Main explorer - the class remains here for backward compatibility
@@ -57,8 +52,7 @@ import org.openide.windows.WindowManager;
 *
 * @author Ian Formanek, David Simonek, Jaroslav Tulach
 */
-public final class NbMainExplorer extends CloneableTopComponent
-    implements DeferredPerformer.DeferredCommand {
+public final class NbMainExplorer extends CloneableTopComponent {
 
     static final long serialVersionUID=6021472310669753679L;
     //  static final long serialVersionUID=-9070275145808944151L;
@@ -123,15 +117,10 @@ public final class NbMainExplorer extends CloneableTopComponent
     * backward serialization compatibility.
     * Performed with delay, when WS is in consistent state. */
     public void open (Workspace workspace) {
-        DeferredPerformer.getDefault().putRequest(
-            this, new DeferredPerformer.DeferredContext(workspace, true)
-        );
+        doOpen(workspace);
     }
 
-    /** Implementation of DeferredPerformer.DeferredCommand.
-    * Serves both for refresh roots and old explorer open requests */
-    public void performCommand (DeferredPerformer.DeferredContext context) {
-        Workspace workspace = (Workspace)context.getData(); 
+    private void doOpen(Workspace workspace) {
         if (workspace == null) {
             // refresh roots request
             refreshRoots ();
@@ -192,9 +181,8 @@ public final class NbMainExplorer extends CloneableTopComponent
         //is added to mode.
         if (SwingUtilities.isEventDispatchThread()) {
             if (toBeActivated != null) {
-                ModeImpl mode = (ModeImpl)workspace.findMode(toBeActivated);
+                Mode mode = workspace.findMode(toBeActivated);
                 if (mode != null) {
-                    mode.requestFocus(toBeActivated);
                     toBeActivated.focusView();
                 }
             }
@@ -204,9 +192,8 @@ public final class NbMainExplorer extends CloneableTopComponent
                 final Workspace localWorkspace = workspace;
                 SwingUtilities.invokeLater(new Runnable () {
                     public void run () {
-                        ModeImpl mode = (ModeImpl)localWorkspace.findMode(localActivated);
+                        Mode mode = localWorkspace.findMode(localActivated);
                         if (mode != null) {
-                            mode.requestFocus(localActivated);
                             localActivated.focusView();
                         }
                     }
@@ -402,13 +389,14 @@ public final class NbMainExplorer extends CloneableTopComponent
     /** @return The mode for main explorer on given workspace.
     * Creates explorer mode if no such mode exists on given workspace */
     private static Mode explorerMode (Workspace workspace) {
-        Mode result = workspace.findMode(WellKnownModeNames.EXPLORER);
+        Mode result = workspace.findMode("explorer"); // NOI18N
         if (result == null) {
             // create explorer mode on current workspace
             String displayName = NbBundle.getBundle(NbMainExplorer.class).
                                  getString("CTL_ExplorerTitle");
             result = workspace.createMode(
-                         WellKnownModeNames.EXPLORER, displayName,
+                         "explorer", // NOI18N
+                         displayName,
                          NbMainExplorer.class.getResource(
                              "/org/netbeans/core/resources/frames/explorer.gif" // NOI18N
                          )
@@ -424,7 +412,7 @@ public final class NbMainExplorer extends CloneableTopComponent
     /** Common explorer top component which composites bean tree view
     * to view given context. */
     public static class ExplorerTab extends ExplorerPanel
-        implements DeferredPerformer.DeferredCommand, TopComponent.Cloneable {
+        implements /*DeferredPerformer.DeferredCommand,*/ TopComponent.Cloneable {
         static final long serialVersionUID =-8202452314155464024L;
         /** composited view */
         protected TreeView view;
@@ -552,7 +540,8 @@ public final class NbMainExplorer extends CloneableTopComponent
 
         /** Ensures that component is valid before opening */
         public void open (Workspace workspace) {
-            performCommand(null);
+            setValidRootContext();
+            
             super.open(workspace);
         }
 
@@ -575,7 +564,7 @@ public final class NbMainExplorer extends CloneableTopComponent
         // serializable (getHandle returns null).
         /** Adjusts this component persistence according
          * root context node persistence ability. */
-        void adjustComponentPersistence() {
+        public void adjustComponentPersistence() {
             Node.Handle handle = getExplorerManager().getRootContext().getHandle();
             if(handle == null) {
                 // Not persistent.
@@ -603,11 +592,7 @@ public final class NbMainExplorer extends CloneableTopComponent
             return this;
         }
 
-        /** Implementation of DeferredPerformer.DeferredCommand
-        * Performs initialization of component's attributes
-        * after deserialization (component's name, icon etc, 
-        * according to the root context) */
-        public void performCommand (DeferredPerformer.DeferredContext context) {
+        private void setValidRootContext() {
             if (!valid) {
                 valid = true;
                 validateRootContext();
@@ -679,7 +664,7 @@ public final class NbMainExplorer extends CloneableTopComponent
         // deserialization, so we must wait for it
         protected final void scheduleValidation() {
             valid = false;
-            DeferredPerformer.getDefault().putRequest(this, null);
+            setValidRootContext();
         }
         
         /* Updated accessible name of the tree view */
@@ -1144,13 +1129,7 @@ public final class NbMainExplorer extends CloneableTopComponent
         RootsListener() {}
         
         public void stateChanged(ChangeEvent e) {
-
-                // possible change in list of roots
-                // defer refresh request if window system is in inconsistent state
-                DeferredPerformer.getDefault().putRequest(
-                    NbMainExplorer.getExplorer(), 
-                    new DeferredPerformer.DeferredContext(null, true)
-                );
+            NbMainExplorer.getExplorer().doOpen(null);
         }
     } // end of RootsListener inner class
 

@@ -19,7 +19,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.Mutex;
 
-import org.netbeans.core.*;
+import org.netbeans.core.NbSheet;
 
 /** Opens properties that listen on global changes of selected nodes and update itself.
 *
@@ -34,7 +34,7 @@ public final class GlobalPropertiesAction extends CallableSystemAction implement
     }
 
     public void run() {
-        TopComponent c = NbNodeOperation.Sheet.getDefault ();
+        TopComponent c = NbSheet.getDefault ();
         c.open ();
         c.requestFocus();
     }

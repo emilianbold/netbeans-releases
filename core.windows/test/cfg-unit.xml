@@ -38,9 +38,10 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="ide" name="testbag_1" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/core/filesystems/*.class"/>
-                <include name="org/netbeans/beaninfo/editors/*.class"/>
-                <exclude name="org/netbeans/core/filesystems/MIMEResolverImplTest.class"/>
+                <include name="org/netbeans/core/windows/*.class"/>
+                <exclude name="org/netbeans/core/windows/LazyLoadingTest.class"/>
+                <exclude name="org/netbeans/core/windows/UIModeManagerTest.class"/>
+                <exclude name="org/netbeans/core/windows/APITests1.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -48,6 +49,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="ide" name="testbag_2" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
+                <include name="org/netbeans/core/windows/layers/*.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -55,18 +57,6 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="code" name="testbag_3" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/core/*Test.class"/>
-                <exclude name="org/netbeans/core/AutomountSupportTest.class"/>
-                <exclude name="org/netbeans/core/PlainTest.class/testPlainShowsNoGUI"/>
-                <exclude name="org/netbeans/core/BundleKeysTest.class"/> <!-- see JellyTools_compatibility -->
-                <include name="org/netbeans/core/modules/*Test.class"/>
-                <include name="org/netbeans/core/modules/*Test?.class"/>
-                <include name="org/netbeans/core/projects/SystemFileSystemTest.class"/>
-                <include name="org/netbeans/core/projects/cache/*Test.class"/>
-                <include name="org/netbeans/core/lookup/*Test.class"/>
-                <include name="org/netbeans/core/lookup/*Test?.class"/>
-                <exclude name="org/netbeans/core/lookup/InstanceDataObjectModuleTest4.class"/>
-                <include name="org/netbeans/PatchByteCodeTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -74,14 +64,6 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="failing" executor="code" name="testbag_4" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
-                <!-- Under investigation why it fails (probably "as designed"): -->
-                <include name="org/netbeans/core/lookup/InstanceDataObjectModuleTest4.class"/>
-                <!-- Seems to fail consistently on tester machine. Cannot reproduce on workstation. TBD. -->
-                <!-- Window displayed always says: "Exception". So something is being thrown by something else. -->
-                <!-- But there is no way to track down what that is. When core-windows.jar includes all -->
-                <!-- GUI stuff, and plain core does not show dialogs for exceptions, this will be fixable. -->
-                <include name="org/netbeans/core/PlainTest.class/testPlainShowsNoGUI"/>
-                <include name="org/netbeans/core/AutomountSupportTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -89,7 +71,6 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="failing" executor="ide" name="testbag_5" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/core/filesystems/MIMEResolverImplTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -97,6 +78,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="ide" name="testbag_6" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
+                <include name="org/netbeans/core/windows/LazyLoadingTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -104,9 +86,9 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="ide" name="JellyTools_compatibility" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/lib/terminalemulator/TermTest.class"/>
-                <include name="org/netbeans/core/projects/FileStatePropertyTest.class"/>
-                <include name="org/netbeans/core/BundleKeysTest.class"/>
+                <include name="org/netbeans/core/windows/awt/TabControlTest.class"/>
+                <include name="org/netbeans/core/windows/frames/PerimeterPaneTest.class"/>
+                <include name="org/netbeans/core/windows/UIModeManagerTest.class"/>
             </patternset>
         </testset>
     </testbag>
