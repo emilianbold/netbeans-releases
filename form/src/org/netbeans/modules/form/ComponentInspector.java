@@ -425,7 +425,9 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
     // --------------
 
     public UndoRedo getUndoRedo() {
-        return focusedForm != null ? focusedForm.getFormUndoManager() : null;
+        UndoRedo ur = focusedForm != null ?
+                          focusedForm.getFormUndoManager() : null;
+        return ur != null ? ur : super.getUndoRedo();
     }
 
     public HelpCtx getHelpCtx() {

@@ -187,8 +187,9 @@ public class FormDesigner extends TopComponent
     }
 
     public UndoRedo getUndoRedo() {
-        return formEditorSupport != null ?
-               formEditorSupport.getFormUndoManager() : null;
+        UndoRedo ur = formEditorSupport != null ?
+                          formEditorSupport.getFormUndoManager() : null;
+        return ur != null ? ur : super.getUndoRedo();
     }
 
     void updateActivatedNodes() {
