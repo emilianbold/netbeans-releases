@@ -659,6 +659,26 @@ Included in JDK 1.3, else you may need to download it separately."/>
     <nbinstaller action="reinstall" module="examplemodules/minicomposer-test/minicomposer.jar"/>
   </target>
 
+  <target name="example-globalactions-test-build" description="Build globalactions for testing purposes.">
+    <javac srcdir="api/examples" destdir="api/examples">
+      <include name="org/netbeans/examples/modules/globalactions/"/>
+      <classpath>
+        <fileset dir="../openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
+      </classpath>
+    </javac>
+    <mkdir dir="examplemodules/globalactions-test"/>
+    <jar jarfile="examplemodules/globalactions-test/globalactions.jar"
+         manifest="api/examples/org/netbeans/examples/modules/globalactions.mf"
+	 basedir="api/examples"
+	 includes="org/netbeans/examples/modules/globalactions/"
+	 compress="false"/>
+  </target>
+  <target name="example-globalactions-test" depends="example-globalactions-test-build" description="Try installing globalactions into running IDE.">
+    <nbinstaller action="reinstall" module="examplemodules/globalactions-test/globalactions.jar"/>
+  </target>
+
   <target name="openidex-all" depends="netbeans">
     <ant dir="../openidex"/>
   </target>
