@@ -305,7 +305,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module apisupport lite..."/>
     <ant dir="../apisupport/lite" target="netbeans"/>
   </target>
-  <target name="all-applet" depends="build-platform,all-debuggercore,all-java/srcmodel,all-openide/compiler,all-debuggercore/oldapi">
+  <target name="all-applet" depends="build-platform,all-debuggercore">
     <echo message="Building module applet..."/>
     <ant dir="../applet" target="netbeans"/>
   </target>
