@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -133,7 +133,7 @@ public final class LoaderPoolNode extends AbstractNode {
     /** Really adds the loader.
      */
     private static synchronized void doAdd (DataLoader l, ManifestSection.LoaderSection s) throws Exception {
-        if (err.isLoggable(ErrorManager.UNKNOWN)) {
+        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
             List before = s.getInstallBefore() == null ? null : Arrays.asList(s.getInstallBefore());
             List after = s.getInstallAfter() == null ? null : Arrays.asList(s.getInstallAfter());
             err.log("add: " + l + " repclass: " + l.getRepresentationClass().getName() + " before: " + before + " after: " + after);
@@ -251,7 +251,7 @@ public final class LoaderPoolNode extends AbstractNode {
                                err.log (ErrorManager.USER, "Probably you wanted " + otherRepn + " which is the loader's representation class."); // NOI18N
                            }
                        };
-        if (err.isLoggable(ErrorManager.UNKNOWN)) {
+        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
             err.log("Before sort: " + loaders);
         }
         try {
@@ -260,7 +260,7 @@ public final class LoaderPoolNode extends AbstractNode {
             err.notify (ErrorManager.WARNING, uue);
             // leave order as it was
         }
-        if (err.isLoggable(ErrorManager.UNKNOWN)) {
+        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
             err.log("After sort: " + loaders);
         }
         update ();
@@ -281,7 +281,7 @@ public final class LoaderPoolNode extends AbstractNode {
     */
     private static synchronized void writePool (ObjectOutputStream oos)
     throws IOException {
-        err.log ("writePool");
+        if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("writePool");
         oos.writeObject (installBefores);
         oos.writeObject (installAfters);
         
@@ -302,7 +302,7 @@ public final class LoaderPoolNode extends AbstractNode {
             }
 
             if (obj != null) {
-                err.log ("writing " + l.getDisplayName ());
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("writing " + l.getDisplayName ());
                 // Find its module, if any.
                 Class c = l.getClass();
                 Iterator mit = modules.iterator();
@@ -310,7 +310,7 @@ public final class LoaderPoolNode extends AbstractNode {
                 while (mit.hasNext()) {
                     ModuleInfo m = (ModuleInfo)mit.next();
                     if (m.isEnabled() && m.owns(c)) {
-                        err.log("belongs to module: " + m.getDisplayName());
+                        if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("belongs to module: " + m.getDisplayName());
                         oos.writeObject(m.getCodeNameBase());
                         int r = m.getCodeNameRelease();
                         oos.writeInt(r); // might be -1, note
@@ -325,7 +325,7 @@ public final class LoaderPoolNode extends AbstractNode {
                     }
                 }
                 if (!found) {
-                    err.log("does not belong to any module");
+                    if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("does not belong to any module");
                     // just write the NbMarshalledObject<DataLoader> itself;
                     // we need to support that for compatibility of old loader
                     // pools anyway
@@ -333,7 +333,7 @@ public final class LoaderPoolNode extends AbstractNode {
                 oos.writeObject (obj);
             }
         }
-        err.log ("writing null");
+        if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("writing null");
         oos.writeObject (null);
 
         // Write out system loaders now:
@@ -349,15 +349,15 @@ public final class LoaderPoolNode extends AbstractNode {
                 obj = null;
             }
             if (obj != null) {
-                err.log ("writing " + l.getDisplayName ());
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("writing " + l.getDisplayName ());
                 // No associated module, no need to write such info.
                 oos.writeObject (obj);
             }
         }
-        err.log ("writing null");
+        if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("writing null");
         oos.writeObject (null);
 
-        err.log ("done writing");
+        if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("done writing");
     }
 
     /** Reads loader from the input stream.
@@ -390,7 +390,7 @@ public final class LoaderPoolNode extends AbstractNode {
         for (;;) {
             Object o1 = ois.readObject();
             if (o1 == null) {
-                err.log ("reading null");
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("reading null");
                 break;
             }
             NbMarshalledObject obj;
@@ -402,25 +402,25 @@ public final class LoaderPoolNode extends AbstractNode {
                 obj = (NbMarshalledObject)ois.readObject();
                 ModuleInfo m = (ModuleInfo)modules.get(name);
                 if (m == null) {
-                    err.log("No known module " + name + ", skipping loader");
+                    if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("No known module " + name + ", skipping loader");
                     continue;
                 }
                 if (!m.isEnabled()) {
-                    err.log("Module " + name + " is disabled, skipping loader");
+                    if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("Module " + name + " is disabled, skipping loader");
                     continue;
                 }
                 if (m.getCodeNameRelease() < rel) {
-                    err.log("Module " + name + " is too old (major vers.), skipping loader");
+                    if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("Module " + name + " is too old (major vers.), skipping loader");
                     continue;
                 }
                 if (spec != null) {
                     SpecificationVersion v = m.getSpecificationVersion();
                     if (v == null || v.compareTo(new SpecificationVersion(spec)) < 0) {
-                        err.log("Module " + name + " is too old (spec. vers.), skipping loader");
+                        if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("Module " + name + " is too old (spec. vers.), skipping loader");
                         continue;
                     }
                 }
-                err.log("Module " + name + " is OK, will try to restore loader");
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("Module " + name + " is OK, will try to restore loader");
             } else {
                 // Loader with no known module, or backward compatibility.
                 obj = (NbMarshalledObject)o1;
@@ -430,7 +430,7 @@ public final class LoaderPoolNode extends AbstractNode {
             try {
                 DataLoader loader = (DataLoader)obj.get ();
                 Class clazz = loader.getClass();
-                err.log ("reading " + loader.getDisplayName () + " [" + clazz.getName() + "]");
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("reading " + loader.getDisplayName () + " [" + clazz.getName() + "]");
                 l.add (loader);
                 classes.add (clazz);
             } catch (IOException ex) {
@@ -455,14 +455,14 @@ public final class LoaderPoolNode extends AbstractNode {
         for (;;) {
             NbMarshalledObject obj = (NbMarshalledObject) ois.readObject ();
             if (obj == null) {
-                err.log ("reading null");
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("reading null");
                 break;
             }
             Exception t = null;
             try {
                 // Just reads its shared state, nothing more.
                 DataLoader loader = (DataLoader) obj.get ();
-                err.log ("reading " + loader.getDisplayName ());
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("reading " + loader.getDisplayName ());
             } catch (IOException ex) {
                 t = ex;
             } catch (ClassNotFoundException ex) {
@@ -481,7 +481,7 @@ public final class LoaderPoolNode extends AbstractNode {
             }
         }
 
-        err.log ("done reading");
+        if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("done reading");
 
         // Explanation: modules are permitted to restoreDefault () before
         // the loader pool is de-externalized. This means that all loader manifest
@@ -516,7 +516,7 @@ public final class LoaderPoolNode extends AbstractNode {
     /** Notification that the state of pool has changed
     */
     private static synchronized void update () {
-        err.log("update");
+        if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("update");
         // clear the cache of loaders
         loadersArray = null;
 
@@ -541,7 +541,7 @@ public final class LoaderPoolNode extends AbstractNode {
     */
     public static synchronized boolean remove (DataLoader dl) {
         if (loaders.remove (dl)) {
-            err.log("remove: " + dl);
+            if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("remove: " + dl);
             installBefores.remove (dl.getClass ().getName ());
             installAfters.remove (dl.getClass ().getName ());
             dl.removePropertyChangeListener (getNbLoaderPool ());
@@ -684,8 +684,7 @@ public final class LoaderPoolNode extends AbstractNode {
             try {
                 return new Node[] { new LoaderPoolItemNode ((DataLoader)loader) };
             } catch (IntrospectionException e) {
-                if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                    e.printStackTrace ();
+                err.notify(e);
                 return new Node[] { };
             }
         }
@@ -744,7 +743,7 @@ public final class LoaderPoolNode extends AbstractNode {
         /** Called from the request task */
         public void run () {
             super.fireChangeEvent(new ChangeEvent (this));
-            err.log ("change event fired");
+            if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("change event fired");
         }
 
 
