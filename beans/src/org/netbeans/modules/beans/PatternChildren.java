@@ -109,7 +109,6 @@ public class PatternChildren extends ClassChildren {
 
         // Method is added or removed ve have to re-analyze the pattern abd to
         // registrate Children as listener
-
         reassignMethodListener();
         reassignFieldListener();
         patternAnalyser.analyzeAll();
@@ -210,6 +209,8 @@ public class PatternChildren extends ClassChildren {
 
     final class MethodElementListener implements PropertyChangeListener {
         public void propertyChange ( PropertyChangeEvent e ) {
+            if( e.getSource() instanceof org.netbeans.modules.java.JavaDataObject ) //ignore
+                return;
             refreshKeys(PatternFilter.ALL);
             //patternAnalyser.analyzeAll();
         }
@@ -221,6 +222,8 @@ public class PatternChildren extends ClassChildren {
 
     final class FieldElementListener implements PropertyChangeListener {
         public void propertyChange ( PropertyChangeEvent e ) {
+            if( e.getSource() instanceof org.netbeans.modules.java.JavaDataObject ) //ignore
+                return;
             refreshKeys(PatternFilter.ALL);
             //reassignFieldListener();
             //patternAnalyser.resolveFields();
@@ -236,9 +239,7 @@ public class PatternChildren extends ClassChildren {
         public boolean equals( Object c ) {
             return c instanceof PatternComparator;
         }
-
     }
-
 }
 
 /*
