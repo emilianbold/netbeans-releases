@@ -21,6 +21,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <xsl:variable name="modules" select="document('modules.xml')/modules"/>
     <xsl:variable name="deps" select="/p:project/p:configuration/nbm:data/nbm:module-dependencies"/>
+    <xsl:variable name="path" select="/p:project/p:configuration/nbm:data/nbm:path"/>
     <xsl:variable name="public.packages">
         <xsl:variable name="pkgs" select="/p:project/p:configuration/nbm:data/nbm:public-packages"/>
         <xsl:choose>
@@ -42,11 +43,46 @@ Microsystems, Inc. All Rights Reserved.
 
 <xsl:comment> *** GENERATED FROM project.xml - DO NOT EDIT *** </xsl:comment>
 
-<project name="{/p:project/p:configuration/nbm:data/nbm:path}/impl" default="netbeans" basedir="..">
+<xsl:variable name="build.prerequisites">
+    <xsl:for-each select="$deps/nbm:dependency[nbm:build-prerequisite]">
+        <xsl:if test="position() &gt; 1">
+            <xsl:text>,</xsl:text>
+        </xsl:if>
+            <xsl:variable name="cnb" select="nbm:code-name-base"/>
+            <xsl:variable name="match" select="$modules/module[cnb = $cnb]"/>
+            <!--
+            <xsl:message>Found match: <xsl:value-of select="$match"/> for '<xsl:value-of select="$cnb"/>'</xsl:message>
+            -->
+            <xsl:choose>
+                <xsl:when test="count($match) = 0">
+                    <xsl:message>Warning: could not find module named <xsl:value-of select="$cnb"/>!</xsl:message>
+                </xsl:when>
+                <xsl:when test="count($match) > 1">
+                    <xsl:message>Warning: more than one match for module <xsl:value-of select="$cnb"/>!</xsl:message>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:text>all-</xsl:text>
+                    <xsl:value-of select="$match/path"/>
+                </xsl:otherwise>
+            </xsl:choose>
+    </xsl:for-each>
+</xsl:variable>
+<xsl:comment>
+NOTE: nbbuild/build.xml should contain:
+&lt;target name="all-<xsl:value-of select="$path"/>" depends="<xsl:value-of select="$build.prerequisites"/>"&gt;
+    &lt;echo message="Building module <xsl:value-of select="$path"/>..."/&gt;
+    &lt;ant dir="../<xsl:value-of select="$path"/>" target="netbeans"/&gt;
+&lt;/target&gt;
+</xsl:comment>
+
+
+<project name="{$path}/impl" default="netbeans" basedir="..">
 
     <target name="init">
         <property file="nbproject/private/private.properties"/>
+        <!--
         <property name="user.properties.file" location="${{netbeans.user}}/build.properties"/>
+        -->
         <property file="${{user.properties.file}}"/>
         <property file="nbproject/project.properties"/>
         <property name="code.name.base.dashes" value="{translate(/p:project/p:name, '.', '-')}"/>
@@ -93,7 +129,8 @@ Microsystems, Inc. All Rights Reserved.
             <path id="test.cp">
                 <path refid="cp"/>
                 <pathelement location="${{src.dir}}"/>
-                <pathelement location="${{libs.junit.classpath}}"/>
+                <pathelement location="${{nbroot}}/xtest/lib/junit.jar"/>
+                <pathelement location="${{nbroot}}/xtest/lib/nbjunit.jar"/>
                 <pathelement path="${{test.cp.extra}}"/>
             </path>
             <path id="test.run.cp">
