@@ -39,10 +39,25 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compile-regular" depends="init,warn-re-jdk13proxies">
     <javac srcdir="src" destdir="src">
       <exclude name="**/org/openide/util/WeakListener13.java" unless="jdk13proxies"/>
+      <!-- Needs core, it is deprecated anyway: -->
+      <exclude name="org/openide/loaders/ExtensionListEditor.java"/>
       <classpath>
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/parser.jar"/>
+      </classpath>
+    </javac>
+    <!-- Hack. Deprecated class. -->
+    <javac srcdir="../core/src" destdir="../core/src">
+      <include name="org/netbeans/beaninfo/editors/ExtensionListEditor.java"/>
+      <classpath>
+        <pathelement location="src"/>
+      </classpath>
+    </javac>
+    <javac srcdir="src" destdir="src">
+      <include name="org/openide/loaders/ExtensionListEditor.java"/>
+      <classpath>
+        <pathelement location="../core/src"/>
       </classpath>
     </javac>
   </target>
@@ -81,6 +96,7 @@ Microsystems, Inc. All Rights Reserved.
       <include name="org/openide/filesystems/LocalFileSystem.java"/>
       <include name="org/openide/filesystems/JarFileSystem.java"/>
       <include name="org/openide/filesystems/AbstractFileSystem.java"/>
+      <include name="org/openide/explorer/propertysheet/PropertyDialogManager.java"/>
     </preprocess>
   </target>
   
