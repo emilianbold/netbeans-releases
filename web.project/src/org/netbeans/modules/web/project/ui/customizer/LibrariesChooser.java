@@ -17,6 +17,7 @@ import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.project.WebProjectGenerator;
+import org.netbeans.modules.web.project.Utils;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -40,7 +41,7 @@ public class LibrariesChooser extends javax.swing.JPanel {
     /** Creates new form LibrariesChooser */
     public LibrariesChooser(Collection alreadySelectedLibs, String j2eePlatform) {
         initComponents();
-        jLabel2.setForeground(getErrorColor());
+        jLabel2.setForeground(Utils.getErrorColor());
         jList1.setPrototypeCellValue("0123456789012345678901234");      //NOI18N
         jList1.setModel(new LibrariesListModel());
         this.j2eePlatform = j2eePlatform;
@@ -77,12 +78,6 @@ public class LibrariesChooser extends javax.swing.JPanel {
             }
         }
         return true;
-    }
-
-    private static Color getErrorColor() {
-        // inspired by org.openide.WizardDescriptor
-        Color c = UIManager.getColor("nb.errorForeground"); //NOI18N
-        return c == null ? new Color(89,79,191) : c;
     }
 
     /** This method is called from within the constructor to

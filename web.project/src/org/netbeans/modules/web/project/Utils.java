@@ -21,6 +21,8 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 
@@ -273,4 +275,9 @@ public class Utils {
         return false;
     }
 
+    public static Color getErrorColor() {
+        // inspired by org.openide.WizardDescriptor
+        Color c = UIManager.getColor("nb.errorForeground"); //NOI18N
+        return c == null ? new Color(89,79,191) : c;
+    }
 }
