@@ -56,7 +56,7 @@ public class AntProjectDataLoaderBeanInfo extends SimpleBeanInfo {
 
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return loadImage ("/org/apache/tools/ant/module/resources/AntIcon.gif");
+            return org.openide.util.Utilities.loadImage ("org/apache/tools/ant/module/resources/AntIcon.gif");
         } else {
             return null;
         }
