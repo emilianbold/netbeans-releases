@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -55,6 +55,7 @@ import org.openide.ErrorManager;
  * Second panel of I18N Wizard.
  *
  * @author  Peter Zavadsky
+ * @author  Marian Petras
  * @see Panel
  */
 final class ResourceWizardPanel extends JPanel {
@@ -149,6 +150,16 @@ final class ResourceWizardPanel extends JPanel {
                 return label;
             }
         });
+
+        Component cellSample = new DefaultTableCellRenderer()
+                               .getTableCellRendererComponent(
+                                    resourcesTable, //table
+                                    "N/A",          //value             //NOI18N
+                                    false,          //isSelected
+                                    false,          //hasFocus
+                                    0, 0);          //row, column
+        int cellHeight = Math.max(16, cellSample.getPreferredSize().height);
+        resourcesTable.setRowHeight(cellHeight + resourcesTable.getRowMargin());
 
         resourcesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent evt) {

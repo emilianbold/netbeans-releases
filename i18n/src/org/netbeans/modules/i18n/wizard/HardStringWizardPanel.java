@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -69,6 +69,7 @@ import org.openide.DialogDisplayer;
  * It is the fourth and last panel of I18N Wizard.
  *
  * @author  Peter Zavadsky
+ * @author  Marian Petras
  * @see Panel
  */
 final class HardStringWizardPanel extends JPanel {
@@ -244,6 +245,16 @@ final class HardStringWizardPanel extends JPanel {
                 return super.getTableCellEditorComponent(table, value, isSelected, row, column);
             }
         });
+        
+        Component cellSample = new DefaultTableCellRenderer()
+                               .getTableCellRendererComponent(
+                                    hardStringTable,  //table
+                                    "N/A",            //value           //NOI18N
+                                    false,            //isSelected
+                                    false,            //hasFocus
+                                    0, 0);            //row, column
+        int cellHeight = Math.max(16, cellSample.getPreferredSize().height);
+        hardStringTable.setRowHeight(cellHeight + hardStringTable.getRowMargin());
         
         hardStringTable.getColumnModel().getColumn(COLUMN_INDEX_CUSTOM).setCellEditor(new CustomizeCellEditor());
 
