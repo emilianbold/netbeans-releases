@@ -79,6 +79,7 @@ public class BrokenReferencesModel extends AbstractListModel {
         String bundleID;
         switch (or.type) {
             case REF_TYPE_LIBRARY:
+            case REF_TYPE_LIBRARY_CONTENT:
                 bundleID = "LBL_BrokenLinksCustomizer_BrokenLibrary"; // NOI18N
                 break;
             case REF_TYPE_PROJECT:
@@ -103,6 +104,9 @@ public class BrokenReferencesModel extends AbstractListModel {
         switch (or.type) {
             case REF_TYPE_LIBRARY:
                 bundleID = "LBL_BrokenLinksCustomizer_BrokenLibraryDesc"; // NOI18N
+                break;
+            case REF_TYPE_LIBRARY_CONTENT:
+                bundleID = "LBL_BrokenLinksCustomizer_BrokenLibraryContentDesc"; // NOI18N
                 break;
             case REF_TYPE_PROJECT:
                 bundleID = "LBL_BrokenLinksCustomizer_BrokenProjectReferenceDesc"; // NOI18N
@@ -237,6 +241,7 @@ public class BrokenReferencesModel extends AbstractListModel {
                 set.add(new OneReference(REF_TYPE_LIBRARY, libraryRef, true));
             }
             else {
+                //XXX: Should check all the volumes (sources, javadoc, ...)?
                 List/*<URL>*/ cp = lib.getContent("classpath");    //NOI18N
                 for (Iterator cpIt = cp.iterator(); cpIt.hasNext();) {
                     URL url = (URL) cpIt.next();
@@ -244,7 +249,7 @@ public class BrokenReferencesModel extends AbstractListModel {
                         url = FileUtil.getArchiveFile (url);
                     }
                     if (URLMapper.findFileObject (url) == null) {
-                        set.add(new OneReference(REF_TYPE_LIBRARY, libraryRef, true));
+                        set.add(new OneReference(REF_TYPE_LIBRARY_CONTENT, libraryRef, true));
                     }
                 }
             }
@@ -407,6 +412,7 @@ public class BrokenReferencesModel extends AbstractListModel {
     public static final int REF_TYPE_FILE = 2;
     public static final int REF_TYPE_LIBRARY = 3;
     public static final int REF_TYPE_PLATFORM = 4;
+    public static final int REF_TYPE_LIBRARY_CONTENT = 5;
     
     public static class OneReference {
         
@@ -428,6 +434,7 @@ public class BrokenReferencesModel extends AbstractListModel {
             switch (type) {
                 
                 case REF_TYPE_LIBRARY:
+                case REF_TYPE_LIBRARY_CONTENT:
                     // libs.<name>.classpath
                     return ID.substring(5, ID.length()-10);
                     
