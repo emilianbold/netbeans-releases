@@ -267,6 +267,10 @@ public class ProjectTab extends TopComponent
     // SEARCHING NODES
     
     public boolean selectNode( Object object ) {
+        return selectNode (object, true);
+    }
+    
+    public boolean selectNode( Object object, boolean requestFocus ) {
         // System.out.println("Selecting node " + id + " : " + object );
         
         ProjectsRootNode root = (ProjectsRootNode)manager.getRootContext();
@@ -275,7 +279,9 @@ public class ProjectTab extends TopComponent
             try {
                 manager.setSelectedNodes( new Node[] { selectedNode } );
                 open();
-                requestActive();                
+                if (requestFocus) {
+                    requestActive();                
+                }
                 btv.scrollToNode(selectedNode);
                 return true;
             }

@@ -137,9 +137,9 @@ public class ProjectUtilities {
                 // select && expand if the focus is outside ProjectTab
                 SwingUtilities.invokeLater (new Runnable () {
                     public void run () {
-                        boolean success = ptLogial.selectNode (newDo.getPrimaryFile ());
+                        boolean success = ptLogial.selectNode (newDo.getPrimaryFile (), false);
                         if (!success) {
-                            ptPhysical.selectNode (newDo.getPrimaryFile ());
+                            ptPhysical.selectNode (newDo.getPrimaryFile (), false);
                         }
                     }
                 });
