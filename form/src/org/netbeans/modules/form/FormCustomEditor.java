@@ -24,10 +24,7 @@ import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.*;
 import java.beans.PropertyEditor;
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
@@ -38,7 +35,8 @@ import javax.swing.border.EmptyBorder;
  *
  * @author  Ian Formanek, Vladimir Zboril
  */
-public class FormCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
+public class FormCustomEditor extends JPanel
+                              implements EnhancedCustomPropertyEditor {
 
     private static final int DEFAULT_WIDTH  = 350;
     private static final int DEFAULT_HEIGHT = 350;
@@ -58,92 +56,116 @@ public class FormCustomEditor extends javax.swing.JPanel implements EnhancedCust
     /** Creates new form FormCustomEditor */
     public FormCustomEditor(FormPropertyEditor editor) {
         initComponents();
-        
-        advancedButton.setText(FormEditor.getFormBundle().getString("CTL_Advanced"));   // NOI18N
-        advancedButton.setMnemonic(FormEditor.getFormBundle().getString("CTL_Advanced_mnemonic").charAt(0));    // NOI18N
+
+        advancedButton.setText(FormEditor.getFormBundle().getString("CTL_Advanced")); // NOI18N
+        advancedButton.setMnemonic(FormEditor.getFormBundle().getString(
+                                        "CTL_Advanced_mnemonic").charAt(0)); // NOI18N
         advancedButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showAdvancedSettings();
             }
         });
         
-        jLabel1.setText(FormEditor.getFormBundle().getString("LAB_SelectMode"));   //NOI18N
-        jLabel1.setDisplayedMnemonic((FormEditor.getFormBundle().getString("LAB_SelectMode.mnemonic").charAt(0)));   //NOI18N
-        jLabel1.setLabelFor(jComboBox1);
+        jLabel1.setText(FormEditor.getFormBundle().getString("LAB_SelectMode")); //NOI18N
+        jLabel1.setDisplayedMnemonic((FormEditor.getFormBundle().getString(
+                                        "LAB_SelectMode.mnemonic").charAt(0))); //NOI18N
+        jLabel1.setLabelFor(editorsCombo);
         
+        HelpCtx.setHelpIDString(cardPanel, getClass().getName() + ".tabbedPane"); // NOI18N
+
         this.editor = editor;
         preCode = editor.getProperty().getPreCode();
         postCode = editor.getProperty().getPostCode();
         allEditors = editor.getAllEditors();
-        allCustomEditors = new Component[allEditors.length];
-        PropertyEditor currentlyUsedEditor = editor.getModifiedEditor();
-        if (currentlyUsedEditor == null) {
-            currentlyUsedEditor = allEditors[0];
-            editor.setModifiedEditor(currentlyUsedEditor);
-        } else if (!currentlyUsedEditor.getClass().equals(allEditors[0].getClass())) {
-            // if the current editor does not match any of available ones, we will use the first available instead of it
-            editor.setModifiedEditor(currentlyUsedEditor);
+
+        PropertyEditor currentEditor = editor.getModifiedEditor();
+        if (currentEditor == null) {
+            currentEditor = allEditors[0];
+            editor.setModifiedEditor(currentEditor);
         }
       
-        //**********************************    
-        HelpCtx.setHelpIDString(CardPanel, FormCustomEditor.class.getName() + ".tabbedPane"); // NOI18N
-            
-        int indexToSelect = -1;
-        for (int i = 0; i < allEditors.length; i++) {
-            editor.getPropertyContext().initPropertyEditor(allEditors[i]);
+        int currentIndex = -1;
 
-                if (allEditors[i].getClass().equals(currentlyUsedEditor.getClass()) && indexToSelect == -1) {
-                    allEditors[i].setValue(editor.getValue());
-                    indexToSelect = i;
-                } else {
-                    Object currValue = editor.getValue();
-                    boolean valueSet = false;
-                    if (currValue != null) {
-                        if (editor.getPropertyType().isAssignableFrom(currValue.getClass())) {
-                            allEditors[i].setValue(currValue); // current value is of the real property type
-                            valueSet = true;
-                        } else if (currValue instanceof FormDesignValue) {
-                            Object desValue = ((FormDesignValue)currValue).getDesignValue();
-                            if (desValue != FormDesignValue.IGNORED_VALUE) {
-                                allEditors[i].setValue(desValue); // current value is of the real property type
-                                valueSet = true;
-                            }
-                        }
-                    }
-                    if (!valueSet) {
-                        Object defValue = editor.getProperty().getDefaultValue();
-                        if (defValue != null) {
-                            allEditors[i].setValue(defValue);
-                        }
-                    }
-                }
-
-                String CardName;
-                if (allEditors[i] instanceof NamedPropertyEditor) {
-                    CardName =((NamedPropertyEditor)allEditors[i]).getDisplayName();
-                } else {
-                    CardName = Utilities.getShortClassName(allEditors[i].getClass());
-                }
-
-                Component custEd = null;
-                if (!allEditors[i].supportsCustomEditor() || (custEd = allEditors[i].getCustomEditor()) instanceof java.awt.Window) {
-                    javax.swing.JPanel p = new javax.swing.JPanel(new java.awt.GridBagLayout());
-                    p.add(new JLabel(FormEditor.getFormBundle().getString("CTL_PropertyEditorDoesNot")));   // NOI18N
-                    custEd = p;
-                }
-
-                allCustomEditors[i] = custEd;
-                CardPanel.add(CardName, custEd);
-                jComboBox1.addItem(CardName);
+        for (int i=0; i < allEditors.length; i++)
+            if (allEditors[i].getClass().equals(currentEditor.getClass())) {
+                currentIndex = i;
+                break;
             }
 
-            
-        if (indexToSelect == -1) {
-            // if the current editor does not match any of available ones, we will use the first available instaed of it
-            jComboBox1.setSelectedIndex(0);
-        } else {
-           jComboBox1.setSelectedIndex( indexToSelect); 
+        if (currentIndex == -1) {
+            PropertyEditor[] editors = new PropertyEditor[allEditors.length+1];
+            editors[0] = currentEditor;
+            System.arraycopy(allEditors, 0, editors, 1, allEditors.length);
+            allEditors = editors;
+            currentIndex = 0;
         }
+
+        allCustomEditors = new Component[allEditors.length];
+
+        Object currentValue = editor.getValue();
+
+        for (int i=0; i < allEditors.length; i++) {
+            PropertyEditor prEd = allEditors[i];
+            editor.getPropertyContext().initPropertyEditor(prEd);
+
+            if (i == currentIndex) { // this is the currently used editor
+                prEd.setValue(currentValue);
+            }
+            else {
+                boolean valueSet = false;
+                if (currentValue != null) {
+                    if (editor.getPropertyType().isAssignableFrom(
+                                                   currentValue.getClass())) {
+                        // currentValue contains a real property value
+                        prEd.setValue(currentValue);
+                        valueSet = true;
+                    }
+                    else if (currentValue instanceof FormDesignValue) {
+                        Object realValue =
+                            ((FormDesignValue)currentValue).getDesignValue();
+                        if (realValue != FormDesignValue.IGNORED_VALUE) {
+                            // current value is FormDesignValue with known real value
+                            prEd.setValue(realValue); 
+                            valueSet = true;
+                        }
+                    }
+                }
+                if (!valueSet) {
+                    Object defaultValue = editor.getProperty().getDefaultValue();
+                    if (defaultValue != null)
+                        prEd.setValue(defaultValue);
+                }
+            }
+
+            String editorName = prEd instanceof NamedPropertyEditor ?
+                        ((NamedPropertyEditor)prEd).getDisplayName() :
+                        Utilities.getShortClassName(prEd.getClass());
+
+            Component custEd = null;
+            if (!prEd.supportsCustomEditor()
+                    || (custEd = prEd.getCustomEditor()) instanceof Window) {
+                JPanel p = new JPanel(new GridBagLayout());
+                p.add(new JLabel(FormEditor.getFormBundle().getString(
+                                            "CTL_PropertyEditorDoesNot"))); // NOI18N
+                custEd = p;
+            }
+
+            allCustomEditors[i] = custEd;
+            cardPanel.add(editorName, custEd);
+            editorsCombo.addItem(editorName);
+        }
+
+        editorsCombo.setSelectedIndex(currentIndex);
+        CardLayout cl = (CardLayout) cardPanel.getLayout();
+        cl.show(cardPanel, (String) editorsCombo.getSelectedItem());
+
+        editorsCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CardLayout cl = (CardLayout) cardPanel.getLayout();
+                cl.show(cardPanel, (String) editorsCombo.getSelectedItem());
+                FormCustomEditor.this.editor.setModifiedEditor(getCurrentPropertyEditor());
+            }
+        });
     }
 
     /** This method is called from within the constructor to
@@ -152,20 +174,14 @@ public class FormCustomEditor extends javax.swing.JPanel implements EnhancedCust
      * always regenerated by the Form Editor.
      */
     private void initComponents() {//GEN-BEGIN:initComponents
-        jComboBox1 = new javax.swing.JComboBox();
+        editorsCombo = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
-        CardPanel = new javax.swing.JPanel();
+        cardPanel = new javax.swing.JPanel();
         advancedButton = new javax.swing.JButton();
         
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
-        
-        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jComboBox1ActionPerformed(evt);
-            }
-        });
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
@@ -173,7 +189,7 @@ public class FormCustomEditor extends javax.swing.JPanel implements EnhancedCust
         gridBagConstraints1.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints1.insets = new java.awt.Insets(12, 5, 0, 11);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(jComboBox1, gridBagConstraints1);
+        add(editorsCombo, gridBagConstraints1);
         
         jLabel1.setText("jLabel1");
         gridBagConstraints1 = new java.awt.GridBagConstraints();
@@ -187,7 +203,7 @@ public class FormCustomEditor extends javax.swing.JPanel implements EnhancedCust
         java.awt.GridBagConstraints gridBagConstraints2;
         
         jPanel1.setBorder(new javax.swing.border.EtchedBorder());
-        CardPanel.setLayout(new java.awt.CardLayout());
+        cardPanel.setLayout(new java.awt.CardLayout());
         
         gridBagConstraints2 = new java.awt.GridBagConstraints();
         gridBagConstraints2.gridx = 0;
@@ -197,7 +213,7 @@ public class FormCustomEditor extends javax.swing.JPanel implements EnhancedCust
         gridBagConstraints2.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints2.weightx = 1.0;
         gridBagConstraints2.weighty = 1.0;
-        jPanel1.add(CardPanel, gridBagConstraints2);
+        jPanel1.add(cardPanel, gridBagConstraints2);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -217,19 +233,12 @@ public class FormCustomEditor extends javax.swing.JPanel implements EnhancedCust
         
     }//GEN-END:initComponents
 
-    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
-        // Add your handling code here:
-        CardLayout cl = (CardLayout) CardPanel.getLayout();
-        cl.show(CardPanel, (String) jComboBox1.getSelectedItem());
-        FormCustomEditor.this.editor.setModifiedEditor(getCurrentPropertyEditor());
-    }//GEN-LAST:event_jComboBox1ActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox jComboBox1;
+    private javax.swing.JComboBox editorsCombo;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel CardPanel;
+    private javax.swing.JPanel cardPanel;
     private javax.swing.JButton advancedButton;
     // End of variables declaration//GEN-END:variables
     
@@ -283,13 +292,13 @@ public class FormCustomEditor extends javax.swing.JPanel implements EnhancedCust
     }
 
     public PropertyEditor getCurrentPropertyEditor() {
-        int index = jComboBox1.getSelectedIndex();
+        int index = editorsCombo.getSelectedIndex();
         return (index == -1) ? null : allEditors[index];
     }
 
     
     public Component getCurrentCustomPropertyEditor() {
-        int index = jComboBox1.getSelectedIndex();
+        int index = editorsCombo.getSelectedIndex();
         return (index == -1) ? null : allCustomEditors[index];
     }
 }
