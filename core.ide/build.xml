@@ -52,7 +52,13 @@ Microsystems, Inc. All Rights Reserved.
         </locjar>
     </target>
 
-    <target name="netbeans" depends="jars">
+    <target name="release">
+        <copy todir="netbeans" includeEmptyDirs="false">
+            <fileset dir="release" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
+        </copy>
+    </target>
+
+    <target name="netbeans" depends="jars,release">
         <genlist targetname="nbm" outputfiledir="../../nbbuild/netbeans"/>
     </target>
 
