@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,6 +15,9 @@
 package org.netbeans.core.windows.services;
 
 
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import javax.swing.JDialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -46,11 +49,19 @@ public class DialogDisplayerImpl extends DialogDisplayer {
                     return new NbDialog(d, NbPresenter.currentModalDialog);
                 }
                 else {
-                    Frame f = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow() 
-                        instanceof Frame ? 
-                        (Frame) KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow() 
-                        : WindowManager.getDefault().getMainWindow();
-                    return new NbDialog(d, f);
+                    if (KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow() instanceof Dialog) {
+                        NbDialog dlg = new NbDialog(d, (Dialog)KeyboardFocusManager.getCurrentKeyboardFocusManager ().getActiveWindow ());
+                        dlg.requestFocusInWindow ();
+                        return dlg;
+                    } else {
+                        Frame f = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow() 
+                            instanceof Frame ? 
+                            (Frame) KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow() 
+                            : WindowManager.getDefault().getMainWindow();
+                        NbDialog dlg = new NbDialog(d, f);
+                        dlg.requestFocusInWindow ();
+                        return dlg;
+                    }
                 }
             }
         });
