@@ -29,11 +29,15 @@ import org.openide.text.NbDocument;
 import org.openide.util.*;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
+import org.w3c.dom.events.Event;
+import org.w3c.dom.events.EventListener;
+import org.w3c.dom.events.EventTarget;
 import org.xml.sax.*;
 import threaddemo.model.*;
 import threaddemo.util.*;
 
-// XXX needs to attach a DOM event listener to the DOM document to handle structure changes
+// XXX after Broken, edits do not recreate doc
+// XXX should maybe show stale value during delays    
 
 /**
  * Support class for DOM provider interface.
@@ -42,7 +46,7 @@ import threaddemo.util.*;
  * using the {@link TwoWaySupport} semantics.
  * @author Jesse Glick
  */
-public final class DomSupport extends DocumentParseSupport implements DomProvider, ErrorHandler, TwoWayListener, EntityResolver {
+public final class DomSupport extends DocumentParseSupport implements DomProvider, ErrorHandler, TwoWayListener, EntityResolver, EventListener {
     
     static {
         // Need Xerces DOM - Crimson's DOM has no event support.
@@ -50,19 +54,17 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     }
     
     private final Phadhail ph;
-    private final Mutex mutex;
     private final Set listeners = new HashSet();
     
     public DomSupport(Phadhail ph, EditorCookie.Observable edit, Mutex mutex) {
         super(edit, mutex);
         this.ph = ph;
-        this.mutex = mutex;
         addTwoWayListener(this);
     }
     
     public Document getDocument() throws IOException {
         try {
-            return (Document)mutex.readAccess(new Mutex.ExceptionAction() {
+            return (Document)getMutex().readAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
                     try {
                         Object v = getValueBlocking();
@@ -79,9 +81,15 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     }
     
     public void setDocument(final Document d) throws IOException {
+        if (d == null) throw new NullPointerException();
         try {
-            mutex.writeAccess(new Mutex.ExceptionAction() {
+            getMutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
+                    Document old = (Document)getStaleValueNonBlocking();
+                    if (old != null && old != d) {
+                        ((EventTarget)old).removeEventListener("DOMSubtreeModified", DomSupport.this, false);
+                        ((EventTarget)d).addEventListener("DOMSubtreeModified", DomSupport.this, false);
+                    }
                     try {
                         mutate(d);
                         return null;
@@ -98,7 +106,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     }
     
     public boolean isReady() {
-        return ((Boolean)mutex.readAccess(new Mutex.Action() {
+        return ((Boolean)getMutex().readAccess(new Mutex.Action() {
             public Object run() {
                 return getValueNonBlocking() != null ? Boolean.TRUE : Boolean.FALSE;
             }
@@ -110,7 +118,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     }
     
     public Mutex mutex() {
-        return mutex;
+        return getMutex();
     }
     
     public void addChangeListener(ChangeListener l) {
@@ -134,7 +142,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
             ls = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
         }
         final ChangeEvent ev = new ChangeEvent(this);
-        mutex.readAccess(new Mutex.Action() {
+        getMutex().readAccess(new Mutex.Action() {
             public Object run() {
                 System.err.println("DS.fireChange");
                 for (int i = 0; i < ls.length; i++) {
@@ -146,8 +154,11 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     }
     
     protected final DerivationResult doDerive(StyledDocument document, List documentEvents, Object oldValue) throws IOException {
+        // ignoring documentEvents
         System.err.println("DS.doDerive");//XXX
-        // ignoring documentEvents, oldValue
+        if (oldValue != null) {
+            ((EventTarget)oldValue).removeEventListener("DOMSubtreeModified", this, false);
+        }
         String text;
         try {
             text = document.getText(0, document.getLength());
@@ -161,6 +172,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
         } catch (SAXException e) {
             throw (IOException)new IOException(e.toString()).initCause(e);
         }
+        ((EventTarget)newValue).addEventListener("DOMSubtreeModified", this, false);
         // This impl does not compute structural diffs, so newValue == derivedDelta when modified:
         return new DerivationResult(newValue, oldValue != null ? newValue : null);
     }
@@ -214,6 +226,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     }
     
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+        // Ignore external entities.
         return new InputSource(new ByteArrayInputStream(new byte[0]));
     }
     
@@ -246,6 +259,27 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     public void recreated(TwoWayEvent.Recreated evt) {
         System.err.println("Received: " + evt);//XXX
         fireChange();
+    }
+    
+    public void handleEvent(final Event evt) {
+        try {
+            getMutex().writeAccess(new Mutex.Action() {
+                public Object run() {
+                    Document d = (Document)evt.getCurrentTarget();
+                    Document old = (Document)getValueNonBlocking();
+                    assert old == null || old == d;
+                    try {
+                        setDocument(d);
+                    } catch (IOException e) {
+                        assert false : e;
+                    }
+                    return null;
+                }
+            });
+        } catch (RuntimeException e) {
+            // Xerces ignores them.
+            e.printStackTrace();
+        }
     }
     
 }
