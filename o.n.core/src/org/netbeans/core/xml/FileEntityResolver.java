@@ -393,7 +393,15 @@ final class FileEntityResolver extends EntityCatalog implements Environment.Prov
                 reader.parse(is);
             } catch (StopSaxException ex) {
             } catch (Exception ex) { // SAXException, FileNotFoundException, IOException
-                ErrorManager.getDefault().notify(ex);
+                try {
+                    // #25082: do not notify an exception if the file comes
+                    // from other filesystem than the system filesystem
+                    if (src.getFileSystem() == Repository.getDefault().getDefaultFileSystem()) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+                } catch (org.openide.filesystems.FileStateInvalidException fie) {
+                    // ignore
+                }
             }
         }
         
