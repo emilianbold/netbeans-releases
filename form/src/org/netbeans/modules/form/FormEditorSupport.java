@@ -1130,10 +1130,19 @@ public class FormEditorSupport extends JavaEditor
         MultiViewDescription[] descs = new MultiViewDescription[] {
             new JavaDesc(formDataObject), new FormDesc(formDataObject) };
 
-        return MultiViewFactory.createCloneableMultiView(
+        CloneableTopComponent mvtc =  
+              MultiViewFactory.createCloneableMultiView(
                                     descs,
                                     descs[elementToOpen],
                                     new CloseHandler(formDataObject));
+        
+        // #45665 - dock into editor mode if possible..
+        Workspace current = WindowManager.getDefault().getCurrentWorkspace();
+        Mode editorMode = current.findMode(EDITOR_MODE);
+        if (editorMode != null) {
+            editorMode.dockInto(mvtc);
+        }
+        return mvtc;
     }
     
     private static String getMVTCToolTipText(FormDataObject formDataObject) {
