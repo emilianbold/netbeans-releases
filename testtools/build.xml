@@ -52,6 +52,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${jdkhome}/lib/tools.jar"/>
         <fileset dir="${nbroot}/core/external">
           <include name="xerces*.jar"/>
+          <include name="xml-apis*.jar"/>
         </fileset>
       </classpath>
     </javac>
