@@ -19,6 +19,14 @@ Microsystems, Inc. All Rights Reserved.
 			<path>websvc/core</path>
 			<module-dependencies>
 				<dependency>
+					<code-name-base>org.netbeans.modules.schema2beans</code-name-base>
+					<build-prerequisite/>
+					<compile-dependency/>
+					<run-dependency>
+						<release-version>1</release-version>
+					</run-dependency>
+				</dependency>
+				<dependency>
 					<code-name-base>org.netbeans.modules.projectapi</code-name-base>
 					<build-prerequisite/>
 					<compile-dependency/>
@@ -74,6 +82,15 @@ Microsystems, Inc. All Rights Reserved.
 				</dependency>
 				<dependency>
 					<code-name-base>org.netbeans.modules.xml.core</code-name-base>
+					<build-prerequisite/>
+					<compile-dependency/>
+					<run-dependency>
+						<release-version>2</release-version>
+						<!-- XXX how to specify impl dep? -->
+					</run-dependency>
+				</dependency>
+				<dependency>
+					<code-name-base>org.netbeans.modules.xml.catalog</code-name-base>
 					<build-prerequisite/>
 					<compile-dependency/>
 					<run-dependency>
