@@ -66,11 +66,11 @@ public class SwingBrowserBeanInfo extends SimpleBeanInfo {
             try {
                 eventSets[0] = new EventSetDescriptor (
                     SwingBrowser.class, 
-                    "propertyChangeListener", 
+                    "propertyChangeListener", // NOI18N
                     PropertyChangeListener.class, 
-                    new String[] {"propertyChange"}, 
-                    "addPropertyChangeListener", 
-                    "removePropertyChangeListener"
+                    new String[] {"propertyChange"}, // NOI18N
+                    "addPropertyChangeListener", // NOI18N
+                    "removePropertyChangeListener" // NOI18N
                 );   // NOI18N
             }
             catch( IntrospectionException e) {}

@@ -116,7 +116,7 @@ public class DataLoaderPool {
         public PropertyDescriptor[] getPropertyDescriptors () {
             try {
                 // Hide the actions property from users, since shadows inherit actions anyway:
-                Class c = Class.forName ("org.openide.loaders.DataLoaderPool$ShadowLoader");
+                Class c = Class.forName ("org.openide.loaders.DataLoaderPool$ShadowLoader"); // NOI18N
                 PropertyDescriptor actions = new PropertyDescriptor ("actions", c); // NOI18N
                 actions.setHidden (true);
                 return new PropertyDescriptor[] { actions };

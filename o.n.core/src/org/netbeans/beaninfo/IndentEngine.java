@@ -33,7 +33,7 @@ public abstract class IndentEngine {
         static {
             Class c;
             try {
-                c = Class.forName("org.openide.text.IndentEngine$Default");
+                c = Class.forName("org.openide.text.IndentEngine$Default"); // NOI18N
             } catch (Exception e) {
                 throw new IllegalStateException();
             }
