@@ -109,6 +109,9 @@ MultiViewDescription returns PERSISTENCE_NEVER, it should be possible
 to serialize the Description instance. After restoration the
 deserialized instance will create a fresh MultiViewElement instance.<br>
 <br>
+If you define your own <code>CloseOperationHandler</code> implementation for the multiview component, then you also ought to define it
+Serializable.
+<br>
 When restoring the multiview TopComponent, all the
 MultiViewDescriptions are deserialized, also all the stored
 MultiViewElements are deserialized.&nbsp; These are kept and the
