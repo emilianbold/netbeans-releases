@@ -41,6 +41,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -49,9 +50,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-
-// XXX various methods need to acquire read or write mutex!
 
 /**
  * Support class for implementing Ant-based projects.
@@ -99,6 +97,8 @@ public final class AntProjectHelper {
             }
         };
     }
+    
+    private static final RequestProcessor RP = new RequestProcessor("AntProjectHelper.RP"); // NOI18N
     
     /**
      * Project base directory.
@@ -178,31 +178,34 @@ public final class AntProjectHelper {
      * private.xml is created as a skeleton on demand.
      */
     private Document getConfigurationXml(boolean shared) {
-        Document xml = shared ? projectXml : privateXml;
-        if (xml == null) {
-            String path = shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH;
-            xml = loadXml(path);
+        assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
+        synchronized (modifiedMetadataPaths) { // can be in read lock only; modifiedMetadataPaths is a convenient lock
+            Document xml = shared ? projectXml : privateXml;
             if (xml == null) {
-                // Missing or broken; create a skeleton.
-                String element = shared ? "project" : "private"; // NOI18N
-                String ns = shared ? PROJECT_NS : PRIVATE_NS;
-                xml = XMLUtil.createDocument(element, ns, null, null);
+                String path = shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH;
+                xml = loadXml(path);
+                if (xml == null) {
+                    // Missing or broken; create a skeleton.
+                    String element = shared ? "project" : "private"; // NOI18N
+                    String ns = shared ? PROJECT_NS : PRIVATE_NS;
+                    xml = XMLUtil.createDocument(element, ns, null, null);
+                    if (shared) {
+                        // #46048: need to generate minimal compliant XML skeleton.
+                        Element typeEl = xml.createElementNS(PROJECT_NS, "type"); // NOI18N
+                        typeEl.appendChild(xml.createTextNode(getType().getType()));
+                        xml.getDocumentElement().appendChild(typeEl);
+                        xml.getDocumentElement().appendChild(xml.createElementNS(PROJECT_NS, "configuration")); // NOI18N
+                    }
+                }
                 if (shared) {
-                    // #46048: need to generate minimal compliant XML skeleton.
-                    Element typeEl = xml.createElementNS(PROJECT_NS, "type"); // NOI18N
-                    typeEl.appendChild(xml.createTextNode(getType().getType()));
-                    xml.getDocumentElement().appendChild(typeEl);
-                    xml.getDocumentElement().appendChild(xml.createElementNS(PROJECT_NS, "configuration")); // NOI18N
+                    projectXml = xml;
+                } else {
+                    privateXml = xml;
                 }
             }
-            if (shared) {
-                projectXml = xml;
-            } else {
-                privateXml = xml;
-            }
+            assert xml != null;
+            return xml;
         }
-        assert xml != null;
-        return xml;
     }
     
     /**
@@ -216,6 +219,7 @@ public final class AntProjectHelper {
      * If the file does not exist, or there is any load error, return null.
      */
     private Document loadXml(String path) {
+        assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         FileObject xml = dir.getFileObject(path);
         if (xml == null || !xml.isData()) {
             return null;
@@ -241,6 +245,7 @@ public final class AntProjectHelper {
      * If the file does not yet exist, it is created.
      */
     private void saveXml(final Document doc, final String path) throws IOException {
+        assert ProjectManager.mutex().isWriteAccess();
         assert !writingXML;
         writingXML = true;
         try {
@@ -310,6 +315,7 @@ public final class AntProjectHelper {
      * @return the data root
      */
     private Element getConfigurationDataRoot(boolean shared) {
+        assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         Document doc = getConfigurationXml(shared);
         if (shared) {
             Element project = doc.getDocumentElement();
@@ -349,11 +355,26 @@ public final class AntProjectHelper {
      * @param path path to the changed file (XML or properties)
      */
     void fireExternalChange(final String path) {
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-            public void run() {
+        final Mutex.Action action = new Mutex.Action() {
+            public Object run() {
                 fireChange(path, false);
+                return null;
             }
-        });
+        };
+        if (ProjectManager.mutex().isWriteAccess()) {
+            // Run it right now. postReadRequest would be too late.
+            ProjectManager.mutex().readAccess(action);
+        } else if (ProjectManager.mutex().isReadAccess()) {
+            // Run immediately also. No need to switch to read access.
+            action.run();
+        } else {
+            // Not safe to acquire a new lock, so run later in read access.
+            RP.post(new Runnable() {
+                public void run() {
+                    ProjectManager.mutex().readAccess(action);
+                }
+            });
+        }
     }
 
     /**
@@ -363,7 +384,7 @@ public final class AntProjectHelper {
      * @param expected true if the result of an API-initiated change, false if from external causes
      */
     private void fireChange(String path, boolean expected) {
-        assert ProjectManager.mutex().isWriteAccess();
+        assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         final AntProjectListener[] _listeners;
         synchronized (listeners) {
             if (listeners.isEmpty()) {
@@ -396,6 +417,7 @@ public final class AntProjectHelper {
      * Call when explicitly modifying some piece of metadata.
      */
     private void modifying(String path) {
+        assert ProjectManager.mutex().isWriteAccess();
         state.markModified();
         modifiedMetadataPaths.add(path);
         fireChange(path, true);
@@ -414,6 +436,7 @@ public final class AntProjectHelper {
      * Should only be called from {@link ProjectGenerator#createProject}.
      */
     void markModified() {
+        assert ProjectManager.mutex().isWriteAccess();
         state.markModified();
         // To make sure projectXmlSaved is called:
         modifiedMetadataPaths.add(PROJECT_XML_PATH);
@@ -425,6 +448,7 @@ public final class AntProjectHelper {
      * Access from GeneratedFilesHelper.
      */
     boolean isProjectXmlModified() {
+        assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         return modifiedMetadataPaths.contains(PROJECT_XML_PATH);
     }
     
@@ -435,6 +459,7 @@ public final class AntProjectHelper {
      * creating <code>build-impl.xml</code> and/or <code>build.xml</code>.
      */
     private void save() throws IOException {
+        assert ProjectManager.mutex().isWriteAccess();
         assert !modifiedMetadataPaths.isEmpty();
         ProjectXmlSavedHook hook = null;
         if (modifiedMetadataPaths.contains(PROJECT_XML_PATH)) {
@@ -550,18 +575,22 @@ public final class AntProjectHelper {
      *               <code>private.xml</code>
      * @return the configuration data that is available
      */
-    public Element getPrimaryConfigurationData(boolean shared) {
-        String name = type.getPrimaryConfigurationDataElementName(shared);
+    public Element getPrimaryConfigurationData(final boolean shared) {
+        final String name = type.getPrimaryConfigurationDataElementName(shared);
         assert name.indexOf(':') == -1;
-        String namespace = type.getPrimaryConfigurationDataElementNamespace(shared);
+        final String namespace = type.getPrimaryConfigurationDataElementNamespace(shared);
         assert namespace != null && namespace.length() > 0;
-        Element el = getConfigurationFragment(name, namespace, shared);
-        if (el != null) {
-            return el;
-        } else {
-            // No such data, corrupt file.
-            return getConfigurationXml(shared).createElementNS(namespace, name);
-        }
+        return (Element) ProjectManager.mutex().readAccess(new Mutex.Action() {
+            public Object run() {
+                Element el = getConfigurationFragment(name, namespace, shared);
+                if (el != null) {
+                    return el;
+                } else {
+                    // No such data, corrupt file.
+                    return getConfigurationXml(shared).createElementNS(namespace, name);
+                }
+            }
+        });
     }
     
     /**
@@ -597,14 +626,16 @@ public final class AntProjectHelper {
                 return;
             }
             String path;
-            if (f.equals(resolveFile(PROJECT_XML_PATH))) {
-                path = PROJECT_XML_PATH;
-                projectXml = null;
-            } else if (f.equals(resolveFile(PRIVATE_XML_PATH))) {
-                path = PRIVATE_XML_PATH;
-                privateXml = null;
-            } else {
-                throw new AssertionError("Unexpected file change in " + f); // NOI18N
+            synchronized (modifiedMetadataPaths) {
+                if (f.equals(resolveFile(PROJECT_XML_PATH))) {
+                    path = PROJECT_XML_PATH;
+                    projectXml = null;
+                } else if (f.equals(resolveFile(PRIVATE_XML_PATH))) {
+                    path = PRIVATE_XML_PATH;
+                    privateXml = null;
+                } else {
+                    throw new AssertionError("Unexpected file change in " + f); // NOI18N
+                }
             }
             fireExternalChange(path);
         }

@@ -19,6 +19,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ant.freeform.ui.ProjectCustomizerProvider;
 import org.netbeans.modules.ant.freeform.ui.View;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -28,6 +29,7 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
@@ -100,13 +102,17 @@ public final class FreeformProject implements Project {
         }
         
         public String getDisplayName() {
-            Element genldata = helper.getPrimaryConfigurationData(true);
-            Element nameEl = Util.findElement(genldata, "name", FreeformProjectType.NS_GENERAL); // NOI18N
-            if (nameEl == null) {
-                // Corrupt. Cf. #48267 (cause unknown).
-                return "???"; // NOI18N
-            }
-            return Util.findText(nameEl);
+            return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
+                public Object run() {
+                    Element genldata = helper.getPrimaryConfigurationData(true);
+                    Element nameEl = Util.findElement(genldata, "name", FreeformProjectType.NS_GENERAL); // NOI18N
+                    if (nameEl == null) {
+                        // Corrupt. Cf. #48267 (cause unknown).
+                        return "???"; // NOI18N
+                    }
+                    return Util.findText(nameEl);
+                }
+            });
         }
         
         public Icon getIcon() {
