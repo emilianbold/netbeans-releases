@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <property name="ismp.project" value="coreide.xml"/>
   
-  <target name="init" depends="set-buildnumber, set-installer.basename, set-nb.dir" unless="inited">
+  <target name="init" depends="set-buildnumber, set-installer.basename, set-nb.dir, copy-localized-data" unless="inited">
     <property name="inited" value="true" />
   </target>
   
@@ -26,7 +26,13 @@ Microsystems, Inc. All Rights Reserved.
     <property name="nb.dir" location="../../nbbuild/netbeans" />
   </target>
 
+  <target name="copy-localized-data">
+     <copy todir="." failonerror="false">
+         <fileset dir="../../translatedfiles/src/installer/coreide"/>
+     </copy>
+ </target>
   
+ 
   <target name="set-ismp.cp" unless="ismp.cp-set">
     <path id="ismp.cp">        
         <pathelement path="${ismp.home}" />

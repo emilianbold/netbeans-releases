@@ -19,8 +19,14 @@ Microsystems, Inc. All Rights Reserved.
   <property name="nb.dir" location="build/netbeans"/>
 <!--  <property name="ismp.project" value="linux.xml"/>-->
   
-  <target name="init" depends="set-buildnumber, set-installer.basename, set-nb.dir" unless="inited">
+  <target name="init" depends="set-buildnumber, set-installer.basename, set-nb.dir, copy-localized-data" unless="inited">
     <property name="inited" value="true" />
+  </target>
+  
+  <target name="copy-localized-data" failonerror="false">
+      <copy todir=".">
+          <fileset dir="../../translatedfiles/src/installer/jdkbundle"/>
+      </copy>
   </target>
   
   <target name="set-nb.dir" unless="nb.dir">
