@@ -88,11 +88,6 @@ public class Action {
     /** Comparator used for this action instance. */
     private Operator.StringComparator comparator;
 
-    static {
-        // Checks if you run on correct jemmy version. Writes message to jemmy log if not.
-        JellyVersion.checkJemmyVersion();
-    }
-
     /** creates new Action instance without API_MODE and SHORTCUT_MODE support
      * @param menuPath action path in main menu (use null value if menu mode is not supported)
      * @param popupPath action path in popup menu (use null value if popup mode shell is not supported) */    
@@ -152,12 +147,17 @@ public class Action {
     }
     
     static {
+        // Checks if you run on correct jemmy version. Writes message to jemmy log if not.
+        JellyVersion.checkJemmyVersion();
+
         if (JemmyProperties.getCurrentProperty("Action.DefaultMode")==null)
             JemmyProperties.setCurrentProperty("Action.DefaultMode", new Integer(POPUP_MODE));
         Timeouts.initDefault("Action.WaitAfterShortcutTimeout", WAIT_AFTER_SHORTCUT_TIMEOUT);
-        // Set not-exact and case sensitive comparator as default because of 
+        // Set case sensitive comparator as default because of 
         // very often clash between Cut and Execute menu items.
-        defaultComparator = new Operator.DefaultStringComparator(false, true);
+        // Substring criterion is set according to default string comparator
+        boolean compareExactly = !Operator.getDefaultStringComparator().equals("abc", "a"); // NOI18N
+        defaultComparator = new Operator.DefaultStringComparator(compareExactly, true);
     }
     
     private void perform(int mode) {
@@ -257,7 +257,7 @@ public class Action {
         // Need to wait here to be more reliable.
         // TBD - It can be removed after issue 23663 is solved.
         new EventTool().waitNoEvent(500);
-        MainWindowOperator.getDefault().menuBar().pushMenu(menuPath, "|");
+        MainWindowOperator.getDefault().menuBar().pushMenu(menuPath, "|", getComparator());
         try {
             Thread.sleep(AFTER_ACTION_WAIT_TIME);
         } catch (Exception e) {
@@ -345,8 +345,7 @@ public class Action {
         if(oldVisualizer != null) {
             Operator.setDefaultComponentVisualizer(oldVisualizer);
         }
-        popup.setComparator(getComparator());
-        popup.pushMenu(popupPath, "|");
+        popup.pushMenu(popupPath, "|", getComparator());
         try {
             Thread.sleep(AFTER_ACTION_WAIT_TIME);
         } catch (Exception e) {
@@ -365,9 +364,7 @@ public class Action {
         // TBD - It can be removed after issue 23663 is solved.
         new EventTool().waitNoEvent(500);
         component.clickForPopup();
-        JPopupMenuOperator popup=new JPopupMenuOperator(component);
-        popup.setComparator(getComparator());
-        popup.pushMenu(popupPath, "|");
+        new JPopupMenuOperator(component).pushMenu(popupPath, "|", getComparator());
         try {
             Thread.sleep(AFTER_ACTION_WAIT_TIME);
         } catch (Exception e) {
@@ -591,7 +588,8 @@ public class Action {
         if(systemActionClass != null) {
             return SystemAction.get(systemActionClass).isEnabled();
         } else if(menuPath != null) {
-            return MainWindowOperator.getDefault().menuBar().showMenuItem(menuPath, "|").isEnabled();
+            return MainWindowOperator.getDefault().menuBar().showMenuItem(
+                                    menuPath, "|", getComparator()).isEnabled();
         } else {
             throw new UnsupportedOperationException("Cannot detect if "+getClass().getName()+" is enabled.");
         }
@@ -638,8 +636,7 @@ public class Action {
             if(oldVisualizer != null) {
                 Operator.setDefaultComponentVisualizer(oldVisualizer);
             }
-            popup.setComparator(getComparator());
-            return popup.showMenuItem(popupPath, "|").isEnabled();
+            return popup.showMenuItem(popupPath, "|", getComparator()).isEnabled();
         } else {
             throw new UnsupportedOperationException("Cannot detect if "+getClass().getName()+" is enabled.");
         }
@@ -674,11 +671,11 @@ public class Action {
             // TBD - It can be removed after issue 23663 is solved.
             new EventTool().waitNoEvent(500);
             componentOperator.clickForPopup();
-            JPopupMenuOperator popup = new JPopupMenuOperator(componentOperator);
-            popup.setComparator(getComparator());
-            return popup.showMenuItem(popupPath, "|").isEnabled();
+            return new JPopupMenuOperator(componentOperator).showMenuItem(
+                                    popupPath, "|", getComparator()).isEnabled();
         } else if(menuPath != null) {
-            return MainWindowOperator.getDefault().menuBar().showMenuItem(menuPath, "|").isEnabled();
+            return MainWindowOperator.getDefault().menuBar().showMenuItem(
+                                    menuPath, "|", getComparator()).isEnabled();
         } else {
             throw new UnsupportedOperationException("Cannot detect if "+getClass().getName()+" is enabled.");
         }
