@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.form;
 
+import java.awt.*;
 import java.util.*;
 import java.lang.reflect.*;
 import javax.swing.*;
@@ -68,7 +69,14 @@ public class CreationFactory {
             UIManager.getLookAndFeel().getClass().getName(),
             new Mutex.ExceptionAction () {
                 public Object run() throws Exception {
-                    return cd != null ? cd.createDefaultInstance() : cls.newInstance();
+                    Object instance = (cd != null)
+                        ? cd.createDefaultInstance() : cls.newInstance();
+                    
+                    if (instance instanceof Component
+                        && FormUtils.isHeavyweight((Component)instance)) {
+                        ((Component) instance).setName(null);
+                    }
+                    return instance;
                 }
             });
     }
@@ -84,7 +92,13 @@ public class CreationFactory {
                     UIManager.getLookAndFeel().getClass().getName(),
                     new Mutex.ExceptionAction () {
                         public Object run() throws Exception {
-                            return creator.createInstance(props);
+                            Object instance = creator.createInstance(props);
+                            
+                            if (instance instanceof Component
+                                && FormUtils.isHeavyweight((Component)instance)) {
+                                ((Component) instance).setName(null);
+                            }
+                            return instance;
                         }
                     });
             }
