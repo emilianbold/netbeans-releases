@@ -87,6 +87,7 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider {
         jTextFieldFileName = new javax.swing.JTextField();
         jLabelExContent = new javax.swing.JLabel();
         jTextFieldExContent = new javax.swing.JTextField();
+        excludeMessage = new javax.swing.JLabel();
         jCheckBoxCommpress = new javax.swing.JCheckBox();
         jLabelAddContent = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -134,14 +135,24 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         jPanel1.add(jTextFieldExContent, gridBagConstraints);
         jTextFieldExContent.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerWar.class, "ACS_CustomizeWAR_Content_A11YDesc"));
+
+        excludeMessage.setText(NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizerWAR_ExcludeMessage"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        jPanel1.add(excludeMessage, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jPanel1, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxCommpress, org.openide.util.NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_Commpres_JCheckBox"));
@@ -236,6 +247,7 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider {
     // </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel excludeMessage;
     private javax.swing.JButton jButtonAddJar;
     private javax.swing.JButton jButtonAddLib;
     private javax.swing.JButton jButtonAddProject;
