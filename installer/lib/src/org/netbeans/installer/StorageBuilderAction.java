@@ -58,7 +58,6 @@ public class StorageBuilderAction extends ProductAction {
     public void build(ProductBuilderSupport support) {
         try {
             support.putClass(RunCommand.class.getName());
-            support.putClass(FileComparator.class.getName());
             support.putClass(Util.class.getName());
             support.putClass("org.netbeans.installer.StorageBuilderAction$ProgressThread");
         } catch (Exception ex){
@@ -409,7 +408,6 @@ public class StorageBuilderAction extends ProductAction {
         
         //status detail related variables
         //progress dots (...) after the path if it is being shown since s while
-        private final FileComparator fileComp = new FileComparator();
         private final int MIN_DOTS = 3;
         private int fileCounter = 0;
         private String lastPathShown;
