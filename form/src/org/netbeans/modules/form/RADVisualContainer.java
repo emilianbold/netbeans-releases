@@ -254,6 +254,6 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         if (comp != null && comp == containerMenu)
             return subComponents.size();
 
-        return subComponents.indexOf(comp);
+        return subComponents.lastIndexOf(comp);
     }
 }

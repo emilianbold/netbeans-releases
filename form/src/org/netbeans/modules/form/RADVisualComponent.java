@@ -45,6 +45,12 @@ public class RADVisualComponent extends RADComponent {
     // -----------------------------------------------------------------------------
     // Initialization
 
+    public void setParentComponent(RADComponent parentComp) {
+        super.setParentComponent(parentComp);
+        if (parentComp != null)
+            getConstraintsProperties();
+    }
+
 //    void initParent(RADVisualContainer parent) {
 //        this.parent = parent;
 //    }
