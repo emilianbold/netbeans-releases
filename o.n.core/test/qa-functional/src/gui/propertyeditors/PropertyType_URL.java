@@ -57,7 +57,7 @@ public class PropertyType_URL extends PropertyEditorsTest {
     public void testByInPlaceInvalid(){
         propertyValue_L = "xxx";
         propertyValueExpectation_L = propertyValue_L;
-        waitDialog = false;                                     
+        waitDialog = true;                                     
         setByInPlace(propertyName_L, propertyValue_L, false);
     }
     
