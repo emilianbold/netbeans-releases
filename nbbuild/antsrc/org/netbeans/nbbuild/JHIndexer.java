@@ -14,8 +14,10 @@
 package org.netbeans.nbbuild;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.util.*;
 
+import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.FileScanner;
@@ -24,6 +26,7 @@ import org.apache.tools.ant.taskdefs.Delete;
 import org.apache.tools.ant.taskdefs.Java;
 import org.apache.tools.ant.taskdefs.MatchingTask;
 import org.apache.tools.ant.taskdefs.Mkdir;
+import org.apache.tools.ant.types.Path;
 
 // ToDo:
 // stopwords configuration
@@ -140,9 +143,42 @@ public class JHIndexer extends MatchingTask {
                 java.createArg ().setValue ("-db");
                 java.createArg ().setFile (db);
                 java.setFailonerror (true);
+                // Does not work when run using Ant support internally to the IDE:
+                // IllegalAccessError since some classes are
+                // loaded from jhall.jar, some from startup jh.jar, and some loaded from
+                // jh.jar are package private, thus attempts to access them from classes
+                // loaded from jhall.jar is illegal. So we fork.
+                if (System.getProperty ("org.openide.version") != null) {
+                    java.setFork (true);
+                }
                 java.init ();
                 java.setLocation (location);
                 java.execute ();
+                // A failed attempt to make it work inside the IDE with internal execution.
+                // For unknown reasons (I do not have full JavaHelp source), running internally
+                // throws FileNotFoundException: ...../JavaHelpSearch/TMAP (No such file or directory)
+                // from MemoryRAFFile constructor in the indexer.
+                /*
+                Path classpath = new Path (project);
+                classpath.createPathElement ().setLocation (jhall);
+                AntClassLoader loader = new AntClassLoader (project, classpath);
+                loader.addLoaderPackageRoot ("javax.help");
+                loader.addLoaderPackageRoot ("com.sun.java.help");
+                try {
+                    Class clazz = loader.loadClass ("com.sun.java.help.search.Indexer");
+                    Method main = clazz.getMethod ("main", new Class[] { String[].class });
+                    try {
+                        main.invoke (null, new Object[] { new String[] { "-c", config.getAbsolutePath (), "-db", db.getAbsolutePath () } });
+                    } catch (SecurityException se) {
+                        // Ignore, probably just System.exit() being called or something.
+                        se.printStackTrace ();//XXX
+                    }
+                } catch (InvocationTargetException ite) {
+                    throw new BuildException ("Could not run indexer", ite.getTargetException (), location);
+                } catch (Exception e) { // ClassNotFoundException, NoSuchMethodException, ...
+                    throw new BuildException ("Could not run indexer", e, location);
+                }
+                 */
             } finally {
                 config.delete ();
             }
