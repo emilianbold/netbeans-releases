@@ -144,10 +144,22 @@ public class ProjectsRootNode extends AbstractNode {
             return null;
             
         }
-        else {
-            
+        else if ( ch.type == PHYSICAL_VIEW ) {
+            Node[] nodes = ch.getNodes( true );
+            for( int i = 0; i < nodes.length; i++  ) {
+                PhysicalView.PathFinder pf = (PhysicalView.PathFinder)nodes[i].getLookup().lookup( PhysicalView.PathFinder.class );
+                if ( pf != null ) {
+                    Node n = pf.findPath( nodes[i], target );
+                    if ( n != null ) {
+                        return n;
+                    }
+                }
+            }
             return null;
-        }        
+        }       
+        else {
+            return null;
+        }
     }
     
     private static class Handle implements Node.Handle {

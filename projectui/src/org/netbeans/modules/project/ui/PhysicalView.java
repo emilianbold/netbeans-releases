@@ -17,7 +17,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.StringTokenizer;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -45,6 +47,8 @@ import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.NodeNotFoundException;
+import org.openide.nodes.NodeOp;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.NbBundle;
 
@@ -130,7 +134,7 @@ public class PhysicalView {
         public GroupNode(Project project, SourceGroup group, boolean isProjectDir, DataFolder dataFolder ) {
             super( dataFolder.getNodeDelegate(),
                    dataFolder.createNodeChildren( VISIBILITY_QUERY_FILTER ),                       
-                   createLookup( project, dataFolder ) );
+                   createLookup( project, group, dataFolder ) );
 
             this.project = project;
             this.pi = ProjectUtils.getInformation( project );
@@ -237,14 +241,58 @@ public class PhysicalView {
             }
         }
         
-        private static Lookup createLookup( Project p, DataFolder dataFolder ) {
+        private static Lookup createLookup( Project p, SourceGroup group, DataFolder dataFolder ) {
             return new ProxyLookup(new Lookup[] {
                 dataFolder.getNodeDelegate().getLookup(),
-                Lookups.singleton(p),
+                Lookups.fixed( new Object[] { p, new PathFinder( group ) } ),
                 p.getLookup(),
             });
         }
 
+    }
+        
+    public static class PathFinder {
+        
+        private SourceGroup group;
+        
+        public PathFinder( SourceGroup group ) {
+            this.group = group;
+        }
+        
+        public Node findPath( Node root, Object object ) {
+                 
+            if ( !( object instanceof FileObject ) ) {
+                return null;
+            }
+            
+            FileObject fo = (FileObject)object;        
+            FileObject groupRoot = group.getRootFolder();
+            if ( FileUtil.isParentOf( groupRoot, fo ) /* && group.contains( fo ) */ ) {
+                // The group contains the object
+
+                String relPath = FileUtil.getRelativePath( groupRoot, fo );
+                
+                ArrayList path = new ArrayList();
+                StringTokenizer strtok = new StringTokenizer( relPath, "/" );
+                while( strtok.hasMoreTokens() ) {
+                   path.add( strtok.nextToken() );
+                }
+                path.set( path.size() - 1, fo.getName() );
+                                 
+                try {
+                    return NodeOp.findPath( root, Collections.enumeration( path ) );
+                }
+                catch ( NodeNotFoundException e ) {
+                    return null;
+                }
+            }   
+            else if ( groupRoot.equals( fo ) ) {
+                return root;
+            }
+
+            return null;
+        }
+                    
     }
     
 }
