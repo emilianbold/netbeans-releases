@@ -15,11 +15,13 @@ package org.netbeans.modules.j2ee.ejbjarproject.classpath;
 
 import java.io.File;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.openide.filesystems.FileObject;
@@ -49,7 +51,10 @@ public class ClassPathSupport {
     public final static String ELEMENT_INCLUDED_LIBRARIES = "included-library"; // NOI18N
     // AB: I'm not sure this is used at all in the EJB project
     public final static String ELEMENT_ADDITIONAL_LIBRARIES = "ejb-module-additional-libraries"; // NOI18N
-                
+    
+    private static final String ATTR_FILES = "files"; //NOI18N
+    private static final String ATTR_DIRS = "dirs"; //NOI18N
+    
     private PropertyEvaluator evaluator;
     private ReferenceHelper referenceHelper;
     private AntProjectHelper antProjectHelper;
@@ -163,9 +168,12 @@ public class ClassPathSupport {
         ArrayList result = new ArrayList();
         ArrayList includedLibraries = new ArrayList();
         
+        List cp = new LinkedList();
+        
         while( classpath.hasNext() ) {
 
             Item item = (Item)classpath.next();
+            cp.add(item);
             String reference = null;
             
             switch( item.getType() ) {
@@ -225,7 +233,7 @@ public class ClassPathSupport {
         }
         
         if ( includedLibrariesElement != null )
-            putIncludedLibraries( includedLibraries, antProjectHelper, includedLibrariesElement );
+            putIncludedLibraries( includedLibraries, cp, antProjectHelper, includedLibrariesElement );
 
         String[] items = new String[ result.size() ];
         for( int i = 0; i < result.size(); i++) {
@@ -291,7 +299,7 @@ public class ClassPathSupport {
      * Updates the project helper with the list of classpath items which are to be
      * included in deployment.
      */
-    private static void putIncludedLibraries( List /*<String>*/ libraries, AntProjectHelper antProjectHelper, String includedLibrariesElement ) {
+    private static void putIncludedLibraries( List /*<String>*/ libraries, List /*<Item>*/ classpath, AntProjectHelper antProjectHelper, String includedLibrariesElement ) {
         assert libraries != null;
         assert antProjectHelper != null;
         assert includedLibrariesElement != null;
@@ -302,16 +310,31 @@ public class ClassPathSupport {
             Node n = libs.item( 0 );
             n.getParentNode().removeChild( n );
         }
-        
+
         Document doc = data.getOwnerDocument();
-        for (Iterator i = libraries.iterator(); i.hasNext();) {
-            Element library = doc.createElementNS( EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, includedLibrariesElement );
-            library.appendChild( doc.createTextNode( (String)i.next() ) );
-            data.appendChild( library );
-        }
+        Iterator cp = classpath.iterator();
+        for (Iterator i = libraries.iterator(); i.hasNext();)
+             data.appendChild(createLibraryElement(doc, (String)i.next(), (Item) cp.next(), includedLibrariesElement));
+        
         antProjectHelper.putPrimaryConfigurationData( data, true );
     }
     
+    private static Element createLibraryElement(Document doc, String pathItem, Item item, String includedLibrariesElement ) {
+        Element libraryElement = doc.createElementNS( EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, includedLibrariesElement );
+        ArrayList files = new ArrayList ();
+        ArrayList dirs = new ArrayList ();
+        EjbJarProjectProperties.getFilesForItem(item, files, dirs);
+        if (files.size() > 0) {
+            libraryElement.setAttribute(ATTR_FILES, "" + files.size());
+        }
+        if (dirs.size() > 0) {
+            libraryElement.setAttribute(ATTR_DIRS, "" + dirs.size());
+        }
+        
+        libraryElement.appendChild( doc.createTextNode( pathItem ) );
+        return libraryElement;
+    }
+       
     /**
      * Extracts <b>the first</b> nested text from an element.
      * Currently does not handle coalescing text nodes, CDATA sections, etc.
@@ -349,16 +372,18 @@ public class ClassPathSupport {
         private int type;
         private String property;
         private boolean includedInDeployment;
+        private String raw;
         
-        private Item( int type, Object object, String property, boolean included ) {
+        private Item( int type, Object object, String property, boolean included, String raw ) {
             this.type = type;
             this.object = object;
             this.property = property;
             this.includedInDeployment = included;
+            this.raw = raw;
         }
         
         private Item( int type, Object object, URI artifactURI, String property, boolean included ) {
-            this( type, object, property, included );
+            this( type, object, property, included,null );
             this.artifactURI = artifactURI;
         }
               
@@ -369,7 +394,8 @@ public class ClassPathSupport {
             if ( library == null ) {
                 throw new IllegalArgumentException( "library must not be null" ); // NOI18N
             }
-            return new Item( TYPE_LIBRARY, library, property, included );
+            String libraryName = library.getName();
+            return new Item( TYPE_LIBRARY, library, property, included, EjbJarProjectProperties.LIBRARY_PREFIX + libraryName + EjbJarProjectProperties.LIBRARY_SUFFIX);
         }
         
         public static Item create( AntArtifact artifact, URI artifactURI, String property, boolean included ) {
@@ -386,24 +412,28 @@ public class ClassPathSupport {
             if ( file == null ) {
                 throw new IllegalArgumentException( "file must not be null" ); // NOI18N
             }
-            return new Item( TYPE_JAR, file, property, included );
+            return new Item( TYPE_JAR, file, property, included, null );
         }
         
         public static Item create( String property, boolean included ) {
             if ( property == null ) {
                 throw new IllegalArgumentException( "property must not be null" ); // NOI18N
             }
-            return new Item ( TYPE_CLASSPATH, null, property, included );
+            return new Item ( TYPE_CLASSPATH, null, property, included, null );
         }
         
         public static Item createBroken( int type, String property, boolean included ) {
             if ( property == null ) {
                 throw new IllegalArgumentException( "property must not be null in broken items" ); // NOI18N
             }
-            return new Item( type, BROKEN, property, included );
+            return new Item( type, BROKEN, property, included, null );
         }
         
         // Instance methods ----------------------------------------------------
+        
+        public String getRaw() {
+            return raw;
+        }
         
         public int getType() {
             return type;
@@ -460,7 +490,16 @@ public class ClassPathSupport {
         public boolean isBroken() {
             return object == BROKEN;
         }
-                        
+        
+        public String toString() {
+            return "artifactURI=" + artifactURI
+                    + ", type=" + type 
+                    + ", property=" + property
+                    + ", includedInDeployment=" + includedInDeployment
+                    + ", raw=" + raw
+                    + ", object=" + object;
+        }
+        
         public int hashCode() {
         
             int hash = getType();

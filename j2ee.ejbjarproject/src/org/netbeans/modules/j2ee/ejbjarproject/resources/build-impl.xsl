@@ -17,6 +17,7 @@ Microsystems, Inc. All Rights Reserved.
                 xmlns:xalan="http://xml.apache.org/xslt"
                 xmlns:ejbjarproject1="http://www.netbeans.org/ns/j2ee-ejbjarproject/1"
                 xmlns:ejbjarproject2="http://www.netbeans.org/ns/j2ee-ejbjarproject/2"
+                xmlns:ejbjarproject3="http://www.netbeans.org/ns/j2ee-ejbjarproject/3"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
                 exclude-result-prefixes="xalan p ejb projdeps">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
@@ -39,7 +40,7 @@ is divided into following sections:
 
 ]]></xsl:comment>
 
-        <xsl:variable name="name" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:name"/>
+        <xsl:variable name="name" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:name"/>
         <project name="{$name}-impl">
             <xsl:attribute name="default">build</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
@@ -82,7 +83,7 @@ is divided into following sections:
 
             <target name="-do-init">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-userdir,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
-                <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:explicit-platform">
+                <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
                     <!--Setting java and javac default location -->
                     <property name="platforms.${{platform.active}}.javac" value="${{platform.home}}/bin/javac"/>
                     <property name="platforms.${{platform.active}}.java" value="${{platform.home}}/bin/java"/>
@@ -106,11 +107,11 @@ is divided into following sections:
                 <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
                 <property name="default.javac.source" value="1.4"/>
                 <property name="default.javac.target" value="1.4"/>
-                <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:use-manifest">
+                <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:use-manifest">
                     <fail unless="manifest.file">Must set manifest.file</fail>
                 </xsl:if>
                 <xsl:call-template name="createRootAvailableTest">
-                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:test-roots"/>
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:test-roots"/>
                     <xsl:with-param name="propName">have.tests</xsl:with-param>
                 </xsl:call-template>
                 <condition property="netbeans.home+have.tests">
@@ -150,10 +151,10 @@ is divided into following sections:
                 <!-- Note that if the properties were defined in project.xml that would be easy -->
                 <!-- But required props should be defined by the AntBasedProjectType, not stored in each project -->
                 <xsl:call-template name="createSourcePathValidityTest">
-                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:source-roots"/>
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
                 </xsl:call-template>
                 <xsl:call-template name="createSourcePathValidityTest">
-                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:test-roots"/>
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:test-roots"/>
                 </xsl:call-template>
                 <fail unless="build.dir">Must set build.dir</fail>
                 <fail unless="build.generated.dir">Must set build.generated.dir</fail>
@@ -188,7 +189,7 @@ is divided into following sections:
                         <xsl:attribute name="name">srcdir</xsl:attribute>
                         <xsl:attribute name="default">
                             <xsl:call-template name="createPath">
-                                <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:source-roots"/>
+                                <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
                             </xsl:call-template>
                         </xsl:attribute>
                     </attribute>
@@ -217,7 +218,7 @@ is divided into following sections:
                             <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
                             <xsl:attribute name="source">${javac.source}</xsl:attribute>
                             <xsl:attribute name="target">${javac.target}</xsl:attribute>
-                            <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:explicit-platform">
+                            <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
                                 <xsl:attribute name="fork">yes</xsl:attribute>
                                 <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
                             </xsl:if>
@@ -247,12 +248,12 @@ is divided into following sections:
                             <xsl:attribute name="dir">${basedir}</xsl:attribute> <!-- #47474: match <java> --> 
                             <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
                             <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
-                            <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:explicit-platform">
+                            <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
                             <batchtest todir="${{build.test.results.dir}}">
                                 <xsl:call-template name="createFilesets">
-                                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:test-roots"/>
+                                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:test-roots"/>
                                     <xsl:with-param name="includes">@{includes}</xsl:with-param>
                                 </xsl:call-template>
                             </batchtest>
@@ -290,7 +291,7 @@ is divided into following sections:
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
-                            <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:explicit-platform">
+                            <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
                                 <bootclasspath>
                                     <path path="${{platform.bootcp}}"/>
                                 </bootclasspath>
@@ -331,7 +332,7 @@ is divided into following sections:
                     </attribute>
                     <sequential>
                         <java fork="true" classname="@{{classname}}">
-                            <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:explicit-platform">
+                            <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                                 <bootclasspath>
                                     <path path="${{platform.bootcp}}"/>
@@ -350,13 +351,8 @@ is divided into following sections:
                 </macrodef>
             </target>
             
-            <target name="-init-taskdefs">
-                <taskdef name="copyfiles" classname="org.netbeans.modules.web.project.ant.CopyFiles" classpath="${{copyfiles.classpath}}"/>
-            </target>
-
-            
             <target name="init">
-                <xsl:attribute name="depends">-pre-init,-init-private,-init-userdir,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-nbjpda,-init-macrodef-debug,-init-taskdefs</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-userdir,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-nbjpda,-init-macrodef-debug</xsl:attribute>
             </target>
 
             <xsl:comment>
@@ -380,7 +376,7 @@ is divided into following sections:
                 <xsl:attribute name="depends">init, -deps-module-jar, -deps-ear-jar</xsl:attribute>
             </target>
 
-            <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service|/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-service-clients/ejbjarproject2:web-service-client">
+            <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service|/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">
 				<target name="wscompile-init" depends="init">
 					<taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
 					  <classpath path="${{wscompile.classpath}}"/>
@@ -391,12 +387,12 @@ is divided into following sections:
 				</target>
 			</xsl:if>
 
-            <xsl:for-each select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service">
+            <xsl:for-each select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service">
               <xsl:variable name="wsname">
-                <xsl:value-of select="ejbjarproject2:web-service-name"/>
+                <xsl:value-of select="ejbjarproject3:web-service-name"/>
               </xsl:variable>
               <xsl:choose>
-              <xsl:when test="ejbjarproject2:from-wsdl">
+              <xsl:when test="ejbjarproject3:from-wsdl">
                 <target name="{$wsname}_wscompile" depends="init, wscompile-init">
                   <wscompile import="true" 
                      config="${{{$wsname}.config.name}}"
@@ -433,22 +429,22 @@ is divided into following sections:
               </xsl:choose>
             </xsl:for-each>
 
-            <xsl:for-each select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-service-clients/ejbjarproject2:web-service-client">
+            <xsl:for-each select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">
                 <xsl:variable name="wsclientname">
-                    <xsl:value-of select="ejbjarproject2:web-service-client-name"/>
+                    <xsl:value-of select="ejbjarproject3:web-service-client-name"/>
                 </xsl:variable>
                 <xsl:variable name="useimport">
                     <xsl:choose>
-                        <xsl:when test="ejbjarproject2:web-service-stub-type">
-                            <xsl:value-of select="ejbjarproject2:web-service-stub-type='jsr-109_client'"/>
+                        <xsl:when test="ejbjarproject3:web-service-stub-type">
+                            <xsl:value-of select="ejbjarproject3:web-service-stub-type='jsr-109_client'"/>
                         </xsl:when>
                         <xsl:otherwise>true</xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>
                 <xsl:variable name="useclient">
                     <xsl:choose>
-                        <xsl:when test="ejbjarproject2:web-service-stub-type">
-                            <xsl:value-of select="ejbjarproject2:web-service-stub-type='jaxrpc_static_client'"/>
+                        <xsl:when test="ejbjarproject3:web-service-stub-type">
+                            <xsl:value-of select="ejbjarproject3:web-service-stub-type='jaxrpc_static_client'"/>
                         </xsl:when>
                         <xsl:otherwise>false</xsl:otherwise>
                     </xsl:choose>
@@ -484,14 +480,14 @@ is divided into following sections:
             </target>
             
             <target name="-pre-compile">
-                <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-service-clients/ejbjarproject2:web-service-client">
+                <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">
                     <xsl:attribute name="depends">
-                        <xsl:for-each select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-service-clients/ejbjarproject2:web-service-client">
+                        <xsl:for-each select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">
                             <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
                             <xsl:variable name="wsname2">
-                                <xsl:value-of select="ejbjarproject2:web-service-client-name"/>
+                                <xsl:value-of select="ejbjarproject3:web-service-client-name"/>
                             </xsl:variable>
-                            <xsl:value-of select="ejbjarproject2:web-service-client-name"/><xsl:text>_client_wscompile</xsl:text>
+                            <xsl:value-of select="ejbjarproject3:web-service-client-name"/><xsl:text>_client_wscompile</xsl:text>
                         </xsl:for-each>
                     </xsl:attribute>
                 </xsl:if>
@@ -500,18 +496,29 @@ is divided into following sections:
             </target>
 
             <target name="library-inclusion-in-archive" depends="compile">
-                <xsl:for-each select="//ejbjarproject2:included-library">
+                <xsl:for-each select="//ejbjarproject3:included-library">
                     <xsl:variable name="included.prop.name">
                         <xsl:value-of select="."/>
                     </xsl:variable>
-                    <copyfiles todir="${{build.classes.dir}}">
-                        <xsl:attribute name="files">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
-                     </copyfiles>
+                    <xsl:if test="//ejbjarproject3:included-library[@files]">
+                        <xsl:call-template name="copyIterateFiles">
+                            <xsl:with-param name="files" select="@files"/>
+                            <xsl:with-param name="target" select="'${build.classes.dir}'"/>
+                            <xsl:with-param name="libfile" select="$included.prop.name"/>
+                        </xsl:call-template>
+                    </xsl:if>
+                    <xsl:if test="//ejbjarproject3:included-library[@dirs]">
+                        <xsl:call-template name="copyIterateDirs">
+                            <xsl:with-param name="files" select="@dirs"/>
+                            <xsl:with-param name="target" select="'${build.classes.dir}'"/>
+                            <xsl:with-param name="libfile" select="$included.prop.name"/>
+                        </xsl:call-template>
+                    </xsl:if>
                 </xsl:for-each>   
             </target> 
 
             <target name="library-inclusion-in-manifest" depends="compile">
-                <xsl:for-each select="//ejbjarproject2:included-library">
+                <xsl:for-each select="//ejbjarproject3:included-library">
                     <xsl:variable name="included.prop.name">
                         <xsl:value-of select="."/>
                     </xsl:variable>
@@ -521,18 +528,30 @@ is divided into following sections:
                     <basename>
                         <xsl:attribute name="property"><xsl:value-of select="$base.prop.name"/></xsl:attribute>
                         <xsl:attribute name="file">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
-                     </basename>
-                     <copyfiles todir="${{dist.ear.dir}}">
-                        <xsl:attribute name="files">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
-                     </copyfiles>
+                    </basename>
+                     
+                    <xsl:if test="//ejbjarproject3:included-library[@files]">
+                        <xsl:call-template name="copyIterateFiles">
+                            <xsl:with-param name="files" select="@files"/>
+                            <xsl:with-param name="target" select="'${dist.ear.dir}'"/>
+                            <xsl:with-param name="libfile" select="$included.prop.name"/>
+                        </xsl:call-template>
+                    </xsl:if>
+                    <xsl:if test="//ejbjarproject3:included-library[@dirs]">
+                        <xsl:call-template name="copyIterateDirs">
+                            <xsl:with-param name="files" select="@dirs"/>
+                            <xsl:with-param name="target" select="'${dist.ear.dir}'"/>
+                            <xsl:with-param name="libfile" select="$included.prop.name"/>
+                        </xsl:call-template>
+                    </xsl:if>
                 </xsl:for-each>   
                 
                 <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
-                    <xsl:if test="//ejbjarproject2:included-library">
+                    <xsl:if test="//ejbjarproject3:included-library">
                         <attribute>
                             <xsl:attribute name="name">Class-Path</xsl:attribute>
                             <xsl:attribute name="value">
-                                <xsl:for-each select="//ejbjarproject2:included-library">
+                                <xsl:for-each select="//ejbjarproject3:included-library">
                                     <xsl:variable name="base.prop.name">
                                         <xsl:value-of select="concat('${included.lib.', ., '}')"/>
                                     </xsl:variable>
@@ -548,7 +567,7 @@ is divided into following sections:
             
             <target name="-do-compile">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile</xsl:attribute>
-                <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service">
+                <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service">
                     <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment> 
                     <delete> 
                       <fileset dir="${{classes.dir}}" includes="**/*_Tie.* **/*_SerializerRegistry.*"/>
@@ -557,7 +576,7 @@ is divided into following sections:
                 <ejbjarproject2:javac destdir="${{classes.dir}}"/>
                 <copy todir="${{classes.dir}}">
                     <xsl:call-template name="createFilesets">
-                        <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:source-roots"/>
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
                         <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
                     </xsl:call-template>
                     <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
@@ -566,7 +585,7 @@ is divided into following sections:
                 <copy todir="${{classes.dir}}/META-INF">
                   <fileset dir="${{meta.inf}}" excludes="**/*.dbschema ${{meta.inf.excludes}}"/> 
                 </copy>
-                <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service">
+                <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service">
                     <xsl:comment>For web services, refresh ejb-jar.xml and sun-ejb-jar.xml</xsl:comment>  
                     <copy todir="${{classes.dir}}" overwrite="true"> 
                       <fileset includes="META-INF/ejb-jar.xml META-INF/sun-ejb-jar.xml" dir="${{meta.inf}}"/>
@@ -575,15 +594,15 @@ is divided into following sections:
             </target>
 
             <target name="-post-compile">
-                <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service">
+                <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service">
                     <xsl:attribute name="depends">
-                        <xsl:for-each select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service">
-                            <xsl:if test="not(ejbjarproject2:from-wsdl)">
-                                <xsl:if test="position()!=1 and not(preceding-sibling::ejbjarproject2:web-service/ejbjarproject2:from-wsdl)"><xsl:text>, </xsl:text></xsl:if>
+                        <xsl:for-each select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service">
+                            <xsl:if test="not(ejbjarproject3:from-wsdl)">
+                                <xsl:if test="position()!=1 and not(preceding-sibling::ejbjarproject3:web-service/ejbjarproject3:from-wsdl)"><xsl:text>, </xsl:text></xsl:if>
                                 <xsl:variable name="wsname2">
-                                    <xsl:value-of select="ejbjarproject2:web-service-name"/>
+                                    <xsl:value-of select="ejbjarproject3:web-service-name"/>
                                 </xsl:variable>
-                                <xsl:value-of select="ejbjarproject2:web-service-name"/><xsl:text>_wscompile</xsl:text>
+                                <xsl:value-of select="ejbjarproject3:web-service-name"/><xsl:text>_wscompile</xsl:text>
                             </xsl:if>
                         </xsl:for-each>
                     </xsl:attribute>
@@ -719,7 +738,7 @@ is divided into following sections:
             <sourcepath>
                 <path path="${{web.docbase.dir}}"/>
             </sourcepath>
-            <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:explicit-platform">
+            <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
             <bootclasspath>
                 <path path="${{platform.bootcp}}"/>
             </bootclasspath>
@@ -755,7 +774,7 @@ is divided into following sections:
                 <mkdir dir="${{dist.javadoc.dir}}"/>
                 <!-- XXX do an up-to-date check first -->
                 <xsl:choose>
-                    <xsl:when test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:explicit-platform">
+                    <xsl:when test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
                         <!-- XXX #46901: <javadoc> does not support an explicit executable -->
                         <ejbjarproject1:property name="platform.javadoc.tmp" value="platforms.${{platform.active}}.javadoc"/>
                         <condition property="platform.javadoc" value="${{platform.home}}/bin/javadoc">
@@ -809,7 +828,7 @@ is divided into following sections:
                         <apply executable="${{platform.javadoc}}" failonerror="true" parallel="true">
                             <arg value="-d"/>
                             <arg file="${{dist.javadoc.dir}}"/>
-                            <xsl:if test ="not(/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:explicit-platform/@explicit-source-supported ='false')">
+                            <xsl:if test ="not(/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform/@explicit-source-supported ='false')">
                                 <arg value="-source"/>
                                 <arg value="${{javac.source}}"/>
                             </xsl:if>
@@ -822,12 +841,12 @@ is divided into following sections:
                             <xsl:element name="arg">
                                 <xsl:attribute name="path">
                                     <xsl:call-template name="createPath">
-                                        <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:source-roots"/>
+                                        <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
                                     </xsl:call-template>
                                 </xsl:attribute>
                             </xsl:element>
                             <xsl:call-template name="createFilesets">
-                                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:source-roots"/>
+                                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
                                     <xsl:with-param name="includes">**/*.java</xsl:with-param>
                            </xsl:call-template>
                         </apply>
@@ -851,11 +870,11 @@ is divided into following sections:
                             </classpath>
                             <sourcepath>
                                 <xsl:call-template name="createPathElements">
-                                    <xsl:with-param name="locations" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:source-roots"/>
+                                    <xsl:with-param name="locations" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
                                 </xsl:call-template>
                             </sourcepath>
                             <xsl:call-template name="createFilesets">
-                                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:source-roots"/>
+                                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
                            </xsl:call-template>
                         </javadoc>
                     </xsl:otherwise>
@@ -897,7 +916,7 @@ is divided into following sections:
                 <xsl:element name="ejbjarproject2:javac">
                     <xsl:attribute name="srcdir">
                         <xsl:call-template name="createPath">
-                            <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:test-roots"/>
+                            <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:test-roots"/>
                         </xsl:call-template>
                     </xsl:attribute>
                     <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
@@ -906,7 +925,7 @@ is divided into following sections:
                 </xsl:element>
                 <copy todir="${{build.test.classes.dir}}">
                     <xsl:call-template name="createFilesets">
-                        <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:test-roots"/>
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:test-roots"/>
                         <xsl:with-param name="excludes">**/*.java</xsl:with-param>
                     </xsl:call-template>
                 </copy>
@@ -933,7 +952,7 @@ is divided into following sections:
                 <xsl:element name="ejbjarproject2:javac">
                     <xsl:attribute name="srcdir">
                         <xsl:call-template name="createPath">
-                            <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:test-roots"/>
+                            <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:test-roots"/>
                         </xsl:call-template>
                     </xsl:attribute>
                     <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
@@ -1186,7 +1205,7 @@ to simulate
         <xsl:element name="condition">
             <xsl:attribute name="property"><xsl:value-of select="$propName"/></xsl:attribute>
             <or>
-                <xsl:for-each select="$roots/ejbjarproject2:root">
+                <xsl:for-each select="$roots/ejbjarproject3:root">
                     <xsl:element name="available">
 			        <xsl:attribute name="file"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
 		            </xsl:element>
@@ -1197,7 +1216,7 @@ to simulate
 
     <xsl:template name="createSourcePathValidityTest">
         <xsl:param name="roots"/>
-        <xsl:for-each select="$roots/ejbjarproject2:root">
+        <xsl:for-each select="$roots/ejbjarproject3:root">
             <xsl:element name="fail">
 			    <xsl:attribute name="unless"><xsl:value-of select="@id"/></xsl:attribute>
                 <xsl:text>Must set </xsl:text><xsl:value-of select="@id"/>
@@ -1209,7 +1228,7 @@ to simulate
 		<xsl:param name="roots"/>
         <xsl:param name="includes"/>
         <xsl:param name="excludes"/>
-        <xsl:for-each select="$roots/ejbjarproject2:root">
+        <xsl:for-each select="$roots/ejbjarproject3:root">
             <xsl:element name="fileset">
 			    <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
                 <xsl:if test="$includes">
@@ -1224,7 +1243,7 @@ to simulate
 
     <xsl:template name="createPathElements">
         <xsl:param name="locations"/>
-        <xsl:for-each select="$locations/ejbjarproject2:root">
+        <xsl:for-each select="$locations/ejbjarproject3:root">
             <xsl:element name="pathelement">
 			    <xsl:attribute name="location"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
 		    </xsl:element>
@@ -1233,7 +1252,7 @@ to simulate
 
     <xsl:template name="createPath">
             <xsl:param name="roots"/>
-            <xsl:for-each select="$roots/ejbjarproject2:root">
+            <xsl:for-each select="$roots/ejbjarproject3:root">
                 <xsl:if test="position() != 1">
                         <xsl:text>:</xsl:text>
                 </xsl:if>
@@ -1243,5 +1262,38 @@ to simulate
             </xsl:for-each>						
     </xsl:template>
 
+    <xsl:template name="copyIterateFiles" >
+        <xsl:param name="files" />
+        <xsl:param name="target"/>
+        <xsl:param name="libfile"/>
+        <xsl:if test="$files &gt; 0">
+        <xsl:variable name="fileNo" select="$files+(-1)"/>
+        <xsl:variable name="lib" select="concat('${',$libfile,'.libfile.',$files,'}')"/>
+        <copy file="{$lib}" todir="{$target}"/>
+        <xsl:call-template name="copyIterateFiles">
+            <xsl:with-param name="files" select="$fileNo"/>
+            <xsl:with-param name="target" select="$target"/>
+            <xsl:with-param name="libfile" select="$libfile"/>
+        </xsl:call-template>
+        </xsl:if>
+    </xsl:template>
+            
+    <xsl:template name="copyIterateDirs" >
+        <xsl:param name="files" />
+        <xsl:param name="target"/>
+        <xsl:param name="libfile"/>
+        <xsl:if test="$files &gt; 0">
+            <xsl:variable name="fileNo" select="$files+(-1)"/>
+            <xsl:variable name="lib" select="concat('${',$libfile,'.libdir.',$files,'}')"/>
+            <copy todir="{$target}">
+                <fileset dir="{$lib}" includes="**/*"/>
+            </copy>
+            <xsl:call-template name="copyIterateDirs">
+                <xsl:with-param name="files" select="$fileNo"/>
+                <xsl:with-param name="target" select="$target"/>
+                <xsl:with-param name="libfile" select="$libfile"/>
+            </xsl:call-template>
+        </xsl:if>
+    </xsl:template>
 
 </xsl:stylesheet>

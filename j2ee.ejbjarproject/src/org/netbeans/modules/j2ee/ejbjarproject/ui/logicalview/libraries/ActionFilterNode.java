@@ -285,6 +285,14 @@ class ActionFilterNode extends FilterNode {
                props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                props.setProperty(classPathId, itemRefs);
                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+
+               //update lib references in private properties
+               EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+               ArrayList l = new ArrayList ();
+               l.addAll(resources);
+               EjbJarProjectProperties.storeLibrariesLocations(l.iterator(), privateProps);
+               helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
+
                return FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
            } else {
                return null;

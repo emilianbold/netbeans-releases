@@ -26,7 +26,7 @@ public final class EjbJarProjectType implements AntBasedProjectType {
     
     public static final String TYPE = "org.netbeans.modules.j2ee.ejbjarproject";
     private static final String PROJECT_CONFIGURATION_NAME = "data";
-    public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-ejbjarproject/2";
+    public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-ejbjarproject/3";
     private static final String PRIVATE_CONFIGURATION_NAME = "data";
     private static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-ejbjarproject-private/1";
     

@@ -61,6 +61,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -90,7 +91,7 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
  * Represents one ejb module project
  * @author Chris Webster
  */
-public class EjbJarProject implements Project, AntProjectListener, FileChangeListener {
+public class EjbJarProject implements Project, AntProjectListener, FileChangeListener, PropertyChangeListener {
     
     private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif")); // NOI18N
     
@@ -110,7 +111,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
     private PropertyHelper propertyHelper;
-    
+    private final EjbJarProjectClassPathExtender classpathExtender; 
     private PropertyChangeListener j2eePlatformListener;
     
     // TODO: AB: replace the code in EjbJarProjectProperties.setNewServerInstanceValue with this 
@@ -184,6 +185,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         apiWebServicesClientSupport = WebServicesSupportFactory.createWebServicesClientSupport(ejbJarWebServicesSupport);
         this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper,
             UpdateHelper.createDefaultNotifier());
+        classpathExtender = new EjbJarProjectClassPathExtender(this, updateHelper, evaluator(), refHelper);
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
         ProjectManager.mutex().postWriteRequest(
@@ -213,6 +215,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     
     private PropertyEvaluator createEvaluator() {
         PropertyEvaluator eval = helper.getStandardPropertyEvaluator();
+        eval.addPropertyChangeListener(WeakListeners.propertyChange(this, eval));
         return eval;
     }
     
@@ -267,7 +270,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new EjbJarFileBuiltQuery (helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
                 new RecommendedTemplatesImpl(),
                 refHelper,
-                new EjbJarProjectClassPathExtender(this, updateHelper, evaluator(), refHelper)
+                classpathExtender
                 // TODO: AB: maybe add "this" to the lookup. You should not cast a Project to EjbJarProject, but use the lookup instead.
             });
     }
@@ -704,6 +707,21 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
         }
         
+    }
+         
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(EjbJarProjectProperties.JAVAC_CLASSPATH)) {
+            ProjectManager.mutex().postWriteRequest(new Runnable () {
+                public void run() {
+                    EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+                    //update lib references in private properties
+                    EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                    Iterator cpItems = classpathExtender.getClassPathSupport().itemsIterator(props.getProperty(EjbJarProjectProperties.JAVAC_CLASSPATH),  ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES);
+                    EjbJarProjectProperties.storeLibrariesLocations(cpItems, privateProps);
+                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
+                }
+            });
+        }
     }
     
     /**

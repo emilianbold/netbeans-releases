@@ -15,6 +15,7 @@ package org.netbeans.modules.j2ee.ejbjarproject.classpath;
 import java.io.IOException;
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
@@ -85,6 +86,14 @@ public class EjbJarProjectClassPathExtender implements ProjectClassPathExtender 
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties                                
                                 props.setProperty(classPathId, itemRefs);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                                
+                                //update lib references in private properties
+                                EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                                ArrayList l = new ArrayList ();
+                                l.addAll(resources);
+                                EjbJarProjectProperties.storeLibrariesLocations(l.iterator(), privateProps);
+                                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
+
                                 ProjectManager.getDefault().saveProject(project);
                                 return Boolean.TRUE;
                             }
@@ -195,6 +204,10 @@ public class EjbJarProjectClassPathExtender implements ProjectClassPathExtender 
                 throw (IOException) ErrorManager.getDefault().annotate(t,e);
             }
         }
+    }
+    
+    public ClassPathSupport getClassPathSupport() {
+         return this.cs;
     }
 
 }

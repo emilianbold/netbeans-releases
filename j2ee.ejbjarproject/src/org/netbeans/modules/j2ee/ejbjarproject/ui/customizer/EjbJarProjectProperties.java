@@ -17,9 +17,12 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
@@ -57,6 +60,7 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 
 
 /** Helper class. Defines constants for properties. Knows the proper
@@ -381,6 +385,8 @@ public class EjbJarProjectProperties {
         
         storeAdditionalProperties(projectProperties);
 
+        storeLibrariesLocations (ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel()).iterator(), privateProperties);
+        
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );        
@@ -575,6 +581,109 @@ public class EjbJarProjectProperties {
         }
         else {
             return property;
+        }
+    }
+    
+     /** Store locations of libraries in the classpath param that have more the one
+     * file into the properties in the following format:
+     * 
+     * <ul>
+     * <li>libs.foo.classpath.libdir.1=C:/foo
+     * <li>libs.foo.classpath.libdirs=1
+     * <li>libs.foo.classpath.libfile.1=C:/bar/a.jar
+     * <li>libs.foo.classpath.libfile.2=C:/bar/b.jar
+     * <li>libs.foo.classpath.libfiles=1
+     * </ul>
+     * This is needed for the Ant copy task as it cannot copy more the one file
+     * and it needs different handling for files and directories.
+     * <br>
+     * It removes all properties that match this format that were in the {@link #properties}
+     * but are not in the {@link #classpath}.
+     */
+    public static void storeLibrariesLocations (Iterator /*<Item>*/ classpath, EditableProperties privateProps) {
+        ArrayList exLibs = new ArrayList ();
+        Iterator propKeys = privateProps.keySet().iterator();
+        while (propKeys.hasNext()) {
+            String key = (String) propKeys.next();
+            if (key.endsWith(".libdirs") || key.endsWith(".libfiles") || //NOI18N
+                    (key.indexOf(".libdir.") > 0) || (key.indexOf(".libfile.") > 0)) { //NOI18N
+                exLibs.add(key);
+            }
+        }
+        while (classpath.hasNext()) {
+            ClassPathSupport.Item item = (ClassPathSupport.Item)classpath.next();
+            ArrayList /*File*/ files = new ArrayList ();
+            ArrayList /*File*/ dirs = new ArrayList ();
+            getFilesForItem (item, files, dirs);
+            String key;
+            if (files.size() > 0) {
+                String ref = item.getReference() == null ? item.getRaw() : item.getReference();
+                for (int i = 0; i < files.size(); i++) {
+                    File f = (File) files.get(i);
+                    key = getAntPropertyName(ref)+".libfile." + (i+1); //NOI18N
+                    privateProps.setProperty (key, "" + f.getAbsolutePath()); //NOI18N
+                    exLibs.remove(key);
+                }
+            }
+            if (dirs.size() > 0) {
+                String ref = item.getReference() == null ? item.getRaw() : item.getReference();
+                for (int i = 0; i < dirs.size(); i++) {
+                    File f = (File) dirs.get(i);
+                    key = getAntPropertyName(ref)+".libdir." + (i+1); //NOI18N
+                    privateProps.setProperty (key, "" + f.getAbsolutePath()); //NOI18N
+                    exLibs.remove(key);
+                }
+            }
+        }
+        Iterator unused = exLibs.iterator();
+        while (unused.hasNext()) {
+            privateProps.remove(unused.next());
+        }
+    }
+    
+    public static final void getFilesForItem (ClassPathSupport.Item item, List/*File*/ files, List/*File*/ dirs) {
+        if (item.isBroken()) {
+            return ;
+        }
+        if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
+            List/*<URL>*/ roots = item.getLibrary().getContent("classpath");  //NOI18N
+            for (Iterator it = roots.iterator(); it.hasNext();) {
+                URL rootUrl = (URL) it.next();
+                FileObject root = URLMapper.findFileObject (rootUrl);
+                if ("jar".equals(rootUrl.getProtocol())) {  //NOI18N
+                    root = FileUtil.getArchiveFile (root);
+                }
+                File f = FileUtil.toFile(root);
+                if (f != null) {
+                    if (f.isFile()) {
+                        files.add(f); 
+                    } else {
+                        dirs.add(f);
+                    }
+                }
+            }
+        }
+        if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+            File root = item.getFile();
+            if (root != null) {
+                if (root.isFile()) {
+                    files.add(root); 
+                } else {
+                    dirs.add(root);
+                }
+            }
+        }
+        if (item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
+            String artifactFolder = item.getArtifact().getScriptLocation().getParent();
+            URI roots[] = item.getArtifact().getArtifactLocations();
+            for (int i = 0; i < roots.length; i++) {
+                String root = artifactFolder + File.separator + roots [i];
+                if (root.endsWith(File.separator)) {
+                    dirs.add(new File (root));
+                } else {
+                    files.add(new File (root));
+                }
+            }
         }
     }
 }

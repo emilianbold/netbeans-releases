@@ -14,9 +14,14 @@
 package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
@@ -27,10 +32,13 @@ import org.openide.util.NbBundle;
 import org.openide.util.Mutex;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -49,6 +57,10 @@ public class UpdateHelper {
     private boolean alreadyAskedInWriteAccess;
     private Boolean isCurrent;
     private Element cachedElement;
+
+    private static final String INCLUDED_LIBRARY = "included-library"; //NOI18N
+    private static final String ATTR_FILES = "files"; //NOI18N
+    private static final String ATTR_DIRS = "dirs"; //NOI18N
 
     /**
      * Creates new UpdateHelper
@@ -176,7 +188,7 @@ public class UpdateHelper {
      */
     public synchronized boolean isCurrent () {
         if (this.isCurrent == null) {
-            this.isCurrent = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2ee-ejbjarproject/1",true) == null ? //NOI18N
+            this.isCurrent = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2ee-ejbjarproject/3",true) != null ? //NOI18N
                 Boolean.TRUE : Boolean.FALSE;
         }
         return isCurrent.booleanValue();
@@ -203,7 +215,15 @@ public class UpdateHelper {
 
     private void saveUpdate () throws IOException {
         this.helper.putPrimaryConfigurationData(getUpdatedSharedConfigurationData(),true);
-        this.cfg.removeConfigurationFragment("data","http://www.netbeans.org/ns/j2ee-ejbjarproject/1",true); //NOI18N
+        
+        if (this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2ee-ejbjarproject/1",true) != null) { //NOI18N
+            //version 1
+            this.cfg.removeConfigurationFragment("data","http://www.netbeans.org/ns/j2ee-ejbjarproject/1",true); //NOI18N
+        } else {
+            //version 2
+            this.cfg.removeConfigurationFragment("data","http://www.netbeans.org/ns/j2ee-ejbjarproject/2",true); //NOI18N
+        }
+                
         ProjectManager.getDefault().saveProject (this.project);
         this.genFileHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_IMPL_XML_PATH, UpdateHelper.class.getResource("resources/build-impl.xsl"),
             true);
@@ -215,20 +235,68 @@ public class UpdateHelper {
     private synchronized Element getUpdatedSharedConfigurationData () {
         if (cachedElement == null) {
             Element  oldRoot = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2ee-ejbjarproject/1",true);    //NOI18N
+            
+            int version = 1;
+            if (oldRoot == null) {
+                version = 2;
+                oldRoot = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2ee-ejbjarproject/2",true);    //NOI18N
+            }
+            final String ns = version == 1 ? "http://www.netbeans.org/ns/web-project/1" : "http://www.netbeans.org/ns/web-project/2"; //NOI18N 
+            
             if (oldRoot != null) {
                 Document doc = oldRoot.getOwnerDocument();
                 Element newRoot = doc.createElementNS (EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
                 copyDocument (doc, oldRoot, newRoot);
-                Element sourceRoots = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
-                Element root = doc.createElementNS (EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-                root.setAttribute ("id","src.dir");   //NOI18N
-                sourceRoots.appendChild(root);
-                newRoot.appendChild (sourceRoots);
-                Element testRoots = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
-                root = doc.createElementNS (EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-                root.setAttribute ("id","test.src.dir");   //NOI18N
-                testRoots.appendChild (root);
-                newRoot.appendChild (testRoots);
+                if(version == 1) {
+                    //1=>2 upgrade
+                    Element sourceRoots = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
+                    Element root = doc.createElementNS (EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+                    root.setAttribute ("id","src.dir");   //NOI18N
+                    sourceRoots.appendChild(root);
+                    newRoot.appendChild (sourceRoots);
+                    Element testRoots = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
+                    root = doc.createElementNS (EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+                    root.setAttribute ("id","test.src.dir");   //NOI18N
+                    testRoots.appendChild (root);
+                    newRoot.appendChild (testRoots);
+                }
+                if(version == 1 || version == 2) {
+                    //2=>3 upgrade
+                    NodeList libList = newRoot.getElementsByTagNameNS(ns, INCLUDED_LIBRARY);
+                    for (int i = 0; i < libList.getLength(); i++) {
+                        if (libList.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                            Element library = (Element) libList.item(i);
+                            String fileText = findText(library);
+                            if (fileText.startsWith ("libs.")) {
+                                String libName = fileText.substring(6, fileText.indexOf(".classpath")); //NOI18N
+                                List/*<URL>*/ roots = LibraryManager.getDefault().getLibrary(libName).getContent("classpath"); //NOI18N
+                                ArrayList files = new ArrayList ();
+                                ArrayList dirs = new ArrayList ();
+                                for (Iterator it = roots.iterator(); it.hasNext();) {
+                                    URL rootUrl = (URL) it.next();
+                                    FileObject root = org.openide.filesystems.URLMapper.findFileObject (rootUrl);
+                                    if ("jar".equals(rootUrl.getProtocol())) {  //NOI18N
+                                        root = FileUtil.getArchiveFile (root);
+                                    }
+                                    if (root != null) {
+                                        if (root.isData()) {
+                                            files.add(root); 
+                                        } else {
+                                            dirs.add(root);
+                                        }
+                                    }
+                                }
+                                if (files.size() > 0) {
+                                    library.setAttribute(ATTR_FILES, "" + files.size());
+                                }
+                                if (dirs.size() > 0) {
+                                    library.setAttribute(ATTR_DIRS, "" + dirs.size());
+                                }
+                            }
+                        }
+                    }
+                }
+                
                 cachedElement = newRoot;
             }
         }
@@ -245,6 +313,13 @@ public class UpdateHelper {
                 case Node.ELEMENT_NODE:
                     Element oldElement = (Element) node;
                     newNode = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,oldElement.getTagName());
+                    //copy attributes
+                    NamedNodeMap m = oldElement.getAttributes();
+                    Element newElement = (Element) newNode;
+                    for (int index = 0; index < m.getLength(); index++) {
+                        Node attr = m.item(index);
+                        newElement.setAttribute(attr.getNodeName(), attr.getNodeValue());
+                    }
                     copyDocument(doc,oldElement,(Element)newNode);
                     break;
                 case Node.TEXT_NODE:
@@ -277,6 +352,24 @@ public class UpdateHelper {
         };
     }
 
+    /**
+     * Extract nested text from a node.
+     * Currently does not handle coalescing text nodes, CDATA sections, etc.
+     * @param parent a parent node
+     * @return the nested text, or null if none was found
+     */
+    private static String findText(Node parent) {
+        NodeList l = parent.getChildNodes();
+        for (int i = 0; i < l.getLength(); i++) {
+            if (l.item(i).getNodeType() == Node.TEXT_NODE) {
+                Text text = (Text)l.item(i);
+                return text.getNodeValue();
+            }
+        }
+        return null;
+    }
+    
+    
     /**
      * Interface used by the UpdateHelper to ask user about
      * the project update.
