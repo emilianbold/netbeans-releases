@@ -1131,7 +1131,7 @@ implements Serializable, DataObject.Container {
                 img = (Image)UIManager.get("Nb.Explorer.Folder.openedIcon");
             }
             if (img == null) {
-                img = super.getIcon(type);
+                img = super.getOpenedIcon(type);
             } else {
                 // give chance to annotate icon returned from UIManeger
                 // copied from DataNode to keep the contract
