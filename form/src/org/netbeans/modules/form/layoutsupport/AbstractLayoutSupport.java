@@ -768,6 +768,13 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
                                  targetProperties,
                                  FormUtils.CHANGED_ONLY
                                    | FormUtils.DISABLE_CHANGE_FIRING);
+        
+        // Ensure correct propagation of copied properties (issue 50011)
+        try {
+            clone.acceptContainerLayoutChange(null);
+        } catch (PropertyVetoException pvex) {
+            // should not happen
+        }
 
         int compCount = getComponentCount();
         LayoutConstraints[] constraints = new LayoutConstraints[compCount];
