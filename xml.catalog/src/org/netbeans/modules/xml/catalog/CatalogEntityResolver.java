@@ -107,7 +107,10 @@ public class CatalogEntityResolver extends UserCatalog implements EntityResolver
 
         while (it.hasNext()) {
             CatalogReader next = (CatalogReader) it.next();
-            ret.add(next.getPublicIDs());            
+            Iterator ids = next.getPublicIDs();
+            if (ids != null) {
+                ret.add(ids);
+            }
         }
         
         return ret;

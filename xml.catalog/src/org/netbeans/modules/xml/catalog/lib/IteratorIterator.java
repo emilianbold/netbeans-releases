@@ -33,8 +33,10 @@ public final class IteratorIterator implements Iterator {
 
     /**
      * New iterators can be added while hasNext() or prior its first call.
+     * @param it iterator, never <codE>null</null>.
      */
     public void add(Iterator it) {
+        assert it != null;
         iterators.add(it);
     }
 
