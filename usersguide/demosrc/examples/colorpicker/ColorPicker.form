@@ -32,7 +32,6 @@
                       <Color PropertyName="shadow" blue="86" green="86" red="86" type="rgb"/>
                     </EtchetBorder>
                   </Border>
-                  <Color PropertyName="color" blue="0" green="0" id="black" palette="0" red="0" type="palette"/>
                 </TitledBorder>
               </Border>
             </Property>
@@ -56,7 +55,6 @@
                       <Color PropertyName="shadow" blue="86" green="86" red="86" type="rgb"/>
                     </EtchetBorder>
                   </Border>
-                  <Color PropertyName="color" blue="0" green="0" id="black" palette="0" red="0" type="palette"/>
                 </TitledBorder>
               </Border>
             </Property>
@@ -80,7 +78,6 @@
                       <Color PropertyName="shadow" blue="86" green="86" red="86" type="rgb"/>
                     </EtchetBorder>
                   </Border>
-                  <Color PropertyName="color" blue="0" green="0" id="black" palette="0" red="0" type="palette"/>
                 </TitledBorder>
               </Border>
             </Property>
@@ -105,7 +102,6 @@
                   <Color PropertyName="shadow" blue="86" green="86" red="86" type="rgb"/>
                 </EtchetBorder>
               </Border>
-              <Color PropertyName="color" blue="0" green="0" id="black" palette="0" red="0" type="palette"/>
             </TitledBorder>
           </Border>
         </Property>

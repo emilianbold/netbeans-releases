@@ -22,9 +22,8 @@ public class ColorPicker extends javax.swing.JFrame {
      * It initializes all GUI components.
      */
     public ColorPicker() {
-        initComponents ();
-        pack ();
-
+        initComponents();
+        pack();
     }
 
     /** This method is called from within the constructor to
@@ -49,7 +48,7 @@ public class ColorPicker extends javax.swing.JFrame {
         sliderPanel.setLayout(new javax.swing.BoxLayout(sliderPanel, javax.swing.BoxLayout.Y_AXIS));
 
         redSlider.setMaximum(255);
-        redSlider.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color(134, 134, 134)), "Red", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), java.awt.Color.black));
+        redSlider.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color(134, 134, 134)), "Red"));
         redSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 redSliderStateChanged(evt);
@@ -61,7 +60,7 @@ public class ColorPicker extends javax.swing.JFrame {
         redSlider.getAccessibleContext().setAccessibleDescription("Red slider.");
 
         greenSlider.setMaximum(255);
-        greenSlider.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color(134, 134, 134)), "Green", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), java.awt.Color.black));
+        greenSlider.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color(134, 134, 134)), "Green"));
         greenSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 greenSliderStateChanged(evt);
@@ -73,7 +72,7 @@ public class ColorPicker extends javax.swing.JFrame {
         greenSlider.getAccessibleContext().setAccessibleDescription("Green slider.");
 
         blueSlider.setMaximum(255);
-        blueSlider.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color(134, 134, 134)), "Blue", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), java.awt.Color.black));
+        blueSlider.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color(134, 134, 134)), "Blue"));
         blueSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 blueSliderStateChanged(evt);
@@ -88,7 +87,7 @@ public class ColorPicker extends javax.swing.JFrame {
 
         colorPreviewPanel.setLayout(new java.awt.BorderLayout());
 
-        colorPreviewPanel.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color(134, 134, 134)), "Color Preview", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), java.awt.Color.black));
+        colorPreviewPanel.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color(134, 134, 134)), "Color Preview"));
         colorPreviewPanel.add(colorPreview1, java.awt.BorderLayout.CENTER);
         colorPreview1.getAccessibleContext().setAccessibleName("Color Preview Component");
         colorPreview1.getAccessibleContext().setAccessibleDescription("Color preview component.");
@@ -103,41 +102,41 @@ public class ColorPicker extends javax.swing.JFrame {
      * It sets the current blue color value.
      * @param evt ChangeEvent instance passed from stateChanged event.
      */
-    private void blueSliderStateChanged (javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_blueSliderStateChanged
-        colorPreview1.setBlue (blueSlider.getValue ());
+    private void blueSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_blueSliderStateChanged
+        colorPreview1.setBlue(blueSlider.getValue());
     }//GEN-LAST:event_blueSliderStateChanged
 
     /** This method is called when green slider position is changed.
      * It sets the current green color value.
      * @param evt ChangeEvent instance passed from stateChanged event.
      */
-    private void greenSliderStateChanged (javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_greenSliderStateChanged
-        colorPreview1.setGreen (greenSlider.getValue ());
+    private void greenSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_greenSliderStateChanged
+        colorPreview1.setGreen(greenSlider.getValue());
     }//GEN-LAST:event_greenSliderStateChanged
 
     /** This method is called when red slider position is changed.
      * It sets the current red color value.
      * @param evt ChangeEvent instance passed from stateChanged event.
      */
-    private void redSliderStateChanged (javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_redSliderStateChanged
-        colorPreview1.setRed (redSlider.getValue ());
+    private void redSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_redSliderStateChanged
+        colorPreview1.setRed(redSlider.getValue());
     }//GEN-LAST:event_redSliderStateChanged
 
     /** This method is called when the application frame is closed.
      * @param evt WindowEvent instance passed from windowClosing event.
      */
     private void exitForm(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_exitForm
-        System.exit (0);
+        System.exit(0);
     }//GEN-LAST:event_exitForm
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JSlider blueSlider;
     private examples.colorpicker.ColorPreview colorPreview1;
     private javax.swing.JPanel colorPreviewPanel;
     private javax.swing.JSlider greenSlider;
-    private javax.swing.JPanel sliderPanel;
     private javax.swing.JSlider redSlider;
-    private javax.swing.JSlider blueSlider;
+    private javax.swing.JPanel sliderPanel;
     // End of variables declaration//GEN-END:variables
 
 
@@ -145,7 +144,7 @@ public class ColorPicker extends javax.swing.JFrame {
      * @param args Application arguments.
      */    
     public static void main(java.lang.String[] args) {
-        new ColorPicker ().show ();
+        new ColorPicker().show();
     }
 
 }

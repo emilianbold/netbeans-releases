@@ -25,7 +25,7 @@ public class Ted extends javax.swing.JFrame {
      * It initializes all GUI components [menu bar, menu items, editor pane, etc.].
      */
     public Ted() {
-        initComponents ();
+        initComponents();
         setSize(500,300);
     }
 
@@ -206,7 +206,7 @@ public class Ted extends javax.swing.JFrame {
      * @param evt ActionEvent instance passed from actionPerformed event.
      */
     private void findMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findMenuItemActionPerformed
-        new Finder (this, textBox).show();
+        new Finder(this, textBox).show();
     }//GEN-LAST:event_findMenuItemActionPerformed
 
     /** This method is called when Help -> About menu item is invoked.
@@ -230,30 +230,30 @@ public class Ted extends javax.swing.JFrame {
      * @param evt ActionEvent instance passed from actionPerformed event.
      */
     private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
-        FileDialog fileDialog = new FileDialog (this, "Open...", FileDialog.LOAD);
-        fileDialog.show ();
-        if (fileDialog.getFile () == null)
+        FileDialog fileDialog = new FileDialog(this, "Open...", FileDialog.LOAD);
+        fileDialog.show();
+        if (fileDialog.getFile() == null)
             return;
-        fileName = fileDialog.getDirectory () + File.separator + fileDialog.getFile ();
+        fileName = fileDialog.getDirectory() + File.separator + fileDialog.getFile();
 
         FileInputStream fis = null;
         String str = null;
         try {
-            fis = new FileInputStream (fileName);
-            int size = fis.available ();
+            fis = new FileInputStream(fileName);
+            int size = fis.available();
             byte[] bytes = new byte [size];
-            fis.read (bytes);
-            str = new String (bytes);
+            fis.read(bytes);
+            str = new String(bytes);
         } catch (IOException e) {
         } finally {
             try {
-                fis.close ();
+                fis.close();
             } catch (IOException e2) {
             }
         }
 
         if (str != null)
-            textBox.setText (str);
+            textBox.setText(str);
     }//GEN-LAST:event_openMenuItemActionPerformed
 
     /** This method is called when File -> New menu item is invoked.
@@ -262,29 +262,29 @@ public class Ted extends javax.swing.JFrame {
      */
     private void newMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newMenuItemActionPerformed
         fileName = "";
-        textBox.setText ("");
+        textBox.setText("");
     }//GEN-LAST:event_newMenuItemActionPerformed
 
     /** This method is called when the application frame is closed.
      * @param evt WindowEvent instance passed from windowClosing event.
      */
     private void exitForm(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_exitForm
-        System.exit (0);
+        System.exit(0);
     }//GEN-LAST:event_exitForm
 
     /** Saves the current content of editor pane to the file.
      * @param fileName Name of the file.
      */
-    private void doSave (String fileName) {
+    private void doSave(String fileName) {
         FileOutputStream fos = null;
-        String str = textBox.getText ();
+        String str = textBox.getText();
         try {
-            fos = new FileOutputStream (fileName);
-            fos.write (str.getBytes ());
+            fos = new FileOutputStream(fileName);
+            fos.write(str.getBytes());
         } catch (IOException e) {
         } finally {
             try {
-                fos.close ();
+                fos.close();
             } catch (IOException e2) {
             }
         }
@@ -292,41 +292,42 @@ public class Ted extends javax.swing.JFrame {
 
     /** Asks for a file name. then saves the current content of editor pane to the file.
      */
-    private void doSaveAs () {
-        FileDialog fileDialog = new FileDialog (this, "Save As...", FileDialog.SAVE);
-        fileDialog.show ();
-        if (fileDialog.getFile () == null)
+    private void doSaveAs() {
+        FileDialog fileDialog = new FileDialog(this, "Save As...", FileDialog.SAVE);
+        fileDialog.show();
+        if (fileDialog.getFile() == null)
             return;
-        fileName = fileDialog.getDirectory () + File.separator + fileDialog.getFile ();
+        fileName = fileDialog.getDirectory() + File.separator + fileDialog.getFile();
 
-        doSave (fileName);
+        doSave(fileName);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem;
-    private javax.swing.JMenuBar tedMenuBar;
+    private javax.swing.JMenu editMenu;
+    private javax.swing.JMenuItem exitMenuItem;
+    private javax.swing.JMenu fileMenu;
+    private javax.swing.JMenuItem findMenuItem;
+    private javax.swing.JMenu helpMenu;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JMenuItem newMenuItem;
+    private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JMenuItem saveAsMenuItem;
     private javax.swing.JMenuItem saveMenuItem;
-    private javax.swing.JMenu helpMenu;
-    private javax.swing.JScrollPane textScrollPane;
-    private javax.swing.JMenu editMenu;
-    private javax.swing.JMenuItem newMenuItem;
-    private javax.swing.JMenuItem exitMenuItem;
-    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JMenuBar tedMenuBar;
     private javax.swing.JTextArea textBox;
-    private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JMenuItem findMenuItem;
-    private javax.swing.JMenu fileMenu;
-    private javax.swing.JMenuItem openMenuItem;
+    private javax.swing.JScrollPane textScrollPane;
     // End of variables declaration//GEN-END:variables
+
+    private String fileName = "";
 
 
     /** Starts the application.
      * @param args Application arguments.
      */    
     public static void main(java.lang.String[] args) {
-        new Ted ().show ();
+        new Ted().show();
     }
 
-    private String fileName = "";
 }

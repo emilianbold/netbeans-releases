@@ -127,17 +127,17 @@ public class Finder extends javax.swing.JDialog {
      * If the field contains some text, it sets the caret position to the searched word, otherwise does nothing.
      * @param evt ActionEvent instance passed from actionPerformed event.
      */
-    private void findButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findButtonActionPerformed
+    private void findButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findButtonActionPerformed
         // Add your handling code here:
-        String text = textEditor.getText ();
-        String textToFind = findField.getText ();
-        if (!"".equals (textToFind)) {
-            int index = text.indexOf (textToFind);
+        String text = textEditor.getText();
+        String textToFind = findField.getText();
+        if (!"".equals(textToFind)) {
+            int index = text.indexOf(textToFind);
             if (index != -1) {
-                textEditor.setCaretPosition (index);
-                closeDialog (null);
+                textEditor.setCaretPosition(index);
+                closeDialog(null);
             } else {
-                java.awt.Toolkit.getDefaultToolkit ().beep ();
+                java.awt.Toolkit.getDefaultToolkit().beep();
             }
         }
     }//GEN-LAST:event_findButtonActionPerformed
@@ -146,7 +146,7 @@ public class Finder extends javax.swing.JDialog {
      * It closes the Finder dialog.
      * @param evt ActionEvent instance passed from actionPerformed event.
      */
-    private void closeButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
+    private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
         closeDialog(null);
     }//GEN-LAST:event_closeButtonActionPerformed
 
@@ -154,20 +154,20 @@ public class Finder extends javax.swing.JDialog {
      * @param evt WindowEvent instance passed from windowClosing event.
      */
     private void closeDialog(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_closeDialog
-        setVisible (false);
-        dispose ();
+        setVisible(false);
+        dispose();
     }//GEN-LAST:event_closeDialog
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton findButton;
     private javax.swing.JPanel buttonPanel;
-    private javax.swing.JLabel findLabel;
     private javax.swing.JButton closeButton;
+    private javax.swing.JButton findButton;
     private javax.swing.JTextField findField;
+    private javax.swing.JLabel findLabel;
     private javax.swing.JPanel findPanel;
     // End of variables declaration//GEN-END:variables
-    private javax.swing.JTextArea textEditor;
 
+    private javax.swing.JTextArea textEditor;
 
 }

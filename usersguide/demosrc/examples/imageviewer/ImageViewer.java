@@ -22,8 +22,8 @@ public class ImageViewer extends javax.swing.JFrame {
      * It initializes all GUI components [menu bar, menu items, desktop pane, etc.].
      */
     public ImageViewer() {
-        initComponents ();
-        pack ();
+        initComponents();
+        pack();
         setBounds( 100, 100, 400, 400 );
     }
 
@@ -54,8 +54,8 @@ public class ImageViewer extends javax.swing.JFrame {
 
         fileMenu.setMnemonic('f');
         fileMenu.setText("File");
-        openMenuItem.setMnemonic('o');
         openMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        openMenuItem.setMnemonic('o');
         openMenuItem.setText("Open");
         openMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -95,7 +95,7 @@ public class ImageViewer extends javax.swing.JFrame {
      * It closes the application.
      * @param evt ActionEvent instance passed from actionPerformed event.
      */
-    private void exitMenuItemActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
+    private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
         System.exit( 0 );
     }//GEN-LAST:event_exitMenuItemActionPerformed
 
@@ -103,19 +103,19 @@ public class ImageViewer extends javax.swing.JFrame {
      * It displays a dialog to choose the image file to be opened and displayed.
      * @param evt ActionEvent instance passed from actionPerformed event.
      */
-    private void openMenuItemActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
+    private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
         javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
         chooser.addChoosableFileFilter(new ImageFileFilter());
         int option = chooser.showOpenDialog(this);
         if (option == javax.swing.JFileChooser.APPROVE_OPTION) {
             java.io.File file = chooser.getSelectedFile();
             if (file == null) return;
-            ImageFrame ifr = new ImageFrame (file.getAbsolutePath());
-            desktop.add (ifr, javax.swing.JLayeredPane.DEFAULT_LAYER);
-
+            ImageFrame ifr = new ImageFrame(file.getAbsolutePath());
+            desktop.add(ifr, javax.swing.JLayeredPane.DEFAULT_LAYER);
+            
             ifr.setVisible( true );
-            ifr.setSize (200, 200);
-            ifr.setLocation (0, 0);
+            ifr.setSize(200, 200);
+            ifr.setLocation(0, 0);
         }
     }//GEN-LAST:event_openMenuItemActionPerformed
 
@@ -123,16 +123,9 @@ public class ImageViewer extends javax.swing.JFrame {
      * @param evt WindowEvent instance passed from windowClosing event.
      */
     private void exitForm(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_exitForm
-        System.exit (0);
+        System.exit(0);
     }//GEN-LAST:event_exitForm
 
-    /** Starts the application.
-     * @param args Application arguments.
-     */    
-    public static void main (String args[]) {
-        new ImageViewer ().show ();
-    }
-    
     /** Define custom file filter for acceptable image files.
      */
     private static class ImageFileFilter extends javax.swing.filechooser.FileFilter {
@@ -151,12 +144,20 @@ public class ImageViewer extends javax.swing.JFrame {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenuBar mainMenuBar;
     private javax.swing.JDesktopPane desktop;
     private javax.swing.JMenuItem exitMenuItem;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JMenuBar mainMenuBar;
     private javax.swing.JMenuItem openMenuItem;
     // End of variables declaration//GEN-END:variables
+
+
+    /** Starts the application.
+     * @param args Application arguments.
+     */    
+    public static void main(String args[]) {
+        new ImageViewer().show();
+    }
 
 }

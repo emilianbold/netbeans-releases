@@ -30,9 +30,9 @@ public class ColorPreviewBeanInfo extends SimpleBeanInfo {
     static {
         try {
 
-            properties[PROPERTY_blue] = new PropertyDescriptor ( "blue", ColorPreview.class, "getBlue", "setBlue" );
-            properties[PROPERTY_green] = new PropertyDescriptor ( "green", ColorPreview.class, "getGreen", "setGreen" );
-            properties[PROPERTY_red] = new PropertyDescriptor ( "red", ColorPreview.class, "getRed", "setRed" );
+            properties[PROPERTY_blue] = new PropertyDescriptor( "blue", ColorPreview.class, "getBlue", "setBlue" );
+            properties[PROPERTY_green] = new PropertyDescriptor( "green", ColorPreview.class, "getGreen", "setGreen" );
+            properties[PROPERTY_red] = new PropertyDescriptor( "red", ColorPreview.class, "getRed", "setRed" );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
@@ -50,7 +50,7 @@ public class ColorPreviewBeanInfo extends SimpleBeanInfo {
     static {
         try {
 
-            eventSets[EVENT_propertyChangeListener] = new EventSetDescriptor ( ColorPreview.class, "propertyChangeListener", java.beans.PropertyChangeListener.class, new String[] { "propertyChange" }, "addPropertyChangeListener", "removePropertyChangeListener" );
+            eventSets[EVENT_propertyChangeListener] = new EventSetDescriptor( ColorPreview.class, "propertyChangeListener", java.beans.PropertyChangeListener.class, new String[] { "propertyChange" }, "addPropertyChangeListener", "removePropertyChangeListener" );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Events
 
@@ -80,16 +80,16 @@ public class ColorPreviewBeanInfo extends SimpleBeanInfo {
     }
 
 
-    java.awt.Image icon = loadImage ("/tutorial/colorpicker/ColorPreview.gif");
+    java.awt.Image icon = loadImage("/tutorial/colorpicker/ColorPreview.gif");
 
     /** This method returns this bean info icon, depending on given argument.
      * @param iconKind Type of icon.
      * @return Icon associated with this BeanInfo.
      */
-    public java.awt.Image getIcon (int iconKind) {
+    public java.awt.Image getIcon(int iconKind) {
 
         switch (iconKind) {
-        case java.beans.BeanInfo.ICON_COLOR_16x16: return icon;
+            case java.beans.BeanInfo.ICON_COLOR_16x16: return icon;
         }
         return null;
 

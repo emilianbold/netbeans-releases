@@ -56,9 +56,9 @@ public class ColorPreview extends javax.swing.JPanel {
     public void setRed(int red) {
         int oldRed = this.red;
         this.red = red;
-        propertyChangeSupport.firePropertyChange("red" , new Integer(oldRed) , new Integer(red));
-        setBackground (new java.awt.Color (red, green, blue));
-        repaint ();
+        propertyChangeSupport.firePropertyChange("red", new Integer(oldRed), new Integer(red));
+        setBackground(new java.awt.Color(red, green, blue));
+        repaint();
     }
 
     /** Green value getter.
@@ -74,9 +74,9 @@ public class ColorPreview extends javax.swing.JPanel {
     public void setGreen(int green) {
         int oldGreen = this.green;
         this.green = green;
-        propertyChangeSupport.firePropertyChange("green" , new Integer(oldGreen) , new Integer(green));
-        setBackground (new java.awt.Color (red, green, blue));
-        repaint ();
+        propertyChangeSupport.firePropertyChange("green", new Integer(oldGreen), new Integer(green));
+        setBackground(new java.awt.Color(red, green, blue));
+        repaint();
     }
 
     /** Blue value getter.
@@ -92,8 +92,8 @@ public class ColorPreview extends javax.swing.JPanel {
     public void setBlue(int blue) {
         int oldBlue = this.blue;
         this.blue = blue;
-        propertyChangeSupport.firePropertyChange("blue" , new Integer(oldBlue) , new Integer(blue));
-        setBackground (new java.awt.Color (red, green, blue));
-        repaint ();
+        propertyChangeSupport.firePropertyChange("blue", new Integer(oldBlue), new Integer(blue));
+        setBackground(new java.awt.Color(red, green, blue));
+        repaint();
     }
 }

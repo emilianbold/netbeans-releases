@@ -21,9 +21,9 @@ public class About extends javax.swing.JDialog {
      * It creates modal dialog and displays it.
      */
     public About(java.awt.Frame parent) {
-        super (parent, true);
-        initComponents ();
-        pack ();
+        super(parent, true);
+        initComponents();
+        pack();
         setLocationRelativeTo(parent);
     }
 
@@ -52,20 +52,17 @@ public class About extends javax.swing.JDialog {
 
     }//GEN-END:initComponents
 
-
     /** This method is called when the dialog is closed.
      * @param evt WindowEvent instance passed from windowClosing event.
      */
     private void closeDialog(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_closeDialog
-        setVisible (false);
-        dispose ();
+        setVisible(false);
+        dispose();
     }//GEN-LAST:event_closeDialog
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
-
-
 
 }
