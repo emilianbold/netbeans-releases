@@ -11,75 +11,70 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<!--       
- *        Copyright (C) 2000  Sun Microsystems, Inc
- *                    All rights reserved.
- *          Notice of copyright on this source code 
- *          product does not indicate publication. 
- * 
- * RESTRICTED RIGHTS LEGEND: Use, duplication, or disclosure by 
- * the U.S. Government is subject to restrictions as set forth 
- * in subparagraph (c)(1)(ii) of the Rights in Technical Data
- * and Computer Software Clause at DFARS 252.227-7013 (Oct. 1988) 
- * and FAR 52.227-19 (c) (June 1988).
- *
- *    Sun Microsystems, Inc., 901 San Antonio Road,
- *    Palo Alto, California 94303 U.S.A.
- *
--->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<!--
+ *     Copyright 2001 Sun Microsystems, Inc. All rights reserved.
+>   *     Use is subject to license terms.
+>   *
+>   *     Copyright 2001 Sun Microsystems, Inc. Tous droits réservés.
+>   *     L'utilisation est régie par les termes de cette licence.
+>   *
+>   *
+> -->
 <html>
 <head>
+<meta name="lastupdated" content="19apr2001">
 <title>Browsing Structures</title>
+<link rel="stylesheet" href="ide.css" type="text/css">
 </head>
+<body bgcolor="#FFFFFF">
 
-<body bgColor=#ffffff>
 <h2>Browsing Structures</h2>
 
-<p>Databases consist of the following, each of which represent a list of columns:</p>
+Databases consist of the following, each of which represent a list of columns:
 <ul>
   <li>Tables</li>
   <li>Views</li>
   <li>Stored procedures</li>
 </ul>
-<p>The Database Explorer follows this structure when displaying the database. 
+The Database Explorer follows this structure when displaying the database. 
   <br>
-  Accordingly, new nodes that appear under a connection when it is live<br>
-  represent tables, views, and procedures.</p>
-<p><b>To browse a table</b></p>
+  Accordingly, new nodes that appear under a connection when it is live
+  represent tables, views, and procedures.
+<h3>To browse a table</h3>
 <ol>
-  <li>Click on the table node.. </li>
-  <li> Expand the table node to see the table's columns and an indexes node, showing 
+  <li>Click the table node. </li>
+  <li> Expand the table node to see the table's columns and an index's node, 
+showing 
     all indexes defined on a given table. </li>
 </ol>
-<p><b>Columns</b>
-<p>Columns are distinguished by color:
+<h4>Columns</h4>
+Columns are distinguished by color:
 <ul>
   <li>Red represents columns that are a member of the primary key.</li>
   <li>Blue represents an ordinary column.</li>
-  <li>Green represents indexed columns that are present in one or more indexes</li>
+  <li>Green represents indexed columns that are present in one or more 
+indexes.</li>
 </ul>
-<p><b>Indexes</b></p>
-<p>Click on an index node to see a list of the columns indexed for a given table.</p>
-<p> <b>Views</b></p>
+<h4>Indexes</h4>
+Click on an index node to see a list of the columns indexed for a given table.
+<h4> <b>Views</h4>
+ Click the Views node to see the Views on a given database.<br>
 
-  <p> Click the Views node to see the Views on a given database.</p>
-
-<p>View columns are shaded gray; you cannot change the physical characteristics 
-  <br>
+View columns are shaded gray; you cannot change the physical characteristics 
   of columns in a view. However, you can change a view by dropping the view and 
-  subsequently <br>
-  recreating it.</p>
-<p><b>Procedures</b></p>
-<p> Choose Procedures to view stored procedure names and their <code>in</code> 
-  and <code>out</code> parameters.</p>
+  subsequently
+  recreating it.
+<h4>Procedures</h4>
+ Choose Procedures to view stored procedure names and their <code>in</code> 
+  and <code>out</code> parameters.
 <table>
-<tr>
-    <th colspan=2 align=left height="22">See also</th>
-</tr>
-<tr>
-<td width="30"></td>
-    <td> <a href="manipsql.html">Enabling and Disabling Debug Mode to Monitor 
+         <tr>
+         <th colspan=2 align=left>See also</th>
+         </tr>
+         <tr>
+         <td width="23"></td>
+         <td> <a href="manipsql.html">Enabling and Disabling Debug Mode to Monitor 
       SQL Commands</a></td>
 </tr>
 </table>
