@@ -39,6 +39,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.EditorKit;
+import org.openide.ErrorManager;
 
 import org.openide.text.DataEditorSupport;
 import org.openide.filesystems.FileObject;
@@ -326,6 +327,23 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
                 nd.setValue(NotifyDescriptor.NO_OPTION);       
                 DialogDisplayer.getDefault().notify(nd);
                 if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;
+            }
+            try {
+                java.nio.charset.CharsetEncoder coder = java.nio.charset.Charset.forName(encoding).newEncoder();
+                if (!coder.canEncode(getDocument().getText(0, getDocument().getLength()))){
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage (BaseJspEditorSupport.class, "MSG_BadCharConversion", //NOI18N
+                    new Object [] { getDataObject().getPrimaryFile().getNameExt(),
+                                    encoding}),
+                        NotifyDescriptor.YES_NO_OPTION,
+                        NotifyDescriptor.WARNING_MESSAGE);
+                        nd.setValue(NotifyDescriptor.NO_OPTION);
+                        DialogDisplayer.getDefault().notify(nd);
+                        if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;                
+                }
+            }
+            catch (javax.swing.text.BadLocationException e){
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);            
             }
             super.saveDocument();
             if (parse) {
