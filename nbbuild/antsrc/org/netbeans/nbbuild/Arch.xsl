@@ -121,7 +121,9 @@
         <xsl:variable name="value" select="@id" />
     
         <p/>
+        <font color="gray" >
         <b>Question (<xsl:value-of select="@id"/>):</b> <em><xsl:apply-templates select="./node()" /></em>
+        </font>
         <p/>
         
         <xsl:choose>
@@ -190,12 +192,10 @@
             </td>
             
             <td> <!-- url -->
-                <a>
-                    <xsl:attribute name="href" >
-                        <xsl:value-of select="$url" />
-                    </xsl:attribute>
-                    <xsl:value-of select="$url" />
-                </a>
+                <xsl:call-template name="describe">
+                  <xsl:with-param name="describe.url" select="$url" />
+                  <xsl:with-param name="describe.node" select="./node()" />
+                </xsl:call-template>
             </td>
         </tbody>
             
@@ -217,6 +217,7 @@
     <xsl:template name="property">
         <xsl:variable name="name" select="@name" />
         <xsl:variable name="category" select="@category" />
+        <xsl:variable name="url" select="@url" />
 
         <tbody>
             <td>
@@ -242,10 +243,37 @@
             </td>
             
             <td> <!-- description -->
-                    <xsl:apply-templates select="./node()" />
+                <xsl:call-template name="describe">
+                  <xsl:with-param name="describe.url" select="$url" />
+                  <xsl:with-param name="describe.node" select="./node()" />
+                </xsl:call-template>
             </td>
         </tbody>
             
+    </xsl:template>
+    
+    <!-- template to display URL &| description -->
+    <xsl:template name="describe">
+       <xsl:param name="describe.url" />
+       <xsl:param name="describe.node" />
+       
+       
+       <xsl:if test="$describe.url" >
+            <a>
+                <xsl:attribute name="href" >
+                    <xsl:value-of select="$describe.url" />
+                </xsl:attribute>
+                <xsl:value-of select="$describe.url" />
+            </a>
+           
+           <xsl:if test="$describe.node" >
+               <p/>
+           </xsl:if>
+       </xsl:if>
+       
+       <xsl:if test="$describe.node" >
+           <xsl:apply-templates select="$describe.node" />
+       </xsl:if>
     </xsl:template>
 
     <!-- Format random HTML elements as is: -->
