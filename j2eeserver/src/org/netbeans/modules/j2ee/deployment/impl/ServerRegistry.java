@@ -26,24 +26,26 @@ import java.io.*;
 //import java.util.logging.*;
 
 public final class ServerRegistry implements java.io.Serializable {
-
+    
     public static final String DIR_INSTALLED_SERVERS = "/J2EE/InstalledServers"; //NOI18N
     public static final String DIR_JSR88_PLUGINS = "/J2EE/DeploymentPlugins"; //NOI18N
     public static final String URL_ATTR = "url"; //NOI18N
     public static final String USERNAME_ATTR = InstanceProperties.USERNAME_ATTR;
     public static final String PASSWORD_ATTR = InstanceProperties.PASSWORD_ATTR;
     public static final String FILE_DEFAULT_INSTANCE = "DefaultInstance.settings";
-
+    public static final String J2EE_DEFAULT_SERVER = "j2ee.defaultServer";
+    public static final String TARGETNAME_ATTR = "targetNaem";
+    public static final String SERVER_NAME = "serverName";
     private static ServerRegistry instance = null;
     public synchronized static ServerRegistry getInstance() {
-
+        
         if(instance == null) instance = new ServerRegistry();
         return instance;
-
+        
         //PENDING need to get this from lookup
         //    return (ServerRegistry) Lookup.getDefault().lookup(ServerRegistry.class);
     }
-
+    
     private transient Map servers = new HashMap();
     private transient Map instances = new HashMap();
     private transient Collection pluginListeners = new HashSet();
@@ -51,24 +53,24 @@ public final class ServerRegistry implements java.io.Serializable {
     
     // This is the serializable portion of ServerRegistry
     private ServerString defaultInstance;
-
+    
     public ServerRegistry() {
-
+        
         Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
         FileObject dir = rep.findResource(DIR_JSR88_PLUGINS);
         dir.addFileChangeListener(new PluginInstallListener());
         FileObject[] ch = dir.getChildren();
         for(int i = 0; i < ch.length; i++)
             addPlugin(ch[i]);
-
+        
         dir = rep.findResource(DIR_INSTALLED_SERVERS);
         dir.addFileChangeListener(new InstanceInstallListener());
         ch = dir.getChildren();
-
+        
         for(int i = 0; i < ch.length; i++)
             addInstance(ch[i]);
     }
-
+    
     private synchronized void addPlugin(FileObject fo) {
         try {
             if(fo.isFolder()) {
@@ -78,9 +80,9 @@ public final class ServerRegistry implements java.io.Serializable {
                 servers.put(name,server);
                 firePluginListeners(server,true);
             }
-
+            
         } catch (Exception e) {
-
+            
             e.printStackTrace(System.err);
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Plugin installation failed"));
         }
@@ -151,11 +153,11 @@ public final class ServerRegistry implements java.io.Serializable {
     public Collection getInstances() {
         return instances.values();
     }
-
+    
     public String[] getInstanceURLs() {
         return (String[]) instances.keySet().toArray(new String[instances.size()]);
     }
-
+    
     public void checkInstanceExists(String url) throws InstanceCreationException {
         if (getServerInstance(url) != null) {
             String msg = NbBundle.getMessage(ServerRegistry.class, "MSG_InstanceAlreadyExists", url);
@@ -219,8 +221,8 @@ public final class ServerRegistry implements java.io.Serializable {
             return;
         }
         
-//        try {
-            addInstanceImpl(url,username,password);
+        //        try {
+        addInstanceImpl(url,username,password);
   /*      } catch(java.io.IOException e) {
             String msg = NbBundle.getMessage(ServerRegistry.class, "MSG_ErrorCreateInstance", url);
             InstanceCreationException ice = new InstanceCreationException(msg);
@@ -254,7 +256,7 @@ public final class ServerRegistry implements java.io.Serializable {
         for(Iterator i = servers.values().iterator(); i.hasNext();) {
             Server server = (Server) i.next();
             try {
-               if(server.handlesUri(url)) {
+                if(server.handlesUri(url)) {
                     DeploymentManager manager = server.getDeploymentManager(url,username,password);
                     if(manager != null) {
                         ServerInstance instance = new ServerInstance(server,url,manager);
@@ -290,8 +292,8 @@ public final class ServerRegistry implements java.io.Serializable {
         return getInstances();
     }
     
-    public synchronized void addInstanceListener (InstanceListener il) {
-        instanceListeners.add (il);
+    public synchronized void addInstanceListener(InstanceListener il) {
+        instanceListeners.add(il);
     }
     
     public synchronized void removeInstanceListener(InstanceListener il) {
@@ -326,32 +328,109 @@ public final class ServerRegistry implements java.io.Serializable {
     }
     
     public void setDefaultInstance(ServerString instance) {
-        if (instance == null || instance.equals (defaultInstance)) {
+        if (instance != null && instance.equals(defaultInstance)) {
             return;
         }
+        
+        if (instance == null) {
+            removeDefaultInstanceFile();
+        }
+        
         if (ServerStringConverter.writeServerInstance(instance, DIR_INSTALLED_SERVERS, FILE_DEFAULT_INSTANCE)) {
             ServerString oldValue = defaultInstance;
             defaultInstance = instance;
             fireDefaultInstance(oldValue, instance);
         }
     }
-
+    
+    static private void removeDefaultInstanceFile() {
+        FileLock lock = null;
+        Writer writer = null;
+        try {
+            String pathName = DIR_INSTALLED_SERVERS + "/" + FILE_DEFAULT_INSTANCE;
+            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(pathName);
+            fo.delete();
+        } catch(Exception ioe) {
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, ioe);
+        }
+    }
+    
+    private ServerString getInstallerDefaultPlugin() {
+        String netbeansHome = System.getProperty("netbeans.home"); //NOI18N
+        Properties installProp = readProperties(netbeansHome, "system/install.properties"); //NOI18N
+        
+        String j2eeDefaultServerFileName = installProp.getProperty(J2EE_DEFAULT_SERVER);
+        if (j2eeDefaultServerFileName == null)
+            return null;
+        
+        Properties defaultServerProp = readProperties(netbeansHome, j2eeDefaultServerFileName);
+        String serverName = defaultServerProp.getProperty(SERVER_NAME);
+        String url = defaultServerProp.getProperty(URL_ATTR);
+        String user = defaultServerProp.getProperty(USERNAME_ATTR);
+        String password = defaultServerProp.getProperty(PASSWORD_ATTR);
+        String targetName = defaultServerProp.getProperty(TARGETNAME_ATTR);
+        
+        try {
+            if (url != null) {
+                InstanceProperties instProp = InstanceProperties.getInstanceProperties(url);
+                if (instProp == null)
+                    instProp = InstanceProperties.createInstanceProperties(url, user, password);
+                instProp.setProperties(defaultServerProp);
+                
+                ServerInstance inst = getServerInstance(url);
+                if (inst != null)
+                    return new ServerString(inst, targetName);
+                
+            } else if (serverName != null) {
+                Server server = getServer(serverName);
+                if (server != null) {
+                    ServerInstance[] instances = server.getInstances();
+                    if (instances.length > 1)
+                        return new ServerString(instances[0]);
+                }
+            }
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+        return null;
+    }
+    
+    static private Properties readProperties(String rootDir, String relativePath) {
+        File propFile = new File(rootDir, relativePath);
+        Properties prop = new Properties();
+        try {
+            prop.load(new FileInputStream(propFile));
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, ioe.toString());
+        }
+        return prop;
+    }
+    
     public ServerString getDefaultInstance() {
         return getDefaultInstance(true);
     }
     
     public ServerString getDefaultInstance(boolean readFromFile) {
-        if (defaultInstance == null && readFromFile) {
+        if (defaultInstance != null)
+            return defaultInstance;
+        
+        if (readFromFile) {
             defaultInstance = ServerStringConverter.readServerInstance(DIR_INSTALLED_SERVERS, FILE_DEFAULT_INSTANCE);
+            
+            if (defaultInstance == null) {
+                defaultInstance = getInstallerDefaultPlugin();
+            }
+            
         }
         
         if (defaultInstance == null) {
             ServerInstance[] instances = getServerInstances();
             if (instances != null && instances.length > 0) {
-                //PENDING: layer.xml entry for a preferred server instance
-                setDefaultInstance(new ServerString(instances[0]));
+                defaultInstance = new ServerString(instances[0]);
             }
         }
+        
+        setDefaultInstance(defaultInstance);
         return defaultInstance;
     }
     

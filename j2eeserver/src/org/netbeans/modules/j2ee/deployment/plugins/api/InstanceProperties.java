@@ -88,6 +88,14 @@ public abstract class InstanceProperties {
      * @value property string value
      * @exception IllegalStateException when instance already removed or not created yet
      */
+    public abstract void setProperties(java.util.Properties props) throws IllegalStateException;
+
+    /**
+     * Set instance property
+     * @propname name of property
+     * @value property string value
+     * @exception IllegalStateException when instance already removed or not created yet
+     */
     public abstract void setProperty(String propname, String value) throws IllegalStateException;
     
     /**

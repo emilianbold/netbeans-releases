@@ -82,4 +82,13 @@ public class InstancePropertiesImpl extends InstanceProperties implements Server
         }
     }
     
+    public void setProperties(java.util.Properties props) throws IllegalStateException {
+        java.util.Enumeration propNames = props.propertyNames();
+        while (propNames.hasMoreElements()) {
+            String propName = (String) propNames.nextElement();
+            String propValue = props.getProperty(propName);
+            setProperty(propName, propValue);
+        }
+    }    
+    
 }

@@ -73,6 +73,16 @@ public class ServerString implements java.io.Serializable {
         this.serverInstance = null;
     }
     
+    public ServerString(ServerInstance instance, String targetName) {
+        this.plugin = instance.getServer().getShortName();
+        this.instance = instance.getUrl();
+        this.serverInstance = instance;
+        if (targetName != null)
+            this.targets = new String[] { targetName };
+        else
+            this.targets = null;
+    }
+    
     public String getPlugin() {
         return plugin;
     }
