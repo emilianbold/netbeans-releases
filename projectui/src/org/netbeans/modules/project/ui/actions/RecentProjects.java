@@ -52,6 +52,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
         super( NbBundle.getMessage(RecentProjects.class, "LBL_RecentProjectsAction_Name"), // NOI18N
               new ImageIcon(Utilities.loadImage(ICON)));
         OpenProjectList.getDefault().addPropertyChangeListener( this );
+        recreate = true;
     }
     
         
@@ -82,10 +83,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
         
     private void fillSubMenu() {
         
-        if ( subMenu == null ) {
-            createSubMenu();
-        }
-        
+        createSubMenu();        
         subMenu.removeAll();
         
         List projects = OpenProjectList.getDefault().getRecentProjects();
@@ -113,6 +111,8 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
             jmi.putClientProperty( PROJECT_KEY, p );
             jmi.addActionListener( jmiActionListener );
         }
+        
+        recreate = false;
     }
 
     // Implementation of change listener ---------------------------------------
@@ -121,6 +121,8 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     public void propertyChange( PropertyChangeEvent e ) {
         
         if ( OpenProjectList.PROPERTY_RECENT_PROJECTS.equals( e.getPropertyName() ) ) {
+            createSubMenu();
+            subMenu.setEnabled( !OpenProjectList.getDefault().isRecentProjectsEmpty() );
             recreate = true;
         }
         
