@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
@@ -138,6 +138,8 @@ public class CreateTestAction extends CookieAction {
         ProgressIndicator progress = new ProgressIndicator();
         progress.show();
         
+        boolean testCreated = false;
+        
         msg = NbBundle.getMessage(
                 CreateTestAction.class,
                 "MSG_StatusBar_CreateTest_Begin");                      //NOI18N
@@ -147,7 +149,9 @@ public class CreateTestAction extends CookieAction {
             for(int nodeIdx = 0; nodeIdx < nodes.length; nodeIdx++) {
                 if (!hasParentAmongNodes(nodes, nodeIdx)) {
                     if (null != (fo = TestUtil.getFileObjectFromNode(nodes[nodeIdx])))
-                        createTest(fsTest, fo, doTestTempl, doSuiteTempl, null, progress);
+                        if (createTest(fsTest, fo, doTestTempl, doSuiteTempl, null, progress)) {
+                            testCreated = true;
+                        }
                     else {
                         // @@ log - the node has no file associated
                         // System.out.println("@@ log - the node has no file associated");
@@ -168,6 +172,13 @@ public class CreateTestAction extends CookieAction {
         }
         finally {
             progress.hide();
+        }
+        if (!testCreated) {
+            msg = NbBundle.getMessage(
+                    CreateTestAction.class,
+                    "MSG_No_test_created");                             //NOI18N
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    msg, NotifyDescriptor.WARNING_MESSAGE));
         }
     }
     
@@ -215,7 +226,13 @@ public class CreateTestAction extends CookieAction {
         }
     }
     
-    private void createTest(FileSystem fsTest,
+    /**
+     * @return  <code>true</code> if at least one test has been created;
+     *          <code>false</code> otherwise
+     * @exception  org.netbeans.modules.junit.CreateTestCanceledException
+     *             if the process of tests creation has been cancelled
+     */
+    private boolean createTest(FileSystem fsTest,
                             FileObject foSource,
                             DataObject doTestT,
                             DataObject doSuiteT,
@@ -223,6 +240,7 @@ public class CreateTestAction extends CookieAction {
                             ProgressIndicator progress)
         throws CreateTestCanceledException
     {
+        boolean testCreated = false;
         if (foSource.isFolder()) {
             // recurse of subfolders
             FileObject  childs[] = foSource.getChildren();
@@ -246,6 +264,9 @@ public class CreateTestAction extends CookieAction {
             
             if ((0 < mySuite.size())&(JUnitSettings.getDefault().isGenerateSuiteClasses())) {
                 createSuiteTest(fsTest, DataFolder.findFolder(foSource), mySuite, doSuiteT, parentSuite, progress);
+            }
+            if (0 < mySuite.size()) {
+                testCreated = true;
             }
         }
         else {
@@ -276,6 +297,7 @@ public class CreateTestAction extends CookieAction {
                             if (null != parentSuite) {
                                 parentSuite.add(name);
                             }
+                            testCreated = true;
                         }
                         else
                             progress.setMessage(getIgnoringMsg(classSource.getName().getFullName()), false);
@@ -295,6 +317,7 @@ public class CreateTestAction extends CookieAction {
         
         if (progress.isCanceled())
             throw new CreateTestCanceledException();
+        return testCreated;
     }
     
     
