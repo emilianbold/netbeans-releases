@@ -41,6 +41,7 @@ public class DriverNodeInfo extends DriverListNodeInfo
 	{
 		put(DatabaseNodeInfo.NAME, drv.getName());
 		put(DatabaseNodeInfo.URL, drv.getURL());
+		put(DatabaseNodeInfo.PREFIX, drv.getDatabasePrefix());
 		put(DatabaseNodeInfo.DBDRIVER, drv);
 	}
 

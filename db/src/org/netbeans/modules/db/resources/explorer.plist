@@ -79,20 +79,39 @@
 		options = {};
 		defaultdriverlist = (
 			{
-				name = "Oracle";
-				driver = "oracle.jdbc.driver.OracleDriver";
+				name = "Cloudscape";
+				driver = "COM.cloudscape.core.JDBCDriver";
+				prefix = "jdbc:cloudscape:<DB>";
 			},
 			{
-				name = "Sybase";
-				driver = "com.sybase.jdbc.SybDriver";
+				name = "Cloudscape RMI";
+				driver = "COM.cloudscape.core.JDBCDriver";
+				prefix = "jdbc:rmi:<HOST>:<PORT>:jdbc:cloudscape:<DB>";
 			},
 			{
 				name = "ODBC Bridge";
 				driver = "sun.jdbc.odbc.JdbcOdbcDriver";
+				prefix = "jdbc.odbc.<DB>";
 			},
 			{
-				name = "Cloudscape";
-				driver = "COM.cloudscape.core.JDBCDriver";
+				name = "Oracle";
+				driver = "oracle.jdbc.driver.OracleDriver";
+				prefix = "jdbc:oracle:@<SID>";
+			},
+			{
+				name = "Oracle thin";
+				driver = "oracle.jdbc.driver.OracleDriver";
+				prefix = "jdbc:oracle:thin:@<HOST>:<PORT>:<SID>";
+			},
+			{
+				name = "Pointbase";
+				driver = "com.pointbase.jdbc.jdbcDriver";
+				prefix = "jdbc:pointbase:<DB>";
+			},
+			{
+				name = "Sybase";
+				driver = "com.sybase.jdbc.SybDriver";
+				prefix = "jdbc:sybase:Tds:<HOST>:<PORT>";
 			}
 		);	
 		actions = (
@@ -146,18 +165,24 @@
 				name = "DriverURL";
 				class = java.lang.String;
 				writable = YES;
+			},
+			{
+				code = prefix;
+				name = "DatabasePrefix";
+				class = java.lang.String;
+				writable = YES;	
 			}
 		);
 		actions = (
 			{
-				name = "AddNewDriver";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddDriverAction;
-				node = driverlist;
-			},
-			{
 				name = "ConnectUsing";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.ConnectUsingDriverAction;
 				node = root;
+			},
+			{
+				name = "AddNewDriver";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddDriverAction;
+				node = driverlist;
 			},
 			delimiter,
 			{
@@ -196,8 +221,10 @@
 	*/
 	connection = {
 		name = Connection;
-		displayname = "{db} as {user} [disconnected]";
-		activedisplayname = "{db} as {user}";
+//		displayname = "{db} as {user} [disconnected]";
+//		activedisplayname = "{db} as {user}";
+		displayname = "{0} [disconnected]";
+		activedisplayname = "{0}";
 		class = com.netbeans.enterprise.modules.db.explorer.nodes.ConnectionNode;
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ConnectionNodeInfo;
 		iconbase = "/com/netbeans/enterprise/modules/db/resources/connectionDisconnected";
@@ -256,22 +283,26 @@
 		);
 		properties = (
 			{
+				code = name;
+				writable = YES;
+			},
+			{
 				code = db;
 				name = "DatabaseURL";
 				class = java.lang.String;
-				writable = NO;
+				writable = YES;
 			},
 			{
 				code = driver;
 				name = "DriverURL";
 				class = java.lang.String;
-				writable = NO;
+				writable = YES;
 			},
 			{
 				code = user;
 				name = "User";
 				class = java.lang.String;
-				writable = NO;
+				writable = YES;
 			},
 			{
 				code = readonlydatabase;
@@ -310,54 +341,10 @@
 				writable = NO;
 			},
 			{
-				code = rememberpassword;
+				code = rememberpwd;
 				name = "RememberPassword";
 				class = java.lang.Boolean;
 				writable = NO;
-			}
-		);
-	};
-
-	/** 
-	* Catalog section.
-	* This section describes dynamic subnodes in "Connection" node.
-	*/
-	catalog = {
-		name = "Catalog";
-		displayname = "Catalog {name}";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.CatalogNodeInfo;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/catalog";
-		resultset = (name);
-		children = (tablelist,viewlist,procedurelist);
-		options = {};	
-		properties = ();
-		actions = (
-/*
-			{
-				name = "Grab structure";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.GrabCatalogAction;
-			},
-			{
-				name = "Recreate";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.RecreateCatalogAction;
-			},
-			delimiter,
-*/
-			{
-				name = "Cut";
-				class = org.openide.actions.CutAction;
-				system = YES;
-			},
-			{
-				name = "Copy";
-				class = org.openide.actions.CopyAction;
-				system = YES;
-			},
-			{
-				name = "Paste";
-				class = org.openide.actions.PasteAction;
-				system = YES;
 			}
 		);
 	};
@@ -385,19 +372,6 @@
 				class = com.netbeans.enterprise.modules.db.explorer.actions.RecreateTableAction;
 			},
 			delimiter,
-/*
-			{
-				name = "Grab structure";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.GrabCatalogAction;
-				node = catalog;
-			},
-			{
-				name = "Recreate";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.RecreateCatalogAction;
-				node = catalog;
-			},
-			delimiter,
-*/
 			{
 				name = "Refresh";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.RefreshChildrenAction;
@@ -435,8 +409,8 @@
 /*		resultset = (catalog,schema,name,type,remarks); */
 		resultset = (catalog,schema,name,type);
 		options = {
-			cut = YES;
-			copy = YES;
+			cut = NO;
+			copy = NO;
 			delete = YES;
 		};	
 		children_ordering = {
@@ -638,7 +612,7 @@
 		class = com.netbeans.enterprise.modules.db.explorer.nodes.ColumnNode;
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.IndexColumnNodeInfo;
 		iconbase = "/com/netbeans/enterprise/modules/db/resources/columnIndex";
-		resultset = (catalog,schema,tablename,unique,qual,name,type,ordpos,colname,ord,card,pages,filter);
+		resultset = (catalog,schema,tablename,unique,qual,idxname,type,ordpos,name,ord,card,pages,filter);
 		options = {};	
 		actions = (
 			{
@@ -726,6 +700,12 @@
 				name = "Remarks";
 				class = java.lang.String;
 				writable = YES;
+			},
+			{
+				code = idxname;
+				name = "Index";
+				class = java.lang.String;
+				writable = NO;
 			}
 		);
 	};
