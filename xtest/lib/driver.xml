@@ -157,8 +157,8 @@ Microsystems, Inc. All Rights Reserved.
          <copy file="${archive.file2}" toDir="${xtest.driver.backup}"/>
          <antcall target="ship-results"/>
          <antcall target="ship-nbresults"/>
-         <delete file="${xtest.results}/${archive.filename}"/>
-         <delete file="${xtest.results}/${archive.filename2}"/>
+         <delete file="${xtest.driver.backup}/${archive.filename}"/>
+         <delete file="${xtest.driver.backup}/${archive.filename2}"/>
    </target>
    
    <target name="ship-results" if="xtest.ship.results.to">
