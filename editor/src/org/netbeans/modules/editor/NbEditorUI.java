@@ -134,7 +134,6 @@ public class NbEditorUI extends ExtEditorUI {
       if (ea != null && sa != null) {
         if (updatePerformer) {
           if (ea.isEnabled() && sa instanceof CallbackSystemAction) {
-            System.out.println("NbEditorUI.java:136 setting performer of sa=" + sa + " to " + this);
             ((CallbackSystemAction)sa).setActionPerformer(this);
           }
         }
@@ -173,7 +172,7 @@ public class NbEditorUI extends ExtEditorUI {
       if (systemAction != null) {
         if (systemAction instanceof CallbackSystemAction) {
           CallbackSystemAction csa = (CallbackSystemAction)systemAction;
-          if (csa.getActionPerformer() == this) {
+          if (!csa.getSurviveFocusChange() || csa.getActionPerformer() == this) {
             csa.setActionPerformer(null);
           }
         }
@@ -281,6 +280,7 @@ public class NbEditorUI extends ExtEditorUI {
 
 /*
  * Log
+ *  4    Jaga      1.3         3/27/00  Miloslav Metelka checking focus surviving
  *  3    Jaga      1.2         3/24/00  Miloslav Metelka 
  *  2    Jaga      1.1         3/21/00  Miloslav Metelka 
  *  1    Jaga      1.0         3/15/00  Miloslav Metelka 
