@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
 	  <classpath>
 		<pathelement path="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar" />
-		<pathelement path="${schema2beans/dev.dir}/${nb.modules/autoload.dir}/schema2beansdev.jar" />
+		<pathelement path="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
 		<pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
 	  </classpath>
 	</taskdef>
@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
      <java classname="org.netbeans.modules.schema2beansdev.GenBeans" fork="yes">
        <classpath>
           <pathelement location="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar" />
-          <pathelement location="${schema2beans/dev.dir}/${nb.modules/autoload.dir}/schema2beansdev.jar" />
+          <pathelement location="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
           <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
           <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
        </classpath>
