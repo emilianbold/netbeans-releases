@@ -27,7 +27,14 @@ import org.openide.util.Lookup;
  * </p>
  * <div class="nonnormative">
  * <p>
- * Use classpath API to obtain classpath for the document base.
+ * Use classpath API to obtain classpath for the document base (this classpath
+ * is used for code completion of JSPs). An example:
+ * <pre>
+ *   WebModule wm = ...;
+ *   FileObject docRoot = wm.getDocumentBase ();
+ *   ClassPath cp = ClassPath.getClassPath(docRoot, ClassPath.EXECUTE);
+ * 
+ * </pre>
  * <p>
  * Note that the particular directory structure for web module is not guaranteed 
  * by this API.
@@ -130,5 +137,9 @@ public final class WebModule {
         return getDocumentBase().equals(wm.getDocumentBase())
             && getJ2eePlatformVersion().equals (wm.getJ2eePlatformVersion())
             && getContextPath().equals(wm.getContextPath());
+    }
+    
+    public int hashCode () {
+        return getDocumentBase ().getPath ().length () + getContextPath ().length ();
     }
 }

@@ -17,8 +17,10 @@ package org.netbeans.modules.web.api.webmodule;
  *
  * @author  Milan Kuchtiak
  */
-public interface WebProjectConstants {
+public class WebProjectConstants {
 
+    private WebProjectConstants () {}
+    
     /**
      * Document root root sources type (source folders for JSPs, HTML ...)
      * @see org.netbeans.api.project.Sources
