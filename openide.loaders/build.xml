@@ -28,6 +28,9 @@ Microsystems, Inc. All Rights Reserved.
     <path id="cp">
         <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
         <pathelement location="${nb_all}/openide/src"/>
+        <fileset dir="${nb_all}/core/external">
+          <include name="xml-apis*.jar"/>
+        </fileset>
     </path>
   
     <target name="compile">
