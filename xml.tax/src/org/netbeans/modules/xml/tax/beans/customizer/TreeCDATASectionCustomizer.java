@@ -111,6 +111,9 @@ public class TreeCDATASectionCustomizer extends AbstractTreeCustomizer {
         dataPanel.setLayout(new java.awt.BorderLayout());
 
         dataTextArea.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                dataTextAreaFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 dataTextAreaFocusLost(evt);
             }
@@ -136,6 +139,12 @@ public class TreeCDATASectionCustomizer extends AbstractTreeCustomizer {
         add(dataPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
+
+    private void dataTextAreaFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_dataTextAreaFocusGained
+        if ("new".equals(getClientProperty("xml-edit-mode"))) {  // NOI18N
+            dataTextArea.selectAll();
+        }
+    }//GEN-LAST:event_dataTextAreaFocusGained
 
     private void dataTextAreaKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_dataTextAreaKeyPressed
         // Add your handling code here:

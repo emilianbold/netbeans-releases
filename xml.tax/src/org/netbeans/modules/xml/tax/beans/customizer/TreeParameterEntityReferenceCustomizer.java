@@ -125,6 +125,9 @@ public class TreeParameterEntityReferenceCustomizer extends AbstractTreeCustomiz
         });
 
         nameField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                nameFieldFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 nameFieldFocusLost(evt);
             }
@@ -142,6 +145,12 @@ public class TreeParameterEntityReferenceCustomizer extends AbstractTreeCustomiz
         add(nameField, gridBagConstraints);
 
     }//GEN-END:initComponents
+
+    private void nameFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_nameFieldFocusGained
+        if ("new".equals(getClientProperty("xml-edit-mode"))) {  // NOI18N
+            nameField.selectAll();
+        }
+    }//GEN-LAST:event_nameFieldFocusGained
     
     /**
      */

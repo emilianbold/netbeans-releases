@@ -147,6 +147,9 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
         });
 
         targetField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                targetFieldFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 targetFieldFocusLost(evt);
             }
@@ -165,6 +168,9 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
 
         dataPanel.setPreferredSize(new java.awt.Dimension(350, 230));
         dataTextArea.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                dataTextAreaFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 dataTextAreaFocusLost(evt);
             }
@@ -189,6 +195,19 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
         add(dataPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
+
+    private void dataTextAreaFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_dataTextAreaFocusGained
+        if ("new".equals(getClientProperty("xml-edit-mode"))) {  // NOI18N
+            dataTextArea.selectAll();
+        }
+    }//GEN-LAST:event_dataTextAreaFocusGained
+
+    private void targetFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_targetFieldFocusGained
+        if ("new".equals(getClientProperty("xml-edit-mode"))) {  // NOI18N
+            targetField.selectAll();
+        }
+
+    }//GEN-LAST:event_targetFieldFocusGained
 
     private void dataTextAreaKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_dataTextAreaKeyPressed
         // Add your handling code here:
