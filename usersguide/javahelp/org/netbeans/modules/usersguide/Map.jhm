@@ -726,12 +726,23 @@
 
 <mapID target="NetbeansDebuggerWatchesPropertiesSheet" url="debug/properties/watches_properties.html" />
 <mapID target="NetbeansDebuggerLocalsPropertiesSheet" url="debug/properties/locals_properties.html" />
-<mapID target="NetbeansDebuggerBreakpointsPropertiesSheet" url="debug/properties/breakpoint_properties.html" />
+<mapID target="NetbeansDebuggerBreakpointsPropertiesSheet" url="pending.html" />
+<mapID target="NetbeansDebuggerBreakpointMethodJPDA" url="debug/properties/brkpt_method.html" />
+<mapID target="NetbeansDebuggerBreakpointThreadJPDA" url="debug/properties/brkpt_thread.html" />
+<mapID target="NetbeansDebuggerBreakpointFieldJPDA" url="debug/properties/brkpt_variable.html" />
+<mapID target="NetbeansDebuggerBreakpointClassJPDA" url="debug/properties/brkpt_class.html" />
+<mapID target="NetbeansDebuggerBreakpointExceptionJPDA" url="debug/properties/brkpt_exception.html" />
+<mapID target="NetbeansDebuggerBreakpointLineJPDA" url="debug/properties/brkpt_line.html" />
+
 <mapID target="NetbeansDebuggerSessionsPropertiesSheet" url="debug/properties/session_properties.html" />
 <mapID target="NetbeansDebuggerCallStackPropertiesSheet" url="debug/properties/callstack_properties.html" />
 <mapID target="NetbeansDebuggerThreadsPropertiesSheet" url="debug/properties/threads_properties.html" />
 <mapID target="NetbeansDebuggerNodePropertiesSheet" url="debug/properties/debug_node_properties.html" />
 <mapID target="NetbeansDebuggerClassesPropertiesSheet" url="debug/properties/classes_properties.html" />
+
+<mapID target="NetbeansDebuggerFieldPropertiesSheet" url="debug/properties/classes_field_properties.html" />
+<mapID target="NetbeansDebuggerConstructorPropertiesSheet" url="debug/properties/classes_cons_properties.html" />
+<mapID target="NetbeansDebuggerMethodPropertiesSheet" url="debug/properties/classes_method_properties.html" />
 
 <mapID target="org.netbeans.modules.httpserver.HttpServerNode_properties" url="webbrowser/httpserver_properties.html" />
 <mapID target="org.netbeans.modules.httpserver.HttpServerNode_expert" url="webbrowser/httpserver_expert.html" />
