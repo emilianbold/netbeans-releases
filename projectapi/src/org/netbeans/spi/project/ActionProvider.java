@@ -68,7 +68,7 @@ public interface ActionProvider {
     /**
      * Standard command for running the project in debugger
      */    
-    String COMMAND_DEBUG = "debug"; /*XXX define somewhere*/ // NOI18N
+    String COMMAND_DEBUG = "debug"; // NOI18N
     
     /**
      * Standard command for running single file in debugger
