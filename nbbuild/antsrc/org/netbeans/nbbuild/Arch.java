@@ -153,7 +153,7 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
     }
     
     private void generateMissingQuestions (Set missing) throws IOException {
-        Writer w = new FileWriter (questionsFile, true);
+        Writer w = new OutputStreamWriter (new FileOutputStream (questionsFile.toString (), true));
         
         w.write("<!-- Copy this above the </api-answers> tag! -->\n\n");
         java.util.Iterator it = missing.iterator();
