@@ -39,16 +39,27 @@ public final class CatalogEntry extends Object {
      */
     public String getSystemID() {
         String sid = catalog.getSystemID(publicID);
-        if (sid != null) return sid;
-        
-        if (catalog instanceof EntityResolver) {
-            try {
-                InputSource in = ((EntityResolver) catalog).resolveEntity(publicID, null);
-                if (in != null) return in.getSystemId();
-            } catch (Exception ex) {
-                // return null;
+        if (sid == null) {
+            if (catalog instanceof EntityResolver) {
+                try {
+                    InputSource in = ((EntityResolver) catalog).resolveEntity(publicID, null);
+                    if (in != null) {
+                        sid = in.getSystemId();
+                    }
+                } catch (Exception ex) {
+                    // return null;
+                }
             }
         }
+
+        //#53710 URL space canonization (%20 form works in most cases)
+        String patchedSystemId = sid;
+        if (patchedSystemId != null) {
+            patchedSystemId = patchedSystemId.replaceAll("\\+", "%20"); // NOI18N
+            patchedSystemId = patchedSystemId.replaceAll("\\ ", "%20"); // NOI18N
+            return patchedSystemId;
+        }
+
         return null;
     }
     
