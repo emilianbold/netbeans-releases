@@ -24,11 +24,13 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.StyledDocument;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import org.xml.sax.*;
 import org.w3c.dom.*;
 import org.w3c.dom.events.*;
-import org.apache.xerces.parsers.*;
-import org.apache.xml.serialize.*;
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
 
 import org.openide.*;
 import org.openide.cookies.EditorCookie;
@@ -45,6 +47,14 @@ import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.openide.filesystems.Repository;
 
 public class AntProjectSupport implements AntProjectCookie.ParseStatus, DocumentListener, FileChangeListener, org.w3c.dom.events.EventListener, Runnable, ChangeListener {
+    
+    /**
+     * XML parser to use.
+     * Must match contents of META-INF/services/javax.xml.parsers.DocumentBuilderFactory in xerces.jar.
+     * Using JAXP is not enough because we might get Crimson, which won't work (no DOM Events).
+     * XMLUtil.parse also does not currently enforce Xerces over Crimson.
+     */
+    private static final String XERCES_DOCUMENT_BUILDER_FACTORY = "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl"; // NOI18N
   
     private File file;
     private FileObject fo;
@@ -61,6 +71,8 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
 
     private transient Set listeners; // see init(); Set<ChangeListener>
     private transient EditorCookie editor = null;
+    
+    private transient DocumentBuilder documentBuilder;
     
     // milliseconds of quiet time after a textual document change after which
     // changes will be fired and the XML may be reparsed
@@ -239,17 +251,41 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
         }
     }
     
+    /**
+     * Make a DocumentBuilder object for use in this support.
+     * Thread-safe, but of course the result is not.
+     * @throws Exception for various reasons of configuration
+     */
+    private static synchronized DocumentBuilder createDocumentBuilder() throws Exception {
+        DocumentBuilderFactory factory = (DocumentBuilderFactory)Class.forName(XERCES_DOCUMENT_BUILDER_FACTORY).newInstance();
+        factory.setNamespaceAware(true);
+        DocumentBuilder documentBuilder = factory.newDocumentBuilder();
+        documentBuilder.setErrorHandler(ErrHandler.DEFAULT);
+        return documentBuilder;
+    }
+    
+    /**
+     * XML parser error handler; passes on all errors.
+     */
+    private static final class ErrHandler implements ErrorHandler {
+        static final ErrorHandler DEFAULT = new ErrHandler();
+        private ErrHandler() {}
+        public void error(SAXParseException exception) throws SAXException {
+            throw exception;
+        }
+        public void fatalError(SAXParseException exception) throws SAXException {
+            throw exception;
+        }
+        public void warning(SAXParseException exception) throws SAXException {
+            throw exception;
+        }
+    }
+    
     private void parseDocument () {
+        assert Thread.holdsLock(parseLock); // so it is OK to use documentBuilder
         FileObject fo = getFileObject ();
         AntModule.err.log ("AntProjectSupport.parseDocument: fo=" + fo);
         try {
-            DOMParser parser = new DOMParser ();
-            // Xerces 1.2.3 has an apparent bug that when lazy node expansion is turned on,
-            // when the node finally is expanded (in response to some getter method), the
-            // DOM tree fires a mutation event (though in fact the tree has not been changed).
-            // This causes gratuitous document modification and an endless feedback loop.
-            // Appears to have been fixed in Xerces CVS in Feb 2001, so remove this sometime...
-            parser.setFeature ("http://apache.org/xml/features/dom/defer-node-expansion", false); // NOI18N
             Reader rd;
             EditorCookie editor = getEditor ();
             File file = getFile(); // #19705
@@ -275,7 +311,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
                 InputSource in = new InputSource (rd);
                 if (file != null) { // #10348
                     try {
-                        in.setSystemId (file.toURL ().toString ());
+                        in.setSystemId(file.toURI().toURL().toString());
                     } catch (MalformedURLException mfue) {
                         AntModule.err.notify (ErrorManager.WARNING, mfue);
                     }
@@ -285,8 +321,10 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
                     // as the system ID. If necessary, Ant's algorithm could be copied
                     // here to make the behavior match perfectly, but it ought not be necessary.
                 }
-                parser.parse (in);
-                Document doc = parser.getDocument ();
+                if (documentBuilder == null) {
+                    documentBuilder = createDocumentBuilder();
+                }
+                Document doc = documentBuilder.parse(in);
                 if (editor != null) {
                     //AntModule.err.log ("doc=" + doc);
                     // Xerces DOM parser implements DOM event model.
@@ -361,7 +399,9 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
             if (editor != null) {
                 StyledDocument doc = editor.openDocument ();
                 // Gack. What a mess. Have to regenerate whole document.
-                // XXX replace with XMLDataObject.write when possible....
+                // XXX replace with XMLUtil.write when possible....
+                // but that method is not well suited to regenerating hand-edited text
+                // because it sets indentation, etc., which clobbers whitespace changes
                 JEditorPane[] panes = editor.getOpenedPanes (); // #11738
                 int[] carets = new int[(panes == null) ? 0 : panes.length];
                 for (int i = 0; i < carets.length; i++) {
