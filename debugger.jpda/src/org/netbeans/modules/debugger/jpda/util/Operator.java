@@ -164,6 +164,11 @@ public class Operator {
     public void resume () {
         resume = true;
     }
+    
+    public void destroy () {
+        thread.stop ();
+        thread = null;
+    }
 
     /**
     * Requests stop after curent event set dispatch.
