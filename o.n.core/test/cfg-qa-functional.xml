@@ -9,23 +9,13 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!-- 
-  These classes are excluded by default (defined in build.xml):
-    "**/*Suite.class"
-    "**/*$$*.class"
-    "**/data/**"
-    "**/hidden/**"
-    "**/*Hidden.*"
-    "**/*Hid.*"
--->
-
 <mconfig name="core qa-functional test config">
-<!-- Start Property Editors testbag -->
 
+<!-- Start Property Editors testbag -->
     <testbag testattribs="validation or full or ide or pe" executor="ide" name="Property Editors tests">
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -47,10 +37,7 @@ Microsystems, Inc. All Rights Reserved.
 		<include name="gui/propertyeditors/PropertyType_int.class"/>
 		<include name="gui/propertyeditors/PropertyType_long.class"/>
 		<include name="gui/propertyeditors/PropertyType_short.class"/>
-                
-<!--		<include name="gui/propertyeditors/PropertyType_ElementFormat.class"/>
-		<include name="gui/propertyeditors/PropertyType_Type.class"/>
--->	    </patternset>
+	    </patternset>
 	</testset>
     </testbag>
 
@@ -58,10 +45,7 @@ Microsystems, Inc. All Rights Reserved.
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/propertyeditors/PropertyType_Color.class"/>
-		<include name="gui/propertyeditors/PropertyType_CompilerType.class"/>
 		<include name="gui/propertyeditors/PropertyType_Dimension.class"/>
-		<include name="gui/propertyeditors/PropertyType_Executor.class"/>
-		<include name="gui/propertyeditors/PropertyType_ExtensionList.class"/>
 		<include name="gui/propertyeditors/PropertyType_File.class"/>
 		<include name="gui/propertyeditors/PropertyType_Filesystem.class"/>
 		<include name="gui/propertyeditors/PropertyType_Font.class"/>
@@ -76,109 +60,13 @@ Microsystems, Inc. All Rights Reserved.
 		<include name="gui/propertyeditors/PropertyType_ServiceType.class"/>
 		<include name="gui/propertyeditors/PropertyType_String.class"/>
 		<include name="gui/propertyeditors/PropertyType_StringArray.class"/>
-                
-<!--		<include name="gui/propertyeditors/PropertyType_IdentifierArray.class"/>
-		<include name="gui/propertyeditors/PropertyType_DebuggerType.class"/>
-                
-		<include name="gui/propertyeditors/PropertyType_Icon.class"/>
--->	    </patternset>
-	</testset>
-    </testbag>
-
-    <testbag testattribs="platform" executor="platform" name="Property Editors - platform">
-	<testset dir="qa-functional/src">
-	    <patternset>
-		<include name="gui/propertyeditors/PropertyType_BooleanO.class"/>
-		<include name="gui/propertyeditors/PropertyType_ByteO.class"/>
-		<include name="gui/propertyeditors/PropertyType_Character.class"/>
-		<include name="gui/propertyeditors/PropertyType_Class.class"/>
-		<include name="gui/propertyeditors/PropertyType_DoubleO.class"/>
-		<include name="gui/propertyeditors/PropertyType_FloatO.class"/>
-		<include name="gui/propertyeditors/PropertyType_Integer.class"/>
-		<include name="gui/propertyeditors/PropertyType_LongO.class"/>
-		<include name="gui/propertyeditors/PropertyType_ShortO.class"/>
-		<include name="gui/propertyeditors/PropertyType_URL.class"/>
-		<include name="gui/propertyeditors/PropertyType_boolean.class"/>
-		<include name="gui/propertyeditors/PropertyType_byte.class"/>
-		<include name="gui/propertyeditors/PropertyType_char.class"/>
-		<include name="gui/propertyeditors/PropertyType_double.class"/>
-		<include name="gui/propertyeditors/PropertyType_float.class"/>
-		<include name="gui/propertyeditors/PropertyType_int.class"/>
-		<include name="gui/propertyeditors/PropertyType_long.class"/>
-		<include name="gui/propertyeditors/PropertyType_short.class"/>
-                
-<!--		<include name="gui/propertyeditors/PropertyType_ElementFormat.class"/>
-		<include name="gui/propertyeditors/PropertyType_Type.class"/>
--->            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="platform" executor="platform" name="Property Customizers - platform">
-	<testset dir="qa-functional/src">
-	    <patternset>
-		<include name="gui/propertyeditors/PropertyType_Color.class"/>
-		<include name="gui/propertyeditors/PropertyType_Dimension.class"/>
-		<include name="gui/propertyeditors/PropertyType_ExtensionList.class"/>
-		<include name="gui/propertyeditors/PropertyType_File.class"/>
-		<include name="gui/propertyeditors/PropertyType_Filesystem.class"/>
-		<include name="gui/propertyeditors/PropertyType_Font.class"/>
-		<include name="gui/propertyeditors/PropertyType_Insets.class"/>
-		<include name="gui/propertyeditors/PropertyType_NbClassPath.class"/>
-		<include name="gui/propertyeditors/PropertyType_NbProcessDescriptor.class"/>
-		<include name="gui/propertyeditors/PropertyType_Point.class"/>
-		<include name="gui/propertyeditors/PropertyType_Properties.class"/>
-		<include name="gui/propertyeditors/PropertyType_Rectangle.class"/>
-		<include name="gui/propertyeditors/PropertyType_String.class"/>
-		<include name="gui/propertyeditors/PropertyType_StringArray.class"/>
-                
-		<include name="gui/propertyeditors/PropertyType_CompilerType.class/testByCombo"/>
-		<include name="gui/propertyeditors/PropertyType_CompilerType.class/verifyCustomizer"/>
-<!--		<include name="gui/propertyeditors/PropertyType_CompilerType.class/testCustomizerCancel_platform"/>
-		<include name="gui/propertyeditors/PropertyType_CompilerType.class/testCustomizerOk_platform"/>
--->                
-		<include name="gui/propertyeditors/PropertyType_Executor.class/testByCombo"/>
-		<include name="gui/propertyeditors/PropertyType_Executor.class/verifyCustomizer"/>
-<!--		<include name="gui/propertyeditors/PropertyType_Executor.class/testCustomizerCancel_platform"/>
-		<include name="gui/propertyeditors/PropertyType_Executor.class/testCustomizerOk_platform"/>
--->
-		<include name="gui/propertyeditors/PropertyType_HTMLBrowser.class/testByComboSWINGBrowser"/>
-                
-		<include name="gui/propertyeditors/PropertyType_IndentEngine.class/testByCombo"/>
-		<include name="gui/propertyeditors/PropertyType_IndentEngine.class/verifyCustomizer"/>
-<!--		<include name="gui/propertyeditors/PropertyType_IndentEngine.class/testCustomizerCancel_platform"/>
-		<include name="gui/propertyeditors/PropertyType_IndentEngine.class/testCustomizerOk_platform"/>
--->                
-		<include name="gui/propertyeditors/PropertyType_ServiceType.class/testByCombo"/>
-		<include name="gui/propertyeditors/PropertyType_ServiceType.class/verifyCustomizer"/>
-<!--		<include name="gui/propertyeditors/PropertyType_ServiceType.class/testCustomizerCancel_platform"/>
-		<include name="gui/propertyeditors/PropertyType_ServiceType.class/testCustomizerOk_platform"/>
--->                
-
-
-<!--		<include name="gui/propertyeditors/PropertyType_IdentifierArray.class"/>
-		<include name="gui/propertyeditors/PropertyType_Icon.class"/>
-		<include name="gui/propertyeditors/PropertyType_DebuggerType.class/testByCombo"/>
-		<include name="gui/propertyeditors/PropertyType_DebuggerType.class/verifyCustomizer"/>
-		<include name="gui/propertyeditors/PropertyType_DebuggerType.class/testCustomizerCancel_platform"/>
-		<include name="gui/propertyeditors/PropertyType_DebuggerType.class/testCustomizerOk_platform"/>
--->
 	    </patternset>
 	</testset>
     </testbag>
-    
-    <testbag testattribs="platform_debug" executor="ide" name="Platform debug">
-	<testset dir="qa-functional/src">
-	    <patternset>
-		<include name="gui/propertyeditors/PlatformDebug.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
-
 <!-- END Property Editors testbag -->
 
 
 <!-- START javahelp testbag -->
-
     <testbag testattribs="full or validation or javahelp" executor="ide" name="Javahelp tests">
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -186,19 +74,9 @@ Microsystems, Inc. All Rights Reserved.
 	    </patternset>
 	</testset>
     </testbag>
-    
 <!-- END javahelp testbag -->
     
-    <executor name="code" antfile="build-qa-functional.xml" target="runcodetest"/>
-    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
-
-    <executor name="ide_firststart_mdi" antfile="build-qa-functional.xml" target="runidetest_firststart_mdi"/>
-    <executor name="ide_firststart_sdi" antfile="build-qa-functional.xml" target="runidetest_firststart_sdi"/>
-    <executor name="ide_secondstart_mdi" antfile="build-qa-functional.xml" target="runidetest_secondstart_mdi"/>
-    <executor name="ide_secondstart_sdi" antfile="build-qa-functional.xml" target="runidetest_secondstart_sdi"/>
-    
-    <executor name="platform" antfile="build-qa-functional.xml" target="runplatformtest"/>
-
-    <compiler name="QAcompiler" antfile="build-qa-functional.xml" target="QAcompiler" default="true"/>
+    <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
+    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
 
 </mconfig>

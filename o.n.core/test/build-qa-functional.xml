@@ -18,111 +18,19 @@ Microsystems, Inc. All Rights Reserved.
          runidetest executor -->
     <import file="${xtest.home}/lib/default-build-qa-functional.xml"/>
     
-    <!-- =================== -->
-    <!-- Setting classpathes -->
-    <!-- =================== -->
-    
-    <path id="compiletest.classpath">
-        <pathelement location="${xtest.home}/lib/openide-13javac-workaround.jar"/>
-	<pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-	<fileset dir="${openide.dir}/${nb.lib.dir}">
-            <include name="openide*.jar"/> <!-- is it needed? -->
-        </fileset>
-        <!-- XXX -->
-        <fileset dir="${openide/execution.dir}/${nb.modules/autoload.dir}">
-            <include name="openide-*.jar"/> <!-- is it needed? -->
-            <include name="core-*.jar"/>
-        </fileset>
-        <pathelement location="../../jemmy/builds/jemmy.jar"/>
-        <pathelement location="../../jellytools/builds/jelly2-nb.jar"/>
-        
-	<pathelement path="${junit.path}"/> <!-- XXX ??? -->
-        <pathelement path="${xerces.path}"/> <!-- XXX ??? -->
-    </path>
-    
-    <path id="codetest.classpath">
-        <fileset dir="${core.dir}/${nb.lib.dir}/">
-            <include name="core.jar"/>
-            <include name="ext/*.jar"/>
-        </fileset>
-        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-        <!-- XXX -->
-        <fileset dir="${openide.dir}/${nb.modules/autoload.dir}">
-            <include name="openide-*.jar"/>
-            <include name="core-*.jar"/>
-        </fileset>
-    </path>
-    
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->
-    
-    <target name="QAcompiler">
-        <buildTests srcDir="qa-functional/src"> <!-- compileexcludes="**/data/**" -->
-            <classpath refid="compiletest.classpath"/>
+    <!-- Overrides default qa-functional-compiler because we need something 
+         more on classpath -->
+    <target name="qa-functional-compiler">
+        <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
+            <classpath>
+                <path refid="jemmy.and.jelly.path"/>
+                <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+                <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+            </classpath>
         </buildTests>
-    </target>
-
-    <!-- ================ -->
-    <!-- Global Executors -->
-    <!-- ================ -->
-    
-    <target name="runidetest">
-        <executeTests  pluginName="ide">
-            <classpath refid="jemmy.and.jelly.path"/>
-        </executeTests>
-    </target>
-
-    <target name="runidetest_firststart_mdi">
-        <property name="xtest.ide.winsys" value="mdi"/>
-        <executeTests  pluginName="ide">
-            <classpath refid="jemmy.and.jelly.path"/>
-        </executeTests>
-    </target>
-    
-    <!-- This target executes tests inside IDE-->
-    <target name="runidetest_firststart_sdi">
-        <property name="xtest.ide.winsys" value="sdi"/>
-        <executeTests  pluginName="ide">
-            <classpath refid="jemmy.and.jelly.path"/>
-        </executeTests>
-    </target>
-    
-    <!-- This target executes tests inside IDE-->
-    <target name="runidetest_secondstart_mdi">
-        <property name="xtest.ide.winsys" value="mdi"/>
-        <property name="xtest.ide.reuse.userdir" value="true"/><!--<property name="xtest.reuse.ide" value="true"/>-->
-        <executeTests  pluginName="ide">
-            <classpath refid="jemmy.and.jelly.path"/>
-        </executeTests>
-    </target>
-    
-    <!-- This target executes tests inside IDE and will reuse userdir from previous testbag-->    
-    <target name="runidetest_secondstart_sdi">
-        <property name="xtest.ide.winsys" value="sdi"/>
-        <property name="xtest.ide.reuse.userdir" value="true"/><!--<property name="xtest.reuse.ide" value="true"/>-->
-        <executeTests  pluginName="ide">
-            <classpath refid="jemmy.and.jelly.path"/>
-        </executeTests>
-    </target>
-    
-    <target name="runcodetest">
-        <executeTests  pluginName="jvm">
-            <classpath refid="codetest.classpath"/>
-        </executeTests>
-    </target>
-
-    <!-- This target is executed from test-executor in newly created Project -->
-    <!-- Name of this task is defined in cfg-xxx.xml -->
-    <!-- This target executes tests inside IDE -->
-    <target name="runplatformtest">
-        <mkdir dir="${netbeans.home}/modules/ext"/>
-        <copy todir="${netbeans.home}/modules/ext" >
-             <fileset dir="../../ant/external">
-                <include name="*.jar"/>
-             </fileset>
-        </copy>        
-        <antcall target="runidetest"/>
     </target>
     
 </project>
