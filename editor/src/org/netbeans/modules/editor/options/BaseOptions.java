@@ -1179,21 +1179,16 @@ public class BaseOptions extends OptionSupport {
      *  (properties.xml) */
     public void setSettingValue(String settingName, Object newValue,
     String propertyName) {
-        if (!getTypeName().equals(BASE) && !settingName.equals(COLORING_MAP_PROP) /*&& !isReadExternal()*/){ //[PENDING] coloring map ???
-            if (!isTheSame(settingName, newValue)){
-                Map map = new HashMap();
-                map.put(settingName, newValue);
-                updateSettings(PropertiesMIMEProcessor.class, map);
-            }
+        if (!isTheSame(settingName, newValue)){
+            Map map = new HashMap();
+            map.put(settingName, newValue);
+            updateSettings(PropertiesMIMEProcessor.class, map);
         }
-        
         super.setSettingValue(settingName,newValue,propertyName);
     }
     
     public Object getSettingValue(String settingName) {
-        if (!getTypeName().equals(BASE) && !settingName.equals(COLORING_MAP_PROP)){
-            loadSettings(PropertiesMIMEProcessor.class);
-        }
+        loadSettings(PropertiesMIMEProcessor.class);
         return super.getSettingValue(settingName);
     }
     
