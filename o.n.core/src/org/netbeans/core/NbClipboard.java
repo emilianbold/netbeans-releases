@@ -57,7 +57,15 @@ class NbClipboard extends ExClipboard implements LookupListener
     }
 
     public synchronized Transferable getContents(Object requestor) {
-        return systemClipboard.getContents(requestor);
+        try {
+            return systemClipboard.getContents(requestor);
+        }
+        catch (ThreadDeath ex) {
+            throw ex;
+        }
+        catch (Throwable ex) {
+            return null;
+        }
     }
     
     public synchronized void resultChanged(LookupEvent ev) {
