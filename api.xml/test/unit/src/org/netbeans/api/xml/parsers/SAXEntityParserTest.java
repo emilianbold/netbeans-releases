@@ -13,6 +13,7 @@
 package org.netbeans.api.xml.parsers;
 
 import java.io.*;
+import java.net.URL;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.xml.sax.*;
@@ -20,6 +21,8 @@ import org.xml.sax.helpers.*;
 import org.xml.sax.ext.*;
 
 /**
+ * Tests SAXEntityParser as DTDParser.
+ * Tests wrapping logic for relative references.
  *
  * @author Petr Kuzel
  */
@@ -46,6 +49,7 @@ public class SAXEntityParserTest extends NbTestCase {
         // DTD parser test        
         
         InputSource input = new InputSource(new StringReader("<!ELEMENT x ANY>"));
+        input.setSystemId("StringReader");
                 
         XMLReader peer = XMLReaderFactory.createXMLReader("org.apache.crimson.parser.XMLReaderImpl");
         TestDeclHandler dtdHandler = new TestDeclHandler();
@@ -61,18 +65,40 @@ public class SAXEntityParserTest extends NbTestCase {
         boolean exceptionThrown = false;
         try {
             parser.parse(new InputSource(new StringReader("")));
-        } catch (IllegalStateException ex) {
+        } 
+        catch (IllegalStateException ex) {
             exceptionThrown = true;
-        } finally {
+        } 
+        finally {
             assertTrue("Parser may not be reused!", exceptionThrown);
         }
+        
+        relativeReferenceTest();
     }        
     
     /**
-     * Wrapping may not broke relative references.
+     * Wrapping used to broke relative references.
      */
-    private void relativeReferenceTest() {
-        
+    private void relativeReferenceTest() throws Exception {
+
+        final boolean pass[] = {false};
+
+        try {
+            URL url = getClass().getResource("data/RelativeTest.dtd");
+            System.out.println("URL:" + url);
+            InputSource input = new InputSource(url.toExternalForm());
+            XMLReader peer = XMLReaderFactory.createXMLReader("org.apache.crimson.parser.XMLReaderImpl");
+            peer.setDTDHandler(new DefaultHandler() {
+                public void notationDecl(String name, String publicId, String systemId) {
+                    if ("notation".equals(name)) pass[0] = true;
+                }
+            });
+            SAXEntityParser parser = new SAXEntityParser(peer, false);
+            parser.parse(input);
+        }
+        finally {
+            assertTrue("External entity not reached!", pass[0]);
+        }
     }
     
     

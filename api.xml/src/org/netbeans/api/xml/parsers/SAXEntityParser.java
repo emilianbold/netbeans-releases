@@ -17,7 +17,6 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.openide.ErrorManager;
-import org.openide.TopManager;
 
 import org.xml.sax.*;
 
@@ -101,7 +100,7 @@ public class SAXEntityParser implements XMLReader {
 
         String originalSID = entity.getSystemId();
         if (originalSID == null) {
-            ErrorManager err = TopManager.getDefault().getErrorManager();
+            ErrorManager err = Util.THIS.getErrorManager();
             if (err.isLoggable(err.WARNING)) {
                 StringWriter writer = new StringWriter();
                 PrintWriter out = new PrintWriter(writer);

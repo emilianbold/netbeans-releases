@@ -14,7 +14,6 @@
 package org.netbeans.spi.xml.cookies;
 
 import javax.xml.transform.*;
-import org.openide.TopManager;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
