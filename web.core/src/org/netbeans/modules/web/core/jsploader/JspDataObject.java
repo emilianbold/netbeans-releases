@@ -595,7 +595,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         }
     }
 
-    public CompileData getPlugin() {
+    public synchronized CompileData getPlugin() {
         if (compileData == null) {
             if ( firstStart ) {
                 addWebContextListener();
@@ -770,7 +770,10 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         }
     }
     
-    /** Updates classFileData, servletDataObject, servletEdit */
+    /** Updates classFileData, servletDataObject, servletEdit 
+     * This does not need to be synchronized, because the calling method
+     * getPlugin() is synchronized.
+     */
     private void checkRefreshServlet() {
 
         final DataObject oldServlet = servletDataObject;
@@ -902,7 +905,10 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
 
 
     /** Gets the current fileobject of the servlet corresponding to this JSP or null if may not exist.
-    * Note that the file still doesn't need to exist, even if it's not null. */
+    * Note that the file still doesn't need to exist, even if it's not null. 
+    * This does not need to be synchronized, because the calling method
+    * getPlugin() is synchronized.
+    */
     private FileObject updateServletFileObject() throws IOException {
         String servletFileName = compileData.getCurrentServletFileName();
 	if(debug) System.out.println("upd::servletFileName = " + servletFileName); // NOI18N
