@@ -65,7 +65,6 @@ public abstract class PageInfo {
     private String errorPage = null;
     private String info;
 
-    private int maxTagNesting = 0;
     private boolean scriptless = false;
     private boolean scriptingInvalid = false;
     private String isELIgnoredValue;
@@ -143,14 +142,6 @@ public abstract class PageInfo {
      
     public List getDependants() {
         return dependants;
-    }
-
-    public int getMaxTagNesting() {
-        return maxTagNesting;
-    }
-
-    public void setMaxTagNesting(int maxTagNesting) {
-        this.maxTagNesting = maxTagNesting;
     }
 
     public void setScriptless(boolean s) {
@@ -680,7 +671,6 @@ public abstract class PageInfo {
         sb.append(indent).append("threadSafe          : ").append(isThreadSafe).append("\n");  // NOI18N
         sb.append(indent).append("isErrorPage         : ").append(isErrorPage).append("\n");  // NOI18N
         sb.append(indent).append("errorPage           : ").append(errorPage).append("\n");  // NOI18N
-        sb.append(indent).append("maxTagNesting       : ").append(maxTagNesting).append("\n");  // NOI18N
         sb.append(indent).append("scriptless          : ").append(scriptless).append("\n");  // NOI18N
         sb.append(indent).append("scriptingInvalid    : ").append(scriptingInvalid).append("\n");  // NOI18N
         sb.append(indent).append("elIgnored           : ").append(isELIgnored).append("\n");  // NOI18N
