@@ -503,8 +503,8 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             }
         }
     }
-
-    public final void mousePressed(MouseEvent e) {
+    
+    public void mousePressed(MouseEvent e) {
         if (locked && !e.isPopupTrigger()) {
             Element el = getDocument().getDefaultRootElement().getElement(getLineCount()-1);
             getCaret().setDot(el.getStartOffset());
@@ -602,7 +602,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         
         public void paint(Graphics g) {
             JTextComponent component = textView;
-            if(isVisible() && y >= 0) {
+            if(isVisible() && y >= fontHeight) {
                 try {
                     TextUI mapper = component.getUI();
                     Rectangle r = mapper.modelToView(component, getDot(), Position.Bias.Forward);

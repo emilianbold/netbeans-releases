@@ -118,10 +118,23 @@ final class OutputTab extends AbstractOutputTab {
             return (OutputWindow) getClientProperty ("outputWindow"); //NOI18N
         }
     }
+    
+    void requestActive() {
+        findOutputWindow().requestActive();
+    }
 
     public void lineClicked(int line) {
         findOutputWindow().lineClicked (this, line);
     }
+    
+    boolean linePressed (int line, Point p) {
+        OutWriter out = getIO().out();
+        if (out != null) {
+            return out.getLines().getListenerForLine(line) != null;
+        } else {
+            return false;
+        }
+    }    
 
     public void postPopupMenu(Point p, Component src) {
         findOutputWindow().postPopupMenu(this, p, src);

@@ -49,6 +49,7 @@ public class OutputWindow extends AbstractOutputWindow {
     public OutputWindow() {
         this (new Controller());
         enableEvents(AWTEvent.FOCUS_EVENT_MASK);
+        putClientProperty ("dontActivate", Boolean.TRUE);
     }
 
     protected void closeRequest(AbstractOutputTab tab) {

@@ -41,6 +41,16 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
             findOutputTab().lineClicked(line);
         }
     }
+    
+    private boolean linePressed (int line, Point p) {
+        boolean result;
+        if (!(getDocument() instanceof OutputDocument) || !inLeadingOrTrailingWhitespace(line, p)) {
+            result = findOutputTab().linePressed (line, p);
+        } else {
+            result = false;
+        }
+        return result;
+    }
 
     protected void postPopupMenu(Point p, Component src) {
         findOutputTab().postPopupMenu(p, src);
@@ -123,6 +133,23 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
                 super.mouseMoved(evt);
             }
         }
+    }
+    
+    public void mousePressed(MouseEvent e) {
+        super.mousePressed(e);
+        if (e.getSource() == textView && SwingUtilities.isLeftMouseButton(e)) {
+            int pos = textView.viewToModel(e.getPoint());
+            if (pos != -1) {
+                int line = textView.getDocument().getDefaultRootElement().getElementIndex(pos);
+                if (line >= 0) {
+                    if (linePressed(line, e.getPoint())) {
+                        e.consume();
+                        return;
+                    }
+                }
+            }
+        }
+        findOutputTab().requestActive();
     }
 
     private OutputTab findOutputTab() {
