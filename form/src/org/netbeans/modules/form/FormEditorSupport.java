@@ -201,23 +201,25 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
     private void attachWorkspacesListener() {
         openOnEditing = true;
-        workspacesListener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (WindowManager.PROP_CURRENT_WORKSPACE.equals(evt.getPropertyName())) {
-                    if (openOnEditing) {
-                        if (isCurrentWorkspaceEditing()) {
-                            openOnEditing = false;
-                            TopManager.getDefault().getWindowManager().removePropertyChangeListener(workspacesListener);
-                            workspacesListener = null;
+        if (workspacesListener == null) {
+            workspacesListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (WindowManager.PROP_CURRENT_WORKSPACE.equals(evt.getPropertyName())) {
+                        if (openOnEditing) {
+                            if (isCurrentWorkspaceEditing()) {
+                                openOnEditing = false;
+                                TopManager.getDefault().getWindowManager().removePropertyChangeListener(workspacesListener);
+                                workspacesListener = null;
 
-                            FormEditor.getComponentInspector().open();
-                            getFormTopComponent().open();
+                                FormEditor.getComponentInspector().open();
+                                getFormTopComponent().open();
+                            }
                         }
                     }
                 }
-            }
-        };
-        TopManager.getDefault().getWindowManager().addPropertyChangeListener(workspacesListener);
+            };
+            TopManager.getDefault().getWindowManager().addPropertyChangeListener(workspacesListener);
+        }
     }
 
     public FormDataObject getFormObject() {
