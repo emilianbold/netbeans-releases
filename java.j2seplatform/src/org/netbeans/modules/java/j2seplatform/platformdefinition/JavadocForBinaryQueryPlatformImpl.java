@@ -44,7 +44,7 @@ import org.openide.util.WeakListeners;
  */
 public class JavadocForBinaryQueryPlatformImpl implements JavadocForBinaryQueryImplementation {
     
-    private static int MAX_DEPTH = 3;
+    private static int MAX_DEPTH = 4;   // Japanese Javadoc has subfolders /docs/ja/api
 
     /** Default constructor for lookup. */
     public JavadocForBinaryQueryPlatformImpl() {

@@ -170,7 +170,7 @@ class J2SEActionProvider implements ActionProvider {
             }
             p.setProperty("fix.includes", path); // NOI18N
         }
-        else if (command.equals (COMMAND_RUN)) {
+        else if (command.equals (COMMAND_RUN) || command.equals(COMMAND_DEBUG)) {
             EditableProperties ep = antProjectHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
             // check project's main class
@@ -187,9 +187,9 @@ class J2SEActionProvider implements ActionProvider {
 
             p = new Properties();
             p.setProperty("main.class", mainClass); // NOI18N
-            targetNames = (String[])commands.get(COMMAND_RUN);
+            targetNames = (String[])commands.get(command);
             if (targetNames == null) {
-                throw new IllegalArgumentException(COMMAND_RUN);
+                throw new IllegalArgumentException(command);
             }
         } else if (command.equals (COMMAND_RUN_SINGLE) || command.equals (COMMAND_DEBUG_SINGLE)) {
             FileObject file = findSources(context)[0];
