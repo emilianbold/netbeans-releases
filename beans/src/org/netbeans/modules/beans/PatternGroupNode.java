@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.beans.Introspector;
 import java.util.Set;
 import java.util.WeakHashMap;
+import javax.jmi.reflect.InvalidObjectException;
 
 import org.netbeans.modules.javacore.internalapi.ParsingListener;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
@@ -107,7 +108,7 @@ public class  PatternGroupNode extends AbstractNode {
     private PatternFilter filter;
     
     
-    public PatternGroupNode(Children children, ClassElement clsElem, PatternFilter filter) {
+    public PatternGroupNode(PatternChildren children, ClassElement clsElem, PatternFilter filter) {
         super(children);
         setName(PatternNode.getString("Patterns"));
         setShortDescription (PatternNode.getString("Patterns_HINT"));
@@ -115,24 +116,21 @@ public class  PatternGroupNode extends AbstractNode {
         setActions(DEFAULT_ACTIONS);
         this.classElement = clsElem;
         this.filter = filter;
-        
-        DataObject dobj = (DataObject)clsElem.getCookie(DataObject.class);
-        addParsingListener(dobj, new ParsListener(dobj, this));
 
-        if (children instanceof PatternChildren) {
-            CookieSet cs = getCookieSet();
-            cs.add(((PatternChildren)children).getPatternAnalyser());
-        } else {
-            isJDK15 = true;
-            if (isWritable)
-                setActions(DEFAULT_ACTIONS_NON_WRITEABLE);
+        if (isWritable) {
+            DataObject dobj = (DataObject)clsElem.getCookie(DataObject.class);
+            addParsingListener(dobj, new ParsListener(dobj, this));
         }
+
+        CookieSet cs = getCookieSet();
+        cs.add(((PatternChildren)children).getPatternAnalyser());
     }
 
-    public PatternGroupNode(Children children, ClassElement clsElem, PatternFilter filter, boolean isWriteable) {
+    public PatternGroupNode(PatternChildren children, ClassElement clsElem, PatternFilter filter, boolean isWriteable, boolean isJDK15) {
         this(children, clsElem, filter);
-        isWritable = isWriteable;
-        if (!isWritable) {
+        this.isWritable = isWriteable;
+        this.isJDK15 = isJDK15;
+        if (!isWritable || isJDK15) {
             setActions(DEFAULT_ACTIONS_NON_WRITEABLE);
         }
     }
@@ -373,45 +371,40 @@ public class  PatternGroupNode extends AbstractNode {
     public void updateChildren(Resource resource) {
         boolean b = hasJDK15Features(resource);
         if (b != isJDK15) {
-            isJDK15 = b;        
-            if (isJDK15) {
-                Children ch = getChildren();
-                if (ch instanceof PatternChildren) {
-                    CookieSet cs = getCookieSet();
-                    cs.remove(((PatternChildren) ch).getPatternAnalyser());
-                    ((PatternChildren) ch).removeAll();
-                }
-                setChildren(Children.LEAF);
-                if (isWritable) {
-                    setActions(DEFAULT_ACTIONS_NON_WRITEABLE);
-                }
-            } else {
-                PatternChildren children = new PatternChildren(classElement, isWritable);
-                children.setFilter(filter);
-                setChildren(children);
-                CookieSet cs = getCookieSet();
-                cs.add(children.getPatternAnalyser());
-                if (isWritable) {
-                    setActions(DEFAULT_ACTIONS);
-                }
-            }
-        } // if
+            isJDK15 = b;
+            CookieSet cs = getCookieSet();
+            PatternChildren ch = (PatternChildren)getChildren();
+            cs.remove(ch.getPatternAnalyser());
+            
+            PatternChildren children = new PatternChildren(classElement, !isJDK15);
+            children.setFilter(filter);
+            setChildren(children);
+            cs.add(children.getPatternAnalyser());
+            setActions(isJDK15 ? DEFAULT_ACTIONS_NON_WRITEABLE : DEFAULT_ACTIONS);
+        }
     }
     
     public static boolean hasJDK15Features(Resource resource) {
-        int s = resource.getStatus();
-        return ((s & ResourceImpl.HAS_ANNOTATION) > 0 || (s & ResourceImpl.HAS_ANNOTATIONTYPES) > 0 
-            || (s & ResourceImpl.HAS_ENUMS) > 0 || (s & ResourceImpl.HAS_GENERICS) > 0);
+        try {
+            int s = resource.getStatus();
+            return ((s & ResourceImpl.HAS_ANNOTATION) > 0 || (s & ResourceImpl.HAS_ANNOTATIONTYPES) > 0 
+                || (s & ResourceImpl.HAS_ENUMS) > 0 || (s & ResourceImpl.HAS_GENERICS) > 0);
+        } catch (InvalidObjectException e) {
+            return false;
+        }
     }
 
-    public static synchronized void addParsingListener(DataObject dobj, ParsingListener listener) {
+    public static void addParsingListener(DataObject dobj, ParsingListener listener) {
         if (beanParsingListener == null) {
-            beanParsingListener = new BeanParsingListener();
+            synchronized(PatternGroupNode.class) {
+                if (beanParsingListener == null)
+                    beanParsingListener = new BeanParsingListener();
+            }
         }
         beanParsingListener.addListener(dobj, listener);
     }
     
-    public static synchronized void removeParsingListener(DataObject dobj, ParsingListener listener) {
+    public static void removeParsingListener(DataObject dobj, ParsingListener listener) {
         if (beanParsingListener == null)
             return;
         beanParsingListener.removeListener(dobj, listener);
