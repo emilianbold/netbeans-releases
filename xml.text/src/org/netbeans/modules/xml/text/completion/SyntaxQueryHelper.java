@@ -310,7 +310,23 @@ public class SyntaxQueryHelper {
             case XMLDefaultTokenContext.ARGUMENT_ID:
                 if (StartTag.class.equals(syntaxNode.getClass()) 
                 || EmptyTag.class.equals(syntaxNode.getClass())) {
-                    ctx.initVirtualAttr((Element)syntaxNode, preText);
+                    NamedNodeMap attrs = syntaxNode.getAttributes();
+                    int minOffsetGreaterThanCurrent = 1000000000;
+                    Node curAttrNode = null;
+                    for (int ind = 0; ind < attrs.getLength(); ind++) {
+                        AttrImpl attr = (AttrImpl)attrs.item(ind);
+                        int attrTokOffset = attr.getFirstToken().getOffset();
+                        if (attrTokOffset < minOffsetGreaterThanCurrent && attrTokOffset + attr.getValue().length() > token.getOffset()) {
+                            minOffsetGreaterThanCurrent = attrTokOffset;
+                            curAttrNode = attr;
+                        }
+                    }
+                    
+                    if (curAttrNode != null) {
+                        ctx.init(curAttrNode, preText);
+                    } else {
+                        ctx.initVirtualAttr((Element)syntaxNode, preText);
+                    }
                     return COMPLETION_TYPE_ATTRIBUTE;
                 }
                 break;
@@ -342,7 +358,11 @@ public class SyntaxQueryHelper {
     }
     
     public HintContext getContext() {
-        return ctx;
+        if (completionType != COMPLETION_TYPE_UNKNOWN && completionType != COMPLETION_TYPE_DTD) {
+            return ctx;
+        } else {
+            return null;
+        }
     }
     
     public TokenItem getToken() {
