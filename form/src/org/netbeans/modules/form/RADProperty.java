@@ -18,8 +18,6 @@ import java.beans.*;
 import java.lang.reflect.*;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
-import org.openide.TopManager;
-import org.openide.ErrorManager;
 
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
@@ -97,26 +95,11 @@ public class RADProperty extends FormProperty {
             : null;
 
         // invoke the setter method
-        try {
-            writeMethod.invoke(component.getBeanInstance(), new Object[] { value });
-        }
-        catch (InvocationTargetException ex) {
-            String message = java.text.MessageFormat.format(
-                        FormEditor.getFormBundle().getString("MSG_ERR_INCORRECT_VALUE_OF_PROPERTY"),
-                        new Object[] { desc.getDisplayName() }
-                   );
-            IllegalArgumentException iae = new IllegalArgumentException(message);
-            TopManager.getDefault ().getErrorManager().annotate(
-                iae, ErrorManager.USER, null,
-                message, null, null);
-            
-            throw iae;
-        }
-        finally {
-            if (scrollbarPeerHack != null) // restore the Scrollbar's fake peer
-                FakePeerSupport.attachFakePeer((java.awt.Component)beanInstance,
-                                                scrollbarPeerHack);
-        }
+        writeMethod.invoke(component.getBeanInstance(), new Object[] { value });
+
+        if (scrollbarPeerHack != null) // restore the Scrollbar's fake peer
+            FakePeerSupport.attachFakePeer((java.awt.Component)beanInstance,
+                                           scrollbarPeerHack);
     }
 
     public void setValue(Object value) throws IllegalAccessException,

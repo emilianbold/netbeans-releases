@@ -17,6 +17,8 @@ import java.util.*;
 import java.beans.*;
 import java.lang.reflect.*;
 import org.openide.nodes.Node;
+import org.openide.TopManager;
+import org.openide.ErrorManager;
 
 
 /** 
@@ -191,12 +193,26 @@ public abstract class FormProperty extends Node.Property {
             // derive real value
             Object realValue = getRealValue(value);
 
-            // set the real value to the target object
-            if (realValue != FormDesignValue.IGNORED_VALUE) {
-                setTargetValue(realValue);
+            try {
+                // set the real value to the target object
+                if (realValue != FormDesignValue.IGNORED_VALUE) {
+                    setTargetValue(realValue);
+                }
+                else if (valueSet && defValue != BeanSupport.NO_VALUE) {
+                    setTargetValue(defValue);
+                }
             }
-            else if (valueSet && defValue != BeanSupport.NO_VALUE) {
-                setTargetValue(defValue);
+            catch (java.lang.Throwable ex) {
+                String message = java.text.MessageFormat.format(
+                            FormEditor.getFormBundle().getString("MSG_ERR_INCORRECT_VALUE_OF_PROPERTY"),
+                            new Object[] { getDisplayName() }
+                        );
+                IllegalArgumentException iae = new IllegalArgumentException(message);
+                TopManager.getDefault ().getErrorManager().annotate(
+                    iae, ErrorManager.USER, null,
+                    message, null, null);
+            
+                throw iae;
             }
 
             if (canReadFromTarget()) {
