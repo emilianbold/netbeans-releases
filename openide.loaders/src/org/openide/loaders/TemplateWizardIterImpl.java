@@ -77,7 +77,7 @@ final class TemplateWizardIterImpl extends Object
         
         iterator = it;
         if (notify) {
-            showingPanel = false;
+            //showingPanel = false;
             fireStateChanged ();
         }
     }
