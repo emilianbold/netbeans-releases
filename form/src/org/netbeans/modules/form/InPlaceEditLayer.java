@@ -44,9 +44,9 @@ class InPlaceEditLayer extends JPanel
     private JTextComponent editingTextComp;
     private InPlaceTextField inPlaceField;
 
-//    private MouseInputListener layerMouseListener;
     private ComponentListener layerResizeListener;
     private KeyListener compKeyListener;
+    private FocusListener compFocusListener;
     private ActionListener compActionListener;
 
     private ArrayList listeners;
@@ -141,6 +141,7 @@ class InPlaceEditLayer extends JPanel
         }
 
         editingTextComp.removeKeyListener(compKeyListener);
+        editingTextComp.removeFocusListener(compFocusListener);
         if (editingTextComp instanceof JTextField)
             ((JTextField)editingTextComp).removeActionListener(compActionListener);
         editingTextComp = null;
@@ -211,6 +212,7 @@ class InPlaceEditLayer extends JPanel
             addComponentListener(layerResizeListener);
 
         editingTextComp.addKeyListener(compKeyListener);
+        editingTextComp.addFocusListener(compFocusListener);
         if (editingTextComp instanceof JTextField)
             ((JTextField)editingTextComp).addActionListener(compActionListener);
     }
@@ -259,6 +261,13 @@ class InPlaceEditLayer extends JPanel
                 else if (e.getModifiers() == InputEvent.CTRL_MASK
                          && (e.getKeyCode() == 10 || e.getKeyCode() == KeyEvent.VK_ENTER))
                     finishEditing(true);
+            }
+        };
+        
+        // listening for focus lost
+        compFocusListener = new FocusAdapter() {
+            public void focusLost(FocusEvent event) {
+                finishEditing(true);
             }
         };
 
