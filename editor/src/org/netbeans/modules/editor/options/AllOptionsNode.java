@@ -15,6 +15,7 @@ package org.netbeans.modules.editor.options;
 
 import java.beans.IntrospectionException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import org.netbeans.editor.Settings;
 import org.netbeans.modules.editor.NbEditorSettingsInitializer;
@@ -25,11 +26,13 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 import org.openide.TopManager;
+import org.openide.actions.CustomizeBeanAction;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.util.WeakListener;
 import org.openide.util.HelpCtx;
+import org.openide.util.actions.SystemAction;
 
 
 /** Node representing the Editor Settings main node.
@@ -60,6 +63,21 @@ public class AllOptionsNode extends FilterNode {
     
     public HelpCtx getHelpCtx () {
         return new HelpCtx (HELP_ID);
+    }
+    
+    // #28678 Exclude Customize Bean action.
+    /** Overrides superclass method, excludes the CustomizeBeanAction from the node. */
+    public SystemAction[] getActions() {
+        SystemAction[] as = super.getActions();
+        List actions = java.util.Arrays.asList(as);
+        SystemAction customizeBean = SystemAction.get(CustomizeBeanAction.class);
+        if(actions.contains(customizeBean)) {
+            actions = new ArrayList(actions); // to be mutable
+            actions.remove(customizeBean);
+            return (SystemAction[])actions.toArray(new SystemAction[0]);
+        } else {
+            return as;
+        }
     }
     
     /** Class representing subnodes of Editor Settings node.*/

@@ -32,7 +32,10 @@ import org.netbeans.editor.AnnotationTypes;
 import java.lang.Boolean;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.List;
 import org.openide.TopManager;
+import org.openide.actions.CustomizeBeanAction;
 
 /** Node representing the Annotation Types in Options window.
  *
@@ -190,6 +193,22 @@ public class AnnotationTypesNode extends AbstractNode {
             public HelpCtx getHelpCtx() {
                 return new HelpCtx(HELP_ID);
             }
+            
+            // #28678 Exclude Customize Bean action.
+            /** Overrides superclass method, excludes the CustomizeBeanAction from the node. */
+            public SystemAction[] getActions() {
+                SystemAction[] as = super.getActions();
+                List actions = java.util.Arrays.asList(as);
+                SystemAction customizeBean = SystemAction.get(CustomizeBeanAction.class);
+                if(actions.contains(customizeBean)) {
+                    actions = new ArrayList(actions); // to be mutable
+                    actions.remove(customizeBean);
+                    return (SystemAction[])actions.toArray(new SystemAction[0]);
+                } else {
+                    return as;
+                }
+            }
+            
         }
     }
 
