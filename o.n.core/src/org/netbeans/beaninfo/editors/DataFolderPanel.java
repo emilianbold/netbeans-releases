@@ -557,7 +557,7 @@ class DataFolderPanel extends TopComponent implements
             FileSystem fs = (FileSystem)system.get ();
             if (fs != null) {
                 DataFolder folder = DataFolder.findFolder (fs.getRoot ());
-                String currentName = packageName.getText();
+                String currentName = packageName.getText().replace('\\', '/');
                 if (currentName.length () > 0) {
                     folder = DataFolder.create (folder, currentName);
                 }
