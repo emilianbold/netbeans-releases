@@ -128,8 +128,17 @@ abstract class FakeComponentPeer implements FakePeer
     }
 
     public Graphics getGraphics() {
-        // this is called from target (leads to infinite loop)
-        return null; //_target.getGraphics();
+        Component parent = _target.getParent();
+        if (parent != null) {
+            Graphics g = parent.getGraphics();
+            if (g != null) {
+                Rectangle bounds = _target.getBounds();
+                g.translate(bounds.x, bounds.y);
+                g.setClip(bounds);
+            }
+            return g;
+        }
+        return null;
     }
 
     public Toolkit getToolkit() {
