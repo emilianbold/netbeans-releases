@@ -73,4 +73,8 @@ public class SourcesView extends TopComponent {
     public String getName () {
         return NbBundle.getMessage (SourcesView.class, "CTL_Sourcess_view");
     }
+    
+    public String getToolTipText () {
+        return NbBundle.getMessage (SourcesView.class, "CTL_Sources_tooltip");// NOI18N
+    }
 }
