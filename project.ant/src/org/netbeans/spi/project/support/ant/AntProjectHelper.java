@@ -376,10 +376,15 @@ public final class AntProjectHelper {
         ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
                 for (int i = 0; i < _listeners.length; i++) {
-                    if (xml) {
-                        _listeners[i].configurationXmlChanged(ev);
-                    } else {
-                        _listeners[i].propertiesChanged(ev);
+                    try {
+                        if (xml) {
+                            _listeners[i].configurationXmlChanged(ev);
+                        } else {
+                            _listeners[i].propertiesChanged(ev);
+                        }
+                    } catch (RuntimeException e) {
+                        // Don't prevent other listeners from being notified.
+                        ErrorManager.getDefault().notify(e);
                     }
                 }
                 return null;
