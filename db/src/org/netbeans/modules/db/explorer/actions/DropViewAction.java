@@ -28,17 +28,20 @@ public class DropViewAction extends DatabaseAction
 	public void performAction(Node[] activatedNodes) 
 	{
 		Node node;
-		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-		else return;
+		if (activatedNodes != null && activatedNodes.length>0)
+      node = activatedNodes[0];
+		else
+      return;
 		ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
-		try {			
-		} catch(Exception e) {
-			TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DropIndexErrorPrefix")+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-		}
+//		try {			
+//		} catch(Exception e) {
+//			TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DropIndexErrorPrefix")+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+//		}
 	}
 }
 /*
  * <<Log>>
+ *  7    Gandalf-post-FCS1.5.1.0     4/10/00  Radko Najman    
  *  6    Gandalf   1.5         11/27/99 Patrik Knakal   
  *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

@@ -31,21 +31,20 @@ import com.netbeans.enterprise.modules.db.explorer.nodes.RootNode;
 public class ProcedureNodeInfo extends DatabaseNodeInfo 
 {
   static final long serialVersionUID =-5984072379104199563L;
-	public DatabaseDriver getDatabaseDriver()
-	{
+  
+/*
+	public DatabaseDriver getDatabaseDriver() {
 		return (DatabaseDriver)get(DatabaseNodeInfo.DBDRIVER);
 	}
-/*
-	public void setDatabaseDriver(DatabaseDriver drv)
-	{
+  
+	public void setDatabaseDriver(DatabaseDriver drv) {
 		put(DatabaseNodeInfo.NAME, drv.getName());
 		put(DatabaseNodeInfo.URL, drv.getURL());
 		put(DatabaseNodeInfo.DBDRIVER, drv);
 	}
 */
-	public void initChildren(Vector children)
-	throws DatabaseException
-	{
+  
+	public void initChildren(Vector children) throws DatabaseException {
  		try {
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
@@ -53,6 +52,7 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo
       
       DriverSpecification drvSpec = getDriverSpecification();
       drvSpec.getProcedureColumns(catalog, dmd, name, null);
+      
 			if (drvSpec.rs != null) {
         while (drvSpec.rs.next()) {
           DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE_COLUMN, drvSpec.rs);
@@ -82,10 +82,12 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo
                 itype = "result";
                 break;
             }
-            if (ibase != null) info.put("iconbase", ibase);
+            if (ibase != null)
+              info.put("iconbase", ibase);
             info.put("type", itype);
             children.add(info);
-          } else throw new Exception("unable to create node information for procedure column");
+          } else
+            throw new Exception("unable to create node information for procedure column");
         }
         drvSpec.rs.close();
       }
@@ -97,6 +99,7 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo
 
 /*
  * <<Log>>
+ *  14   Gandalf-post-FCS1.12.1.0    4/10/00  Radko Najman    
  *  13   Gandalf   1.12        1/25/00  Radko Najman    new driver adaptor 
  *       version
  *  12   Gandalf   1.11        12/22/99 Radko Najman    Integer type -> Number 

@@ -77,10 +77,9 @@ public class ViewDataAction extends DatabaseAction
 
 				} 
 				
-				DataViewWindow win = new DataViewWindow(info.getDatabaseConnection(), info.getUser(), expression);
+				DataViewWindow win = new DataViewWindow(info, expression);
 				win.open();
 				win.executeCommand();
-				
 			} catch(Exception e) {
 				TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("ShowDataError") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 			}
@@ -89,6 +88,7 @@ public class ViewDataAction extends DatabaseAction
 }
 /*
  * <<Log>>
+ *  8    Gandalf-post-FCS1.6.1.0     4/10/00  Radko Najman    
  *  7    Gandalf   1.6         2/10/00  Radko Najman    
  *  6    Gandalf   1.5         11/27/99 Patrik Knakal   
  *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

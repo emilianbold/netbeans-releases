@@ -334,6 +334,7 @@
 				name = "ExecuteCommand";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
 			},
+			delimiter,
 			{
 				name = "TestDriver";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.TestDriverAction;
@@ -1168,6 +1169,11 @@
 			},
 			delimiter,
 			{
+				name = "ExecuteCommand";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+			},
+			delimiter,
+			{
 				name = "Refresh";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.RefreshChildrenAction;
 				perm = "write";
@@ -1768,6 +1774,11 @@
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddIndexAction;
 				perm = "write";
 			},
+			delimiter,
+			{
+				name = "ExecuteCommand";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+			},
 			delimiter
 		);
 	};
@@ -1796,6 +1807,12 @@
 				node = ilist;
 				perm = "write";
 			},
+			delimiter,
+			{
+				name = "ExecuteCommand";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+			},
+			delimiter,
 			{
 				name = "Refresh";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.RefreshChildrenAction;
@@ -1842,6 +1859,11 @@
 			delete = YES;
 		};	
 		actions = (
+			{
+				name = "ExecuteCommand";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+			},
+			delimiter,
 			{
 				name = "Cut";
 				class = org.openide.actions.CutAction;
@@ -1996,6 +2018,11 @@
 				name = "AddView";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateViewAction;
 				perm = "write";
+			},
+			delimiter,
+			{
+				name = "ExecuteCommand";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter
 		);
@@ -2156,7 +2183,13 @@
 		children = ();
 		properties = ();
 		options = {};	
-		actions = ();
+		actions = (
+			{
+				name = "ExecuteCommand";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+			},
+			delimiter
+		);
 	};
 
 	procedure = {
@@ -2171,13 +2204,18 @@
 			delete = YES;
 		};	
 		actions = (
-/*			{
-				name = "AddProcedure";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateProcedureAction;
-				node = procedurelist;
+//			{
+//				name = "AddProcedure";
+//				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateProcedureAction;
+//				node = procedurelist;
+//			},
+//			delimiter,
+			{
+				name = "ExecuteCommand";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
 			},
-			delimiter,
-*/			{
+			delimiter,			
+			{
 				name = "Cut";
 				class = org.openide.actions.CutAction;
 				system = YES;
@@ -2236,13 +2274,18 @@
 			delete = YES;
 		};	
 		actions = (
-/*			{
-				name = "AddProcedure";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateProcedureAction;
-				node = procedurelist;
+//			{
+//				name = "AddProcedure";
+//				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateProcedureAction;
+//				node = procedurelist;
+//			},
+//			delimiter,
+			{
+				name = "ExecuteCommand";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
 			},
-			delimiter,
-*/			{
+			delimiter,			
+			{
 				name = "Cut";
 				class = org.openide.actions.CutAction;
 				system = YES;

@@ -27,22 +27,24 @@ import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
 public class IndexListNodeInfo extends DatabaseNodeInfo
 {
   static final long serialVersionUID =5809643799834921044L;
-	public void initChildren(Vector children)
-	throws DatabaseException
-	{
- 		try {
-			DatabaseMetaData dmd = getSpecification().getMetaData();
-			String catalog = (String)get(DatabaseNode.CATALOG);
-			String table = (String)get(DatabaseNode.TABLE);
+  
+  public void initChildren(Vector children) throws DatabaseException {
+    try {
+      DatabaseMetaData dmd = getSpecification().getMetaData();
+      String catalog = (String)get(DatabaseNode.CATALOG);
+      String table = (String)get(DatabaseNode.TABLE);
 
       DriverSpecification drvSpec = getDriverSpecification();
       drvSpec.getIndexInfo(catalog, dmd, table, true, false);
-      boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
-			
+
+//      boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
+      boolean jdbcOdbcBridge = (((((String)get(DatabaseNode.DRIVER)).trim().equals("sun.jdbc.odbc.JdbcOdbcDriver")) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
+      
       if (drvSpec.rs != null) {
-  			Set ixmap = new HashSet();
+        Set ixmap = new HashSet();
         while (drvSpec.rs.next()) {
-          if (jdbcOdbcBridge) drvSpec.rsTemp.next();
+          if (jdbcOdbcBridge)
+            drvSpec.rsTemp.next();
           if (drvSpec.rs.getString("INDEX_NAME") != null) {
             IndexNodeInfo info;
             if (jdbcOdbcBridge)
@@ -56,16 +58,18 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
                 info.put("index", info.getName());
                 children.add(info);
               }
-            } else throw new Exception("unable to create node information for index");
+            } else
+              throw new Exception("unable to create node information for index");
           }
         }
         drvSpec.rs.close();
-        if (jdbcOdbcBridge) drvSpec.rsTemp.close();
+        if (jdbcOdbcBridge)
+          drvSpec.rsTemp.close();
       }
- 		} catch (Exception e) {
-			throw new DatabaseException(e.getMessage());	
-		}
-	}
+    } catch (Exception e) {
+      throw new DatabaseException(e.getMessage());	
+    }
+  }
 	
 	public void addIndex(String name)
 	throws DatabaseException
@@ -107,6 +111,7 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 
 /*
  * <<Log>>
+ *  15   Gandalf-post-FCS1.13.1.0    4/10/00  Radko Najman    
  *  14   Gandalf   1.13        1/26/00  Radko Najman    JDBC-ODBC bridge HACK
  *  13   Gandalf   1.12        1/25/00  Radko Najman    new driver adaptor 
  *       version

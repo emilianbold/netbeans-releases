@@ -28,9 +28,7 @@ import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
 public class ViewNodeInfo extends DatabaseNodeInfo
 {
   static final long serialVersionUID =8370676447530973161L;
-	public void initChildren(Vector children)
-	throws DatabaseException
-	{				
+	public void initChildren(Vector children) throws DatabaseException {
  		try {
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
@@ -91,6 +89,7 @@ public class ViewNodeInfo extends DatabaseNodeInfo
 }
 /*
  * <<Log>>
+ *  13   Gandalf-post-FCS1.11.1.0    4/10/00  Radko Najman    
  *  12   Gandalf   1.11        1/25/00  Radko Najman    new driver adaptor 
  *       version
  *  11   Gandalf   1.10        12/15/99 Radko Najman    driver adaptor

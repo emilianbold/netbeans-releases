@@ -28,9 +28,8 @@ public class ProcedureListNodeInfo extends DatabaseNodeInfo
 implements ProcedureOwnerOperations
 {
   static final long serialVersionUID =-7911927402768472443L;
-	public void initChildren(Vector children)
-	throws DatabaseException
-	{
+  
+	public void initChildren(Vector children) throws DatabaseException {
  		try {
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String) get(DatabaseNode.CATALOG);
@@ -41,9 +40,11 @@ implements ProcedureOwnerOperations
       if (drvSpec.rs != null) {
         while (drvSpec.rs.next()) {
           DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE, drvSpec.rs);
-          info.put(DatabaseNode.PROCEDURE, info.getName());
-          if (info != null) children.add(info);
-          else throw new Exception("unable to create node information for procedure");
+          if (info != null) {
+            info.put(DatabaseNode.PROCEDURE, info.getName());
+            children.add(info);
+          } else
+            throw new Exception("unable to create node information for procedure");
         }
         drvSpec.rs.close();
       }
@@ -66,9 +67,27 @@ implements ProcedureOwnerOperations
 			throw new DatabaseException(e.getMessage());
 		}		
 	}
+  
+	public void refreshChildren() throws DatabaseException {
+// PENDING !!!
+/*
+		Vector charr = new Vector();
+		DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
+
+		put(DatabaseNodeInfo.CHILDREN, charr);
+		chil.remove(chil.getNodes());
+		initChildren(charr);
+		Enumeration en = charr.elements();
+		while(en.hasMoreElements()) {
+			DatabaseNode subnode = chil.createNode((DatabaseNodeInfo)en.nextElement());
+			chil.add(new Node[] {subnode});
+		}
+*/
+  }
 }
 /*
  * <<Log>>
+ *  14   Gandalf-post-FCS1.12.1.0    4/10/00  Radko Najman    
  *  13   Gandalf   1.12        1/25/00  Radko Najman    new driver adaptor 
  *       version
  *  12   Gandalf   1.11        12/15/99 Radko Najman    driver adaptor

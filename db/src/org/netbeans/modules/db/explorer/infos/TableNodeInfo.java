@@ -43,7 +43,9 @@ public class TableNodeInfo extends DatabaseNodeInfo
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
       DriverSpecification drvSpec = getDriverSpecification();
-      boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
+      
+//      boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) /*&& (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))*/) ? true : false);
+      boolean jdbcOdbcBridge = (((((String)get(DatabaseNode.DRIVER)).trim().equals("sun.jdbc.odbc.JdbcOdbcDriver")) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
 
 			// Primary keys
 			Hashtable ihash = new Hashtable(); 		
@@ -222,6 +224,7 @@ public class TableNodeInfo extends DatabaseNodeInfo
 }
 /*
  * <<Log>>
+ *  18   Gandalf-post-FCS1.16.1.0    4/10/00  Radko Najman    
  *  17   Gandalf   1.16        1/26/00  Radko Najman    JDBC-ODBC bridge HACK
  *  16   Gandalf   1.15        1/25/00  Radko Najman    new driver adaptor 
  *       version

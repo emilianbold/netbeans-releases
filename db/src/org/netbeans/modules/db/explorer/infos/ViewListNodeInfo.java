@@ -26,9 +26,8 @@ import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
 public class ViewListNodeInfo extends DatabaseNodeInfo
 {
   static final long serialVersionUID =2854540580610981370L;
-	public void initChildren(Vector children)
-	throws DatabaseException
-	{
+  
+	public void initChildren(Vector children) throws DatabaseException {
  		try {
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String) get(DatabaseNode.CATALOG);
@@ -41,9 +40,10 @@ public class ViewListNodeInfo extends DatabaseNodeInfo
         while (drvSpec.rs.next()) {
           DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, drvSpec.rs);
           if (info != null) {
-            info.put(DatabaseNode.TABLE, info.getName());
+            info.put(DatabaseNode.VIEW, info.getName());
             children.add(info);
-          } else throw new Exception("unable to create node information for table");
+          } else
+            throw new Exception("unable to create node information for table");
         }
         drvSpec.rs.close();
       }
@@ -80,10 +80,25 @@ public class ViewListNodeInfo extends DatabaseNodeInfo
 			throw new DatabaseException(e.getMessage());	
 		}
 	}
+  
+	public void refreshChildren() throws DatabaseException {
+		Vector charr = new Vector();
+		DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
+
+		put(DatabaseNodeInfo.CHILDREN, charr);
+		chil.remove(chil.getNodes());		
+		initChildren(charr);
+		Enumeration en = charr.elements();
+		while(en.hasMoreElements()) {
+			DatabaseNode subnode = chil.createNode((DatabaseNodeInfo)en.nextElement());
+			chil.add(new Node[] {subnode});
+		}
+	}
 }
 
 /*
  * <<Log>>
+ *  15   Gandalf-post-FCS1.13.1.0    4/10/00  Radko Najman    
  *  14   Gandalf   1.13        1/25/00  Radko Najman    new driver adaptor 
  *       version
  *  13   Gandalf   1.12        12/22/99 Radko Najman    Case Identifiers removed

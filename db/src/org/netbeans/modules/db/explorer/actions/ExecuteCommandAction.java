@@ -48,7 +48,7 @@ public class ExecuteCommandAction extends DatabaseAction
 				node = activatedNodes[0];
 				DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
 				
-				DataViewWindow win = new DataViewWindow(info.getDatabaseConnection(), info.getUser(), "");
+				DataViewWindow win = new DataViewWindow(info, "");
 				win.open();
 			} catch(Exception e) {
 				TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DataViewFetchErrorPrefix") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
@@ -58,6 +58,7 @@ public class ExecuteCommandAction extends DatabaseAction
 }
 /*
  * <<Log>>
+ *  2    Gandalf-post-FCS1.0.1.0     4/10/00  Radko Najman    
  *  1    Gandalf   1.0         2/10/00  Radko Najman    
  * $
  */

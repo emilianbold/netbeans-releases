@@ -38,8 +38,8 @@ import org.openide.util.datatransfer.*;
 import org.openide.windows.TopComponent;
 
 import com.netbeans.ddl.DBConnection;
-import com.netbeans.enterprise.modules.db.explorer.infos.ColumnNodeInfo;
-import com.netbeans.enterprise.modules.db.explorer.nodes.RootNode;
+import com.netbeans.enterprise.modules.db.explorer.infos.*;
+import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 
 public class DataViewWindow extends TopComponent {
 	private JTextArea queryarea;
@@ -48,11 +48,13 @@ public class DataViewWindow extends TopComponent {
 	private JComboBox rcmdscombo;
 	private String schema;
 	private ResourceBundle bundle;
+  private Node node;
   
   static final long serialVersionUID =6855188441469780252L;
   
-	public DataViewWindow(DBConnection dbcon, String user, String query) throws SQLException {
-  	schema = user;
+	public DataViewWindow(DatabaseNodeInfo info, String query) throws SQLException {
+  	schema = info.getUser();
+    node = info.getNode();
     
   	try {
     	bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
@@ -64,7 +66,7 @@ public class DataViewWindow extends TopComponent {
     	setLayout (layout);
     
       // Data model
-    	dbadaptor = new DataModel(dbcon);
+    	dbadaptor = new DataModel(info.getDatabaseConnection());
     
       // Query area and button
     	JPanel subpane = new JPanel();
@@ -502,14 +504,21 @@ public class DataViewWindow extends TopComponent {
         rs.close();
         fireTableChanged(null);
       } else {
-        if (command.toLowerCase().startsWith("delete") || command.toLowerCase().startsWith("insert") ||command.toLowerCase().startsWith("update"))
+        if (command.toLowerCase().startsWith("delete") || command.toLowerCase().startsWith("insert") || command.toLowerCase().startsWith("update"))
           stat.executeUpdate(command);
-        else
+        else {
           stat.execute(command);
+          
+          //refresh DBExplorer nodes
+          while (!(node instanceof ConnectionNode))
+            node = node.getParentNode();
+          Enumeration nodes = node.getChildren().nodes();
+          while (nodes.hasMoreElements())
+            ((DatabaseNodeInfo)((Node)nodes.nextElement()).getCookie(DatabaseNodeInfo.class)).refreshChildren();
+        }
         
       	TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CommandExecuted"), NotifyDescriptor.INFORMATION_MESSAGE));
       }
-
       stat.close();
     	con.close();
     }
@@ -622,6 +631,7 @@ public class DataViewWindow extends TopComponent {
 
 /*
  * <<Log>>
+ *  11   Gandalf-post-FCS1.9.1.0     4/10/00  Radko Najman    
  *  10   Gandalf   1.9         2/10/00  Radko Najman    command editor support
  *  9    Gandalf   1.8         1/5/00   Jaroslav Tulach Change in notify 
  *       descriptor.
