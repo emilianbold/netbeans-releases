@@ -13,6 +13,7 @@
 
 package org.netbeans.core.lookup;
 
+import junit.framework.AssertionFailedError;
 import org.netbeans.junit.*;
 import junit.textui.TestRunner;
 
@@ -50,18 +51,21 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
     private ModuleManager mgr;
     protected Module m1, m2;
 
-//    private static Throwable first = null;
+    protected void runTest () throws Throwable {
+        try {
+            super.runTest();
+        } catch (Error err) {
+            AssertionFailedError newErr = new AssertionFailedError (err.getMessage () + "\n" + ErrManager.messages);
+            newErr.initCause (err);
+            throw newErr;
+        }
+    }
+    
     
     protected void setUp() throws Exception {
-        /* Of course that setUp is called more than once
-        if (first == null) {
-            first = new Throwable("First called here:");
-        } else {
-            first.printStackTrace();
-            new Throwable("I have been called twice!").printStackTrace();
-        }
-         */
-        mgr = NbTopManager.get().getModuleSystem().getManager();
+        NbTopManager nb = NbTopManager.get ();
+        nb.register (new ErrManager ());
+        mgr = nb.getModuleSystem().getManager();
         final File jar1 = toFile (InstanceDataObjectModuleTestHid.class.getResource("data/test1.jar"));
         final File jar2 = toFile (InstanceDataObjectModuleTestHid.class.getResource("data/test2.jar"));
         try {
@@ -203,5 +207,35 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         }
         if (thistoo && !f.delete()) throw new IOException("Could not delete: " + f);
     }
+    
+    private static final class ErrManager extends org.openide.ErrorManager {
+        public static final StringBuffer messages = new StringBuffer ();
+        
+        public Throwable annotate (Throwable t, int severity, String message, String localizedMessage, Throwable stackTrace, java.util.Date date) {
+            return t;
+        }
+        
+        public Throwable attachAnnotations (Throwable t, org.openide.ErrorManager.Annotation[] arr) {
+            return t;
+        }
+        
+        public org.openide.ErrorManager.Annotation[] findAnnotations (Throwable t) {
+            return null;
+        }
+        
+        public org.openide.ErrorManager getInstance (String name) {
+            return this;
+        }
+        
+        public void log (int severity, String s) {            
+            messages.append (s);
+            messages.append ('\n');
+        }
+        
+        public void notify (int severity, Throwable t) {
+            messages.append (t.getMessage ());
+        }
+        
+    } 
     
 }
