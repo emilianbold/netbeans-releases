@@ -110,6 +110,7 @@ is divided into following sections:
                 <condition property="no.javadoc.preview">
                     <isfalse value="${{javadoc.preview}}"/>
                 </condition>
+                <property name="javac.compilerargs" value=""/>
                 <condition property="no.deps">
                     <and>
                         <istrue value="${{no.dependencies}}"/>
@@ -205,6 +206,7 @@ is divided into following sections:
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
+                            <compilerarg line="${{javac.compilerargs}}"/>
                             <customize/>
                         </javac>
                     </sequential>
@@ -330,9 +332,9 @@ is divided into following sections:
             </target>
 
             <xsl:comment>
-    ===================
+    ======================
     COMPILATION SECTION
-    ===================
+    ======================
     </xsl:comment>
 
             <xsl:call-template name="deps.target">
@@ -470,9 +472,9 @@ is divided into following sections:
             </target>
 
             <xsl:comment>
-    ====================
+    ======================
     DIST BUILDING SECTION
-    ====================
+    ======================
     </xsl:comment>
 
             <target name="pre-dist">
@@ -500,9 +502,9 @@ is divided into following sections:
             </target>
 
             <xsl:comment>
-    =================
+    ======================
     EXECUTION SECTION
-    =================
+    ======================
     </xsl:comment>
 
             <target name="run">
@@ -528,9 +530,9 @@ is divided into following sections:
 
             
             <xsl:comment>
-    =================
+    ======================
     DEBUGGING SECTION
-    =================
+    ======================
     </xsl:comment>
     <target name="debug">
         <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
@@ -551,6 +553,11 @@ is divided into following sections:
             </xsl:if>
         </nbjpdaconnect>
         <nbbrowse url="${{client.url}}"/>
+    </target>
+    
+    <target name="debug-single">
+        <xsl:attribute name="if">netbeans.home</xsl:attribute>
+        <xsl:attribute name="depends">init,compile,compile-jsps,do-compile-single-jsp,debug</xsl:attribute>
     </target>
 
     <target name="-debug-start-debugger">
@@ -589,9 +596,9 @@ is divided into following sections:
     </target>
     
             <xsl:comment>
-    ===============
+    ======================
     JAVADOC SECTION
-    ===============
+    ======================
     </xsl:comment>
 
             <target name="javadoc-build">
@@ -698,9 +705,9 @@ is divided into following sections:
             </target>
             
             <xsl:comment>
-    ===============
+    ======================
     CLEANUP SECTION
-    ===============
+    ======================
     </xsl:comment>
 
             <xsl:call-template name="deps.target">
