@@ -83,7 +83,7 @@ public class URLDataObject extends MultiDataObject {
     );
     getCookieSet ().add (new URLNodeCookie () {
         public void openInNewWindow () {
-          System.out.println("Open In New Window");
+          //System.out.println("Open In New Window");
         }
 
         public void editURL () {
@@ -191,6 +191,7 @@ public class URLDataObject extends MultiDataObject {
 
 /*
  * Log
+ *  6    Gandalf   1.5         4/8/99   Ian Formanek    Removed debug prints
  *  5    Gandalf   1.4         3/26/99  Ian Formanek    Fixed use of obsoleted 
  *       NbBundle.getBundle (this)
  *  4    Gandalf   1.3         3/9/99   Ian Formanek    
