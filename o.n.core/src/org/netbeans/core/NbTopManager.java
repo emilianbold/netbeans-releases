@@ -588,7 +588,9 @@ public abstract class NbTopManager extends TopManager {
                              TopManager.getDefault().getWindowManager().getMainWindow(),
                              true);
                     }
-
+                    
+                    //Bugfix #8551
+                    presenter.getRootPane().requestDefaultFocus();
                     presenter.setVisible(true);
 
                     if (focusOwner != null) { // if the focusOwner is null (meaning that MainWindow was focused before), the focus will be back on main window
