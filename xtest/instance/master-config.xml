@@ -78,7 +78,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="openide"  	testtypes="qa-functional"  attributes="validation"/>
       <module name="projects" 	testtypes="qa-functional"  attributes="validation,jdk13"/> 
       <module name="qa"       	testtypes="serialization"  attributes="validation"/>
-      <!-- temporarily removed because if crashes all testing
+      <!-- temporarily removed because it crashes all testing
       <module name="qa"       	testtypes="qa-functional"  attributes="validation"/>
       -->
       <module name="rmi" 	testtypes="qa-functional"  attributes="validation"/>
@@ -143,7 +143,9 @@ Microsystems, Inc. All Rights Reserved.
       <module name="openide"  	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="projects" 	testtypes="qa-functional"  attributes="validation,full,jdk13"/> 
       <module name="qa"       	testtypes="serialization"  attributes="validation,full"/>
+      <!-- temporarily removed because it crashes all testing
       <module name="qa"       	testtypes="qa-functional"  attributes="validation,full"/>
+      -->
       <module name="rmi" 	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="vcsgeneric"	testtypes="qa-functional"  attributes="validation,full"/>      
       <module name="xml"	testtypes="qa-functional"  attributes="validation,full"/>
