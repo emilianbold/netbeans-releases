@@ -1010,9 +1010,6 @@ public final class PersistenceManager implements PropertyChangeListener {
      * @return window system configuration
      */
     public WindowManagerConfig loadWindowSystem() {
-        //Issue 40343 - don't allow global node selection to survive a project change
-        ((RegistryImpl) WindowManagerImpl.getInstance().getRegistry()).clearNodesForProjectChange();
-        
         //long start = System.currentTimeMillis();
         
         //Clear set of used tc_id

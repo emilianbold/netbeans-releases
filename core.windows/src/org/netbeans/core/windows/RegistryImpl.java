@@ -190,17 +190,6 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
     /// notifications of changes from window manager <<<<<
     //////////////////////////////////////////////////////
 
-    
-    /** Clears the global node selection.  Called by WindowManagerImpl before
-     * starting to load a new window system configuration, so no components
-     * retain nodes from the previous project and throw exceptions. */
-    public void clearNodesForProjectChange() {
-        Node[] old = currentNodes;
-        Node[] nue = new Node[0];
-        tryFireChanges (old, nue);
-    }
-    
-    
     /** Cancels the menu if it is not assigned to specified window.
      * @param window window that the menu should be checked against
      *    (if this window contains the menu, then the menu will not be closed)
