@@ -336,7 +336,7 @@ public class OptionsAction extends CallableSystemAction {
             }
             
             if (obj != null) {
-                if (!obj.getPrimaryFile().getPackageName('/').startsWith ("UI/Services")) { // NOI18N
+                if (!obj.getPrimaryFile().getPath().startsWith ("UI/Services")) { // NOI18N
                     return;
                 }
 
