@@ -29,7 +29,7 @@ class SelectMethodsNode extends EjbSectionNode {
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {
-        final SelectMethodsTableModel model = new SelectMethodsTableModel(queries);
+        final SelectMethodsTableModel model = queries.getSelectMethodsTableModel();
         final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(), model) {
             protected void editCell(final int row, final int column) {
                 model.editRow(row);

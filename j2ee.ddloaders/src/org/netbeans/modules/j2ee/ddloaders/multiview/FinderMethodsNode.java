@@ -29,14 +29,14 @@ class FinderMethodsNode extends EjbSectionNode {
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {
-        final FinderMethodsTableModel model = new FinderMethodsTableModel(queries);
+        final FinderMethodsTableModel model = queries.getFinderMethodsTableModel();
         InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(), model) {
             protected void editCell(final int row, final int column) {
                 model.editRow(row);
             }
 
             public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
-                super.dataModelPropertyChange(source, propertyName, oldValue, newValue);    
+                //super.dataModelPropertyChange(source, propertyName, oldValue, newValue);    
             }
         };
         return innerTablePanel;

@@ -13,6 +13,7 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.openide.src.ClassElement;
 
 import java.beans.PropertyChangeEvent;
@@ -25,7 +26,7 @@ public abstract class QueryMethodsTableModel extends InnerTableModel {
 
     protected final EntityHelper.Queries queries;
 
-    public QueryMethodsTableModel(String[] columnNames, int[] columnWidths, EntityHelper.Queries queries) {
+    public QueryMethodsTableModel(String[] columnNames, int[] columnWidths, final EntityHelper.Queries queries) {
         super(null, columnNames, columnWidths);
         this.queries = queries;
         queries.addPropertyChangeListener(new PropertyChangeListener() {
@@ -34,7 +35,15 @@ public abstract class QueryMethodsTableModel extends InnerTableModel {
                 if (source instanceof Entity) {
                     tableChanged();
                 } else if (source instanceof ClassElement) {
-                    fireTableDataChanged();
+                    //fireTableDataChanged();
+                } else if (source instanceof Query) {
+                    for (int i = 0, n = getRowCount(); i < n; i++) {
+                        QueryMethodHelper queryMethodHelper = getQueryMethodHelper(i);
+                        if (queryMethodHelper.query == source) {
+                            fireTableRowsUpdated(i, i);
+                            return;
+                        }
+                    }
                 } else {
                     fireTableDataChanged();
                 }

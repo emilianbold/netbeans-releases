@@ -61,7 +61,7 @@ public class QueryMethodHelper {
     }
 
     public String getReturnType() {
-        MethodElement method = getPrototypeMethod();
+        MethodElement method = getImplementationMethod();
         return method == null ? null : method.getReturn().getFullString();
     }
 
@@ -140,18 +140,7 @@ public class QueryMethodHelper {
     }
 
     public MethodElement getPrototypeMethod() {
-        MethodElement prototypeMethod = null;
-        if (isSelectMethod) {
-            //select method
-            prototypeMethod = implementationMethod;
-        } else {
-            //finder method
-            if (localMethod != null) {
-                prototypeMethod = localMethod;
-            } else if (remoteMethod != null) {
-                prototypeMethod = remoteMethod;
-            }
-        }
+        MethodElement prototypeMethod = getImplementationMethod();
         if (prototypeMethod == null) {
             prototypeMethod = new MethodElement();
             QueryMethod queryMethod = query.getQueryMethod();
@@ -175,6 +164,22 @@ public class QueryMethodHelper {
                 prototypeMethod.setParameters(params);
             } catch (SourceException e) {
                 notifyError(e);
+            }
+        }
+        return prototypeMethod;
+    }
+
+    public MethodElement getImplementationMethod() {
+        MethodElement prototypeMethod = null;
+        if (isSelectMethod) {
+            //select method
+            prototypeMethod = implementationMethod;
+        } else {
+            //finder method
+            if (localMethod != null) {
+                prototypeMethod = localMethod;
+            } else if (remoteMethod != null) {
+                prototypeMethod = remoteMethod;
             }
         }
         return prototypeMethod;
@@ -223,7 +228,7 @@ public class QueryMethodHelper {
 
     private MethodElement removeMethod(MethodElement method, boolean remote) {
         ClassElement interfaceClass = getHomeClass(remote);
-        if (remoteMethod != null) {
+        if (method != null) {
             try {
                 interfaceClass.removeMethod(method);
             } catch (SourceException e) {

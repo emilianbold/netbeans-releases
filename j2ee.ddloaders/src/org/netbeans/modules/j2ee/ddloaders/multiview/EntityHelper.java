@@ -265,6 +265,8 @@ public class EntityHelper extends EntityAndSessionHelper {
         private Query[] finderMethods;
         public static final String SELECT_PREFIX = "ejbSelect"; //NOI18N
         public static final String FIND_PREFIX = "find"; //NOI18N
+        private FinderMethodsTableModel finderMethodsTableModel = new FinderMethodsTableModel(this);
+        private SelectMethodsTableModel selectMethodsTableModel = new SelectMethodsTableModel(this);
 
         public Queries() {
             initQueryMethods();
@@ -275,11 +277,11 @@ public class EntityHelper extends EntityAndSessionHelper {
             finderMethods = getQueries(FIND_PREFIX);
         }
 
-        public QueryMethodHelper getQueryMethodHelper(Query finderMethod) {
-            QueryMethodHelper queryMethodHelper = (QueryMethodHelper) queryMethodHelperMap.get(finderMethod);
+        public QueryMethodHelper getQueryMethodHelper(Query query) {
+            QueryMethodHelper queryMethodHelper = (QueryMethodHelper) queryMethodHelperMap.get(query);
             if (queryMethodHelper == null) {
-                queryMethodHelper = new QueryMethodHelper(EntityHelper.this, finderMethod);
-                queryMethodHelperMap.put(finderMethod, queryMethodHelper);
+                queryMethodHelper = new QueryMethodHelper(EntityHelper.this, query);
+                queryMethodHelperMap.put(query, queryMethodHelper);
             }
             return queryMethodHelper;
         }
@@ -369,6 +371,14 @@ public class EntityHelper extends EntityAndSessionHelper {
 
         public String getRemote() {
             return EntityHelper.this.getRemote();
+        }
+
+        public FinderMethodsTableModel getFinderMethodsTableModel() {
+            return finderMethodsTableModel;
+        }
+
+        public SelectMethodsTableModel getSelectMethodsTableModel() {
+            return selectMethodsTableModel;
         }
     }
 }
