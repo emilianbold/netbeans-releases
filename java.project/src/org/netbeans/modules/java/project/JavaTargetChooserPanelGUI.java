@@ -27,6 +27,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.SourceGroup;
 import org.netbeans.spi.project.Sources;
 import org.openide.filesystems.FileObject;
@@ -65,7 +66,9 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     }
     
     public void initValues( Project p, FileObject template, String preselectedFolder ) {
-        this.project = p;               
+        this.project = p;
+        // Show name of the project
+        projectTextField.setText( ProjectUtils.getInformation(p).getDisplayName() );
         // Setup comboboxes 
         rootComboBox.setModel( new DefaultComboBoxModel( getSourceFolderNodes( p ) ) );
         updatePackages();        
@@ -126,6 +129,8 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         jPanel1 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         documentNameTextField = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        projectTextField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         rootComboBox = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
@@ -155,36 +160,47 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        gridBagConstraints.weightx = 1.0;
         add(jPanel1, gridBagConstraints);
+
+        jLabel5.setText("Project");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(jLabel5, gridBagConstraints);
+
+        projectTextField.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
+        add(projectTextField, gridBagConstraints);
 
         jLabel1.setText("Package Root:");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
+        gridBagConstraints.weightx = 1.0;
         add(rootComboBox, gridBagConstraints);
 
         jLabel2.setText("Package:");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
+        gridBagConstraints.weightx = 1.0;
         add(packageComboBox, gridBagConstraints);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
@@ -232,10 +248,12 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JComboBox packageComboBox;
+    private javax.swing.JTextField projectTextField;
     private javax.swing.JComboBox rootComboBox;
     private javax.swing.JSeparator targetSeparator;
     // End of variables declaration//GEN-END:variables
