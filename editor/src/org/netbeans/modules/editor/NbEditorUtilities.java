@@ -18,8 +18,10 @@ import java.awt.event.ActionListener;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.JEditorPane;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -114,6 +116,7 @@ public class NbEditorUtilities {
     * @param original whether to retrieve the original line (true) before
     *   the modifications were done or the current line (false)
     * @return the line object
+    * @deprecated Replaced by more generic method having {@link javax.swing.text.Document} parameter.
     */
     public static Line getLine(BaseDocument doc, int offset, boolean original) {
         DataObject dob = getDataObject(doc);
@@ -130,6 +133,33 @@ public class NbEditorUtilities {
                     } catch (BadLocationException e) {
                     }
 
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Get the line object from the given position.
+     * @param doc document for which the line is being retrieved
+     * @param offset position in the document
+     * @param original whether to retrieve the original line (true) before
+     *   the modifications were done or the current line (false)
+     * @return the line object
+     */
+    public static Line getLine(Document doc, int offset, boolean original) {
+        DataObject dob = getDataObject(doc);
+        if (dob != null) {
+            LineCookie lc = (LineCookie)dob.getCookie(LineCookie.class);
+            if (lc != null) {
+                Line.Set lineSet = lc.getLineSet();
+                if (lineSet != null) {
+                    Element lineRoot = (doc instanceof AbstractDocument)
+                        ? ((AbstractDocument)doc).getParagraphElement(0).getParentElement()
+                        : doc.getDefaultRootElement();
+                    int lineIndex = lineRoot.getElementIndex(offset);
+                    return original
+                           ? lineSet.getOriginal(lineIndex)
+                           : lineSet.getCurrent(lineIndex);
                 }
             }
         }

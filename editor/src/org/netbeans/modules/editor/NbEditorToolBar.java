@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 
 import javax.swing.ImageIcon;
@@ -96,6 +97,8 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
     private static final String DEFAULT_TOOLBAR_NAME = "Default"; // NOI18N
     
     static final String BASE_MIME_TYPE = "text/base"; // NOI18N
+    
+    private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
 
     /** Runnable for returning the focus back to the last active text component. */
     private static final Runnable returnFocusRunnable
@@ -368,24 +371,15 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                             if (obj instanceof Presenter.Toolbar) {
                                 Component tbp = ((Presenter.Toolbar)obj).getToolbarPresenter();
                                 add(tbp);
-                                if (tbp instanceof JButton) {
-                                    JButton jtbp = (JButton)tbp;
-                                    jtbp.setBorderPainted(false);
-                                    jtbp.setContentAreaFilled(false);
-                                    jtbp.addMouseListener(sharedMouseListener);
-                                    jtbp.setMargin (new Insets(2, 1, 0, 1));
+                                if (tbp instanceof AbstractButton) {
+                                    processButton((AbstractButton)tbp);
                                 }
 
                             } else if (obj instanceof Component) {
                                 add((Component)obj);
-                                if (obj instanceof JButton) {
-                                    JButton button = (JButton)obj;
-                                    button.setContentAreaFilled(false);
-                                    button.setBorderPainted(false);
-                                    button.addMouseListener(sharedMouseListener);
-                                    button.setMargin (new Insets(2, 1, 0, 1));
+                                if (obj instanceof AbstractButton) {
+                                    processButton((AbstractButton)obj);
                                 }
-
                             }
                         }
 
@@ -427,16 +421,21 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                                 }
                             }
                         }
-
-                        button.setContentAreaFilled(false);
-                        button.setBorderPainted(false);
-                        button.addActionListener(sharedActionListener);
-                        button.addMouseListener(sharedMouseListener);
-                        button.setMargin (new Insets(2, 1, 0, 1));
-
+                        
+                        processButton(button);
                     }
                 }
             }
+        }
+    }
+
+    private void processButton(AbstractButton button) {
+        button.setContentAreaFilled(false);
+        button.setBorderPainted(false);
+        button.addActionListener(sharedActionListener);
+        button.setMargin(BUTTON_INSETS);
+        if (button instanceof JButton) {
+            button.addMouseListener(sharedMouseListener);
         }
     }
 

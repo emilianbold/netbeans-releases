@@ -22,45 +22,27 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import javax.swing.JEditorPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.KeyStroke;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.StyledDocument;
-import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Keymap;
 import org.netbeans.editor.ActionFactory;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtKit;
-import org.netbeans.editor.ext.FindDialogSupport;
-import org.netbeans.editor.ext.GotoDialogSupport;
-import org.openide.windows.TopComponent;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.Presenter;
 import org.openide.actions.UndoAction;
 import org.openide.actions.RedoAction;
 import org.openide.windows.TopComponent;
-import org.openide.text.Annotation;
-import org.netbeans.editor.Bookmarks;
-import org.openide.text.Line;
-import org.netbeans.editor.ActionFactory.ToggleBookmarkAction;
-import org.netbeans.editor.ActionFactory.GotoNextBookmarkAction;
-import org.netbeans.editor.ActionFactory.GotoPreviousBookmarkAction;
-import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseAction;
-import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.editor.MacroDialogSupport;
 import org.netbeans.editor.Settings;
@@ -89,12 +71,10 @@ public class NbEditorKit extends ExtKit {
     /** Action property that stores the name of the corresponding nb-system-action */
     public static final String SYSTEM_ACTION_CLASS_NAME_PROPERTY = "systemActionClassName"; // NOI18N
 
-    public static final String BOOKMARK_ANNOTATION_TYPE = "editor-bookmark"; // NOI18N
-    
     static final long serialVersionUID =4482122073483644089L;
     
     private static final Map contentTypeTable;
-    
+
     /** Name of the action for generating of Go To popup menu*/
     public static final String generateGoToPopupAction = "generate-goto-popup"; // NOI18N
 
@@ -111,7 +91,7 @@ public class NbEditorKit extends ExtKit {
         contentTypeTable.put("org.netbeans.modules.xml.text.syntax.XMLKit", "text/xml"); // NOI18N
         contentTypeTable.put("org.netbeans.modules.corba.idl.editor.coloring.IDLKit", "text/x-idl"); // NOI18N
     }
-
+    
     public NbEditorKit(){
         super();
         // lazy init of MIME options
@@ -155,9 +135,6 @@ public class NbEditorKit extends ExtKit {
                                        new NbStopMacroRecordingAction(),
                                        new NbUndoAction(),
                                        new NbRedoAction(),
-                                       new NbToggleBookmarkAction(),
-                                       new NbGotoNextBookmarkAction(BaseKit.gotoNextBookmarkAction, false),
-                                       new NbGotoPreviousBookmarkAction(BaseKit.gotoPreviousBookmarkAction, false),
                                        new NbBuildToolTipAction(),
                                        new NbToggleLineNumbersAction(),
                                        new ToggleToolbarAction(),
@@ -174,7 +151,7 @@ public class NbEditorKit extends ExtKit {
             a.putValue(SYSTEM_ACTION_CLASS_NAME_PROPERTY, systemActionClass.getName());
         }
     }
-
+    
     protected void updateActions() {
         addSystemActionMapping(cutAction, org.openide.actions.CutAction.class);
         addSystemActionMapping(copyAction, org.openide.actions.CopyAction.class);
@@ -499,183 +476,6 @@ public class NbEditorKit extends ExtKit {
 
     }
 
-
-    public static class NbToggleBookmarkAction extends ToggleBookmarkAction {
-
-        static final long serialVersionUID = 8870696224845563318L;
-
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target == null)
-                return;
-
-            BaseDocument doc = (BaseDocument)target.getDocument();
-            Caret caret = target.getCaret();
-            
-            // check whether the glyph gutter is visible or not
-            if (Utilities.getEditorUI(target) == null || !Utilities.getEditorUI(target).isGlyphGutterVisible()) {
-                target.getToolkit().beep();
-                return;
-            }
-
-            int line = 0;
-            try {
-                line = Utilities.getLineOffset(doc, caret.getDot());
-            } catch (BadLocationException e) {
-                target.getToolkit().beep();
-                return;
-            }
-
-            Bookmarks bookmarks = doc.getBookmarks();
-            
-            Annotation anno = null;
-            Bookmark bookmark = (Bookmark)bookmarks.getBookmark(line);
-            if (bookmark != null)
-                anno = bookmark.getAnno();
-            
-            if (anno == null) {
-                anno = new BookmarkAnnotation();
-                
-                Line lineObj = NbEditorUtilities.getLine(doc, caret.getDot(), false);
-                if (lineObj == null) {
-                    target.getToolkit().beep();
-                    return;
-                }
-                anno.attach(lineObj);
-
-                bookmarks.putBookmark(new Bookmark(anno));
-            } else {
-                anno.detach();
-                bookmarks.removeBookmark(bookmark);
-            }
-        }
-    }
-
-    public static class NbGotoNextBookmarkAction extends GotoNextBookmarkAction {
-
-        static final long serialVersionUID =-6305740718286540539L;
-
-        public NbGotoNextBookmarkAction() {
-            super(null, false);
-        }
-        
-        public NbGotoNextBookmarkAction(String nm, boolean select) {
-            super(nm, select);
-        }
-
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target == null)
-                return;
-                
-            BaseDocument doc = (BaseDocument)target.getDocument();
-            Caret caret = target.getCaret();
-
-            // check whether the glyph gutter is visible or not
-            if (Utilities.getEditorUI(target) == null || !Utilities.getEditorUI(target).isGlyphGutterVisible()) {
-                target.getToolkit().beep();
-                return;
-            }
-            
-            int line = 0;
-            
-            try {
-                line = Utilities.getLineOffset(doc, caret.getDot());
-            } catch (BadLocationException e) {
-                target.getToolkit().beep();
-                return;
-            }
-
-            Bookmarks bookmarks = doc.getBookmarks();
-            
-            Bookmark bookmark = (Bookmark)bookmarks.getNextLineBookmark(line+1);
-
-            if (bookmark == null)
-                bookmark = (Bookmark)bookmarks.getNextLineBookmark(0);
-                
-            if (bookmark == null)
-                return;
-
-            Annotation anno = bookmark.getAnno();
-            anno.moveToFront();
-            if (doc instanceof NbEditorDocument){
-                NbEditorDocument nbDoc = (NbEditorDocument)doc;
-                Map annoMap = nbDoc.getAnnoMap();
-                Object obj = annoMap.get(anno);
-                if (obj instanceof AnnotationDesc){
-                    AnnotationDesc desc = (AnnotationDesc) obj;
-                    caret.setDot(desc.getOffset());
-                    return;
-                }
-            }
-            
-            ((Line)anno.getAttachedAnnotatable()).show(Line.SHOW_GOTO);
-
-        }
-    }
-
-    
-    public static class NbGotoPreviousBookmarkAction extends GotoPreviousBookmarkAction {
-
-
-        public NbGotoPreviousBookmarkAction() {
-            super(null, false);
-        }
-        
-        public NbGotoPreviousBookmarkAction(String nm, boolean select) {
-            super(nm, select);
-        }
-
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target == null)
-                return;
-                
-            BaseDocument doc = (BaseDocument)target.getDocument();
-            Caret caret = target.getCaret();
-
-            // check whether the glyph gutter is visible or not
-            if (Utilities.getEditorUI(target) == null || !Utilities.getEditorUI(target).isGlyphGutterVisible()) {
-                target.getToolkit().beep();
-                return;
-            }
-            
-            int line = 0;
-            int lastLine = 0;
-            
-            try {
-                line = Utilities.getLineOffset(doc, caret.getDot());
-                lastLine = Utilities.getLineOffset(doc, doc.getLength());
-            } catch (BadLocationException e) {
-                target.getToolkit().beep();
-                return;
-            }
-
-            Bookmarks bookmarks = doc.getBookmarks();
-            
-            Bookmark bookmark = (Bookmark)bookmarks.getPreviousLineBookmark(line-1);
-
-            if (bookmark == null)
-                bookmark = (Bookmark)bookmarks.getPreviousLineBookmark(lastLine);
-                
-            if (bookmark == null)
-                return;
-
-            Annotation anno = bookmark.getAnno();
-            anno.moveToFront();
-            if (doc instanceof NbEditorDocument){
-                NbEditorDocument nbDoc = (NbEditorDocument)doc;
-                Map annoMap = nbDoc.getAnnoMap();
-                Object obj = annoMap.get(anno);
-                if (obj instanceof AnnotationDesc){
-                    AnnotationDesc desc = (AnnotationDesc) obj;
-                    caret.setDot(desc.getOffset());
-                    return;
-                }
-            }
-            
-            ((Line)anno.getAttachedAnnotatable()).show(Line.SHOW_GOTO);
-
-        }
-    }
-    
     /** Switch visibility of line numbers in editor */
     public class NbToggleLineNumbersAction extends ActionFactory.ToggleLineNumbersAction {
 
@@ -702,43 +502,6 @@ public class NbEditorKit extends ExtKit {
         
     }
 
-    
-    /** Annotation implementation for bookmarks */
-    private static class BookmarkAnnotation extends Annotation {
-        
-        public String getAnnotationType() {
-            return BOOKMARK_ANNOTATION_TYPE;
-        }
-        
-        public String getShortDescription() {
-            return org.openide.util.NbBundle.getBundle (NbEditorKit.class).getString("Bookmark_Tooltip"); // NOI18N
-        }
-    }
-
-    /** Description of bookmark */
-    private static class Bookmark implements Bookmarks.Bookmark {
-        
-        private Annotation anno;
-        
-        public Bookmark(Annotation anno) {
-            this.anno = anno;
-        }
-        
-        public int getLine() {
-            return ((Line)anno.getAttachedAnnotatable()).getLineNumber();
-        }
-
-        public Annotation getAnno() {
-            return anno;
-        }
-        
-        public void remove() {
-            anno.detach();
-            anno = null;
-        }
-        
-    }
-    
     public static class NbGenerateGoToPopupAction extends BaseAction {
 
         public String getShortDescription() {

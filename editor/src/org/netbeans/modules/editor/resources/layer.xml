@@ -138,21 +138,11 @@ Microsystems, Inc. All Rights Reserved.
                         <file name="find-next"/>
                         <attr name="find-next/toggle-highlight-search" boolvalue="true"/>
                         <file name="toggle-highlight-search"/>
-                        <attr name="toggle-highlight-search/Separator2.instance" boolvalue="true"/>
-                        <file name="Separator2.instance">
+                        <attr name="toggle-highlight-search/Separator-after-toggle-highlight-search.instance" boolvalue="true"/>
+                        <file name="Separator-after-toggle-highlight-search.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         </file>
-                        <attr name="Separator2.instance/bookmark-toggle" boolvalue="true"/>
-                        <file name="bookmark-toggle"/>
-                        <attr name="bookmark-toggle/bookmark-next" boolvalue="true"/>
-                        <file name="bookmark-next"/>
-			<file name="bookmark-previous"/>
-			<attr name="bookmark-next/bookmark-previous" boolvalue="true"/>
-                        <attr name="bookmark-previous/Separator3.instance" boolvalue="true"/>
-                        <file name="Separator3.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        </file>
-                        <attr name="Separator3.instance/word-match-next" boolvalue="true"/>
+                        <attr name="Separator-after-toggle-highlight-search.instance/word-match-next" boolvalue="true"/>
                         <file name="word-match-next"/>
                         <attr name="word-match-next/word-match-prev" boolvalue="true"/>
                         <file name="word-match-prev"/>
@@ -174,15 +164,6 @@ Microsystems, Inc. All Rights Reserved.
                         <file name="stop-macro-recording"/>
                     </folder>
                 </folder>
-            </folder>
-        </folder>
-
-        <folder name="AnnotationTypes">
-            <file name="bookmark.xml" url="AnnotationTypes/bookmark.xml"/>
-            <folder name="BookmarkActions">
-              <file name="org-netbeans-modules-editor-NbEditorKit$NbToggleBookmarkAction.instance" />
-              <file name="org-netbeans-modules-editor-NbEditorKit$NbGotoNextBookmarkAction.instance" />
-              <file name="org-netbeans-modules-editor-NbEditorKit$NbGotoPreviousBookmarkAction.instance" />	      
             </folder>
         </folder>
 

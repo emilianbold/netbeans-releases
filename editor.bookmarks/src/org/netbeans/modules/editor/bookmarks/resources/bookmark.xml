@@ -1,0 +1,12 @@
+<!DOCTYPE type PUBLIC '-//NetBeans//DTD annotation type 1.0//EN' 'http://www.netbeans.org/dtds/annotation-type-1_0.dtd'> 
+
+<type 
+	name='editor-bookmark'
+	description_key='HINT_BOOKMARK'
+	localizing_bundle='org.netbeans.modules.editor.bookmarks.Bundle'
+	visible='true' 
+	glyph='nbresloc:/org/netbeans/modules/editor/bookmarks/resources/bookmarkglyph.gif'
+	type='line'
+        actions='BookmarkActions'/> 
+
+<!-- if will be highlight used again, use this color: highlight='0xB8E6E6' -->
