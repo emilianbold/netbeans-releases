@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
       <pathelement location="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar" />
       <pathelement location="${openide/io.dir}/${nb.modules.dir}/org-openide-io.jar"/>
       <pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/>
-      <pathelement location="${j2eeserver.dir}/${nb.modules/autoload.dir}/j2eeserver.jar"/>
+      <pathelement location="${j2eeserver.dir}/${nb.modules.dir}/org-netbeans-modules-j2eeserver.jar"/>
       <pathelement location="${xml/api.dir}/${nb.modules/autoload.dir}/xml-api.jar" />
       <pathelement location="${xml/core.dir}/${nb.modules/autoload.dir}/xml-core.jar" />
       <pathelement location="${xml/catalog.dir}/${nb.modules.dir}/xml-catalog.jar"/>
