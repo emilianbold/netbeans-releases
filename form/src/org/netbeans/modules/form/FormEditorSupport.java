@@ -64,18 +64,17 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   private static PropertyChangeListener editorFocusChangeListener = new PropertyChangeListener () {
     public void propertyChange (PropertyChangeEvent evt) {
       if (evt.getPropertyName ().equals (TopComponent.Registry.PROP_ACTIVATED)) {
-        System.out.println("listener - component activated");
-        String componentName = TopComponent.getRegistry ().getActivated ().getName ();
-        System.out.println("component name = "+componentName);
-        // is it a form ? => find formManager for it and focus it in ComponentInspector
-        for (java.util.Enumeration enum = openForms.keys (); enum.hasMoreElements ();) {
-          FormEditorSupport fes = (FormEditorSupport) enum.nextElement ();
-          String formName = fes.getFormObject ().getName ();
-          System.out.println("formName="+formName);
-          if (formName.equals (componentName)) {
-            System.out.println("this it the component !");
-            FormEditor.getComponentInspector().focusForm ((FormManager2) openForms.get (fes));
-            break;
+        TopComponent tc = TopComponent.getRegistry ().getActivated ();
+        if (tc != null) {
+          String componentName = tc.getName ();
+          // is it a form ? => find formManager for it and focus it in ComponentInspector
+          for (java.util.Enumeration enum = openForms.keys (); enum.hasMoreElements ();) {
+            FormEditorSupport fes = (FormEditorSupport) enum.nextElement ();
+            String formName = fes.getFormObject ().getName ();
+            if (formName.equals (componentName)) {
+              FormEditor.getComponentInspector().focusForm ((FormManager2) openForms.get (fes));
+              break;
+            }
           }
         }
       }
@@ -472,6 +471,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  42   Gandalf   1.41        1/9/00   Pavel Buzek     
  *  41   Gandalf   1.40        1/9/00   Pavel Buzek     #2918
  *  40   Gandalf   1.39        1/8/00   Ian Formanek    Fixes problem with 
  *       corrupted hierarchy in Component Inspector after (re)opening form
