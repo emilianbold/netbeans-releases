@@ -18,4 +18,13 @@
     <folder name="bug39210">
         <file name="inline.txt">MyContent</file>
     </folder>
+
+    <folder name="bug21204">
+        <file name="different-attr.txt">
+            <attr name="x" stringvalue="y" />
+        </file>
+        <file name="same-attr.txt">
+            <attr name="x" stringvalue="y" />
+        </file>
+    </folder>
 </filesystem>

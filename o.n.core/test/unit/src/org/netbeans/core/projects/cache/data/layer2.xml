@@ -15,4 +15,13 @@
     <folder name="bar">
         <file name="test5"/>
     </folder>
+
+    <folder name="bug21204">
+        <file name="different-attr.txt">
+            <attr name="z" stringvalue="y" />
+        </file>
+        <file name="same-attr.txt">
+            <attr name="x" stringvalue="different-value" />
+        </file>
+    </folder>
 </filesystem>
