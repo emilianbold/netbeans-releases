@@ -58,41 +58,16 @@ public class ClassPathTest extends NbTestCase {
         return dir;
     }
     
-    private void mountDiskRoot(File file) throws Exception {
-        File root = file;
-        while (root.getParentFile() != null) {
-            root = root.getParentFile();
-        }
-        LocalFileSystem lfs = new LocalFileSystem();
-        lfs.setRootDirectory(root);
-        Repository.getDefault().addFileSystem(lfs);
-    }    
-    
-    
-    private void umountDiskRoot (File file) throws Exception {
-        File root = file;
-        while (root.getParentFile() != null) {
-            root = root.getParentFile();
-        }
-        FileSystem[] fss = Repository.getDefault().toArray();
-        for (int i=0; i< fss.length; i++) {
-            File f = FileUtil.toFile(fss[i].getRoot());
-            if (root.equals(f)) {
-                Repository.getDefault().removeFileSystem(fss[i]);
-            }
-        }
-    }
+   
     
     protected void setUp() throws java.lang.Exception {
         super.setUp();
         File f = getBaseDir();
-        mountDiskRoot(f);
     }
     
     protected void tearDown() throws java.lang.Exception {
         super.tearDown();
         File f = getBaseDir();
-        umountDiskRoot(f);
     }        
     
     /**
@@ -107,9 +82,9 @@ public class ClassPathTest extends NbTestCase {
         File f3 = new File(f2, "Main.java");
         f3.createNewFile();
 
-        FileObject cpRoot = FileUtil.fromFile(f)[0];
-        FileObject cpItem = FileUtil.fromFile(f2)[0];
-        FileObject clazz = FileUtil.fromFile(f3)[0];
+        FileObject cpRoot = FileUtil.toFileObject(f);
+        FileObject cpItem = FileUtil.toFileObject(f2);
+        FileObject clazz = FileUtil.toFileObject(f3);
         ClassPath cp = ClassPathSupport.createClassPath(new FileObject[]{cpRoot});
         String pkg = cp.getResourceName(cpItem);
         assertEquals("org/netbeans/test", pkg);
@@ -153,8 +128,8 @@ public class ClassPathTest extends NbTestCase {
         File root_2 = new File (getBaseDir(),"root_2");
         root_2.mkdir();
         FileObject[] roots = new FileObject [] {
-            FileUtil.fromFile(root_1)[0],
-            FileUtil.fromFile(root_2)[0],
+            FileUtil.toFileObject(root_1),
+            FileUtil.toFileObject(root_2),
         };
         
         FileObject tmp = roots[0].createFolder("org");
@@ -205,8 +180,8 @@ public class ClassPathTest extends NbTestCase {
         root_1.mkdir();
         File root_2 = new File (getBaseDir(),"root_2");
         root_2.mkdir();
-        assertTrue (FileUtil.fromFile(root_1).length > 0);
-        assertTrue (FileUtil.fromFile(root_2).length > 0);
+        assertNotNull ("Can not find file",FileUtil.toFileObject(root_1));
+        assertNotNull ("Can not find file",FileUtil.toFileObject(root_2));
 
         TestClassPathImplementation impl = new TestClassPathImplementation();
 	ClassPath cp = ClassPathFactory.createClassPath (impl);

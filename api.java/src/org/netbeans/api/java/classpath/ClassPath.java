@@ -656,15 +656,14 @@ public final class ClassPath {
         }
 
         public void addRoot (URL url) {
-            if (!initialized) {
-                FileObject fo = URLMapper.findFileObject (url);
-                if (fo != null) {
-                    try {
-                        fo.getFileSystem().addFileChangeListener (this);
-                        initialized = true;
-                    } catch (FileStateInvalidException e) {
-                        ErrorManager.getDefault().notify (e);
-                    }
+            if (!isInitialized()) {                
+                FileSystem fs = getFileSystem ();
+                if (fs != null) {
+                    fs.addFileChangeListener (this);
+                    setInitialized(true);
+                }
+                else {                                                
+                    ErrorManager.getDefault().log (ErrorManager.ERROR,"Can not find file system, not able to listen on changes.");  //NOI18N
                 }
             }
             String path = url.getPath();
@@ -684,8 +683,11 @@ public final class ClassPath {
 
         public void removeAllRoots () {
             this.roots.clear();
-            Repository.getDefault().removeFileChangeListener (this);
-            initialized = false;
+            FileSystem fs = getFileSystem ();
+            if (fs != null) {
+                fs.removeFileChangeListener (this);
+            }
+            initialized = false; //Already synchronized
         }
 
         public void fileFolderCreated(FileEvent fe) {
@@ -711,12 +713,18 @@ public final class ClassPath {
         }
 
         public void run() {
-            if (initialized) {
-                Repository.getDefault().removeFileChangeListener (this);
+            if (isInitialized()) {
+                FileSystem fs = getFileSystem();
+                if (fs != null) {
+                    fs.removeFileChangeListener (this);
+                }
             }
         }
 
         private void processEvent (FileEvent fe) {
+            if (!isInitialized()) {
+                return; //Not interesting, cache already cleared
+            }
             String path = getPath (fe.getFile());
             if (path == null)
                 return;
@@ -751,6 +759,31 @@ public final class ClassPath {
                 return path;
             } catch (MalformedURLException mue) {
                 ErrorManager.getDefault().notify (mue);
+                return null;
+            }
+        }
+        
+        private synchronized boolean isInitialized () {
+            return this.initialized;
+        }
+        
+        private synchronized void setInitialized (boolean newValue) {
+            this.initialized = newValue;
+        }
+        
+        private static FileSystem getFileSystem () {
+            File[] roots = File.listRoots();
+            if (roots.length == 0) {
+                return null;
+            }
+            FileObject fo = FileUtil.toFileObject(roots[0]);
+            if (fo == null) {
+                return null;
+            }
+            try {
+                return fo.getFileSystem();
+            } catch (FileStateInvalidException e) {
+                ErrorManager.getDefault().notify (e);
                 return null;
             }
         }
