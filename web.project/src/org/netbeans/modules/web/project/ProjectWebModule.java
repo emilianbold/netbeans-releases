@@ -133,9 +133,14 @@ public final class ProjectWebModule extends J2eeModuleProvider
         FileObject docBase = getFileObject(WebProjectProperties.WEB_DOCBASE_DIR);
         if (docBase == null && !silent) {
             String relativePath = helper.getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
-            String path = (relativePath != null ? helper.getAntProjectHelper().resolvePath(relativePath) : ""); // NOI18N
-            showErrorMessage(NbBundle.getMessage(ProjectWebModule.class, "MSG_DocBase_Corrupted", //NOI18N
-                    project.getName(), path));
+            String path = (relativePath != null ? helper.getAntProjectHelper().resolvePath(relativePath) : null);
+            String errorMessage;
+            if (path != null) {
+                errorMessage = NbBundle.getMessage(ProjectWebModule.class, "MSG_DocBase_Corrupted", project.getName(), path);
+            } else {
+                errorMessage = NbBundle.getMessage(ProjectWebModule.class, "MSG_DocBase_Corrupted_Unknown", project.getName());
+            }
+            showErrorMessage(errorMessage);
         }
         return docBase;
     }
