@@ -14,6 +14,10 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="junit" default="netbeans" basedir=".">
 
+  <property name="nbm_alias" value="nb_ide"/>
+  <property name="homepage.base" value="netbeans.org"/>
+  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
 
   <property name="build.compiler.deprecation" value="off"/>
@@ -103,8 +107,8 @@ Microsystems, Inc. All Rights Reserved.
     <makenbm file="junit.nbm"
              topdir="."
              module="netbeans/modules/junit.jar"
-	     homepage="http://junit.netbeans.org/"
-	     distribution="http://www.netbeans.org/download/nbms/40/junit.nbm">
+	     homepage="http://junit.${homepage.base}/"
+	     distribution="http://${dist.base}/junit.nbm">
       <license name="junit-license.txt">
         <text>For the JUnit module itself:</text>
         <file location="${module.license.file}"/>
