@@ -346,9 +346,8 @@ public abstract class NbTopManager extends TopManager {
     */
     public void showUrl (URL url) {
         if (htmlViewer == null) htmlViewer = new NbBrowser ();
-        htmlViewer.open ();
-        htmlViewer.requestFocus ();
-        htmlViewer.setURL (url);
+
+	((NbBrowser)htmlViewer).showUrl (url);
     }
 
 
@@ -893,6 +892,30 @@ public abstract class NbTopManager extends TopManager {
             return super.closeLast ();
         }
 
+	/** Show URL in browser
+	 * @param url URL to be shown 
+	 */
+	private void showUrl (URL url) {
+	    if (Boolean.TRUE.equals (getClientProperty ("InternalBrowser"))) { // NOI18N
+		NbPresenter d = NbPresenter.currentModalDialog;
+		if (d != null) {
+                    HtmlBrowser htmlViewer = new HtmlBrowser ();
+                    htmlViewer.setURL (url);
+                    JDialog d1 = new JDialog (d);
+                    d1.getContentPane ().add ("Center", htmlViewer); // NOI18N
+                    // [PENDING] if nonmodal, better for the dialog to be reused...
+                    // (but better nonmodal than modal here)
+                    d1.setModal (false);
+                    d1.setTitle (Main.getString ("CTL_Help"));
+                    d1.pack ();
+                    d1.show ();
+                    return;
+		}
+	    }
+            open ();
+            requestFocus ();
+            setURL (url);
+	}
         /* Deserialize this top component.
         * @param in the stream to deserialize from
         */
