@@ -175,7 +175,7 @@ public class TargetServer {
         if (dtarget.getModule().getModuleType() == J2eeModule.WAR) {
             for (Iterator j=toRedeploy.iterator(); j.hasNext();) {
                 TargetModule deployed = (TargetModule) j.next();
-                File lastContentDir = new File(deployed.getContentDirectory());
+                File lastContentDir = (deployed.getContentDirectory() == null) ? null : new File(deployed.getContentDirectory());
 
                 // content dir or context root changes since last deploy
                 if ((currentContentDir != null && ! currentContentDir.equals(lastContentDir)) ||
@@ -256,7 +256,7 @@ public class TargetServer {
             ModuleType type = (ModuleType) dtarget.getModule().getModuleType();
             TargetModuleID[] ids = dm.getAvailableModules(type, targets);
             for (int i=0; i<ids.length; i++) {
-                availables.put(ids[i].getModuleID(), ids[i]);
+                availables.put(ids[i].toString(), ids[i]);
             }
         } catch (TargetException te) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, te);
