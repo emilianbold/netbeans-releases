@@ -1761,24 +1761,24 @@ public abstract class BaseBean implements Cloneable {
 			    && hasKey) {
 
 			    if (isBean) {
-				if (newValue != null) {
-				    prop.setValue(0, 
-						  ((BaseBean)newValue).clone());
-				} else {
-				    prop.setValue(0, newValue);
-				}
+                    if (newValue != null) {
+                        prop.setValue(0, 
+                                      ((BaseBean)newValue).clone());
+                    } else {
+                        prop.setValue(0, newValue);
+                    }
 			    }
 			    else {
-				//  We need to explicitely copy the attrs
-				this.copyProperty(prop, bean, 0, newValue);
+                    //  We need to explicitely copy the attrs
+                    this.copyProperty(prop, bean, 0, newValue);
 			    }
 			    
 			    if (DDLogFlags.debug) {
-				TraceLogger.put(TraceLogger.DEBUG,
-						TraceLogger.SVC_DD,
-						DDLogFlags.DBG_UBN, 5,
-						DDLogFlags.MERGENTFND,
-						"updating with new value");
+                    TraceLogger.put(TraceLogger.DEBUG,
+                                    TraceLogger.SVC_DD,
+                                    DDLogFlags.DBG_UBN, 5,
+                                    DDLogFlags.MERGENTFND,
+                                    "updating with new value");
 			    }
 			}
 			else
