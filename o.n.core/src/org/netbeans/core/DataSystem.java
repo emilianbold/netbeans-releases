@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -69,6 +69,15 @@ implements RepositoryListener, NewTemplateAction.Cookie {
     */
     private DataSystem(Children ch, DataFilter filter) {
         this (ch, NbTopManager.get ().getRepository (), filter);
+    }
+
+    // delegate Index cookie to Filesystems Settings for convenience
+    public Node.Cookie getCookie(Class clazz) {
+        if (clazz == Index.class) {
+            return TopManager.getDefault ().getPlaces().nodes().repositorySettings().getCookie(clazz);
+        } else {
+            return super.getCookie(clazz);
+        }
     }
 
     public HelpCtx getHelpCtx () {
@@ -134,6 +143,9 @@ implements RepositoryListener, NewTemplateAction.Cookie {
                    null,
 */
                    SystemAction.get (org.netbeans.core.actions.MountAction.class),
+                   null,
+                   // See getCookie override:
+                   SystemAction.get(org.openide.actions.ReorderAction.class),
                    null,
                    SystemAction.get (org.openide.actions.ToolsAction.class),
                    //SystemAction.get (org.openide.actions.PropertiesAction.class), // #12072
