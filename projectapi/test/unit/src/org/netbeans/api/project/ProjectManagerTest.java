@@ -31,6 +31,7 @@ import org.openide.util.lookup.Lookups;
  * and that unmodified projects can (incl. after a save)
  * - testIsProject
  * - testCallFindProjectWithinLoadProjectProhibited
+ * - testDeleteAndRecreateProject
  */
 
 /**

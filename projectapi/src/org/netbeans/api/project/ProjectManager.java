@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -25,7 +24,9 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
-import org.openide.ErrorManager;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -115,6 +116,11 @@ public final class ProjectManager {
     private final Map/*<Project,ProjectFactory>*/ proj2Factory = new WeakHashMap();
     
     /**
+     * Checks for deleted projects.
+     */
+    private final FileChangeListener projectDeletionListener = new ProjectDeletionListener();
+    
+    /**
      * The thread which is currently loading a project, if any.
      */
     private Thread loadingThread = null;
@@ -199,6 +205,7 @@ public final class ProjectManager {
                         Project p = createProject(projectDirectory);
                         synchronized (dir2Proj) {
                             dir2Proj.notifyAll();
+                            projectDirectory.addFileChangeListener(projectDeletionListener);
                             if (p != null) {
                                 dir2Proj.put(projectDirectory, new SoftReference(p));
                                 resetLP = true;
@@ -471,6 +478,21 @@ public final class ProjectManager {
         } catch (MutexException e) {
             throw (IOException)e.getException();
         }
+    }
+    
+    /**
+     * Removes cache entries for deleted projects.
+     */
+    private final class ProjectDeletionListener extends FileChangeAdapter {
+        
+        public ProjectDeletionListener() {}
+
+        public void fileDeleted(FileEvent fe) {
+            synchronized (dir2Proj) {
+                dir2Proj.remove(fe.getFile());
+            }
+        }
+        
     }
     
 }
