@@ -377,6 +377,7 @@ is divided into following sections:
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
                     <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
                         <fileset dir="${{build.classes.dir}}" xmlns="http://www.netbeans.org/ns/j2se-project/1"/>
+                        <!-- XXX should have a property serving as the excludes list -->
                     </jar>
                 </presetdef>
             </target>
