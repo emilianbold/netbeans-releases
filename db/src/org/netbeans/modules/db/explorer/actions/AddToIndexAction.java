@@ -83,7 +83,6 @@ public class AddToIndexAction extends DatabaseAction {
                     isUQ = !(Boolean.valueOf(val).booleanValue());
                 
                 rset.clear();                
-                break;
             }
             rs.close();
 
