@@ -45,8 +45,10 @@ import org.openide.util.WeakListener;
  * Does actual dirty job, search on the actual activated table and sets the results as highlighted text on particular cell.
  *
  * @author  Peter Zavadsky
+ * @author  Marian Petras
  */
-public class FindPerformer implements ActionPerformer, PropertyChangeListener {
+public class FindPerformer extends javax.swing.AbstractAction
+                           implements ActionPerformer, PropertyChangeListener {
 
     /** Table on which perform the search. */
     private JTable table;
@@ -229,6 +231,11 @@ public class FindPerformer implements ActionPerformer, PropertyChangeListener {
     /** Getter for highlight search flag. */
     public boolean isHighlightSearch() {
         return highlightSearch;
+    }
+
+    /* implements interface javax.swing.Action */
+    public void actionPerformed(java.awt.event.ActionEvent e) {
+        performAction(null);
     }
 
     // ActionPerformer implementation.
