@@ -56,6 +56,8 @@ public class BeansTemplates extends NbTestCase {
         JellyProperties.setJemmyDebugTimeouts();
         JellyProperties.setDefaults();
         sampleDir = mountSampledir();
+        MainFrame mf = MainFrame.getMainFrame();
+        mf.switchToGUIEditing();
     }
     
     public void tearDown() {       
@@ -98,7 +100,8 @@ public class BeansTemplates extends NbTestCase {
         JBWizard jbw = JBWizard.launch(JelloBundle.getString("org.netbeans.modules.beans.Bundle","Templates/Beans/Customizer.java"), sampleDir);
         jbw.setName(NAME_CUSTOMIZER);
         jbw.finish();
-        Editor editor = new Editor(NAME_CUSTOMIZER);      
+        Editor editor = new Editor();      
+        editor.find(NAME_CUSTOMIZER); 
         editor.select(1,10);
         editor.deleteSelectedText();
         ref(editor.getText());
@@ -126,18 +129,26 @@ public class BeansTemplates extends NbTestCase {
         explorer.switchToFilesystemsTab();       
         
         String userdir = System.getProperty("netbeans.user");        
-        String myObjects [] = {userdir+File.separator+"sampledir"+explorer.delim+NAME_JAVA_BEAN,
-                              userdir+File.separator+"sampledir"+explorer.delim+NAME_BEAN_INFO,
-                              userdir+File.separator+"sampledir"+explorer.delim+NAME_BEAN_INFO_NO_ICON,
-                              userdir+File.separator+"sampledir"+explorer.delim+NAME_CUSTOMIZER,
-                              userdir+File.separator+"sampledir"+explorer.delim+NAME_PROPERTY_EDITOR
-                            };        
-        for (int i=0;i<myObjects.length;i++) {
-            System.out.println("myObjects["+i+"] = "+myObjects[i]);
-            explorer.pushPopupMenu("Delete", myObjects[i]);
+            
+            explorer.pushPopupMenu("Delete", userdir+File.separator+"sampledir"+explorer.delim+NAME_JAVA_BEAN);
             new JelloYesNoDialog("Confirm Object Deletion").yes();
-        }                            
-        explorer.pushPopupMenu("Unmount Filesystem", userdir+File.separator+"sampledir");                            
+            new JelloSaveCancelDialog(JelloUtilities.getForteFrame(),"Question").save();
+
+            explorer.pushPopupMenu("Delete", userdir+File.separator+"sampledir"+explorer.delim+NAME_BEAN_INFO);
+            new JelloYesNoDialog("Confirm Object Deletion").yes();
+            
+            explorer.pushPopupMenu("Delete", userdir+File.separator+"sampledir"+explorer.delim+NAME_BEAN_INFO_NO_ICON);
+            new JelloYesNoDialog("Confirm Object Deletion").yes();
+            
+            explorer.pushPopupMenu("Delete", userdir+File.separator+"sampledir"+explorer.delim+NAME_CUSTOMIZER);
+            new JelloYesNoDialog("Confirm Object Deletion").yes();
+            new JelloSaveCancelDialog(JelloUtilities.getForteFrame(),"Question").save();
+
+            explorer.pushPopupMenu("Delete", userdir+File.separator+"sampledir"+explorer.delim+NAME_PROPERTY_EDITOR);
+            new JelloYesNoDialog("Confirm Object Deletion").yes();
+            new JelloSaveCancelDialog(JelloUtilities.getForteFrame(),"Question").save();
+
+            explorer.pushPopupMenu("Unmount Filesystem", userdir+File.separator+"sampledir");                            
     }
     
     
