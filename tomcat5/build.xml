@@ -12,7 +12,7 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="tomcatj2ee" default="netbeans" basedir=".">
+<project name="tomcat5" default="netbeans" basedir=".">
 <!-- 
   <property name="nbm_alias" value="nb_ide"/>
 -->
@@ -21,19 +21,17 @@ Microsystems, Inc. All Rights Reserved.
   <property name="license.file" value="../../nbbuild/standard-nbm-license.txt"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="nb_root" location="../.."/>
-  <property name="j2eeserver_root" location="../../j2eeserver"/>
-  <property name="j2eeserver_jars" location="${j2eeserver_root}/netbeans/modules/autoload"/>
   <property name="nbext" location="${nb_root}/nbbuild"/>
-  <property name="tomcat5_dir" location="src/org/netbeans/modules/tomcat/tomcat5"/>
+  <property name="tomcat5_dir" location="src/org/netbeans/modules/tomcat5"/>
 	
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nb_root}/nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nb_root}/nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nb_root}/nbbuild/nbantext.jar"/>
 
-  <!-- Check if it is neceseary to rebuild beans for Tomcat 4.0-->
+  <!-- Check if it is neceseary to rebuild beans for Tomcat 5-->
   <target name="dd2beans_init">
         <mkdir dir="${tomcat5_dir}/config"/>
-        <uptodate property="dd.generation.uptodate" targetfile="${tomcat5_dir}/config/TomcatConfig.java">
+        <uptodate property="dd.generation.uptodate" targetfile="${tomcat5_dir}/config/Parameter.java">
           <srcfiles dir="${tomcat5_dir}/resources"
                     includes="tomcat5_config.*"/>
         </uptodate>
@@ -54,7 +52,7 @@ Microsystems, Inc. All Rights Reserved.
         </classpath>
         <arg line= "-f ${tomcat5_dir}/resources/tomcat5_config.dtd" />
         <!--<arg line= "-mdd ${tomcat5_dir}/resources/tomcat5_config.mdd" />-->
-        <arg line= "-p org.netbeans.modules.tomcat.tomcat5.config" />
+        <arg line= "-p org.netbeans.modules.tomcat5.config" />
         <arg line= "-r src" />
       </java>
   </target>
@@ -64,13 +62,19 @@ Microsystems, Inc. All Rights Reserved.
       <classpath>
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
         <pathelement location="${nb_root}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
+        <pathelement location="${nb_root}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/>
+        <pathelement location="${nb_root}/openide/io/netbeans/modules/autoload/openide-io.jar"/>
         <pathelement path="${nb_root}/core/external/xml-apis-1.0b2.jar" />
         <pathelement location="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar"/>
         <pathelement location="${nb_root}/web/core/netbeans/modules/jsp.jar"/>
-        <pathelement location="${j2eeserver_jars}/j2eetools.jar"/>
-        <pathelement location="${j2eeserver_jars}/ext/jsr88javax.jar"/>
+        <pathelement location="${nb_root}/j2eeserver/netbeans/modules/autoload/j2eeserver.jar"/>
+        <pathelement location="${nb_root}/debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>
         <fileset dir="${nb_root}/openide/netbeans/lib">
           <include name="openide*.jar" />
+        </fileset>
+        <fileset dir="${nb_root}/core/external">
+          <include name="xml-apis*.jar"/>
+          <include name="xerces*.jar"/>
         </fileset>
       </classpath>
     </javac>

@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+
+    <folder name="Services">
+        <folder name="TomcatInstallations">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.tomcat.tomcat5.resources.Bundle"/>
+            <!-- Actually empty. Modules like bundled Tomcat can add custom installation -->
+        </folder>
+    </folder>
+    
+    <folder name="xml">
+        <folder name="entities">
+            <folder name="NetBeans_org_netbeans_modules_tomcat5">
+                <file name="DTD_XML_TomcatInstallations_1_0" url="nbres:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans org.netbeans.modules.tomcat5//DTD XML TomcatInstallations 1.0//EN"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="lookups">
+            <folder name="NetBeans_org_netbeans_modules_tomcat5">
+                <file name="DTD_XML_TomcatInstallations_1_0.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.api.settings.Factory.create"/>
+                    <attr name="settings.convertor" methodvalue="org.netbeans.api.settings.Factory.properties"/>
+                    <attr name="settings.instanceClass" stringvalue="org.netbeans.modules.tomcat5.Tomcat5Installation"/>
+                    <attr name="settings.instanceOf" stringvalue="org.netbeans.modules.tomcat5.Tomcat5Installation"/>
+                </file>
+            </folder>
+        </folder>
+        
+        <folder name="memory">
+            <folder name="org">
+                <folder name="netbeans">
+                    <folder name="modules">
+                        <folder name="tomcat5">
+                            <file name="Tomcat5Installation">
+                                <attr name="settings.providerPath"
+                                stringvalue="xml/lookups/NetBeans_org_netbeans_modules_tomcat5/DTD_XML_TomcatInstallations_1_0.instance"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+</filesystem>
