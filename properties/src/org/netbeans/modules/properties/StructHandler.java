@@ -99,9 +99,13 @@ public class StructHandler extends Object {
     /** When parser finishes its job, it's called this method to set new values.
      *
      * @param newPropStructure new properties structure
-     * @return properties strcuture which holds actual parsed info.
      */
-    private synchronized PropertiesStructure updatePropertiesStructure(PropertiesStructure newPropStructure) {
+    private synchronized void updatePropertiesStructure(PropertiesStructure newPropStructure) {
+        if(newPropStructure == null) {
+            propStructureSRef = new SoftReference(null);
+            return;
+        }
+        
         PropertiesStructure propStructure = (PropertiesStructure)propStructureSRef.get();
 
         if(propStructure == null) {
@@ -114,8 +118,6 @@ public class StructHandler extends Object {
             // Update calls notification methods according to changes.
             propStructure.update(newPropStructure);
         }
-
-        return propStructure;
     }
 
     /** Gets properties structure handled by this handler. */
