@@ -139,7 +139,7 @@ public class NbTopManager extends TopManager {
     }
     
     
-    if (htmlViewer == null) htmlViewer = new HtmlBrowser.BrowserComponent ();
+    if (htmlViewer == null) htmlViewer = new NbBrowser ();
     htmlViewer.open ();
     htmlViewer.requestFocus ();
     htmlViewer.setURL (url);
@@ -458,6 +458,25 @@ public class NbTopManager extends TopManager {
     change.removePropertyChangeListener (l);
   }
 
+  /**
+  * For externalization of HTMLBrowser.
+  */
+  private static class NbBrowser extends HtmlBrowser.BrowserComponent {
+  
+    /**
+    * For externalization.
+    */
+    public NbBrowser () {
+    }
+    
+    /* Deserialize this top component.
+    * @param in the stream to deserialize from
+    */
+    public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
+      super.readExternal (in);
+      htmlViewer = this;
+    }
+  }
 }
 
 
