@@ -93,6 +93,8 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListen
         ((WizardDescriptor)settings).putProperty ("WizardPanel_contentData", new String[] { // NOI18N
                 NbBundle.getBundle (TemplateChooserPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
                 NbBundle.getBundle (TemplateChooserPanel.class).getString ("LBL_TemplatesPanel_Dots")}); // NOI18N
+        // bugfix #44400: wizard title always changes
+        ((WizardDescriptor)settings).putProperty ("NewFileWizard_Title", null); // NOI18N
     }
 
     public void storeSettings(Object settings) {
