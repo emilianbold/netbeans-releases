@@ -6,11 +6,10 @@
 
 package Templates.Ant;
 
-// IMPORTANT! You may need to mount ant.jar before this class will
-// compile. So mount the JAR ant/lib/ant.jar (NOT modules/ant.jar)
-// from your IDE installation directory in your Filesystems before
-// continuing to ensure that it is in your classpath.
-// Or if building the task with Ant, use e.g.:
+// IMPORTANT! You need to compile this class against ant.jar. So add the
+// JAR ide4/ant/lib/ant.jar from your IDE installation directory (or any
+// other version of Ant you wish to use) to your classpath. Or if
+// writing your own build target, use e.g.:
 // <classpath>
 //     <pathelement location="${ant.home}/lib/ant.jar"/>
 // </classpath>
