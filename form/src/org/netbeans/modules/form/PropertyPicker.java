@@ -184,7 +184,7 @@ public class PropertyPicker extends javax.swing.JDialog {
 
       propertiesScrollPane.setViewportView (propertyList);
 
-    insidePanel.add (propertiesScrollPane, "Center");
+    insidePanel.add (propertiesScrollPane, "Center"); // NOI18N
 
       jPanel1 = new javax.swing.JPanel ();
       jPanel1.setLayout (new java.awt.BorderLayout (8, 0));
@@ -192,7 +192,7 @@ public class PropertyPicker extends javax.swing.JDialog {
         componentLabel = new javax.swing.JLabel ();
         componentLabel.setText ("Component:");
 
-      jPanel1.add (componentLabel, "West");
+      jPanel1.add (componentLabel, "West"); // NOI18N
 
         componentsCombo = new javax.swing.JComboBox ();
         componentsCombo.addItemListener (new java.awt.event.ItemListener () {
@@ -202,12 +202,12 @@ public class PropertyPicker extends javax.swing.JDialog {
           }
         );
 
-      jPanel1.add (componentsCombo, "Center");
+      jPanel1.add (componentsCombo, "Center"); // NOI18N
 
-    insidePanel.add (jPanel1, "North");
+    insidePanel.add (jPanel1, "North"); // NOI18N
 
 
-    getContentPane ().add (insidePanel, "Center");
+    getContentPane ().add (insidePanel, "Center"); // NOI18N
 
     buttonsPanel = new javax.swing.JPanel ();
     buttonsPanel.setLayout (new java.awt.BorderLayout ());
@@ -215,7 +215,7 @@ public class PropertyPicker extends javax.swing.JDialog {
       leftButtonsPanel = new javax.swing.JPanel ();
       leftButtonsPanel.setLayout (new java.awt.FlowLayout (0, 5, 5));
 
-    buttonsPanel.add (leftButtonsPanel, "West");
+    buttonsPanel.add (leftButtonsPanel, "West"); // NOI18N
 
       rightButtonsPanel = new javax.swing.JPanel ();
       rightButtonsPanel.setLayout (new java.awt.FlowLayout (2, 5, 5));
@@ -242,10 +242,10 @@ public class PropertyPicker extends javax.swing.JDialog {
 
       rightButtonsPanel.add (cancelButton);
 
-    buttonsPanel.add (rightButtonsPanel, "East");
+    buttonsPanel.add (rightButtonsPanel, "East"); // NOI18N
 
 
-    getContentPane ().add (buttonsPanel, "South");
+    getContentPane ().add (buttonsPanel, "South"); // NOI18N
 
   }//GEN-END:initComponents
 
@@ -313,6 +313,7 @@ public class PropertyPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  16   Gandalf   1.15        1/5/00   Ian Formanek    NOI18N
  *  15   Gandalf   1.14        11/27/99 Patrik Knakal   
  *  14   Gandalf   1.13        11/25/99 Ian Formanek    Uses Utilities module
  *  13   Gandalf   1.12        11/5/99  Jesse Glick     Context help jumbo 

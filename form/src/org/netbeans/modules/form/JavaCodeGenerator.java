@@ -45,18 +45,18 @@ import java.util.Iterator;
 public class JavaCodeGenerator extends CodeGenerator {
   private static Object GEN_LOCK = new Object ();
 
-  protected static final String AUX_VARIABLE_MODIFIER = "JavaCodeGenerator_VariableModifier";
-  protected static final String AUX_SERIALIZE_TO = "JavaCodeGenerator_SerializeTo";
-  protected static final String AUX_CODE_GENERATION = "JavaCodeGenerator_CodeGeneration";
-  protected static final String AUX_CREATE_CODE_PRE = "JavaCodeGenerator_CreateCodePre";
-  protected static final String AUX_CREATE_CODE_POST = "JavaCodeGenerator_CreateCodePost";
-  protected static final String AUX_CREATE_CODE_CUSTOM = "JavaCodeGenerator_CreateCodeCustom";
-  protected static final String AUX_INIT_CODE_PRE = "JavaCodeGenerator_InitCodePre";
-  protected static final String AUX_INIT_CODE_POST = "JavaCodeGenerator_InitCodePost";
+  protected static final String AUX_VARIABLE_MODIFIER = "JavaCodeGenerator_VariableModifier"; // NOI18N
+  protected static final String AUX_SERIALIZE_TO = "JavaCodeGenerator_SerializeTo"; // NOI18N
+  protected static final String AUX_CODE_GENERATION = "JavaCodeGenerator_CodeGeneration"; // NOI18N
+  protected static final String AUX_CREATE_CODE_PRE = "JavaCodeGenerator_CreateCodePre"; // NOI18N
+  protected static final String AUX_CREATE_CODE_POST = "JavaCodeGenerator_CreateCodePost"; // NOI18N
+  protected static final String AUX_CREATE_CODE_CUSTOM = "JavaCodeGenerator_CreateCodeCustom"; // NOI18N
+  protected static final String AUX_INIT_CODE_PRE = "JavaCodeGenerator_InitCodePre"; // NOI18N
+  protected static final String AUX_INIT_CODE_POST = "JavaCodeGenerator_InitCodePost"; // NOI18N
 
-  protected static final String SECTION_INIT_COMPONENTS = "initComponents";
-  protected static final String SECTION_VARIABLES = "variables";
-  protected static final String SECTION_EVENT_PREFIX = "event_";
+  protected static final String SECTION_INIT_COMPONENTS = "initComponents"; // NOI18N
+  protected static final String SECTION_VARIABLES = "variables"; // NOI18N
+  protected static final String SECTION_EVENT_PREFIX = "event_"; // NOI18N
     
   public static final Integer VALUE_GENERATE_CODE = new Integer (0);
   public static final Integer VALUE_SERIALIZE = new Integer (1);
@@ -70,21 +70,21 @@ public class JavaCodeGenerator extends CodeGenerator {
   private JavaEditor.SimpleSection initComponentsSection;
   private JavaEditor.SimpleSection variablesSection;
 
-  private static final String INIT_COMPONENTS_HEADER = "private void initComponents () {\n";
-  private static final String INIT_COMPONENTS_FOOTER = "}\n";
+  private static final String INIT_COMPONENTS_HEADER = "private void initComponents () {\n"; // NOI18N
+  private static final String INIT_COMPONENTS_FOOTER = "}\n"; // NOI18N
   private static final String VARIABLES_HEADER = FormEditor.getFormBundle ().getString ("MSG_VariablesBegin");
   private static final String VARIABLES_FOOTER = FormEditor.getFormBundle ().getString ("MSG_VariablesEnd");
 
   private static final String oneIndent = "  "; // [PENDING - indentation engine]
 
   /** The prefix for event handler sections */
-  private static final String EVT_SECTION_PREFIX = "event_";
+  private static final String EVT_SECTION_PREFIX = "event_"; // NOI18N
 
   // FINALIZE DEBUG METHOD
   public void finalize () throws Throwable {
     super.finalize ();
     if (System.getProperty ("netbeans.debug.form.finalize") != null) {
-      System.out.println("finalized: "+this.getClass ().getName ()+", instance: "+this);
+      System.out.println("finalized: "+this.getClass ().getName ()+", instance: "+this); // NOI18N
     }
   } // FINALIZE DEBUG METHOD
   
@@ -102,7 +102,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     variablesSection = s.findSimpleSection (SECTION_VARIABLES);
 
     if ((initComponentsSection == null) || (variablesSection == null)) {
-      System.out.println("ERROR: Cannot initialize guarded sections... code generation is disabled.");
+      System.out.println("ERROR: Cannot initialize guarded sections... code generation is disabled."); // NOI18N
       errorInitializing = true;
     }
 
@@ -123,7 +123,7 @@ public class JavaCodeGenerator extends CodeGenerator {
         }
         String oldValue = component.getName ();
         component.setName ((String)value);
-        component.getNodeReference ().firePropertyChangeHelper ("variableName", oldValue, value);
+        component.getNodeReference ().firePropertyChangeHelper ("variableName", oldValue, value); // NOI18N
       }
 
       public Object getValue () {
@@ -228,7 +228,7 @@ public class JavaCodeGenerator extends CodeGenerator {
           public Object getValue () {
             Object value = component.getAuxValue (AUX_CREATE_CODE_PRE);
             if (value == null) {
-              value = "";
+              value = ""; // NOI18N
             }
             return value;
           }          
@@ -247,7 +247,7 @@ public class JavaCodeGenerator extends CodeGenerator {
           public Object getValue () {
             Object value = component.getAuxValue (AUX_CREATE_CODE_POST);
             if (value == null) {
-              value = "";
+              value = ""; // NOI18N
             }
             return value;
           }
@@ -266,7 +266,7 @@ public class JavaCodeGenerator extends CodeGenerator {
           public Object getValue () {
             Object value = component.getAuxValue (AUX_INIT_CODE_PRE);
             if (value == null) {
-              value = "";
+              value = ""; // NOI18N
             }
             return value;
           }          
@@ -285,7 +285,7 @@ public class JavaCodeGenerator extends CodeGenerator {
           public Object getValue () {
             Object value = component.getAuxValue (AUX_INIT_CODE_POST);
             if (value == null) {
-              value = "";
+              value = ""; // NOI18N
             }
             return value;
           }
@@ -331,7 +331,7 @@ public class JavaCodeGenerator extends CodeGenerator {
             public Object getValue () {
               Object value = component.getAuxValue (AUX_CREATE_CODE_CUSTOM);
               if (value == null) {
-                value = "";
+                value = ""; // NOI18N
               }
               return value;
             }          
@@ -350,13 +350,13 @@ public class JavaCodeGenerator extends CodeGenerator {
 // -----------------------------------------------------------------------------------------------
 // Private Methods
   private String getDefaultSerializedName (RADComponent component) {
-    return component.getFormManager ().getFormObject ().getName () + "_" + component.getName ();
+    return component.getFormManager ().getFormObject ().getName () + "_" + component.getName (); // NOI18N
   }
 
   private void regenerateInitializer () {
     if (errorInitializing) return;
     try {
-      IndentEngine engine = IndentEngine.find ("text/x-java");
+      IndentEngine engine = IndentEngine.find ("text/x-java"); // NOI18N
       AWTIndentStringWriter initCodeBuffer = new AWTIndentStringWriter ();
       Writer initCodeWriter = engine.createWriter (formManager.getFormEditorSupport ().getDocument (), initComponentsSection.getBegin ().getOffset (), initCodeBuffer);
   
@@ -383,12 +383,12 @@ public class JavaCodeGenerator extends CodeGenerator {
         if (menuComp != null) {
           String menuText = null;
           if (visualForm.getFormInfo () instanceof JMenuBarContainer) {
-             menuText = "setJMenuBar (";
+             menuText = "setJMenuBar ("; // NOI18N
           } else if (visualForm.getFormInfo () instanceof MenuBarContainer) {
-             menuText = "setMenuBar (";
+             menuText = "setMenuBar ("; // NOI18N
           }
           if (menuText != null) {
-             menuText = menuText + menuComp + ");\n\n";
+             menuText = menuText + menuComp + ");\n\n"; // NOI18N
              initCodeWriter.write (menuText);
           }
         }
@@ -403,36 +403,36 @@ public class JavaCodeGenerator extends CodeGenerator {
         Dimension formSize = visualForm.getFormSize ();
         Point formPosition = visualForm.getFormPosition ();
   
-        String sizeText = "";
+        String sizeText = ""; // NOI18N
   
         switch (formPolicy) {
           case RADVisualFormContainer.GEN_PACK: 
-              sizeText = "pack ();\n";
+              sizeText = "pack ();\n"; // NOI18N
               break;
           case RADVisualFormContainer.GEN_BOUNDS: 
               if (genCenter) {
                 StringBuffer sizeBuffer = new StringBuffer ();
                 if (genSize) {
-                  sizeBuffer.append ("pack ();\n");
-                  sizeBuffer.append ("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n");
-                  sizeBuffer.append ("java.awt.Dimension dialogSize = getSize();\n");
-                  sizeBuffer.append ("setSize (new java.awt.Dimension ("+formSize.width + ", " + formSize.height + "));\n");
-                  sizeBuffer.append ("setLocation((screenSize.width-"+formSize.width+")/2, (screenSize.height-"+formSize.height+")/2);\n");
+                  sizeBuffer.append ("pack ();\n"); // NOI18N
+                  sizeBuffer.append ("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
+                  sizeBuffer.append ("java.awt.Dimension dialogSize = getSize();\n"); // NOI18N
+                  sizeBuffer.append ("setSize (new java.awt.Dimension ("+formSize.width + ", " + formSize.height + "));\n"); // NOI18N
+                  sizeBuffer.append ("setLocation((screenSize.width-"+formSize.width+")/2, (screenSize.height-"+formSize.height+")/2);\n"); // NOI18N
                 } else {
-                  sizeBuffer.append ("pack ();\n");
-                  sizeBuffer.append ("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n");
-                  sizeBuffer.append ("java.awt.Dimension dialogSize = getSize();\n");
-                  sizeBuffer.append ("setLocation((screenSize.width-dialogSize.width)/2, (screenSize.height-dialogSize.height)/2);\n");
+                  sizeBuffer.append ("pack ();\n"); // NOI18N
+                  sizeBuffer.append ("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
+                  sizeBuffer.append ("java.awt.Dimension dialogSize = getSize();\n"); // NOI18N
+                  sizeBuffer.append ("setLocation((screenSize.width-dialogSize.width)/2, (screenSize.height-dialogSize.height)/2);\n"); // NOI18N
                 }
   
                 sizeText = sizeBuffer.toString ();
   
               } else if (genPosition && genSize) { // both size and position
-                sizeText = "setBounds ("+formPosition.x + ", " + formPosition.y +", " + formSize.width + ", " + formSize.height + ");\n";
+                sizeText = "setBounds ("+formPosition.x + ", " + formPosition.y +", " + formSize.width + ", " + formSize.height + ");\n"; // NOI18N
               } else if (genPosition) { // position only
-                sizeText = "setLocation (new java.awt.Point ("+formPosition.x + ", " + formPosition.y + "));\n";
+                sizeText = "setLocation (new java.awt.Point ("+formPosition.x + ", " + formPosition.y + "));\n"; // NOI18N
               } else if (genSize) { // size only
-                sizeText = "setSize (new java.awt.Dimension ("+formSize.width + ", " + formSize.height + "));\n";
+                sizeText = "setSize (new java.awt.Dimension ("+formSize.width + ", " + formSize.height + "));\n"; // NOI18N
               }
               break;
         }
@@ -458,20 +458,20 @@ public class JavaCodeGenerator extends CodeGenerator {
 
   private void regenerateVariables () {
     if (errorInitializing) return;
-    IndentEngine engine = IndentEngine.find ("text/x-java");
+    IndentEngine engine = IndentEngine.find ("text/x-java"); // NOI18N
     StringWriter variablesBuffer = new StringWriter ();
     Writer variablesWriter = engine.createWriter (formManager.getFormEditorSupport ().getDocument (), variablesSection.getBegin ().getOffset (), variablesBuffer);
 
     try {
       variablesWriter.write (VARIABLES_HEADER);
-      variablesWriter.write ("\n");
+      variablesWriter.write ("\n"); // NOI18N
       RADForm form = formManager.getRADForm ();
   
       addVariables (formManager.getNonVisualsContainer (), variablesWriter);
       addVariables (form.getFormContainer (), variablesWriter);
       
       variablesWriter.write (VARIABLES_FOOTER);
-      variablesWriter.write ("\n");
+      variablesWriter.write ("\n"); // NOI18N
       variablesWriter.close ();
       synchronized (GEN_LOCK) {
         String originalText = variablesSection.getText ();
@@ -506,14 +506,14 @@ public class JavaCodeGenerator extends CodeGenerator {
       RADComponent[] children = ((ComponentContainer)comp).getSubBeans ();
       for (int i = 0; i < children.length; i++) {
         if ((comp instanceof FormContainer) || (!FormEditor.getFormSettings ().getIndentAWTHierarchy ())) {
-          initCodeWriter.write ("\n");
+          initCodeWriter.write ("\n"); // NOI18N
           // do not indent for top-level children
           addInitCode (children[i], initCodeWriter, initCodeBuffer, level);
 
           if (comp instanceof RADVisualContainer) {
             if (comp instanceof RADVisualFormContainer) {
               // no indent for top-level container
-              initCodeWriter.write ("\n");
+              initCodeWriter.write ("\n"); // NOI18N
               generateComponentAddCode (children[i], (RADVisualContainer)comp, initCodeWriter);
             } else {
               generateComponentAddCode (children[i], (RADVisualContainer)comp, initCodeWriter);
@@ -523,13 +523,13 @@ public class JavaCodeGenerator extends CodeGenerator {
         } else {
           initCodeWriter.flush ();
           initCodeBuffer.setIndentLevel (level + 1, oneIndent);
-          initCodeWriter.write ("\n");
+          initCodeWriter.write ("\n"); // NOI18N
           addInitCode (children[i], initCodeWriter, initCodeBuffer, level + 1);
 
           if (comp instanceof RADVisualContainer) {
             if (comp instanceof RADVisualFormContainer) {
               // no indent for top-level container
-              initCodeWriter.write ("\n");
+              initCodeWriter.write ("\n"); // NOI18N
               generateComponentAddCode (children[i], (RADVisualContainer)comp, initCodeWriter);
             } else {
               generateComponentAddCode (children[i], (RADVisualContainer)comp, initCodeWriter);
@@ -543,7 +543,7 @@ public class JavaCodeGenerator extends CodeGenerator {
         }
       }
     }
-    initCodeWriter.write ("\n");
+    initCodeWriter.write ("\n"); // NOI18N
   }
   
   private void generateComponentCreate (RADComponent comp, Writer initCodeWriter) throws IOException {
@@ -555,9 +555,9 @@ public class JavaCodeGenerator extends CodeGenerator {
     String preCode = (String) comp.getAuxValue (AUX_CREATE_CODE_PRE);
     String postCode = (String) comp.getAuxValue (AUX_CREATE_CODE_POST);
     String customCreateCode = (String) comp.getAuxValue (AUX_CREATE_CODE_CUSTOM);
-    if ((preCode != null) && (!preCode.equals(""))) {
+    if ((preCode != null) && (!preCode.equals(""))) { // NOI18N
       initCodeWriter.write (preCode);
-      initCodeWriter.write ("\n");
+      initCodeWriter.write ("\n"); // NOI18N
     }
     Integer generationType = (Integer)comp.getAuxValue (AUX_CODE_GENERATION);
     if (comp.hasHiddenState () || ((generationType != null) && (generationType.equals (VALUE_SERIALIZE)))) {
@@ -566,23 +566,23 @@ public class JavaCodeGenerator extends CodeGenerator {
         serializeTo = getDefaultSerializedName (comp);
         comp.setAuxValue (AUX_SERIALIZE_TO, serializeTo);
       }
-      initCodeWriter.write ("try {\n");
+      initCodeWriter.write ("try {\n"); // NOI18N
       initCodeWriter.write (comp.getName ());
-      initCodeWriter.write (" = (");
+      initCodeWriter.write (" = ("); // NOI18N
       initCodeWriter.write (comp.getBeanClass ().getName ());
-      initCodeWriter.write (")java.beans.Beans.instantiate (getClass ().getClassLoader (), \"");
+      initCodeWriter.write (")java.beans.Beans.instantiate (getClass ().getClassLoader (), \""); // NOI18N
       // write package name
       String packageName = formManager.getFormObject ().getPrimaryFile ().getParent ().getPackageName ('.');
-      if (!"".equals (packageName)) {
-        initCodeWriter.write (packageName + ".");
+      if (!"".equals (packageName)) { // NOI18N
+        initCodeWriter.write (packageName + "."); // NOI18N
       }
       initCodeWriter.write (serializeTo);
-      initCodeWriter.write ("\");\n");
-      initCodeWriter.write ("} catch (ClassNotFoundException e) {\n");
-      initCodeWriter.write ("e.printStackTrace ();\n");
-      initCodeWriter.write ("} catch (java.io.IOException e) {\n");
-      initCodeWriter.write ("e.printStackTrace ();\n");
-      initCodeWriter.write ("}\n");
+      initCodeWriter.write ("\");\n"); // NOI18N
+      initCodeWriter.write ("} catch (ClassNotFoundException e) {\n"); // NOI18N
+      initCodeWriter.write ("e.printStackTrace ();\n"); // NOI18N
+      initCodeWriter.write ("} catch (java.io.IOException e) {\n"); // NOI18N
+      initCodeWriter.write ("e.printStackTrace ();\n"); // NOI18N
+      initCodeWriter.write ("}\n"); // NOI18N
     } else {
       Class[] exceptions=null;
       try {
@@ -592,43 +592,43 @@ public class JavaCodeGenerator extends CodeGenerator {
         e.printStackTrace();
       }
       if (exceptions.length > 0) {
-        initCodeWriter.write ("try {\n");
+        initCodeWriter.write ("try {\n"); // NOI18N
       }
 
-      if ((customCreateCode != null) && (!customCreateCode.equals(""))) {
-        initCodeWriter.write (comp.getName () + " = ");
+      if ((customCreateCode != null) && (!customCreateCode.equals(""))) { // NOI18N
+        initCodeWriter.write (comp.getName () + " = "); // NOI18N
         initCodeWriter.write (customCreateCode);
       } else {
-        initCodeWriter.write (comp.getName () + " = ");
-        initCodeWriter.write ("new ");
-        initCodeWriter.write (comp.getBeanClass ().getName () + " ();");
+        initCodeWriter.write (comp.getName () + " = "); // NOI18N
+        initCodeWriter.write ("new "); // NOI18N
+        initCodeWriter.write (comp.getBeanClass ().getName () + " ();"); // NOI18N
       }
-      initCodeWriter.write ("\n");
+      initCodeWriter.write ("\n"); // NOI18N
 
       int varCount = 1;
       // add the catch for all checked exceptions
       for (int j = 0; j < exceptions.length; j++) {
-        initCodeWriter.write ("} catch (");
+        initCodeWriter.write ("} catch ("); // NOI18N
         initCodeWriter.write (exceptions[j].getName ());
-        initCodeWriter.write (" ");
-        String excName = "e"+varCount;
+        initCodeWriter.write (" "); // NOI18N
+        String excName = "e"+varCount; // NOI18N
         varCount++;
         while (formManager.getVariablesPool ().isReserved (excName)) {
-          excName = "e"+varCount;
+          excName = "e"+varCount; // NOI18N
           varCount++;
         }
         initCodeWriter.write (excName);
-        initCodeWriter.write (") {\n");
+        initCodeWriter.write (") {\n"); // NOI18N
         initCodeWriter.write (excName);
-        initCodeWriter.write (".printStackTrace ();\n");
+        initCodeWriter.write (".printStackTrace ();\n"); // NOI18N
         if (j == exceptions.length - 1) {
-          initCodeWriter.write ("}\n");
+          initCodeWriter.write ("}\n"); // NOI18N
         }
       }
     }
-    if ((postCode != null) && (!postCode.equals(""))) {
+    if ((postCode != null) && (!postCode.equals(""))) { // NOI18N
       initCodeWriter.write (postCode);
-      initCodeWriter.write ("\n");
+      initCodeWriter.write ("\n"); // NOI18N
     }
   }
   
@@ -645,9 +645,9 @@ public class JavaCodeGenerator extends CodeGenerator {
     Object genType = comp.getAuxValue (AUX_CODE_GENERATION);
     String preCode = (String) comp.getAuxValue (AUX_INIT_CODE_PRE);
     String postCode = (String) comp.getAuxValue (AUX_INIT_CODE_POST);
-    if ((preCode != null) && (!preCode.equals(""))) {
+    if ((preCode != null) && (!preCode.equals(""))) { // NOI18N
       initCodeWriter.write (preCode);
-      initCodeWriter.write ("\n");
+      initCodeWriter.write ("\n"); // NOI18N
     }
     if ((genType == null) || VALUE_GENERATE_CODE.equals (genType)) {
       // not serialized ==>> save
@@ -662,9 +662,9 @@ public class JavaCodeGenerator extends CodeGenerator {
         }
       }
     }
-    if ((postCode != null) && (!postCode.equals(""))) {
+    if ((postCode != null) && (!postCode.equals(""))) { // NOI18N
       initCodeWriter.write (postCode);
-      initCodeWriter.write ("\n");
+      initCodeWriter.write ("\n"); // NOI18N
     }
   }
 
@@ -677,12 +677,12 @@ public class JavaCodeGenerator extends CodeGenerator {
     if ((comp instanceof RADMenuItemComponent) && (((RADMenuItemComponent)comp).getMenuItemType () == RADMenuItemComponent.T_SEPARATOR)) {
       // treat AWT Separator specially - it is not a component
       initCodeWriter.write (container.getName ());
-      initCodeWriter.write (".addSeparator ();");
+      initCodeWriter.write (".addSeparator ();"); // NOI18N
     } else {
       initCodeWriter.write (container.getName ());
-      initCodeWriter.write (".add (");
+      initCodeWriter.write (".add ("); // NOI18N
       initCodeWriter.write (comp.getName ());
-      initCodeWriter.write (");");
+      initCodeWriter.write (");"); // NOI18N
     }
   }
 
@@ -721,12 +721,12 @@ public class JavaCodeGenerator extends CodeGenerator {
             ed.setValue (value);
 
             javaInitializationString = ed.getJavaInitializationString ();
-            if ("???".equals (javaInitializationString)) {
+            if ("???".equals (javaInitializationString)) { // NOI18N
               javaInitializationString = null; // cannot generate code for this property
             }
           } else {
             // null values are generated separately, as most property editors cannot cope with nulls
-            javaInitializationString = "null";
+            javaInitializationString = "null"; // NOI18N
           }
         }
       } catch (Exception e) {
@@ -741,7 +741,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     // 1. pre initialization code
     if (preCode != null) {
       initCodeWriter.write (preCode);
-      if (!preCode.endsWith ("\n")) initCodeWriter.write ("\n");
+      if (!preCode.endsWith ("\n")) initCodeWriter.write ("\n"); // NOI18N
     }
 
     // 2. property setter code
@@ -749,35 +749,35 @@ public class JavaCodeGenerator extends CodeGenerator {
       // if the setter throws checked exceptions, we must generate try/catch block around it.
       Class[] exceptions = writeMethod.getExceptionTypes ();
       if (exceptions.length > 0) {
-        initCodeWriter.write ("try {\n");
+        initCodeWriter.write ("try {\n"); // NOI18N
       }
             
       initCodeWriter.write (getVariableGenString (comp, false));
       initCodeWriter.write (writeMethod.getName ());
-      initCodeWriter.write (" (");
+      initCodeWriter.write (" ("); // NOI18N
   
       initCodeWriter.write (javaInitializationString);
       
-      initCodeWriter.write (");\n");
+      initCodeWriter.write (");\n"); // NOI18N
   
       int varCount = 1;
       // add the catch for all checked exceptions
       for (int j = 0; j < exceptions.length; j++) {
-        initCodeWriter.write ("} catch (");
+        initCodeWriter.write ("} catch ("); // NOI18N
         initCodeWriter.write (exceptions[j].getName ());
-        initCodeWriter.write (" ");
-        String excName = "e"+varCount;
+        initCodeWriter.write (" "); // NOI18N
+        String excName = "e"+varCount; // NOI18N
         varCount++;
         while (formManager.getVariablesPool ().isReserved (excName)) {
-          excName = "e"+varCount;
+          excName = "e"+varCount; // NOI18N
           varCount++;
         }
         initCodeWriter.write (excName);
-        initCodeWriter.write (") {\n");
+        initCodeWriter.write (") {\n"); // NOI18N
         initCodeWriter.write (excName);
-        initCodeWriter.write (".printStackTrace ();\n");
+        initCodeWriter.write (".printStackTrace ();\n"); // NOI18N
         if (j == exceptions.length - 1) {
-          initCodeWriter.write ("}\n");
+          initCodeWriter.write ("}\n"); // NOI18N
         }
       }
     }
@@ -785,7 +785,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     // 3. post initialization code
     if (postCode != null) {
       initCodeWriter.write (postCode);
-      if (!postCode.endsWith ("\n")) initCodeWriter.write ("\n");
+      if (!postCode.endsWith ("\n")) initCodeWriter.write ("\n"); // NOI18N
     }
   }
           
@@ -836,14 +836,14 @@ public class JavaCodeGenerator extends CodeGenerator {
           unicastEvent = true;
         
         if (unicastEvent) {
-          initCodeWriter.write ("try {\n");
+          initCodeWriter.write ("try {\n"); // NOI18N
         }
         
         // beginning of the addXXXListener
         initCodeWriter.write(variablePrefix);
         initCodeWriter.write(eventSetDesc.getAddListenerMethod().getName());
-        initCodeWriter.write(" (new ");
-        initCodeWriter.write(classToGenerate.getName() + " () {\n");
+        initCodeWriter.write(" (new "); // NOI18N
+        initCodeWriter.write(classToGenerate.getName() + " () {\n"); // NOI18N
 
         // listener innerclass' methods - indented one more indent to the right
         for (int j = 0; j < events.length; j++) {
@@ -862,57 +862,57 @@ public class JavaCodeGenerator extends CodeGenerator {
           else {
             varNames = new String[evtParams.length];
             for (int k = 0; k < evtParams.length; k ++)
-              varNames[k] = "param" + k;
+              varNames[k] = "param" + k; // NOI18N
           }
 
           // generate the listener's method
           initCodeWriter.write (getMethodHeaderText (evtMethod, varNames));
-          initCodeWriter.write (" {\n");
+          initCodeWriter.write (" {\n"); // NOI18N
 
           if (events[j].getHandlers ().size () > 0) {
             // generate the call to the handlers
             for (Iterator it = events[j].getHandlers ().iterator (); it.hasNext();) {
               EventsManager.EventHandler handler = (EventsManager.EventHandler) it.next ();
               initCodeWriter.write (handler.getName ());
-              initCodeWriter.write (" (");
+              initCodeWriter.write (" ("); // NOI18N
               for (int k = 0; k < varNames.length; k++) {
                 initCodeWriter.write (varNames[k]);
                 if (k != varNames.length - 1)
-                 initCodeWriter.write (", ");
+                 initCodeWriter.write (", "); // NOI18N
               }
-              initCodeWriter.write (");");
+              initCodeWriter.write (");"); // NOI18N
               if (it.hasNext())
-                initCodeWriter.write ("\n");
+                initCodeWriter.write ("\n"); // NOI18N
             }
           }
-          initCodeWriter.write ("\n");
-          initCodeWriter.write ("}\n");
+          initCodeWriter.write ("\n"); // NOI18N
+          initCodeWriter.write ("}\n"); // NOI18N
         }
 
         // end of the innerclass
-        initCodeWriter.write ("}\n");
-        initCodeWriter.write (");\n");
+        initCodeWriter.write ("}\n"); // NOI18N
+        initCodeWriter.write (");\n"); // NOI18N
 
 
         // if the event is unicast, generate the catch for TooManyListenersException
         if (unicastEvent) {
-          initCodeWriter.write ("} catch (java.util.TooManyListenersException ");
-          String varName = "e";
+          initCodeWriter.write ("} catch (java.util.TooManyListenersException "); // NOI18N
+          String varName = "e"; // NOI18N
           if (formManager.getVariablesPool ().isReserved (varName)) {
             int varCount = 1;
-            varName = "e1";
+            varName = "e1"; // NOI18N
             while (true) {
               if (!(formManager.getVariablesPool ().isReserved (varName)))
                 break;             
-              varName = "e"+varCount;
+              varName = "e"+varCount; // NOI18N
             }
           }
            
           initCodeWriter.write (varName);
-          initCodeWriter.write (") {\n");
+          initCodeWriter.write (") {\n"); // NOI18N
           initCodeWriter.write (varName);
-          initCodeWriter.write (".printStackTrace ();\n");
-          initCodeWriter.write ("}\n");          
+          initCodeWriter.write (".printStackTrace ();\n"); // NOI18N
+          initCodeWriter.write ("}\n"); // NOI18N
         }
       }
     }
@@ -929,11 +929,11 @@ public class JavaCodeGenerator extends CodeGenerator {
       Integer m = (Integer) children[i].getAuxValue (AUX_VARIABLE_MODIFIER);
       int modifiers = (m != null) ? m.intValue() : FormEditor.getFormSettings ().getVariablesModifier ();
       variablesWriter.write (java.lang.reflect.Modifier.toString (modifiers));
-      variablesWriter.write (" ");
+      variablesWriter.write (" "); // NOI18N
       variablesWriter.write (children[i].getBeanClass ().getName ());
-      variablesWriter.write (" ");
+      variablesWriter.write (" "); // NOI18N
       variablesWriter.write (children[i].getName ());
-      variablesWriter.write (";\n");
+      variablesWriter.write (";\n"); // NOI18N
       if (children[i] instanceof ComponentContainer) {
         addVariables ((ComponentContainer)children[i], variablesWriter);
       }
@@ -945,10 +945,10 @@ public class JavaCodeGenerator extends CodeGenerator {
       if (containerCode) {
         return (((FormContainer)comp).getFormInfo ().getContainerGenName ());
       } else {
-        return "";
+        return ""; // NOI18N
       }
     } else {
-      return comp.getName () + ".";
+      return comp.getName () + "."; // NOI18N
     }
   }
     
@@ -1020,25 +1020,25 @@ public class JavaCodeGenerator extends CodeGenerator {
 
   private String getEventHandlerHeader (String handlerName, String[] paramTypes) {
     StringBuffer buf = new StringBuffer ();
-    buf.append ("private void ");
+    buf.append ("private void "); // NOI18N
     buf.append (handlerName);
-    buf.append (" (");
+    buf.append (" ("); // NOI18N
 
     // create variable names
     String[] varNames = new String [paramTypes.length];
 
     if (paramTypes.length == 1)
-      varNames [0] = paramTypes [0] + " " + new FormLoaderSettings ().getEventVariableName();
+      varNames [0] = paramTypes [0] + " " + new FormLoaderSettings ().getEventVariableName(); // NOI18N
     else
       for (int i = 0; i < paramTypes.length; i ++)
-        varNames [i] = paramTypes [0] + " param" + i;
+        varNames [i] = paramTypes [0] + " param" + i; // NOI18N
 
     for (int i = 0; i < paramTypes.length; i++) {
       buf.append (varNames[i]);
       if (i != paramTypes.length - 1)
-        buf.append (", ");
+        buf.append (", "); // NOI18N
       else
-        buf.append (") {\n");
+        buf.append (") {\n"); // NOI18N
     }
     return buf.toString ();
   }
@@ -1125,31 +1125,31 @@ public class JavaCodeGenerator extends CodeGenerator {
   */
   private String getMethodHeaderText (Method m, String[] paramNames) {
     StringBuffer buf = new StringBuffer() ;
-    buf.append ("public ");
+    buf.append ("public "); // NOI18N
     buf.append (m.getReturnType().getName());
-    buf.append (" ");
+    buf.append (" "); // NOI18N
     buf.append (m.getName());
-    buf.append (" (");
+    buf.append (" ("); // NOI18N
 
     Class[] params = m.getParameterTypes();
     for (int i = 0; i < params.length; i++) {
       buf.append (params[i].getName());
-      buf.append (" ");
+      buf.append (" "); // NOI18N
       buf.append (paramNames[i]);
       if (i != params.length - 1)
-        buf.append (", ");
+        buf.append (", "); // NOI18N
     }
-    buf.append (")");
+    buf.append (")"); // NOI18N
 
     Class[] exceptions = m.getExceptionTypes();
     if (exceptions.length != 0) {
-      buf.append ("\n");
-      buf.append ("throws ");
+      buf.append ("\n"); // NOI18N
+      buf.append ("throws "); // NOI18N
     }
     for (int i = 0; i < exceptions.length; i++) {
       buf.append (exceptions[i].getName());
       if (i != exceptions.length - 1)
-        buf.append (", ");
+        buf.append (", "); // NOI18N
     }
 
     return buf.toString();
@@ -1199,9 +1199,9 @@ public class JavaCodeGenerator extends CodeGenerator {
         if (serializeTo != null) {
           try {
             FileObject fo = formManager.getFormObject ().getPrimaryFile ();
-            FileObject serFile = fo.getParent ().getFileObject (serializeTo, "ser");
+            FileObject serFile = fo.getParent ().getFileObject (serializeTo, "ser"); // NOI18N
             if (serFile == null) {
-              serFile = fo.getParent ().createData (serializeTo, "ser");
+              serFile = fo.getParent ().createData (serializeTo, "ser"); // NOI18N
             }
             if (serFile != null) {
               FileLock lock = null;
@@ -1335,7 +1335,7 @@ public class JavaCodeGenerator extends CodeGenerator {
       if (level == 0) {
         currentIndent = null;
       } else {
-        currentIndent = "";
+        currentIndent = ""; // NOI18N
         for (int i = 0; i < level; i++) {
           currentIndent = currentIndent + indentString;
         }
@@ -1347,7 +1347,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     */
     public void write(int c) {
       if ((currentIndent != null) && (c == (int)'\n')) {
-        super.write ("\n" + currentIndent);
+        super.write ("\n" + currentIndent); // NOI18N
       } else {
         super.write (c);
       }
@@ -1363,7 +1363,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     public void write(char cbuf[], int off, int len) {
       if (currentIndent != null) {
         String str = new String (cbuf, off, len);
-        str = Utilities.replaceString (str, "\n", "\n"+currentIndent);
+        str = Utilities.replaceString (str, "\n", "\n"+currentIndent); // NOI18N
         char[] newBuf = str.toCharArray ();
         super.write (newBuf, 0, newBuf.length);
       } else {
@@ -1375,7 +1375,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     * Write a string.
     */
     public void write(String str) {
-      if (currentIndent != null) str = Utilities.replaceString (str, "\n", "\n"+currentIndent);
+      if (currentIndent != null) str = Utilities.replaceString (str, "\n", "\n"+currentIndent); // NOI18N
       super.write (str);
     }
     
@@ -1387,7 +1387,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     * @param  len  Number of characters to write
     */
     public void write(String str, int off, int len)  {
-      if (currentIndent != null) str = Utilities.replaceString (str, "\n", "\n"+currentIndent);
+      if (currentIndent != null) str = Utilities.replaceString (str, "\n", "\n"+currentIndent); // NOI18N
       super.write (str, off, len);
     }
   }
@@ -1454,6 +1454,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  62   Gandalf   1.61        1/5/00   Ian Formanek    NOI18N
  *  61   Gandalf   1.60        12/16/99 Pavel Buzek     #3612
  *  60   Gandalf   1.59        12/13/99 Pavel Buzek     
  *  59   Gandalf   1.58        11/25/99 Pavel Buzek     support for multiple 

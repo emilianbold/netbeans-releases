@@ -29,48 +29,48 @@ public class FormLoaderSettings extends SystemOption {
   static final long serialVersionUID = 8949624818164732719L;
 
   /** Property name of the workspace property */
-  public static final String PROP_WORKSPACE = "workspace";
+  public static final String PROP_WORKSPACE = "workspace"; // NOI18N
   /** Property name of the indentAWTHierarchy property */
-  public static final String PROP_INDENT_AWT_HIERARCHY = "indentAWTHierarchy";
+  public static final String PROP_INDENT_AWT_HIERARCHY = "indentAWTHierarchy"; // NOI18N
   /** Property name of the sortEventSets property */
-  public static final String PROP_SORT_EVENT_SETS = "sortEventSets";
+  public static final String PROP_SORT_EVENT_SETS = "sortEventSets"; // NOI18N
   /** Property name of the eventVariableName property */
-  public static final String PROP_EVENT_VARIABLE_NAME = "eventVariableName";
+  public static final String PROP_EVENT_VARIABLE_NAME = "eventVariableName"; // NOI18N
   /** Property name of the shortBeanNames property */
-  public static final String PROP_SHORT_BEAN_NAMES = "shortBeanNames";
+  public static final String PROP_SHORT_BEAN_NAMES = "shortBeanNames"; // NOI18N
   /** Property name of the selectionBorderSize property */
-  public static final String PROP_SELECTION_BORDER_SIZE = "selectionBorderSize";
+  public static final String PROP_SELECTION_BORDER_SIZE = "selectionBorderSize"; // NOI18N
   /** Property name of the selectionBorderColor property */
-  public static final String PROP_SELECTION_BORDER_COLOR = "selectionBorderColor";
+  public static final String PROP_SELECTION_BORDER_COLOR = "selectionBorderColor"; // NOI18N
   /** Property name of the connectionBorderColor property */
-  public static final String PROP_CONNECTION_BORDER_COLOR = "connectionBorderColor";
+  public static final String PROP_CONNECTION_BORDER_COLOR = "connectionBorderColor"; // NOI18N
   /** Property name of the dragBorderColor property */
-  public static final String PROP_DRAG_BORDER_COLOR = "dragBorderColor";
+  public static final String PROP_DRAG_BORDER_COLOR = "dragBorderColor"; // NOI18N
   /** Property name of the showGrid property */
-  public static final String PROP_SHOW_GRID = "showGrid";
+  public static final String PROP_SHOW_GRID = "showGrid"; // NOI18N
   /** Property name of the gridX property */
-  public static final String PROP_GRID_X = "gridX";
+  public static final String PROP_GRID_X = "gridX"; // NOI18N
   /** Property name of the gridY property */
-  public static final String PROP_GRID_Y = "gridY";
+  public static final String PROP_GRID_Y = "gridY"; // NOI18N
   /** Property name of the applyGridToPosition property */
-  public static final String PROP_APPLY_GRID_TO_POSITION = "applyGridToPosition";
+  public static final String PROP_APPLY_GRID_TO_POSITION = "applyGridToPosition"; // NOI18N
   /** Property name of the applyGridToSize property */
-  public static final String PROP_APPLY_GRID_TO_SIZE = "applyGridToSize";
+  public static final String PROP_APPLY_GRID_TO_SIZE = "applyGridToSize"; // NOI18N
   /** Property name of the variablesModifier property */
-  public static final String PROP_VARIABLES_MODIFIER = "variablesModifier";
+  public static final String PROP_VARIABLES_MODIFIER = "variablesModifier"; // NOI18N
   /** Property name of the displayWritableOnly property */
-  public static final String PROP_DISPLAY_WRITABLE_ONLY = "displayWritableOnly";
+  public static final String PROP_DISPLAY_WRITABLE_ONLY = "displayWritableOnly"; // NOI18N
 
   /** Property name of the editorSearchPath property */
-  public static final String PROP_EDITOR_SEARCH_PATH = "editorSearchPath";
+  public static final String PROP_EDITOR_SEARCH_PATH = "editorSearchPath"; // NOI18N
   /** Property name of the registeredEditors property */
-  public static final String PROP_REGISTERED_EDITORS = "registeredEditors";
+  public static final String PROP_REGISTERED_EDITORS = "registeredEditors"; // NOI18N
 
   /** outputLevel property name */
-  public static final String PROP_OUTPUT_LEVEL = "outputLevel";
+  public static final String PROP_OUTPUT_LEVEL = "outputLevel"; // NOI18N
 
   /** Property name of the nullLayout property */
-  public static final String PROP_NULL_LAYOUT = "nullLayout";
+  public static final String PROP_NULL_LAYOUT = "nullLayout"; // NOI18N
 
   /** Minimum output detail level */
   public static final int OUTPUT_MINIMUM = 0;
@@ -94,7 +94,7 @@ public class FormLoaderSettings extends SystemOption {
   */
   private static boolean sortEventSets = true;
   /** The name of the Event variable generated in the event handlers. */
-  private static String eventVariableName = "evt";
+  private static String eventVariableName = "evt"; // NOI18N
   /** If true, the names of beans in ComponentPalette are shown without
   * the package names.
   * If false, fully qualified name is used.
@@ -128,14 +128,14 @@ public class FormLoaderSettings extends SystemOption {
   private static String [] editorSearchPath;
   /** Array of items [Class Name, Editor1, Editor2, ...] */
   private static String [][] registeredEditors = new String [][] {
-    { "byte", "sun.beans.editors.ByteEditor" },
-    { "short", "sun.beans.editors.ShortEditor" },
-    { "integer", "sun.beans.editors.IntEditor" },
-    { "long" ,"sun.beans.editors.LongEditor" },
-    { "boolean", "sun.beans.editors.BoolEditor" },
-    { "float", "sun.beans.editors.FloatEditor" },
-    { "double", "sun.beans.editors.DoubleEditor" },
-    { String[].class.getName (), "com.netbeans.developer.editors.StringArrayEditor.class"},
+    { "byte", "sun.beans.editors.ByteEditor" }, // NOI18N
+    { "short", "sun.beans.editors.ShortEditor" }, // NOI18N
+    { "integer", "sun.beans.editors.IntEditor" }, // NOI18N
+    { "long" ,"sun.beans.editors.LongEditor" }, // NOI18N
+    { "boolean", "sun.beans.editors.BoolEditor" }, // NOI18N
+    { "float", "sun.beans.editors.FloatEditor" }, // NOI18N
+    { "double", "sun.beans.editors.DoubleEditor" }, // NOI18N
+    { String[].class.getName (), "com.netbeans.developer.editors.StringArrayEditor.class"}, // NOI18N
   };
 
   private static int outputLevel = OUTPUT_NORMAL;
@@ -154,7 +154,7 @@ public class FormLoaderSettings extends SystemOption {
     String[] defaultPath = java.beans.PropertyEditorManager.getEditorSearchPath ();
     editorSearchPath = new String[defaultPath.length + 1];
     System.arraycopy (defaultPath, 0, editorSearchPath, 0, defaultPath.length);
-    editorSearchPath[editorSearchPath.length-1] = "com.netbeans.developer.explorer.propertysheet.editors";
+    editorSearchPath[editorSearchPath.length-1] = "com.netbeans.developer.explorer.propertysheet.editors"; // NOI18N
   }
   
 // ------------------------------------------
@@ -463,6 +463,7 @@ public class FormLoaderSettings extends SystemOption {
 
 /*
  * Log
+ *  18   Gandalf   1.17        1/5/00   Ian Formanek    NOI18N
  *  17   Gandalf   1.16        12/8/99  Pavel Buzek     "workspace" property 
  *       added (workspace where forms are opened)
  *  16   Gandalf   1.15        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

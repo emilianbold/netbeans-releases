@@ -60,14 +60,14 @@ final public class FormPropertyEditorManager extends Object {
   private static String getTypeName (Class type) {
     String typeName = type.getName ();
     if (type.isPrimitive ()) {
-      if (Byte.TYPE.equals (type)) typeName = "byte";
-      else if (Short.TYPE.equals (type)) typeName = "short";
-      else if (Integer.TYPE.equals (type)) typeName = "integer";
-      else if (Long.TYPE.equals (type)) typeName = "long";
-      else if (Boolean.TYPE.equals (type)) typeName = "boolean";
-      else if (Float.TYPE.equals (type)) typeName = "float";
-      else if (Double.TYPE.equals (type)) typeName = "double";
-      else if (Character.TYPE.equals (type)) typeName = "char";
+      if (Byte.TYPE.equals (type)) typeName = "byte"; // NOI18N
+      else if (Short.TYPE.equals (type)) typeName = "short"; // NOI18N
+      else if (Integer.TYPE.equals (type)) typeName = "integer"; // NOI18N
+      else if (Long.TYPE.equals (type)) typeName = "long"; // NOI18N
+      else if (Boolean.TYPE.equals (type)) typeName = "boolean"; // NOI18N
+      else if (Float.TYPE.equals (type)) typeName = "float"; // NOI18N
+      else if (Double.TYPE.equals (type)) typeName = "double"; // NOI18N
+      else if (Character.TYPE.equals (type)) typeName = "char"; // NOI18N
     }
     return typeName;
   }
@@ -83,7 +83,7 @@ final public class FormPropertyEditorManager extends Object {
     String typeName = getTypeName (type);
 
     // 1. try adding "Editor" to the class name.
-    String editorName = type.getName() + "Editor";
+    String editorName = type.getName() + "Editor"; // NOI18N
     try {
       editorsList.add (Class.forName (editorName, true, TopManager.getDefault ().currentClassLoader ()));
     } catch (Exception e) {
@@ -98,7 +98,7 @@ final public class FormPropertyEditorManager extends Object {
       editorName = editorName.substring(editorName.indexOf('.') + 1);
     }
     for (int i = 0; i < searchPath.length; i++) {
-      String name = searchPath[i] + "." + editorName + "Editor";
+      String name = searchPath[i] + "." + editorName + "Editor"; // NOI18N
       try {
         Class editorClass = Class.forName (name, true, TopManager.getDefault ().currentClassLoader ());
         editorsList.add (editorClass);
@@ -171,6 +171,7 @@ final public class FormPropertyEditorManager extends Object {
 
 /*
  * Log
+ *  12   Gandalf   1.11        1/5/00   Ian Formanek    NOI18N
  *  11   Gandalf   1.10        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  10   Gandalf   1.9         9/24/99  Ian Formanek    Fixed char primitive 

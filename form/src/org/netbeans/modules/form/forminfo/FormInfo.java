@@ -65,7 +65,7 @@ public abstract class FormInfo {
   * @see #getTopContainer
   */
   public String getContainerGenName () {
-    return "";
+    return ""; // NOI18N
   }
   
   /** Allows the FormInfo to provide specific synthetic properties for the form component 
@@ -83,7 +83,7 @@ public abstract class FormInfo {
   public void finalize () throws Throwable {
     super.finalize ();
     if (System.getProperty ("netbeans.debug.form.finalize") != null) {
-      System.out.println("finalized: "+this.getClass ().getName ()+", instance: "+this);
+      System.out.println("finalized: "+this.getClass ().getName ()+", instance: "+this); // NOI18N
     }
   } // FINALIZE DEBUG METHOD
 
@@ -91,6 +91,7 @@ public abstract class FormInfo {
 
 /*
  * Log
+ *  8    Gandalf   1.7         1/5/00   Ian Formanek    NOI18N
  *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  6    Gandalf   1.5         7/9/99   Ian Formanek    Menu editor improvements

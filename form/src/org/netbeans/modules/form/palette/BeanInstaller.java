@@ -52,13 +52,13 @@ public final class BeanInstaller extends Object {
 
   /** Initialize static fields */
   static {
-    hasFocusBorder = new LineBorder(UIManager.getColor("List.focusCellHighlight"));
+    hasFocusBorder = new LineBorder(UIManager.getColor("List.focusCellHighlight")); // NOI18N
     noFocusBorder = new EmptyBorder(1, 1, 1, 1);
     lastDirectory = null;
   }
 
   /** Extension of jar archive where to find module */
-  static String JAR_EXT = ".jar";
+  static String JAR_EXT = ".jar"; // NOI18N
 
   //==============================================================================
   // Installing new beans - user action.
@@ -94,7 +94,7 @@ public final class BeanInstaller extends Object {
           true,
           null
         );
-        desc.setHelpCtx (new HelpCtx (BeanInstaller.class.getName () + ".installBean"));
+        desc.setHelpCtx (new HelpCtx (BeanInstaller.class.getName () + ".installBean")); // NOI18N
 
         TopManager.getDefault ().createDialog (desc).show ();
         if (desc.getValue () == NotifyDescriptor.OK_OPTION) {
@@ -138,41 +138,41 @@ public final class BeanInstaller extends Object {
     Iterator it = entries.keySet().iterator();
     while (it.hasNext()) {
       String key = (String) it.next();
-      String value = ((Attributes) entries.get(key)).getValue("Java-Bean");
+      String value = ((Attributes) entries.get(key)).getValue("Java-Bean"); // NOI18N
 //System.out.println ("Key: >"+key+"<");
 //System.out.println ("Value: >"+value+"<");
-      if ((value != null) && value.equalsIgnoreCase("True")) {
-        if (key.endsWith(".class")) {
+      if ((value != null) && value.equalsIgnoreCase("True")) { // NOI18N
+        if (key.endsWith(".class")) { // NOI18N
           String wholeName = key.substring(0, key.length() - 6).replace('/', '.').replace('\\', '.');
           int lastDot = wholeName.lastIndexOf('.');
           String pack;
           String name;
           if (lastDot == -1) {
-            pack = "";
+            pack = ""; // NOI18N
             name = wholeName;
           }
           else {
             pack = wholeName.substring(0, lastDot);
             name = wholeName.substring(lastDot + 1);
           }
-          FileObject fo = jar.find(pack, name, "class");
+          FileObject fo = jar.find(pack, name, "class"); // NOI18N
           if (fo != null) {
             foundJB.add(fo);
           }
-        } else if (key.endsWith(".ser")) {
+        } else if (key.endsWith(".ser")) { // NOI18N
           String wholeName = key.substring(0, key.length() - 4).replace('/', '.').replace('\\', '.');
           int lastDot = wholeName.lastIndexOf('.');
           String pack;
           String name;
           if (lastDot == -1) {
-            pack = "";
+            pack = ""; // NOI18N
             name = wholeName;
           }
           else {
             pack = wholeName.substring(0, lastDot);
             name = wholeName.substring(lastDot + 1);
           }
-          FileObject fo = jar.find(pack, name, "ser");
+          FileObject fo = jar.find(pack, name, "ser"); // NOI18N
 //System.out.println ("Find fo: >"+fo+"<"+ ", : "+pack+", "+name);
           if (fo != null) {
             foundJB.add(fo);
@@ -220,7 +220,7 @@ public final class BeanInstaller extends Object {
       Object obj = it.next();
       String name = null;
       if (obj instanceof FileObject) {
-        if ("class".equals (((FileObject)obj).getExt ())) {
+        if ("class".equals (((FileObject)obj).getExt ())) { // NOI18N
           name = ((FileObject)obj).getPackageName('.');
           if (name != null) createInstance(category, name, null);
         } else {
@@ -267,12 +267,12 @@ public final class BeanInstaller extends Object {
     String fileName = formatName(className);
     FileLock lock = null;
     try {
-      if (folder.getFileObject(fileName+".instance") == null) {
-        FileObject fo = folder.createData(fileName, "instance");
+      if (folder.getFileObject(fileName+".instance") == null) { // NOI18N
+        FileObject fo = folder.createData(fileName, "instance"); // NOI18N
         if (iconName != null) {
           lock = fo.lock ();
           java.io.OutputStream os = fo.getOutputStream (lock);
-          String ic = "icon="+iconName;
+          String ic = "icon="+iconName; // NOI18N
           os.write (ic.getBytes ());
         }
         DataObject dobj = DataObject.find (fo);
@@ -312,7 +312,7 @@ public final class BeanInstaller extends Object {
       true,
       null
     );
-    desc.setHelpCtx (new HelpCtx (BeanInstaller.class.getName () + ".selectPaletteCategory"));
+    desc.setHelpCtx (new HelpCtx (BeanInstaller.class.getName () + ".selectPaletteCategory")); // NOI18N
 
     TopManager.getDefault ().createDialog (desc).show ();
     if (desc.getValue () == NotifyDescriptor.OK_OPTION) {
@@ -450,7 +450,7 @@ public final class BeanInstaller extends Object {
     FileInputStream fis2 = null;
     Properties alreadyInstalled = new Properties();
     try {
-      alreadyInstalled.load(fis2 = new FileInputStream(localBase + "installed.properties"));
+      alreadyInstalled.load(fis2 = new FileInputStream(localBase + "installed.properties")); // NOI18N
     } catch (IOException e) {
       /* ignore - the file just does not exist */
     } finally {
@@ -461,7 +461,7 @@ public final class BeanInstaller extends Object {
     Properties details = new Properties();
     FileInputStream fis = null;
     try {
-      details.load(fis = new FileInputStream(localBase + "beans.properties"));
+      details.load(fis = new FileInputStream(localBase + "beans.properties")); // NOI18N
     } catch (IOException e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
       // ignore in this case
@@ -474,7 +474,7 @@ public final class BeanInstaller extends Object {
       FileInputStream fis3 = null;
       try {
         Properties globalDetails = new Properties ();
-        globalDetails.load(fis3 = new FileInputStream(globalBase + "beans.properties"));
+        globalDetails.load(fis3 = new FileInputStream(globalBase + "beans.properties")); // NOI18N
         for (Enumeration e = globalDetails.propertyNames (); e.hasMoreElements (); ) {
           String propName = (String)e.nextElement ();
           if (details.get (propName) == null) { // if not present in the local list, copy the <name, value> to it
@@ -497,7 +497,7 @@ public final class BeanInstaller extends Object {
           String withoutExt = list[i].getName ().substring(0, list[i].getName ().length() - JAR_EXT.length());
           String categoryName = details.getProperty(withoutExt, withoutExt);
           if (autoLoadJar(list[i], categoryName, details.getProperty(withoutExt + ".beans"))) {
-            alreadyInstalled.put(list[i].getName (), "true");
+            alreadyInstalled.put(list[i].getName (), "true"); // NOI18N
           }
         } else {
           // ensure, that the filesystems are present
@@ -509,7 +509,7 @@ public final class BeanInstaller extends Object {
     if (modified) {
       FileOutputStream fos = null;
       try {
-        fos = new FileOutputStream(localBase + "installed.properties");
+        fos = new FileOutputStream(localBase + "installed.properties"); // NOI18N
         alreadyInstalled.store(fos, "Installed Archives");
       } catch (IOException e) {
         if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
@@ -545,20 +545,20 @@ public final class BeanInstaller extends Object {
       LinkedList list = findJavaBeans(jar);
       if (selection != null) {
         Vector dest = new Vector();
-        StringTokenizer tok = new StringTokenizer(selection, ", ", false);
+        StringTokenizer tok = new StringTokenizer(selection, ", ", false); // NOI18N
         while (tok.hasMoreTokens()) {
           String token = tok.nextToken();
           String clName = token;
-          String clPack = "";
+          String clPack = ""; // NOI18N
           
           int lastDot = token.lastIndexOf('.');
-          if ((lastDot != -1) && (!token.endsWith("."))) {
+          if ((lastDot != -1) && (!token.endsWith("."))) { // NOI18N
             clName = token.substring(lastDot + 1);
             clPack = token.substring(0, lastDot);
           }
-          FileObject fo = jar.find(clPack, clName, "class");
+          FileObject fo = jar.find(clPack, clName, "class"); // NOI18N
           if (fo == null) { // if not found, try ser
-            fo = jar.find(clPack, clName, "ser");
+            fo = jar.find(clPack, clName, "ser"); // NOI18N
           }
           if (fo != null) {
             Iterator it = list.iterator ();
@@ -616,7 +616,7 @@ public final class BeanInstaller extends Object {
       layout.setHgap(5);
       setLayout(layout);
       add(new JLabel(bundle.getString("CTL_PaletteCategories")), "North");
-      add(new JScrollPane (list), "Center");
+      add(new JScrollPane (list), "Center"); // NOI18N
       setBorder(new EmptyBorder(5, 5, 5, 5));
     }
 
@@ -660,7 +660,7 @@ static final long serialVersionUID =-6038414545631774041L;
       layout.setHgap(5);
       setLayout(layout);
       add(new JLabel(bundle.getString("CTL_SelectBeans")), "North");
-      add(new JScrollPane (list), "Center");
+      add(new JScrollPane (list), "Center"); // NOI18N
       setBorder(new EmptyBorder(5, 5, 5, 5));
     }
 
@@ -701,8 +701,8 @@ static final long serialVersionUID =-6038414545631774041L;
 
       setText(fo.getName());
       if (isSelected){
-        setBackground(UIManager.getColor("List.selectionBackground"));
-        setForeground(UIManager.getColor("List.selectionForeground"));
+        setBackground(UIManager.getColor("List.selectionBackground")); // NOI18N
+        setForeground(UIManager.getColor("List.selectionForeground")); // NOI18N
       }
       else {
         setBackground(list.getBackground());
@@ -716,6 +716,7 @@ static final long serialVersionUID =-6038414545631774041L;
 
 /*
  * Log
+ *  26   Gandalf   1.25        1/5/00   Ian Formanek    NOI18N
  *  25   Gandalf   1.24        11/5/99  Jaroslav Tulach ComponentPalette.getDefault
  *        is back.
  *  24   Gandalf   1.23        11/4/99  Jaroslav Tulach Component palette is 

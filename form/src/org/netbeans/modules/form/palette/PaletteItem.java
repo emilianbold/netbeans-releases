@@ -29,7 +29,7 @@ public class PaletteItem implements java.io.Serializable {
   /** generated Serialized Version UID */
 //  static final long serialVersionUID = -2098259549820241091L;
 
-  public final static String ATTR_IS_CONTAINER = "isContainer";
+  public final static String ATTR_IS_CONTAINER = "isContainer"; // NOI18N
 // -----------------------------------------------------------------------------
 // Global class variables
 
@@ -93,9 +93,9 @@ public class PaletteItem implements java.io.Serializable {
   
   public String getDisplayName () {
     String name = getName ();
-    if (name.endsWith ("BorderInfo")) {
+    if (name.endsWith ("BorderInfo")) { // NOI18N
       return name.substring (0, name.length () - 4); // remove the "Info" from BorderInfo classes
-    } else if (name.endsWith ("Layout") && name.startsWith ("Design")) {
+    } else if (name.endsWith ("Layout") && name.startsWith ("Design")) { // NOI18N
       return name.substring (6); // remove the "Design" from DesignXXXLayout classes
     }
     return name;
@@ -177,6 +177,7 @@ public class PaletteItem implements java.io.Serializable {
 
 /*
  * Log
+ *  15   Gandalf   1.14        1/5/00   Ian Formanek    NOI18N
  *  14   Gandalf   1.13        11/27/99 Patrik Knakal   
  *  13   Gandalf   1.12        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

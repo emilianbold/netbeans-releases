@@ -34,48 +34,48 @@ import com.netbeans.developer.modules.loaders.form.forminfo.*;
 * @author Ian Formanek
 */
 public class GandalfPersistenceManager extends PersistenceManager {
-  public static final String CURRENT_VERSION = "1.0";
+  public static final String CURRENT_VERSION = "1.0"; // NOI18N
   
-  public static final String XML_FORM = "Form";
-  public static final String XML_NON_VISUAL_COMPONENTS = "NonVisualComponents";
-  public static final String XML_CONTAINER = "Container";
-  public static final String XML_COMPONENT = "Component";
-  public static final String XML_MENU_COMPONENT = "MenuItem";
-  public static final String XML_MENU_CONTAINER = "Menu";
-  public static final String XML_LAYOUT = "Layout";
-  public static final String XML_CONSTRAINTS = "Constraints";
-  public static final String XML_CONSTRAINT = "Constraint";
-  public static final String XML_SUB_COMPONENTS = "SubComponents";
-  public static final String XML_EVENTS = "Events";
-  public static final String XML_EVENT = "EventHandler";
-  public static final String XML_PROPERTIES = "Properties";
-  public static final String XML_PROPERTY = "Property";
-  public static final String XML_SYNTHETIC_PROPERTY = "SyntheticProperty";
-  public static final String XML_SYNTHETIC_PROPERTIES = "SyntheticProperties";
-  public static final String XML_AUX_VALUES = "AuxValues";
-  public static final String XML_AUX_VALUE = "AuxValue";
-  public static final String XML_SERIALIZED_PROPERTY_VALUE = "SerializedValue";
+  public static final String XML_FORM = "Form"; // NOI18N
+  public static final String XML_NON_VISUAL_COMPONENTS = "NonVisualComponents"; // NOI18N
+  public static final String XML_CONTAINER = "Container"; // NOI18N
+  public static final String XML_COMPONENT = "Component"; // NOI18N
+  public static final String XML_MENU_COMPONENT = "MenuItem"; // NOI18N
+  public static final String XML_MENU_CONTAINER = "Menu"; // NOI18N
+  public static final String XML_LAYOUT = "Layout"; // NOI18N
+  public static final String XML_CONSTRAINTS = "Constraints"; // NOI18N
+  public static final String XML_CONSTRAINT = "Constraint"; // NOI18N
+  public static final String XML_SUB_COMPONENTS = "SubComponents"; // NOI18N
+  public static final String XML_EVENTS = "Events"; // NOI18N
+  public static final String XML_EVENT = "EventHandler"; // NOI18N
+  public static final String XML_PROPERTIES = "Properties"; // NOI18N
+  public static final String XML_PROPERTY = "Property"; // NOI18N
+  public static final String XML_SYNTHETIC_PROPERTY = "SyntheticProperty"; // NOI18N
+  public static final String XML_SYNTHETIC_PROPERTIES = "SyntheticProperties"; // NOI18N
+  public static final String XML_AUX_VALUES = "AuxValues"; // NOI18N
+  public static final String XML_AUX_VALUE = "AuxValue"; // NOI18N
+  public static final String XML_SERIALIZED_PROPERTY_VALUE = "SerializedValue"; // NOI18N
   
-  public static final String ATTR_FORM_VERSION = "version";
-  public static final String ATTR_FORM_TYPE = "type";
-  public static final String ATTR_COMPONENT_NAME = "name";
-  public static final String ATTR_COMPONENT_CLASS = "class";
-  public static final String ATTR_PROPERTY_NAME = "name";
-  public static final String ATTR_PROPERTY_TYPE = "type";
-  public static final String ATTR_PROPERTY_EDITOR = "editor";
-  public static final String ATTR_PROPERTY_VALUE = "value";
-  public static final String ATTR_PROPERTY_PRE_CODE = "preCode";
-  public static final String ATTR_PROPERTY_POST_CODE = "postCode";
-  public static final String ATTR_EVENT_NAME = "event";
-  public static final String ATTR_EVENT_HANDLER = "handler";
-  public static final String ATTR_AUX_NAME = "name";
-  public static final String ATTR_AUX_VALUE = "value";
-  public static final String ATTR_AUX_VALUE_TYPE = "type";
-  public static final String ATTR_LAYOUT_CLASS = "class";
-  public static final String ATTR_CONSTRAINT_LAYOUT = "layoutClass";
-  public static final String ATTR_CONSTRAINT_VALUE = "value";
+  public static final String ATTR_FORM_VERSION = "version"; // NOI18N
+  public static final String ATTR_FORM_TYPE = "type"; // NOI18N
+  public static final String ATTR_COMPONENT_NAME = "name"; // NOI18N
+  public static final String ATTR_COMPONENT_CLASS = "class"; // NOI18N
+  public static final String ATTR_PROPERTY_NAME = "name"; // NOI18N
+  public static final String ATTR_PROPERTY_TYPE = "type"; // NOI18N
+  public static final String ATTR_PROPERTY_EDITOR = "editor"; // NOI18N
+  public static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
+  public static final String ATTR_PROPERTY_PRE_CODE = "preCode"; // NOI18N
+  public static final String ATTR_PROPERTY_POST_CODE = "postCode"; // NOI18N
+  public static final String ATTR_EVENT_NAME = "event"; // NOI18N
+  public static final String ATTR_EVENT_HANDLER = "handler"; // NOI18N
+  public static final String ATTR_AUX_NAME = "name"; // NOI18N
+  public static final String ATTR_AUX_VALUE = "value"; // NOI18N
+  public static final String ATTR_AUX_VALUE_TYPE = "type"; // NOI18N
+  public static final String ATTR_LAYOUT_CLASS = "class"; // NOI18N
+  public static final String ATTR_CONSTRAINT_LAYOUT = "layoutClass"; // NOI18N
+  public static final String ATTR_CONSTRAINT_VALUE = "value"; // NOI18N
 
-  private static final String ONE_INDENT =  "  ";
+  private static final String ONE_INDENT =  "  "; // NOI18N
   private static final Object NO_VALUE = new Object ();
   
   private org.w3c.dom.Document topDocument = XMLDataObject.createDocument();
@@ -111,7 +111,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
   private String readEncoding (InputStream is) {
     // If all else fails, assume XML without a declaration, and
     // using UTF-8 encoding.
-    String useEncoding = "UTF-8";
+    String useEncoding = "UTF-8"; // NOI18N
     byte buf [];
     int	len;
     buf = new byte [4];
@@ -123,7 +123,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         case 0:
           // 00 3c 00 3f == illegal UTF-16 big-endian
           if (buf [1] == 0x3c && buf [2] == 0x00 && buf [3] == 0x3f) {
-            useEncoding = "UnicodeBig";
+            useEncoding = "UnicodeBig"; // NOI18N
           }
           // else it's probably UCS-4
           break;
@@ -138,7 +138,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             // 3c 00 3f 00 == illegal UTF-16 little endian
             case 0x00:
               if (buf [2] == 0x3f && buf [3] == 0x00) {
-                useEncoding = "UnicodeLittle";
+                useEncoding = "UnicodeLittle"; // NOI18N
               }
               // else probably UCS-4
               break;
@@ -151,7 +151,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
               // One of several encodings could be used:
               // Shift-JIS, ASCII, UTF-8, ISO-8859-*, etc
               //
-              useEncoding = "UTF8";
+              useEncoding = "UTF8"; // NOI18N
           }
           break;
 
@@ -160,7 +160,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             if (buf [1] == 0x6f
               && (0x0ff & buf [2]) == 0x0a7
               && (0x0ff & buf [3]) == 0x094) {
-              useEncoding = "CP037";
+              useEncoding = "CP037"; // NOI18N
             }
             // whoops, treat as UTF-8
             break;
@@ -168,12 +168,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
           // UTF-16 big-endian
           case 0xfe:
             if ((buf [1] & 0x0ff) != 0xff) break;
-            useEncoding = "UTF-16";
+            useEncoding = "UTF-16"; // NOI18N
 
           // UTF-16 little-endian
           case 0xff:
             if ((buf [1] & 0x0ff) != 0xfe) break;
-            useEncoding = "UTF-16";
+            useEncoding = "UTF-16"; // NOI18N
 
           // default ... no XML declaration
           default:
@@ -183,10 +183,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
       byte buffer[] = new byte [1024];
       is.read(buffer);
       String s = new String (buffer, useEncoding);
-      int pos = s.indexOf("encoding");
+      int pos = s.indexOf("encoding"); // NOI18N
       String result=null;
       int startPos, endPos;
-      if ((pos > 0) && (pos < s.indexOf (">"))) {
+      if ((pos > 0) && (pos < s.indexOf (">"))) { // NOI18N
         if ( (startPos = s.indexOf('"', pos)) > 0 && 
              (endPos = s.indexOf('"', startPos+1)) > startPos ) {
           result = s.substring(startPos+1, endPos);
@@ -241,7 +241,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     try {
       formInfo = (FormInfo)TopManager.getDefault ().currentClassLoader ().loadClass (infoClass).newInstance ();
     } catch (Exception e) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
       throw new IOException (java.text.MessageFormat.format (
         FormEditor.getFormBundle ().getString ("FMT_ERR_FormInfoNotFound"),
         new String[] { infoClass }
@@ -319,7 +319,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         try {
           compClass = TopManager.getDefault ().currentClassLoader ().loadClass (className);
         } catch (Exception e) {
-          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
           FormEditor.fileError (java.text.MessageFormat.format (
             FormEditor.getFormBundle ().getString ("FMT_ERR_ClassNotFound"),
             new Object [] {
@@ -365,7 +365,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
   
       return true;
     } catch (Exception e) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
       return false; // [PENDING - undo already processed init?]
     }
   }
@@ -397,7 +397,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
               }
               comp.setConstraints (layoutClass, cd);
             } catch (Exception e) {
-              if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+              if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
               // ignore and try another constraints // [PENDING - add to errors list]
             }
           }
@@ -478,7 +478,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 propsMap.put (propName, propValue);
               }
             } catch (Exception e) {
-              if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+              if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
               // ignore property with problem
               // [PENDING - notify problem]
             }
@@ -489,7 +489,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         ((RADVisualContainer)comp).setDesignLayout (dl);
       } catch (Exception e) {
         // if (System.getProperty ("netbeans.debug.exceptions") != null) // [PENDING]
-        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
         return false; // [PENDING - notify]
       }
     }
@@ -508,7 +508,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             continue; 
           }
         } catch (Exception e) {
-          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
           // [PENDING - notify error]
           continue; // ignore this property
         }
@@ -526,17 +526,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
             PropertyEditor ed = FormEditor.createPropertyEditor (editorClass, propertyClass, comp, prop);
             ((RADComponent.RADProperty)prop).setCurrentEditor (ed);
           } catch (Exception e) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+            if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
             // ignore
           }
         }
         try {
           prop.setValue (propValue);
         } catch (java.lang.reflect.InvocationTargetException e) {
-          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
           // ignore this property // [PENDING]
         } catch (IllegalAccessException e) {
-          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
           // ignore this property // [PENDING]
         } catch (Exception e) {
           // unexpected exception - always printed
@@ -560,7 +560,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
           if (propType != null) propClass = findPropertyType (propType);
         } catch (Exception e2) {
           // OK, try to use decodeValue in this case
-          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e2.printStackTrace ();
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e2.printStackTrace (); // NOI18N
         }
         Object propValue=null;
         //System.out.println("loading name="+propName+", encodedValue="+encodedValue);
@@ -576,7 +576,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             propValue = decodeValue (encodedValue);
           }
         } catch (IOException e) {
-          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
           // [PENDING - handle error]
         }
         //System.out.println("......encoded to:"+propValue);
@@ -593,10 +593,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
         try {
           prop.setValue (propValue);
         } catch (java.lang.reflect.InvocationTargetException e) {
-          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
           // ignore this property // [PENDING]
         } catch (IllegalAccessException e) {
-          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
           // ignore this property // [PENDING]
         } catch (Exception e) {
           // unexpected exception - always printed
@@ -649,7 +649,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                   auxValueType = findPropertyType (auxValueClass);
                 } catch (Exception e2) {
                   // OK, try to use decodeValue in this case
-                  if (Boolean.getBoolean ("netbeans.debug.exceptions")) e2.printStackTrace ();
+                  if (Boolean.getBoolean ("netbeans.debug.exceptions")) e2.printStackTrace (); // NOI18N
                 }
               }
               if (auxValueType != null) {
@@ -665,7 +665,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
               }
               auxTable.put (auxName, auxValueDecoded);
             } catch (IOException e) {
-              if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+              if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
               // [PENDING - handle error]
             }
           }
@@ -689,12 +689,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
       StringBuffer buf = new StringBuffer ();
       
       // 1.store XML file header
-      buf.append ("<?xml version=\"1.0\"");
+      buf.append ("<?xml version=\"1.0\""); // NOI18N
       if (manager.getEncoding () != null) {
-        buf.append (" encoding=\"" + manager.getEncoding ()+ "\"");
+        buf.append (" encoding=\"" + manager.getEncoding ()+ "\""); // NOI18N
       }
-      buf.append (" ?>\n");
-      buf.append ("\n");
+      buf.append (" ?>\n"); // NOI18N
+      buf.append ("\n"); // NOI18N
       
       // 2.store Form element
       addElementOpenAttr (
@@ -795,7 +795,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
   }
 
   private void saveLayout (DesignLayout layout, StringBuffer buf, String indent) {
-    buf.append ("\n");
+    buf.append ("\n"); // NOI18N
     buf.append (indent);
     List changedProperties = layout.getChangedProperties ();
     if (changedProperties.size () == 0) {
@@ -951,7 +951,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     
     // 2. Events
     if (component.getEventsList ().getEventNames ().size () > 0) {
-      buf.append ("\n");
+      buf.append ("\n"); // NOI18N
       buf.append (indent); addElementOpen (buf, XML_EVENTS);
       saveEvents (component.getEventsList ().getEventNames (), buf, indent + ONE_INDENT);
       buf.append (indent); addElementClose (buf, XML_EVENTS);
@@ -959,7 +959,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     // 3. Aux Values
     if (component.getAuxValues ().size () > 0) {
-      buf.append ("\n");
+      buf.append ("\n"); // NOI18N
       buf.append (indent); addElementOpen (buf, XML_AUX_VALUES);
       saveAuxValues (component.getAuxValues (), buf, indent + ONE_INDENT);
       buf.append (indent); addElementClose (buf, XML_AUX_VALUES);
@@ -998,7 +998,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       try {
         value = prop.getValue ();
       } catch (Exception e) {
-        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
         // problem getting value => ignore this property
         continue;
       }
@@ -1089,7 +1089,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       try {
         value = prop.getValue ();
       } catch (Exception e) {
-        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
         // problem getting value => ignore this property
         continue;
       }
@@ -1271,8 +1271,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
       if (prop != null) {
         ed = FormEditor.createPropertyEditor (editorClass, propertyType, radComponent, prop);
       } else {
-        if (Boolean.getBoolean ("netbeans.debug.form")) {
-          System.out.println ("Property: "+nameNode.getNodeValue ()+", of component: "+radComponent.getName ()+"["+radComponent.getBeanClass ().getName ()+"] not found.");
+        if (Boolean.getBoolean ("netbeans.debug.form")) { // NOI18N
+          System.out.println ("Property: "+nameNode.getNodeValue ()+", of component: "+radComponent.getName ()+"["+radComponent.getBeanClass ().getName ()+"] not found."); // NOI18N
         } // [PENDING better notification, localize]
       }
     }
@@ -1340,14 +1340,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
   }
 
   private Class  findPropertyType (String type) throws ClassNotFoundException {
-    if ("int".equals (type)) return Integer.TYPE;
-    else if ("short".equals (type)) return Short.TYPE;
-    else if ("byte".equals (type)) return Byte.TYPE;
-    else if ("long".equals (type)) return Long.TYPE;
-    else if ("float".equals (type)) return Float.TYPE;
-    else if ("double".equals (type)) return Double.TYPE;
-    else if ("boolean".equals (type)) return Boolean.TYPE;
-    else if ("char".equals (type)) return Character.TYPE;
+    if ("int".equals (type)) return Integer.TYPE; // NOI18N
+    else if ("short".equals (type)) return Short.TYPE; // NOI18N
+    else if ("byte".equals (type)) return Byte.TYPE; // NOI18N
+    else if ("long".equals (type)) return Long.TYPE; // NOI18N
+    else if ("float".equals (type)) return Float.TYPE; // NOI18N
+    else if ("double".equals (type)) return Double.TYPE; // NOI18N
+    else if ("boolean".equals (type)) return Boolean.TYPE; // NOI18N
+    else if ("char".equals (type)) return Character.TYPE; // NOI18N
     else {
       return TopManager.getDefault ().currentClassLoader ().loadClass (type);
     }
@@ -1362,7 +1362,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
   * @exception IllegalArgumentException thrown if specified object is not of supported type
   */
   private Object decodePrimitiveValue (String encoded, Class type) throws IllegalArgumentException{
-    if ("null".equals (encoded)) return null;
+    if ("null".equals (encoded)) return null; // NOI18N
     
     if (Integer.class.isAssignableFrom (type) || Integer.TYPE.equals (type)) {
       return Integer.valueOf (encoded);
@@ -1386,7 +1386,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       try {
         return TopManager.getDefault ().currentClassLoader ().loadClass (encoded);
       } catch (ClassNotFoundException e) {
-        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
         // will return null as the notification of failure
       }
     }
@@ -1420,7 +1420,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
     
     if (value == null) {
-      return "null";
+      return "null"; // NOI18N
     }
     
     return null; // is not a primitive type
@@ -1435,17 +1435,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
     
     char[] bisChars = value.toCharArray ();
     byte[] bytes = new byte[bisChars.length];
-    String singleNum = "";
+    String singleNum = ""; // NOI18N
     int count = 0;
     for (int i = 0; i < bisChars.length; i++) {
       if (',' == bisChars[i]) {
         try {
           bytes[count++] = Byte.parseByte (singleNum);
         } catch (NumberFormatException e) {
-          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
           throw new IOException ();
         }
-        singleNum = "";
+        singleNum = ""; // NOI18N
       } else {
         singleNum += bisChars[i];
       }
@@ -1459,7 +1459,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       Object ret = ois.readObject ();
       return ret;
     } catch (Exception e) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
       throw new IOException ();
     }
   }
@@ -1474,16 +1474,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
       oos.writeObject (value);
       oos.close ();
     } catch (Exception e) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
       return null; // problem during serialization
     }
     byte[] bosBytes = bos.toByteArray ();
     StringBuffer sb = new StringBuffer (bosBytes.length);
     for (int i = 0; i < bosBytes.length; i++) {
       if (i != bosBytes.length - 1) {
-         sb.append (bosBytes[i]+",");
+         sb.append (bosBytes[i]+","); // NOI18N
       } else {
-        sb.append (""+bosBytes[i]);
+        sb.append (""+bosBytes[i]); // NOI18N
       }
     }
     return sb.toString ();
@@ -1493,48 +1493,48 @@ public class GandalfPersistenceManager extends PersistenceManager {
 // Utility formatting methods
   
   private void addElementOpen (StringBuffer buf, String elementName) {
-    buf.append ("<");
+    buf.append ("<"); // NOI18N
     buf.append (elementName);
-    buf.append (">\n");
+    buf.append (">\n"); // NOI18N
   }
 
   private void addElementOpenAttr (StringBuffer buf, String elementName, String[] attrNames, String[] attrValues) {
-    buf.append ("<");
+    buf.append ("<"); // NOI18N
     buf.append (elementName);
     for (int i = 0; i < attrNames.length; i++) {
       if (attrValues[i] == null) continue;
-      buf.append (" ");
+      buf.append (" "); // NOI18N
       buf.append (attrNames[i]);
-      buf.append ("=\"");
+      buf.append ("=\""); // NOI18N
       buf.append (encodeToProperXML(attrValues[i]));
-      buf.append ("\"");
+      buf.append ("\""); // NOI18N
     }
-    buf.append (">\n");
+    buf.append (">\n"); // NOI18N
   }
   
   private void addLeafElementOpenAttr (StringBuffer buf, String elementName, String[] attrNames, String[] attrValues) {
-    buf.append ("<");
+    buf.append ("<"); // NOI18N
     buf.append (elementName);
     for (int i = 0; i < attrNames.length; i++) {
       if (attrValues[i] == null) continue;
-      buf.append (" ");
+      buf.append (" "); // NOI18N
       buf.append (attrNames[i]);
-      buf.append ("=\"");
+      buf.append ("=\""); // NOI18N
       buf.append (encodeToProperXML(attrValues[i]));
-      buf.append ("\"");
+      buf.append ("\""); // NOI18N
     }
-    buf.append ("/>\n");
+    buf.append ("/>\n"); // NOI18N
   }
 
   private void addElementClose (StringBuffer buf, String elementName) {
-    buf.append ("</");
+    buf.append ("</"); // NOI18N
     buf.append (elementName);
-    buf.append (">\n");
+    buf.append (">\n"); // NOI18N
   }
 
   private void saveNodeIntoText (StringBuffer buf, org.w3c.dom.Node valueNode, String indent) {
     buf.append (indent); 
-    buf.append ("<");
+    buf.append ("<"); // NOI18N
     buf.append (valueNode.getNodeName ());
 
     org.w3c.dom.NamedNodeMap attributes = valueNode.getAttributes ();
@@ -1562,28 +1562,28 @@ public class GandalfPersistenceManager extends PersistenceManager {
         String attrName = attrNode.getNodeName (); 
         String attrValue = attrNode.getNodeValue (); 
         
-        buf.append (" ");
+        buf.append (" "); // NOI18N
         buf.append (encodeToProperXML (attrName));
-        buf.append ("=\"");
+        buf.append ("=\""); // NOI18N
         buf.append (encodeToProperXML (attrValue));
-        buf.append ("\"");
+        buf.append ("\""); // NOI18N
       }
     }
     // [PENDING - CNODES, TEXT NODES, ...]
 
     org.w3c.dom.NodeList children = valueNode.getChildNodes ();
     if ((children == null) || (children.getLength () == 0)) {
-      buf.append ("/>\n");
+      buf.append ("/>\n"); // NOI18N
     } else {
-      buf.append (">\n");
+      buf.append (">\n"); // NOI18N
       for (int i = 0; i < children.getLength (); i++) {
         if (children.item (i).getNodeType () == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
         saveNodeIntoText (buf, children.item (i), indent + ONE_INDENT);
       }
       buf.append (indent);
-      buf.append ("</");
+      buf.append ("</"); // NOI18N
       buf.append (encodeToProperXML (valueNode.getNodeName ()));
-      buf.append (">\n");
+      buf.append (">\n"); // NOI18N
     }
   }
 
@@ -1613,12 +1613,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
   private String encodeToProperXML (String text) {
     if (text.indexOf ('&') != -1) text = Utilities.replaceString (text, "&", "&amp;"); // must be the first to prevent changes in the &XX; codes
 
-    if (text.indexOf ('<') != -1) text = Utilities.replaceString (text, "<", "&lt;");
-    if (text.indexOf ('>') != -1) text = Utilities.replaceString (text, ">", "&gt;");
-    if (text.indexOf ('\'') != -1) text = Utilities.replaceString (text, "\'", "&apos;");
-    if (text.indexOf ('\"') != -1) text = Utilities.replaceString (text, "\"", "&quot;");
-    if (text.indexOf ('\n') != -1) text = Utilities.replaceString (text, "\n", "&#xa;");
-    if (text.indexOf ('\t') != -1) text = Utilities.replaceString (text, "\t", "&#x9;");
+    if (text.indexOf ('<') != -1) text = Utilities.replaceString (text, "<", "&lt;"); // NOI18N
+    if (text.indexOf ('>') != -1) text = Utilities.replaceString (text, ">", "&gt;"); // NOI18N
+    if (text.indexOf ('\'') != -1) text = Utilities.replaceString (text, "\'", "&apos;"); // NOI18N
+    if (text.indexOf ('\"') != -1) text = Utilities.replaceString (text, "\"", "&quot;"); // NOI18N
+    if (text.indexOf ('\n') != -1) text = Utilities.replaceString (text, "\n", "&#xa;"); // NOI18N
+    if (text.indexOf ('\t') != -1) text = Utilities.replaceString (text, "\t", "&#x9;"); // NOI18N
     return text;
   }
 
@@ -1673,6 +1673,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  47   Gandalf   1.46        1/5/00   Ian Formanek    NOI18N
  *  46   Gandalf   1.45        1/2/00   Ian Formanek    Improved serialization 
  *       of primitive types in AUX values and Synthetic properties
  *  45   Gandalf   1.44        12/14/99 Pavel Buzek     #1991

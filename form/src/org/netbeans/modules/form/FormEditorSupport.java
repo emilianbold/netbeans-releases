@@ -94,7 +94,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     synchronized (OPEN_FORM_LOCK) {
       if (!formLoaded) {
         if (!loadForm ()) {
-          TopManager.getDefault ().setStatusText ("");
+          TopManager.getDefault ().setStatusText (""); // NOI18N
           return;
         }
       }
@@ -123,7 +123,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     }
     
     // clear status line
-    TopManager.getDefault ().setStatusText ("");
+    TopManager.getDefault ().setStatusText (""); // NOI18N
   }
   
   /* Calls superclass.
@@ -143,7 +143,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     synchronized (OPEN_FORM_LOCK) {
       if (!formLoaded) {
         if (!loadForm ()) {
-          TopManager.getDefault ().setStatusText ("");
+          TopManager.getDefault ().setStatusText (""); // NOI18N
           return super.openAt (pos);
         }
       }
@@ -168,7 +168,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     getFormTopComponent ().requestFocus ();
     
     // clear status line
-    TopManager.getDefault ().setStatusText ("");
+    TopManager.getDefault ().setStatusText (""); // NOI18N
 
     // 4. open editor
     return super.openAt (pos);
@@ -444,6 +444,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  39   Gandalf   1.38        1/5/00   Ian Formanek    NOI18N
  *  38   Gandalf   1.37        12/8/99  Pavel Buzek     FormEditor and 
  *       ComponentInspector windows open on Visual workspace
  *  37   Gandalf   1.36        11/24/99 Pavel Buzek     Component Inspector is 

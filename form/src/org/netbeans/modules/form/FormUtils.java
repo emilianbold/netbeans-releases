@@ -36,7 +36,7 @@ public class FormUtils extends Object {
 // -----------------------------------------------------------------------------
 // Static variables
   
-  private static String PROP_NAME = "PropertyName";
+  private static String PROP_NAME = "PropertyName"; // NOI18N
 
   private static final boolean debug = (System.getProperty ("netbeans.debug.form") != null);
 
@@ -49,13 +49,13 @@ public class FormUtils extends Object {
 
   /** The properties whose changes are ignored in JComponent subclasses */
   private static String[] jComponentIgnoredList = new String [] {
-    "UI",
-    "layout",
-    "maximumSize",
-    "minimumSize",
-    "preferredSize",
-    "border",
-    "model"
+    "UI", // NOI18N
+    "layout", // NOI18N
+    "maximumSize", // NOI18N
+    "minimumSize", // NOI18N
+    "preferredSize", // NOI18N
+    "border", // NOI18N
+    "model" // NOI18N
   };
 
   static {
@@ -76,7 +76,7 @@ public class FormUtils extends Object {
         java.awt.Panel.class,
       };
     } catch (Exception e) {
-      throw new InternalError("Cannot initialize AWT classes");
+      throw new InternalError("Cannot initialize AWT classes"); // NOI18N
     }
 
     jComponentIgnored = new HashMap (15);
@@ -92,11 +92,11 @@ public class FormUtils extends Object {
     // if it is a subclass of Applet, we ignore InvocationTargetException
     // on codeBase, documentBase and appletContext properties
     if (java.applet.Applet.class.isAssignableFrom (beanClass))
-      if ("codeBase".equals (propertyName) ||
-          "documentBase".equals (propertyName) ||
-          "appletContext".equals (propertyName))
+      if ("codeBase".equals (propertyName) || // NOI18N
+          "documentBase".equals (propertyName) || // NOI18N
+          "appletContext".equals (propertyName)) // NOI18N
          dontPrint = true;
-    if ("tearOff".equals (propertyName) || "helpMenu".equals (propertyName))
+    if ("tearOff".equals (propertyName) || "helpMenu".equals (propertyName)) // NOI18N
       dontPrint = true;
     if (!dontPrint) {
 //    if (System.getProperty ("netbeans.full.hack") != null)
@@ -175,9 +175,9 @@ public class FormUtils extends Object {
       if (jComponentIgnored.get (propertyName) != null)
         return true;
     }
-    if (javax.swing.JDesktopPane.class.isAssignableFrom (beanClass) && "desktopManager".equals (propertyName))
+    if (javax.swing.JDesktopPane.class.isAssignableFrom (beanClass) && "desktopManager".equals (propertyName)) // NOI18N
       return true;
-    if (javax.swing.JInternalFrame.class.isAssignableFrom (beanClass) && "menuBar".equals (propertyName))
+    if (javax.swing.JInternalFrame.class.isAssignableFrom (beanClass) && "menuBar".equals (propertyName)) // NOI18N
       return true;
     return false;
   }
@@ -189,7 +189,7 @@ public class FormUtils extends Object {
   public static String getDefaultEventName (RADComponent component, Method listenerMethod) {
     String componentName = component.getName ();
     if (component instanceof FormContainer) {
-      componentName = "form";
+      componentName = "form"; // NOI18N
     }
     return getDefaultEventName (componentName, listenerMethod);
   } 
@@ -208,14 +208,14 @@ public class FormUtils extends Object {
     StringBuffer sb = new StringBuffer (desc.getName ());
     Class[] params = desc.getMethod ().getParameterTypes ();
     if ((params == null) || (params.length == 0)) {
-      sb.append (" ()");
+      sb.append (" ()"); // NOI18N
     } else {
       for (int i = 0; i < params.length; i++) {
-        if (i == 0) sb.append (" (");
-        else sb.append (", ");
+        if (i == 0) sb.append (" ("); // NOI18N
+        else sb.append (", "); // NOI18N
         sb.append (Utilities.getShortClassName (params[i]));
       }
-      sb.append (")");
+      sb.append (")"); // NOI18N
     }
 
     return sb.toString ();
@@ -447,6 +447,7 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  24   Gandalf   1.23        1/5/00   Ian Formanek    NOI18N
  *  23   Gandalf   1.22        12/13/99 Pavel Buzek     
  *  22   Gandalf   1.21        12/9/99  Pavel Buzek     utils for XML properties
  *       - readProperty, writeProperty
