@@ -9,12 +9,12 @@ Implementation-Version: @BUILD_NUMBER_SUBST@
 Implementation-Vendor: NetBeans
 OpenIDE-Module: org.openide.modules/1
 OpenIDE-Module-Module-Dependencies: org.openide.util/1
-X-COMMENT: XXX WRONG!
+X-Comment-3: XXX WRONG!
 OpenIDE-Module-Localizing-Bundle: org/openide/Bundle.properties
 OpenIDE-Module-Specification-Version: @SPEC_VERS_SUBST@
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 
 Name: /org/openide/modules/
 Package-Title: org.openide.modules
-X-Comment-3: also needs to be left here so Package.getPackage("org.openide.modules") works
+X-Comment-4: also needs to be left here so Package.getPackage("org.openide.modules") works
 
