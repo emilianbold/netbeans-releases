@@ -343,8 +343,7 @@ public class ServerFileDistributor extends ServerProgress {
         
         private void record(String relativePath) {
             if (! classesChanged) {
-                boolean importantClass = !moduleType.equals (ModuleType.WAR) || relativePath.startsWith ("WEB-INF/classes/"); //NOI18N
-                boolean classes = importantClass && (relativePath.endsWith(".class") || relativePath.endsWith(".properties")); //NOI18N
+                boolean classes = !moduleType.equals (ModuleType.WAR) || relativePath.startsWith ("WEB-INF/classes/"); //NOI18N
                 boolean importantLib = !moduleType.equals (ModuleType.WAR) || relativePath.startsWith ("WEB-INF/lib/"); //NOI18N
                 boolean libs = importantLib && (relativePath.endsWith(".jar") || relativePath.endsWith(".zip")); //NOI18N
                 if (classes || libs) {
