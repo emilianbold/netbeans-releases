@@ -31,7 +31,7 @@ import javax.swing.JPanel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 
-import org.openide.cookies.SourceCookie;
+import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
@@ -62,18 +62,18 @@ public class InsertI18nStringAction extends CookieAction {
      * @param activatedNodes currently activated nodes
      */
     public void performAction (final Node[] activatedNodes) {
-        final SourceCookie.Editor sec = (SourceCookie.Editor)(activatedNodes[0]).getCookie(SourceCookie.Editor.class);
-        if(sec == null)
+        final EditorCookie editorCookie = (EditorCookie)(activatedNodes[0]).getCookie(EditorCookie.class);
+        if(editorCookie == null)
             return;
         
-        sec.open();
+        editorCookie.open();
 
         // Set data object.
-        DataObject dataObject = (DataObject)sec.getSource().getCookie(DataObject.class);
+        DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
         if(dataObject == null)
             return; 
 
-        JEditorPane[] panes = sec.getOpenedPanes();
+        JEditorPane[] panes = editorCookie.getOpenedPanes();
         
         if(panes == null || panes.length == 0)
             return;
@@ -82,12 +82,13 @@ public class InsertI18nStringAction extends CookieAction {
         int position = panes[0].getCaret().getDot();
 
         // Set document.
-        StyledDocument document = sec.getDocument();
+        StyledDocument document = editorCookie.getDocument();
+        
         if(document == null) {
             // Shouldn't happen.
             if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                 TopManager.getDefault().notifyException(new InternalError("I18N: InsertI18nAction: Document not initialized.")); // NOI18N
-            dataObject = null;
+            
             return;
         }
         
@@ -102,7 +103,12 @@ public class InsertI18nStringAction extends CookieAction {
 
     /** Create panel used for specifying i18n string. */
     private JPanel createPanel(final DataObject dataObject, final StyledDocument document, final int position) {
-        I18nSupport support = new JavaI18nSupport(dataObject, document);
+        I18nSupport.Factory factory = FactoryRegistry.getFactory(dataObject.getClass().getName());
+        
+        if(factory == null)
+            throw new InternalError("I18N: No factory registered for data object type="+dataObject.getClass().getName()); // NOI18N
+        
+        I18nSupport support = factory.create(dataObject, document);
         
         final I18nPanel i18nPanel = new I18nPanel(false, true);
         
@@ -155,8 +161,11 @@ public class InsertI18nStringAction extends CookieAction {
                         // Try to add key to bundle.                            
                         i18nString.addProperty(i18nString.getKey(), i18nString.getValue(), i18nString.getComment());
 
-                        // Create field in necessary.
-                        I18nUtil.createField((JavaI18nString)i18nString, dataObject);
+                        // Create field if necessary. 
+                        // PENDING, should not be performed here -> capability moves to i18n wizard.
+                        if(i18nString instanceof JavaI18nString && i18nString.hasAdditionalCustomizer())
+                            I18nUtil.createField((JavaI18nString)i18nString, dataObject);
+                        
                         // Replace string.
                         document.insertString(position, I18nUtil.getReplaceJavaCode((JavaI18nString)i18nString, dataObject), null);
 
@@ -244,9 +253,8 @@ public class InsertI18nStringAction extends CookieAction {
             topComponent.close();
     }
     
-    /** Overrides superclass method.
-     * @return true if action will be present 
-     */
+    /** Overrides superclass method. Adds additional test if i18n module has registered factory
+     * for this data object to be able to perform i18n action. */
     protected boolean enable(Node[] activatedNodes) {
         if (!super.enable(activatedNodes))
             return false;
@@ -255,7 +263,7 @@ public class InsertI18nStringAction extends CookieAction {
         // PENDING>>
         // It causes StackOverflowError
         // I18nSupport.isGuardedPosittion() checks teh way it causes change cookies (remove add SaveCookie), what
-        // in turn calls back enable method, it calls isGueardedPosition again etc. etc.
+        // in turn calls back enable method, it calls isGuardedPosition again etc. etc.
         /*final SourceCookie.Editor sec = (SourceCookie.Editor)(activatedNodes[0]).getCookie(SourceCookie.Editor.class);        
         if (sec != null) {
             JEditorPane[] edits = sec.getOpenedPanes();
@@ -269,40 +277,41 @@ public class InsertI18nStringAction extends CookieAction {
         }*/
         // PENDING<<        
         
-        return true;
+        DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
+        
+        if(dataObject == null)
+            return false;
+        
+        return FactoryRegistry.hasFactory(dataObject.getClass().getName());
     }
 
-    /**
+    /** Implements superclass abstract method.
      * @return MODE_EXACTLY_ONE.
      */
     protected int mode () {
         return MODE_EXACTLY_ONE;
     }
 
-    /**
-     * @return cookies needed to enable this action on appropriate node.
-     */
+    /** Implemenst superclass abstract method.
+     * @return <code>EditorCookie<code>.class 
+     * #see org.openide.cookies.EditorCookie */
     protected Class[] cookieClasses () {
         return new Class [] {
-            SourceCookie.Editor.class
+            EditorCookie.class
         };
     }
 
-    /** 
-     * @return the action's icon
-     */
+    /** Gets localized name of action. Overrides superclass method. */
     public String getName() {
         return I18nUtil.getBundle().getString("CTL_InsertI18nString");
     }
 
-    /** 
-     * @return the action's help context 
-     */
+    /** Gets the action's help context. Implemenst superclass abstract method. */
     public HelpCtx getHelpCtx() {
         return new HelpCtx (InsertI18nStringAction.class);
     }
 
-    /** Action's icon location.
+    /** Gets the action's icon location.
      * @return the action's icon location
      */
     protected String iconResource () {
