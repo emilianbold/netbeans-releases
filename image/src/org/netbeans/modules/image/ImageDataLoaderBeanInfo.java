@@ -16,7 +16,7 @@ package org.netbeans.modules.image;
 import java.beans.*;
 import java.awt.Image;
 
-import org.openide.TopManager;
+import org.openide.ErrorManager;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.Utilities;
 
@@ -30,7 +30,7 @@ public class ImageDataLoaderBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
         } catch (IntrospectionException ie) {
-	    TopManager.getDefault().getErrorManager().notify(ie);
+	    ErrorManager.getDefault().notify(ie);
             return null;
         }
     }

@@ -32,7 +32,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
-import org.openide.TopManager;
+import org.openide.ErrorManager;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -156,7 +156,7 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
                 return (Image)readImage.invoke(null,new Object[]{ getPrimaryFile().getInputStream() });
             }
         }catch(Exception ex){
-            TopManager.getDefault().getErrorManager().notify(ex);
+            ErrorManager.getDefault().notify(ex);
         }
         return null;
     }
@@ -235,7 +235,7 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
                         icon = (ImageIcon)ThumbnailProperty.this.getValue();
                     } catch(InvocationTargetException ioe) {
                         if(Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
-                            TopManager.getDefault().getErrorManager().notify(ioe);
+                            ErrorManager.getDefault().notify(ioe);
                         }
                     }
                     

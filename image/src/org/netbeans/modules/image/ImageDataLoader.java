@@ -23,7 +23,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
-import org.openide.TopManager;
+import org.openide.ErrorManager;
 
 import java.lang.reflect.Method;
 import java.util.Iterator;
@@ -85,7 +85,7 @@ public class ImageDataLoader extends UniFileLoader {
                     getExtensions().addExtension(ext);
                 }
             }catch(Exception ex){
-                TopManager.getDefault().getErrorManager().notify(ex);
+                ErrorManager.getDefault().notify(ex);
             }
         }
         return retValue;

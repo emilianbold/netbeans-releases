@@ -22,7 +22,7 @@ import java.awt.event.ActionListener;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -84,7 +84,7 @@ public class CustomZoomAction extends CallableSystemAction {
                 }        
                 
                 private void notifyInvalidInput() {
-                    TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                         NbBundle.getBundle(CustomZoomAction.class).getString("MSG_InvalidValues"),
                         NotifyDescriptor.ERROR_MESSAGE
                     ));
@@ -92,7 +92,7 @@ public class CustomZoomAction extends CallableSystemAction {
                 
             } // End of annonymnous ActionListener.
         );
-        dialogs[0] = TopManager.getDefault().createDialog(dd);
+        dialogs[0] = DialogDisplayer.getDefault().createDialog(dd);
         dialogs[0].setVisible(true);
         
     }

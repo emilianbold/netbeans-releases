@@ -32,7 +32,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.OpenSupport;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.util.NbBundle;
@@ -119,7 +119,7 @@ public class ImageOpenSupport extends OpenSupport implements OpenCookie, CloseCo
         MessageFormat fmt = new MessageFormat(NbBundle.getBundle(ImageOpenSupport.class).getString("MSG_ExternalChange")); // NOI18N
         String msg = fmt.format(new Object[] { entry.getFile().getPackageNameExt('/', '.')});
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
-        Object ret = TopManager.getDefault().notify(nd);
+        Object ret = DialogDisplayer.getDefault().notify(nd);
 
         if (NotifyDescriptor.YES_OPTION.equals(ret)) {
             // due to compiler 1.2 bug only

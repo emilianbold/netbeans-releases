@@ -13,7 +13,8 @@ import java.awt.print.*;
 import java.io.*;
 
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
+import org.openide.ErrorManager;
+import org.openide.DialogDisplayer;
 import org.openide.cookies.PrintCookie;
 import org.openide.util.NbBundle;
 
@@ -84,11 +85,11 @@ public class ImagePrintSupport implements PrintCookie, Printable, ImageObserver 
             final String msg = NbBundle.getMessage(org.openide.text.PrintSettings.class, "CTL_Printer_Abort"); // NOI18N
             java.awt.EventQueue.invokeLater(new Runnable() { // display in the awt thread
                 public void run() {
-                    TopManager.getDefault().notify(new NotifyDescriptor.Message(msg));
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
                 }
             });
         } catch (Exception e) {
-            TopManager.getDefault().notifyException(e);
+            ErrorManager.getDefault().notify(e);
         }        
     }
     
