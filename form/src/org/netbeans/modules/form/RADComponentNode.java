@@ -87,6 +87,11 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     firePropertyChange (null, null, null);
   }
 
+  /** Provides package-private access for firing property changes */
+  void firePropertyChangeHelper (String name, Object oldValue, Object newValue) {
+    super.firePropertyChange (name, oldValue, newValue);
+  }
+
   public Image getIcon (int iconType) {
     Image ic = BeanSupport.getBeanIcon (component.getBeanClass (), iconType);
     if (ic != null) return ic;
@@ -677,6 +682,8 @@ static final long serialVersionUID =3851021533468196849L;
 
 /*
  * Log
+ *  37   Gandalf   1.36        9/17/99  Ian Formanek    Fixed bug 1825 - 
+ *       Property sheets are not synchronized 
  *  36   Gandalf   1.35        9/12/99  Ian Formanek    FormAwareEditor.setRADComponent
  *        changes
  *  35   Gandalf   1.34        9/6/99   Ian Formanek    Fixed bug 2629 - If you 

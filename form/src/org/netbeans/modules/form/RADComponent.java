@@ -382,7 +382,7 @@ public class RADComponent {
   * @return the default property value or null, which means that the default value is null or cannot be obtained (write only property, ...)
   */
   public Object getDefaultPropertyValue (RADProperty prop) {
-    return changedPropertyValues.get (prop);
+    return defaultPropertyValues.get (prop);
   }
 
 // -----------------------------------------------------------------------------
@@ -469,6 +469,7 @@ public class RADComponent {
               if (oldValue == null) return; // no change
               formManager.getEventsManager ().removeEventHandler (event);
               formManager.fireEventRemoved (RADComponent.this, oldValue);
+              notifyPropertiesChange ();
               
             } else {
               
@@ -485,6 +486,8 @@ public class RADComponent {
                 formManager.getEventsManager ().addEventHandler (event, handlerName);
                 formManager.fireEventAdded (RADComponent.this, event.getHandler ());
               }
+
+              notifyPropertiesChange ();
 
               if ((gotoMethod != null) && gotoMethod.equals (handlerName)) {
                 gotoMethod = null;
@@ -610,6 +613,10 @@ public class RADComponent {
 
 // -----------------------------------------------------------------------------
 // Properties and Inner Classes
+
+  public void notifyPropertiesChange () {
+    if (componentNode != null) componentNode.notifyPropertiesChange ();
+  }
 
   public interface RADProperty {
     public String getName ();
@@ -751,7 +758,10 @@ public class RADComponent {
       }
       
       debugChangedValues ();
+
       getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), old, val);
+      if (componentNode != null) componentNode.firePropertyChangeHelper (RADPropertyImpl.this.getName (), old, val);
+
       if (RADComponent.this instanceof RADVisualComponent) {
         if (beanInstance instanceof javax.swing.JComponent) {
           ((javax.swing.JComponent)beanInstance).repaint ();
@@ -801,10 +811,9 @@ public class RADComponent {
         } catch (InvocationTargetException e) {
           // what to do, ignore...
         }
-        if (getNodeReference () != null) {
-          getNodeReference ().notifyPropertiesChange ();
-        }
         getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), old, def);
+        notifyPropertiesChange ();
+        if (componentNode != null) componentNode.firePropertyChangeHelper (RADPropertyImpl.this.getName (), old, def);
       }
       // [PENDING - test]
     }
@@ -978,6 +987,7 @@ public class RADComponent {
       }
       debugChangedValues ();
       getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), old, val);
+      if (componentNode != null) componentNode.firePropertyChangeHelper (RADIndexedPropertyImpl.this.getName (), old, val);
       if (RADComponent.this instanceof RADVisualComponent) {
         if (beanInstance instanceof javax.swing.JComponent) {
           ((javax.swing.JComponent)beanInstance).repaint ();
@@ -1027,10 +1037,8 @@ public class RADComponent {
         } catch (InvocationTargetException e) {
           // what to do, ignore...
         }
-        if (getNodeReference () != null) {
-          getNodeReference ().notifyPropertiesChange ();
-        }
         getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), old, def);
+        if (componentNode != null) componentNode.firePropertyChangeHelper (RADIndexedPropertyImpl.this.getName (), old, def);
       }
       // [PENDING - test]
     }
@@ -1180,12 +1188,6 @@ public class RADComponent {
             event.getName(),
             event.getName());
       this.event = event;
-/*      event.addPropertyChangeListener (new PropertyChangeListener () {
-          public void propertyChange (PropertyChangeEvent evt) {
-            firePropertyChangeHelper (EventProperty.this.getName (), evt.getOldValue (), evt.getNewValue ());
-          }
-        }
-      ); */ // [PENDING]
     }
 
     /** Returns property editor for this property.
@@ -1247,6 +1249,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  53   Gandalf   1.52        9/17/99  Ian Formanek    Fixed bug 1825 - 
+ *       Property sheets are not synchronized 
  *  52   Gandalf   1.51        9/12/99  Ian Formanek    Fixed setPre/PostCode
  *  51   Gandalf   1.50        9/12/99  Ian Formanek    FormAwareEditor.setRADComponent
  *        changes
