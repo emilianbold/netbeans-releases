@@ -486,6 +486,20 @@
     <tocitem text="Built-in Client Filesystem Properties" target="cvs.filesystemproperties" />
     <tocitem text="Managing Connections to Remote Repositories" target="cvs.password" />
   </tocitem>
+  <tocitem text="CVS Command Arguments" target="cvs_args_intro">
+    <tocitem text="Add Arguments" target="args_add"/>
+    <tocitem text="Annotate Arguments" target="args_annotate"/>
+    <tocitem text="Checkout Arguments" target="args_checkout"/>
+    <tocitem text="Commit Arguments" target="args_commit"/>
+    <tocitem text="Diff Arguments" target="args_diff"/>
+    <tocitem text="Global Arguments" target="args_global"/>
+    <tocitem text="Log Arguments" target="args_log"/>
+    <tocitem text="Remove Arguments" target="args_remove"/>
+    <tocitem text="Status Arguments" target="args_status"/>
+    <tocitem text="Tag Arguments" target="args_tag"/>
+    <tocitem text="Update Arguments" target="args_update"/>
+  </tocitem>
+    
   <tocitem text="Generic VCS Support" target="vcs.vcsgeneric">
     <tocitem text="Mounting a Directory With Generic VCS Support" target="vcsgeneric.mounting" />
     <tocitem text="Mounting a CVS Directory With Generic VCS Support" target="vcsgeneric.custom-cvs" />

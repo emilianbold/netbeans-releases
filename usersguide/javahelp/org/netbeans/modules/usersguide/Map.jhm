@@ -563,6 +563,18 @@
 <mapID target="cvs.local" url="vcs-nb/cvs-nb/cvs_local.html" />
 <mapID target="cvs.commandopts" url="vcs-nb/cvs-nb/cvs_commandopts-save.html" />
 <mapID target="cvs.wizard" url="vcs-nb/cvs-nb/cvs_wizard.html" />
+<mapID target="args_add" url="vcs-nb/cvs-nb/args/args_add.html"/>
+<mapID target="args_annotate" url="vcs-nb/cvs-nb/args/args_annotate.html"/>
+<mapID target="args_checkout" url="vcs-nb/cvs-nb/args/args_checkout.html"/>
+<mapID target="args_commit" url="vcs-nb/cvs-nb/args/args_commit.html"/>
+<mapID target="args_diff" url="vcs-nb/cvs-nb/args/args_diff.html"/>
+<mapID target="args_global" url="vcs-nb/cvs-nb/args/args_global.html"/>
+<mapID target="args_log" url="vcs-nb/cvs-nb/args/args_log.html"/>
+<mapID target="args_remove" url="vcs-nb/cvs-nb/args/args_remove.html"/>
+<mapID target="args_status" url="vcs-nb/cvs-nb/args/args_status.html"/>
+<mapID target="args_tag" url="vcs-nb/cvs-nb/args/args_tag.html"/>
+<mapID target="args_update" url="vcs-nb/cvs-nb/args/args_update.html"/>
+<mapID target="cvs_args_intro" url="vcs-nb/cvs-nb/args/cvs_args_intro.html"/>
 <mapID target="vcs.vcsgeneric" url="vcs-nb/vcsgeneric/vcs_vcsgeneric.html" />
 <mapID target="vcsgeneric.mounting" url="vcs-nb/vcsgeneric/vcsgeneric_mounting.html" />
 <mapID target="vcsgeneric.wizard" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />
