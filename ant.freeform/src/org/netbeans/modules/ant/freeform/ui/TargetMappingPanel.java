@@ -18,6 +18,7 @@ import java.awt.Frame;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -26,6 +27,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.WindowConstants;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
@@ -125,6 +127,16 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
     }
 
     private void updateCombos(boolean selectDefaults) {
+        // In case you go back and choose a different script:
+        buildCombo.removeAllItems();
+        cleanCombo.removeAllItems();
+        javadocCombo.removeAllItems();
+        runCombo.removeAllItems();
+        debugCombo.removeAllItems();
+        testCombo.removeAllItems();
+        if (projectType.equals("webapps")) { // NOI18N
+            redeployCombo.removeAllItems();
+        }
         Iterator it = targetNames.iterator();
         while (it.hasNext()) {
             String name = (String)it.next();
@@ -133,10 +145,10 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
             javadocCombo.addItem(name);
             runCombo.addItem(name);
             debugCombo.addItem(name);
-            if (projectType.equals("j2se")) //NOI18N
-                testCombo.addItem(name);
-            else if (projectType.equals("webapps")) //NOI18N
+            testCombo.addItem(name);
+            if (projectType.equals("webapps")) { // NOI18N
                 redeployCombo.addItem(name);
+            }
         }
         if (selectDefaults) {
             selectItem(buildCombo, "build", false); //NOI18N
@@ -802,14 +814,16 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         boolean[] adv = {false, true};
         for (int i = 0; i < types.length; i++) {
             for (int j = 0; j < adv.length; j++) {
-                JDialog dlg = new JDialog((Frame) null, "type=" + types[i] + " advancedMode=" + adv[j], true); // NOI18N
-                dlg.getContentPane().add(new TargetMappingPanel(types[i], adv[j]));
+                JDialog dlg = new JDialog((Frame) null, "type=" + types[i] + " advancedMode=" + adv[j], false); // NOI18N
+                dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                TargetMappingPanel panel = new TargetMappingPanel(types[i], adv[j]);
+                panel.setTargetNames(new ArrayList(Arrays.asList(new String[] {"build", "clean", "test"})), true); // NOI18N
+                dlg.getContentPane().add(panel);
                 dlg.pack();
                 dlg.setSize(700, 500);
                 dlg.setVisible(true);
             }
         }
-        System.exit(0);
     }
     
 }
