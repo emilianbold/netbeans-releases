@@ -14,6 +14,7 @@ package org.netbeans.modules.xml.tools.generator;
 
 import java.text.MessageFormat;
 import java.io.IOException;
+import java.io.File;
 import javax.swing.*;
 import java.awt.*;
 
@@ -25,7 +26,7 @@ import org.openide.util.*;
 import org.netbeans.modules.xml.core.lib.GuiUtil;
 
 /**
- * Extremelly simple dialog with one input line. Invoke using
+ * Extremely simple dialog with one input line. Invoke using
  * {@link #getFileObject} method.
  */
 public class SelectFileDialog extends JPanel {
@@ -33,14 +34,20 @@ public class SelectFileDialog extends JPanel {
     /** Serial Version UID */
     private static final long serialVersionUID = 4699298946223454165L;
 
-
     private Util.NameCheck check;
 
-    
+    private JButton OK_OPTION = new JButton(Util.THIS.getString("BK0002"));
+
     //
     // init
     //
 
+    /**
+     *
+     * @param folder parent folder that will host created file
+     * @param name default file name
+     * @param ext default file.extension
+     */
     public SelectFileDialog (FileObject folder, String name, String ext) {
 
         this (folder, name, ext, Util.JAVA_CHECK);
@@ -51,10 +58,16 @@ public class SelectFileDialog extends JPanel {
         this.name = name;
         this.ext = ext;
         this.check = check;
-        this.selectDD = new DialogDescriptor
-                        (this, Util.THIS.getString ("PROP_fileNameTitle") + " *." + ext, true, // NOI18N
-                         DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
-                         DialogDescriptor.BOTTOM_ALIGN, null, null);
+        this.selectDD = new DialogDescriptor(
+                this,
+                Util.THIS.getString ("PROP_fileNameTitle") + " *." + ext, // NOI18N
+                true,
+                new Object[] {OK_OPTION, DialogDescriptor.CANCEL_OPTION},
+                OK_OPTION,
+                DialogDescriptor.BOTTOM_ALIGN,
+                null,
+                null
+        );
 
         initComponents ();
         fileLabel.setDisplayedMnemonic(Util.THIS.getChar("PROP_fileName_mne")); // NOI18N
@@ -144,39 +157,34 @@ public class SelectFileDialog extends JPanel {
 
     // check for errors and signalize them
     private void updateDialogUI() {
+       enableOkOption (checkAll());
+    }
 
-//         if (!!! check.checkName(fileField.getText())) {
-//             fileField.setForeground(Color.red);        
-//             enableOkOption (false);
-//         } else {
-//             fileField.setForeground(Color.black);
-//             enableOkOption (true);
-//         }
+    private boolean checkAll() {
+        String typedText = fileField.getText();
+        // no relative paths allowed #24693
+        if (typedText.indexOf(File.separatorChar) != -1) return false;
+        return check.checkName(typedText);
     }
 
     private void enableOkOption(boolean enable) {
-/* NullPointerEx
-        Object[] options = selectDD.getOptions();
-
-        for (int i = 0; i<options.length; i++) {
-            if ( Util.THIS.isLoggable() ) /* then * / Util.THIS.debug("   " + options[i]);
-            if (options[i].equals(DialogDescriptor.OK_OPTION)) {
-                if ( Util.THIS.isLoggable() ) /* then * / Util.THIS.debug("++++");                        
-            }
-        }
-*/        
+        OK_OPTION.setEnabled(enable);
     }
 
+    /**
+     * Get file object that have user selected
+     * @throws IOException if cancelled or invalid data entered
+     */
     public FileObject getFileObject () throws IOException {
         FileObject newFO = null;
 
         while ( newFO == null ) {
             DialogDisplayer.getDefault().createDialog (selectDD).show();
-            if (selectDD.getValue() != DialogDescriptor.OK_OPTION) {
+            if (selectDD.getValue() != OK_OPTION) {
                 throw new UserCancelException();
             }
             final String newName = fileField.getText();
-        
+
             newFO = folder.getFileObject (newName, ext);
         
             if ( ( newFO == null ) ||
@@ -230,10 +238,10 @@ public class SelectFileDialog extends JPanel {
     private javax.swing.JPanel fillPanel;
     // End of variables declaration//GEN-END:variables
 
-    DialogDescriptor selectDD;
-    FileObject folder;
-    String name;
-    String ext;    
+    private DialogDescriptor selectDD;
+    private FileObject folder;
+    private String name;
+    private String ext;
     
     
     /** Initialize accesibility
