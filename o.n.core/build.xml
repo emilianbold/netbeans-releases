@@ -66,7 +66,7 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="release/bin" excludesfile="../nbbuild/standard-jar-excludes.txt">
                 <!-- These do not currently work anyway: -->
                 <exclude name="unsupported/nbscript*"/>
-                <exclude name="**/runide.sh" />
+                <exclude name="**/runide*" />
                 <exclude name="**/ide.policy" />
                 <exclude name="**/ide.ks" />
             </fileset>
