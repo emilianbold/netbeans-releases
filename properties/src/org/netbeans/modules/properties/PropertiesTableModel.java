@@ -180,7 +180,8 @@ public class PropertiesTableModel extends AbstractTableModel {
     /* Returns a string pair for a value in an item (may be null). */
     private StringPair stringPairForValue(Element.ItemElem item) {
         if (item == null)
-            return new StringPair();
+            // item doesnt't exist -> value is null
+            return new StringPair(null, null);
         else
             return new StringPair(item.getComment(), item.getValue());
     }
@@ -402,5 +403,5 @@ public class PropertiesTableModel extends AbstractTableModel {
         }
 
     } // end of inner class
-
+        
 }
