@@ -32,15 +32,24 @@ Microsystems, Inc. All Rights Reserved.
   <!-- QA TESTS -->
   <!-- ======== -->
   
-  <!-- QA functional tests for Netbeans and FFJ CE -->
+  <!-- QA functional tests for Netbeans -->
   <config name="qa-functional-nb">
+      <!-- 
       <module name="debuggercore" testtypes="qa-functional" attributes="stable"/>
+      -->
+      <module name="i18n" testtypes="qa-functional" attributes="stable"/>
+  </config>
+  
+  <!-- QA functional tests for FFJ CE -->
+  <config name="qa-functional-ffjce">
+      <module name="debuggercore" testtypes="qa-functional" attributes="stable"/>
+      <module name="i18n" testtypes="qa-functional" attributes="stable"/>
   </config>
 
   <!-- Deprecated, only for compatibility -->
   <config name="qa-pilot">
       <module name="debuggercore" testtypes="qa-functional" attributes="stable"/>
   </config>
-    
+
 </testconfig>
 
