@@ -44,6 +44,7 @@ public class PropertyType_ServiceType extends PropertyEditorsTest {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new PropertyType_ServiceType("testByCombo"));
+        suite.addTest(new PropertyType_ServiceType("verifyCustomizer"));
         suite.addTest(new PropertyType_ServiceType("testCustomizerOk"));
         suite.addTest(new PropertyType_ServiceType("testCustomizerCancel"));
         return suite;
@@ -84,6 +85,10 @@ public class PropertyType_ServiceType extends PropertyEditorsTest {
         setByCustomizerCancel(propertyName_L, false);
     }
     
+    public void verifyCustomizer() {
+        verifyCustomizer(propertyName_L);
+    }
+    
     public void setCustomizerValue() {
         ServiceTypeCustomEditorOperator customizer = new ServiceTypeCustomEditorOperator(propertyCustomizer);
         customizer.setServiceTypeValue(propertyValue_L);
@@ -93,6 +98,14 @@ public class PropertyType_ServiceType extends PropertyEditorsTest {
         verifyExpectationValue(propertyName_L,expectation, propertyValueExpectation_L, propertyValue_L, false);
     }
     
+    public void verifyCustomizerLayout() {
+        ServiceTypeCustomEditorOperator customizer = new ServiceTypeCustomEditorOperator(propertyCustomizer);
+        customizer.lstServices();
+        customizer.propertySheet();
+        customizer.btOK();
+        customizer.btCancel();
+        customizer.btHelp();
+    }    
     
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line
@@ -101,8 +114,5 @@ public class PropertyType_ServiceType extends PropertyEditorsTest {
         //junit.textui.TestRunner.run(new NbTestSuite(PropertyType_ServiceType.class));
         junit.textui.TestRunner.run(suite());
     }
-    
-    public void verifyCustomizerLayout() {
-    }    
     
 }

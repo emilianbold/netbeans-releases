@@ -46,6 +46,7 @@ public class PropertyType_Color extends PropertyEditorsTest {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new PropertyType_Color("verifyCustomizer"));
         suite.addTest(new PropertyType_Color("testCustomizerCancel"));
         suite.addTest(new PropertyType_Color("testCustomizerOk"));
         suite.addTest(new PropertyType_Color("testByInPlace"));
@@ -81,6 +82,10 @@ public class PropertyType_Color extends PropertyEditorsTest {
         setByInPlace(propertyName_L, propertyValue_L, false);
     }
     
+    public void verifyCustomizer(){
+        verifyCustomizer(propertyName_L);
+    }
+    
     public void setCustomizerValue() {
         ColorCustomEditorOperator customizer = new ColorCustomEditorOperator(propertyCustomizer);
         
@@ -113,6 +118,11 @@ public class PropertyType_Color extends PropertyEditorsTest {
     }
     
     public void verifyCustomizerLayout() {
+        ColorCustomEditorOperator customizer = new ColorCustomEditorOperator(propertyCustomizer);
+        customizer.verify();
+        customizer.btOK();
+        customizer.btCancel();
+        customizer.btHelp();
     }    
     
     /** Test could be executed internaly in Forte without XTest

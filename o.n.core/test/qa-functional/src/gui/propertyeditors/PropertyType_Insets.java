@@ -49,6 +49,7 @@ public class PropertyType_Insets extends PropertyEditorsTest {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new PropertyType_Insets("verifyCustomizer"));
         suite.addTest(new PropertyType_Insets("testCustomizerCancel"));
         suite.addTest(new PropertyType_Insets("testCustomizerOk"));
         suite.addTest(new PropertyType_Insets("testByInPlace"));
@@ -100,6 +101,10 @@ public class PropertyType_Insets extends PropertyEditorsTest {
         setByInPlace(propertyName_L, propertyValue_L, false);
     }
     
+    public void verifyCustomizer() {
+        verifyCustomizer(propertyName_L);
+    }
+    
     public void setCustomizerValue() {
         RectangleCustomEditorOperator customizer = new RectangleCustomEditorOperator(propertyCustomizer);
         StringTokenizer st = new StringTokenizer(propertyValue_L, ", ");
@@ -115,6 +120,12 @@ public class PropertyType_Insets extends PropertyEditorsTest {
         verifyExpectationValue(propertyName_L,expectation, propertyValueExpectation_L, propertyValue_L, waitDialog);
     }
     
+    public void verifyCustomizerLayout() {
+        RectangleCustomEditorOperator customizer = new RectangleCustomEditorOperator(propertyCustomizer);
+        customizer.verify();
+        customizer.btOK();
+        customizer.btCancel();
+    }    
     
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line
@@ -123,8 +134,5 @@ public class PropertyType_Insets extends PropertyEditorsTest {
         //junit.textui.TestRunner.run(new NbTestSuite(PropertyType_Insets.class));
         junit.textui.TestRunner.run(suite());
     }
-    
-    public void verifyCustomizerLayout() {
-    }    
     
 }

@@ -15,11 +15,10 @@ package gui.propertyeditors;
 
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.properties.editors.StringArrayCustomEditorOperator;
+
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 import org.netbeans.junit.NbTestSuite;
-
-
 
 /**
  * Tests of Identifier Array Property Editor.
@@ -56,12 +55,13 @@ public class PropertyType_IdentifierArray extends PropertyEditorsTest {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new PropertyType_IdentifierArray("testByInPlace"));
+        suite.addTest(new PropertyType_IdentifierArray("verifyCustomizer"));
         suite.addTest(new PropertyType_IdentifierArray("testCustomizerCancel"));
         suite.addTest(new PropertyType_IdentifierArray("testCustomizerAdd"));
         suite.addTest(new PropertyType_IdentifierArray("testCustomizerRemove"));
         suite.addTest(new PropertyType_IdentifierArray("testCustomizerEdit"));
         suite.addTest(new PropertyType_IdentifierArray("testCustomizerUp"));
-//        suite.addTest(new PropertyType_IdentifierArray("testCustomizerDown"));
+        suite.addTest(new PropertyType_IdentifierArray("testCustomizerDown"));
         return suite;
     }
     
@@ -115,6 +115,10 @@ public class PropertyType_IdentifierArray extends PropertyEditorsTest {
         setByInPlace(propertyName_L, propertyValue_L, true);
     }
     
+    public void verifyCustomizer() {
+        verifyCustomizer(propertyName_L);
+    }
+    
     public void setCustomizerValue() {
         StringArrayCustomEditorOperator customizer = new StringArrayCustomEditorOperator(propertyCustomizer);
         
@@ -138,13 +142,11 @@ public class PropertyType_IdentifierArray extends PropertyEditorsTest {
         }
         
         if(propertyValue_L.startsWith(UP)){
-            customizer.lstItemList().selectItem(getItem(propertyValue_L,UP));
-            customizer.up();
+            customizer.up(getItem(propertyValue_L,UP));
         }
         
         if(propertyValue_L.startsWith(DOWN)){
-            customizer.lstItemList().selectItem(getItem(propertyValue_L,DOWN));
-            customizer.down();
+            customizer.down(getItem(propertyValue_L,DOWN));
         }
         
     }
@@ -165,6 +167,18 @@ public class PropertyType_IdentifierArray extends PropertyEditorsTest {
         }
     }
     
+    public void verifyCustomizerLayout() {
+        StringArrayCustomEditorOperator customizer = new StringArrayCustomEditorOperator(propertyCustomizer);
+        customizer.btAdd();
+        customizer.btRemove();
+        customizer.btEdit();
+        customizer.btUp();
+        customizer.btDown();
+        customizer.lstItemList();
+        customizer.btOK();
+        customizer.btCancel();
+    }    
+    
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line
      */
@@ -172,8 +186,5 @@ public class PropertyType_IdentifierArray extends PropertyEditorsTest {
         //junit.textui.TestRunner.run(new NbTestSuite(PropertyType_IdentifierArray.class));
         junit.textui.TestRunner.run(suite());
     }
-    
-    public void verifyCustomizerLayout() {
-    }    
     
 }

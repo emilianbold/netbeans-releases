@@ -58,7 +58,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="(validation and not full) or ide or ws" executor="ide" name="Main Window tests - validation" resultsprocessor="unit">
+    <testbag testattribs="(validation and not full) or ide" executor="ide" name="Main Window tests - validation" resultsprocessor="unit">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/windowsystem/mainwindow/MainMenu.class/testMainMenuMnemonicsCollision"/>
@@ -81,7 +81,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="(validation and not full) or ide or ws" executor="ide" name="MDI Workspaces tests - validation" resultsprocessor="unit">
+    <testbag testattribs="(validation and not full) or ide" executor="ide" name="MDI Workspaces tests - validation" resultsprocessor="unit">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/windowsystem/mdi/WorkspacesTest.class/testSwitchingWorkspacesByMenu"/>
@@ -152,24 +152,29 @@ Microsystems, Inc. All Rights Reserved.
 		<include name="gui/propertyeditors/PropertyType_StringArray.class"/>
                 
 		<include name="gui/propertyeditors/PropertyType_CompilerType.class/testByCombo"/>
+		<include name="gui/propertyeditors/PropertyType_CompilerType.class/varifyCustomizer"/>
 <!--		<include name="gui/propertyeditors/PropertyType_CompilerType.class/testCustomizerCancel_platform"/>
 		<include name="gui/propertyeditors/PropertyType_CompilerType.class/testCustomizerOk_platform"/>
 -->                
 		<include name="gui/propertyeditors/PropertyType_DebuggerType.class/testByCombo"/>
+		<include name="gui/propertyeditors/PropertyType_DebuggerType.class/verifyCustomizer"/>
 <!--		<include name="gui/propertyeditors/PropertyType_DebuggerType.class/testCustomizerCancel_platform"/>
 		<include name="gui/propertyeditors/PropertyType_DebuggerType.class/testCustomizerOk_platform"/>
 -->                
 		<include name="gui/propertyeditors/PropertyType_Executor.class/testByCombo"/>
+		<include name="gui/propertyeditors/PropertyType_Executor.class/verifyCustomizer"/>
 <!--		<include name="gui/propertyeditors/PropertyType_Executor.class/testCustomizerCancel_platform"/>
 		<include name="gui/propertyeditors/PropertyType_Executor.class/testCustomizerOk_platform"/>
 -->
 		<include name="gui/propertyeditors/PropertyType_HTMLBrowser.class/testByComboSWINGBrowser"/>
                 
 		<include name="gui/propertyeditors/PropertyType_IndentEngine.class/testByCombo"/>
+		<include name="gui/propertyeditors/PropertyType_IndentEngine.class/verifyCustomizer"/>
 <!--		<include name="gui/propertyeditors/PropertyType_IndentEngine.class/testCustomizerCancel_platform"/>
 		<include name="gui/propertyeditors/PropertyType_IndentEngine.class/testCustomizerOk_platform"/>
 -->                
 		<include name="gui/propertyeditors/PropertyType_ServiceType.class/testByCombo"/>
+		<include name="gui/propertyeditors/PropertyType_ServiceType.class/verifyCustomizer"/>
 <!--		<include name="gui/propertyeditors/PropertyType_ServiceType.class/testCustomizerCancel_platform"/>
 		<include name="gui/propertyeditors/PropertyType_ServiceType.class/testCustomizerOk_platform"/>
 -->                
@@ -229,6 +234,14 @@ Microsystems, Inc. All Rights Reserved.
 		<include name="gui/propertyeditors/PropertyType_ServiceType.class"/>
 		<include name="gui/propertyeditors/PropertyType_String.class"/>
 		<include name="gui/propertyeditors/PropertyType_StringArray.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
+    <testbag testattribs="platform_debug" executor="ide" name="Platform debug" resultsprocessor="unit">
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/propertyeditors/PlatformDebug.class"/>
 	    </patternset>
 	</testset>
     </testbag>

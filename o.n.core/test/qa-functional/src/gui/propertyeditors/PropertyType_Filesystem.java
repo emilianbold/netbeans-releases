@@ -58,6 +58,7 @@ public class PropertyType_Filesystem extends PropertyEditorsTest {
         FS_Data_path_data_jar = FS_Data_path + System.getProperty("file.separator") + "data.jar";
         
         NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new PropertyType_Filesystem("verifyCustomizer"));
         suite.addTest(new PropertyType_Filesystem("testCustomizerCancel"));
         suite.addTest(new PropertyType_Filesystem("testCustomizerAddDirectory"));
         suite.addTest(new PropertyType_Filesystem("testCustomizerAddJar"));
@@ -86,9 +87,12 @@ public class PropertyType_Filesystem extends PropertyEditorsTest {
         setByCustomizerCancel(propertyName_L, false);
     }
     
+    public void verifyCustomizer() {
+        verifyCustomizer(propertyName_L);
+    }
+    
     public void setCustomizerValue() {
         FilesystemCustomEditorOperator customizer = new FilesystemCustomEditorOperator(propertyCustomizer);
-
         
         if(propertyValue_L.startsWith(ADDDIRECTORY)){
             customizer.addLocalDirectory();
@@ -153,6 +157,13 @@ public class PropertyType_Filesystem extends PropertyEditorsTest {
         return path;
     }
     
+    public void verifyCustomizerLayout() {
+        FilesystemCustomEditorOperator customizer = new FilesystemCustomEditorOperator(propertyCustomizer);
+        customizer.verify();
+        customizer.btOK();
+        customizer.btCancel();
+        customizer.btHelp();
+    }    
     
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line
@@ -161,8 +172,5 @@ public class PropertyType_Filesystem extends PropertyEditorsTest {
         //junit.textui.TestRunner.run(new NbTestSuite(PropertyType_Filesystem.class));
         junit.textui.TestRunner.run(suite());
     }
-    
-    public void verifyCustomizerLayout() {
-    }    
     
 }

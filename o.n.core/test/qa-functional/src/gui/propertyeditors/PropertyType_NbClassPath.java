@@ -13,13 +13,11 @@
 
 package gui.propertyeditors;
 
-
 import org.netbeans.junit.NbTestSuite;
+
 import gui.propertyeditors.utilities.PropertyEditorsSupport;
 
 import org.netbeans.jellytools.properties.editors.ClasspathCustomEditorOperator;
-
-
 
 /**
  * Tests of NbClassPath Property Editor.
@@ -73,6 +71,7 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
         
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new PropertyType_NbClassPath("testByInPlace"));
+        suite.addTest(new PropertyType_NbClassPath("verifyCustomizer")); 
         suite.addTest(new PropertyType_NbClassPath("testCustomizerCancel")); 
         suite.addTest(new PropertyType_NbClassPath("testCustomizerAddDirectory"));
         suite.addTest(new PropertyType_NbClassPath("testCustomizerRemove"));
@@ -136,6 +135,10 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
         setByInPlace(propertyName_L, propertyValue_L, true);
     }
     
+    public void verifyCustomizer() {
+        verifyCustomizer(propertyName_L);
+    }
+    
     public void setCustomizerValue() {
         ClasspathCustomEditorOperator customizer = new ClasspathCustomEditorOperator(propertyCustomizer);
         
@@ -177,6 +180,13 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
         return str;
     }
     
+    public void verifyCustomizerLayout() {
+        ClasspathCustomEditorOperator customizer = new ClasspathCustomEditorOperator(propertyCustomizer);
+        customizer.verify();
+        customizer.btOK();
+        customizer.btCancel();
+    }    
+    
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line
      */
@@ -184,8 +194,5 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
         //junit.textui.TestRunner.run(new NbTestSuite(PropertyType_NbClassPath.class));
         junit.textui.TestRunner.run(suite());
     }
-    
-    public void verifyCustomizerLayout() {
-    }    
     
 }

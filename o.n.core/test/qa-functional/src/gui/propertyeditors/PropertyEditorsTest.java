@@ -173,7 +173,7 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
         }
     }
     
-    private void verifyCustomizer(String propertyName){
+    public void verifyCustomizer(String propertyName){
         try {
             err.println(CAPTION + " Trying to verify customizer {name="+propertyName+"} .");
             openAndGetPropertyCustomizer(propertyName);
@@ -356,12 +356,21 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     }
     
     private void failTest(Exception exc, String message) {
+        makeIDEScreenshot(this);
         err.println("################################");
         exc.printStackTrace(err);
         err.println("################################");
         fail(message);
     }
     
+    public static void makeIDEScreenshot(JellyTestCase testCase) {
+        try{                                                                                                                                           
+            testCase.getWorkDir();                                                                                                                     
+            org.netbeans.jemmy.util.PNGEncoder.captureScreen(testCase.getWorkDirPath()+System.getProperty("file.separator")+"IDEscreenshot.png");      
+        }catch(Exception ioexc){                                                                                                                       
+            testCase.log("Impossible make IDE screenshot!!! \n" + ioexc.toString());                                                                   
+        }                                                                                                                                              
+    }                                                                                                                                                  
     
     public abstract void setCustomizerValue();
     

@@ -41,6 +41,7 @@ public class PropertyType_String extends PropertyEditorsTest {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new PropertyType_String("verifyCustomizer"));
         suite.addTest(new PropertyType_String("testCustomizerCancel"));
         suite.addTest(new PropertyType_String("testCustomizerOk"));
         suite.addTest(new PropertyType_String("testByInPlace"));
@@ -62,6 +63,9 @@ public class PropertyType_String extends PropertyEditorsTest {
         setByInPlace(propertyName_L, propertyValue_L, true);
     }
     
+    public void verifyCustomizer() {
+        verifyCustomizer(propertyName_L);
+    }
     
     public void setCustomizerValue() {
         StringCustomEditorOperator customizer = new StringCustomEditorOperator(propertyCustomizer);
@@ -80,6 +84,12 @@ public class PropertyType_String extends PropertyEditorsTest {
         }
     }
     
+    public void verifyCustomizerLayout() {
+        StringCustomEditorOperator customizer = new StringCustomEditorOperator(propertyCustomizer);
+        customizer.verify();
+        customizer.btOK();
+        customizer.btCancel();
+    }    
     
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line
@@ -88,8 +98,5 @@ public class PropertyType_String extends PropertyEditorsTest {
         //junit.textui.TestRunner.run(new NbTestSuite(PropertyType_String.class));
         junit.textui.TestRunner.run(suite());
     }
-    
-    public void verifyCustomizerLayout() {
-    }    
     
 }

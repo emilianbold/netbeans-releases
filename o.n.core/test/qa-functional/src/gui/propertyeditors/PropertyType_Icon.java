@@ -57,6 +57,7 @@ public class PropertyType_Icon extends PropertyEditorsTest {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new PropertyType_Icon("verifyCustomizer"));
         suite.addTest(new PropertyType_Icon("testCustomizerCancel"));
         suite.addTest(new PropertyType_Icon("testCustomizerOkURL"));
         suite.addTest(new PropertyType_Icon("testCustomizerOkFile"));
@@ -125,6 +126,10 @@ public class PropertyType_Icon extends PropertyEditorsTest {
         setByInPlace(propertyName_L, propertyValue_L, true);
     }
     
+    public void verifyCustomizer() {
+        verifyCustomizer(propertyName_L);
+    }
+    
     public void setCustomizerValue() {
         IconCustomEditorOperator customizer = new IconCustomEditorOperator(propertyCustomizer);
         
@@ -179,6 +184,13 @@ public class PropertyType_Icon extends PropertyEditorsTest {
         return returnValue;
     }
     
+    public void verifyCustomizerLayout() {
+        IconCustomEditorOperator customizer = new IconCustomEditorOperator(propertyCustomizer);
+        customizer.verify();
+        customizer.btOK();
+        customizer.btCancel();
+    }    
+    
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line
      */
@@ -186,8 +198,5 @@ public class PropertyType_Icon extends PropertyEditorsTest {
         //junit.textui.TestRunner.run(new NbTestSuite(PropertyType_Icon.class));
         junit.textui.TestRunner.run(suite());
     }
-    
-    public void verifyCustomizerLayout() {
-    }    
     
 }

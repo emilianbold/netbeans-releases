@@ -52,6 +52,7 @@ public class PropertyType_ExtensionList extends PropertyEditorsTest {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new PropertyType_ExtensionList("testByInPlace"));
+        suite.addTest(new PropertyType_ExtensionList("verifyCustomizer"));
         suite.addTest(new PropertyType_ExtensionList("testCustomizerCancel"));
         suite.addTest(new PropertyType_ExtensionList("testCustomizerAdd"));
         suite.addTest(new PropertyType_ExtensionList("testCustomizerRemove"));
@@ -95,6 +96,10 @@ public class PropertyType_ExtensionList extends PropertyEditorsTest {
         setByInPlace(propertyName_L, propertyValue_L, true);
     }
     
+    public void verifyCustomizer() {
+        verifyCustomizer(propertyName_L);
+    }
+    
     public void setCustomizerValue() {
         StringArrayCustomEditorOperator customizer = new StringArrayCustomEditorOperator(propertyCustomizer);
         
@@ -107,9 +112,7 @@ public class PropertyType_ExtensionList extends PropertyEditorsTest {
         }
         
         if(propertyValue_L.startsWith(EDIT)){
-            customizer.lstItemList().selectItem(getItem(propertyValue_L,EDIT));
-            customizer.setItemText(getItem(propertyValue_L,EE));
-            customizer.edit();
+            customizer.edit(getItem(propertyValue_L,EDIT), getItem(propertyValue_L,EE));
         }
         
     }
@@ -117,7 +120,6 @@ public class PropertyType_ExtensionList extends PropertyEditorsTest {
     public void verifyPropertyValue(boolean expectation) {
         verifyExpectationValue(propertyName_L,expectation, propertyValueExpectation_L, propertyValue_L, waitDialog);
     }
-    
     
     private String getItem(String str, String delim) {
         int first = str.indexOf(delim);
@@ -130,15 +132,23 @@ public class PropertyType_ExtensionList extends PropertyEditorsTest {
         }
     }
     
+    public void verifyCustomizerLayout() {
+        StringArrayCustomEditorOperator customizer = new StringArrayCustomEditorOperator(propertyCustomizer);
+        customizer.btAdd();
+        customizer.btRemove();
+        customizer.btEdit();
+        customizer.lstItemList();
+        customizer.txtItemText();
+        customizer.btOK();
+        customizer.btCancel();
+    }
+    
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line
      */
     public static void main(String[] args) {
         //junit.textui.TestRunner.run(new NbTestSuite(PropertyType_ExtensionList.class));
         junit.textui.TestRunner.run(suite());
-    }
-    
-    public void verifyCustomizerLayout() {
     }
     
 }

@@ -14,10 +14,10 @@
 package gui.propertyeditors;
 
 import org.netbeans.jellytools.properties.editors.StringCustomEditorOperator;
+
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 
 import org.netbeans.junit.NbTestSuite;
-
 
 /**
  * Tests of Properties Property Editor.
@@ -47,6 +47,7 @@ public class PropertyType_Properties extends PropertyEditorsTest {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new PropertyType_Properties("testByInPlace"));
+        suite.addTest(new PropertyType_Properties("verifyCustomizer"));
         suite.addTest(new PropertyType_Properties("testCustomizerOk"));
         suite.addTest(new PropertyType_Properties("testCustomizerCancel"));
         return suite;
@@ -71,6 +72,9 @@ public class PropertyType_Properties extends PropertyEditorsTest {
         setByInPlace(propertyName_L, propertyValue_L, true);
     }
     
+    public void verifyCustomizer() {
+        verifyCustomizer(propertyName_L);
+    }
     
     public void setCustomizerValue() {
         StringCustomEditorOperator customizer = new StringCustomEditorOperator(propertyCustomizer);
@@ -83,6 +87,13 @@ public class PropertyType_Properties extends PropertyEditorsTest {
         verifyExpectationValue(propertyName_L,expectation, propertyValueExpectation_L, propertyValue_L, false);
     }
     
+    public void verifyCustomizerLayout() {
+        StringCustomEditorOperator customizer = new StringCustomEditorOperator(propertyCustomizer);
+        new JEditorPaneOperator(customizer);
+        customizer.btOK();
+        customizer.btCancel();
+        customizer.btHelp();
+    }    
     
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line
@@ -91,8 +102,5 @@ public class PropertyType_Properties extends PropertyEditorsTest {
         //junit.textui.TestRunner.run(new NbTestSuite(PropertyType_Properties.class));
         junit.textui.TestRunner.run(suite());
     }
-    
-    public void verifyCustomizerLayout() {
-    }    
     
 }

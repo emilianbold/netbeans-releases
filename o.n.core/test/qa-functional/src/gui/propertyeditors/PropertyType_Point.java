@@ -14,13 +14,12 @@
 package gui.propertyeditors;
 
 import java.util.StringTokenizer;
+
 import org.netbeans.jemmy.JemmyException;
 
 import org.netbeans.jellytools.properties.editors.DimensionCustomEditorOperator;
 
 import org.netbeans.junit.NbTestSuite;
-
-
 
 /**
  * Tests of Point Property Editor.
@@ -48,6 +47,7 @@ public class PropertyType_Point extends PropertyEditorsTest {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new PropertyType_Point("verifyCustomizer"));
         suite.addTest(new PropertyType_Point("testCustomizerCancel"));
         suite.addTest(new PropertyType_Point("testCustomizerOk"));
         suite.addTest(new PropertyType_Point("testByInPlace"));
@@ -99,8 +99,11 @@ public class PropertyType_Point extends PropertyEditorsTest {
         setByInPlace(propertyName_L, propertyValue_L, false);
     }
     
+    public void verifyCustomizer() {
+        verifyCustomizer(propertyName_L);
+    }
+    
     public void setCustomizerValue() {
-        
         DimensionCustomEditorOperator customizer = new DimensionCustomEditorOperator(propertyCustomizer);
 
         StringTokenizer st = new StringTokenizer(propertyValue_L, ", ");
@@ -117,6 +120,12 @@ public class PropertyType_Point extends PropertyEditorsTest {
         verifyExpectationValue(propertyName_L,expectation, propertyValueExpectation_L, propertyValue_L, waitDialog);
     }
     
+    public void verifyCustomizerLayout() {
+        DimensionCustomEditorOperator customizer = new DimensionCustomEditorOperator(propertyCustomizer);
+        customizer.verify();
+        customizer.btOK();
+        customizer.btCancel();
+    }    
     
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line
@@ -125,8 +134,5 @@ public class PropertyType_Point extends PropertyEditorsTest {
         //junit.textui.TestRunner.run(new NbTestSuite(PropertyType_Point.class));
         junit.textui.TestRunner.run(suite());
     }
-    
-    public void verifyCustomizerLayout() {
-    }    
     
 }

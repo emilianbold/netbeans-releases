@@ -19,7 +19,6 @@ import org.netbeans.jellytools.properties.editors.ProcessDescriptorCustomEditorO
 
 import org.netbeans.junit.NbTestSuite;
 
-
 /**
  * Tests of NbProcessDescriptor Property Editor.
  *
@@ -54,6 +53,7 @@ public class PropertyType_NbProcessDescriptor extends PropertyEditorsTest {
         
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new PropertyType_NbProcessDescriptor("testByInPlace"));
+        suite.addTest(new PropertyType_NbProcessDescriptor("verifyCustomizer"));
         suite.addTest(new PropertyType_NbProcessDescriptor("testCustomizerCancel"));
         suite.addTest(new PropertyType_NbProcessDescriptor("testCustomizerOk"));
         return suite;
@@ -81,8 +81,11 @@ public class PropertyType_NbProcessDescriptor extends PropertyEditorsTest {
         setByInPlace(propertyName_L, propertyValue_L, true);
     }
     
+    public void verifyCustomizer() {
+        verifyCustomizer(propertyName_L);
+    }
+    
     public void setCustomizerValue() {
-
         ProcessDescriptorCustomEditorOperator customizer = new ProcessDescriptorCustomEditorOperator(propertyCustomizer);
         
         int index = propertyValue_L.indexOf(DELIM);
@@ -98,6 +101,13 @@ public class PropertyType_NbProcessDescriptor extends PropertyEditorsTest {
         verifyExpectationValue(propertyName_L,expectation, propertyValueExpectation_L, propertyValue_L, waitDialog);
     }
     
+    public void verifyCustomizerLayout() {
+        ProcessDescriptorCustomEditorOperator customizer = new ProcessDescriptorCustomEditorOperator(propertyCustomizer);
+        customizer.verify();
+        customizer.btOK();
+        customizer.btCancel();
+        customizer.btHelp();
+    }    
     
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line
@@ -106,8 +116,5 @@ public class PropertyType_NbProcessDescriptor extends PropertyEditorsTest {
         //junit.textui.TestRunner.run(new NbTestSuite(PropertyType_NbProcessDescriptor.class));
         junit.textui.TestRunner.run(suite());
     }
-    
-    public void verifyCustomizerLayout() {
-    }    
     
 }

@@ -16,6 +16,7 @@ package gui.propertyeditors;
 import gui.propertyeditors.utilities.PropertyEditorsSupport;
 
 import org.netbeans.jellytools.properties.editors.FileCustomEditorOperator;
+
 import org.netbeans.jemmy.EventTool;
 
 import org.netbeans.junit.NbTestSuite;
@@ -74,6 +75,9 @@ public class PropertyType_File extends PropertyEditorsTest {
         setByInPlace(propertyName_L, propertyValue_L, true);
     }
     
+    public void verifyCustomizer() {
+        verifyCustomizer(propertyName_L);
+    }
     
     public void setCustomizerValue() {
         FileCustomEditorOperator customizer = new FileCustomEditorOperator(propertyCustomizer);
@@ -86,6 +90,10 @@ public class PropertyType_File extends PropertyEditorsTest {
     }
     
     public void verifyCustomizerLayout() {
+        FileCustomEditorOperator customizer = new FileCustomEditorOperator(propertyCustomizer);
+        customizer.verify();
+        customizer.btOK();
+        customizer.btCancel();
     }    
     
     /** Test could be executed internaly in Forte without XTest
