@@ -35,7 +35,7 @@
             
             <hint>
             Some non-NetBeans projects are packaged as NetBeans modules
-            (see <a href="http://libs.netbeans.org">libraries</a>) and
+            (see <a href="http://libs.netbeans.org/">libraries</a>) and
             it is prefered to use this approach when more modules may
             depend on such third-party library.
             </hint>
@@ -291,8 +291,8 @@
         </question>
         
         <question id="exec-introspection">
-            Does your module use any kind of runtime type informations (instanceof,
-            work with java.lang.Class, etc.)?
+            Does your module use any kind of runtime type information (<code>instanceof</code>,
+            work with <code>java.lang.Class</code>, etc.)?
             <hint>
             Check for cases when you have an object of type A and you also
             expect it to (possibly) be of type B and do some special action. That
