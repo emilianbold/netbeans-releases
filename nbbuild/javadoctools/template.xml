@@ -114,8 +114,14 @@ cause it to fail.
                 <not>
                     <isset property="javadoc.packages" />
                 </not>
+                <equals arg1="${javadoc.packages}" arg2="" />
             </or>
         </condition>
+        <!--
+        <echo message="AAA: ${javadoc.should.not.be.generated}" />
+        <echo message="BBB: ${javadoc.up.to.date}" />
+        <echo message="CCC: ${javadoc.packages}" />
+        -->
     </target>
 
     <target name="javadoc-make-plain-title" unless="javadoc.main.page">
