@@ -203,7 +203,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
             if (selIndex != -1) {
                 commandMgr.slideIn(selIndex);
             } else {
-                commandMgr.slideOut(false, true);
+                commandMgr.slideOut(true, true);
             }
         }
     }
@@ -306,6 +306,10 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     
     boolean isActive() {
         return active;
+    }
+    
+    boolean isHoveringAllowed() {
+        return !isActive() || !commandMgr.isCompSlided();
     }
     
     int getButtonIndex(Component button) {

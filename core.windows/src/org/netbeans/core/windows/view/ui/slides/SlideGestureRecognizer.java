@@ -88,7 +88,7 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
 
     /** Activates automatic slide in system */
     public void mouseEntered(MouseEvent e) {
-        if (slideBar.isActive()) {
+        if (!slideBar.isHoveringAllowed()) {
             // don't even try to trigger automatic sliding when focused slide is active
             return;
         }
@@ -106,11 +106,13 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
     
     /** Reacts to popup triggers on sliding buttons */
     public void mousePressed(MouseEvent e) {
+        autoSlideTrigger.deactivateAutoSlideInGesture();
         handlePopupRequests(e);
     }
     
     /** Reacts to popup triggers on sliding buttons */
     public void mouseReleased(MouseEvent e) {
+        autoSlideTrigger.deactivateAutoSlideInGesture();
         handlePopupRequests(e);
     }
     
