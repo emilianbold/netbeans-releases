@@ -13,573 +13,526 @@
 
 package com.netbeans.developer.modules.text.options;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Point;
-import java.awt.BorderLayout;
-import java.awt.Dialog;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.ItemEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyEditor;
-import java.beans.PropertyEditorManager;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import java.awt.*;
+import java.beans.*;
+import java.lang.reflect.InvocationTargetException;
+
+import org.openide.explorer.propertysheet.PropertyPanel;
+import org.openide.explorer.propertysheet.PropertyModel;
 import com.netbeans.editor.Coloring;
-import com.netbeans.editor.ColoringManager;
-import com.netbeans.editor.DefaultSettings;
-import org.openide.TopManager;
-import org.openide.DialogDescriptor;
-import org.openide.util.HelpCtx;
+import com.netbeans.editor.Settings;
+import com.netbeans.developer.editors.FontEditor;
+import com.netbeans.developer.editors.ColorEditor;
 
 /** 
- *
- * @author  mmetelka
- * @version 
+ * ColoringEditorPanel is custom property editor operating
+ * over ColoringBean, it is interfaced only through ColoringEditor
+ * @author  Petr Nejedly
+ * 
+ * TODO: remove updateUIs as Hans will repair PropertyPanel
  */
 public class ColoringEditorPanel extends javax.swing.JPanel {
 
-  private static final String FONT = "font";
-  private static final String FORE_COLOR = "foreColor";
-  private static final String BACK_COLOR = "backColor";
-  
-  private static final Coloring DEFAULT_COLORING
-      = new Coloring(
-          "default",
-          DefaultSettings.defaultFont,
-          DefaultSettings.defaultForeColor,
-          DefaultSettings.defaultBackColor
-      );
+  /** Access to our localized texts */
+  static java.util.ResourceBundle bundle = 
+    org.openide.util.NbBundle.getBundle( ColoringEditorPanel.class );
 
-  private Coloring coloring;
+  /** support for distributing change events. */                                    
+  private PropertyChangeSupport support;   
+  private boolean firing = false;
   
-  private Coloring defaultColoring = DEFAULT_COLORING;
+  /** the value we're operating over. */
+  private ColoringBean value;
   
-  private boolean canFire;
+  /** PropertyModels for Coloring's properties */
+  private PropertyModel fontEditor;
+  private PropertyModel fgColorEditor;
+  private PropertyModel bgColorEditor;
   
-  private Editor editor;
+  /** PropertyPanels for visual editing of Coloring's properties.
+   * We need'em for enabling/disabling  
+   */
+  private PropertyPanel fontEditPanel;
+  private PropertyPanel fgEditPanel;
+  private PropertyPanel bgEditPanel;
   
-  private String editorProp;
+  /** Component for preview actual coloring composed of value and defaultColoring
+   */
+  private ColoringPreview preview;
   
-static final long serialVersionUID =-1215879026462786721L;
   /** Creates new form ColoringEditorPanel */
   public ColoringEditorPanel() {
+    support = new PropertyChangeSupport(this); 
+
+    Coloring def =  new Coloring( Font.decode( null ), Color.black, Color.white );    
+    value = new ColoringBean(def, "null", def, true );
+    
     initComponents ();
-    preview.setOpaque(true);
-    fontPreview.setForeground(Color.black);
-    fontPreview.setBackground(Color.white);
-    canFire = true;
-    addListeners();
-    HelpCtx.setHelpIDString (this, ColoringEditorPanel.class.getName ());
-  }
-  
-  public Coloring getColoring() {
-    return coloring;
-  }
-  
-  public void setColoring(Coloring coloring) {
-    this.coloring = coloring;
-    updatePanel();
-  }
-  
-  public void setDefaultColoring(Coloring defaultColoring) {
-    if (defaultColoring != null) { // must be non-null
-      this.defaultColoring = defaultColoring;
-      updatePanel();
-    }
-  }
 
-  public void setExample(String example) {
-    fontPreview.setText(example);
-    preview.setText(example);
-  }
-  
-  private void updatePanel() {
-    canFire = false;
-
-    Font f = coloring.getFont();
-    boolean t = false;
-    if (f == null) {
-      t = true;
-      f = defaultColoring.getFont();
-    }
-    fontPreview.setFont(f);
-    fontTransparent.setSelected(t);
-    fontChange.setEnabled(!t);
+    preview = new ColoringPreview();
+    previewPanel.add( preview, BorderLayout.CENTER );
     
-    Color c = coloring.getForeColor();
-    t = false;
-    if (c == null) {
-      t = true;
-      c = defaultColoring.getForeColor();
-    }
-    foreColorPreview.setBackground(c);
-    foreColorTransparent.setSelected(t);
-    foreColorChange.setEnabled(!t);
+    fontEditor = new PropertyModelSupport( Font.class, FontEditor.class );
+    fontEditor.addPropertyChangeListener( new PropertyChangeListener() {
+      public void propertyChange( PropertyChangeEvent evt ) {
+        Font newFont = null;
+        Font actFont = value.coloring.getFont();
+
+        // ShortHand if editor is only showing inherited value, ignore changes
+        if( actFont == null ) return;
+
+        // Request the value currenly displayed
+        try {
+          newFont = (Font)fontEditor.getValue();
+        } catch( InvocationTargetException e ) {
+          if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();  
+        }
+
+        if( newFont == null ) return;
+        
+        // If displayed value is different, user have changed it, not setValue
+        if( ! newFont.equals( actFont ) ) {
+//          System.err.println( "Fonts aren't equal, newFont = " + newFont + ", oldFont = " + oldFont );
+//          System.err.println( "newFont.class = " + newFont.getClass() + ", oldFont.class = " + oldFont.getClass() );
+          setValueImpl( Coloring.changeFont( value.coloring, newFont ) );
+        }
+      }
+    });
+    fontEditPanel = new PropertyPanel( fontEditor, 0 );
+    fontPanel.add( fontEditPanel, java.awt.BorderLayout.CENTER );
     
-    c = coloring.getBackColor();
-    t = false;
-    if (c == null) {
-      t = true;
-      c = defaultColoring.getBackColor();
-    }
-    backColorPreview.setBackground(c);
-    backColorTransparent.setSelected(t);
-    backColorChange.setEnabled(!t);
+    fgColorEditor = new PropertyModelSupport( Color.class, ColorEditor.class );
+    fgColorEditor.addPropertyChangeListener( new PropertyChangeListener() {
+      public void propertyChange( PropertyChangeEvent evt ) {
+        Color newColor = null;        
+        Color foreColor = value.coloring.getForeColor();
 
-    if (coloring.getName().equals(ColoringManager.DEFAULT)) {
-      fontTransparent.setEnabled(false);
-      foreColorTransparent.setEnabled(false);
-      backColorTransparent.setEnabled(false);
-      fontChange.setEnabled(true);
-      foreColorChange.setEnabled(true);
-      backColorChange.setEnabled(true);
-    }
+        // ShortHand if editor is only showing inherited value
+        if( foreColor == null ) return;
 
-    updatePreview();
+        // Request the value currenly displayed
+        try {
+          newColor = (Color)fgColorEditor.getValue();
+        } catch( InvocationTargetException e ) {
+          if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();  
+        }
 
-    canFire = true;
+        if( newColor == null ) return;  // Yep; editor is able to send us null color
+        
+        // If displayed value is different, user have changed it, not setValue
+        if( ! newColor.equals( foreColor ) )
+          setValueImpl( Coloring.changeForeColor( value.coloring, newColor ) );
+      }
+    });
+    fgEditPanel = new PropertyPanel( fgColorEditor, 0 );
+    fgColorPanel.add( fgEditPanel, java.awt.BorderLayout.CENTER );
+    
+    bgColorEditor = new PropertyModelSupport( Color.class, ColorEditor.class );
+    bgColorEditor.addPropertyChangeListener( new PropertyChangeListener() {
+      public void propertyChange( PropertyChangeEvent evt ) {
+        Color newColor = null;
+        Color backColor = value.coloring.getBackColor();
+
+        // ShortHand if editor is only showing inherited value
+        if( backColor == null ) return;
+
+        // Request the value currenly displayed
+        try {
+          newColor = (Color)bgColorEditor.getValue();
+        } catch( InvocationTargetException e ) {
+          if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();  
+        }
+
+        if( newColor == null ) return; // Yep; editor is able to send us null color
+        
+        // If displayed value is different, user have changed it, not setValue
+        if( ! newColor.equals( backColor ) ) {
+          setValueImpl( Coloring.changeBackColor( value.coloring, newColor ) );
+        }
+      }
+    });
+    bgEditPanel = new PropertyPanel( bgColorEditor, 0 );
+    bgColorPanel.add( bgEditPanel, java.awt.BorderLayout.CENTER );  
+
+    updateEditors();
+  }
+  
+  /**
+   *  Used by underlaying ColoringEditor to query actual Coloring
+   */
+  public ColoringBean getValue() {
+    return value;
   }
 
-  private void updatePreview() {
-    preview.setFont(fontPreview.getFont());
-    preview.setBackground(backColorPreview.getBackground());
-    preview.setForeground(foreColorPreview.getBackground());
-  }
-   
-  private void updateEditor(Coloring c) {
-    if (editor != null) {
-      Object value;
-      if (editorProp.equals(FONT)) {
-        value = c.getFont();
-      } else if (editorProp.equals(FORE_COLOR)) {
-        value = c.getForeColor();
+  /**
+   * Used to adjust current coloring from underlaying
+   * ColoringEditor - initial setup of displayed / edited value
+   */
+  public void setValue( ColoringBean value ) {
+    if( (value == null) || (value.coloring == null) ) {
+//      System.err.println("null value rejected" );
+      return;
+    }
+    if( this.value != value ) {
+      this.value = value;
+      updateEditors();
+updateUI();
+      preview.setValue( value );
+
+      if( !firing ) {
+        firing = true;
+        support.firePropertyChange( "value", null, null );
+        firing = false;
       } else {
-        value = c.getBackColor();
-      }
-
-      editor.setValue(value);
-    }
-  }
-
-  private void updateFromEditor() {
-    if (editor != null) {
-      Object value = editor.getValue();
-      if (editorProp.equals(FONT)) {
-        fontPreview.setFont((Font)value);
-      } else if (editorProp.equals(FORE_COLOR)) {
-        foreColorPreview.setBackground((Color)value);
-      } else {
-        backColorPreview.setBackground((Color)value);
+//        System.err.println( "!!!! Already firing: ColoringEditorPanel[163] !!!!" );
       }
     }
   }
 
-  private void updateColoring() {
-    Coloring c = coloring;
-    c = Coloring.changeFont(c, fontTransparent.isSelected()
-        ? null : fontPreview.getFont());
-    c = Coloring.changeForeColor(c, foreColorTransparent.isSelected()
-        ? null : foreColorPreview.getBackground());
-    c = Coloring.changeBackColor(c, backColorTransparent.isSelected()
-        ? null : backColorPreview.getBackground());
-
-    updateEditor(c);
-
-    if (!c.equals(coloring)) {
-      Coloring old = coloring;
-      coloring = c;
-      updatePreview();
-      firePropertyChange("value", old, coloring);
-    }
-  }
-
-  private void createEditor(String prop) {
-    if (editor == null) {
-      Class propClass = (prop.equals(FONT) ? Font.class : Color.class);
-      editorProp = prop;
-      editor = new Editor(propClass);
-      updateEditor(coloring);
-      editor.setOldValue(editor.getValue());
-      editor.setVisible(true);
-    }
-  }
-
-  private void clearEditor() {
-    editor = null;
-  }
-
-  private void addListeners() {
-    fontPreview.addPropertyChangeListener(
-      new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          if (canFire && "font".equals(evt.getPropertyName())) {
-            updateColoring();
-          }
-        }
-      }
-    );
-    fontTransparent.addItemListener(
-      new ItemListener() {
-        public void itemStateChanged(ItemEvent evt) {
-          if (canFire) {
-            boolean s = fontTransparent.isSelected();
-            fontChange.setEnabled(!s);
-            if (s) {
-              fontPreview.setFont(defaultColoring.getFont());
-            }
-            updateColoring();
-          }
-        }
-      }
-    );
     
-    foreColorPreview.addPropertyChangeListener(
-      new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          if (canFire && "background".equals(evt.getPropertyName())) {
-            updateColoring();
-          }
-        }
-      }
-    );
-    foreColorTransparent.addItemListener(
-      new ItemListener() {
-        public void itemStateChanged(ItemEvent evt) {
-          if (canFire) {
-            boolean s = foreColorTransparent.isSelected();
-            foreColorChange.setEnabled(!s);
-            if (s) {
-              foreColorPreview.setBackground(defaultColoring.getForeColor());
-            }
-            updateColoring();
-          }
-        }
-      }
-    );
+  private void setValueImpl( Coloring newColoring ) {   
 
-    backColorPreview.addPropertyChangeListener(
-      new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          if (canFire && "background".equals(evt.getPropertyName())) {
-            updateColoring();
-          }
-        }
-      }
-    );
-    backColorTransparent.addItemListener(
-      new ItemListener() {
-        public void itemStateChanged(ItemEvent evt) {
-          if (canFire) {
-            boolean s = backColorTransparent.isSelected();
-            backColorChange.setEnabled(!s);
-            if (s) {
-              backColorPreview.setBackground(defaultColoring.getBackColor());
-            }
-            updateColoring();
-          }
-        }
-      }
-    );
+    value = value.changeColoring( newColoring );
+
+    preview.setValue( value );
+updateUI();
+
+    if( !firing ) {
+      firing = true;
+      support.firePropertyChange( "value", null, null );
+      firing = false;
+    } else {
+//      System.err.println( "!!!!! Already firing: ColoringEditorPanel[205] !!!!!" );
+    }
   }
+
+  
+  private void updateEditors() {
+    if( value == null ) {
+      return;
+    }
     
+    boolean fontInherit = value.coloring.getFont() == null;
+    boolean fgInherit = value.coloring.getForeColor() == null;
+    boolean bgInherit = value.coloring.getBackColor() == null;
+
+    try {
+      fontEditor.setValue( (fontInherit ? value.defaultColoring : value.coloring).getFont() );
+      fgColorEditor.setValue( (fgInherit ? value.defaultColoring : value.coloring).getForeColor() );            
+      bgColorEditor.setValue( (bgInherit ? value.defaultColoring : value.coloring).getBackColor() );
+    } catch( InvocationTargetException e ) {
+      if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();  
+    }
+    
+
+    if( value.isDefault ) {
+      // default coloring can't inherit values from itself
+      fontCheckBox.setSelected( false );
+      fontCheckBox.setEnabled( false ); // don't inherit
+      fontEditPanel.setPreferences( 0 );  // is editable
+
+      fgCheckBox.setSelected( false );
+      fgCheckBox.setEnabled( false );
+      fgEditPanel.setPreferences( 0 );
+
+      bgCheckBox.setSelected( false );
+      bgCheckBox.setEnabled( false );      
+      bgEditPanel.setPreferences( 0 );
+
+    } else {
+      // non-default coloring - can inherit, some fields set to inherited
+      fontCheckBox.setSelected( fontInherit );
+      fontCheckBox.setEnabled( true );
+      fontEditPanel.setPreferences( fontInherit ? PropertyPanel.PREF_READ_ONLY : 0 );
+      
+      fgCheckBox.setSelected( fgInherit );
+      fgCheckBox.setEnabled( true );
+      fgEditPanel.setPreferences( fgInherit ? PropertyPanel.PREF_READ_ONLY : 0 );
+
+      bgCheckBox.setSelected( bgInherit );
+      bgCheckBox.setEnabled( true );      
+      bgEditPanel.setPreferences( bgInherit ? PropertyPanel.PREF_READ_ONLY : 0 );
+    }      
+    
+  }
+  
+
+  /** Adds listener to change of the value.                                     
+   */                                                                           
+  public void addPropertyChangeListener(PropertyChangeListener l) {             
+    support.addPropertyChangeListener(l);                                       
+  }                                                                             
+                                                                                
+  /** Removes listener to change of the value.                                  
+   */                                                                           
+  public void removePropertyChangeListener(PropertyChangeListener l) {          
+    support.removePropertyChangeListener(l);                                    
+  } 
+
+  /** To make us looking bigger */
+  public Dimension getPreferredSize() {
+    Dimension small = super.getPreferredSize();
+//    small.width *= 1.2;
+    small.height *= 1.2;
+    return small;
+  }
+  
   /** This method is called from within the constructor to
    * initialize the form.
    * WARNING: Do NOT modify this code. The content of this method is
    * always regenerated by the FormEditor.
    */
-private void initComponents () {//GEN-BEGIN:initComponents
-setLayout (new java.awt.GridBagLayout ());
-java.awt.GridBagConstraints gridBagConstraints1;
+  private void initComponents () {//GEN-BEGIN:initComponents
+    fontPanel = new javax.swing.JPanel ();
+    fontCheckBox = new javax.swing.JCheckBox ();
+    fgColorPanel = new javax.swing.JPanel ();
+    fgCheckBox = new javax.swing.JCheckBox ();
+    bgColorPanel = new javax.swing.JPanel ();
+    bgCheckBox = new javax.swing.JCheckBox ();
+    previewPanel = new javax.swing.JPanel ();
+    setLayout (new java.awt.GridBagLayout ());
+    java.awt.GridBagConstraints gridBagConstraints1;
 
-fontPanel = new javax.swing.JPanel ();
-fontPanel.setLayout (new java.awt.GridBagLayout ());
-java.awt.GridBagConstraints gridBagConstraints2;
-fontPanel.setBorder (new javax.swing.border.TitledBorder(
-  new javax.swing.border.EtchedBorder(), "Font"));
+    fontPanel.setLayout (new java.awt.BorderLayout ());
+    fontPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_FontTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8))));
 
-  fontPreview = new javax.swing.JLabel ();
-  fontPreview.setText ("Text");
-  fontPreview.setHorizontalAlignment (0);
-  
-  gridBagConstraints2 = new java.awt.GridBagConstraints ();
-  gridBagConstraints2.fill = java.awt.GridBagConstraints.HORIZONTAL;
-  gridBagConstraints2.weightx = 1.0;
-  fontPanel.add (fontPreview, gridBagConstraints2);
-  
-  fontChange = new javax.swing.JButton ();
-  fontChange.setText ("Change ...");
-  fontChange.addActionListener (new java.awt.event.ActionListener () {
-  public void actionPerformed (java.awt.event.ActionEvent evt) {
-  fontChangeActionPerformed (evt);
-  }
-  }
-  );
-  
-  gridBagConstraints2 = new java.awt.GridBagConstraints ();
-  gridBagConstraints2.gridwidth = 0;
-  gridBagConstraints2.insets = new java.awt.Insets (5, 5, 5, 5);
-  fontPanel.add (fontChange, gridBagConstraints2);
-  
-  fontTransparent = new javax.swing.JCheckBox ();
-  fontTransparent.setText ("Transparent");
-  
-  gridBagConstraints2 = new java.awt.GridBagConstraints ();
-  gridBagConstraints2.gridwidth = 0;
-  gridBagConstraints2.insets = new java.awt.Insets (5, 5, 5, 5);
-  fontPanel.add (fontTransparent, gridBagConstraints2);
-  
-
-gridBagConstraints1 = new java.awt.GridBagConstraints ();
-gridBagConstraints1.gridwidth = 0;
-gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-gridBagConstraints1.weightx = 1.0;
-add (fontPanel, gridBagConstraints1);
-
-foreColorPanel = new javax.swing.JPanel ();
-foreColorPanel.setLayout (new java.awt.GridBagLayout ());
-java.awt.GridBagConstraints gridBagConstraints3;
-foreColorPanel.setBorder (new javax.swing.border.TitledBorder(
-  new javax.swing.border.EtchedBorder(), "Foreground Color"));
-
-  foreColorPreview = new javax.swing.JPanel ();
-  foreColorPreview.setLayout (new java.awt.FlowLayout ());
-  foreColorPreview.setPreferredSize (new java.awt.Dimension(50, 27));
-  foreColorPreview.setBackground (java.awt.Color.red);
-  
-  gridBagConstraints3 = new java.awt.GridBagConstraints ();
-  gridBagConstraints3.fill = java.awt.GridBagConstraints.HORIZONTAL;
-  gridBagConstraints3.insets = new java.awt.Insets (5, 5, 5, 5);
-  gridBagConstraints3.weightx = 1.0;
-  foreColorPanel.add (foreColorPreview, gridBagConstraints3);
-  
-  foreColorChange = new javax.swing.JButton ();
-  foreColorChange.setText ("Change ...");
-  foreColorChange.addActionListener (new java.awt.event.ActionListener () {
-  public void actionPerformed (java.awt.event.ActionEvent evt) {
-  foreColorChangeActionPerformed (evt);
-  }
-  }
-  );
-  
-  gridBagConstraints3 = new java.awt.GridBagConstraints ();
-  gridBagConstraints3.gridwidth = 0;
-  gridBagConstraints3.insets = new java.awt.Insets (5, 5, 5, 5);
-  foreColorPanel.add (foreColorChange, gridBagConstraints3);
-  
-  foreColorTransparent = new javax.swing.JCheckBox ();
-  foreColorTransparent.setText ("Transparent");
-  
-  gridBagConstraints3 = new java.awt.GridBagConstraints ();
-  gridBagConstraints3.gridwidth = 0;
-  gridBagConstraints3.insets = new java.awt.Insets (5, 5, 5, 5);
-  foreColorPanel.add (foreColorTransparent, gridBagConstraints3);
-  
-
-gridBagConstraints1 = new java.awt.GridBagConstraints ();
-gridBagConstraints1.gridwidth = 0;
-gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-gridBagConstraints1.weightx = 1.0;
-add (foreColorPanel, gridBagConstraints1);
-
-backColorPanel = new javax.swing.JPanel ();
-backColorPanel.setLayout (new java.awt.GridBagLayout ());
-java.awt.GridBagConstraints gridBagConstraints4;
-backColorPanel.setBorder (new javax.swing.border.TitledBorder(
-  new javax.swing.border.EtchedBorder(), "Background Color"));
-
-  backColorPreview = new javax.swing.JPanel ();
-  backColorPreview.setLayout (new java.awt.FlowLayout ());
-  backColorPreview.setPreferredSize (new java.awt.Dimension(50, 27));
-  backColorPreview.setBackground (java.awt.Color.red);
-  
-  gridBagConstraints4 = new java.awt.GridBagConstraints ();
-  gridBagConstraints4.fill = java.awt.GridBagConstraints.HORIZONTAL;
-  gridBagConstraints4.insets = new java.awt.Insets (5, 5, 5, 5);
-  gridBagConstraints4.weightx = 1.0;
-  backColorPanel.add (backColorPreview, gridBagConstraints4);
-  
-  backColorChange = new javax.swing.JButton ();
-  backColorChange.setText ("Change ...");
-  backColorChange.addActionListener (new java.awt.event.ActionListener () {
-  public void actionPerformed (java.awt.event.ActionEvent evt) {
-  backColorChangeActionPerformed (evt);
-  }
-  }
-  );
-  
-  gridBagConstraints4 = new java.awt.GridBagConstraints ();
-  gridBagConstraints4.gridwidth = 0;
-  gridBagConstraints4.insets = new java.awt.Insets (5, 5, 5, 5);
-  backColorPanel.add (backColorChange, gridBagConstraints4);
-  
-  backColorTransparent = new javax.swing.JCheckBox ();
-  backColorTransparent.setText ("Transparent");
-  
-  gridBagConstraints4 = new java.awt.GridBagConstraints ();
-  gridBagConstraints4.gridwidth = 0;
-  gridBagConstraints4.insets = new java.awt.Insets (5, 5, 5, 5);
-  backColorPanel.add (backColorTransparent, gridBagConstraints4);
-  
-
-gridBagConstraints1 = new java.awt.GridBagConstraints ();
-gridBagConstraints1.gridwidth = 0;
-gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-gridBagConstraints1.weightx = 1.0;
-add (backColorPanel, gridBagConstraints1);
-
-previewPanel = new javax.swing.JPanel ();
-previewPanel.setLayout (new java.awt.GridBagLayout ());
-java.awt.GridBagConstraints gridBagConstraints5;
-previewPanel.setBorder (new javax.swing.border.TitledBorder(
-  new javax.swing.border.EtchedBorder(), "Preview"));
-
-  preview = new javax.swing.JLabel ();
-  preview.setBorder (new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)));
-  preview.setHorizontalTextPosition (0);
-  preview.setText ("Text");
-  preview.setHorizontalAlignment (0);
-  
-  gridBagConstraints5 = new java.awt.GridBagConstraints ();
-  gridBagConstraints5.fill = java.awt.GridBagConstraints.HORIZONTAL;
-  gridBagConstraints5.insets = new java.awt.Insets (5, 5, 5, 5);
-  gridBagConstraints5.weightx = 1.0;
-  previewPanel.add (preview, gridBagConstraints5);
-  
-
-gridBagConstraints1 = new java.awt.GridBagConstraints ();
-gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-gridBagConstraints1.weightx = 1.0;
-add (previewPanel, gridBagConstraints1);
-
-}//GEN-END:initComponents
-
-  private void backColorChangeActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backColorChangeActionPerformed
-    // Add your handling code here:
-    createEditor(BACK_COLOR);
-    
-  }//GEN-LAST:event_backColorChangeActionPerformed
-
-  private void foreColorChangeActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_foreColorChangeActionPerformed
-    // Add your handling code here:
-    createEditor(FORE_COLOR);
-    
-  }//GEN-LAST:event_foreColorChangeActionPerformed
-
-  private void fontChangeActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fontChangeActionPerformed
-    // Add your handling code here:
-    createEditor(FONT);
-  
-  }//GEN-LAST:event_fontChangeActionPerformed
-
-
-// Variables declaration - do not modify//GEN-BEGIN:variables
-private javax.swing.JPanel fontPanel;
-private javax.swing.JLabel fontPreview;
-private javax.swing.JButton fontChange;
-private javax.swing.JCheckBox fontTransparent;
-private javax.swing.JPanel foreColorPanel;
-private javax.swing.JPanel foreColorPreview;
-private javax.swing.JButton foreColorChange;
-private javax.swing.JCheckBox foreColorTransparent;
-private javax.swing.JPanel backColorPanel;
-private javax.swing.JPanel backColorPreview;
-private javax.swing.JButton backColorChange;
-private javax.swing.JCheckBox backColorTransparent;
-private javax.swing.JPanel previewPanel;
-private javax.swing.JLabel preview;
-// End of variables declaration//GEN-END:variables
-  
-  class Editor {
-    
-    Dialog dialog;
-
-    DialogDescriptor dialogDescriptor;
-    
-    Object oldValue;
-
-    PropertyEditor editor;
-
-    PropertyChangeListener pcl = new PropertyChangeListener() {
-      public void propertyChange(PropertyChangeEvent evt) {
-        updateFromEditor();
-      }
-    };
-          
-    
-    Editor(Class propClass) {
-      editor = PropertyEditorManager.findEditor(propClass);
-      if (propClass == Color.class) {
-        editor.setValue(Color.black);
-      } else if (propClass == Font.class) {
-        editor.setValue(DefaultSettings.defaultFont);
-      }
- 
-      JPanel p = new JPanel(new BorderLayout());
-      p.add(editor.getCustomEditor());
-
-      dialogDescriptor = new DialogDescriptor(p, "");
-      dialog = TopManager.getDefault().createDialog(dialogDescriptor);
-      dialog.pack();
-    }
-    
-    public void setVisible(boolean visible) {
-      if (visible) {
-//        Point p = new Point(getX() + getWidth(), getY());
-//        SwingUtilities.convertPointToScreen(p, ColoringEditorPanel.this);
-//        editor.setLocation(p);
-        editor.addPropertyChangeListener(pcl);
-        dialog.setVisible(true);
-        editor.removePropertyChangeListener(pcl);
-
-        Object o = dialogDescriptor.getValue();
-        if (o == DialogDescriptor.OK_OPTION) { // ok pressed
-          updateFromEditor();
-        } else { // cancel pressed
-          setValue(oldValue);
-          updateFromEditor();
+      fontCheckBox.setText (bundle.getString("CEP_FontTrans"));
+      fontCheckBox.addActionListener (new java.awt.event.ActionListener () {
+        public void actionPerformed (java.awt.event.ActionEvent evt) {
+          fontCheckBoxActionPerformed (evt);
         }
+      }
+      );
+  
+      fontPanel.add (fontCheckBox, java.awt.BorderLayout.SOUTH);
+  
 
-        dialog.setVisible(false);
-        dialog.dispose();
-        dialog = null;
-        dialogDescriptor = null;
-        clearEditor();
+    gridBagConstraints1 = new java.awt.GridBagConstraints ();
+    gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
+    gridBagConstraints1.insets = new java.awt.Insets (8, 8, 0, 8);
+    gridBagConstraints1.weightx = 1.0;
+    gridBagConstraints1.weighty = 0.3;
+    add (fontPanel, gridBagConstraints1);
+
+    fgColorPanel.setLayout (new java.awt.BorderLayout ());
+    fgColorPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_FgTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8))));
+
+      fgCheckBox.setText (bundle.getString("CEP_FgTrans"));
+      fgCheckBox.addActionListener (new java.awt.event.ActionListener () {
+        public void actionPerformed (java.awt.event.ActionEvent evt) {
+          fgCheckBoxActionPerformed (evt);
+        }
+      }
+      );
+  
+      fgColorPanel.add (fgCheckBox, java.awt.BorderLayout.SOUTH);
+  
+
+    gridBagConstraints1 = new java.awt.GridBagConstraints ();
+    gridBagConstraints1.gridx = 0;
+    gridBagConstraints1.gridy = 1;
+    gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+    gridBagConstraints1.insets = new java.awt.Insets (0, 8, 0, 8);
+    gridBagConstraints1.weightx = 1.0;
+    add (fgColorPanel, gridBagConstraints1);
+
+    bgColorPanel.setLayout (new java.awt.BorderLayout ());
+    bgColorPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_BgTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8))));
+
+      bgCheckBox.setText (bundle.getString("CEP_BgTrans"));
+      bgCheckBox.addActionListener (new java.awt.event.ActionListener () {
+        public void actionPerformed (java.awt.event.ActionEvent evt) {
+          bgCheckBoxActionPerformed (evt);
+        }
+      }
+      );
+  
+      bgColorPanel.add (bgCheckBox, java.awt.BorderLayout.SOUTH);
+  
+
+    gridBagConstraints1 = new java.awt.GridBagConstraints ();
+    gridBagConstraints1.gridx = 0;
+    gridBagConstraints1.gridy = 2;
+    gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+    gridBagConstraints1.insets = new java.awt.Insets (0, 8, 0, 8);
+    gridBagConstraints1.weightx = 1.0;
+    add (bgColorPanel, gridBagConstraints1);
+
+    previewPanel.setLayout (new java.awt.BorderLayout ());
+    previewPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CEP_PreviewTitle" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8))));
+
+
+    gridBagConstraints1 = new java.awt.GridBagConstraints ();
+    gridBagConstraints1.gridx = 0;
+    gridBagConstraints1.gridy = 3;
+    gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
+    gridBagConstraints1.insets = new java.awt.Insets (0, 8, 8, 8);
+    gridBagConstraints1.weightx = 1.0;
+    gridBagConstraints1.weighty = 1.0;
+    add (previewPanel, gridBagConstraints1);
+
+  }//GEN-END:initComponents
+
+private void bgCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bgCheckBoxActionPerformed
+    Color valueColor = null;
+    Color editorColor = value.defaultColoring.getBackColor(); 
+
+    if( !bgCheckBox.isSelected() ) {
+      // unchecked - set real value 
+      valueColor = editorColor;
+    }
+
+    value = value.changeColoring( Coloring.changeBackColor( value.coloring, valueColor ) ) ;
+    
+    try {
+      bgColorEditor.setValue( editorColor );
+    } catch( InvocationTargetException e ) {
+      if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();  
+    }
+    
+    // reset editable state
+    bgEditPanel.setPreferences( bgCheckBox.isSelected() ? PropertyPanel.PREF_READ_ONLY : 0 );
+    // update preview and fire change
+    setValueImpl( value.coloring );
+  }//GEN-LAST:event_bgCheckBoxActionPerformed
+
+private void fgCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fgCheckBoxActionPerformed
+    Color valueColor = null;
+    Color editorColor = value.defaultColoring.getForeColor(); 
+
+    if( !fgCheckBox.isSelected() ) {
+      // unchecked - set real value 
+      valueColor = editorColor;
+    }
+
+    value = value.changeColoring( Coloring.changeForeColor( value.coloring, valueColor ) );
+    
+    try {
+      fgColorEditor.setValue( editorColor );
+    } catch( InvocationTargetException e ) {
+      if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();  
+    }
+    
+    // reset editable state
+    fgEditPanel.setPreferences( fgCheckBox.isSelected() ? PropertyPanel.PREF_READ_ONLY : 0 );
+    // update preview and fire change
+    setValueImpl( value.coloring );
+  }//GEN-LAST:event_fgCheckBoxActionPerformed
+
+private void fontCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fontCheckBoxActionPerformed
+    Font valueFont = null;
+    Font editorFont = value.defaultColoring.getFont(); 
+
+    if( !fontCheckBox.isSelected() ) {
+      // unchecked - set real value 
+      valueFont = editorFont;
+    }
+
+    value = value.changeColoring( Coloring.changeFont( value.coloring, valueFont ) );
+    
+    try {
+      fontEditor.setValue( editorFont );
+    } catch( InvocationTargetException e ) {
+      if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();  
+    }
+    
+    // reset editable state
+    fontEditPanel.setPreferences( fontCheckBox.isSelected() ? PropertyPanel.PREF_READ_ONLY : 0 );
+    // update preview and fire change
+    setValueImpl( value.coloring );
+  }//GEN-LAST:event_fontCheckBoxActionPerformed
+
+
+  // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JPanel fontPanel;
+  private javax.swing.JCheckBox fontCheckBox;
+  private javax.swing.JPanel fgColorPanel;
+  private javax.swing.JCheckBox fgCheckBox;
+  private javax.swing.JPanel bgColorPanel;
+  private javax.swing.JCheckBox bgCheckBox;
+  private javax.swing.JPanel previewPanel;
+  // End of variables declaration//GEN-END:variables
+
+
+  
+  
+  private class PropertyModelSupport implements PropertyModel {
+    
+    /** support for the properties changes. */                                    
+    private PropertyChangeSupport support;   
+
+    Class type;
+    Class editor;
+    Object value;
+    
+    public PropertyModelSupport( Class propertyType, Class propertyEditor ) {
+      support = new PropertyChangeSupport(this); 
+      this.type = propertyType;
+      this.editor = propertyEditor;
+    }
+                                                                                
+    public Class getPropertyType() {
+      return type;
+    }
+      
+    public Class getPropertyEditorClass() {
+      return editor;
+    }
+
+    public Object getValue() {
+      return value;
+    }                    
+                                                                                
+    public void setValue(Object v) {
+      if( v != null && (!v.equals( value )) ) {
+        value = v;
+        support.firePropertyChange( PROP_VALUE, null, null );
+      }
+    }                                                                                   
+
+    
+    /** Adds listener to change of the value.                                     
+     */                                                                           
+    public void addPropertyChangeListener(PropertyChangeListener l) {             
+      support.addPropertyChangeListener(l);                                       
+    }                                                                             
+                                                                                
+    /** Removes listener to change of the value.                                  
+     */                                                                           
+    public void removePropertyChangeListener(PropertyChangeListener l) {          
+      support.removePropertyChangeListener(l);                                    
+    } 
+  }
+  
+//----------------------------------------------------------------
+
+  private class ColoringPreview extends javax.swing.JComponent {
+    ColoringBean value;
+    
+    void setValue( ColoringBean c ) {
+      value = c;
+      repaint();
+    }
+    
+    public void paint( java.awt.Graphics g ) {
+      if (value != null) {
+        Coloring coloring = value.coloring.apply( value.defaultColoring );
+        
+        java.awt.Rectangle box = getBounds();
+
+        // clear background
+        g.setColor(coloring.getBackColor());
+        g.fillRect(0, 0 /*box.x, box.y*/, box.width - 1, box.height - 1);
+
+        // draw example text
+        g.setColor(coloring.getForeColor());
+        g.setFont(coloring.getFont());
+        FontMetrics fm = g.getFontMetrics();
+        int x = Math.max((box.width - fm.stringWidth(value.example)) / 2, 0);
+        int y = Math.max((box.height - fm.getHeight()) / 2 + fm.getAscent(), 0);
+        g.drawString(value.example, x, y);
       }
     }
-
-    public void setOldValue(Object oldValue) {
-      this.oldValue = oldValue;
-    }
-
-    public void setValue(Object value) {
-      editor.setValue(value);
-    }
-    
-    public Object getValue() {
-      return editor.getValue();
-    }
-    
   }
   
 }
-
-/*
- * Log
- *  8    Gandalf   1.7         11/14/99 Miloslav Metelka 
- *  7    Gandalf   1.6         11/5/99  Jesse Glick     Context help jumbo 
- *       patch.
- *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  5    Gandalf   1.4         8/9/99   Ian Formanek    Generated Serial Version
- *       UID
- *  4    Gandalf   1.3         7/29/99  Miloslav Metelka 
- *  3    Gandalf   1.2         7/26/99  Miloslav Metelka 
- *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
- *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
- * $
- */

@@ -20,60 +20,79 @@ import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
+
 import com.netbeans.editor.Coloring;
 import org.openide.util.HelpCtx;
 
 /**
-* Settings for editor
-*
-* @author Miloslav Metelka
-*/
+ * Coloring Editor for editor settings. Operates over one ColoringBean
+ *
+ * @author Miloslav Metelka
+ * @author Petr Nejedly
+ */
 public class ColoringEditor extends PropertyEditorSupport {
 
-  /** The value */
-  private ColoringBean value;
-
-  /** Editor for font and color component. */
+  /** Editor for font and color components. */
   private ColoringEditorPanel editor;
 
   /** Construct new instance */
   public ColoringEditor() {
   }
 
-  /** This editor is paintable */
-  public boolean isPaintable() {
+  /** Get value as text is not supported */
+  public String getAsText() {
+    return null;
+  }
+
+  /** Set value as text is not supported */
+  public void setAsText(String text) {
+    throw new IllegalArgumentException();
+  }
+
+    /** Set the new value into property editor */
+  public void setValue(Object value) {
+    super.setValue( value );
+    if (editor != null) {
+      editor.setValue( (ColoringBean)getValue() );
+    }
+  }
+
+  /** It supports custom editor */
+  public boolean supportsCustomEditor() {
     return true;
   }
 
-  public ColoringEditorPanel getEditor() {
+  /** Get custom editor */
+  public Component getCustomEditor() {
     if (editor == null) {
+
+      // If we don't have any, create one
       editor = new ColoringEditorPanel();
-      refreshEditor();
+
+      // fill it with our current value
+      editor.setValue( (ColoringBean)getValue() );
+
+      // register listener, which will propagate editor changes to our interval value with firing
       editor.addPropertyChangeListener(new PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName() == "value") {
-              ColoringBean newValue = new ColoringBean();
-              newValue.setColoring(editor.getColoring());
-              newValue.defaultColoring = value.defaultColoring;
-              newValue.example = value.example;
-              setValue(newValue);
-              firePropertyChange();
-            }
-          }
+        public void propertyChange(PropertyChangeEvent evt) {
+          if (evt.getPropertyName() == "value")
+            superSetValue( editor.getValue()); // skip updating editor
         }
-      );
+      });
     }
+    
     return editor;
   }
   
-  private Coloring getAppliedColoring() {
-    Coloring dc = value.defaultColoring;
-    Coloring c = value.getColoring();
-    Coloring ret = null;
-    if (dc != null && c != null) {
-      ret = c.apply(dc);
-    }
-    return ret;
+
+  /** when we don't need to update editor, use this */
+  void superSetValue( Object value ) {
+    super.setValue( value );
+  }
+
+  /** This editor is paintable */
+  public boolean isPaintable() {
+    return true;
   }
 
   /** Paint the current value */
@@ -87,57 +106,31 @@ public class ColoringEditor extends PropertyEditorSupport {
       // draw example text
       g.setColor(c.getForeColor());
       g.setFont(c.getFont());
-      String text = value.example;
+      String text = ((ColoringBean)getValue()).example;
       FontMetrics fm = g.getFontMetrics();
       int x = Math.max((box.width - fm.stringWidth(text)) / 2, 0);
       int y = Math.max((box.height - fm.getHeight()) / 2 + fm.getAscent(), 0);
       g.drawString(text, x, y);
     }
   }
-
-  /** Get value as text is not supported */
-  public String getAsText() {
-    return null;
-  }
-
-  /** Set value as text is not supported */
-  public void setAsText(String text) {
-    throw new IllegalArgumentException();
-  }
-
-  /** It supports custom editor */
-  public boolean supportsCustomEditor() {
-    return true;
-  }
-
-  /** Get custom editor */
-  public Component getCustomEditor() {
-    return getEditor();
-  }
-
-  private void refreshEditor() {
-    editor.setColoring(value.getColoring());
-    editor.setDefaultColoring(value.defaultColoring);
-    editor.setExample(value.example);
-  }
   
-  /** Set the new value into property editor */
-  public void setValue(Object value) {
-    this.value = (ColoringBean) value;
-    if (editor != null) {
-      refreshEditor();
+  private Coloring getAppliedColoring() {
+    ColoringBean value = ((ColoringBean)getValue());
+    if( value == null ) return null;
+    Coloring dc = value.defaultColoring;
+    Coloring c = value.coloring;
+    Coloring ret = null;
+    if (dc != null && c != null) {
+      ret = c.apply(dc);
     }
+    return ret;
   }
-
-  /** Get the current value */
-  public Object getValue() {
-    return value;
-  }
-
+      
 }
 
 /*
  * Log
+ *  10   Gandalf   1.9         12/28/99 Miloslav Metelka 
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  8    Gandalf   1.7         8/17/99  Miloslav Metelka 

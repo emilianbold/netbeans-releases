@@ -14,6 +14,7 @@
 package com.netbeans.developer.modules.text.options;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Insets;
 import java.util.Map;
 import java.util.List;
@@ -21,8 +22,8 @@ import java.util.ArrayList;
 import javax.swing.text.JTextComponent;
   
 import com.netbeans.editor.Settings;
+import com.netbeans.editor.SettingsUtil;
 import com.netbeans.editor.Coloring;
-import com.netbeans.editor.ColoringManager;
 import com.netbeans.editor.BaseKit;
 import com.netbeans.editor.Syntax;
 import com.netbeans.editor.MultiKeyBinding;
@@ -48,7 +49,7 @@ public class BaseOptions extends OptionSupport {
   public static final String CARET_ITALIC_OVERWRITE_MODE_PROP = "caretItalicOverwriteMode";
   public static final String CARET_TYPE_INSERT_MODE_PROP = "caretTypeInsertMode";
   public static final String CARET_TYPE_OVERWRITE_MODE_PROP = "caretTypeOverwriteMode";
-  public static final String COLORING_ARRAY_PROP = "coloringArray";
+  public static final String COLORING_MAP_PROP = "coloringMap";
   public static final String EXPAND_TABS_PROP = "expandTabs";
   public static final String FIND_HIGHLIGHT_SEARCH = "findHighlightSearch";
   public static final String FIND_HISTORY_PROP = "findHistory";
@@ -78,14 +79,6 @@ public class BaseOptions extends OptionSupport {
   public static final String TEXT_LIMIT_LINE_VISIBLE_PROP = "textLimitLineVisible";
   public static final String TEXT_LIMIT_WIDTH_PROP = "textLimitWidth";
 
-  private static final int[] COLORING_SETS = new int[] {
-    ColoringManager.DEFAULT_SET,
-    ColoringManager.DOCUMENT_SET,
-    ColoringManager.COMPONENT_SET,
-    ColoringManager.STATUS_BAR_SET,
-    ColoringManager.TOKEN_SET
-  };
-
   static final String[] BASE_PROP_NAMES = {
     ABBREV_MAP_PROP,
     CARET_BLINK_RATE_PROP,
@@ -95,7 +88,7 @@ public class BaseOptions extends OptionSupport {
     CARET_ITALIC_OVERWRITE_MODE_PROP,
     CARET_TYPE_INSERT_MODE_PROP,
     CARET_TYPE_OVERWRITE_MODE_PROP,
-    COLORING_ARRAY_PROP,
+    COLORING_MAP_PROP,
     EXPAND_TABS_PROP,
     FONT_SIZE_PROP,
     HIGHLIGHT_CARET_ROW_PROP,
@@ -260,25 +253,39 @@ public class BaseOptions extends OptionSupport {
     setSettingValue(Settings.KEY_BINDING_LIST, list);
   }
 
-  public Object[] getColoringArray() {
-    return getColoringsHelper(COLORING_SETS);
+  public Map getColoringMap() {
+    Map cm = SettingsUtil.getColoringMap(getKitClass(), false);
+    cm.put(null, getKitClass()); // add kit class
+    return cm;
   }
 
-  public void setColoringArray(Object[] value) {
-    setColoringsHelper(value, COLORING_SETS);
+  public void setColoringMap(Map coloringMap) {
+    coloringMap.remove(null); // remove kit class
+    SettingsUtil.updateColoringSettings(getKitClass(), coloringMap, false);
   }
   
   public int getFontSize() {
-    ColoringManager cm = (ColoringManager)getSettingValue(Settings.COLORING_MANAGER);
-    return cm.getDefaultColoring(getKitClass()).getFont().getSize();
+    Coloring dc = SettingsUtil.getColoring(getKitClass(), Settings.DEFAULT_COLORING, false);
+    return dc.getFont().getSize();
   }
   
-  public void setFontSize(int size) {
-    ColoringManager cm = (ColoringManager)getSettingValue(Settings.COLORING_MANAGER);
-    for (int i = 0; i < COLORING_SETS.length; i++) {
-      ColoringManager.updateFontSize(cm.getColorings(getKitClass(), COLORING_SETS[i]), size);
-    }
-    Settings.touchValue(getKitClass(), Settings.COLORING_MANAGER);
+  public void setFontSize(final int size) {
+    final int oldSize = getFontSize();
+    Map cm = SettingsUtil.getColoringMap(getKitClass(), false);
+    SettingsUtil.changeColorings(cm,
+      new SettingsUtil.ColoringChanger() {
+        public Coloring changeColoring(String coloringName, Coloring c) {
+          if (c != null) {
+            Font font = c.getFont();
+            if (font != null && font.getSize() == oldSize) {
+              return Coloring.changeFontSize(c, size);
+            }
+          }
+          return c;
+        }
+      }
+    );
+    SettingsUtil.updateColoringSettings(getKitClass(), cm, false);
   }
   
   public float getLineHeightCorrection() {
@@ -416,6 +423,7 @@ public class BaseOptions extends OptionSupport {
 
 /*
  * Log
+ *  13   Gandalf   1.12        12/28/99 Miloslav Metelka 
  *  12   Gandalf   1.11        11/11/99 Miloslav Metelka 
  *  11   Gandalf   1.10        11/5/99  Jesse Glick     Context help jumbo 
  *       patch.
