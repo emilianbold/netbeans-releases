@@ -63,18 +63,47 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
     
     private String addReference(Object ref, AntArtifact target) throws IOException {
          String refName = null;
+         WebApp webApp = getWebApp();
          if (ref instanceof EjbRef) {
             EjbRef ejbRef = (EjbRef) ref;
-            refName = getUniqueName(getWebApp(), "EjbRef", "EjbRefName", 
+            refName = getUniqueName(getWebApp(), "EjbRef", "EjbRefName", //NOI18N
                     ejbRef.getEjbRefName());
             ejbRef.setEjbRefName(refName);
-            getWebApp().addEjbRef(ejbRef);
-         } else {
+            // EjbRef can come from Ejb project 
+            try {
+                EjbRef newRef = (EjbRef)webApp.createBean("EjbRef"); //NOI18N
+                try {
+                    newRef.setAllDescriptions(ejbRef.getAllDescriptions());
+                } catch (VersionNotSupportedException ex) {
+                    newRef.setDescription(ejbRef.getDefaultDescription());
+                }
+                newRef.setEjbLink(ejbRef.getEjbLink());
+                newRef.setEjbRefName(ejbRef.getEjbRefName());
+                newRef.setEjbRefType(ejbRef.getEjbRefType());
+                newRef.setHome(ejbRef.getHome());
+                newRef.setRemote(ejbRef.getRemote());
+                getWebApp().addEjbRef(newRef);
+            } catch (ClassNotFoundException ex){}
+         } else if (ref instanceof EjbLocalRef) {
             EjbLocalRef ejbRef = (EjbLocalRef) ref;
-            refName = getUniqueName(getWebApp(), "EjbLocalRef", "EjbRefName", 
-                    ejbRef.getEjbRefName());
+            refName = getUniqueName(getWebApp(), "EjbLocalRef", "EjbRefName", //NOI18N
+                      ejbRef.getEjbRefName());
             ejbRef.setEjbRefName(refName);
-            getWebApp().addEjbLocalRef(ejbRef);
+            // EjbLocalRef can come from Ejb project 
+            try {
+                EjbLocalRef newRef = (EjbLocalRef)webApp.createBean("EjbLocalRef"); //NOI18N
+                try {
+                    newRef.setAllDescriptions(ejbRef.getAllDescriptions());
+                } catch (VersionNotSupportedException ex) {
+                    newRef.setDescription(ejbRef.getDefaultDescription());
+                }
+                newRef.setEjbLink(ejbRef.getEjbLink());
+                newRef.setEjbRefName(ejbRef.getEjbRefName());
+                newRef.setEjbRefType(ejbRef.getEjbRefType());
+                newRef.setLocal(ejbRef.getLocal());
+                newRef.setLocalHome(ejbRef.getLocalHome());
+                getWebApp().addEjbLocalRef(newRef);
+            } catch (ClassNotFoundException ex){}
          }
          
          if(helper.addReference(target)) {
