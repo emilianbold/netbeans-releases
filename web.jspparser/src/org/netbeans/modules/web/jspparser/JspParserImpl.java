@@ -117,6 +117,8 @@ public class JspParserImpl implements JspParserAPI {
     }
 
     public JspParserAPI.ParseResult analyzePage(FileObject jspFile, WebModule wm, int errorReportingMode) {
+        if (wm ==null)
+            return getNoWebModuleResult(jspFile, null);
         FileObject wmRoot = wm.getDocumentBase();
         if (wmRoot == null) {
             return getNoWebModuleResult(jspFile, wm);
