@@ -46,6 +46,7 @@ public final class FreeformProject implements Project {
         this.helper = helper;
         eval = new FreeformEvaluator(this);
         lookup = initLookup();
+        new ProjectXmlValidator(helper.resolveFileObject(AntProjectHelper.PROJECT_XML_PATH));
     }
     
     public AntProjectHelper helper() {
