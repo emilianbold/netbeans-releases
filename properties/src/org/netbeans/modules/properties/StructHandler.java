@@ -155,7 +155,7 @@ debug("...SET (SOMETHING)");
   * and parsing is not running yet.
   */
   void autoParse() {   
-debug("Starting autoparse");
+//debug("Starting autoparse");
     if (dirty && getStatus()) 
       getParsedDataBlocking();
 /*    Children.MUTEX.writeAccess(new Runnable() {
@@ -263,7 +263,7 @@ debug("...SET (null)");
     }
     catch (PropertiesException e) {
       // PENDING
-debug("STRUCTURE IS NULL");
+//debug("STRUCTURE IS NULL");
       return null;
     }  
   }

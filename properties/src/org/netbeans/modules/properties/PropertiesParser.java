@@ -103,9 +103,9 @@ class PropertiesParser {
   */
   public void parseFile() {
     try {
-System.out.println("parsing-begin  //" + Thread.currentThread().toString());  
+//System.out.println("parsing-begin  //" + Thread.currentThread().toString());  
       PropertiesStructure ps = parseFileMain(input);
-System.out.println("parsing-end  //" + Thread.currentThread().toString());  
+//System.out.println("parsing-end  //" + Thread.currentThread().toString());  
       input.close();
       pfe.getHandler().setPropertiesStructure(ps);
     }
@@ -340,7 +340,9 @@ System.out.println("parsing-end  //" + Thread.currentThread().toString());
   *   its position in the document.
   */
   private static class PropertiesRead {
-
+         
+//    private OutputStream debugOutput;
+    
     /** The underlaying reader. */
     private Reader reader;
                         
@@ -353,7 +355,11 @@ System.out.println("parsing-end  //" + Thread.currentThread().toString());
     /** Does the initialization */         
     private PropertiesRead() {    
       peekChar = -1;
-      position = 0;
+      position = 0;                                              
+/*      try {
+        debugOutput = new FileOutputStream("c:\\debug.properties");
+      }
+      catch (Exception e) {}*/
     }
     
     /** Creates the reader from the text. */
@@ -380,7 +386,10 @@ System.out.println("parsing-end  //" + Thread.currentThread().toString());
       int character = peek();
       peekChar = -1;
       if (character != -1)
-        position++;
+        position++;       
+
+//      if (character >= 0)  
+//        debugOutput.write(character);  
       return character;  
     }     
               
@@ -473,6 +482,7 @@ System.out.println("parsing-end  //" + Thread.currentThread().toString());
     /** Closes the stream */
     public void close() throws IOException {
       reader.close();
+//      debugOutput.close();
     }            
     
     

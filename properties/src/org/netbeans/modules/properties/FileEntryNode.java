@@ -221,7 +221,7 @@ public class FileEntryNode extends AbstractNode {
   */
   private class PropL extends Object implements PropertyChangeListener {
     public void propertyChange (PropertyChangeEvent ev) {
-System.out.println("FileEntryNode event : " + ev.getPropertyName());
+//System.out.println("FileEntryNode event : " + ev.getPropertyName());
       //fireChange (ev);
     }
   }
@@ -229,6 +229,7 @@ System.out.println("FileEntryNode event : " + ev.getPropertyName());
 
 /*
  * <<Log>>
+ *  2    Gandalf   1.1         5/16/99  Petr Jiricka    
  *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
  * $
  * Beta Change History:

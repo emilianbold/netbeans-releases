@@ -188,7 +188,7 @@ public final class PropertiesDataObject extends MultiDataObject {
       
         public void propertyChange(PropertyChangeEvent evt) {
           if (evt.getPropertyName().equals(PROP_FILES)) {
-            System.out.println("got prop_files");          
+//System.out.println("got prop_files");          
             mySetKeys();                                
           }  
         }
@@ -216,6 +216,7 @@ public final class PropertiesDataObject extends MultiDataObject {
 
 /*
  * <<Log>>
+ *  10   Gandalf   1.9         5/16/99  Petr Jiricka    
  *  9    Gandalf   1.8         5/14/99  Petr Jiricka    
  *  8    Gandalf   1.7         5/13/99  Petr Jiricka    
  *  7    Gandalf   1.6         5/12/99  Petr Jiricka    

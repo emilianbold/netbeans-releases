@@ -45,6 +45,11 @@ public class PropertiesStructure extends Element {
   * Looks for changes between the structures and according to them calls update methods.
   */
   public synchronized void update(PropertiesStructure struct) {       
+//System.out.println(" ------- OLD -------- ");
+//System.out.println(toString());
+//System.out.println(" ------- NEW -------- ");
+//System.out.println(struct.toString());
+//System.out.println(" -------------------- ");
     boolean structChanged = false;
     Element.ItemElem curItem;
     Element.ItemElem oldItem;
@@ -72,10 +77,28 @@ public class PropertiesStructure extends Element {
     if ((deleted.size() > 0) || (inserted.size() > 0))
       structChanged = true;
 
-System.out.println("struct : " + structChanged);
+/*System.out.println("struct : " + structChanged);
 System.out.println("changed : " + changed.size());
+for (int i=0; i<changed.size(); i++) {
+  Element.ItemElem itemik = (Element.ItemElem)changed.get(i);
+  System.out.println(itemik.getKey());
+  System.out.println(itemik.getValue());
+  System.out.println(itemik.getComment());
+}
 System.out.println("inserted : " + inserted.size());
+for (int i=0; i<inserted.size(); i++) {
+  Element.ItemElem itemik = (Element.ItemElem)inserted.get(i);
+  System.out.println(itemik.getKey());
+  System.out.println(itemik.getValue());
+  System.out.println(itemik.getComment());
+}
 System.out.println("deleted : " + deleted.size());
+for (int i=0; i<deleted.size(); i++) {
+  Element.ItemElem itemik = (Element.ItemElem)deleted.get(i);
+  System.out.println(itemik.getKey());
+  System.out.println(itemik.getValue());
+  System.out.println(itemik.getComment());
+}*/
 
     // assign the new structure
     items = new_items;        
@@ -92,8 +115,6 @@ System.out.println("deleted : " + deleted.size());
                                                          
   /** Sets the parent of this element. */
   void setParent(StructHandler parent) {
-    if (handler != null)
-      System.out.println("Parent already set - " + getClass().getName());
     handler = parent;
   }
   
@@ -226,20 +247,20 @@ System.out.println("deleted : " + deleted.size());
 
   /** Notification that the given item has changed (its value or comment) */
   void itemChanged(Element.ItemElem elem) {
-System.out.println("PropStr - item " + elem.getKey());
+//System.out.println("PropStr - item " + elem.getKey());
     getParentBundleStructure().itemChanged(elem);
   }
 
   /** Notification that the structure has changed (no specific information). */
   void structureChanged() {
-System.out.println("PropStr - struct - general");
+//System.out.println("PropStr - struct - general");
     getParentBundleStructure().oneFileChanged(getParent());
   }                        
   
   /** Notification that the structure has changed (items have been added or deleted,
   * also includes changing an item's key). */
   void structureChanged(ArrayMapList changed, ArrayMapList inserted, ArrayMapList deleted) {
-System.out.println("PropStr - struct");
+//System.out.println("PropStr - struct");
     getParentBundleStructure().oneFileChanged(getParent(), changed, inserted, deleted);
   }                        
   
@@ -247,7 +268,7 @@ System.out.println("PropStr - struct");
   * Think twice when using this - don't I need to reparse all files ?
   */
   void itemKeyChanged(String oldKey, Element.ItemElem newElem) {
-System.out.println("renaming from " + oldKey + " to " + newElem.getKey());
+//System.out.println("renaming from " + oldKey + " to " + newElem.getKey());
     // update the element in the structure, because now it is in with the wrong key
     int index = items.indexOf(oldKey);
     if (index < 0)

@@ -71,7 +71,7 @@ public class PropertiesTableModel extends AbstractTableModel {
       public void propertyChange(PropertyChangeEvent evt) { 
         // PENDING - should be finer
         if (evt.getPropertyName().equals(PropertiesDataObject.PROP_FILES)) {
-          System.out.println("PropertyChange in PropertiesTableModel");
+//System.out.println("PropertyChange in PropertiesTableModel");
           fireTableStructureChanged();                                        
         }
       }
@@ -91,7 +91,7 @@ public class PropertiesTableModel extends AbstractTableModel {
   
     public void bundleChanged(PropertyBundleEvent evt) {
       // PENDING - should be maybe even finer
-      System.out.println("BundleChange in PropertiesTableModel");
+//System.out.println("BundleChange in PropertiesTableModel");
       switch (evt.getChangeType()) {
         case PropertyBundleEvent.CHANGE_STRUCT:
           fireTableStructureChanged();                                        

@@ -123,7 +123,7 @@ public class KeyNode extends AbstractNode {
   * @exception IllegalArgumentException if the rename failed
   */
   public void setName (String name) {
-    System.out.println("Setting name = " + name);
+//System.out.println("Setting name = " + name);
     item.getParent().renameItem(item.getKey(), name);
     // regenerate all children
     Node par = getParentNode();
@@ -160,7 +160,7 @@ public class KeyNode extends AbstractNode {
 
       public void setValue (Object val) throws IllegalAccessException,
       IllegalArgumentException, InvocationTargetException {
-System.out.println("Set property key to " + val);      
+//System.out.println("Set property key to " + val);      
         if (!(val instanceof String))
           throw new IllegalArgumentException();
 
@@ -209,6 +209,7 @@ System.out.println("Set property key to " + val);
 
 /*
  * <<Log>>
+ *  3    Gandalf   1.2         5/16/99  Petr Jiricka    
  *  2    Gandalf   1.1         5/14/99  Petr Jiricka    
  *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
  * $

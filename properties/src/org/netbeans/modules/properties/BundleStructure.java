@@ -85,7 +85,7 @@ public class BundleStructure extends PropertyChangeSupport {
           updateEntries();
           // PENDING
           firePropertyChange (evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-          System.out.println("PropertyChange in BundleStructure"); 
+//System.out.println("PropertyChange in BundleStructure"); 
         }
       }
       
@@ -225,7 +225,7 @@ public class BundleStructure extends PropertyChangeSupport {
   * Fires a change event for this item.
   */
   void itemChanged(Element.ItemElem item) {
-System.out.println("firing item change");
+//System.out.println("firing item change");
     support.fireItemChanged(item.getParent()/*PropertiesStructure*/
                                 .getParent()/*StructHandler*/
                                 .getEntry()/*PropertiesFileEntry*/
@@ -237,7 +237,7 @@ System.out.println("firing item change");
   * Fires changes for a bundle or a file according to the changes in the keys.
   */
   void oneFileChanged(StructHandler handler) {
-System.out.println("firing file change");
+//System.out.println("firing file change 1");
     // PENDING - events should be finer
     // find out whether global key table has changed and fire a change according to that
     SortedArrayList oldKeyList = keyList;
@@ -253,7 +253,7 @@ System.out.println("firing file change");
   */
   void oneFileChanged(StructHandler handler, ArrayMapList itemsChanged, 
                       ArrayMapList itemsAdded, ArrayMapList itemsDeleted) {
-System.out.println("firing file change");
+//System.out.println("firing file change 2");
     // PENDING - events should be finer
     // find out whether global key table has changed
     // should use a faster algorithm of building the keyset
