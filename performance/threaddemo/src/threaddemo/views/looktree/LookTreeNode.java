@@ -213,8 +213,11 @@ abstract class LookTreeNode implements LookListener {
         fireDisplayChange(this);
     }
     
-    public void nodeDestroyed(LookEvent evt) {
+    public void objectDestroyed(LookEvent evt) {
         // XXX what is this supposed to do? nothing probably...
+        
+        // phrebejk: notify the view about removing object from
+        // underlying data structutre
     }
     
     public void openedIconChange(LookEvent evt) {
