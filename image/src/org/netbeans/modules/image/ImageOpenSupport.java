@@ -22,6 +22,7 @@ import java.util.Enumeration;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 
+import org.openide.cookies.CloseCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileChangeAdapter;
@@ -46,7 +47,7 @@ import org.openide.util.RequestProcessor.Task;
  * @author Peter Zavadsky
  */
 
-public class ImageOpenSupport extends OpenSupport implements OpenCookie {
+public class ImageOpenSupport extends OpenSupport implements OpenCookie, CloseCookie {
 
     /** Saves last modified time. */
     private long lastSaveTime;
