@@ -35,7 +35,7 @@
 
 //            if (i == 1000) {
             try {
-                out.println ("This is the thousandth line", new L());
+//                out.println ("This is the thousandth line", new L());
 //                Thread.currentThread().sleep(20);
                 } catch (Exception e) {}
 //            }
