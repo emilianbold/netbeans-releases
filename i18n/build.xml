@@ -19,6 +19,20 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <exclude name="org/netbeans/modules/i18n/cross/"/>
+      <classpath>
+        <fileset dir="../openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
+        <pathelement location="../core/netbeans/lib/core.jar"/>
+        <pathelement location="../properties/netbeans/modules/properties.jar"/>
+        <pathelement location="../editor/netbeans/modules/ext/nb-editor.jar"/>
+        <pathelement location="../editor/netbeans/modules/editor.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
+      </classpath>
+    </javac>
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <include name="org/netbeans/modules/i18n/cross/"/>
       <classpath>
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
@@ -32,6 +46,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
       </classpath>
     </javac>
+
   </target>
 
   <target name="jars" depends="compile">
@@ -43,8 +58,19 @@ Microsystems, Inc. All Rights Reserved.
             basedir="src"
 	    excludesfile="../nbbuild/standard-jar-excludes.txt"
 	    compress="false">
+      <exclude name="org/netbeans/modules/i18n/cross/"/>
       <locale name="ja"/>
     </locjar>
+    <copy file="manifest-cross.mf" tofile="manifest-cross-subst.mf" filtering="on"/>
+    <locjar jarfile="netbeans/modules/i18n-cross.jar"
+            manifest="manifest-cross-subst.mf"
+            basedir="src"
+	    excludesfile="../nbbuild/standard-jar-excludes.txt"
+	    compress="false">
+      <include name="org/netbeans/modules/i18n/cross/"/>
+      <locale name="ja"/>
+    </locjar>
+
   </target>
 
   <target name="netbeans" depends="jars"/>
@@ -70,6 +96,7 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
+    <delete file="manifest-cross-subst.mf"/>
     <delete file="i18n.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>
