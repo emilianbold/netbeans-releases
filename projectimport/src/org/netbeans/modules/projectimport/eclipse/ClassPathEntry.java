@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.projectimport.eclipse;
 
+import java.io.File;
 import org.openide.ErrorManager;
 
 /**
@@ -103,7 +104,7 @@ public final class ClassPathEntry {
     }
     
     boolean isRawPathRelative() {
-        return !rawPath.startsWith("/");
+        return !(new File(rawPath).isAbsolute());
     }
     
     public String toString() {
