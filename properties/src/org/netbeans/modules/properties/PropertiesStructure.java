@@ -173,7 +173,7 @@ for (int i=0; i<deleted.size(); i++) {
   /** Renames an item. 
   * @return true if the item has been renamed successfully, false if another item with the same name exists.
   */                         
-  public boolean renameItem(String oldKey, String newKey) {
+  public synchronized boolean renameItem(String oldKey, String newKey) {
     Element.ItemElem item = getItem(newKey);
     if (item == null) {
       item = getItem(oldKey);
@@ -189,7 +189,7 @@ for (int i=0; i<deleted.size(); i++) {
   /** Deletes an item from the structure, if exists. 
   * @return true if the item has been deleted successfully, false if it didn't exist.
   */                         
-  public boolean deleteItem(String key) {
+  public synchronized boolean deleteItem(String key) {
     if (key == null)
       key = "";
     if (key.length() == 0)
@@ -218,7 +218,7 @@ for (int i=0; i<deleted.size(); i++) {
   /** Adds an item to the end of the file, or before the terminating comment, if exists. 
   * @return true if the item has been added successfully, false if another item with the same name exists.
   */                         
-  public boolean addItem(String key, String value, String comment) {
+  public synchronized boolean addItem(String key, String value, String comment) {
     if (key == null)
       key = "";
     if (value == null)
