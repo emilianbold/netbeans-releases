@@ -85,7 +85,8 @@
 		<mapID target="about_tld" url="web/create/tag/tld/about_tld.html" />
 		<mapID target="tld_edit" url="web/create/tag/tld/tld_edit.html" />
 		<mapID target="tld_create" url="web/create/tag/tld/tld_create.html" />
-		<!-- End of "Create" section -->
+		<!-- End of "Create/Tag" subsection -->
+	<!-- End of "Create" section -->
 
 	<!-- Start of "Configure" section -->
         <mapID target="about_webapp_configure" url="web/configure/about_webapp_configure.html" />
@@ -112,6 +113,31 @@
 	<!-- End of "Debug" section -->
 
 <!-- End of "Developing Web Applications" help -->
+	
+<!-- Start of CSH for Web Applications -->
+
+	<!-- The Sources panel in Project Properties for a Standard Web Application: -->
+	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerSources" url="web/csh/dbox_projprops/WebCustomizerSources.html" />
+	<!-- The Libraries panel in Project Properties for a Standard Web Application: -->
+	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerLibraries" url="web/csh/dbox_projprops/WebCustomizerLibraries.html" />
+        <!-- The Compile panel in Project Properties for a Standard Web Application: -->
+	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerCompile" url="web/csh/dbox_projprops/WebCustomizerCompile.html" />
+        <!-- The Packaging panel in Project Properties for a Standard Web Application: -->
+	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWar" url="web/csh/dbox_projprops/WebCustomizerWar.html" />
+	<!-- The Documenting panel in Project Properties for a Standard Web Application: -->
+	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerJavadoc" url="web/csh/dbox_projprops/WebCustomizerJavadoc.html" />
+	<!-- The Run panel in Project Properties for a Standard Web Application: -->
+	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerRun" url="web/overvw/WebCustomizerRun.html" />
+	<!-- The Non-Panel panel in Project Properties for a Standard Web Application (temporarily for web service hook-up): -->
+	<mapID target="org.netbeans.modules.web.project.ui.customizer.WebCustomizer" url="web/overvw/WebCustomizer.html" />
+	<!-- The Library Manager dialog box: -->
+	<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/create/tag/taglib/taglib_manage.html" />
+	<!-- The Test Web Service Operation dialog box (this help id will be moved to web service section later): -->
+	<mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="web/webservice/websvcdb.html" />
+
+<!-- End of CSH for Web Applications -->
+
+
 
 <!-- Start of "Developing Web Services" help -->
 	
@@ -149,23 +175,7 @@
 
 <!-- End of "Developing Web Services" help -->
 	
-<!-- Standard Web Project Properties dialog box-->
-<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerGeneral" url="web/overvw/WebCustomizerGeneral.html" />
-<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerSources" url="web/overvw/WebCustomizerSources.html" />
-<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerCompile" url="web/overvw/WebCustomizerCompile.html" />
-<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerCompileTest" url="web/overvw/WebCustomizerCompileTest.html" />
-<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWar" url="web/overvw/WebCustomizerWar.html" />
-<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerJavadoc" url="web/overvw/WebCustomizerJavadoc.html" />
-<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerRun" url="web/overvw/WebCustomizerRun.html" />
-<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerRunTest" url="web/overvw/WebCustomizerRunTest.html" />
-<mapID target="org.netbeans.modules.web.project.ui.customizer.WebCustomizer" url="web/overvw/WebCustomizer.html" />
-<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerLibraries" url="web/overvw/WebCustomizerLibraries.html" />
 
-<!-- Other web-related dialog boxes -->
-<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/taglibUI/ctx_repaddto.html" />
-<mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="web/webservice/websvcdb.html" />
-
-<!-- End of web apps help -->
 
 <!-- Start of Enterprise Application help -->
 
