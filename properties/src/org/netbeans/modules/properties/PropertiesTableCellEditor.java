@@ -46,6 +46,9 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
     /** Comment component */
     private JTextComponent commentComponent;
 
+    /** Class representing settings used in table view. */
+    private final TableViewSettings settings;
+    
     
     /** Constructs a PropertiesTableCellEditor that uses a text field.
     * @param x  a JTextField object ...
@@ -62,6 +65,7 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
         this.delegate = new PropertiesEditorDelegate(commentComponent, valueComponent, valueLabel);
         ((JTextField)editorComponent).addActionListener(delegate);
         
+        settings = TableViewSettings.getDefault();
     }
 
     
@@ -84,6 +88,8 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
         Caret caret = textField.getCaret();
         caret.setVisible(true);
         caret.setDot(0);
+        
+        textField.setFont(settings.getFont());
         
         // Check for search results.
         // If search was performed, highlight the found string.
