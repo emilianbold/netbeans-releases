@@ -73,7 +73,7 @@ public final class GenerateDTDSupport implements XMLGenerateCookie  {
             String name = primFile.getName();
             FileObject folder = primFile.getParent();
 
-            FileObject generFile = (new SelectFileDialog(folder, name, DTD_EXT)).getFileObject();
+            FileObject generFile = (new SelectFileDialog(folder, name, DTD_EXT, Util.NONEMPTY_CHECK)).getFileObject();
             name = generFile.getName();
 
             // IANA encoding name

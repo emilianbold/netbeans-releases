@@ -36,8 +36,6 @@ public class SelectFileDialog extends JPanel {
 
     private Util.NameCheck check;
 
-    private JButton OK_OPTION = new JButton(Util.THIS.getString("BK0002"));
-
     //
     // init
     //
@@ -62,8 +60,8 @@ public class SelectFileDialog extends JPanel {
                 this,
                 Util.THIS.getString ("PROP_fileNameTitle") + " *." + ext, // NOI18N
                 true,
-                new Object[] {OK_OPTION, DialogDescriptor.CANCEL_OPTION},
-                OK_OPTION,
+                new Object[] {DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION},
+                DialogDescriptor.OK_OPTION,
                 DialogDescriptor.BOTTOM_ALIGN,
                 null,
                 null
@@ -168,7 +166,7 @@ public class SelectFileDialog extends JPanel {
     }
 
     private void enableOkOption(boolean enable) {
-        OK_OPTION.setEnabled(enable);
+        selectDD.setValid(enable);
     }
 
     /**
@@ -179,8 +177,9 @@ public class SelectFileDialog extends JPanel {
         FileObject newFO = null;
 
         while ( newFO == null ) {
-            DialogDisplayer.getDefault().createDialog (selectDD).show();
-            if (selectDD.getValue() != OK_OPTION) {
+            JDialog dialog = (JDialog) DialogDisplayer.getDefault().createDialog (selectDD);
+            dialog.show();
+            if (selectDD.getValue() != DialogDescriptor.OK_OPTION) {
                 throw new UserCancelException();
             }
             final String newName = fileField.getText();

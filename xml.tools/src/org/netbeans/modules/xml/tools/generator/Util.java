@@ -29,6 +29,7 @@ class Util extends AbstractUtil {
 
     public static final NameCheck JAVA_CHECK = new JavaIdentifierNameCheck();
 
+    public static final NameCheck NONEMPTY_CHECK = new StringNameCheck();
 
     /** Default and only one instance of this class. */
     public static final Util THIS = new Util();
@@ -47,6 +48,13 @@ class Util extends AbstractUtil {
     public static class JavaIdentifierNameCheck implements NameCheck {
         public boolean checkName (String name) {
             return name.length() > 0 && org.openide.util.Utilities.isJavaIdentifier(name);
+        }
+    }
+
+    /** Passes for any non-empty string. */
+    public static class StringNameCheck implements NameCheck {
+        public boolean checkName (String name) {
+            return name.length() > 0;
         }
     }
 
