@@ -26,6 +26,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="set-nb.dir" unless="nb.dir">
     <property name="nb.dir" location="../../nbbuild/netbeans" />
   </target>
+
   
   <target name="set-ismp.cp" unless="ismp.cp-set">
     <path id="ismp.cp">        
@@ -107,6 +108,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="build" depends="init, build-win32, build-unix" description="build the installers">
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}.jar"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
     <move file="build/disk1/setupsolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
