@@ -110,7 +110,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         // init components
         initComponents();
         // add mnemonics (this has to be here, because of I18N and inability of the form editor
-        addMnemonics();
+        addMnemonicsAndAD();
         
 //        cmdMount.addActionListener(new JUnitCfgOfCreate.CmdMountListener());
     }
@@ -132,30 +132,77 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         }
     }
         
-    private void addMnemonics() {
+    private void addMnemonicsAndAD() {
+        
+        // window
+        this.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.AD"));
         
         // check boxes
         this.chkPublic.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkPublic.mne"));
+        this.chkPublic.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkPublic.toolTip"));
+        this.chkPublic.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkPublic.AD"));        
+        
         this.chkProtected.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkProtected.mne"));
+        this.chkProtected.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkProtected.toolTip"));
+        this.chkProtected.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkProtected.AD"));        
+        
         this.chkPackage.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkPackage.mne"));
-        this.chkExceptions.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkExceptions.mne"));
-        this.chkRegenerateSuite.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkRegenerateSuite.mne"));
+        this.chkPackage.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkPackage.toolTip"));
+        this.chkPackage.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkPackage.AD"));
+        
         this.chkComments.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkComments.mne"));
+        this.chkComments.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkComments.toolTip"));        
+        this.chkComments.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkComments.AD"));
+        
         this.chkContent.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkContent.mne"));
+        this.chkContent.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkContent.toolTip"));
+        this.chkContent.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkContent.AD"));
+        
         this.chkJavaDoc.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkJavaDoc.mne"));
+        this.chkJavaDoc.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkJavaDoc.toolTip"));
+        this.chkJavaDoc.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkJavaDoc.AD"));
+        
+        
+        this.chkExceptions.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkExceptions.mne"));
+        this.chkExceptions.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkExceptions.toolTip"));
+        this.chkExceptions.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkExceptions.AD"));
+        
         this.chkAbstractImpl.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkAbstractImpl.mne"));
-        this.chkEnabled.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkEnabled.mne"));
+        this.chkAbstractImpl.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkAbstractImpl.toolTip"));
+        this.chkAbstractImpl.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkAbstractImpl.AD"));
+        
         this.chkPackagePrivateClasses.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkPackagePrivateClasses.mne"));
+        this.chkPackagePrivateClasses.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkPackagePrivateClasses.toolTip"));
+        this.chkPackagePrivateClasses.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkPackagePrivateClasses.AD"));
+        
+        this.chkRegenerateSuite.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkRegenerateSuite.mne"));
+        this.chkRegenerateSuite.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkRegenerateSuite.toolTip"));
+        this.chkRegenerateSuite.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkRegenerateSuite.AD"));
+        
+        this.chkEnabled.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkEnabled.mne"));
+        this.chkEnabled.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkEnabled.toolTip"));
+        this.chkEnabled.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkEnabled.AD"));
         
         // buttons
 //       this.cmdMount.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.cmdMount.mne"));
         
         // labels
-        /*
+        
         this.lblFileSystem.setDisplayedMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.lblFileSystem.mne"));
+        this.lblFileSystem.setLabelFor(cboFileSystem);
+        this.cboFileSystem.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.cboFileSystem.AD"));
+        this.cboFileSystem.getAccessibleContext().setAccessibleName(bundle.getString("JUnitCfgOfCreate.cboFileSystem.AN"));
+        
         this.lblSuiteClass.setDisplayedMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.lblSuiteClass.mne"));
+        this.lblSuiteClass.setLabelFor(cboSuiteClass);
+        this.cboSuiteClass.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.cboSuiteClass.AD"));
+        this.cboSuiteClass.getAccessibleContext().setAccessibleName(bundle.getString("JUnitCfgOfCreate.cboSuiteClass.AN"));
+        
         this.lblTestClass.setDisplayedMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.lblTestClass.mne"));
-         */
+        this.lblTestClass.setLabelFor(cboTestClass);
+        this.cboTestClass.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.cboTestClass.AD"));
+        this.cboTestClass.getAccessibleContext().setAccessibleName(bundle.getString("JUnitCfgOfCreate.cboTestClass.AN"));
+        
     }
     
     public static final ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.junit.Bundle");
@@ -238,7 +285,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         // display dialog
         DialogDescriptor descriptor = new DialogDescriptor (
             cfg,
-            bundle.getString("LBL_JUnitCfgOfCreate_Title")
+            bundle.getString("JUnitCfgOfCreate.Title")
         );
         descriptor.setHelpCtx(new HelpCtx(JUnitCfgOfCreate.class));
         Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(descriptor);

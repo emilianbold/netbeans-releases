@@ -143,6 +143,36 @@ class TestUtil extends Object {
         }        
         return  name.toString();
     }
+    
+    
+    // fullname has to be in /my/package/stuff/class.java format
+    static public String getPackageNameFromFullName(String fullName) {
+        int lastIndex = fullName.lastIndexOf('/');
+        if (lastIndex != -1) {
+            return fullName.substring(0,lastIndex);
+        } else {
+            return fullName;
+        }
+    }
+    
+    // fullname has to be in /my/package/stuff/class.java format
+    static public String getShortClassNameFromFullName(String fullName) {
+        int lastIndex = fullName.lastIndexOf('/');
+        if (lastIndex != -1) {
+            return fullName.substring(lastIndex);
+        } else {
+            return fullName;
+        }
+    }
+    
+    static public String stripExtensionFromFullName(String fullName) {
+        int lastIndex = fullName.lastIndexOf('.');
+        if (lastIndex != -1) {
+            return fullName.substring(0,lastIndex);
+        } else {
+            return fullName;
+        }
+    }
 
 
     
@@ -289,6 +319,9 @@ class TestUtil extends Object {
     }
     
         
+    static boolean isClassElementTest(ClassElement ce) {
+        return isClassElementImplementingTestInterface(ce);
+    }
     
     // is ClassElement a Test class ?
     static boolean isClassElementImplementingTestInterface(ClassElement ce) {        

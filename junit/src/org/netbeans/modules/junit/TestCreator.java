@@ -42,7 +42,7 @@ public class TestCreator extends java.lang.Object {
     static private final String JUNIT_SUPER_CLASS_NAME                = "TestCase";
     static private final String JUNIT_FRAMEWORK_PACKAGE_NAME    = "junit.framework";    
     
-    static private final String forbidenMethods[]               = {"main", "suite", "setUp"};
+    static private final String forbiddenMethods[]               = {"main", "suite", "run", "runBare", "setUp", "tearDown"};
     static private final String SUIT_BLOCK_START                = "--JUNIT:";
     static private final String SUIT_BLOCK_END                  = ":JUNIT--";
     static private final String SUIT_BLOCK_COMMENT              = "//This block was automatically generated and can be regenerated again.\n" +
@@ -87,7 +87,7 @@ public class TestCreator extends java.lang.Object {
 
         // update the source file of the suite class
         srcelTarget = classTarget.getSource();
-        //System.err.println("createTestSuite(): srcelTarget:");
+        //System.err.println("createTestSuite(): srcelTarget:"+srcelTarget);
         
         srcelTarget.setPackage(packageName.length() != 0 ? Identifier.create(packageName) : null);
         srcelTarget.addImport(new Import(Identifier.create(JUNIT_FRAMEWORK_PACKAGE_NAME), Import.PACKAGE));
@@ -204,7 +204,9 @@ public class TestCreator extends java.lang.Object {
         if (JUnitSettings.getDefault().isRegenerateSuiteMethod()) {
             //System.err.println("TestCreator.createTestClassSuiteMethod() - is regenerate ...");
             removeSuiteMethod(classTest);
-        }         
+        }
+        
+        System.err.println("Generating suite() method for :"+classTest.getName());
         
         // create header of function
         MethodElement method = new MethodElement();
@@ -225,11 +227,15 @@ public class TestCreator extends java.lang.Object {
         body.append(classTest.getName().getName());
         body.append(".class);\n");
         
-        innerClasses = classTest.getClasses();
+        innerClasses = classTest.getClasses();        
         for(int i = 0; i < innerClasses.length; i++) {
-            body.append("suite.addTest(");
-            body.append(innerClasses[i].getName().getName());
-            body.append(".suite());\n");
+            ClassElement innerClass = innerClasses[i];
+            if (TestUtil.isClassElementTest(innerClass)) {
+                //System.err.println("Adding inner class:"+innerClasses[i].getVMName());
+                body.append("suite.addTest(");
+                body.append(innerClass.getName().getName());
+                body.append(".suite());\n");
+            } 
         }
         
         body.append("\nreturn suite;\n");
@@ -519,9 +525,9 @@ public class TestCreator extends java.lang.Object {
         }
     }
     
-    static private boolean isForbiden(String name) {
-        for (int i = 0; i < forbidenMethods.length; i++) {            
-            if (forbidenMethods[i].equals(name)) 
+    static private boolean isForbidden(String name) {
+        for (int i = 0; i < forbiddenMethods.length; i++) {            
+            if (forbiddenMethods[i].equals(name)) 
               return true;            
         }
         return false;
@@ -568,7 +574,7 @@ public class TestCreator extends java.lang.Object {
             ((m.getModifiers() & cfg_MethodsFilter) != 0 ||
             ((m.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED)) == 0 && cfg_MethodsFilterPackage))) {
             name = m.getName().getName();
-            return !isForbiden(name) && (m.getModifiers() & Modifier.ABSTRACT) == 0;
+            return !isForbidden(name) && (m.getModifiers() & Modifier.ABSTRACT) == 0;
         }
         return false;
     }
