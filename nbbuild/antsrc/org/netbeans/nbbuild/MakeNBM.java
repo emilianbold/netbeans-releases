@@ -281,7 +281,7 @@ public class MakeNBM extends Task {
     /** see #13850 for explanation */
     private String moduleName = null;
     private String homepage = null;
-    private String distribution = null;
+    private String distribution = "";
     private String needsrestart = null;
     private String moduleauthor = null;
     private String releasedate = null;
@@ -355,19 +355,14 @@ public class MakeNBM extends Task {
     }
     /** URL where this NBM file is expected to be downloadable from. */
     public void setDistribution (String distribution) throws BuildException {
-        if (distribution.startsWith("http://")) { //NOI18N
-            this.distribution = distribution;
-        } else if (!(distribution.equals(""))) {
-            // workaround for typical bug in build script
-            this.distribution = "http://" + distribution; //NOI18N
-        } else {
-            throw new BuildException("Distribution URL is empty, check build.xml file", getLocation());
-        }
-        // check the URL
-        try {
-            URI uri = java.net.URI.create(this.distribution);
-        } catch (IllegalArgumentException ile) {
-            throw new BuildException("Distribution URL \"" + this.distribution + "\" is not a valid URI", ile, getLocation());
+        this.distribution = distribution;
+        if (!(this.distribution.equals(""))) {
+            // check the URL
+            try {
+                URI uri = java.net.URI.create(this.distribution);
+            } catch (IllegalArgumentException ile) {
+                throw new BuildException("Distribution URL \"" + this.distribution + "\" is not a valid URI", ile, getLocation());
+            }
         }
     }
     public Blurb createLicense () {
