@@ -25,6 +25,7 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -62,9 +63,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 
-import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.jmi.javamodel.*;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import java.lang.reflect.Modifier;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -619,7 +618,7 @@ class WebActionProvider implements ActionProvider {
             // ??? maybe better should be thrown IAE
             return false;
         }
-        Resource res = JavaMetamodel.getManager ().getResource (fo);
+        Resource res = JavaModel.getResource (fo);
         assert res != null : "Resource found for FileObject " + fo;
         return hasMainMethod (res);
     }
@@ -632,7 +631,7 @@ class WebActionProvider implements ActionProvider {
                 // now it is only important top-level class with the same 
                 // name as file. Continue if the file name differs
                 // from top level class name.
-                if (!clazz.getSimpleName ().equals (((JMManager)JMManager.getManager ()).getFileObject (res).getName ()))
+                if (!clazz.getSimpleName ().equals (JavaModel.getFileObject (res).getName ()))
                     continue;
 
                 for (Iterator j = clazz.getFeatures ().iterator(); j.hasNext ();) {
