@@ -61,6 +61,7 @@ public class RADComponent {
 
     private Node.PropertySet[] beanPropertySets;
     private Node.Property[] syntheticProperties;
+    private Node.Property[] beanPreferredProperties;
     private Node.Property[] beanProperties;
     private Node.Property[] beanExpertProperties;
     private Node.Property[] beanEvents;
@@ -211,6 +212,7 @@ public class RADComponent {
         nameToProperty = new HashMap();
 
         syntheticProperties = null; //createSyntheticProperties();
+        beanPreferredProperties = null;
         beanProperties = null; //createBeanProperties();
         beanExpertProperties = null; //createBeanExpertProperties();
 
@@ -375,9 +377,11 @@ public class RADComponent {
     RADComponent.RADProperty[] getAllProperties() {
         if (allProperties == null) {
             Node.Property[] props = getComponentProperties();
+            Node.Property[] prefProps = getComponentPreferredProperties();
             Node.Property[] expertProps = getComponentExpertProperties();
-            ArrayList list = new ArrayList(props.length + expertProps.length);
+            ArrayList list = new ArrayList(props.length + prefProps.length + expertProps.length);
             list.addAll(Arrays.asList(props));
+            list.addAll(Arrays.asList(prefProps));
             list.addAll(Arrays.asList(expertProps));
             allProperties = FormEditor.sortProperties(list, beanClass);
         }
@@ -386,80 +390,67 @@ public class RADComponent {
     }
 
     public Node.PropertySet[] getProperties() {
-        if (beanPropertySets == null) {
-            if (getComponentExpertProperties().length == 0) {
-                // No expert properties
-                beanPropertySets = new Node.PropertySet [] {
-                    new Node.PropertySet(
-                        "properties", // NOI18N
-                        FormEditor.getFormBundle().getString("CTL_PropertiesTab"),
-                        FormEditor.getFormBundle().getString("CTL_PropertiesTabHint")
-                        ) {
-                        public Node.Property[] getProperties() {
-                            return getComponentProperties();
-                        }
-                    },
-                    new Node.PropertySet(
-                        "events", // NOI18N
-                        FormEditor.getFormBundle().getString("CTL_EventsTab"),
-                        FormEditor.getFormBundle().getString("CTL_EventsTabHint")
-                        ) {
-                        public Node.Property[] getProperties() {
-                            return getComponentEvents();
-                        }
-                    },
-                    new Node.PropertySet(
-                        "synthetic", // NOI18N
-                        FormEditor.getFormBundle().getString("CTL_SyntheticTab"),
-                        FormEditor.getFormBundle().getString("CTL_SyntheticTabHint")
-                        ) {
-                        public Node.Property[] getProperties() {
-                            return getSyntheticProperties();
-                        }
-                    },
-                };
-            } else {
-                // With expert properties
-                beanPropertySets = new Node.PropertySet [] {
-                    new Node.PropertySet(
-                        "properties", // NOI18N
-                        FormEditor.getFormBundle().getString("CTL_PropertiesTab"),
-                        FormEditor.getFormBundle().getString("CTL_PropertiesTabHint")
-                        ) {
-                        public Node.Property[] getProperties() {
-                            return getComponentProperties();
-                        }
-                    },
-                    new Node.PropertySet(
-                        "expert", // NOI18N
-                        FormEditor.getFormBundle().getString("CTL_ExpertTab"),
-                        FormEditor.getFormBundle().getString("CTL_ExpertTabHint")
-                        ) {
-                        public Node.Property[] getProperties() {
-                            return getComponentExpertProperties();
-                        }
-                    },
-                    new Node.PropertySet(
-                        "events", // NOI18N
-                        FormEditor.getFormBundle().getString("CTL_EventsTab"),
-                        FormEditor.getFormBundle().getString("CTL_EventsTabHint")
-                        ) {
-                        public Node.Property[] getProperties() {
-                            return getComponentEvents();
-                        }
-                    },
-                    new Node.PropertySet(
-                        "synthetic", // NOI18N
-                        FormEditor.getFormBundle().getString("CTL_SyntheticTab"),
-                        FormEditor.getFormBundle().getString("CTL_SyntheticTabHint")
-                        ) {
-                        public Node.Property[] getProperties() {
-                            return getSyntheticProperties();
-                        }
-                    },
-                };
-            }
+        if (beanPropertySets != null)
+            return beanPropertySets;
+
+        ArrayList propSets = new ArrayList(4);
+
+        if (0 != getComponentPreferredProperties().length) {
+            propSets.add(new Node.PropertySet(
+                             "preferred", // NOI18N
+                             FormEditor.getFormBundle().getString("CTL_PreferredTab"),
+                             FormEditor.getFormBundle().getString("CTL_PreferredTabHint")
+                             ) {
+                public Node.Property[] getProperties() {
+                    return getComponentPreferredProperties();
+                }
+            });
         }
+        
+        propSets.add(new Node.PropertySet(
+                         "properties", // NOI18N
+                         FormEditor.getFormBundle().getString("CTL_PropertiesTab"),
+                         FormEditor.getFormBundle().getString("CTL_PropertiesTabHint")
+                         ) {
+            public Node.Property[] getProperties() {
+                return getComponentProperties();
+            }
+        });
+
+        if (0 != getComponentExpertProperties().length) {
+            propSets.add(new Node.PropertySet(
+                             "expert", // NOI18N
+                             FormEditor.getFormBundle().getString("CTL_ExpertTab"),
+                             FormEditor.getFormBundle().getString("CTL_ExpertTabHint")
+                             ) {
+                public Node.Property[] getProperties() {
+                    return getComponentExpertProperties();
+                }
+            });
+        }
+        
+        propSets.add(new Node.PropertySet(
+                         "events", // NOI18N
+                         FormEditor.getFormBundle().getString("CTL_EventsTab"),
+                         FormEditor.getFormBundle().getString("CTL_EventsTabHint")
+                         ) {
+            public Node.Property[] getProperties() {
+                return getComponentEvents();
+            }
+        });
+
+        propSets.add(new Node.PropertySet(
+                         "synthetic", // NOI18N
+                         FormEditor.getFormBundle().getString("CTL_SyntheticTab"),
+                         FormEditor.getFormBundle().getString("CTL_SyntheticTabHint")
+                         ) {
+            public Node.Property[] getProperties() {
+                return getSyntheticProperties();
+            }
+        });
+
+        beanPropertySets =
+            (Node.PropertySet[]) propSets.toArray(new Node.PropertySet[propSets.size()]);
         return beanPropertySets;
     }
 
@@ -478,6 +469,13 @@ public class RADComponent {
             syntheticProperties = createSyntheticProperties();
         }
         return syntheticProperties;
+    }
+
+    public Node.Property[] getComponentPreferredProperties() {
+        if (beanPreferredProperties == null) {
+            beanPreferredProperties = createBeanPreferredProperties();
+        }
+        return beanPreferredProperties;
     }
 
     public Node.Property[] getComponentProperties() {
@@ -514,6 +512,7 @@ public class RADComponent {
      */
     public RADProperty getPropertyByName(String name) {
         getSyntheticProperties();
+        getComponentPreferredProperties();
         getComponentProperties();
         getComponentEvents();
         getComponentExpertProperties();
@@ -551,11 +550,33 @@ public class RADComponent {
         return getFormManager().getCodeGenerator().getSyntheticProperties(this);
     }
 
+    protected Node.Property[] createBeanPreferredProperties() {
+        PropertyDescriptor[] props = getBeanInfo().getPropertyDescriptors();
+        ArrayList nodeProps = new ArrayList();
+        for (int i = 0; i < props.length; i++) {
+            if ((!props[i].isHidden())
+                && (props[i].isPreferred()
+                    || Boolean.TRUE.equals(props[i].getValue("preferred"))) // NOI18N
+                ) {
+                Node.Property prop = createProperty(props[i]);
+                nodeProps.add(prop);
+            }
+        }
+
+        Node.Property[] np = new Node.Property [nodeProps.size()];
+        nodeProps.toArray(np);
+
+        return np;
+    }
+
     protected Node.Property[] createBeanProperties() {
         PropertyDescriptor[] props = getBeanInfo().getPropertyDescriptors();
         ArrayList nodeProps = new ArrayList();
         for (int i = 0; i < props.length; i++) {
-            if ((!props[i].isHidden()) &&(!props[i].isExpert())) {
+            if ((!props[i].isHidden()) &&(!props[i].isExpert())
+                && (!props[i].isPreferred())
+                && (! Boolean.TRUE.equals(props[i].getValue("preferred"))) // NOI18N
+                ) {
                 Node.Property prop = createProperty(props[i]);
                 nodeProps.add(prop);
             }
