@@ -41,7 +41,9 @@ public class InspectorAction extends AbstractAction {
     /** Opens component inspector (Form structure) component. */
     public void actionPerformed(ActionEvent evt) {
         // show ComponentInspector
-        ComponentInspector.getInstance().open();
+        ComponentInspector inspector = ComponentInspector.getInstance();
+        inspector.open();
+        inspector.requestActive();
     }
     
 }
