@@ -289,8 +289,15 @@ public final class FreeformProject implements Project {
         private final List/*<ChangeListener>*/ listeners = new ArrayList();
         
         public PropertyEvaluatorProxy() throws IOException {
-            delegate = initEval();
+            init();
             helper().addAntProjectListener(this);
+        }
+        
+        private void init() throws IOException {
+            delegate = initEval();
+            if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                Util.err.log("properties for " + getProjectDirectory() + ": " + delegate.getProperties());
+            }
         }
         
         public String getProperty(String prop) {
@@ -329,7 +336,7 @@ public final class FreeformProject implements Project {
         
         public void configurationXmlChanged(AntProjectEvent ev) {
             try {
-                delegate = initEval();
+                init();
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
             }

@@ -42,6 +42,8 @@ public class Util {
     
     private Util() {}
     
+    public static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.ant.freeform"); // NOI18N
+    
     /**
      * Search for an XML element in the direct children of a parent.
      * DOM provides a similar method but it does a recursive search
