@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.Window;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import javax.swing.JDialog;
@@ -54,7 +55,7 @@ public class JellyTestCase extends NbTestCase {
     /** closing all modal dialogs after each test case is disabled by default
      */
     public boolean closeAllModal = Boolean.valueOf(System.getProperty("jelly.close.modal", "true")).booleanValue();
-    
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
@@ -62,14 +63,45 @@ public class JellyTestCase extends NbTestCase {
         super(testName);
     }
     
+    /** Inits environment before test case is executed. It can be overridden
+     * in sub class but it is recommended to call super.initEnvironment() at
+     * the beginning.
+     * <br>
+     * Default initialization: output messages from jemmy are redirected
+     * to jemmy.log file in workdir; jemmy timeouts are loaded from 
+     * org.netbeans.jellytools.timeouts and if system property jelly.timeouts_resource
+     * or jelly.timeouts_file are set, timeouts are loaded from specified
+     * resource/file;
+     */
+    protected void initEnvironment() {
+        // redirect log messages from jemmy to jemmy.log file in workdir
+        PrintStream jemmyLog = getLog("jemmy.log");
+        JemmyProperties.setCurrentOutput(new TestOut(System.in, jemmyLog, jemmyLog));
+        // load timeouts
+        String timeoutsResource = System.getProperty("jelly.timeouts_resource");
+        String timeoutsFile = System.getProperty("jelly.timeouts_file");
+        try {
+            JemmyProperties.getCurrentTimeouts().load(getClass().getClassLoader().
+                         getResourceAsStream("org/netbeans/jellytools/timeouts"));
+            if(timeoutsResource != null && !"".equals("")) {
+                JemmyProperties.getCurrentTimeouts().load(
+                    getClass().getClassLoader().getResourceAsStream(timeoutsResource));
+            } else if(timeoutsFile != null && !"".equals("")) {
+                JemmyProperties.getCurrentTimeouts().load(timeoutsFile);
+            }
+        } catch (Exception e) {
+            throw new JemmyException("Initialization of timeouts failed.", e);
+        }
+    }
+    
     /** Overriden method from JUnit framework execution to perform conditional
      * screen shot and conversion from TimeoutExpiredException to AssertionFailedError. <br>
-     * Redirects output and waits a second before test execution.
+     * Waits a second before test execution.
      * @throws Throwable Throwable
      */
     public void runBare() throws Throwable {
-        PrintStream jemmyLog = getLog("jemmy.log");
-        JemmyProperties.setCurrentOutput(new TestOut(System.in, jemmyLog, jemmyLog));
+        initEnvironment();
+        // wait 
         new EventTool().waitNoEvent(1000);
         try {
             super.runBare();
