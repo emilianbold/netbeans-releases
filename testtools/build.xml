@@ -51,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nbroot}/jemmysupport/netbeans/modules/jemmysupport.jar" />
         <!-- Hopefully set up by nbbuild/build.xml: -->
         <pathelement location="${jdkhome}/lib/tools.jar"/>
-        <fileset dir="${nbroot}/core/external">
+        <fileset dir="${nbroot}/libs/external">
           <include name="xerces*.jar"/>
           <include name="xml-apis*.jar"/>
         </fileset>
