@@ -38,8 +38,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.src.Element;
 import org.openide.cookies.OpenCookie;
-import org.openide.util.HelpCtx;
-import org.openide.util.SharedClassObject;
+import org.openide.util.*;
 
 import org.openide.execution.NbClassPath;
 import org.openide.filesystems.FileObject;
@@ -427,6 +426,7 @@ public class IndexSearch
         showHelp( false );
     }
 
+    RequestProcessor.Task task=null;    
     /** Invokes the browser with help */
     private void showHelp( boolean quick ) {
 
@@ -436,6 +436,7 @@ public class IndexSearch
         if (  resultsList.getMinSelectionIndex() < 0 )
             return;
 
+        
         DocIndexItem  dii = (DocIndexItem)resultsList.getModel().getElementAt( resultsList.getMinSelectionIndex() );
 
         try {
@@ -450,8 +451,17 @@ public class IndexSearch
             if ( strUrl.startsWith( "nbfs:" ) && strUrl.charAt( 5 ) != '/' ){ // NOI18N
                 url = new URL( "nbfs:/" + strUrl.substring( 5 ) ); // NOI18N
             }
-            if ( quick )
-                quickBrowser.setURL( url );
+            
+            if ( quick ){
+                final URL furl = url;
+                if( task != null )
+                    task.cancel();
+                task = RequestProcessor.postRequest( new Runnable(){
+                    public void run(){
+                        quickBrowser.setURL( furl );
+                    }
+                }, 100 );      
+            }
             else
                 TopManager.getDefault().showUrl( url );
         }
