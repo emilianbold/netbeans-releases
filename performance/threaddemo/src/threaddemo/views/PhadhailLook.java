@@ -169,7 +169,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
             null,
             SystemAction.get(DeleteAction.class),
             SystemAction.get(RenameAction.class),
-            SystemAction.get(ToolsAction.class),
+            //SystemAction.get(ToolsAction.class),
         };
     }
     
