@@ -202,7 +202,9 @@
    		<TD><xsl:value-of select="@testsFail"/></TD>
    		<TD><xsl:value-of select="@testsError"/></TD>				
    		<TD><xsl:value-of select="format-number(@testsPass div @testsTotal,'0.00%')"/></TD>
+   		<!--
 	    <TD><xsl:value-of select="@timeStamp"/></TD>
+	    	-->
    		<TD><xsl:value-of select="(@time div 1000)"/></TD>
    	</TR>
 </xsl:template>

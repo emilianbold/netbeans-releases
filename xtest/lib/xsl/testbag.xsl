@@ -35,9 +35,14 @@
 	<LI>Executor: <xsl:value-of select="@executor"/></LI>
 	<LI>Module: <xsl:value-of select="@module"/></LI>
 	<LI>Test Type: <xsl:value-of select="@testType"/></LI>
+	
+	<!-- this is a temporary hack - should be reworked
+		 with the real attribute idicating IDE workdir availabiliry -->
 	<xsl:if test="string(@executor)='ide'">
 		<LI><A HREF="../sys/ide/">IDE User Directory</A></LI>
 	</xsl:if>
+	<!-- end of hack -->
+	
 	<xsl:if test="@unexpectedFailure">
 		<LI><B><FONT color="#FF0000">!!!<xsl:value-of select="@unexpectedFailure"/>!!!</FONT></B></LI>
 	</xsl:if>

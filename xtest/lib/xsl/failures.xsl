@@ -47,14 +47,23 @@
 
 <xsl:template match="TestRun">
 	<A NAME="{@runID}"><H2>Test Run</H2></A>
-	<BLOCKQUOTE>
+	
+		<UL>
+		<xsl:if test="@name">
+			<LI>Name:<xsl:value-of select="@name"/></LI>
+		</xsl:if>
+		<xsl:if test="@config">
+			<LI>Config:<xsl:value-of select="@config"/></LI>
+		</xsl:if>
+			<LI>Run (when): <xsl:value-of select="@timeStamp"/></LI>
 		<xsl:for-each select="TestBag[@unexpectedFailure]">
 			<LI><B><FONT color="#FF0000">
 				!!! Tests did not finish correctly in module <xsl:value-of select="@module"/>, 
 				 in testbag <A HREF="../{parent::*/@runID}/{@bagID}/htmlresults/testbag.html"><xsl:value-of select="@name"/></A> !!!
 			</FONT></B></LI>
 		</xsl:for-each>
-
+		</UL>
+    <BLOCKQUOTE>
 		<xsl:call-template name="Module"/>
 	</BLOCKQUOTE>
 </xsl:template>
