@@ -26,6 +26,7 @@ Microsystems, Inc. All Rights Reserved.
    <property name="installer.params" value=""/>
    
    <property name="xtest.home" location=".."/>
+   <property name="xtest.driver.backup" location="backup"/>
    
    <property name="driver.classpath" location="${xtest.home}/lib/xtest.jar"/>
    <property name="xerces.classpath" location="${xtest.home}/lib/xerces.jar"/>
@@ -36,6 +37,9 @@ Microsystems, Inc. All Rights Reserved.
    <!-- ============== -->
    
    <target name="init" depends="check-classpath">
+     <available file="${xtest.driver.config}" property="xtest.driver.config.present"/>
+
+     <antcall target="check-configfile"/>
      <taskdef name="nbtaskdef" classname="org.netbeans.xtest.NbMultiTaskDef" 
                  classpath="${driver.classpath}"/>
      <nbtaskdef classpath="${driver.classpath};${xerces.classpath};${xmlapis.classpath}">
@@ -49,6 +53,10 @@ Microsystems, Inc. All Rights Reserved.
         <taskdef name="unzip2" classname="org.netbeans.xtest.driver.UnzipExt"/>
         <taskdef name="getfilename" classname="org.netbeans.xtest.driver.FileName"/>
      </nbtaskdef>
+   </target>
+   
+   <target name="check-configfile" unless="xtest.driver.config.present">
+       <fail message="Config file ${xtest.driver.config} doesn't exist."/>
    </target>
    
    <target name="check-classpath" depends="check-xerces-classpath">
@@ -144,8 +152,13 @@ Microsystems, Inc. All Rights Reserved.
          <zip zipfile="${archive.file2}">
             <fileset dir="${xtest.results}" includes="**/xmlresults/*.xml,**/suites/*.xml"/>
          </zip>
+         <mkdir dir="xtest.driver.backup"/>
+         <copy file="${archive.file}" toDir="${xtest.driver.backup}"/>
+         <copy file="${archive.file2}" toDir="${xtest.driver.backup}"/>
          <antcall target="ship-results"/>
          <antcall target="ship-nbresults"/>
+         <delete file="${xtest.results}/${archive.filename}"/>
+         <delete file="${xtest.results}/${archive.filename2}"/>
    </target>
    
    <target name="ship-results" if="xtest.ship.results.to">
