@@ -23,6 +23,7 @@ import javax.swing.JFileChooser;
 
 import org.openide.ErrorManager;
 import org.openide.TopManager;
+import org.openide.nodes.Node;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
@@ -78,6 +79,9 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
      */
     private JFileChooser chooser;
     
+    /** whether the value can be edited -- default to true */
+    private boolean editable = true;
+    
     /**
      * This method is called by the IDE to pass
      * the environment to the property editor.
@@ -130,6 +134,11 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
             mode = directories ? JFileChooser.DIRECTORIES_ONLY :
                 JFileChooser.FILES_AND_DIRECTORIES; // both false, what now? XXX warn
         }
+        
+        if (env.getFeatureDescriptor() instanceof Node.Property){
+            Node.Property prop = (Node.Property)env.getFeatureDescriptor();
+            editable = prop.canWrite();
+        }
     }
 
     /** Returns human readable form of the edited value.
@@ -168,6 +177,14 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
      * @return Returns custom editor component.
      */
     public Component getCustomEditor() {
+        if (!editable) {
+            String info = "";
+            Object curVal = getValue();
+            if (curVal instanceof java.io.File) {
+                info = ((java.io.File)curVal).getAbsolutePath();
+            }
+            return new StringCustomEditor(info, false);
+        }
         if (chooser == null) {
             chooser = new JFileChooser();
         

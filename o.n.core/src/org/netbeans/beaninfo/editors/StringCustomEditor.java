@@ -26,19 +26,15 @@ import javax.swing.border.*;
 */
 public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
 
-    private StringEditor editor;
-
     static final long serialVersionUID =7348579663907322425L;
+    
     /** Initializes the Form */
-    public StringCustomEditor(StringEditor ed) {
-        editor = ed;
-        String s = (String) editor.getValue ();
-        if (s == null) s = ""; // NOI18N
+    public StringCustomEditor(String s, boolean editable) {
         initComponents ();
         
         // bugfix# 9219 sets the text editable or not
-        textArea.setEditable(editor.isEditable());
-        if (! editor.isEditable ()) {
+        textArea.setEditable(editable);
+        if (! editable) {
             textArea.setForeground (textArea.getDisabledTextColor ());
         }
         

@@ -53,7 +53,12 @@ public class StringEditor extends PropertyEditorSupport implements ExPropertyEdi
     }
 
     public java.awt.Component getCustomEditor () {
-        return new StringCustomEditor (this);
+        Object val = getValue();
+        String s = ""; // NOI18N
+        if (val != null) {
+            s = val.toString();
+        }
+        return new StringCustomEditor (s, isEditable()); // NOI18N
     }
 
     private static String toAscii(String str) {
@@ -93,5 +98,4 @@ public class StringEditor extends PropertyEditorSupport implements ExPropertyEdi
             editable = prop.canWrite();
         }
     }
-
 }
