@@ -163,7 +163,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                 getBreakpoint (),
                 e
             );
-            resume = e.getResume ();
+            resume = getBreakpoint().getSuspend() == JPDABreakpoint.SUSPEND_NONE || e.getResume ();
             if (verbose)
                 System.out.println ("B perform breakpoint (no condition): " + this + " resume: " + resume);
         } else {
