@@ -1,10 +1,5 @@
 Netbeans-Module: Image
-Netbeans-Module-Name: Image module
-
-
+Netbeans-Module-Name: Image Module
 
 Name: com/netbeans/developer/modules/loaders/image/ImageDataLoader.class
 Netbeans-Module-Class: Loader
-
-
-
