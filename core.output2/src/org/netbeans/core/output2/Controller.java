@@ -77,6 +77,7 @@ public class Controller { //XXX public only for debug access to logging code
     private static final int ACTION_CLEAR = 12;
     private static final int ACTION_NEXTTAB = 13;
     private static final int ACTION_PREVTAB = 14;
+    private static final int ACTION_TO_EDITOR = 15;
     
 
     //Package private for unit tests
@@ -110,6 +111,9 @@ public class Controller { //XXX public only for debug access to logging code
             (KeyStroke)null);
     Action prevTabAction = new ControllerAction (ACTION_PREVTAB, "PreviousViewAction", //NOI18N
             (KeyStroke)null);
+    
+    Action toEditorAction = new ControllerAction (ACTION_TO_EDITOR, "ToEditorAction", 
+            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0));
 
     private Object[] popupItems = new Object[] {
         copyAction, new JSeparator(), findAction, findNextAction,
@@ -120,7 +124,7 @@ public class Controller { //XXX public only for debug access to logging code
     private Action[] kbdActions = new Action[] {
         copyAction, selectAllAction, findAction, findNextAction, 
         findPreviousAction, wrapAction, saveAsAction, closeAction,
-        navToLineAction, postMenuAction, clearAction,
+        navToLineAction, postMenuAction, clearAction, toEditorAction,
     };
 
     Controller() {}
@@ -394,6 +398,16 @@ public class Controller { //XXX public only for debug access to logging code
             case ACTION_PREVTAB :
                 if (log) log ("Action PREVTAB received");
                 win.selectPreviousTab(tab);
+                break;
+            case ACTION_TO_EDITOR :
+                if (log) log ("Action TO_EDITOR received"); //NOI18N
+                Mode m = WindowManager.getDefault().findMode ("editor"); //NOI18N
+                if (m != null) {
+                    TopComponent tc = m.getSelectedTopComponent();
+                    if (tc != null) {
+                        tc.requestActive();
+                    }
+                }
                 break;
                 
             default :
@@ -1102,8 +1116,29 @@ public class Controller { //XXX public only for debug access to logging code
             if (Controller.log) Controller.log ("NAV TO FIRST LISTENER LINE: " + line);
             if (line > 0) {
                 comp.getOutputPane().sendCaretToLine (line, false);
+                if (isSDI(comp)) {
+                    comp.requestActive();
+                }
             }
         }
+    }
+    
+    private static void maybeFocusOrFront (OutputTab comp) {
+        Container c = comp.getTopLevelAncestor();
+        if (c instanceof JFrame) {
+            JFrame frm = (JFrame) c;
+            Dimension size = frm.getSize();
+            Dimension screen = Utilities.getUsableScreenBounds(comp.getGraphicsConfiguration()).getSize();
+            frm.toFront();
+            if (Math.abs (size.width - screen.width) <= 80 && Math.abs (size.height - screen.height) < 80) {
+                comp.requestFocus();
+            }
+        }
+    }
+    
+    private static boolean isSDI (OutputTab comp) {
+        Container c = comp.getTopLevelAncestor();
+        return (c != WindowManager.getDefault().getMainWindow());
     }
     
     /**
