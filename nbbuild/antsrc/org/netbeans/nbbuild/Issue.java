@@ -25,7 +25,7 @@ import org.xml.sax.SAXException;
 
 
 /** Represents on issue in issuezilla.
- * Created by {@link Issuezilla.getBug }
+ * Created by {@link Issuezilla#getBug}
  *
  * @author Ivan Bradac, refactored by Jaroslav Tulach
  */
