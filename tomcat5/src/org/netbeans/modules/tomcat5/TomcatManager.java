@@ -1239,11 +1239,11 @@ public class TomcatManager implements DeploymentManager {
                 "docBase=\"../server/webapps/manager\"",
                 "docBase=\"balancer\""
             };
-            String passwd = readPassword();
-            if (passwd == null) {
+            String passwd = null;
+            if (isItBundledTomcat()) {
                 passwd = TomcatInstallUtil.generatePassword(8);
+                setPassword(passwd);
             }
-            this.setPassword(passwd);
             String [] patternTo = new String [] { 
                 null, 
                 null, 
@@ -1252,7 +1252,7 @@ public class TomcatManager implements DeploymentManager {
                 //"<Context path=\"/jsp-examples\" docBase=\""+new File (homeDir, "webapps/jsp-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
                 //"<Context path=\"/servlets-examples\" docBase=\""+new File (homeDir, "webapps/servlets-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
                 "</Host>",   // NOI18N
-                "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager\"/>\n</tomcat-users>",   // NOI18N
+                passwd != null ? "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager\"/>\n</tomcat-users>" : null,   // NOI18N
                 null, 
                 "docBase=\"${catalina.home}/server/webapps/admin\"",   // NOI18N
                 "docBase=\"${catalina.home}/server/webapps/manager\"",   // NOI18N
@@ -1311,33 +1311,6 @@ public class TomcatManager implements DeploymentManager {
         return baseDir;
     }
     
-    private final static String PWD_FILENAME = "tomcatpasswd.txt";
-
-    private String readPassword() {
-        FileReader pwdFile = null;
-        LineNumberReader lnr = null;
-        try {
-            pwdFile = new FileReader(System.getProperty("netbeans.user")+System.getProperty("file.separator") + PWD_FILENAME);
-            if (pwdFile == null) {
-                return null;
-            }
-            lnr = new LineNumberReader(pwdFile);
-            String passwd = lnr.readLine();
-            return passwd;
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ioe.toString());
-            return null;
-        } finally {
-            if (lnr != null) {
-                try {
-                    lnr.close();
-                } catch (IOException ioe) {
-                    // just ignore
-                }
-            }
-        }
-    }
-        
     /** Copies server.xml file and patches appBase="webapps" to
      * appBase="$CATALINA_HOME/webapps" during the copy.
      * @return success status.
