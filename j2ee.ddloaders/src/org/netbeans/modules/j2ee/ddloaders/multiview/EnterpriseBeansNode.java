@@ -86,7 +86,7 @@ public class EnterpriseBeansNode extends EjbSectionNode {
         // sort beans according to their display name
         Arrays.sort(ejbs, new Comparator() {
             public int compare(Object o1, Object o2) {
-                return ((Ejb) o1).getDefaultDisplayName().compareTo(((Ejb) o2).getDefaultDisplayName());
+                return getEjbDisplayName((Ejb) o1).compareTo(getEjbDisplayName((Ejb) o2));
             }
         });
         boolean dirty = nodes.length != ejbs.length;
@@ -105,5 +105,13 @@ public class EnterpriseBeansNode extends EjbSectionNode {
             children.add(newNodes);
             populateBoxPanel();
         }
+    }
+
+    private String getEjbDisplayName(Ejb ejb) {
+        String name = ejb.getDefaultDisplayName();
+        if (name == null) {
+            name = ejb.getEjbName();
+        }
+        return name;
     }
 }
