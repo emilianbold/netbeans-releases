@@ -18,10 +18,16 @@
 
 package org.netbeans.modules.junit;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.TreeSet;
+import java.util.Enumeration;
 import java.awt.Image;
 import java.beans.*;
 
 import org.openide.*;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /** Description of {@link JUnitSettings}.
@@ -33,14 +39,17 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
     public PropertyDescriptor[] getPropertyDescriptors () {
         try {
             PropertyDescriptor propFileSystem = new PropertyDescriptor ("FileSystem", JUnitSettings.class);
+            propFileSystem.setPropertyEditorClass(FileSystemPropEd.class);
             propFileSystem.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_file_system"));
             propFileSystem.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_file_system"));
             
             PropertyDescriptor propSuiteTemplate = new PropertyDescriptor ("SuiteTemplate", JUnitSettings.class);
+            propSuiteTemplate.setPropertyEditorClass(TemplatePropEd.class);
             propSuiteTemplate.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_suite_template"));
             propSuiteTemplate.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_suite_template"));
 
             PropertyDescriptor propClassTemplate = new PropertyDescriptor ("ClassTemplate", JUnitSettings.class);
+            propClassTemplate.setPropertyEditorClass(TemplatePropEd.class);
             propClassTemplate.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_class_template"));
             propClassTemplate.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_class_template"));
 
@@ -89,11 +98,19 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
             propInternalExecutor.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_executor_type"));
             propInternalExecutor.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_executor_type"));
             
+            PropertyDescriptor propGenerateExceptionClasses = new PropertyDescriptor ("GenerateExceptionClasses", JUnitSettings.class);
+            propGenerateExceptionClasses.setPropertyEditorClass(BoolPropEd.class);
+            propGenerateExceptionClasses.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_generate_exception_classes"));
+            propGenerateExceptionClasses.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_generate_exception_classes"));
+
+            PropertyDescriptor propTestRunner = new PropertyDescriptor ("TestRunner", JUnitSettings.class);
+            propTestRunner.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_test_runner"));
+            propTestRunner.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_test_runner"));
             
             return new PropertyDescriptor[] { propFileSystem, propSuiteTemplate, propClassTemplate,
               propMembersPublic, propMembersProtected, propMembersPackage, propBodyComments, propBodyContent, 
-              propJavaDoc, propCfgConfigEnabled, propCfgExecEnabled, propInternalExecutor };
-            
+              propJavaDoc, propCfgConfigEnabled, propCfgExecEnabled, propInternalExecutor, 
+              propGenerateExceptionClasses, propTestRunner };
         }
         catch (IntrospectionException ie) {
             if (Boolean.getBoolean ("netbeans.debug.exceptions"))
@@ -138,6 +155,50 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
                 throw new IllegalArgumentException ();
         }
     }
+    
+    public static class SortedListPropEd extends PropertyEditorSupport {
+        private LinkedList displays = new LinkedList();
+        private LinkedList values = new LinkedList();
+
+        public String[] getTags () {
+            TreeSet t = new TreeSet(displays);
+            return (String []) t.toArray(new String[displays.size() - 1]);
+        }
+
+        public String getAsText () {
+            String      value = null;
+            String      display = null;
+            Iterator    iD = displays.iterator();
+            Iterator    iV = values.iterator();
+            while (iV.hasNext()) {
+                value = (String) iV.next();
+                display = (String) iD.next();
+                if (value.equals(getValue()))
+                    break;
+            }
+            return display;
+        }
+        
+        public void setAsText (String text) throws IllegalArgumentException {
+            String      value = null;
+            String      display = null;
+            Iterator    iD = displays.iterator();
+            Iterator    iV = values.iterator();
+            while (iD.hasNext()) {
+                value = (String) iV.next();
+                display = (String) iD.next();
+                if (display.equals(text)) {
+                    setValue(value);
+                    break;
+                }
+            }
+        }
+
+        protected void put(String display, String value) {
+            displays.add(display);
+            values.add(value);
+        }
+    }
 
     public static class ExecutorPropEd extends PropertyEditorSupport {
         private static final String[] tags = {
@@ -152,16 +213,48 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
 
         public String getAsText () {
             return tags[((Integer)getValue()).intValue()];
-        }
+       }
 
         public void setAsText (String text) throws IllegalArgumentException {
             for(int i = 0; i < tags.length; i++) {
                 if (tags[i].equals(text)) {
                     setValue(new Integer(i));
                     return;
-                }
+               }
             }
             throw new IllegalArgumentException ();
+        }
+    }
+
+    public static class FileSystemPropEd extends SortedListPropEd {
+        public FileSystemPropEd() {
+            // default value, when no file system is selected
+            put(NbBundle.getMessage(JUnitSettingsBeanInfo.class, "LBL_no_file_system_selected"), "");
+            
+            Enumeration fss = TopManager.getDefault().getRepository().getFileSystems();
+            while (fss.hasMoreElements()) {
+                FileSystem fs = (FileSystem) fss.nextElement();
+                if (TestUtil.isSupportedFileSystem(fs)) {
+                    put(fs.getDisplayName(), fs.getSystemName());
+                }
+            }
+        }
+    }
+
+    public static class TemplatePropEd extends SortedListPropEd {
+        public TemplatePropEd() {
+            FileObject  foJUnitTmpl;
+            FileObject  foTemplates[];
+
+            foJUnitTmpl = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Templates/JUnit");
+            if (null != foJUnitTmpl) {
+                foTemplates = foJUnitTmpl.getChildren();
+                for(int i = 0; i < foTemplates.length; i++) {
+                    if (!foTemplates[i].getExt().equals("java"))
+                        continue;
+                    put(foTemplates[i].getName(), foTemplates[i].getPackageNameExt('/', '.'));
+                }
+            }
         }
     }
 }
