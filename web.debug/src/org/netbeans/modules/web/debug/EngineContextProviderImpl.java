@@ -49,7 +49,7 @@ public class EngineContextProviderImpl extends SourcePathProvider {
      */
     public String getURL (String relativePath, boolean global) {
         if (verbose) System.out.println ("ECPI(JSP): getURL " + relativePath + " global " + global);
-        if (virtualFolders.contains (relativePath)) {
+        if (virtualFolders.contains (relativePath) || relativePath.startsWith("org/apache/jsp")) {
             if (verbose) System.out.println ("ECPI(JSP):  fo virtual folder");
             return "virtual folder";
         }
