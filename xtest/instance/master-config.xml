@@ -21,6 +21,7 @@ Microsystems, Inc. All Rights Reserved.
     <config name="unit-nb"> <!-- was also similar to old "config-1" -->
         <module name="core" testtypes="unit" attributes="stable"/>
         <module name="openide" testtypes="unit" attributes="stable"/>
+        <module name="openide/masterfs" testtypes="unit" attributes="stable"/>
         <!-- Needs to be early since many other tests compile against it: -->
         <!-- (in general, check using: 'fgrep /build/test/unit/classes */{,*/}nbproject/project.properties') -->
         <module name="projects/projectapi" testtypes="unit" attributes="stable"/>
