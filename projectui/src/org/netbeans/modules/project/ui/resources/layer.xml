@@ -142,8 +142,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/templatesFolder.html" />
-                <!--create private iterator for Folder?-->
-                <!--<attr name="instantiatingIterator" methodvalue="org.netbeans.modules.project.ui.NewFolderWizardIterator.singleton" />-->
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.project.ui.NewFileIterator.folderIterator" />
                 <attr name="templateType_Other" boolvalue="true"/>
             </folder>
         </folder>

@@ -41,18 +41,21 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
     private Project project;
     private SourceGroup[] folders;
     private WizardDescriptor.Panel bottomPanel;
-    SimpleTargetChooserPanel( Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel ) {
+    private boolean isFolder;
+    
+    SimpleTargetChooserPanel( Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel, boolean isFolder ) {
         this.folders = folders;
         this.project = project;
         this.bottomPanel = bottomPanel;
         if ( bottomPanel != null ) {
             bottomPanel.addChangeListener( this );
         }
+        this.isFolder = isFolder;
     }
 
     public Component getComponent() {
         if (gui == null) {
-            gui = new SimpleTargetChooserPanelGUI( project, folders, bottomPanel == null ? null : bottomPanel.getComponent() );
+            gui = new SimpleTargetChooserPanelGUI( project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), isFolder );
             gui.addChangeListener(this);
         }
         return gui;

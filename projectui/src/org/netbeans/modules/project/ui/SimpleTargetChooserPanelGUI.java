@@ -53,11 +53,13 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     private String expectedExtension;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     private SourceGroup[] folders;
+    private boolean isFolder;
     
     /** Creates new form SimpleTargetChooserGUI */
-    public SimpleTargetChooserPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel ) {
+    public SimpleTargetChooserPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, boolean isFolder ) {
         this.project = project;
         this.folders=folders;
+        this.isFolder = isFolder;
         initComponents();
         
         locationComboBox.setRenderer( CELL_RENDERER );
@@ -115,9 +117,6 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         }
         putClientProperty ("NewFileWizard_Title", displayName);// NOI18N        
         
-        // XXX hack to decide if Folder or File will be created
-        // (can be implement better if NewFileIterator will be created)
-        boolean isFolder = template != null && "Folder".equals (template.getName ());  // NOI18N
         if (isFolder) {
             jLabel3.setText (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_FolderName_Label")); // NOI18N
             jLabel2.setText (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_ParentFolder_Label")); // NOI18N

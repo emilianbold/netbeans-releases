@@ -37,7 +37,7 @@ public class ProjectChooserFactoryImpl implements ProjectChooserFactory {
     }
 
     public WizardDescriptor.Panel createSimpleTargetChooser( Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel ) {
-        return new SimpleTargetChooserPanel( project, folders, bottomPanel );
+        return new SimpleTargetChooserPanel( project, folders, bottomPanel, false );
     }
 
     public File getProjectsFolder() {
