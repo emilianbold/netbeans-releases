@@ -48,7 +48,6 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- But if #6 is seen failing, please file a bug report, that is more serious. -->
                 <include name="org/openide/nodes/*.class"/>
 		<exclude name="org/openide/nodes/FilterNodeTest.class/testChangeOriginalLeafToArray"/>
-                <exclude name="org/openide/nodes/ChildrenArrayTest.class/testNodeEventsFiredAtOnce"/>
                 <include name="org/openide/options/*Test.class"/>
                 <include name="org/openide/util/*.class"/>
                 <include name="org/openide/util/actions/*Test.class"/>
