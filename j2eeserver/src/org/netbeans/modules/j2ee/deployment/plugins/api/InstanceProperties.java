@@ -70,7 +70,6 @@ public abstract class InstanceProperties {
         String url, String username, String password) throws InstanceCreationException {
         
         ServerRegistry registry = ServerRegistry.getInstance();
-        registry.checkInstanceAlreadyExists(url);
         registry.addInstance(url, username, password);
         ServerInstance inst = registry.getServerInstance(url);
         return new InstancePropertiesImpl(inst);

@@ -33,6 +33,8 @@ import java.util.*;
 
 public class Server implements Node.Cookie {
     
+    static public final String ATTR_needsFindServerUI = "needsFindServerUI";
+    
     final NetbeansDeployment dep;
     final Class factoryCls;
     DeploymentFactory factory = null;
@@ -42,14 +44,19 @@ public class Server implements Node.Cookie {
     Map configMap;
     Map customMap;
     Lookup lkp;
+    boolean needsFindServerUI = false;
     
     public Server(FileObject fo) throws Exception {
         //long t0 = System.currentTimeMillis();
         
         name = fo.getName();
         FileObject descriptor = fo.getFileObject("Descriptor");
-        if(descriptor == null)
-            throw new IllegalStateException("Incorrect server plugin installation");
+        if(descriptor == null) {
+            String msg = NbBundle.getMessage(Server.class, "MSG_InvalidServerPlugin", name);
+            throw new IllegalStateException(msg);
+        }
+        needsFindServerUI = getBooleanValue(descriptor.getAttribute(ATTR_needsFindServerUI), false);
+        
         dep = NetbeansDeployment.createGraph(descriptor.getInputStream());
         
         lkp = new FolderLookup (DataFolder.findContainer (fo)).getLookup ();
@@ -167,17 +174,6 @@ public class Server implements Node.Cookie {
         return dep.getContainerLimitation() == null || dep.getContainerLimitation().isEjbjarDeploy();
     }
     
-    public FindServer getFindServer() {
-        FindServer oo = (FindServer) lkp.lookup (FindServer.class);
-        if (oo != null) {
-            return oo;
-        } else {
-            String msg = NbBundle.getMessage(Server.class, "MSG_NoInstance", name, DeploymentPlanSplitter.class);
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
-            return null;
-        }
-    }
-        
     public ConfigBeanDescriptor getConfigBeanDescriptor(String className) {
         if(configMap == null) {
             ConfigBean[] beans = dep.getConfigBean();
@@ -277,5 +273,17 @@ public class Server implements Node.Cookie {
     
     public DeploymentFactory getDeploymentFactory() {
         return factory;
+    }
+
+    static public boolean getBooleanValue(Object v, boolean dvalue) {
+        if (v instanceof Boolean) 
+            return ((Boolean)v).booleanValue();
+        if (v instanceof String)
+            return Boolean.valueOf((String) v).booleanValue();
+        return dvalue;
+    }
+    
+    public boolean needsFindServerUI() {
+        return needsFindServerUI;
     }
 }
