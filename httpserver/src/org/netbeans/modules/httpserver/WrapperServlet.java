@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -20,9 +20,6 @@ import java.net.UnknownHostException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.net.URLDecoder;
-import java.util.StringTokenizer;
 import javax.servlet.ServletException;
 import javax.servlet.http.*;
 
@@ -106,7 +103,7 @@ public class WrapperServlet extends NbBaseServlet {
         HttpServerSettings settings = (HttpServerSettings)SharedClassObject.findObject(HttpServerSettings.class, true);
 
         String pi = request.getPathInfo();
-        if (pi.startsWith("/")) {
+        if (pi.startsWith("/")) { // NOI18N
             pi = pi.substring(1);
         }
         URL reconstructedURL = new URL ("http",   // NOI18N

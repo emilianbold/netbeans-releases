@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -119,8 +119,8 @@ public class HttpServerURLMapper extends URLMapper {
             }
             if (fileObject.isFolder() &&
                 (orig.length() > 0) &&
-                !(path.toString().endsWith("/"))) {
-                path.append("/");
+                !(path.toString().endsWith("/"))) { // NOI18N
+                path.append("/"); // NOI18N
             }
 
             HttpServerSettings settings = (HttpServerSettings)SharedClassObject.findObject(HttpServerSettings.class, true);

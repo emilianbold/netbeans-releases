@@ -23,7 +23,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Enumeration;
 import java.util.TreeSet;
-import java.text.DateFormat;
 import java.net.InetAddress;
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -31,7 +30,6 @@ import javax.servlet.http.*;
 import org.openide.util.NbBundle;
 import org.openide.util.enum.AlterEnumeration;
 import org.openide.util.enum.EmptyEnumeration;
-import org.openide.util.enum.RemoveDuplicatesEnumeration;
 import org.openide.util.enum.SequenceEnumeration;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -229,8 +227,6 @@ public abstract class NbBaseServlet extends HttpServlet {
                        "</A><BR><BR>\n"); // NOI18N
         }
 
-        DateFormat dfmt=DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
-
         Iterator it = sortEnumeration (children (file.getPath ()),
                                        new Comparator() {
 
@@ -260,7 +256,7 @@ public abstract class NbBaseServlet extends HttpServlet {
 
             if (all.get (name) == null) {
                 all.put (name, name);
-		StringBuffer sb = new StringBuffer ("<A HREF=\"").append (name);
+		StringBuffer sb = new StringBuffer ("<A HREF=\"").append (name); // NOI18N
 		if (fo.isFolder ()) {
 		    sb.append ("/\"><B>").append (name).append ("</B></A><BR>"); // NOI18N
 		}

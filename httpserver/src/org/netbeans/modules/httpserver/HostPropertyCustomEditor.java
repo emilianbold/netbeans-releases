@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,11 +16,8 @@ package org.netbeans.modules.httpserver;
 import java.awt.event.*;
 import javax.swing.*;
 
-import org.openide.*;
-import org.openide.DialogDescriptor;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.NbBundle;
-import java.awt.Dialog;
 
 /**
  *
@@ -36,9 +33,9 @@ public class HostPropertyCustomEditor extends javax.swing.JPanel implements Acti
         initAccessibility();
         anyRadioButton.addActionListener (this);
         selectedRadioButton.addActionListener (this);
-        anyRadioButton.setMnemonic (NbBundle.getBundle(HostPropertyCustomEditor.class).getString ("CTL_AnyRadioButton_Mnemonic").charAt (0)); // NOI18N
-        selectedRadioButton.setMnemonic (NbBundle.getBundle(HostPropertyCustomEditor.class).getString ("CTL_SelectedRadioButton_Mnemonic").charAt (0)); // NOI18N
-        grantLabel.setDisplayedMnemonic (NbBundle.getBundle(HostPropertyCustomEditor.class).getString ("CTL_GrantLabel_Mnemonic").charAt (0)); // NOI18N
+        anyRadioButton.setMnemonic (NbBundle.getBundle(HostPropertyCustomEditor.class).getString ("CTL_AnyRadioButton_Mnemonic").charAt (0));
+        selectedRadioButton.setMnemonic (NbBundle.getBundle(HostPropertyCustomEditor.class).getString ("CTL_SelectedRadioButton_Mnemonic").charAt (0));
+        grantLabel.setDisplayedMnemonic (NbBundle.getBundle(HostPropertyCustomEditor.class).getString ("CTL_GrantLabel_Mnemonic").charAt (0));
         setPreferredSize (new java.awt.Dimension (300, 200));
         
         // set values from PropertyEditor
@@ -70,10 +67,10 @@ public class HostPropertyCustomEditor extends javax.swing.JPanel implements Acti
     
     private void initAccessibility()
     {
-        hostLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(HostPropertyCustomEditor.class).getString("ACS_HostLabelA11yDesc"));  // NOI18N
-        grantLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(HostPropertyCustomEditor.class).getString("ACS_GrantLabelA11yDesc"));  // NOI18N
-        grantTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(HostPropertyCustomEditor.class).getString("ACS_GrantTextAreaA11yName"));  // NOI18N
-        getAccessibleContext().setAccessibleDescription (org.openide.util.NbBundle.getBundle(HostPropertyCustomEditor.class).getString("ACS_HostPropertyPanelA11yName"));  // NOI18N
+        hostLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(HostPropertyCustomEditor.class).getString("ACS_HostLabelA11yDesc"));
+        grantLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(HostPropertyCustomEditor.class).getString("ACS_GrantLabelA11yDesc"));
+        grantTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(HostPropertyCustomEditor.class).getString("ACS_GrantTextAreaA11yName"));
+        getAccessibleContext().setAccessibleDescription (org.openide.util.NbBundle.getBundle(HostPropertyCustomEditor.class).getString("ACS_HostPropertyPanelA11yDesc"));
     }
     
     /** This method is called from within the constructor to
