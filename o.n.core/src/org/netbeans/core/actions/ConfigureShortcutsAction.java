@@ -33,13 +33,9 @@ public class ConfigureShortcutsAction extends org.openide.util.actions.CallableS
         DialogDescriptor dd = new DialogDescriptor (se, NbBundle.getBundle (ConfigureShortcutsAction.class).getString("CTL_ConfigureShortcuts_Title"));
         TopManager.getDefault ().createDialog (dd).show ();
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            try {
-                if (se.isModified ()) ShortcutsEditor.saveCustomKeys ();
-            } catch (java.io.IOException e) {
-                TopManager.getDefault ().notifyException (e); // [PENDING]
-            }
+            se.flushChanges();
         } else {
-            ShortcutsEditor.installCurrentBindings (); // Cancel the modifications performed in Configure Shortcuts dialog
+            se.resetChanges();
         }
     }
 
@@ -59,15 +55,3 @@ public class ConfigureShortcutsAction extends org.openide.util.actions.CallableS
     }
 
 }
-
-/*
- * Log
- *  7    Gandalf   1.6         2/7/00   David Simonek   Icon resource added
- *  6    Gandalf   1.5         1/5/00   Ian Formanek    NOI18N
- *  5    Gandalf   1.4         1/4/00   Ian Formanek    
- *  4    Gandalf   1.3         12/21/99 Ian Formanek    
- *  3    Gandalf   1.2         12/1/99  Ian Formanek    
- *  2    Gandalf   1.1         11/30/99 Ian Formanek    
- *  1    Gandalf   1.0         11/30/99 Ian Formanek    
- * $
- */

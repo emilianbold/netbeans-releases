@@ -253,7 +253,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
      * folders go first (sorted by name) followed by the rest of objects sorted
      * by name.
      */
-    private static DataFolder findSessionFolder (String name) {
+    static DataFolder findSessionFolder (String name) {
         try {
             FileObject fo = NbTopManager.get ().getRepository().findResource(name);
 
@@ -263,7 +263,6 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
                 fo = NbTopManager.get ().getRepository ().getDefaultFileSystem ().getRoot ().createFolder (name);
                 prepop = true;
             }
-
             DataFolder df = DataFolder.findFolder(fo);
             if (prepop) {
                 try {
@@ -293,16 +292,16 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
         if (name.equals ("Templates")) { //NOI18N
             TemplateWizard.setDescription (folder, new URL ("nbrescurrloc:/org/netbeans/core/resources/templatesRootDescription.html")); //NOI18N
         } else if (name.equals ("Actions")) { //NOI18N
-            populateFolderWithInstances (folder, new URL ("nbresloc:/org/netbeans/core/resources/instancesForActions.txt"), null); //NOI18N
+            populateFolderWithInstances (folder, new URL ("nbresbootloc:/org/netbeans/core/resources/instancesForActions.txt"), null); //NOI18N
         } else if (name.equals ("Menu")) { //NOI18N
-            populateFolderWithInstances (folder, new URL ("nbresloc:/org/netbeans/core/resources/instancesForMenu.txt"), "javax.swing.JSeparator"); //NOI18N
+            populateFolderWithInstances (folder, new URL ("nbresbootloc:/org/netbeans/core/resources/instancesForMenu.txt"), "javax.swing.JSeparator"); //NOI18N
         } else if (name.equals ("Toolbars")) { //NOI18N
-            populateFolderWithInstances (folder, new URL ("nbresloc:/org/netbeans/core/resources/instancesForToolbars.txt"), "javax.swing.JToolBar$separator"); //NOI18N
+            populateFolderWithInstances (folder, new URL ("nbresbootloc:/org/netbeans/core/resources/instancesForToolbars.txt"), "javax.swing.JToolBar$separator"); //NOI18N
             // Also have .xml configuration files for it:
             FileUtil.extractJar (folder.getPrimaryFile (),
                                  NbBundle.getLocalizedFile ("org.netbeans.core.resources.toolbarConfigs", "jar").openStream ());
         } else if (name.equals ("Welcome")) { //NOI18N
-            populateFolderWithInstances (folder, new URL ("nbresloc:/org/netbeans/core/resources/instancesForWelcome.txt"), null); //NOI18N
+            populateFolderWithInstances (folder, new URL ("nbresbootloc:/org/netbeans/core/resources/instancesForWelcome.txt"), null); //NOI18N
         }
     }
     

@@ -48,7 +48,7 @@ import org.openide.nodes.*;
 import org.openide.util.Utilities;
 import org.netbeans.core.actions.*;
 import org.netbeans.core.windows.WindowManagerImpl;
-
+import org.netbeans.core.projects.ModuleLayeredFileSystem;
 
 /** This class is a TopManager for Corona environment.
 *
@@ -181,7 +181,7 @@ public class NonGui extends NbTopManager implements Runnable {
         {
             Exception exc = null;
             try {
-                systemFileSystem = SystemFileSystem.create (userDir, homeDir);
+                systemFileSystem = ModuleLayeredFileSystem.create (userDir, homeDir);
             } catch (IOException ex) {
                 exc = ex;
             } catch (java.beans.PropertyVetoException ex) {

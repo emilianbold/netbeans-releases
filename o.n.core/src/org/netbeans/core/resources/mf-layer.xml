@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+
+<!-- [PENDING] Commented to preserve original behaviour. Enable later.
+  <folder name="Welcome">
+
+    <file name="org-netbeans-core-actions-WebLinkAction$NetbeansOrgWebLink.instance"/>
+    <attribute name="org-netbeans-core-actions-WebLinkAction$NetbeansOrgWebLink.instance/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true"/>
+    <file name="org-netbeans-modules-openfile-OpenFileAction.instance"/>
+    <attribute name="org-netbeans-modules-openfile-OpenFileAction.instance/org-netbeans-core-actions-WebLinkAction$DocsTutorialLink.instance" boolvalue="true"/>
+    <file name="org-netbeans-core-actions-WebLinkAction$DocsTutorialLink.instance"/>
+    <attribute name="org-netbeans-core-actions-WebLinkAction$DocsTutorialLink.instance/org-netbeans-modules-autoupdate-UpdateAction.instance" boolvalue="true"/>
+    <file name="org-netbeans-modules-autoupdate-UpdateAction.instance"/>
+    <attribute name="org-netbeans-modules-autoupdate-UpdateAction.instance/javax-swing-JLabel.instance" boolvalue="true"/>
+    <file name="javax-swing-JLabel.instance"/>
+
+  </folder>
+-->
+
+
+  <folder name="Shortcuts">
+
+    <file name="CS-F6[org-openide-actions-ExecuteProjectAction].instance" />
+    <file name="S-F5[org-openide-actions-FinishDebuggerAction].instance" />
+    <file name="CS-F5[org-openide-actions-DebugProjectAction].instance" />
+    <file name="C-F11[org-openide-actions-CleanAllAction].instance" />
+    <file name="CA-C[org-netbeans-core-actions-StopCompileAction].instance" />
+    <file name="C-Z[org-openide-actions-UndoAction].instance" />
+    <file name="CS-O[org-openide-actions-OpenProjectAction].instance" />
+    <file name="C-F10[org-openide-actions-BuildAllAction].instance" />
+    <file name="DELETE[org-openide-actions-DeleteAction].instance" />
+    <file name="C-Y[org-openide-actions-RedoAction].instance" />
+    <file name="C-F9[org-openide-actions-CompileAllAction].instance" />
+    <file name="C-X[org-openide-actions-CutAction].instance" />
+    <file name="F12[org-netbeans-core-actions-NextOutJumpAction].instance" />
+    <file name="F11[org-openide-actions-CleanAction].instance" />
+    <file name="C-F8[org-openide-actions-ToggleBreakpointAction].instance" />
+    <file name="F10[org-openide-actions-BuildAction].instance" />
+    <file name="F9[org-openide-actions-CompileAction].instance" />
+    <file name="C-G[org-openide-actions-GotoAction].instance" />
+    <file name="C-7[org-netbeans-core-actions-HTMLViewAction].instance" />
+    <file name="F8[org-openide-actions-TraceOverAction].instance" />
+    <file name="A-RIGHT[org-openide-actions-NextTabAction].instance" />
+    <file name="C-F7[org-openide-actions-StepOutAction].instance" />
+    <file name="F7[org-openide-actions-TraceIntoAction].instance" />
+    <file name="C-V[org-openide-actions-PasteAction].instance" />
+    <file name="F6[org-openide-actions-ExecuteAction].instance" />
+    <file name="C-F[org-openide-actions-FindAction].instance" />
+    <file name="C-6[org-netbeans-core-actions-ExecutionViewAction].instance" />
+    <file name="F5[org-openide-actions-StartDebuggerAction].instance" />
+    <file name="F4[org-openide-actions-GoToCursorAction].instance" />
+    <file name="A-LEFT[org-openide-actions-PreviousTabAction].instance" />
+    <file name="C-F5[org-openide-actions-GoAction].instance" />
+    <file name="F1[org-openide-actions-HelpAction].instance" />
+    <file name="C-4[org-netbeans-core-actions-OutputWindowAction].instance" />
+    <file name="C-F4[org-openide-actions-CloseViewAction].instance" />
+    <file name="C-S[org-openide-actions-SaveAction].instance" />
+    <file name="C-C[org-openide-actions-CopyAction].instance" />
+    <file name="C-3[org-netbeans-core-actions-EditorViewAction].instance" />
+    <file name="CS-F10[org-openide-actions-BuildProjectAction].instance" />
+    <file name="C-R[org-openide-actions-ReplaceAction].instance" />
+    <file name="S-F12[org-netbeans-core-actions-PreviousOutJumpAction].instance" />
+    <file name="C-2[org-netbeans-core-actions-ExplorerViewAction].instance" />
+    <file name="CS-F9[org-openide-actions-CompileProjectAction].instance" />
+    <file name="C-1[org-netbeans-core-actions-GlobalPropertiesAction].instance" />
+    <file name="C-P[org-openide-actions-PrintAction].instance" />
+    <file name="C-0[org-openide-actions-OpenLocalExplorerAction].instance" />
+    <file name="CS-S[org-openide-actions-SaveProjectAction].instance" />
+    <file name="S-F8[org-openide-actions-AddWatchAction].instance" />
+    <!-- ]. <file name="C-N[org-netbeans-core-ui-NewNewAction].instance" /> -->
+    <file name="S-F10[org-openide-actions-PopupAction].instance" />
+
+<!-- These should be added by modules!
+    <file name="CS-CANCEL[org.netbeans.modules.debugger.support.actions.ResumeDebuggerAction].instance" />
+    <file name="C-9[org.netbeans.modules.objectbrowser.ShowBrowserAction].instance" />
+    <file name="CS-N[org.netbeans.modules.projects.NewProjectAction].instance" />
+    <file name="CA-F8[org.netbeans.modules.debugger.support.actions.AddBreakpointAction].instance" />
+    <file name="CS-M[org.netbeans.modules.projects.SetMainClassAction].instance" />
+    <file name="C-8[org.netbeans.modules.form.actions.ComponentInspectorAction].instance" />
+    <file name="C-5[org.netbeans.modules.debugger.support.actions.DebuggerViewAction].instance" />
+    <file name="C-CANCEL[org.netbeans.modules.debugger.support.actions.SuspendDebuggerAction].instance" />
+    <file name="CS-I[org.netbeans.modules.projects.ImportProjectAction].instance" />
+    <file name="C-F1[org.netbeans.modules.javadoc.search.SearchDocAction].instance" />
+    <file name="C-O[org.netbeans.modules.openfile.OpenFileAction].instance" />
+-->
+
+  </folder>
+
+
+  <folder name="Startup">
+    <attribute name="SystemFileSystem.localizingBundle" value="org.netbeans.core.Bundle"/>
+  </folder>
+
+  <folder name="Templates">
+    <attribute name="SystemFileSystem.localizingBundle" value="org.netbeans.core.Bundle"/>
+    <attribute name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesRootDescription.html"/>
+  </folder>
+
+</filesystem>
+
+<!-- PENDING to add: -->
+<!-- Actions, Menu, Toolbars -->
+<!-- Shortcuts/Default.keys: wait until in main trunk to simplify merging -->
