@@ -51,7 +51,7 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         initComponents();
         setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         headerSeparator.setForeground(SectionVisualTheme.getSectionHeaderLineColor());
-        titlePanel.setBackground(SectionVisualTheme.getSectionHeaderColor());
+        titlePanel.setBackground(foldable?SectionVisualTheme.getSectionHeaderColor():SectionVisualTheme.getContainerHeaderColor());
         actionPanel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         fillerLine.setForeground(SectionVisualTheme.getFoldLineColor());
         fillerEnd.setForeground(SectionVisualTheme.getFoldLineColor());
@@ -102,8 +102,8 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
     
     /** Method from NodeSectionPanel interface */
     public void setActive(boolean active) {
-        titlePanel.setBackground(active?SectionVisualTheme.getSectionHeaderActiveColor():SectionVisualTheme.getSectionHeaderColor());
-        //headerSeparator.setVisible(!active);
+        titlePanel.setBackground(active?SectionVisualTheme.getSectionHeaderActiveColor():
+            (foldable?SectionVisualTheme.getSectionHeaderColor():SectionVisualTheme.getContainerHeaderColor()));
         if (active && !this.equals(sectionView.getActivePanel())) {
             sectionView.sectionSelected(true);
             sectionView.setActivePanel(this);
