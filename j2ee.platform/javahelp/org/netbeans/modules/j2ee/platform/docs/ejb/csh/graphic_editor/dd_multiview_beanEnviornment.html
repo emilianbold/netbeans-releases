@@ -28,7 +28,14 @@
   of your EJB module's enterprise beans. </p>
 <p>The section for each enterprise bean has a Bean Environment section. The Bean 
   Environment section lets you specify the following information:</p>
-<h3><b>Enterprise Bean References</b> </h3>
+<ul>
+  <li><a href="#beanref">Enterprise Bean References</a></li>
+  <li><a href="#envent">Environment Entries</a></li>
+  <li><a href="#resref">Resource References</a></li>
+  <li><a href="#resenref">Resource Environment References</a></li>
+  <li><a href="#secref">Security Role References</a></li>
+</ul>  
+<h3><b>Enterprise Bean References</b> <a name="beanref" /> </h3>
 <p>Lists all of the enterprise beans that your bean references. When you add a 
   bean reference, the IDE creates lookup code for in the bean class of the enterprise 
   that is doing the calling, and adds a reference to the bean in the deployment 
@@ -36,7 +43,22 @@
 <p>The easiest way to create a bean reference is to open a bean class in the Source 
   Editor, right-click in the bean class, choose Enterprise Resources <img src="../../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Call 
   Enterprise Bean. </p>
-<h3><b>Environment Entries</b></h3>
+  <ul class="note">
+    <li>In <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/glossary_freeform.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="free-form projects">
+    <param name="textFontSize" value="small">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object>, you can only add references to enterprise beans
+    in the same EJB module project.</li>
+  </ul>
+<h3><b>Environment Entries</b><a name="envent" /></h3>
 <p>In the Environment Entries section, you can define properties in the deployment 
   descriptor that you can then access in the code of your EJB module. For example, 
   an entry name of a enterprise bean that calculates money exchanges might be 
@@ -47,14 +69,14 @@
   <tt>Short</tt>, <tt>Long</tt>, and <tt>Float</tt>. Make sure that each entry's 
   value matches its type. Also make sure that the name for each entry is unique 
   in the entire deployment descriptor.</p>
-<h3><b>Resource References</b></h3>
+<h3><b>Resource References<a name="resref" /></b></h3>
 <p>In the Resource References section, you can define references that your bean 
-  needs to access resources such as the following:</p>
+  needs to access server resources. These resources can include the following:</p>
 <ul>
   <li>JMS data sources</li>
   <li>JDBC data sources</li>
   <li>Connectors to enterprise information systems</li>
-  <li>Connectors to message ques</li>
+  <li>Connectors to message queues</li>
   <li>JavaMail resources</li>
 </ul>
 <p>JMS data sources and JDBC data sources are registered automatically when you 
@@ -79,7 +101,7 @@
         factory for connecting to a Queue destination.</li>
       <li><tt>javax.jms.TopicConnectionFactory</tt>. Represents a connection factory 
         for connecting to a Topic destination.</li>
-      <li><tt>javax.jms.ConnectionFactory</tt>. Rrepresents a connection factory 
+      <li><tt>javax.jms.ConnectionFactory</tt>. Represents a connection factory 
         for connecting to a JMS provider. </li>
       <li><tt>javax.resource.cci.ConnectionFactory</tt>. Represents a connection 
         factory for connecting to an EIS.</li>
@@ -90,16 +112,16 @@
   <li>(Optional) Type <tt>Shareable</tt> or <tt>Unshareable</tt> in the Shareable 
     column to specify whether connections obtained through the given resource 
     manager connection factory reference can be shared.</li>
-  <li>(Optional) Type a description of the resource refenerence in the description 
+  <li>(Optional) Type a description of the resource reference in the description 
     column. </li>
 </ul>
-<h3><b>Resource Environment References</b></h3>
+<h3><b>Resource Environment References</b><a name="resenref" /></h3>
 <p>Resource environment references are another type of environment entries. They 
   allow you to refer to administered objects that are associated with resources 
   (for example, JMS Destinations), by using logical names. You can type the name, 
   resource type, and optionally a description for each resource environment reference.</p>
-<h3><b>Security Roles References</b></h3>
-<p>In the Security Roles References section, you can link a reference name used 
+<h3><b>Security Role References</b><a name="secref" /></h3>
+<p>In the Security Role References section, you can link a reference name used 
   in your code to a security role defined on the application server. The value 
   in the Name column must be the security role name that is used as a parameter 
   to the <tt>isCallerInRole(String roleName)</tt> method in your enterprise bean. 

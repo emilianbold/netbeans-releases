@@ -22,16 +22,17 @@
   method and is visible only to the bean class; therefore, a select method can be used only 
   by methods of the bean class. A select method inherits the transaction context 
   of the method that calls it. In addition to returning a bean or a collection 
-  of beans, a select method can also return the value of a field.</p>
-<p><b>To define a select method for an entity bean:</b></p>
+  of beans, a select method can also return the value of a field. Select methods are
+  only available for entity beans that use container-managed persistence (CMP).</p>
+<p><b>To define a select method for a CMP entity bean:</b></p>
 <ol>
-  <li>In the Projects window, expand the Enterprise Beans node. </li>
-  <li>Right-click enterprise bean's node and choose Add <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Add 
-    Select Method. 
-    <p> You can also open the bean class and right-click anywhere inside the body 
-      of the class and choose EJB Methods <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Add 
-      Select Method. This command is only enabled when you click within the body 
-      of the class (after the class declaration). 
+  <li>Open the bean class in the Source Editor.</li>
+  <li>Right-click anywhere inside the body of the class and choose EJB Methods 
+      <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Add 
+      Select Method. This command is only enabled when you click within the 
+      body of the class (after the class declaration).</li>
+  <p>You can also right-click enterprise bean's node in the Projects window and choose Add 
+    <img src="../../images/arrow.gif" alt="and choose">&nbsp;Add Select Method. 
   </li>
   <li>In the Add Select Method dialog box, define the method signature: 
     <ol>

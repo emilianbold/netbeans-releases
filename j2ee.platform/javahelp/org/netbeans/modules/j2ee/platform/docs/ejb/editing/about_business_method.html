@@ -18,29 +18,35 @@
 <h2>About Business Methods</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>A business method is a method inside an enterprise bean that performs some 
-  function and is available for any clients of the bean. Business methods are 
-  typically written in the bean class and registered in the bean's remote interface.</p>
+  function and can be called from outside the bean. Business methods are 
+  written in the bean class and exposed through local or remote interfaces.
+  If a business method is meant to be called by beans and clients that are running
+  in the same JVM (on the same server), they are registered in the bean's local
+  interface. If the method is meant to be called from a remote client, it is 
+  registered in the bean's remote interface.</p>
 <p>An entity bean represents a persistent business object whose data is stored 
   in a database. The bean adds behavior specific to that data. Therefore, an entity 
   bean's business methods are typically accessor and mutator methods that enable 
   you to read and update information in a database that represents a business 
-  concept.</p>
+  concept. Entity bean business methods are almost always local methods, since 
+  remote clients should only access an entity bean through a facade session bean.</p>
 <p>A session bean's business methods typically define tasks that the bean performs 
   for clients. They are not necessarily associated with data in a database.</p>
 <h3>Business Methods in the IDE</h3>
-<p>In the IDE, you can generate business methods by right-clicking the bean node 
-  in the Projects window and choosing Add <img src="../../images/arrow.gif" width="5" height="11" alt="and add">&nbsp;Add 
+<p>In the IDE, you can generate business methods by opening the bean class in the Source
+  Editor, right-clicking anywhere in the body of the class, and choosing 
+  EJB Methods <img src="../../images/arrow.gif" alt="and add">&nbsp;Add 
   Business Method. When you create an enterprise bean in the IDE, the IDE creates 
-  a special <tt><i>BeanName</i>RemoteBusiness</tt> interface in which it registers 
-  business methods. The <tt><i>BeanName</i>Remote</tt> interface extends the <tt><i>BeanName</i>RemoteBusiness</tt> 
-  and the bean class implements both the <tt><i>BeanName</i>Remote</tt> interface 
-  and the <tt><i>BeanName</i>RemoteBusiness</tt> interface. </p>
+  a special <tt><i>BeanInterface</i>Business</tt> interface in which it registers 
+  business methods. The bean interface extends the <tt>Business</tt> interface
+  and the bean class implements both the bean interface and the <tt>RemoteBusiness</tt> 
+  interface. </p>
 <p>The advantage of this approach is that it lets you separate the business logic 
   from implementation logic, and that it lets you check at compile-time that your 
   bean implements the given interfaces. If you want to register business methods 
-  directly in your remote interface, delete the <tt><i>BeanName</i>RemoteBusiness.java</tt>, 
-  delete <tt><i>BeanName</i>RemoteBusiness</tt> from the list of interfaces <tt><i>BeanName</i>Remote</tt> 
-  extends and from the list of interfaces the bean class implements.</p>
+  directly in the bean's interfaces, delete the <tt>Business</tt> interface files. 
+  Then edit the bean interface to not extend the <tt>Business</tt> interface and edit 
+  the bean class to not implement the <tt>Business</tt> interface.</p>
 <table border="0">
   <tr><th colspan="2" align="left" ><a name="seealso">See Also</a></th>
   </tr>

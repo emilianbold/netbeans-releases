@@ -18,7 +18,7 @@
   to process messages asynchronously. The bean acts as a Java Message Service 
   (JMS) message listener, which is similar to an event listener except that the 
   message-driven bean receives messages instead of events. The messages can be 
-  sent by any J2EE component &#151; an application client, another enterprise 
+  sent by any J2EE component: an application client, another enterprise 
   bean, or a web component. </p>
 <h3>Why Use Message-Driven Beans?</h3>
 <p>You might use message-driven beans instead of session beans or entity beans if you 
@@ -71,7 +71,7 @@
       message receipt that causes the bean to be invoked is not part of the transaction. 
       If you want the message receipt to be part of the transaction, you must 
       use container-managed transactions. </p>
-    <p>A message-driven bean&#146;s <tt>newInstance</tt>, <tt>setMessageDrivenContext</tt>, 
+    <p>A message-driven bean's <tt>newInstance</tt>, <tt>setMessageDrivenContext</tt>, 
       <tt>ejbCreate</tt>, and <tt>ejbRemove</tt> methods are called with an unspecified 
       transaction context. There is never a client transaction context available 
       when a message-driven bean is invoked because a transaction context does 
