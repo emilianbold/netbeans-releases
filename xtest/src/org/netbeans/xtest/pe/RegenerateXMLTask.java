@@ -24,6 +24,7 @@ import java.io.*;
 import org.netbeans.xtest.pe.xmlbeans.*;
 import java.util.*;
 import org.w3c.dom.*;
+import org.netbeans.junit.Manager;
 
 // move ant task - i'm lazy to write my own :-)))
 import org.apache.tools.ant.taskdefs.Move;
@@ -199,8 +200,8 @@ public class RegenerateXMLTask extends Task{
         
         debugInfo("regenerateTestBag(): regenerating testbag.xml");       
         
-        
-        UnitTestSuite[] testSuites = ResultsUtils.getUnitTestSuites(new File(testBagResultDir,PEConstants.TESTSUITES_SUBDIR)); 
+        File suitesDir = new File(testBagResultDir,PEConstants.TESTSUITES_SUBDIR);
+        UnitTestSuite[] testSuites = ResultsUtils.getUnitTestSuites(suitesDir); 
         UnitTestSuite[] failingTestSuites = new UnitTestSuite[testSuites.length];
         // clean old values
         testBag.xmlat_testsPass = 0;
@@ -223,6 +224,43 @@ public class RegenerateXMLTask extends Task{
                 failingTestSuites[i] = testSuites[i];
             }
         }
+
+        // adding workdir into crashed suites
+        if (!produceBigReportOnly) { 
+            File[] suiteFiles = suitesDir.listFiles();
+            for (int i=0; i< suiteFiles.length; i++) {
+                boolean modified = false;
+                UnitTestSuite testSuite = ResultsUtils.getUnitTestSuite(suiteFiles[i]);
+                debugInfo("regenerateTestBag(): adding workdir;  suite " + testSuite.getName());
+                // only suites with unexpected failure
+                if (testSuite.xmlat_unexpectedFailure != null) {
+                    if (testSuite.xmlel_UnitTestCase != null) {
+                       for (int u=0; u<testSuite.xmlel_UnitTestCase.length; u++) {
+                          UnitTestCase testCase = testSuite.xmlel_UnitTestCase[u];
+                          debugInfo("regenerateTestBag(): adding workdir;  testcase " + testCase.getName());
+                          // only testcase with unknown result
+                          if (testCase != null && testCase.xmlat_result.equals(UnitTestCase.TEST_UNKNOWN)) {
+                               if (testCase.xmlat_workdir == null) {
+                                   String workdir = testCase.xmlat_class.replace('.',File.separatorChar)
+                                                    + File.separator + testCase.xmlat_name;
+                                   File workdirFile = new File(testBagRoot,"user" + File.separator + workdir);
+                                   debugInfo("regenerateTestBag(): adding workdir; new workdir="+workdir);
+                                   if (workdirFile.exists()) {
+                                        debugInfo("regenerateTestBag(): adding workdir; workdir exist");
+                                        testCase.xmlat_workdir = workdir;
+                                        modified = true;
+                                   }
+                               }
+                          }
+                       }
+                    }
+                }
+                if (modified) {
+                    SerializeDOM.serializeToFile(testSuite.toDocument(),suiteFiles[i]);
+                }
+            }
+        }
+
         // assign id to this testbag
         testBag.xmlat_bagID = testBagRoot.getName();
         
