@@ -58,8 +58,7 @@ public class Difference extends Object implements Serializable {
      * @param secondEnd The line number on which the difference ends in the second file.
      */
     public Difference(int type, int firstStart, int firstEnd, int secondStart, int secondEnd) {
-        this(type, firstStart, firstEnd, secondStart, secondEnd, null, null);
-        //System.out.println(this);
+        this(type, firstStart, firstEnd, secondStart, secondEnd, null, null, null);
     }
     
     /**
@@ -70,6 +69,24 @@ public class Difference extends Object implements Serializable {
      * @param firstEnd The line number on which the difference ends in the first file.
      * @param secondStart The line number on which the difference starts in the second file.
      * @param secondEnd The line number on which the difference ends in the second file.
+     * @param text The text content of the difference. For ADD the text added,
+     *        for CHANGE the new text.
+     */
+    public Difference(int type, int firstStart, int firstEnd, int secondStart, int secondEnd,
+                      String text) {
+        this(type, firstStart, firstEnd, secondStart, secondEnd, text, null, null);
+    }
+    
+    /**
+     * Creates a new instance of Difference
+     * @param type The type of the difference. Must be one of the {@link DELETE},
+     *             {@link ADD} or {@link CHANGE}
+     * @param firstStart The line number on which the difference starts in the first file.
+     * @param firstEnd The line number on which the difference ends in the first file.
+     * @param secondStart The line number on which the difference starts in the second file.
+     * @param secondEnd The line number on which the difference ends in the second file.
+     * @param text The text content of the difference. For ADD the text added,
+     *        for CHANGE the new text.
      * @param firstLineDiffs The list of differences on lines in the first file.
      *                    The list contains instances of {@link Difference.Line}.
      *                    Can be <code>null</code> when there are no line differences.
@@ -78,7 +95,7 @@ public class Difference extends Object implements Serializable {
      *                    Can be <code>null</code> when there are no line differences.
      */
     public Difference(int type, int firstStart, int firstEnd, int secondStart, int secondEnd,
-                      List firstLineDiffs, List secondLineDiffs) {
+                      String text, List firstLineDiffs, List secondLineDiffs) {
         if (type > 2 || type < 0) {
             throw new IllegalArgumentException("Bad Difference type = "+type);
         }
@@ -87,6 +104,7 @@ public class Difference extends Object implements Serializable {
         this.firstEnd = firstEnd;
         this.secondStart = secondStart;
         this.secondEnd = secondEnd;
+        this.text = text;
         this.firstLineDiffs = firstLineDiffs;
         this.secondLineDiffs = secondLineDiffs;
     }
@@ -145,13 +163,6 @@ public class Difference extends Object implements Serializable {
     }
     
     /**
-     * Set the text content of the difference.
-     */
-    public void setText(String text) {
-        this.text = text;
-    }
-    
-    /**
      * Get the text content of the difference.
      */
     public String getText() {
@@ -166,7 +177,7 @@ public class Difference extends Object implements Serializable {
     /**
      * This class represents a difference on a single line.
      */
-    public static class Part extends Object implements Serializable {
+    public static final class Part extends Object implements Serializable {
         
         private int type;
         private int line;
@@ -224,17 +235,18 @@ public class Difference extends Object implements Serializable {
         
         /**
          * Set the text content of the difference.
-         */
+         *
         public void setText(String text) {
             this.text = text;
         }
         
         /**
          * Get the text content of the difference.
-         */
+         *
         public String getText() {
             return text;
         }
+         */
         
     }
     
