@@ -20,20 +20,20 @@ import java.util.*;
 import java.util.List;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URI;
+
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 import org.openide.ErrorManager;
+import org.openide.modules.SpecificationVersion;
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.loaders.*;
 import org.openide.nodes.Node;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Lookup;
+import org.openide.util.*;
 import org.openide.util.lookup.*;
 import org.openide.xml.*;
 
@@ -41,15 +41,26 @@ import org.xml.sax.*;
 
 import org.netbeans.api.java.platform.*;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.java.j2seplatform.wizard.J2SEWizardIterator;
 
 /**
  * Reads and writes the standard platform format implemented by PlatformImpl2.
  *
  * @author Svata Dedic
  */
-public class PlatformConvertor implements Environment.Provider, InstanceCookie.Of,
-        PropertyChangeListener, Runnable, InstanceContent.Convertor {
-    
+public class PlatformConvertor implements Environment.Provider, InstanceCookie.Of, PropertyChangeListener, Runnable, InstanceContent.Convertor {
+
+    private static final String CLASSIC = "classic";        //NOI18N
+    private static final String MODERN = "modern";          //NOI18N
+    private static final String JAVAC13 = "javac1.3";       //NOI18N
+    private static final String[] IMPORTANT_TOOLS = {
+        // Used by j2seproject:
+        "javac", // NOI18N
+        "java", // NOI18N
+        // Might be used, though currently not (cf. #46901):
+        "javadoc", // NOI18N
+    };
+
     private PlatformConvertor() {}
 
     public static PlatformConvertor createProvider(FileObject reg) {
@@ -228,12 +239,133 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         return (Class)obj;
     }
     
-    public static DataObject create(JavaPlatform plat, DataFolder f, String idName) throws IOException {
+    public static DataObject create(final JavaPlatform plat, final DataFolder f, final String idName) throws IOException {
         W w = new W(plat, f, idName);
         f.getPrimaryFile().getFileSystem().runAtomicAction(w);
+        try {
+            ProjectManager.mutex().writeAccess(
+                    new Mutex.ExceptionAction () {
+                        public Object run () throws Exception {
+                            EditableProperties props = PropertyUtils.getGlobalProperties();
+                            generatePlatformProperties(plat, idName, props);
+                            PropertyUtils.putGlobalProperties (props);
+                            return null;
+                        }
+                    });
+        } catch (MutexException me) {
+            Exception originalException = me.getException();
+            if (originalException instanceof RuntimeException) {
+                throw (RuntimeException) originalException;
+            }
+            else if (originalException instanceof IOException) {
+                throw (IOException) originalException;
+            }
+            else
+            {
+                throw new IllegalStateException (); //Should never happen
+            }
+        }
         return w.holder;
     }
-    
+
+    public static void generatePlatformProperties (JavaPlatform platform, String systemName, EditableProperties props) throws IOException {
+        String homePropName = createName(systemName,"home");      //NOI18N
+        String bootClassPathPropName = createName(systemName,"bootclasspath");    //NOI18N
+        String compilerType= createName (systemName,"compiler");  //NOI18N
+        if (props.getProperty(homePropName) != null || props.getProperty(bootClassPathPropName) != null
+                || props.getProperty(compilerType)!=null) {
+            //Already defined warn user
+            String msg = NbBundle.getMessage(J2SEWizardIterator.class,"ERROR_InvalidName"); //NOI18N
+            throw (IllegalStateException)ErrorManager.getDefault().annotate(
+                    new IllegalStateException(msg), ErrorManager.USER, null, msg,null, null);
+        }
+        File jdkHome = FileUtil.toFile ((FileObject)platform.getInstallFolders().iterator().next());
+        props.setProperty(homePropName, jdkHome.getAbsolutePath());
+        ClassPath bootCP = platform.getBootstrapLibraries();
+        StringBuffer sbootcp = new StringBuffer();
+        for (Iterator it = bootCP.entries().iterator(); it.hasNext();) {
+            ClassPath.Entry entry = (ClassPath.Entry) it.next();
+            URL url = entry.getURL();
+            if ("jar".equals(url.getProtocol())) {              //NOI18N
+                url = FileUtil.getArchiveFile(url);
+            }
+            File root = new File (URI.create(url.toExternalForm()));
+            if (sbootcp.length()>0) {
+                sbootcp.append(File.pathSeparator);
+            }
+            sbootcp.append(normalizePath(root, jdkHome, homePropName));
+        }
+        props.setProperty(bootClassPathPropName,sbootcp.toString());   //NOI18N
+        props.setProperty(compilerType,getCompilerType(platform));
+        for (int i = 0; i < IMPORTANT_TOOLS.length; i++) {
+            String name = IMPORTANT_TOOLS[i];
+            FileObject tool = platform.findTool(name);
+            if (tool != null) {
+                if (!isDefaultLocation(tool, platform.getInstallFolders())) {
+                    String toolName = createName(systemName, name);
+                    props.setProperty(toolName, normalizePath(getToolPath(tool), jdkHome, homePropName));
+                }
+            } else {
+                throw new IOException("Cannot locate " + name + " command"); // NOI18N
+            }
+        }
+    }
+
+    public static String createName (String platName, String propType) {
+        return "platforms." + platName + "." + propType;        //NOI18N
+    }
+
+    private static String getCompilerType (JavaPlatform platform) {
+        assert platform != null;
+        String prop = (String) platform.getSystemProperties().get("java.specification.version"); //NOI18N
+        assert prop != null;
+        SpecificationVersion specificationVersion = new SpecificationVersion (prop);
+        SpecificationVersion jdk13 = new SpecificationVersion("1.3");   //NOI18N
+        int c = specificationVersion.compareTo (jdk13);
+        if (c<0) {
+            return CLASSIC;
+        }
+        else if (c == 0) {
+            return JAVAC13;
+        }
+        else {
+            return MODERN;
+        }
+    }
+
+    private static boolean isDefaultLocation (FileObject tool, Collection installFolders) {
+        assert tool != null && installFolders != null;
+        if (installFolders.size()!=1)
+            return false;
+        FileObject root = (FileObject)installFolders.iterator().next();
+        String relativePath = FileUtil.getRelativePath(root,tool);
+        if (relativePath == null) {
+            return false;
+        }
+        StringTokenizer tk = new StringTokenizer(relativePath, "/");
+        return (tk.countTokens()== 2 && "bin".equals(tk.nextToken()));
+    }
+
+
+    private static File getToolPath (FileObject tool) throws IOException {
+        assert tool != null;
+        return new File (URI.create(tool.getURL().toExternalForm()));
+    }
+
+    private static String normalizePath (File path,  File jdkHome, String propName) {
+        String jdkLoc = jdkHome.getAbsolutePath();
+        if (!jdkLoc.endsWith(File.separator)) {
+            jdkLoc = jdkLoc + File.separator;
+        }
+        String loc = path.getAbsolutePath();
+        if (loc.startsWith(jdkLoc)) {
+            return "${"+propName+"}"+File.separator+loc.substring(jdkLoc.length());           //NOI18N
+        }
+        else {
+            return loc;
+        }
+    }
+
     static class W implements FileSystem.AtomicAction {
         JavaPlatform instance;
         MultiDataObject holder;
