@@ -742,7 +742,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
         
         if (this instanceof DataFolder) {
             // action is slow
-            target.getFileSystem().runAtomicAction(action);
+            DataObjectPool.getPOOL ().runAtomicActionSimple (target, action);
         } else {
             // it is quick, make it block DataObject recognition
             DataObjectPool.getPOOL ().runAtomicAction (target, action);

@@ -433,7 +433,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     public void waitNotified (DataObject obj) {
         try {
             synchronized (this) {
-                enterRecognition (null);
+                enterRecognition (obj.getPrimaryFile().getParent());
                 
                 if (toNotify.isEmpty()) {
                     return;
