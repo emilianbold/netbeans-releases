@@ -17,8 +17,11 @@ Microsystems, Inc. All Rights Reserved.
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" location="../../nbbuild/standard-nbm-license.txt"/>
+  <property name="nb_root" location="../.."/>
   <property name="binroot" location="../../../nbextra"/>
   <property name="nbm_alias" value="nb_ide"/>
+
+  <property name="webclientlib" location="C:\Program Files\mozilla.org\M099\javadev\lib\webclient_1_2_win32.jar"/>
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../nbbuild/nbantext.jar"/>
@@ -28,14 +31,15 @@ Microsystems, Inc. All Rights Reserved.
       <include name="org/netbeans/modules/webclient/"/>
       <classpath>
         <!--<pathelement location="patches"/>-->
-	<pathelement location="../../openide/openide-13javac-workaround.jar"/>
+	<pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
         <fileset dir="../../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-        <!--<pathelement location="../httpserver/netbeans/modules/httpserver.jar"/>-->
-        <!--<pathelement location="${binroot}/core/release/lib/ext/servlet.jar"/>-->
-        <pathelement location="${binroot}/extbrowser/webclient/release/lib/ext/webclient.jar"/>
-        <pathelement location="${binroot}/extbrowser/webclient/release/lib/ext/dom2.jar"/>
+        <pathelement location="${webclientlib}"/>
+        <pathelement location="${binroot}/httpserver/release/modules/ext/webserver.jar"/>
+        <pathelement location="${binroot}/httpserver/servletapi/release/modules/ext/servlet-2.2.jar"/>
+        <pathelement location="${nb_root}/httpserver/netbeans/modules/httpserver.jar"/>
+        <!--<pathelement location="${binroot}/extbrowser/webclient/release/lib/ext/dom2.jar"/>-->
       </classpath>
     </javac>
   </target>
@@ -52,9 +56,8 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="release">
-    <copy todir="netbeans">
-      <fileset dir="${binroot}/extbrowser/webclient/release"/>
-    </copy>
+    <mkdir dir="netbeans/lib/ext"/>
+    <copy file="${webclientlib}" tofile="netbeans/lib/ext/webclient.jar"/>
   </target>
 
   <target name="netbeans" depends="jars,release"/>
