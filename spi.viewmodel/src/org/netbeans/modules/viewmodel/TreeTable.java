@@ -183,6 +183,17 @@ ExplorerManager.Provider, PropertyChangeListener {
             }
         }
     }
+
+    /** Requests focus for the tree component. Overrides superclass method. */
+    public void requestFocus () {
+        treeTable.requestFocus();
+    }
+    
+    /** Requests focus for the tree component. Overrides superclass method. */
+    public boolean requestFocusInWindow () {
+        return treeTable.requestFocusInWindow();
+    }
+
     
     private static class MyTreeTable extends TreeTableView {
         MyTreeTable () {

@@ -13,7 +13,6 @@
 
 package org.netbeans.api.debugger.test;
 
-import com.sun.jdi.VirtualMachine;
 
 import java.io.IOException;
 import java.util.*;
@@ -53,15 +52,6 @@ public class TestDICookie {
      */
     public Map getArgs () {
         return args;
-    }
-
-    /**
-     * Creates a new instance of VirtualMachine for this DebuggerInfo Cookie.
-     *
-     * @return a new instance of VirtualMachine for this DebuggerInfo Cookie
-     */
-    public VirtualMachine getVirtualMachine () throws IOException {
-        return null;
     }
 
     private Set infos = new HashSet();
