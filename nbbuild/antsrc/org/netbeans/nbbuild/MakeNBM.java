@@ -20,7 +20,7 @@ import java.util.jar.*;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Location;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.Task;
+import org.apache.tools.ant.taskdefs.MatchingTask;
 import org.apache.tools.ant.taskdefs.Jar;
 import org.apache.tools.ant.taskdefs.SignJar;
 import org.apache.tools.ant.types.FileSet;
@@ -29,7 +29,7 @@ import org.apache.tools.ant.types.FileSet;
  *
  * @author Jesse Glick
  */
-public class MakeNBM extends Task {
+public class MakeNBM extends MatchingTask {
 
     /** The same syntax may be used for either <samp>&lt;license&gt;</samp> or
      * <samp>&lt;description&gt;</samp> subelements.
@@ -338,7 +338,8 @@ public class MakeNBM extends Task {
 	jar.setCompress ("true");
 	//jar.createInclude ().setName ("netbeans/");
 	//jar.createInclude ().setName ("Info/info.xml");
-        FileSet fs = new FileSet ();
+        FileSet fs = fileset;		//makes in apperance to excludes and includes files defined in XML
+//        fs.setRefid(fileset.ref);
         fs.setDir (topdir);
         fs.createInclude ().setName ("netbeans/");
 	fs.createInclude ().setName ("Info/info.xml");
