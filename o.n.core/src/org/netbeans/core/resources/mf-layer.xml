@@ -516,7 +516,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Register some entity catalog entries used in OpenIDE (it will be instantiated as EntityCatalogImpl.Entry)-->
         <file name="org-netbeans-core-xml-EntityCatalogImpl-catalog.xml" >
             <![CDATA[
-            <!DOCTYPE catalog PUBLIC "-//NetBeans//Entity Mapping Registration 1.0//EN" "http://www.netbeans.org/dtd/EntityCatalog.dtd">
+            <!DOCTYPE catalog PUBLIC "-//NetBeans//Entity Mapping Registration 1.0//EN" "http://www.netbeans.org/dtds/EntityCatalog-1_0.dtd">
             <catalog>
                 <!-- public ID defined by XMLDataObject -->
                 <public publicId="-//NetBeans IDE//DTD xmlinfo//EN" uri="nbresboot:/org/openide/resources/xmlinfo.dtd"/>
