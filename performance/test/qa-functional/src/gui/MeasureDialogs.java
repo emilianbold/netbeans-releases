@@ -76,11 +76,11 @@ public class MeasureDialogs  {
         suite.addTest(new LibrariesManager("measureTime", "Libraries Manager open"));
         
         // dialogs and windows which first open a file in the editor
-        suite.addTest(new ImportManagementWizard("measureTime", "Import Management Tool open"));
+//this is removed from NB4.0        suite.addTest(new ImportManagementWizard("measureTime", "Import Management Tool open"));
         suite.addTest(new OverrideMethods("measureTime", "Override and Implement Methods dialog open"));
         suite.addTest(new GotoLineDialog("measureTime", "Go to Line dialog open"));
         suite.addTest(new AutoCommentWindow("measureTime", "Auto Comment Tool open"));
-        suite.addTest(new EditorProperties("measureTime", "Editor Properties open"));
+//this is removed from NB4.0        suite.addTest(new EditorProperties("measureTime", "Editor Properties open"));
         suite.addTest(new FindInSourceEditor("measureTime", "Find in Source Editor dialog open"));
         suite.addTest(new InternationalizeDialog("measureTime", "Internationalize dialog open"));
         
