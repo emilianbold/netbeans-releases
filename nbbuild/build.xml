@@ -3034,6 +3034,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <!-- keep this target name at least for a while for backward compat -jglick -->
   <target name="commitValidation" depends="all-commitValidation,check-commit-validation" if="run.validation">
     <property name="xtest.home" location="../xtest"/>
+    <!-- #47367 - xtest has to be cleaned for the case someone switched between 1.4 and 1.5 JDK -->
+    <ant dir="${xtest.home}" target="clean"/>
     <ant dir="${xtest.home}/instance" target="cleanresults">
         <property name="xtest.config" value="commit-validation-nb"/>
     </ant>
