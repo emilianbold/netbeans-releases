@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.home" location="../../xtest"/>
    
     <!-- default testtypes, attributes used when no value is supplied from command line -->
-    <property name="xtest.testtype" value="qa-gui"/>
+    <property name="xtest.testtype" value="qa-functional"/>
     <property name="xtest.attribs" value="validation"/>
     
     <!-- Points to antfile with module's harness. 

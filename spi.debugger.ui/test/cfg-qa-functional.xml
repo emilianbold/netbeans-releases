@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<mconfig name="Debugger gui functional test config">
+
+    <testbag testattribs="validation" executor="ide" name="Debugger overall" resultsprocessor="qa-functional">
+       <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/debuggercore/StartDebugger.class"/>
+                <include name="gui/debuggercore/Breakpoints.class"/>
+                <include name="gui/debuggercore/LocalVariables.class"/>
+                <include name="gui/debuggercore/Watches.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="start" executor="ide" name="Start Debugger" resultsprocessor="qa-functional">
+       <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/debuggercore/StartDebugger.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="breakpoints" executor="ide" name="Breakpoints" resultsprocessor="qa-functional">
+       <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/debuggercore/Breakpoints.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="local" executor="ide" name="Local Variables" resultsprocessor="qa-functional">
+       <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/debuggercore/LocalVariables.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="watches" executor="ide" name="Watches" resultsprocessor="qa-functional">
+       <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/debuggercore/Watches.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
+
+    <compiler name="default-compiler" default="true" antfile="build-qa-functional.xml" target="default-compiler"/>
+    
+    <resultsprocessor name="qa-functional" antfile="build.xml" target="test_report" default="true"/>
+    
+</mconfig>
