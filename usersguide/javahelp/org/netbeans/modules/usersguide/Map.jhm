@@ -840,7 +840,7 @@
    <mapID target="org.netbeans.modules.group.CreateGroupAction" url="pending.html" />
 
    <!--Begin helpIDs for Versioning Explorer-->
-   <mapID target="org.netbeans.modules.diff.PatchAction" url="vcs-nb/vcs_diffs.html" />
+   <mapID target="org.netbeans.modules.diff.PatchAction" url="vcs-nb/vcs_diff.html" />
    <!--csh for versioning menu items-->
    <mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupMenuAction" url="vcs-nb/vcsgroups/vcs_groups.html" />
 
@@ -878,7 +878,7 @@
 
    <mapID target="org.netbeans.core.actions.ConfigureShortcutsAction" url="shortcuts/kybdshortcuts.html" />
    <mapID target="org.netbeans.core.NbNodeOperation.customize" url="pending.html" />
-   <mapID target="org.netbeans.core.windows.nodes.ModeContext" url="workspace/workspace_jump.html" />
+   <mapID target="org.netbeans.core.windows.nodes.ModeContext" url="configure/workspace/workspace_jump.html" />
    <mapID target="org.openide.explorer.propertysheet.PropertySheet$BeanPasteType" url="pending.html" />
 
    <mapID target="org.openide.actions.StartDebuggerAction" url="pending.html" />
