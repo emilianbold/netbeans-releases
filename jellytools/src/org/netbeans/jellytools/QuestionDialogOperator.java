@@ -1,33 +1,60 @@
 /*
- * QuestionDialogOperator.java
+ *                 Sun Public License Notice
  *
- * Created on 9/23/02 12:32 PM
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.jellytools;
 
-import org.netbeans.jemmy.operators.*;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
 
-/** Class implementing all necessary methods for handling question dialog.
+/** Class implementing all necessary methods for handling "Question" dialog.
  *
- * @author Jiri Kovalsky
- * @version 1.0
+ * @author Jiri.Kovalsky@sun.com
+ * @author Jiri.Skrivanek@sun.com
  */
 public class QuestionDialogOperator extends NbDialogOperator {
-
-    /** Creates new QuestionDialogOperator that can handle it.
+    
+    /** instance of JLabelOperator of question */
+    private JLabelOperator _lblQuestion;
+    
+    
+    /** Waits until dialog with "Question" title is found.
+     * If dialog is not found, runtime exception is thrown.
      */
-    public QuestionDialogOperator(String question) {
-        super("Question");
-        new JLabelOperator(this, question);
+    public QuestionDialogOperator() {
+        super(Bundle.getString("org.openide.text.Bundle", "LBL_SaveFile_Title"));
     }
-
-    /** Performs simple test of QuestionDialogOperator
-    * @param args the command line arguments
-    */
-    public static void main(String args[]) {
-        new QuestionDialogOperator("Are you sure you want to remove the last revision of the file \"A_File.java\"?");
-        System.out.println("QuestionDialogOperator verification finished.");
+    
+    /** Waits until dialog with "Question" title and given text is found.
+     * If dialog is not found, runtime exception is thrown.
+     * @param questionLabelText text to be compared to text dialog
+     */
+    public QuestionDialogOperator(String questionLabelText) {
+        this();
+        _lblQuestion = new JLabelOperator(this, questionLabelText);
+    }
+    
+    /** Returns operator of question's label.
+     * @return JLabelOperator instance of question's label
+     */
+    public JLabelOperator lblQuestion() {
+        if(_lblQuestion == null) {
+            _lblQuestion = new JLabelOperator(this);
+        }
+        return _lblQuestion;
+    }
+    
+    /** Performs verification by accessing all sub-components */    
+    public void verify() {
+        lblQuestion();
     }
 }
