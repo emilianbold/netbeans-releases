@@ -528,7 +528,12 @@ fixedmodules=$${config.fixedmodules.${moduleconfig}}
       <ant dir="../libs/jaxp" target="netbeans"/>
   </target>
 
-  <target name="all-libs" depends="all-libs/xalan, all-libs/jaxp"/>
+  <target name="all-libs/xerces" depends="init">
+      <echo message="Building module libs/xerces..."/>
+      <ant dir="../libs/xerces" target="netbeans"/>
+  </target>
+
+  <target name="all-libs" depends="all-libs/xalan, all-libs/jaxp, all-libs/xerces"/>
 
 
   <!-- XML modules -->

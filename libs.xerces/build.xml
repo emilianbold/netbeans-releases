@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="libs/xerces" default="netbeans" basedir=".">
+
+    <property name="libs_root" location=".."/>
+
+    <property name="nbroot" location="${libs_root}/.."/>
+    <property name="binroot" location="${nbroot}/../nbextra"/>
+    <property name="nbext_root" location="${nbroot}/nbbuild"/>
+
+    <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
+    <property name="homepage.base" value="netbeans.org"/>
+    <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+    <property name="storepass" value="?"/>
+    <property name="nbm_alias" value="nb_ide"/>
+
+    <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
+    <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext_root}/nbantext.jar"/>
+    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext_root}/nbantext.jar"/>
+
+
+    <target name="init">
+        <property file="${libs_root}/public.properties"/>
+        <filter token="XERCES_SPEC_VERS_SUBST" value="${libs.xerces.specification.version}"/>
+        <filter token="XERCES_IMPL_VERS_SUBST" value="${libs.xerces.implementation.version}"/>
+        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    </target>
+
+    <target name="jars" depends="init">
+        <mkdir dir="netbeans/modules"/>
+
+        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+        <locjar jarfile="netbeans/modules/autoload/xerces.jar"
+                manifest="manifest-subst.mf"
+                compress="false">
+            <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
+            <locale name="ja"/>
+        </locjar>    
+    </target>
+
+    <target name="release">
+        <copy todir="netbeans">
+            <fileset dir="${binroot}/libs/xerces/release"/>
+        </copy>
+    </target>
+
+    <target name="netbeans" depends="jars, release">
+        <copy todir="${libs_root}/netbeans">
+            <fileset dir="netbeans"/>
+        </copy>
+        <genlist targetname="nbm" outputfiledir="${nbext_root}/netbeans"/>
+    </target>
+
+    <target name="nbm" depends="netbeans">
+        <delete dir="Info"/>
+        <makenbm file="${libs_root}/xerces.nbm"
+                 topdir="."
+                 module="netbeans/modules/autoload/xerces.jar"
+                 homepage="http://${homepage.base}/#xerces"
+                 distribution="${dist.base}/xerces.nbm">
+            <license file="${license.file}"/>
+            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+        </makenbm>
+    </target>
+
+    <target name="clean">
+        <delete file="manifest-subst.mf"/>
+        <delete file="${libs_root}/xerces.nbm"/>
+        <delete dir="netbeans"/>
+        <delete dir="Info"/>
+    </target>
+
+    <target name="all" depends="clean, nbm"/>
+
+</project>
