@@ -24,6 +24,8 @@ import javax.swing.JFileChooser;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.java.freeform.JavaProjectGenerator;
@@ -43,6 +45,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     private List compUnitsKeys;
     private boolean ignoreEvent;
     private ProjectModel model;
+    private DocumentListener documentListener;
     
     public OutputPanel() {
         initComponents();
@@ -51,6 +54,27 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         output.setModel(listModel);
         // XXX: for now only single selection
         output.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        documentListener = new DocumentListener() {           
+            public void insertUpdate(DocumentEvent e) {
+                update(e);
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                update(e);
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                update(e);
+            }
+        };
+        this.javadoc.getDocument().addDocumentListener(documentListener);
+    }
+    
+    private void update(DocumentEvent e) {
+        int index = sourceFolder.getSelectedIndex();
+        ProjectModel.CompilationUnitKey key = (ProjectModel.CompilationUnitKey)compUnitsKeys.get(index);
+        JavaProjectGenerator.JavaCompilationUnit cu = model.getCompilationUnit(key, model.isTestSourceFolder(index));
+        updateCompilationUnitJavadoc(cu);
     }
 
     public HelpCtx getHelpCtx() {
@@ -102,6 +126,10 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         jPanel1 = new javax.swing.JPanel();
         sourceFolder = new javax.swing.JComboBox();
         jTextArea1 = new javax.swing.JTextArea();
+        jPanel2 = new javax.swing.JPanel();
+        javadoc = new javax.swing.JTextField();
+        javadocBrowse = new javax.swing.JButton();
+        javadocLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -213,7 +241,76 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         jTextArea1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(OutputPanel.class, "ACSN_OutputPanel_jTextArea1"));
         jTextArea1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OutputPanel.class, "ACSD_OutputPanel_jTextArea1"));
 
+        jPanel2.setLayout(new java.awt.GridBagLayout());
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        jPanel2.add(javadoc, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(javadocBrowse, org.openide.util.NbBundle.getMessage(OutputPanel.class, "BTN_OutputPanel_browseJavadoc"));
+        javadocBrowse.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                javadocBrowseActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        jPanel2.add(javadocBrowse, gridBagConstraints);
+
+        javadocLabel.setLabelFor(javadoc);
+        org.openide.awt.Mnemonics.setLocalizedText(javadocLabel, org.openide.util.NbBundle.getMessage(OutputPanel.class, "LBL_OutputPanel_JavadocLabel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
+        jPanel2.add(javadocLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
+        add(jPanel2, gridBagConstraints);
+
     }//GEN-END:initComponents
+
+    private void javadocBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javadocBrowseActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        chooser.setFileSelectionMode (JFileChooser.FILES_AND_DIRECTORIES);
+        chooser.setMultiSelectionEnabled(false);
+        if (lastChosenFile != null) {
+            chooser.setSelectedFile(lastChosenFile);
+        } else if (javadoc.getText().length() > 0) {
+            chooser.setSelectedFile(new File(javadoc.getText()));
+        } else {
+            File files[] = model.getBaseFolder().listFiles();
+            if (files != null && files.length > 0) {
+                chooser.setSelectedFile(files[0]);
+            } else {
+                chooser.setSelectedFile(model.getBaseFolder());
+            }
+        }
+        chooser.setDialogTitle(NbBundle.getMessage(OutputPanel.class, "LBL_Browse_Javadoc")); // NOI18N
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+            File file = chooser.getSelectedFile();
+            file = FileUtil.normalizeFile(file);
+            javadoc.setText(file.getAbsolutePath());
+            lastChosenFile = file;
+        }
+    }//GEN-LAST:event_javadocBrowseActionPerformed
 
     private void outputValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_outputValueChanged
         updateButtons();
@@ -249,6 +346,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         ProjectModel.CompilationUnitKey key = (ProjectModel.CompilationUnitKey)compUnitsKeys.get(index);
         JavaProjectGenerator.JavaCompilationUnit cu = model.getCompilationUnit(key, model.isTestSourceFolder(index));
         updateCompilationUnitOutput(cu);
+        updateCompilationUnitJavadoc(cu);
     }
 
     /** Source package has changes - find current source package and read its compilation unit and
@@ -266,6 +364,47 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         ProjectModel.CompilationUnitKey key = (ProjectModel.CompilationUnitKey)compUnitsKeys.get(index);
         JavaProjectGenerator.JavaCompilationUnit cu = model.getCompilationUnit(key, model.isTestSourceFolder(index));
         updateJListOutput(cu.output);
+        updateJavadocField(cu.javadoc);
+    }
+    
+    private void updateJavadocField(List jd) {
+        String value = "";
+        boolean enabled = true;
+        if (jd != null) {
+            if (jd.size() > 1) {
+                value = getListAsString(jd);
+                enabled = false;
+            } else if (jd.size() == 1) {
+                value = (String)jd.get(0);
+            }
+        }
+        javadoc.setEnabled(enabled);
+        javadocBrowse.setEnabled(enabled);
+        javadoc.setText(value);
+    }
+    
+    private static String getListAsString(List list) {
+        assert list != null;
+        StringBuffer sb = new StringBuffer();
+        Iterator it = list.iterator();
+        while (it.hasNext()) {
+            sb.append((String)it.next());
+            if (it.hasNext()) {
+                sb.append(", "); // NOI18N
+            }
+        }
+        return sb.toString();
+    }
+    
+    private void updateCompilationUnitJavadoc(JavaProjectGenerator.JavaCompilationUnit cu) {
+        if (javadoc.isEnabled()) {
+            if (javadoc.getText().length() > 0) {
+                cu.javadoc = new ArrayList();
+                cu.javadoc.add(javadoc.getText());
+            } else {
+                cu.javadoc = null;
+            }
+        }
     }
 
     /** Read content of list box and update compilation unit's output.*/
@@ -391,13 +530,17 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     }
 
     
-     // Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addOutput;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextField javadoc;
+    private javax.swing.JButton javadocBrowse;
+    private javax.swing.JLabel javadocLabel;
     private javax.swing.JList output;
     private javax.swing.JButton removeOutput;
     private javax.swing.JComboBox sourceFolder;
