@@ -8,54 +8,94 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="debuggercore" default="netbeans" basedir=".">
 
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
+<project name="debuggermultisession" default="netbeans" basedir=".">
 
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
+  <property name="nbroot" value="../../nb_all"/>
+  <property name="f4jroot" value=".."/>
+  <property name="nbext" value="${nbroot}/nbbuild"/>
+  <property name="license.file" value="${f4jroot}/core/release/LICENSE.txt"/>
+
+  <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbroot}/nbbuild/nbantext.jar"/>
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
+  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar"/>
+
   <target name="compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <classpath>
-	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <fileset dir="../openide/netbeans/lib">
+      <classpath>        
+        <pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
+        <!--<pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>-->
+        <fileset dir="${nbroot}/openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
+	<pathelement location="${nbroot}/debuggercore/netbeans/modules/debuggerCore.jar"/>
+	<pathelement location="${nbroot}/debuggerjpda/netbeans/modules/jpdaDebugger.jar"/>
       </classpath>
     </javac>
   </target>
+  
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
     <locjar jarfile="netbeans/modules/debuggerCore.jar"
-            manifest="manifest-subst.mf"
-            basedir="src"
-	    excludesfile="../nbbuild/standard-jar-excludes.txt"
-	    compress="false">
+         manifest="manifest-subst.mf"         	 
+	 compress="false">
+      <fileset dir="${nbroot}/debuggercore/src"
+               excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="src"
+               excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
       <locale name="ja"/>
+      <branding name="f4j"/>
+      <branding name="f4j_ce"/>
+      <branding name="f4j_ie"/>
     </locjar>
   </target>
-  <target name="netbeans" depends="jars"/>
+
+  <target name="javahelp">
+    <copy todir="netbeans/docs">
+      <fileset dir="javahelp"/>
+    </copy>
+    <mkdir dir="netbeans/docs/org/netbeans/modules/debugger/multisession/docs/JavaHelpSearch"/>
+    <jhindexer basedir="netbeans/docs/org/netbeans/modules/debugger/multisession/docs/"
+               db="netbeans/docs/org/netbeans/modules/debugger/multisession/docs/JavaHelpSearch"
+               jhall="${binroot}/nbbuild/lib/jhall.jar">
+      <include name="**/*.html"/>
+      <exclude name="JavaHelpSearch/"/>
+      <exclude name="ja/"/>
+      <exclude name="credits.html"/>
+    </jhindexer>
+    <mkdir dir="netbeans/docs/org/netbeans/modules/debugger/multisession/docs/ja/JavaHelpSearch"/>
+    <jhindexer basedir="netbeans/docs/org/netbeans/modules/debugger/multisession/docs/ja/"
+               db="netbeans/docs/org/netbeans/modules/debugger/multisession/docs/ja/JavaHelpSearch"
+               locale="ja"
+               jhall="${binroot}/nbbuild/lib/jhall.jar">
+      <include name="**/*.html"/>
+      <exclude name="JavaHelpSearch/"/>
+      <exclude name="credits.html"/>
+    </jhindexer>
+  </target>
+
+  <target name="netbeans" depends="jars,javahelp"/>
+
   <target name="nbm" depends="netbeans">
-    <makenbm file="debuggercore.nbm"
+    <makenbm file="debuggermultisession.nbm"
              topdir="."
 	     manifest="manifest-subst.mf"
-	     homepage="http://debuggercore.${homepage.base}/"
-	     distribution="http://${dist.base}/debuggercore.nbm">
+	     homepage="http://${homepage.base}/debuggermultisession.html"
+	     distribution="${dist.base}/debuggermultisession.nbm">
       <license file="${license.file}"/>
       <description>
-        Foundation for the IDE's debugger.
+        Debbuger Multisession module
       </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
     </makenbm>
   </target>
+
   <target name="clean">
     <delete>
       <fileset dir="src">
@@ -63,8 +103,9 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
-    <delete file="debuggercore.nbm"/>
+    <delete file="debuggermultisession.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>
   </target>
+
 </project>

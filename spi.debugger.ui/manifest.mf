@@ -1,9 +1,9 @@
 OpenIDE-Module: org.netbeans.modules.debugger.core/1
-OpenIDE-Module-Name: Debugger Core
-OpenIDE-Module-Display-Category: Debugging
-OpenIDE-Module-Install: org/netbeans/modules/debugger/support/DebuggerModule.class
+OpenIDE-Module-Name: Enterprise Debugger
+OpenIDE-Module-Description: org.netbeans.modules.debugger.multisession.docs.HelpSet
+OpenIDE-Module-Install: org/netbeans/modules/debugger/multisession/EnterpriseModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/debugger/resources/mf-layer.xml
-OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Specification-Version: 2.0
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 
 Name: org/netbeans/modules/debugger/support/DebuggerSettings.class
@@ -12,15 +12,16 @@ OpenIDE-Module-Class: Option
 Name: org/netbeans/modules/debugger/support/DebuggerProjectSettings.class
 OpenIDE-Module-Class: Option
 
-Name: org/netbeans/modules/debugger/delegator/DelegatingDebugger.class
+Name: org/netbeans/modules/debugger/multisession/EnterpriseDebugger.class
 OpenIDE-Module-Class: Debugger
 
 Name: org/netbeans/modules/debugger/support/nodes/DebuggerNode.class
 OpenIDE-Module-Class: Node
 Type: Environment
 
+Name: org/netbeans/modules/debugger/multisession/DebuggerExecutor.class
+OpenIDE-Module-Class: Service
+
 Name: org/netbeans/modules/debugger/delegator/DefaultDebuggerType.class
 OpenIDE-Module-Class: Service
 Default: true
-
-
