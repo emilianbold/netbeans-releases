@@ -410,7 +410,6 @@ implements OperationListener, Runnable, ExplorerManager.Provider {
     */
     private boolean selectNode (DataObject obj, Node root) {
         Node node = findClosestNode(obj, root, true);
-
         try {
             getExplorerManager ().setSelectedNodes (new Node[] { node });
         } catch (PropertyVetoException e) {
@@ -436,7 +435,6 @@ implements OperationListener, Runnable, ExplorerManager.Provider {
     * @param obj the object to look for
     */
     private static Node findDataObject (Node node, DataObject obj) {
-
         Node[] arr = node.getChildren ().getNodes (true);
         for (int i = 0; i < arr.length; i++) {
             DataShadow ds = (DataShadow)arr[i].getCookie (DataShadow.class);
@@ -453,9 +451,14 @@ implements OperationListener, Runnable, ExplorerManager.Provider {
 
         if (obj.isValid ()) {
             Node n = node.getChildren ().findChild (obj.getNodeDelegate ().getName ());
-            if (n != null) return n;
+            if (n != null) {
+                DataObject o = (DataObject) n.getCookie(DataObject.class);
+                if (o == obj) {
+                    return n;
+                }
+            }
         }
-
+        
         return null;
     }
 
