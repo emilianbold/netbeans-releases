@@ -27,6 +27,8 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.BorderUIResource;
+import javax.swing.plaf.BorderUIResource.BevelBorderUIResource;
 import javax.swing.table.*;
 
 import org.openide.DialogDescriptor;
@@ -95,9 +97,8 @@ public class BundleEditPanel extends JPanel {
         
         initSettings();
         
-        // header renderer
+        // Set header renderer.
         final DefaultTableCellRenderer headerRenderer = new DefaultTableCellRenderer() {
-            
             // Sorted column.
             private int column;
             
@@ -119,7 +120,7 @@ public class BundleEditPanel extends JPanel {
 		this.setBorder(javax.swing.UIManager.getBorder("TableHeader.cellBorder")); // NOI18N
 	        return this;
             }
-    
+            
             // Overrides superclass for painting ascending/descending marks for sorted column header.
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -136,9 +137,13 @@ public class BundleEditPanel extends JPanel {
                     
                     Insets insets = this.getInsets();
 
+                    BevelBorderUIResource bevelUI = (BevelBorderUIResource)BorderUIResource.getLoweredBevelBorderUIResource();
+                    
+                    boolean ascending = obj.getBundleStructure().getSortOrder();
+
                     int x1, x2, x3, y1, y2, y3; 
                     
-                    if(obj.getBundleStructure().getSortOrder()) {                    
+                    if(ascending) {
                         // Ascending order.
                         x1 = space.width + mark.width/2;
                         x2 = space.width;
@@ -158,13 +163,34 @@ public class BundleEditPanel extends JPanel {
                         y3 = bounds.y + bounds.height - insets.bottom - 2;
                     }
 
-                    // Draw inside of mark.
-                    g.setColor(SystemColor.lightGray);                    
-                    g.fillPolygon(new int[] {x1, x2, x3}, new int[] {y1, y2, y3}, 3);
-                    
-                    // Draw border of mark.
-                    g.setColor(SystemColor.darkGray);
-                    g.drawPolygon(new int[] {x1, x2, x3}, new int[] {y1, y2, y3}, 3);
+                    // Draw bevel border.
+                    // Draw shadow outer color.
+                    g.setColor(bevelUI.getShadowOuterColor(this));
+                    if(ascending)
+                        g.drawLine(x1, y1, x2, y2);
+                    else
+                        g.drawPolyline(new int[] {x2, x1, x3}, new int[] {y2, y1, y3}, 3);
+                        
+                    // Draw shadow inner color.
+                    g.setColor(bevelUI.getShadowInnerColor(this));
+                    if(ascending)
+                        g.drawLine(x1, y1+1, x2+1, y2-1);
+                    else
+                        g.drawPolyline(new int[] {x2-1, x1+1, x3}, new int[] {y2+1, y1+1, y3-1}, 3);
+                        
+                    // Draw highlihght outer color.
+                    g.setColor(bevelUI.getHighlightOuterColor(this));
+                    if(ascending)
+                        g.drawPolyline(new int[] {x1, x3, x2}, new int[] {y1, y3, y2}, 3);
+                    else
+                        g.drawLine(x2, y2, x3, y3);
+                        
+                    // Draw highlight inner color.
+                    g.setColor(bevelUI.getHighlightInnerColor(this));
+                    if(ascending)
+                        g.drawPolyline(new int[] {x1, x3-1, x2+1}, new int[] {y1+1, y3-1, y2-1}, 3);
+                    else
+                        g.drawLine(x2-1, y2+1, x3, y3-1);
                     
                     g.setColor(oldColor);
                 }
@@ -182,9 +208,11 @@ public class BundleEditPanel extends JPanel {
 
                 tableColumns.addElement(aColumn);
                 aColumn.addPropertyChangeListener(this);
-                recalcWidthCache();
+
                 // this method call is only difference with overriden superclass method
                 setColumnWidths();
+                
+                recalcWidthCache();
                 
                 // set header renderer this 'ugly' way (for each column),
                 // in jdk1.2 is not possible to set default renderer
@@ -193,7 +221,7 @@ public class BundleEditPanel extends JPanel {
                 
                 // Post columnAdded event notification
                 fireColumnAdded(new javax.swing.event.TableColumnModelEvent(this, 0,
-                                                          getColumnCount() - 1));
+                    getColumnCount() - 1));
             }
         });
         
@@ -204,7 +232,7 @@ public class BundleEditPanel extends JPanel {
         JTextField textField = new JTextField();
         textField.setBorder(new LineBorder(Color.black));
         theTable.setDefaultEditor(PropertiesTableModel.StringPair.class,
-                                  new PropertiesTableCellEditor(textField, textComment, textValue));
+            new PropertiesTableCellEditor(textField, textComment, textValue));
 
         // set renderer
         theTable.setDefaultRenderer(PropertiesTableModel.StringPair.class, new DefaultTableCellRenderer() {
@@ -299,12 +327,12 @@ public class BundleEditPanel extends JPanel {
 
         // property change listener - listens to editing state of the table
         theTable.addPropertyChangeListener(new PropertyChangeListener() {
-                                               public void propertyChange(PropertyChangeEvent evt) {
-                                                   if (evt.getPropertyName().equals("tableCellEditor")) { // NOI18N
-                                                       updateEnabled();
-                                                   }
-                                               }
-                                           });
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals("tableCellEditor")) { // NOI18N
+                    updateEnabled();
+                }
+            }
+        });
 
         // listens on clikcs on table header, detects column and sort accordingly to chosen one
         theTable.getTableHeader().addMouseListener(new MouseAdapter() {
@@ -318,8 +346,8 @@ public class BundleEditPanel extends JPanel {
                 obj.getBundleStructure().sort(modelIndex);
             }
         });
-
-    }
+    } // End fo constructor.
+    
 
     /** 
     * Calculates the initial widths of columns of the table component.
@@ -332,7 +360,7 @@ public class BundleEditPanel extends JPanel {
         int totalWidth = 0;
         TopComponent tc = (TopComponent)SwingUtilities.getAncestorOfClass(TopComponent.class, theTable);
         if(tc != null)
-            totalWidth = tc.getBounds().width;
+            totalWidth = tc.getBounds().width - scrollPane.getInsets().left - scrollPane.getInsets().right;
         
         // If previous was not succesful try to set width according EDITOR_MODE width.
         if(totalWidth == 0) {
@@ -376,12 +404,14 @@ public class BundleEditPanel extends JPanel {
         // set the column widths
         for (int i = 0; i < theTable.getColumnCount(); i++) {
             TableColumn column = theTable.getColumnModel().getColumn(i);
-
+            
+            // It is necessary to set both 'widths', see javax.swing.TableColumn
             column.setPreferredWidth(columnWidth);
+            column.setWidth(columnWidth);
         }
-        
-        theTable.invalidate();
-        theTable.getParent().validate();
+
+        // Revalidate table so the widths will fit properly.
+        theTable.revalidate();
     }
 
     void stopEditing() {
