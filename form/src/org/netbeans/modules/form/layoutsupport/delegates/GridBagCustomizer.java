@@ -557,6 +557,10 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                         else size = comp.getPreferredSize();
                     }
 
+                    // Use a new instance - avoid modification of
+                    // the preferred size of the component (issue 48033)
+                    size = new Dimension(size);
+                    
                     if (comp instanceof JComponent && !(comp instanceof JPanel)) {
                         Insets thisIns = getInsets();
                         if (comp instanceof JComponent) {
@@ -575,12 +579,10 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                         if (thisIns.right > 0) size.width += thisIns.right;
                     }
 
-                    Dimension padSize = new Dimension(size.width, size.height);
+                    if (size.width < 6) size.width = 6;
+                    if (size.height < 6) size.height = 6;
 
-                    if (size.width < 6) padSize.width = 6;
-                    if (size.height < 6) padSize.height = 6;
-
-                    return padSize;
+                    return size;
                 }
 
                 public Dimension getMinimumSize() {
