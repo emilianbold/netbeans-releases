@@ -260,6 +260,7 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="../output/src"/>
             <pathelement location="../execution/src"/>
             <pathelement location="../compiler/src"/>
+            <pathelement location="../windows/src"/>
     	</path>
     </target>
     
