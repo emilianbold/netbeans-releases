@@ -63,8 +63,8 @@ public class FormUtils
     static final Object PROP_HIDDEN = new Object();
 
     private static Object[][] propsClassifications = {
-//        { javax.awt.Container.class, CLASS_AND_SUBCLASSES,
-//                "layout", PROP_HIDDEN },
+        { java.awt.Container.class, CLASS_AND_SUBCLASSES,
+                "layout", PROP_HIDDEN },
         { javax.swing.JComponent.class, CLASS_AND_SUBCLASSES,
                 "debugGraphicsOptions", PROP_EXPERT,
                 "preferredSize", PROP_NORMAL },
@@ -643,7 +643,7 @@ public class FormUtils
      */
     public static String getDefaultEventName(RADComponent component, Method listenerMethod) {
         String componentName = component.getName();
-        if (component instanceof FormContainer) {
+        if (component == component.getFormModel().getTopRADComponent()) {
             componentName = "form"; // NOI18N
         }
         return getDefaultEventName(componentName, listenerMethod);
