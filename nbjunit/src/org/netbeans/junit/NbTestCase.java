@@ -673,7 +673,14 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     // begins with nbfs://
     private static String convertNewNBFSURL(URL url) {
         String externalForm = url.toExternalForm();
-        String path = externalForm.substring("nbfs://".length());
+        String path;
+        if (externalForm.startsWith("nbfs://nbhost/")) {
+            // even newer nbfsurl (hope it does not change soon)
+            // return path and omit first slash sign
+            path = url.getPath().substring(1);
+        } else {
+            path = externalForm.substring("nbfs://".length());
+        }
         // convert separators (%2f = /,  etc.)
         StringBuffer sb = new StringBuffer();
         int i = 0;
