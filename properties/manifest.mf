@@ -8,6 +8,3 @@ OpenIDE-Module-Description: com.netbeans.developer.modules.loaders.properties.do
 Name: com/netbeans/developer/modules/loaders/properties/PropertiesDataLoader.class
 OpenIDE-Module-Class: Loader
 Install-Before: com.netbeans.developer.modules.loaders.txt.TXTDataObject
-
-Name: com/netbeans/developer/modules/loaders/properties/LocalizeAction.class
-OpenIDE-Module-Class: Action
