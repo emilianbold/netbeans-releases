@@ -14,15 +14,17 @@
 package org.netbeans.modules.tomcat5.ide;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
+import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.jsps.FindJSPServletImpl;
 
 import org.openide.WizardDescriptor;
 
 /**
+ * OptionalFactory implementation for Tomcat 5.0
  *
  * @author  Pavel Buzek
  */
-public final class OptionalFactory extends OptionalDeploymentManagerFactory {
+public class OptionalFactory extends OptionalDeploymentManagerFactory {
     /** Creates a new instance of OptionalFactory */
     public OptionalFactory () {
     }
@@ -44,6 +46,6 @@ public final class OptionalFactory extends OptionalDeploymentManagerFactory {
     }
 
     public WizardDescriptor.InstantiatingIterator getAddInstanceIterator() {
-        return new TomcatAddInstanceIterator();
+        return new TomcatAddInstanceIterator(TomcatManager.TOMCAT_50);
     }
 }

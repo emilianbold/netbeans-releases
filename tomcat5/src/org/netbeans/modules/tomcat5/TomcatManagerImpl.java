@@ -169,14 +169,19 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             Context ctx = Context.createGraph (in);
             String docBaseURI = dir.getAbsoluteFile().toURI().toASCIIString();
             String docBase = dir.getAbsolutePath ();
-            this.tmId = new TomcatModule (t, ctx.getAttributeValue ("path"), docBase); //NOI18N
+            String ctxPath = ctx.getAttributeValue ("path");
+            this.tmId = new TomcatModule (t, ctxPath, docBase); //NOI18N
             if (!docBase.equals (ctx.getAttributeValue ("docBase"))) { //NOI18N
                 ctx.setAttributeValue ("docBase", docBase); //NOI18N
                 FileOutputStream fos = new FileOutputStream (contextXml);
                 ctx.write (fos);
                 fos.close ();
             }
-            command = "deploy?config=" + contextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
+            if (tm.isTomcat55()) {
+                command = "deploy?config=" + contextXml.toURI ().toASCIIString () + "&path=" + ctxPath; // NOI18N
+            } else {
+                command = "deploy?config=" + contextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
+            }
             cmdType = CommandType.DISTRIBUTE;
             pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
             rp ().post (this, 0, Thread.NORM_PRIORITY);
@@ -269,7 +274,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             String docBase = tmId.getDocRoot ();
             assert docBase != null;
             String docBaseURI = new File (docBase).toURI().toASCIIString();
-            File contextXml = new File (docBase + "/META-INF/context.xml");
+            File contextXml = new File (docBase + "/META-INF/context.xml"); // NO18N
             FileInputStream in = new FileInputStream (contextXml);
             Context ctx = Context.createGraph (in);
             if (!docBase.equals (ctx.getAttributeValue ("docBase"))) { //NOI18N
@@ -278,7 +283,12 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                 ctx.write (fos);
                 fos.close ();
             }
-            command = "deploy?config=" + contextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
+            if (tm.isTomcat55()) {
+                String ctxPath = ctx.getAttributeValue("path"); // NO18N
+                command = "deploy?config=" + contextXml.toURI ().toASCIIString () + "&path=" + ctxPath; // NOI18N
+            } else {
+                command = "deploy?config=" + contextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
+            }
             cmdType = CommandType.DISTRIBUTE;
             pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
             rp ().post (this, 0, Thread.NORM_PRIORITY);

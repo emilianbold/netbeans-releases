@@ -337,7 +337,7 @@ public final class StartTomcat extends StartServer implements ProgressObject
                         TomcatFactory.getEM ().log ("address: " + addressStr);    // NOI18N
                     }
                     p = pd.exec (
-                        new TomcatFormat (homeDir.getAbsolutePath ()),
+                        new TomcatFormat (homeDir.getAbsolutePath (), tm.getTomcatVersion()),
                         new String[] {
                             "JAVA_HOME="+System.getProperty ("jdk.home"),   // NOI18N
                             transportStr,
@@ -378,7 +378,7 @@ public final class StartTomcat extends StartServer implements ProgressObject
                     fireCmdExecProgressEvent(command == CommandType.START ? "MSG_startProcess" : "MSG_stopProcess",
                             StateType.RUNNING);
                     Process p = pd.exec (
-                        new TomcatFormat (homeDir.getAbsolutePath ()), 
+                        new TomcatFormat (homeDir.getAbsolutePath (), tm.getTomcatVersion()),
                         new String[] { 
                             "JAVA_HOME="+System.getProperty ("jdk.home"),  // NOI18N 
                             "CATALINA_HOME="+homeDir.getAbsolutePath (),   // NOI18N
@@ -515,8 +515,11 @@ public final class StartTomcat extends StartServer implements ProgressObject
         private static final String CATALINA_STARTUP_SCRIPT_WIN_JDK15 = "catalina.50.bat";  // NOI18N
         private static final String CATALINA_STARTUP_SCRIPT_OTHER_JDK15 = "catalina.50.sh"; // NOI18N
         
-        public TomcatFormat (String home) {
+        private final int tomcatVersion;
+        
+        public TomcatFormat (String home, int aTomcatVersion) {
             super(new java.util.HashMap ());
+            tomcatVersion = aTomcatVersion;
             String catalinaStartupScript = getStartupScript(home);
             java.util.Map map = getMap ();
             map.put (TAG_EXEC_CMD, catalinaStartupScript);
@@ -539,7 +542,8 @@ public final class StartTomcat extends StartServer implements ProgressObject
          */
         private String getStartupScript(String home) {
             String javaVersion = System.getProperty("java.vm.version");  // NOI18N
-            if (javaVersion != null && javaVersion.startsWith("1.5")) {  // NOI18N
+            if (tomcatVersion == TomcatManager.TOMCAT_50 
+                 && javaVersion != null && javaVersion.startsWith("1.5")) {  // NOI18N
                 String startupScript = Utilities.isWindows() 
                                             ? CATALINA_STARTUP_SCRIPT_WIN_JDK15
                                             : CATALINA_STARTUP_SCRIPT_OTHER_JDK15;

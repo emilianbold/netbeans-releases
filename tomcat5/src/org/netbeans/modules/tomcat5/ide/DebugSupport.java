@@ -54,7 +54,7 @@ public class DebugSupport {
     private static final String MAPPED_PARAM_VALUE = "true"; //NOI18N
 
     public static void allowDebugging(TomcatManager tm) throws IOException, SAXException {
-        String url = TomcatFactory.tomcatUriPrefix + tm.getUri();
+        String url = tm.getUri();
         
         // find the web.xml file
         File webXML = getDefaultWebXML(tm);

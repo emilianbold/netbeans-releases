@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD J2EEServer 1.0//EN" "http://www.netbeans.org/dtds/netbeans-deployment.dtd">
+-->
+<netbeans-deployment>
+    
+    <icon>org/netbeans/modules/tomcat5/resources/tomcat5</icon>
+    
+    <!--
+    The disconnected-string element contains the String parameter to DeploymentFactory55.getDisconnectedDeploymentManager()
+    -->
+    <disconnected-string>tomcat55:jakarta-tomcat-5.5.x</disconnected-string>
+    
+    <container-limitation><war-deploy/></container-limitation>
+    
+    <web-context-root>
+        <xpath>/</xpath>
+        <prop-name>contextRoot</prop-name>
+    </web-context-root>
+</netbeans-deployment>

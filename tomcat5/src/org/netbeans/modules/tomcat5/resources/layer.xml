@@ -51,6 +51,39 @@ Microsystems, Inc. All Rights Reserved.
                     </folder>
                 </folder>
             </folder>
+            <folder name="Tomcat55">
+                <file name="Descriptor" url="deployment55.xml"/>
+                <file name="Factory55.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.TomcatFactory55.create"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory55"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory55,javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
+                </file>
+                <file name="TomcatRegistryNodeFactory.instance">                                
+                    <!--<attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.nodes.TomcatRegistryNodeFactory.create"/>-->
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.nodes.TomcatRegistryNodeFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.RegistryNodeFactory"/>
+                </file>
+                <file name="OptionalFactory55.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory55"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory55"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/>
+                </file>
+                <file name="TomcatPlatformFactory.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.tomcat5.ide.TomcatPlatformFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.TomcatPlatformFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformFactory"/>
+                </file>
+                <file name="TomcatPlanSplitter.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.tomcat5.ide.TomcatPlanSplitter"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.TomcatPlanSplitter"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter"/>
+                </file>
+                <folder name="DeploymentFileNames">
+                    <folder name="WAR">
+                        <file name="META-INF\context.xml"/>
+                    </folder>
+                </folder>
+            </folder>
         </folder>
     </folder>
     

@@ -82,19 +82,15 @@ public class MonitorSupport {
     }
     
     public static void setMonitorFlag(TomcatManager tm, boolean enable) {
-        setMonitorFlag(getTomcatManagerURL(tm), enable);
+        setMonitorFlag(tm.getUri(), enable);
     }
     
     public static boolean getMonitorFlag(TomcatManager tm) {
-        return getMonitorFlag(getTomcatManagerURL(tm));
-    }
-    
-    private static String getTomcatManagerURL(TomcatManager tm) {
-        return TomcatFactory.tomcatUriPrefix + tm.getUri();
+        return getMonitorFlag(tm.getUri());
     }
     
     public static void synchronizeMonitorWithFlag(TomcatManager tm, boolean alsoSetPort, boolean alsoCopyJars) throws IOException, SAXException {
-        String url = getTomcatManagerURL(tm);
+        String url = tm.getUri();
         boolean monitorFlag = getMonitorFlag(url);
         boolean monitorModuleAvailable = isMonitorEnabled();
         boolean shouldInstall = monitorModuleAvailable && monitorFlag;

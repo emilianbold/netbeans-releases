@@ -15,6 +15,7 @@ package org.netbeans.modules.tomcat5.nodes;
 
 import java.beans.PropertyEditor;
 import java.io.File;
+import java.util.LinkedList;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
@@ -187,14 +188,17 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     }
 
     public javax.swing.Action[] getActions(boolean context) {
-        return new SystemAction[] {
-                   null,
-                   SystemAction.get (EditServerXmlAction.class),
-                   SystemAction.get (SharedContextLogAction.class),
-                   SystemAction.get (OpenServerOutputAction.class),
-                   null,
-                   SystemAction.get(PropertiesAction.class)
-               };        
+        TomcatManager tm = getTomcatManager();
+        java.util.List actions = new LinkedList();
+        actions.add(null);
+        actions.add(SystemAction.get(EditServerXmlAction.class));
+        if (tm != null && tm.isTomcat50()) {
+            actions.add(SystemAction.get(SharedContextLogAction.class));
+        }
+        actions.add(SystemAction.get(OpenServerOutputAction.class));
+        actions.add(null);
+        actions.add(SystemAction.get(PropertiesAction.class));
+        return (SystemAction[])actions.toArray(new SystemAction[actions.size()]);
     }
 
     DeploymentManager getDeploymentManager() {
@@ -440,31 +444,34 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                 }
             }
         };
-        ssProp.put(p);       
-        
-        // OPEN CONTEXT LOG ON RUN ENABLED
-        p = new PropertySupport.ReadWrite (
-            OPEN_CONTEXT_LOG_ON_RUN_ENABLED,
-            Boolean.TYPE,
-            NbBundle.getMessage (TomcatInstanceNode.class, "PROP_openLogOnRunEnabled"),   // NOI18N
-            NbBundle.getMessage (TomcatInstanceNode.class, "HINT_openLogOnRunEnabled")   // NOI18N
-        ) {
-            public Object getValue () {
-                TomcatManager tm = getTomcatManager();
-                if (tm != null) {
-                    return Boolean.valueOf(tm.getOpenContextLogOnRun());
-                }
-                return Boolean.TRUE;
-            }
-            
-            public void setValue (Object val) {
-                TomcatManager tm = getTomcatManager();
-                if (tm != null) {
-                    tm.setOpenContextLogOnRun(((Boolean)val).booleanValue());
-                }
-            }
-        };
         ssProp.put(p);
+        
+        TomcatManager tm = getTomcatManager();
+        if (tm != null && tm.isTomcat50()) {
+            // OPEN CONTEXT LOG ON RUN ENABLED
+            p = new PropertySupport.ReadWrite (
+                OPEN_CONTEXT_LOG_ON_RUN_ENABLED,
+                Boolean.TYPE,
+                NbBundle.getMessage (TomcatInstanceNode.class, "PROP_openLogOnRunEnabled"),   // NOI18N
+                NbBundle.getMessage (TomcatInstanceNode.class, "HINT_openLogOnRunEnabled")   // NOI18N
+            ) {
+                public Object getValue () {
+                    TomcatManager tm = getTomcatManager();
+                    if (tm != null) {
+                        return Boolean.valueOf(tm.getOpenContextLogOnRun());
+                    }
+                    return Boolean.TRUE;
+                }
+
+                public void setValue (Object val) {
+                    TomcatManager tm = getTomcatManager();
+                    if (tm != null) {
+                        tm.setOpenContextLogOnRun(((Boolean)val).booleanValue());
+                    }
+                }
+            };
+            ssProp.put(p);
+        }
         
         // SECURITY STARTUP OPTION
         p = new PropertySupport.ReadWrite(

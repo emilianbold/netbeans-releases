@@ -70,6 +70,9 @@ public class TomcatManager implements DeploymentManager {
     /** Enum value for get*Modules methods. */
     static final int ENUM_NONRUNNING = 2;
     
+    public static final int TOMCAT_50 = 0;
+    public static final int TOMCAT_55 = 1;
+    
     /** server.xml check timestamp */
     public static final String TIMESTAMP = "timestamp";
 
@@ -181,6 +184,8 @@ public class TomcatManager implements DeploymentManager {
     
     /** Is it bundled Tomcat? */
     private Boolean isItBundledTomcat = null;
+    
+    private int tomcatVersion;
 
     /** Creates an instance of connected TomcatManager
      * @param conn <CODE>true</CODE> to create connected manager
@@ -188,13 +193,13 @@ public class TomcatManager implements DeploymentManager {
      * @param uname username
      * @param passwd password
      */
-    public TomcatManager (boolean conn, String uri, String uname, String passwd) {
+    public TomcatManager (boolean conn, String uri, String uname, String passwd, int aTomcatVersion) {
         if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
             TomcatFactory.getEM ().log ("Creating connected TomcatManager uri="+uri+", uname="+uname); //NOI18N
         }
         this.connected = conn;
         sTomcat = null;
-        
+        tomcatVersion = aTomcatVersion;
         // parse home and base attrs
         final String home = "home=";
         final String base = ":base=";
@@ -250,7 +255,7 @@ public class TomcatManager implements DeploymentManager {
     }
 
     public InstanceProperties getInstanceProperties() {
-        return InstanceProperties.getInstanceProperties(TomcatFactory.tomcatUriPrefix + getUri());
+        return InstanceProperties.getInstanceProperties(getUri());
     }
     
     /** Creates an instance of disconnected TomcatManager * /
@@ -306,7 +311,11 @@ public class TomcatManager implements DeploymentManager {
      * @return URI including home and base specification
      */
     public String getUri () {
-        return uri;
+        if (isTomcat55()) {
+            return TomcatFactory55.tomcatUriPrefix + uri;
+        } else {
+            return TomcatFactory.tomcatUriPrefix + uri;            
+        }
     }
     
     /** Returns URI of TomcatManager (manager application).
@@ -692,6 +701,18 @@ public class TomcatManager implements DeploymentManager {
         }
         return isItBundledTomcat.booleanValue();
     }
+    
+    public boolean isTomcat55() {
+        return tomcatVersion == TOMCAT_55;
+    }
+    
+    public boolean isTomcat50() {
+        return tomcatVersion == TOMCAT_50;
+    }
+    
+    public int getTomcatVersion() {
+        return tomcatVersion;
+    }
 
 // --- DeploymentManager interface implementation ----------------------
     
@@ -704,7 +725,7 @@ public class TomcatManager implements DeploymentManager {
             throw new InvalidModuleException ("Only WAR modules are supported for TomcatManager"); // NOI18N
         }
         
-        return new WebappConfiguration (deplObj);
+        return new WebappConfiguration (deplObj, tomcatVersion);
     }
     
     public Locale getCurrentLocale () {

@@ -13,14 +13,11 @@
 
 package org.netbeans.modules.tomcat5.nodes;
 
-import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.TargetModuleID;
-import org.netbeans.modules.tomcat5.TomcatModule;
+import java.util.LinkedList;
+import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.nodes.actions.*;
-import org.openide.actions.DeleteAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -47,15 +44,18 @@ public class TomcatWebModuleNode extends AbstractNode {
     }
     
     protected SystemAction[] createActions(){
-        return new SystemAction[] {
-            SystemAction.get (StartAction.class),
-            SystemAction.get (StopAction.class),
-            null,
-            SystemAction.get(OpenURLAction.class),
-            SystemAction.get(org.netbeans.modules.tomcat5.nodes.actions.ContextLogAction.class),
-            null,
-            SystemAction.get (UndeployAction.class)
-        };
+        TomcatManager tm = (TomcatManager)module.getDeploymentManager();
+        java.util.List actions = new LinkedList();
+        actions.add(SystemAction.get(StartAction.class));
+        actions.add(SystemAction.get(StopAction.class));
+        actions.add(null);
+        actions.add(SystemAction.get(OpenURLAction.class));
+        if (tm != null && tm.isTomcat50()) {
+            actions.add(SystemAction.get(ContextLogAction.class));
+        }
+        actions.add(null);
+        actions.add(SystemAction.get(UndeployAction.class));
+        return (SystemAction[])actions.toArray(new SystemAction[actions.size()]);
     }
    
     
