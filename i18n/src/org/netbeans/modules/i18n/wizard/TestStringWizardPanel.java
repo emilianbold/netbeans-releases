@@ -610,8 +610,13 @@ final class TestStringWizardPanel extends JPanel {
                         DataObject dobj = (DataObject) source;
                         comment = dobj.getPrimaryFile().getPackageName('.');
                     }
-                                        
-                    support.getResourceHolder().addProperty(i18nString.getKey(), i18nString.getValue(), comment);
+
+                    // we may have already added it in, it is the referenced from
+                    // multiple sources, merge comments
+                    String key = i18nString.getKey();
+                    String prev = support.getResourceHolder().getCommentForKey(key);
+                    comment += (prev == null ? "" : " " + prev);                // NOI18N
+                    support.getResourceHolder().addProperty(i18nString.getKey(), i18nString.getValue(), comment, false);
 
                     progressPanel.setSubProgress((int)((j+1)/(float)stringMap.size() * 100));
                 } // End of inner for.

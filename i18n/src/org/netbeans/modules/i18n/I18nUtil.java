@@ -75,13 +75,16 @@ public final class I18nUtil {
     public static final String HELP_ID_RUNLOCALE = "internation.runlocale"; // NOI18N
     
     /** Help ID for property editor */
-    public static final String PE_REPLACE_CODE_HELP_ID = "i18n.pe.replacestring";
+    public static final String PE_REPLACE_CODE_HELP_ID = "i18n.pe.replacestring"; // NOI18N
     /** Help ID for property editor */
-    public static final String PE_I18N_REGEXP_HELP_ID = "i18n.pe.i18nregexp";
+    public static final String PE_I18N_REGEXP_HELP_ID = "i18n.pe.i18nregexp";   // NOI18N
     /** Help ID for property editor */
-    public static final String PE_BUNDLE_CODE_HELP_ID = "i18n.pe.bundlestring";
+    public static final String PE_BUNDLE_CODE_HELP_ID = "i18n.pe.bundlestring"; // NOI18N
     /** Help ID for property editor */
-    public static final String PE_TEST_REGEXP_HELP_ID = "i18n.pe.testregexp";
+    public static final String PE_TEST_REGEXP_HELP_ID = "i18n.pe.testregexp";   // NOI18N
+    /** Help ID for javaI18nString. It is a universal one for all subclasses. */
+    public static final String PE_I18N_STRING_HELP_ID = "i18n.pe.i18nString";   // NOI18N
+
     
     /** Items for init format customizer. */
     private static List initFormatItems;

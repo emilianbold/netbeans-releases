@@ -81,11 +81,17 @@ public abstract class ResourceHolder {
      * @return value for key or null if such key os not stored in resource */
     public abstract String getCommentForKey(String key);
     
-    /** Adds new property (key-value pair) to resource object */
-    public abstract void addProperty(Object key, Object value, String comment);
+    /** 
+     * Adds new property (key-value pair) to resource object.
+     * Behave according to settings.
+     */
+    public void addProperty(Object key, Object value, String comment) {
+        boolean overwriteValues = I18nUtil.getOptions().isReplaceResourceValue();
+        addProperty(key, value, comment, overwriteValues);
+    }
     
     /** Adds new property (key-value pair) to resource object, with forcing
-     * of reset the value for existing key. */
+     * of reset the value for existing key in all locales. */
     public abstract void addProperty(Object key, Object value, String comment, boolean forceNewValue);
     
     /** Gets template for reosurce data object. Used by instatianing. 

@@ -28,10 +28,14 @@ import org.openide.util.MapFormat;
  * This is <code>I18nString</code> for java sources.
  *
  * @author  Peter Zavadsky
+ * @author  Petr Kuzel
  */
 public class JavaI18nString extends I18nString {
 
-    /** Arguments used by creation replacing code enclapsulating in java.util.MessageFormat.format method call. */
+    /** 
+     * Arguments used by creation replacing code enclapsulating 
+     * in java.util.MessageFormat.format method call. 
+     */
     protected String[] arguments;
 
     /** Creates 'empty' <code>JavaI18nString</code>.*/
@@ -39,7 +43,26 @@ public class JavaI18nString extends I18nString {
         super(i18nSupport);
     }
 
-
+    /**
+     * Copy contructor.
+     */
+    protected JavaI18nString(JavaI18nString copy) {
+        super(copy);
+        if (arguments == null) return;
+        this.arguments = (String[]) copy.arguments.clone();
+    }
+    
+    public void become(JavaI18nString i18nString) {
+        super.become(i18nString);
+        
+        JavaI18nString peer = (JavaI18nString) i18nString;
+        this.setArguments(peer.arguments);
+    }
+    
+    public Object clone() {
+        return new JavaI18nString(this);
+    }
+    
     /** Getter for property arguments.
      * @return Value of property arguments.
      */
@@ -57,13 +80,15 @@ public class JavaI18nString extends I18nString {
         this.arguments = arguments;
     }
     
-    /** Gets replacing string. Overrides superclass method. Process java specific replacing values. 
-     * @return replacing string or null if this instance is invalid */
+    /** 
+     * Derive replacing string. Overrides superclass method.
+     * Process java specific replacing values. 
+     * @return replacing string or null if this instance is invalid 
+     */
     public String getReplaceString() {
         String result = super.getReplaceString();
         
-        if(result == null)
-            return null;
+        if(result == null) return null;
 
         // Create map.
         Map map = new HashMap(2);
@@ -88,22 +113,6 @@ public class JavaI18nString extends I18nString {
         
         // Replace java specific.
         result = MapFormat.format(result, map);
-
-        // If arguments were set get the message format replace string.
-/*        String[] arguments = getArguments();
-        if(arguments.length > 0) {
-            StringBuffer stringBuffer = new StringBuffer("java.text.MessageFormat.format("); // NOI18N
-            stringBuffer.append(result);
-            stringBuffer.append(", new Object[] {"); // NOI18N
-            for (int i = 0; i < arguments.length; i++) {
-                stringBuffer.append(arguments[i]);
-                if (i < arguments.length - 1)
-                    stringBuffer.append(", "); // NOI18N
-            }
-            stringBuffer.append("})"); // NOI18N
-            result = stringBuffer.toString();
-        }
- */ // TEMP
         
         return result;
     }

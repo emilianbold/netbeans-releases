@@ -27,12 +27,21 @@ import org.openide.util.MapFormat;
  * i18n-izing of found hard coded string. I.e. resource where will be stored 
  * new key-value pair, actual key-value pair and replace code wich will
  * replace found hard coded string.
+ * <p>
+ * It also prescribes that each subclass MUST have <b>copy constuctor</b>
+ * calling its superclass copy constructor. The copy constructor MUST be  then 
+ * called during <b>cloning</b>. All subclasses must also support oposite
+ * process <b>becoming</b>
  *
  * @author  Peter Zavadsky
+ * @author  Petr Kuzel
  */
-public abstract class I18nString extends Object {
+public class I18nString {
 
-    /** Support for this i18n string istance. */
+    /** 
+     * Support for this i18n string istance. 
+     * It contains implementation.
+     */
     protected I18nSupport support;
     
     /** The key value according the hard coded string will be i18n-ized. */
@@ -48,17 +57,49 @@ public abstract class I18nString extends Object {
     protected String replaceFormat;
 
     
-    /** Creates new I18nString. 
-     * @param support <code>I18nSupport</code> linked to this instance, has to be non-null */
-    public I18nString(I18nSupport support) {
-        if(support == null)
-            throw new IllegalArgumentException();
+    /** 
+     * Creates new I18nString. 
+     * @param support <code>I18nSupport</code> linked to this instance,
+     * has to be non-null 
+     */
+    protected I18nString(I18nSupport support) {
+        if(support == null) throw new NullPointerException();
 
         this.support = support;
         
+        //??? what is this
         replaceFormat = I18nUtil.getOptions().getReplaceJavaCode();
     }
 
+    /**
+     * Copy contructor.
+     */
+    protected  I18nString(I18nString copy) {
+        this.key = copy.key;
+        this.value = copy.value;
+        this.comment = copy.comment;
+        this.replaceFormat = copy.replaceFormat;
+        this.support = copy.support;
+    }
+    
+    /**
+     * Let this instance take its state from passed one.
+     * All subclasses must extend it.
+     */
+    public void become(I18nString copy) {
+        this.key = copy.key;
+        this.value = copy.value;
+        this.comment = copy.comment;
+        this.replaceFormat = copy.replaceFormat;
+        this.support = copy.support;
+    }
+    
+    /**
+     * Cloning must use copy contructors.
+     */
+    public Object clone() {
+        return new I18nString(this);
+    }
     
     /** Getter for <code>support</code>. */
     public I18nSupport getSupport() {
@@ -114,8 +155,10 @@ public abstract class I18nString extends Object {
         this.replaceFormat = replaceFormat;
     }
 
-    /** Gets replacing string. 
-     * @return replacing string or null if this instance is invalid */
+    /** 
+     * Derive replacing string.
+     * @return replacing string or null if this instance is invalid 
+     */
     public String getReplaceString() {
         if(getKey() == null || getSupport() == null || getSupport().getResourceHolder().getResource() == null)
             return null;

@@ -175,7 +175,7 @@ final class HardStringWizardPanel extends JPanel {
         });
         
         hardStringTable.setDefaultRenderer(I18nString.class, new DefaultTableCellRenderer() {
-            private final JButton dotButton = new JButton("..."); // NOI18N
+            private final JButton dotButton = new JButton("...");               // NOI18N
             
             public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
@@ -437,17 +437,28 @@ final class HardStringWizardPanel extends JPanel {
             editorComponent.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
                     PropertyPanel panel = i18nString.getSupport().getPropertyPanel();
-                    panel.setI18nString(i18nString);
+                    I18nString clone = (I18nString) i18nString.clone();
+                    panel.setI18nString(clone);
 
-                    DialogDescriptor dd = new DialogDescriptor(panel, Util.getString("PROP_cust_dialog_name"));
+                    String title = Util.getString("PROP_cust_dialog_name");
+                    DialogDescriptor dd = new DialogDescriptor(panel, title);
                     dd.setModal(true);
                     dd.setOptionType(DialogDescriptor.DEFAULT_OPTION);
-                    dd.setOptions(new Object[] {DialogDescriptor.OK_OPTION});
-                    dd.setAdditionalOptions(new Object[0]);
+                    
+                    Object options[] =  new Object[] {
+                        DialogDescriptor.OK_OPTION,
+                        DialogDescriptor.CANCEL_OPTION,
+                    };                    
+                    dd.setOptions(options);
+                    //dd.setAdditionalOptions(new Object[0]);
+                    dd.setHelpCtx(new HelpCtx(I18nUtil.PE_I18N_STRING_HELP_ID));
                     dd.setButtonListener(CustomizeCellEditor.this);
 
-                    Dialog dialog = TopManager.getDefault().createDialog(dd);
+                    Dialog dialog = TopManager.getDefault().createDialog(dd);                    
                     dialog.setVisible(true);
+                    if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+                        i18nString.become(clone);
+                    }
                 }
             });
         }
