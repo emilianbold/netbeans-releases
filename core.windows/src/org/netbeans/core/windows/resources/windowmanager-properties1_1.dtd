@@ -33,6 +33,7 @@ Microsystems, Inc. All Rights Reserved.
      "y" gives position of main window on screen on vertical axis
      top is 0, if value is "center" main window will be centered
      verticaly
+     Note: the "center" values are taken into account for MDI mode only!
      "width" gives absolute width of main window
      "height" gives absolute height of main window
      "relative-width" gives relative width of main window, either width or
