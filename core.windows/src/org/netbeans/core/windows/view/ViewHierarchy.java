@@ -234,7 +234,10 @@ final class ViewHierarchy {
         // PENDING Close all old views.
         for(Iterator it = oldViews.iterator(); it.hasNext(); ) {
             ModeView mv = (ModeView)it.next();
-            mv.getComponent().setVisible(false);
+            Component comp = mv.getComponent();
+            if(comp.isVisible()) {
+                comp.setVisible(false);
+            }
 //            // PENDING
 //            ((java.awt.Window)mv.getComponent()).dispose();
         }
@@ -242,7 +245,12 @@ final class ViewHierarchy {
         // Open all new views.
         for(Iterator it = newViews.keySet().iterator(); it.hasNext(); ) {
             ModeView mv = (ModeView)it.next();
-            mv.getComponent().setVisible(true);
+            Component comp = mv.getComponent();
+            // #37463, it is needed to provide a check, otherwise the window would 
+            // get fronted each time.
+            if(!comp.isVisible()) {
+                mv.getComponent().setVisible(true);
+            }
         }
     }
     
