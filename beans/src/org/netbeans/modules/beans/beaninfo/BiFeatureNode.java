@@ -285,8 +285,7 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
     }
 
     private void addExpertProperty( Sheet sheet ) {
-        Sheet.Set ps = new Sheet.Set();
-        ps.setName( Sheet.EXPERT );
+        Sheet.Set ps = Sheet.createExpertSet();
 
         ps.put(new PropertySupport.ReadWrite (
                    PROP_BOUND,
@@ -418,8 +417,7 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
     }
 
     void addExpertEventSet ( Sheet sheet ) {
-        Sheet.Set ps = new Sheet.Set();
-        ps.setName( Sheet.EXPERT );
+        Sheet.Set ps = Sheet.createExpertSet();
 
         ps.put(new PropertySupport.ReadOnly (
                    PROP_UNICAST,
