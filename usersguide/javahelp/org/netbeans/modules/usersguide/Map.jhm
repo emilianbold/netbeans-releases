@@ -209,7 +209,9 @@
 <mapID target="java.jdks.jump" url="java/jdks_jump.html" />
 
 <!--csh page for Options|IDE Configuration|System|Filesystems Settings|Java Libraries-->
-<mapID target="org.netbeans.modules.java.Filesystem.libraries" url="filesystems/filesystems_classpath.html" />
+<mapID target="org.netbeans.modules.java.Filesystem.libraries" url="filesystems/filesystems_settings.html" />
+<!--csh page for Options|IDE Configuration|System|Filesystems Settings|Java Libraries|[Fileystem]-->
+<mapID target="org.netbeans.modules.java.Filesystem.libraryFS" url="filesystems/filesystems_settings.html" />
 <!--csh page for Options|IDE Configuration|System|Filesystems Settings|Javadoc Documentation-->
 <mapID target="org.netbeans.modules.javadoc.FileSystem.docroots" url="javadoc/search_path.html" />
 <!--csh page for projects|settings|Java Sources-->
@@ -392,7 +394,7 @@
 <mapID target="editing.fonts" url="editing/configuring/fontsandcolors.html" />
 
 <!-- Csh page for Code Completion Data Manager -->
-<mapID target="editing.completion.manager" url="editing/codecompletion/intro.html" />
+<mapID target="editing.completion.manager" url="editing/parserdatabase_customizer.html" />
 
 
 <mapID target="debug.overview" url="debug/debug.html" />
