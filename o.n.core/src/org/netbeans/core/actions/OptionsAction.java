@@ -281,7 +281,7 @@ public class OptionsAction extends CallableSystemAction {
                     JTableHeader h = (JTableHeader)c;
                     
                     // show/hide additional properties
-                    if (0 == h.columnAtPoint (evt.getPoint ())) {
+                    if (1 == h.columnAtPoint (evt.getPoint ())) {
                         refreshColumns (true);
                     }
                 }
@@ -328,6 +328,7 @@ public class OptionsAction extends CallableSystemAction {
                             setProperties (set);
 
                             // set preferred colunm sizes
+                            setTreePreferredWidth(set.length == 1 ? 480 : 300);
                             setTableColumnPreferredWidth (0, 20);
                             for (int i = 1; i < set.length; i++)
                                 setTableColumnPreferredWidth (i, 60);
