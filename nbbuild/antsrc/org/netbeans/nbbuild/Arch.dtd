@@ -80,6 +80,7 @@ HTML contents of the document, with substitutions.
 <!ELEMENT question (#PCDATA | %inline; | hint)* >
 <!ATTLIST question
           id CDATA #REQUIRED
+          when (init|impl|final) 'init'
 >
 
 <!ELEMENT hint %Flow; >
