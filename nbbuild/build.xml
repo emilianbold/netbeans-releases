@@ -3690,7 +3690,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </condition>
     
     
-    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP Linux SunOS Solaris Mac OS X" dir="." executable="diff" failonerror="no" timeout="60000" >
+    <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="diff" failonerror="no" timeout="60000" >
       <arg value="-u" />
       <arg value="${check.files.layout.template}" />
       <arg value="${check.files.layout.generated}" />
