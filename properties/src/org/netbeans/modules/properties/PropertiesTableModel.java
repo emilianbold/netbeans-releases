@@ -315,10 +315,12 @@ public class PropertiesTableModel extends AbstractTableModel {
         for (int i = 0; i < list.length; i++) {
             if (list[i] instanceof JTable) {
                 JTable jt = (JTable)list[i];
-
-                TableColumn column = jt.getColumnModel().getColumn(index);
-                column.setHeaderValue(jt.getModel().getColumnName(index));
-                
+                try {
+                    TableColumn column = jt.getColumnModel().getColumn(index);
+                    column.setHeaderValue(jt.getModel().getColumnName(index));
+                } catch (ArrayIndexOutOfBoundsException abe) {
+                    // only catch exception
+                }
                 jt.getTableHeader().repaint();
             }
         }
