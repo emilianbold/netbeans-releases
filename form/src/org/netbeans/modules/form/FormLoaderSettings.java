@@ -13,17 +13,13 @@
 
 package org.netbeans.modules.form;
 
-import java.lang.reflect.Modifier;
 import java.util.*;
-
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
-
 import org.netbeans.modules.form.codestructure.*;
 
-/** Settings for form data loader.
- *
- * @author Ian Formanek
+/**
+ * Settings for the form editor.
  */
 
 public class FormLoaderSettings extends SystemOption {
@@ -32,10 +28,11 @@ public class FormLoaderSettings extends SystemOption {
 
     /** Property name of the workspace property */
     public static final String PROP_WORKSPACE = "workspace"; // NOI18N
-    /** Property name of the indentAWTHierarchy property */
-//    public static final String PROP_INDENT_AWT_HIERARCHY = "indentAWTHierarchy"; // NOI18N
+
     public static final String PROP_USE_INDENT_ENGINE = "useIndentEngine"; // NOI18N
+
     public static final String PROP_GENERATE_ON_SAVE = "generateOnSave"; // NOI18N
+
     /** Property name of the eventVariableName property */
     public static final String PROP_EVENT_VARIABLE_NAME = "eventVariableName"; // NOI18N
 
@@ -47,8 +44,13 @@ public class FormLoaderSettings extends SystemOption {
     public static final String PROP_CONNECTION_BORDER_COLOR = "connectionBorderColor"; // NOI18N
     /** Property name of the dragBorderColor property */
     public static final String PROP_DRAG_BORDER_COLOR = "dragBorderColor"; // NOI18N
-    /** Property name of the showGrid property */
-//    public static final String PROP_SHOW_GRID = "showGrid"; // NOI18N
+    /** Property name of the formDesignerBackgroundColor property */
+    public static final String PROP_FORMDESIGNER_BACKGROUND_COLOR =
+        "formDesignerBackgroundColor"; // NOI18N
+    /** Property name of the formDesignerBorderColor property */
+    public static final String PROP_FORMDESIGNER_BORDER_COLOR =
+        "formDesignerBorderColor"; // NOI18N
+
     /** Property name of the gridX property */
     public static final String PROP_GRID_X = "gridX"; // NOI18N
     /** Property name of the gridY property */
@@ -57,8 +59,12 @@ public class FormLoaderSettings extends SystemOption {
     public static final String PROP_APPLY_GRID_TO_POSITION = "applyGridToPosition"; // NOI18N
     /** Property name of the applyGridToSize property */
     public static final String PROP_APPLY_GRID_TO_SIZE = "applyGridToSize"; // NOI18N
+
     /** Property name of the variablesModifier property */
     public static final String PROP_VARIABLES_MODIFIER = "variablesModifier"; // NOI18N
+    /** Property name of the variablesLocal property */
+    public static final String PROP_VARIABLES_LOCAL = "variablesLocal"; // NOI18N
+
     /** Property name of the displayWritableOnly property */
     public static final String PROP_DISPLAY_WRITABLE_ONLY = "displayWritableOnly"; // NOI18N
 
@@ -67,60 +73,42 @@ public class FormLoaderSettings extends SystemOption {
     /** Property name of the registeredEditors property */
     public static final String PROP_REGISTERED_EDITORS = "registeredEditors"; // NOI18N
 
-    /** outputLevel property name */
-    public static final String PROP_OUTPUT_LEVEL = "outputLevel"; // NOI18N
-
-    /** Property name of the nullLayout property */
-//    public static final String PROP_NULL_LAYOUT = "nullLayout"; // NOI18N
-
     /** Property name of the selectedPalette property */
     public static final String PROP_SELECTED_PALETTE = "selectedPalette"; // NOI18N
     /** Property name of the showComponentsNames property */
-    public static final String PROP_SHOW_COMPONENTS_NAMES = "showComponentsNames"; // NOI18N    
+    public static final String PROP_SHOW_COMPONENTS_NAMES = "showComponentsNames"; // NOI18N
 
     public static final String PROP_CONTAINER_BEANS = "containerBeans"; // NOI18N
-    /** Property name of the openFormsInOneWindow property */
-//    public static final String PROP_OPEN_FORMS_IN_ONE_WINDOW = "openFormsInOneWindow"; // NOI18N
-    /** Property name of the formDesignerBackgroundColor property */
-    public static final String PROP_FORMDESIGNER_BACKGROUND_COLOR = "formDesignerBackgroundColor"; // NOI18N
-    /** Property name of the formDesignerBorderColor property */
-    public static final String PROP_FORMDESIGNER_BORDER_COLOR = "formDesignerBorderColor"; // NOI18N
-
-    /** Property name of the variablesLocal property */
-    public static final String PROP_VARIABLES_LOCAL = "variablesLocal"; // NOI18N
-
-    /** Minimum output detail level */
-    public static final int OUTPUT_MINIMUM = 0;
-    /** Normal output detail level */
-    public static final int OUTPUT_NORMAL = 1;
-    /** Maximum output detail level */
-    public static final int OUTPUT_MAXIMUM = 2;
 
     // ------------------------------------------
     // properties
 
     private static String workspace = FormEditor.GUI_EDITING_WORKSPACE_NAME;
-    /** If true, the generated code for AWT components' hierarchy
-     * is indented to reflect the hierarchy(i.e. the code for subcomponents of
-     * Container is indented to the right).
-     */
-//    private static boolean indentAWTHierarchy = false;
+
     private static boolean useIndentEngine = false;
+
     private static boolean generateOnSave = false;
 
     /** The name of the Event variable generated in the event handlers. */
     private static String eventVariableName = "evt"; // NOI18N
+
     /** The size(in pixels) of the border that marks visual components on a form
      * as selected. */
     private static int selectionBorderSize = 2;
+
     /** The color of the border boxes on selection border */
-    private static java.awt.Color selectionBorderColor = new java.awt.Color(0, 0, 192);
+    private static java.awt.Color selectionBorderColor =
+        new java.awt.Color(0, 0, 192);
     /** The color of the border boxes on connection border */
     private static java.awt.Color connectionBorderColor = java.awt.Color.red;
     /** The color of the drag border on selection border */
     private static java.awt.Color dragBorderColor = java.awt.Color.gray;
-    /** True if grid should be used, false otherwise. */
-//    private static boolean showGrid = true;
+    /** The color of FormDesigner window's background */
+    private static java.awt.Color formDesignerBackgroundColor = java.awt.Color.white;
+    /** The color of border around designed component */
+    private static java.awt.Color formDesignerBorderColor =
+        new java.awt.Color(224, 224, 255);
+
     /** The grid size(in pixels) in x axis. */
     private static int gridX = 10;
     /** The grid size(in pixels) in y axis. */
@@ -129,45 +117,23 @@ public class FormLoaderSettings extends SystemOption {
     private static boolean applyGridToPosition = true;
     /** True if grid should be applied to size of components, false otherwise. */
     private static boolean applyGridToSize = true;
+
+    /** The modifiers of variables generated for component in Form Editor */
+    private static int variablesModifier = java.lang.reflect.Modifier.PRIVATE;
     /** The local variable generation state for components in Form Editor. */
     private static boolean variablesLocal = false;
-    /** The modifiers of variables generated for component in Form Editor */
-    private static int variablesModifier = Modifier.PRIVATE;
 
     /** If true, only editable properties are displayed in the ComponentInspector */
     private static boolean displayWritableOnly = true;
+
     /** Array of package names to search for property editors used in Form Editor */
     private static String [] editorSearchPath =
         { "org.netbeans.modules.form.editors2" }; // NOI18N
     /** Array of items [Class Name, Editor1, Editor2, ...] */
     private static String [][] registeredEditors = new String [][] {{}};
-//    {
-//        { "byte", "sun.beans.editors.ByteEditor" }, // NOI18N
-//        { "short", "sun.beans.editors.ShortEditor" }, // NOI18N
-//        { "integer", "sun.beans.editors.IntEditor" }, // NOI18N
-//        { "long" ,"sun.beans.editors.LongEditor" }, // NOI18N
-//        { "boolean", "sun.beans.editors.BoolEditor" }, // NOI18N
-//        { "float", "sun.beans.editors.FloatEditor" }, // NOI18N
-//        { "double", "sun.beans.editors.DoubleEditor" }, // NOI18N
-//        { "char", "org.netbeans.beaninfo.editors.CharacterEditor" }, // NOI18N
-//        { String[].class.getName(), "org.openide.explorer.propertysheet.editors.StringArrayEditor"}, // NOI18N
-//    };
-
-//    private static int outputLevel = OUTPUT_NORMAL;
-
-//    private static boolean nullLayout = true;
-
-    private static int emptyFormType = 0;
 
     private static int selectedPalette = 0;
     private static boolean showComponentsNames = false;
-    
-    /** Opened forms are docked into one FormDesigner window, otherwise each form into one single window */
-//    private static boolean openFormsInOneWindow = true;
-    /** The color of FormDesigner window's background */
-    private static java.awt.Color formDesignerBackgroundColor = java.awt.Color.white;
-    /** The color of border around designed component */
-    private static java.awt.Color formDesignerBorderColor = new java.awt.Color(224, 224, 255);
 
     private static final int MIN_SELECTION_BORDER_SIZE = 1;
     private static final int MAX_SELECTION_BORDER_SIZE = 15;
@@ -176,13 +142,6 @@ public class FormLoaderSettings extends SystemOption {
     private static final int MIN_GRID_Y = 2;
 
     private static Map containerBeans;
-
-//    static {
-//        String[] defaultPath = java.beans.PropertyEditorManager.getEditorSearchPath();
-//        editorSearchPath = new String[defaultPath.length + 1];
-//        System.arraycopy(defaultPath, 0, editorSearchPath, 0, defaultPath.length);
-//        editorSearchPath[editorSearchPath.length-1] = "org.netbeans.modules.form.editors2"; // NOI18N
-//    }
 
     // ------------------------------------------
     // property access methods
@@ -194,28 +153,6 @@ public class FormLoaderSettings extends SystemOption {
     public void setWorkspace(String newWorkspace) {
         workspace = newWorkspace;
     }
-
-    public int getEmptyFormType() {
-        return emptyFormType;
-    }
-
-    public void setEmptyFormType(int value) {
-        emptyFormType = value;
-    }
-
-    /** Getter for the IndentAWTHierarchy option */
-//    public boolean getIndentAWTHierarchy() {
-//        return indentAWTHierarchy;
-//    }
-
-    /** Setter for the IndentAWTHierarchy option */
-//    public void setIndentAWTHierarchy(boolean value) {
-//        if (value == indentAWTHierarchy)
-//            return;
-//        indentAWTHierarchy = value;
-//        firePropertyChange(PROP_INDENT_AWT_HIERARCHY,
-//                           new Boolean(!indentAWTHierarchy), new Boolean(indentAWTHierarchy));
-//    }
 
     public boolean getUseIndentEngine() {
         return useIndentEngine;
@@ -262,14 +199,19 @@ public class FormLoaderSettings extends SystemOption {
 
     /** Setter for the selectionBorderSize option */
     public void setSelectionBorderSize(int value) {
-        if (value < MIN_SELECTION_BORDER_SIZE) value = MIN_SELECTION_BORDER_SIZE;
-        else if (value > MAX_SELECTION_BORDER_SIZE) value = MAX_SELECTION_BORDER_SIZE;
+        if (value < MIN_SELECTION_BORDER_SIZE)
+            value = MIN_SELECTION_BORDER_SIZE;
+        else if (value > MAX_SELECTION_BORDER_SIZE)
+            value = MAX_SELECTION_BORDER_SIZE;
 
         if (value == selectionBorderSize)
             return;
+
         int oldValue = selectionBorderSize;
         selectionBorderSize = value;
-        firePropertyChange(PROP_SELECTION_BORDER_SIZE, new Integer(oldValue), new Integer(selectionBorderSize));
+        firePropertyChange(PROP_SELECTION_BORDER_SIZE,
+                           new Integer(oldValue),
+                           new Integer(selectionBorderSize));
     }
 
     /** Getter for the selectionBorderColor option */
@@ -283,7 +225,9 @@ public class FormLoaderSettings extends SystemOption {
             return;
         java.awt.Color oldValue = selectionBorderColor;
         selectionBorderColor = value;
-        firePropertyChange(PROP_SELECTION_BORDER_COLOR, oldValue, selectionBorderColor);
+        firePropertyChange(PROP_SELECTION_BORDER_COLOR,
+                           oldValue,
+                           selectionBorderColor);
     }
 
     /** Getter for the connectionBorderColor option */
@@ -297,7 +241,9 @@ public class FormLoaderSettings extends SystemOption {
             return;
         java.awt.Color oldValue = connectionBorderColor;
         connectionBorderColor = value;
-        firePropertyChange(PROP_CONNECTION_BORDER_COLOR, oldValue, connectionBorderColor);
+        firePropertyChange(PROP_CONNECTION_BORDER_COLOR,
+                           oldValue,
+                           connectionBorderColor);
     }
 
     /** Getter for the dragBorderColor option */
@@ -313,20 +259,6 @@ public class FormLoaderSettings extends SystemOption {
         dragBorderColor = value;
         firePropertyChange(PROP_DRAG_BORDER_COLOR, oldValue, dragBorderColor);
     }
-
-    /** Getter for the showGrid option */
-/*    public boolean getShowGrid() {
-        return showGrid;
-    } */
-
-    /** Setter for the showGrid option */
-/*    public void setShowGrid(boolean value) {
-        if (value == showGrid)
-            return;
-        boolean oldValue = showGrid;
-        showGrid = value;
-        firePropertyChange(PROP_SHOW_GRID, new Boolean(oldValue), new Boolean(showGrid));
-    } */
 
     /** Getter for the gridX option */
     public int getGridX() {
@@ -369,7 +301,9 @@ public class FormLoaderSettings extends SystemOption {
             return;
         boolean oldValue = applyGridToPosition;
         applyGridToPosition = value;
-        firePropertyChange(PROP_APPLY_GRID_TO_POSITION, new Boolean(oldValue), new Boolean(applyGridToPosition));
+        firePropertyChange(PROP_APPLY_GRID_TO_POSITION,
+                           new Boolean(oldValue),
+                           new Boolean(applyGridToPosition));
     }
 
     /** Getter for the applyGridToSize option */
@@ -383,7 +317,9 @@ public class FormLoaderSettings extends SystemOption {
             return;
         boolean oldValue = applyGridToSize;
         applyGridToSize = value;
-        firePropertyChange(PROP_APPLY_GRID_TO_SIZE, new Boolean(oldValue), new Boolean(applyGridToSize));
+        firePropertyChange(PROP_APPLY_GRID_TO_SIZE,
+                           new Boolean(oldValue),
+                           new Boolean(applyGridToSize));
     }
 
     /** Getter for the variablesLocal option. */
@@ -407,8 +343,12 @@ public class FormLoaderSettings extends SystemOption {
         if (variablesLocal)
             variablesModifier &= CodeVariable.FINAL;
 
-        firePropertyChange(PROP_VARIABLES_LOCAL, new Boolean(oldValue), new Boolean(variablesLocal));
-        firePropertyChange(PROP_VARIABLES_MODIFIER, new Integer(oldModif), new Integer(variablesModifier));
+        firePropertyChange(PROP_VARIABLES_LOCAL,
+                           new Boolean(oldValue),
+                           new Boolean(variablesLocal));
+        firePropertyChange(PROP_VARIABLES_MODIFIER,
+                           new Integer(oldModif),
+                           new Integer(variablesModifier));
     }
 
     /** Getter for the variablesModifier option */
@@ -430,7 +370,9 @@ public class FormLoaderSettings extends SystemOption {
         else varType = CodeVariable.FIELD | variablesModifier;
         CodeStructure.setGlobalDefaultVariableType(varType);
 
-        firePropertyChange(PROP_VARIABLES_MODIFIER, new Integer(oldValue), new Integer(variablesModifier));
+        firePropertyChange(PROP_VARIABLES_MODIFIER,
+                           new Integer(oldValue),
+                           new Integer(variablesModifier));
     }
 
     /** Getter for the displayWritableOnly option */
@@ -442,7 +384,9 @@ public class FormLoaderSettings extends SystemOption {
     public void setDisplayWritableOnly(boolean value) {
         Boolean oldValue = new Boolean(displayWritableOnly);
         displayWritableOnly = value;
-        firePropertyChange(PROP_DISPLAY_WRITABLE_ONLY, oldValue, new Boolean(displayWritableOnly));
+        firePropertyChange(PROP_DISPLAY_WRITABLE_ONLY,
+                           oldValue,
+                           new Boolean(displayWritableOnly));
     }
 
     /** Getter for the editorSearchPath option */
@@ -481,42 +425,6 @@ public class FormLoaderSettings extends SystemOption {
         firePropertyChange(PROP_REGISTERED_EDITORS, null, null);
     }
 
-    /** Getter for OutputLevel property.
-     * @return The level of output
-     */
-//    public int getOutputLevel() {
-//        return outputLevel;
-//    }
-
-    /** Setter for OutputLevel property.
-     * @param value The new level of output
-     */
-//    public void setOutputLevel(int value) {
-//        if (outputLevel == value) return;
-//        int oldValue = outputLevel;
-//        outputLevel = value;
-//        // fire the PropertyChange
-//        firePropertyChange(PROP_OUTPUT_LEVEL, new Integer(oldValue), new Integer(outputLevel));
-//    }
-
-    /** Getter for nullLayout property.
-     * @return True, if null layout should be generated, false if org.netbeans.lib.awtextra.AbsoluteLayout should be used
-     */
-//    public boolean isNullLayout() {
-//        return nullLayout;
-//    }
-
-    /** Setter for nullLayout property.
-     * @param value True, if null layout should be generated, false if org.netbeans.lib.awtextra.AbsoluteLayout should be used
-     */
-//    public void setNullLayout(boolean value) {
-//        if (nullLayout == value) return;
-//        boolean oldValue = nullLayout;
-//        nullLayout = value;
-//        // fire the PropertyChange
-//        firePropertyChange(PROP_NULL_LAYOUT, new Boolean(oldValue), new Boolean(nullLayout));
-//    }
-
     public int getSelectedPalette() {
         return selectedPalette;
     }
@@ -526,7 +434,9 @@ public class FormLoaderSettings extends SystemOption {
         int oldValue = selectedPalette;
         selectedPalette = index;
         // fire the PropertyChange
-        firePropertyChange(PROP_SELECTED_PALETTE, new Integer(oldValue), new Integer(selectedPalette));
+        firePropertyChange(PROP_SELECTED_PALETTE,
+                           new Integer(oldValue),
+                           new Integer(selectedPalette));
     }
     
     public boolean getShowComponentsNames() {
@@ -536,21 +446,11 @@ public class FormLoaderSettings extends SystemOption {
     public void setShowComponentsNames(boolean value) {
         if (value == showComponentsNames) return;
         showComponentsNames = value;
-        firePropertyChange(PROP_SHOW_COMPONENTS_NAMES, new Boolean(!value), new Boolean(value));
-    }    
-    
-//    /** Getter for the openFormsInOneWindow option */
-//    public boolean getOpenFormsInOneWindow() {
-//        return openFormsInOneWindow;
-//    }
-//    
-//    /** Setter for the openFormsInOneWindow option */
-//    public void setOpenFormsInOneWindow(boolean value) {
-//        if (value == openFormsInOneWindow) return;
-//        openFormsInOneWindow = value;
-//        firePropertyChange(PROP_OPEN_FORMS_IN_ONE_WINDOW, new Boolean(!value), new Boolean(value));
-//    }    
-    
+        firePropertyChange(PROP_SHOW_COMPONENTS_NAMES,
+                           new Boolean(!value),
+                           new Boolean(value));
+    }
+
     /** Getter for the formDesignerBackgroundColor option */
     public java.awt.Color getFormDesignerBackgroundColor() {
         return formDesignerBackgroundColor;
@@ -562,9 +462,11 @@ public class FormLoaderSettings extends SystemOption {
             return;
         java.awt.Color oldValue = formDesignerBackgroundColor;
         formDesignerBackgroundColor = value;
-        firePropertyChange(PROP_FORMDESIGNER_BACKGROUND_COLOR, oldValue, formDesignerBackgroundColor);
-    }    
-    
+        firePropertyChange(PROP_FORMDESIGNER_BACKGROUND_COLOR,
+                           oldValue,
+                           formDesignerBackgroundColor);
+    }
+
     /** Getter for the formDesignerBorderColor option */
     public java.awt.Color getFormDesignerBorderColor() {
         return formDesignerBorderColor;
@@ -576,8 +478,10 @@ public class FormLoaderSettings extends SystemOption {
             return;
         java.awt.Color oldValue = formDesignerBorderColor;
         formDesignerBorderColor = value;
-        firePropertyChange(PROP_FORMDESIGNER_BORDER_COLOR, oldValue, formDesignerBorderColor);
-    }      
+        firePropertyChange(PROP_FORMDESIGNER_BORDER_COLOR,
+                           oldValue,
+                           formDesignerBorderColor);
+    }
 
     public Map getContainerBeans() {
         return containerBeans;
@@ -589,9 +493,8 @@ public class FormLoaderSettings extends SystemOption {
     }
 
     // XXX(-tdt) Hmm, backward compatibility with com.netbeans package name
-    // again.  The property editor search path is stored in user settings, we
+    // again. The property editor search path is stored in user settings, we
     // must translate
-    
     public void readExternal(java.io.ObjectInput in)
         throws java.io.IOException, ClassNotFoundException
     {
@@ -599,11 +502,11 @@ public class FormLoaderSettings extends SystemOption {
         for (int i = 0; i < editorSearchPath.length; i++) {
             String path = editorSearchPath[i];
             path = org.openide.util.Utilities.translate(path + ".BogusClass"); // NOI18N
-            path = path.substring(0, path.length() - ".BogusClass".length()); //  NOI18N
+            path = path.substring(0, path.length() - ".BogusClass".length()); // NOI18N
             editorSearchPath[i] = path;
         }
     }
-    
+
     /** This method must be overriden. It returns display name of this options.
      */
     public String displayName() {
@@ -613,5 +516,4 @@ public class FormLoaderSettings extends SystemOption {
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.configuring"); // NOI18N
     }
-
 }
