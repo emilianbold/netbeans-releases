@@ -39,7 +39,10 @@ ToDo:
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
         <!-- For running inside IDE, to pick up ant.jar -->
         <pathelement location="${binroot}/nbbuild/lib/ant.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/sax.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/dom.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/> <!-- XML serializer -->
         <pathelement location="${binroot}/nbbuild/lib/jhall.jar"/>
         <pathelement location="${binroot}/xml/catalog/release/modules/ext/resolver-1_1_nb.jar"/>
       </classpath>
@@ -479,6 +482,11 @@ ToDo:
     <ant dir="../corba" target="netbeans"/>
   </target>
 
+  <target name="all-xml/api" depends="all-openide">
+      <echo message="Building module xml/api..."/>
+      <ant dir="../xml/api" target="netbeans"/>
+  </target>
+
   <target name="all-xml/tax" depends="all-openide">
       <echo message="Building module xml/tax..."/>
       <ant dir="../xml/tax" target="netbeans"/>
@@ -524,7 +532,7 @@ ToDo:
       <ant dir="../xml/css" target="netbeans"/>
   </target>
 
-  <target name="all-xml" depends="all-xml/tax,all-xml/core/xalan,all-xml/core/jaxp,all-xml/core,all-xml/catalog,all-xml/tools,all-xml/text-edit,all-xml/tree-edit,all-xml/css"/>
+  <target name="all-xml" depends="all-xml/api,all-xml/tax,all-xml/core/xalan,all-xml/core/jaxp,all-xml/core,all-xml/catalog,all-xml/tools,all-xml/text-edit,all-xml/tree-edit,all-xml/css"/>
 
   <target name="all-treefs" depends="all-openide">
     <echo message="Building module treefs..."/>
