@@ -25,8 +25,8 @@ Therefore, the web servers are shipped with the requirement that anyone
 who attempts to use them must authenticate themselves, using a username and password 
 with the appropriate role associated with them.</p> 
 
-<p>For example, to authenticate yourself when you want to use
-   the Tomcat Manager to deploy your web application, 
+<p>For example, the IDE uses the Tomcat Manager to deploy applications.
+   To authenticate yourself when you deploy your web application, 
    JSP file, or servlet, you need a username
    and password for a user with the "manager" role. 
    This username and password are defined in the
@@ -44,8 +44,9 @@ with the appropriate role associated with them.</p>
 </table>
 <p>
    During installation, the NetBeans IDE generates a user
-   called "ide" that is assigned the "manager" role. This
-   user is created in your user directory's <tt>tomcat-users.xml</tt> file.</p>
+   called "ide" for use with the bundled Tomcat Server. This user
+   is assigned the "manager" role and
+   is created in your user directory's <tt>tomcat-users.xml</tt> file.</p>
 <p><b>To get the password for the "ide" username from your user directory:</b></p>
 <ol>
   <li>Right-click
