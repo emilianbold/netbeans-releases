@@ -43,11 +43,7 @@ public class PropertyPanel extends JPanel {
         
         initComponents();
         initAccessibility();             
-        
-        keyText.setNextFocusableComponent(valueLabel);
-        valueText.setNextFocusableComponent(commentLabel);
-        commentText.setNextFocusableComponent(keyLabel);
-        
+                
         keyText.setText(UtilConvert.unicodesToChars(element.getKey()));
         valueText.setText(UtilConvert.unicodesToChars(element.getValue()));
         commentText.setText(UtilConvert.unicodesToChars(element.getComment()));
