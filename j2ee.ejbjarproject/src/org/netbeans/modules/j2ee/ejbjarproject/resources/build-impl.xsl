@@ -506,20 +506,22 @@ is divided into following sections:
                         <xsl:attribute name="files">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
                      </copyfiles>
                 </xsl:for-each>   
-                <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
-                    <attribute>
-                        <xsl:attribute name="name">Class-Path</xsl:attribute>
-                        <xsl:attribute name="value">
-                            <xsl:for-each select="//ejbjarproject2:included-library">
-                                <xsl:variable name="base.prop.name">
-                                    <xsl:value-of select="concat('${included.lib.', ., '}')"/>
-                                </xsl:variable>
-                                <xsl:if test="position()>1">,</xsl:if>
-                                <xsl:value-of select="$base.prop.name"/>
-                            </xsl:for-each>  
-                        </xsl:attribute>
-                     </attribute>
-                </manifest>
+                <xsl:if test="//ejbjarproject2:included-library">
+                    <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
+                        <attribute>
+                            <xsl:attribute name="name">Class-Path</xsl:attribute>
+                            <xsl:attribute name="value">
+                                <xsl:for-each select="//ejbjarproject2:included-library">
+                                    <xsl:variable name="base.prop.name">
+                                        <xsl:value-of select="concat('${included.lib.', ., '}')"/>
+                                    </xsl:variable>
+                                    <xsl:if test="position()>1">,</xsl:if>
+                                    <xsl:value-of select="$base.prop.name"/>
+                                </xsl:for-each>  
+                            </xsl:attribute>
+                         </attribute>
+                    </manifest>
+                </xsl:if>
             </target>
             
             <target name="do-compile">
