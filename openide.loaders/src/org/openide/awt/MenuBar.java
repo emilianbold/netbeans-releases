@@ -87,6 +87,19 @@ public class MenuBar extends JMenuBar implements Externalizable {
             getAccessibleContext().setAccessibleDescription(folder.getName());
         }
     }
+    
+    public void addImpl (Component c, Object constraint, int idx) {
+        //Issue 17559, Apple's screen menu bar implementation blindly casts
+        //added components as instances of JMenu.  Silently ignore any non-menu
+        //items on Mac if the screen menu flag is true.
+        if (Utilities.getOperatingSystem() == Utilities.OS_MAC && 
+                Boolean.getBoolean ("apple.laf.useScreenMenuBar")) { //NOI18N
+            if (!(c instanceof JMenu)) {
+                return;
+            }
+        }
+        super.addImpl (c, constraint, idx);
+    }
 
     /** Blocks until the menubar is completely created. */
     public void waitFinished () {
