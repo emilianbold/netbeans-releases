@@ -263,7 +263,7 @@ public final class BeanInstaller extends Object {
       DataObject originalDO = DataObject.find (original);
 //      System.out.println ("createShadow: "+folder + ", : " + original +", : "+originalDO);
       if (originalDO != null) {
-        new DataShadow (DataFolder.findFolder (folder), originalDO);
+        DataShadow.create (DataFolder.findFolder (folder), originalDO);
       }
     } catch (IOException e) {
       TopManager.getDefault ().notifyException (e);
@@ -675,6 +675,7 @@ static final long serialVersionUID =-6038414545631774041L;
 
 /*
  * Log
+ *  19   Gandalf   1.18        10/5/99  Jaroslav Tulach Change in DataShadow.
  *  18   Gandalf   1.17        9/26/99  Ian Formanek    Fixed bug 4018 - If a 
  *       JAR archive is added to the beans folder, the beans are not 
  *       automatically installed on IDE startup if they are not explicitly 
