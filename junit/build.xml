@@ -17,21 +17,13 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
 
   <property name="binroot" value=".." />
-
-  <target name="compile-deprec">
-    <javac srcdir="src" destdir="src" deprecation="on">
-      <classpath>
-	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
-	<pathelement location="${binroot}/core/release/lib/ext/junit.jar"/>
-      </classpath>
-    </javac>
-  </target>
+  <property name="build.compiler.deprecation" value="off" />
+  <property name="build.compiler.debug" value="off" />
 
   <target name="compile">
-    <javac srcdir="src" destdir="src">
+    <javac srcdir="src" destdir="src"
+           deprecation="${build.compiler.deprecation}"
+           debug="${build.compiler.debug}">
       <classpath>
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
         <fileset dir="../openide/netbeans/lib">
