@@ -85,7 +85,7 @@ All Rights Reserved.
 </jnlp>
 ]]></echo>
         <!-- replace back accidentally replaced name of the directory -->
-        <replace file="release/nb-launch.jnlp" token="D#I#R#_#N#A#M#E" value="${dirname}/"/>
+        <replace file="release/nb-launch.jnlp" token="D#I#R#_#N#A#M#E" value="${dirname}${file.separator}"/>
     </target>
     
     <target depends="jars" name="copy-to-release">
