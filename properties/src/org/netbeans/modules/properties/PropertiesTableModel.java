@@ -244,7 +244,7 @@ public class PropertiesTableModel extends AbstractTableModel {
                         if (ps != null) {
                             // set the key
                             if (!oldValue.equals(newValue)) {
-                                ps.renameItem(oldValue, Util.escapeKey(newValue)); 
+                                ps.renameItem(oldValue, UtilConvert.escapePropertiesSpecialChars(newValue));
                             }
                             // set the comment
                             if (i == 0) {
@@ -269,12 +269,12 @@ public class PropertiesTableModel extends AbstractTableModel {
                 if (ps != null) {
                     Element.ItemElem item = ps.getItem(key);
                     if (item != null) {
-                        item.setValue(Util.escapeValue(((StringPair)aValue).getValue()));
+                        item.setValue(UtilConvert.escapeLineContinuationChar(((StringPair)aValue).getValue()));
                         item.setComment(((StringPair)aValue).getComment());
                     }
                     else {
                         if ((((StringPair)aValue).getValue().length() > 0) || (((StringPair)aValue).getComment().length() > 0))
-                            ps.addItem(key, Util.escapeValue(((StringPair)aValue).getValue()), ((StringPair)aValue).getComment());
+                            ps.addItem(key, UtilConvert.escapeLineContinuationChar(((StringPair)aValue).getValue()), ((StringPair)aValue).getComment());
                     }
                 }
             }
