@@ -414,7 +414,7 @@ public abstract class Element extends Object implements Serializable {
 
         /** Checks for equality of two ItemElem-s */
         public boolean equals(Object item) {
-            if (item == null)
+            if (item == null || !(item instanceof ItemElem))
                 return false;
             ItemElem ie = (ItemElem)item;
             if ( ((key==null && ie.getKeyElem()==null) || (key!=null && ie.getKeyElem()!=null && getKey().equals(ie.getKey())) ) &&
