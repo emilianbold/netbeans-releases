@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.sql.*;
@@ -95,6 +96,20 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo
             throw new DatabaseException(e.getMessage());
         }
     }
+
+    /* delete procedure from list of procedures and drop procedure in the database */	
+    public void delete()
+    throws IOException
+    {
+        try {
+            Specification spec = (Specification)getSpecification();
+            AbstractCommand cmd = spec.createCommandDropProcedure((String)get(DatabaseNode.PROCEDURE));
+            cmd.execute();
+        } catch (Exception e) {
+            throw new IOException(e.getMessage());
+        }
+    }
+
 }
 
 /*
