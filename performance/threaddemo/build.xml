@@ -100,6 +100,7 @@ Microsystems, Inc. All Rights Reserved.
             <jvmarg value="-Xmx256m"/>
             <jvmarg value="-ea"/>
             <sysproperty key="java.util.logging.config.file" file="${logging.properties}"/>
+            <sysproperty key="com.sun.management.jmxremote" value="1"/>
         </java>
     </target>
     
@@ -112,6 +113,7 @@ Microsystems, Inc. All Rights Reserved.
             <jvmarg value="-Xmx64m"/>
             <jvmarg value="-ea"/>
             <sysproperty key="java.util.logging.config.file" file="logging.properties"/>
+            <sysproperty key="com.sun.management.jmxremote" value="1"/>
             <jvmarg value="-Xdebug"/>
             <jvmarg value="-Xnoagent"/>
             <jvmarg value="-Djava.compiler=none"/>
