@@ -775,6 +775,10 @@ public final class NbMainExplorer extends CloneableTopComponent {
             return TopComponent.PERSISTENCE_ALWAYS;
         }
         
+        protected String preferredID () {
+            return "runtime"; //NOI18N
+        }
+        
         /** Deserialization of RepositoryTab */
         public Object readResolve() throws java.io.ObjectStreamException {
             if (DEFAULT == null) {
