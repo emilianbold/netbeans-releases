@@ -60,11 +60,10 @@ public class SectionNodeView extends SectionView {
         SectionNode sectionNode = retrieveSectionNode((SectionNode) key);
         SectionNodePanel sectionNodePanel = sectionNode.getSectionNodePanel();
         sectionNodePanel.open();
-        JComponent comp = sectionNodePanel;
-        comp.scrollRectToVisible(new Rectangle(comp.getWidth(), comp.getHeight()));
         setActivePanel(sectionNodePanel);
         sectionNodePanel.setActive(true);
         selectNode(sectionNodePanel.getNode());
+        sectionNodePanel.scrollRectToVisible(new Rectangle(sectionNodePanel.getWidth(), sectionNodePanel.getHeight()));
     }
 
     public SectionNode getRootNode() {
