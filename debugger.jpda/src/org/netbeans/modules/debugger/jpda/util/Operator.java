@@ -67,7 +67,7 @@ public class Operator {
               } else 
                 exec = (Executor) e.request ().getProperty ("executor");
               
-              printEvent (e, exec);
+              // printEvent (e, exec);
 
               // safe invocation of user action
               if (exec != null) 
@@ -158,6 +158,7 @@ public class Operator {
 
 /*
  * Log
+ *  15   Jaga      1.9.3.4     3/30/00  Jan Jancura     Comments out!
  *  14   Jaga      1.9.3.3     3/22/00  Jan Jancura     
  *  13   Jaga      1.9.3.2     3/6/00   Jan Jancura     Non java languages 
  *       support  + JDK1.2 patches
