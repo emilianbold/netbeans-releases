@@ -127,7 +127,7 @@ public final class View implements LogicalViewProvider {
             if (labelEl != null) {
                 label = Util.findText(labelEl);
             } else {
-                label = file.getNameExt();
+                label = null;
             }
             DataObject fileDO;
             try {
@@ -145,6 +145,10 @@ public final class View implements LogicalViewProvider {
                     return new Node[] {new ViewItemNode((DataFolder) fileDO, location, label)};
                 } else {
                     assert style.equals(STYLE_PACKAGES) : style;
+                    if (label == null) {
+                        // Don't use fileDO.getNodeDelegate().getDisplayName() since we are not listening to changes anyway.
+                        label = file.getNameExt();
+                    }
                     return new Node[] {PackageView.createPackageView(GenericSources.group(p, file, location, label, null, null))};
                 }
             } else {
@@ -266,7 +270,12 @@ public final class View implements LogicalViewProvider {
         }
         
         public String getDisplayName() {
-            return displayName;
+            if (displayName != null) {
+                return displayName;
+            } else {
+                // #50425: show original name incl. annotations
+                return super.getDisplayName();
+            }
         }
         
         public boolean canRename() {
