@@ -412,7 +412,7 @@ final class XMLSettingsSupport {
          * @param is    stream with stored object, can be null
          * @return deserialized object or null
          */
-        private Object readSerial(InputStream is) {
+        private Object readSerial(InputStream is) throws IOException, ClassNotFoundException {
             if (is == null) return null;
             try {
                 ObjectInput oi = new org.openide.util.io.NbObjectInputStream (is);
@@ -427,14 +427,13 @@ final class XMLSettingsSupport {
                 emgr.annotate(ex, "Content: \n" + getFileContent(source)); // NOI18N
                 emgr.annotate(ex, "Source: " + source); // NOI18N
                 emgr.annotate(ex, "Cannot read class: " + instanceClass); // NOI18N
-                emgr.notify(ErrorManager.INFORMATIONAL, ex);
+                throw ex;
             } catch (ClassNotFoundException ex) {
                 ErrorManager emgr = ErrorManager.getDefault();
                 emgr.annotate(ex, "Content: \n" + getFileContent(source)); // NOI18N
                 emgr.annotate(ex, "Source: " + source); // NOI18N
-                emgr.notify(ErrorManager.INFORMATIONAL, ex);
+                throw ex;
             }
-            return null;
         }
         
         /** Create an instance.

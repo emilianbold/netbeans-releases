@@ -44,7 +44,8 @@ import org.netbeans.modules.settings.ScheduledRequest;
  *
  * @author  Jan Pokorsky
  */
-public final class SerialDataConvertor implements PropertyChangeListener, FileSystem.AtomicAction {
+public final class SerialDataConvertor extends org.openide.filesystems.FileChangeAdapter
+implements PropertyChangeListener, FileSystem.AtomicAction {
     /** data object name cached in the attribute to prevent instance creation when
      * its node is displayed.
      * @see org.openide.loaders.InstanceDataObject#EA_NAME
@@ -69,6 +70,9 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
         this.dobj = dobj;
         this.provider = provider;
         lkpContent = new InstanceContent();
+        
+        FileObject fo = dobj.getPrimaryFile();
+        fo.addFileChangeListener(WeakListener.fileChange(this, fo));
         
         if (isModuleEnabled()) {
             instance =  createInstance(null);
@@ -218,6 +222,12 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
                 instanceCookieChanged(null);
             }
         }
+    }
+
+    /** process events coming from the file object*/
+    public void fileChanged(org.openide.filesystems.FileEvent fe) {
+        if (saver != null && fe.firedFrom(saver)) return;
+        propertyChange(new PropertyChangeEvent(this, SaveSupport.PROP_FILE_CHANGED, null, null));
     }
     
     private ModuleInfo mi;
@@ -403,8 +413,8 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
     /** Support handles automatic setting objects storing and allows to identify
      * the origin of file events fired as a consequence of this storing
      */
-    private final class SaveSupport extends org.openide.filesystems.FileChangeAdapter implements
-    FileSystem.AtomicAction, SaveCookie, java.beans.PropertyChangeListener, org.netbeans.spi.settings.Saver {
+    private final class SaveSupport implements FileSystem.AtomicAction,
+    SaveCookie, java.beans.PropertyChangeListener, org.netbeans.spi.settings.Saver {
         /** property means setting is changed and should be changed */
         public static final String PROP_SAVE = "savecookie"; //NOI18N
         /** property means setting file content is changed */
@@ -516,7 +526,6 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
                 } else {
                     registerPropertyChangeListener(inst);
                 }
-                file.addFileChangeListener(this);
             }
             propertyChangeListenerList.add(listener);
         }
@@ -536,7 +545,6 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
                 } else {
                     unregisterPropertyChangeListener(inst);
                 }
-                file.removeFileChangeListener(this);
             }
         }
         
@@ -605,8 +613,7 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
                 if (propertyChangeListenerList == null) return;
                 list = (java.util.ArrayList)propertyChangeListenerList.clone();
             }
-            java.beans.PropertyChangeEvent event =
-            new java.beans.PropertyChangeEvent(this, name, null, null);
+            PropertyChangeEvent event = new PropertyChangeEvent(this, name, null, null);
             for (int i = 0; i < list.size(); i++) {
                 ((java.beans.PropertyChangeListener)list.get(i)).propertyChange(event);
             }
@@ -620,7 +627,7 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
         private java.io.ByteArrayOutputStream buf;
 
         /** process events coming from a setting object */
-        public final void propertyChange(java.beans.PropertyChangeEvent pce) {
+        public final void propertyChange(PropertyChangeEvent pce) {
             if (isChanged || isWriting) {
                 return;
             }
@@ -735,12 +742,6 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
                 err.annotate(ex, dobj.getPrimaryFile().toString());
         	inform(ex);
             }
-        }
-
-        /** process events coming from the file object*/
-        public void fileChanged(org.openide.filesystems.FileEvent fe) {
-            if (fe.firedFrom(this)) return;
-            firePropertyChange(PROP_FILE_CHANGED);
         }
         
     }

@@ -413,4 +413,44 @@ public class SerialDataConvertorTest extends NbTestCase {
         Thread.sleep(3000);
         assertNull(filename + ".settings was not deleted!", root.getFileObject(filename));
     }
+    
+    public void testCorruptedSettingsFile() throws Exception {
+        final FileObject corrupted = lfs.findResource("/Settings/org-netbeans-modules-settings-convertors-FooSettingSerialDataCorruptedTest.settings");
+        assertNotNull(corrupted);
+        
+        DataObject ido = DataObject.find(corrupted);
+        InstanceCookie ic = (InstanceCookie) ido.getCookie(InstanceCookie.class);
+        assertNotNull("Missing InstanceCookie", ic);
+        
+        Object obj = null;
+        try {
+            obj = ic.instanceCreate();
+        } catch (IOException ex) {
+        }
+        assertNull("corrupted .settings file cannot provide an object", obj);
+        
+        final FileObject valid = lfs.findResource("/Settings/org-netbeans-modules-settings-convertors-FooSettingSerialDataCorruptedTest2.settings");
+        assertNotNull(valid);
+        
+        // simulate revert to default of a corrupted setting object
+        corrupted.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                FileLock l = null;
+                OutputStream os = null;
+                try {
+                    l = corrupted.lock();
+                    os = corrupted.getOutputStream(l);
+                    FileUtil.copy(valid.getInputStream(), os);
+                    os.flush();
+                } finally {
+                    if (os != null) try { os.close(); } catch (IOException ex) {}
+                    if (l != null) l.releaseLock();
+                }
+            }
+        });
+        
+        ic = (InstanceCookie) ido.getCookie(InstanceCookie.class);
+        assertNotNull("Missing InstanceCookie", ic);
+        assertNotNull("the persisted object cannot be read", ic.instanceCreate());
+    }
 }

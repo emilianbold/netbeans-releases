@@ -23,6 +23,35 @@ Microsystems, Inc. All Rights Reserved.
         <file name="org-netbeans-modules-settings-convertors-testDisplayName.settings" url="FooSetting.xml">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.settings.convertors.data.Bundle"/>
         </file>
+        <!-- SerialDataConvertorTest.testCorruptedSettingsFile -->
+        <file name="org-netbeans-modules-settings-convertors-FooSettingSerialDataCorruptedTest.settings">
+<![CDATA[<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="org.netbeans.modules.settings.xtest"/>
+    <instanceof class="org.netbeans.modules.settings.convertors.FooSetting"/>
+    <serialdata class="org.netbeans.modules.settings.convertors.FooSetting">ACED00057372002</serialdata>
+</settings>
+]]>
+        </file>
+        <file name="org-netbeans-modules-settings-convertors-FooSettingSerialDataCorruptedTest2.settings">
+<![CDATA[<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="org.netbeans.modules.settings.xtest"/>
+    <instanceof class="org.netbeans.modules.settings.convertors.FooSetting"/>
+    <instance class="org.netbeans.modules.settings.convertors.FooSetting"/>
+</settings>
+]]>
+        </file>
+        <!-- SerialDataConvertorTest.testCorruptedSettingsFile -->
+        
+        <!-- XMLPropertiesConvertorTest.testCorruptedSettingsFile -->
+        <file name="org-netbeans-modules-settings-convertors-FooSettingXMLPropCorruptedTest.settings">
+<![CDATA[<!DOCTYPE properties PUBLIC "-//NetBeans org.netbeans.modules.settings.xtest//DTD XML FooSetting 1.0//EN"
+"http://www.netbeans.org/dtds/properties-1_0.dtd">
+<properties>
+]]>
+        </file>
+        <!-- XMLPropertiesConvertorTest.testCorruptedSettingsFile -->
     </folder>
     
     

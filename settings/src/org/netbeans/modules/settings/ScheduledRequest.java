@@ -137,7 +137,9 @@ public final class ScheduledRequest implements Runnable {
         try {
             performRequest();
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            ErrorManager err = ErrorManager.getDefault();
+            err.annotate(ex, fobj.toString());
+            err.notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
     

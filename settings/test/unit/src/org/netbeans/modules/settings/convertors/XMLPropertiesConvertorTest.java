@@ -25,9 +25,11 @@ import org.netbeans.spi.settings.Convertor;
 import org.netbeans.spi.settings.Saver;
 import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileLock;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.*;
@@ -301,6 +303,46 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
         folder.delete();
         cookie = (InstanceCookie) dobj.getCookie(InstanceCookie.class);
         assertNull("" + cookie, cookie);
+    }
+   
+    public void testCorruptedSettingsFile() throws Exception {
+        final FileObject corrupted = sfs.findResource("/Settings/org-netbeans-modules-settings-convertors-FooSettingXMLPropCorruptedTest.settings");
+        assertNotNull(corrupted);
+        
+        DataObject ido = DataObject.find(corrupted);
+        InstanceCookie ic = (InstanceCookie) ido.getCookie(InstanceCookie.class);
+        assertNotNull("Missing InstanceCookie", ic);
+        
+        Object obj = null;
+        try {
+            obj = ic.instanceCreate();
+        } catch (IOException ex) {
+        }
+        assertNull("corrupted .settings file cannot provide an object", obj);
+        
+        final FileObject valid = sfs.findResource("/Services/org-netbeans-modules-settings-convertors-FooSetting.settings");
+        assertNotNull(valid);
+        
+        // simulate revert to default of a corrupted setting object
+        corrupted.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                FileLock l = null;
+                OutputStream os = null;
+                try {
+                    l = corrupted.lock();
+                    os = corrupted.getOutputStream(l);
+                    FileUtil.copy(valid.getInputStream(), os);
+                    os.flush();
+                } finally {
+                    if (os != null) try { os.close(); } catch (IOException ex) {}
+                    if (l != null) l.releaseLock();
+                }
+            }
+        });
+        
+        ic = (InstanceCookie) ido.getCookie(InstanceCookie.class);
+        assertNotNull("Missing InstanceCookie", ic);
+        assertNotNull("the persisted object cannot be read", ic.instanceCreate());
     }
     
     final class SaverImpl implements Saver {

@@ -212,17 +212,25 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
         return org.openide.TopManager.getDefault().systemClassLoader().loadClass(instanceClass);
     }
     
-    private void readSetting(java.io.Reader input, Object inst) {
+    private void readSetting(java.io.Reader input, Object inst) throws IOException {
         try {
             java.lang.reflect.Method m = inst.getClass().getDeclaredMethod(
                 "readProperties", new Class[] {Properties.class}); // NOI18N
             m.setAccessible(true);
             XMLPropertiesConvertor.Reader r = new XMLPropertiesConvertor.Reader();
             r.parse(input);
-//            XMLPropertiesConvertor.this.publicId = r.getPublicID();
+            m.setAccessible(true);
             m.invoke(inst, new Object[] {r.getProperties()});
-        } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+        } catch (NoSuchMethodException ex) {
+            throw (IOException) ErrorManager.getDefault().annotate(
+                new IOException(ex.getLocalizedMessage()), ex);
+        } catch (IllegalAccessException ex) {
+            throw (IOException) ErrorManager.getDefault().annotate(
+                new IOException(ex.getLocalizedMessage()), ex);
+        } catch (java.lang.reflect.InvocationTargetException ex) {
+            Throwable t = ex.getTargetException();
+            throw (IOException) ErrorManager.getDefault().annotate(
+                new IOException(t.getLocalizedMessage()), t);
         }
     }
     
@@ -240,8 +248,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
         }
     }
 
-    // XXX ErrorManager
-    private static Properties getProperties (Object inst) {
+    private static Properties getProperties (Object inst) throws IOException {
         try {
             java.lang.reflect.Method m = inst.getClass().getDeclaredMethod(
                 "writeProperties", new Class[] {Properties.class}); // NOI18N
@@ -249,9 +256,16 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
             Properties prop = new Properties();
             m.invoke(inst, new Object[] {prop});
             return prop;
-        } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-            return null;
+        } catch (NoSuchMethodException ex) {
+            throw (IOException) ErrorManager.getDefault().annotate(
+                new IOException(ex.getLocalizedMessage()), ex);
+        } catch (IllegalAccessException ex) {
+            throw (IOException) ErrorManager.getDefault().annotate(
+                new IOException(ex.getLocalizedMessage()), ex);
+        } catch (java.lang.reflect.InvocationTargetException ex) {
+            Throwable t = ex.getTargetException();
+            throw (IOException) ErrorManager.getDefault().annotate(
+                new IOException(t.getLocalizedMessage()), t);
         }
     }
     
@@ -297,7 +311,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
                 }
                 reader.parse(is);
             } catch (SAXException ex) {
-                IOException ioe = new IOException(); // NOI18N
+                IOException ioe = new IOException();
                 ErrorManager emgr = ErrorManager.getDefault();
                 emgr.annotate(ioe, ex);
                 if (ex.getException () != null) {

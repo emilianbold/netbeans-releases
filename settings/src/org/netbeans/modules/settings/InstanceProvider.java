@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.settings;
 
+import java.beans.PropertyChangeEvent;
 import java.lang.ref.SoftReference;
 import java.io.IOException;
 
@@ -29,7 +30,8 @@ import org.netbeans.spi.settings.Convertor;
  *
  * @author  Jan Pokorsky
  */
-final class InstanceProvider implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
+final class InstanceProvider extends org.openide.filesystems.FileChangeAdapter
+implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
     /** container handling objects provided by {@link #lookup} */
     private final org.openide.util.lookup.InstanceContent lkpContent;
     /** container exposing setting to the outside world */
@@ -53,6 +55,9 @@ final class InstanceProvider implements java.beans.PropertyChangeListener, FileS
         this.settingFO = dobj.getPrimaryFile();
         this.providerFO = providerFO;
         this.dobj = dobj;
+        
+        settingFO.addFileChangeListener(
+            org.openide.util.WeakListener.fileChange(this, settingFO));
         
         lkpContent = new org.openide.util.lookup.InstanceContent();
         lkpContent.add(createInstance(null));
@@ -80,7 +85,7 @@ final class InstanceProvider implements java.beans.PropertyChangeListener, FileS
         return dobj;
     }
     
-    public void propertyChange(java.beans.PropertyChangeEvent evt) {
+    public void propertyChange(PropertyChangeEvent evt) {
         if (evt == null) return;
 
         String name = evt.getPropertyName();
@@ -94,6 +99,12 @@ final class InstanceProvider implements java.beans.PropertyChangeListener, FileS
             }
             instanceCookieChanged(null);
         }
+    }
+    
+    /** process events coming from the file object*/
+    public void fileChanged(org.openide.filesystems.FileEvent fe) {
+        if (saver != null && fe.firedFrom((FileSystem.AtomicAction) saver.getSaveCookie())) return;
+        propertyChange(new PropertyChangeEvent(this, SaveSupport.PROP_FILE_CHANGED, null, null));
     }
     
     /** allow to listen on changes of the object inst; should be called when
@@ -235,8 +246,16 @@ final class InstanceProvider implements java.beans.PropertyChangeListener, FileS
                 if (inst != null) return inst;
             }
             
-            synchronized (READWRITE_LOCK) {
-                inst = getConvertor().read(new java.io.InputStreamReader(settingFO.getInputStream()));
+            try {
+                synchronized (READWRITE_LOCK) {
+                    inst = getConvertor().read(new java.io.InputStreamReader(settingFO.getInputStream()));
+                }
+            } catch (IOException ex) {
+                throw (IOException) ErrorManager.getDefault().
+                    annotate(ex, InstanceProvider.this.toString());
+            } catch (ClassNotFoundException ex) {
+                throw (ClassNotFoundException) ErrorManager.getDefault().
+                    annotate(ex, InstanceProvider.this.toString());
             }
             
             synchronized (this) {

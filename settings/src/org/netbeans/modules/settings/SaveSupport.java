@@ -134,7 +134,6 @@ final class SaveSupport {
             if (conv != null) {
                 conv.registerSaver(inst, instToSave);
             }
-            file.addFileChangeListener(instToSave);
         }
         propertyChangeListenerList.add(listener);
     }
@@ -151,7 +150,6 @@ final class SaveSupport {
             if (conv != null) {
                 conv.unregisterSaver(inst, instToSave);
             }
-            file.removeFileChangeListener(instToSave);
         }
     }
     
@@ -181,8 +179,7 @@ final class SaveSupport {
     /** Support for storing instances allowing identify the origin of file events 
      * fired as a consequence of this storing.
      */
-    private class SaveCookieImpl extends org.openide.filesystems.FileChangeAdapter
-    implements FileSystem.AtomicAction, SaveCookie, Saver {
+    private class SaveCookieImpl implements FileSystem.AtomicAction, SaveCookie, Saver {
     
         private java.io.ByteArrayOutputStream buf;
         
@@ -246,11 +243,6 @@ final class SaveSupport {
             buf = null;
             synchronizeName(inst);
             if (!isChanged) firePropertyChange(PROP_SAVE);
-        }
-        
-        public void fileChanged(org.openide.filesystems.FileEvent fe) {
-            if (fe.firedFrom(this)) return;
-            firePropertyChange(PROP_FILE_CHANGED);
         }
         
         public void markDirty() {
