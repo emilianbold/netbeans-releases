@@ -30,7 +30,14 @@ public class SystemFileSystemBeanInfo extends SimpleBeanInfo {
 
     // initialization of the array of descriptors
     static {
-        desc = new PropertyDescriptor[0];
+        try {
+            desc = new PropertyDescriptor[1];
+            desc[0] = new PropertyDescriptor ("propagateMasks", SystemFileSystem.class, "getPropagateMasks", null);
+            desc[0].setHidden (true);
+        } catch (IntrospectionException ie) {
+            if (Boolean.getBoolean ("netbeans.debug.exception"))
+                ie.printStackTrace ();
+        }
     }
 
     /** Provides the LocalFileSystem's icon */
@@ -59,15 +66,3 @@ public class SystemFileSystemBeanInfo extends SimpleBeanInfo {
         return desc;
     }
 }
-
-/*
- * Log
- *  6    Gandalf   1.5         1/13/00  Jaroslav Tulach I18N
- *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  4    Gandalf   1.3         8/7/99   Ian Formanek    Cleaned loading of icons
- *  3    Gandalf   1.2         3/13/99  Jaroslav Tulach Places.roots ()
- *  2    Gandalf   1.1         1/7/99   Ian Formanek    fixed resource names
- *  1    Gandalf   1.0         1/5/99   Ian Formanek    
- * $
- */
