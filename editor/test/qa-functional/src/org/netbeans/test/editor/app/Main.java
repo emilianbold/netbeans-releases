@@ -389,6 +389,8 @@ public class Main extends java.lang.Object {
             log.close();
             System.setErr(oldErr);
         }
+        frame=null;
+        test=null;
         return true;
     }
     
