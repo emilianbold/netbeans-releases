@@ -14,13 +14,16 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.BrowseFolders;
-import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.EntityNode;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
 import org.netbeans.modules.java.JavaDataObject;
@@ -28,9 +31,13 @@ import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.refactoring.ui.MoveClassUI;
 import org.netbeans.modules.refactoring.ui.RefactoringPanel;
 import org.netbeans.modules.refactoring.ui.RenameRefactoringUI;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.src.ClassElement;
@@ -45,8 +52,12 @@ import org.openide.util.Utilities;
 import javax.jmi.reflect.RefObject;
 import javax.swing.*;
 import java.awt.*;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.net.URL;
 import java.rmi.RemoteException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 /**
@@ -223,8 +234,9 @@ public class Utils {
     }
 
     public static ClassPath getSourceClassPath(FileObject ejbJarFile) {
-        EjbJarProject enterpriseProject = (EjbJarProject) FileOwnerQuery.getOwner(ejbJarFile);
-        return enterpriseProject.getEjbModule().getJavaSources();
+        Sources sources = ProjectUtils.getSources(FileOwnerQuery.getOwner(ejbJarFile));
+        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        return ClassPathFactory.createClassPath(new ClassPathImpl(groups));
     }
 
     public static MethodElement getMethod(ClassElement interfaceElement, MethodElement method) {
@@ -349,6 +361,55 @@ public class Utils {
                     Utils.notifyError(e);
                 }
             }
+        }
+    }
+
+    private static class ClassPathImpl implements ClassPathImplementation {
+
+        private List resources = new LinkedList();
+
+        private class PathResourceImpl implements PathResourceImplementation {
+
+            URL[] roots;
+
+            public PathResourceImpl(URL root) {
+                this.roots = new URL[]{root};
+            }
+
+            public URL[] getRoots() {
+                return roots;
+            }
+
+            public ClassPathImplementation getContent() {
+                return ClassPathImpl.this;
+            }
+
+            public void addPropertyChangeListener(PropertyChangeListener listener) {
+            }
+
+            public void removePropertyChangeListener(PropertyChangeListener listener) {
+            }
+        }
+
+        public ClassPathImpl(SourceGroup[] groups) {
+            for (int i = 0; i < groups.length; i++) {
+                SourceGroup group = groups[i];
+                try {
+                    resources.add(new PathResourceImpl(group.getRootFolder().getURL()));
+                } catch (FileStateInvalidException e) {
+                    notifyError(e);
+                }
+            }
+        }
+
+        public java.util.List /*<PathResourceImplementation>*/ getResources() {
+            return resources;
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
     }
 }
