@@ -27,8 +27,12 @@ public class RenameTable extends AbstractCommand
 {
 	/** New name */
 	private String newname;
+
+	/** Command name */
+	public static final String NEW_NAME = "object.newname";
 	
-static final long serialVersionUID =-4410972392441335153L;
+	static final long serialVersionUID =-4410972392441335153L;
+
 	/** Returns new name */
 	public String getNewName()
 	{
@@ -48,13 +52,14 @@ static final long serialVersionUID =-4410972392441335153L;
 	throws DDLException
 	{
 		Map args = super.getCommandProperties();
-		args.put("object.newname", newname);			
+		args.put(NEW_NAME, newname);			
 		return args;	
 	}
 }
 
 /*
 * <<Log>>
+*  4    Gandalf   1.3         10/1/99  Radko Najman    NEW_NAME
 *  3    Gandalf   1.2         8/17/99  Ian Formanek    Generated serial version 
 *       UID
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
