@@ -86,7 +86,7 @@ public class DataModel extends AbstractTableModel
             if (pname.equals(ColumnItem.PRIMARY_KEY) && val.equals(Boolean.TRUE)) {
 
                 if (xcol.allowsNull()) xcol.setProperty(ColumnItem.NULLABLE, Boolean.FALSE);
-                if (!xcol.isIndexed()) xcol.setProperty(ColumnItem.INDEX, Boolean.TRUE);
+                if (xcol.isIndexed()) xcol.setProperty(ColumnItem.INDEX, Boolean.FALSE);
                 if (!xcol.isUnique()) xcol.setProperty(ColumnItem.UNIQUE, Boolean.TRUE);
                 for (int i=0; i<data.size();i++) {
                     ColumnItem eitem = (ColumnItem)data.elementAt(i);
@@ -99,22 +99,23 @@ public class DataModel extends AbstractTableModel
 
             if (pname.equals(ColumnItem.NULLABLE)) {
                 if (val.equals(Boolean.TRUE)) {
-                    xcol.setProperty(ColumnItem.UNIQUE, Boolean.FALSE);
-                    xcol.setProperty(ColumnItem.INDEX, Boolean.FALSE);
+                    //xcol.setProperty(ColumnItem.UNIQUE, Boolean.FALSE);
+                    //xcol.setProperty(ColumnItem.INDEX, Boolean.FALSE);
                     xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
                 }
             }
 
             if (pname.equals(ColumnItem.INDEX)) {
                 if (val.equals(Boolean.TRUE)) {
-                    if (xcol.allowsNull()) xcol.setProperty(ColumnItem.NULLABLE, Boolean.FALSE);
-                    if (!xcol.isUnique()) xcol.setProperty(ColumnItem.UNIQUE, Boolean.TRUE);
-                } else xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
+                    //if (xcol.allowsNull()) xcol.setProperty(ColumnItem.NULLABLE, Boolean.FALSE);
+                    xcol.setProperty(ColumnItem.UNIQUE, Boolean.FALSE);
+                    xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
+                } //else xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
             }
 
             if (pname.equals(ColumnItem.UNIQUE)) {
                 if (val.equals(Boolean.TRUE)) {
-                    xcol.setProperty(ColumnItem.NULLABLE, Boolean.FALSE);
+                    if (xcol.isIndexed()) xcol.setProperty(ColumnItem.INDEX, Boolean.FALSE);
                 } else {
                     xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
                     xcol.setProperty(ColumnItem.INDEX, Boolean.FALSE);

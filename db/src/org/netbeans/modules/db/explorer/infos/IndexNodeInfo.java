@@ -96,7 +96,7 @@ public class IndexNodeInfo extends TableNodeInfo {
             cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
             //refresh list of columns due to the column's icons
-            getParent().getParent().refreshChildren();
+            getParent(DatabaseNode.TABLE).refreshChildren();
         } catch (DDLException e) {
             
         } catch (Exception e) {

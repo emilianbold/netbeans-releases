@@ -54,6 +54,7 @@ public class AddToIndexAction extends DatabaseAction {
             drvSpec.getIndexInfo(tablename, false, false);
             ResultSet rs = drvSpec.getResultSet();
             HashMap rset = new HashMap();
+            boolean isUQ = false;
             while (rs.next()) {
                 rset = drvSpec.getRow();
                 String ixname = (String) rset.get(new Integer(6));
@@ -62,6 +63,7 @@ public class AddToIndexAction extends DatabaseAction {
                     if (ixname.equals(index))
                         ixrm.add(colname);
                 }
+                isUQ = !Boolean.valueOf( (String)rset.get( new Integer(4) ) ).booleanValue();
                 rset.clear();
             }
             rs.close();
@@ -88,6 +90,11 @@ public class AddToIndexAction extends DatabaseAction {
             if (dlg.run()) {
                 CreateIndex icmd = spec.createCommandCreateIndex(tablename);
                 icmd.setIndexName(index);
+                icmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
+                if(isUQ)
+                    icmd.setIndexType(ColumnItem.UNIQUE);
+                else
+                    icmd.setIndexType(new String());
                 Iterator enu = ixrm.iterator();
                 while (enu.hasNext())
                     icmd.specifyColumn((String)enu.next());
@@ -95,8 +102,10 @@ public class AddToIndexAction extends DatabaseAction {
                 icmd.specifyColumn((String)dlg.getSelectedItem());
                 DropIndex dicmd = spec.createCommandDropIndex(index);
                 dicmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
+                dicmd.setTableName(tablename);
                 dicmd.execute();
-                nfo.refreshChildren();
+                icmd.execute();
+                info.getParent(DatabaseNode.TABLE).refreshChildren();
 //				((DatabaseNodeChildren)nfo.getNode().getChildren()).createSubnode(info,true);
             }
 

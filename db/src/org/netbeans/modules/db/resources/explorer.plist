@@ -1779,7 +1779,7 @@
 		options = {
 			cut = NO;
 			copy = NO;
-			delete = YES;
+			delete = NO;
 		};
 		actions = (
 			{
@@ -1880,7 +1880,7 @@
 		options = {
 			cut = NO;
 			copy = NO;
-			delete = YES;
+			delete = NO;
 		};
 		actions = (
 			{
