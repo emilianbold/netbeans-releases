@@ -671,6 +671,16 @@ public class PackageViewTest extends NbTestCase {
                      new String[] { "c.d", "c.f" },
                      new int[] { 0, 0 } );
                      
+        
+        FileUtil.createFolder( root, "src/x/y/z" );
+        assertNodes( ch, 
+                     new String[] { "c.d", "c.f", "x.y.z" },
+                     new int[] { 0, 0, 0 } );
+        n = ch.findChild( "x.y.z" );                     
+        n.setName( "x.y" );
+        assertNodes( ch, 
+                     new String[] { "c.d", "c.f", "x.y" },
+                     new int[] { 0, 0, 0 } );                     
                      
     }
         

@@ -602,9 +602,21 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                         NbBundle.getMessage(PackageViewChildren.class,"MSG_InvalidPackageName"), NotifyDescriptor.INFORMATION_MESSAGE));
                 return;
             }
-            StringTokenizer dtk = new StringTokenizer(name,".");    //NOI18N
+            name = name.replace('.','/')+'/';           //NOI18N
+            oldName = oldName.replace('.','/')+'/';     //NOI18N
+            int i;
+            for (i=0; i<oldName.length() && i< name.length(); i++) {
+                if (oldName.charAt(i) != name.charAt(i)) {
+                    break;
+                }
+            }
+            int index = oldName.lastIndexOf('/',i);     //NOI18N
+            String commonPrefix = index == -1 ? null : oldName.substring(0,index);
+            String toCreate = (index+1 == name.length()) ? "" : name.substring(index+1);    //NOI18N
             try {
-                FileObject destination = this.root;
+                FileObject commonFolder = commonPrefix == null ? this.root : this.root.getFileObject(commonPrefix);
+                FileObject destination = commonFolder;
+                StringTokenizer dtk = new StringTokenizer(toCreate,"/");    //NOI18N
                 while (dtk.hasMoreTokens()) {
                     String pathElement = dtk.nextToken();
                     FileObject tmp = destination.getFileObject(pathElement);
@@ -617,12 +629,12 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 DataFolder sourceFolder = DataFolder.findFolder (source);
                 DataFolder destinationFolder = DataFolder.findFolder (destination);
                 DataObject[] children = sourceFolder.getChildren();
-                for (int i=0; i<children.length; i++) {
-                    if (children[i].getPrimaryFile().isData()) {
-                        children[i].move(destinationFolder);
+                for (int j=0; j<children.length; j++) {
+                    if (children[j].getPrimaryFile().isData()) {
+                        children[j].move(destinationFolder);
                     }
                 }
-                while (!this.root.equals(source)) {
+                while (!commonFolder.equals(source)) {
                     if (source.getChildren().length==0) {
                         FileObject tmp = source;
                         source = source.getParent();
@@ -789,24 +801,36 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         }
 
         private static boolean isValidPackageName (String name) {
-            StringTokenizer tk = new StringTokenizer(name,"."); //NOI18N
+            StringTokenizer tk = new StringTokenizer(name,".",true); //NOI18N
+            boolean delimExpected = false;
             while (tk.hasMoreTokens()) {
                 String namePart = tk.nextToken();
-                for (int i=0; i< namePart.length(); i++) {
-                    char c = namePart.charAt(i);
-                    if (i == 0) {
-                        if (!Character.isJavaIdentifierStart (c)) {
-                            return false;
-                        }
+                if (!delimExpected) {
+                    if (namePart.equals(".")) { //NOI18N
+                        return false;
                     }
-                    else {
-                        if (!Character.isJavaIdentifierPart(c)) {
-                            return false;
+                    for (int i=0; i< namePart.length(); i++) {
+                        char c = namePart.charAt(i);
+                        if (i == 0) {
+                            if (!Character.isJavaIdentifierStart (c)) {
+                                return false;
+                            }
+                        }
+                        else {
+                            if (!Character.isJavaIdentifierPart(c)) {
+                                return false;
+                            }
                         }
                     }
                 }
+                else {
+                    if (!namePart.equals(".")) { //NOI18N
+                        return false;
+                    }
+                }
+                delimExpected = !delimExpected;
             }
-            return true;
+            return delimExpected;
         }
     }
     
