@@ -41,6 +41,7 @@ public class AllOptions extends ContextSystemOption {
         = (BaseOptions)BaseOptions.findObject(BaseOptions.class, true);
 
     public AllOptions() {
+        // Dead class
         // Add the initializer for the base options. It will not be removed
         Settings.addInitializer(baseOptions.getSettingsInitializer(),
             Settings.OPTION_LEVEL);

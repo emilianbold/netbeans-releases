@@ -18,6 +18,7 @@ package org.netbeans.modules.editor;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.lang.reflect.Field;
+import java.io.IOException;
 import java.util.Hashtable;
 import javax.swing.event.ChangeListener;
 import javax.swing.JEditorPane;
@@ -42,9 +43,15 @@ import org.netbeans.modules.editor.options.PlainOptions;
 import org.netbeans.modules.editor.options.JavaPrintOptions;
 import org.netbeans.modules.editor.options.HTMLPrintOptions;
 import org.netbeans.modules.editor.options.PlainPrintOptions;
-
+import org.netbeans.modules.editor.options.AbbrevsMIMEProcessor;
+import org.openide.TopManager;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.RepositoryListener;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInstall;
 import org.openide.nodes.Node;
 import org.openide.options.SystemOption;
@@ -60,33 +67,25 @@ import org.openide.windows.TopComponent;
  *
  * @author Miloslav Metelka
  */
+
 public class EditorModule extends ModuleInstall 
 implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable  {
 
-    /** Generated serial version UID. */
-    static final long serialVersionUID =-929863607593944237L;
+    private static Hashtable kitMapping = new HackMap();
     
-    /** Kit replacements that will be installed into JEditorPane */
-    KitInfo[] replacements = new KitInfo[] {
-        new KitInfo(PlainKit.PLAIN_MIME_TYPE, PlainKit.class.getName(),
-            PlainOptions.class, PlainPrintOptions.class),
-        new KitInfo(JavaKit.JAVA_MIME_TYPE, JavaKit.class.getName(),
-            JavaOptions.class, JavaPrintOptions.class),
-        new KitInfo(HTMLKit.HTML_MIME_TYPE, HTMLKit.class.getName(),
-            HTMLOptions.class, HTMLPrintOptions.class)
+    /** PrintOptions to be installed */
+    Class[] printOpts = new Class[] {
+        PlainPrintOptions.class,
+        JavaPrintOptions.class,
+        HTMLPrintOptions.class
     };
 
     /** Listener on <code>DataObject.Registry</code>. */
     private DORegistryListener rl;
     
-//    private RepositListener repoListen;
-
-//    public void installed () {
-//        restored ();
-//    }
-
-    /** Called when module is restored. Overrides superclass method. */
+    /** Module installed again. */
     public void restored () {
+
         LocaleSupport.addLocalizer(new NbLocalizer(AllOptions.class));
         LocaleSupport.addLocalizer(new NbLocalizer(BaseKit.class));
         LocaleSupport.addLocalizer(new NbLocalizer(JavaSettingsNames.class));
@@ -111,26 +110,30 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
         prepareJCCInit();
 
         // Options
-        AllOptions ao = (AllOptions) SharedClassObject.findObject(AllOptions.class, true);
         PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
         
-        // Start listening on addition/removal of options
-        ao.init();
-
-        for (int i = 0; i < replacements.length; i++) {
-            ao.addOption((SystemOption)SharedClassObject.findObject(replacements[i].optionsClass, true));
-            ps.addOption((SystemOption)SharedClassObject.findObject(replacements[i].printOptionsClass, true));
+        for (int i = 0; i < printOpts.length; i++) {
+            ps.addOption((SystemOption)SharedClassObject.findObject(printOpts[i], true));
         }
 
+        // Autoregistration
+        try {
+            Field keyField = JEditorPane.class.getDeclaredField("kitRegistryKey");  // NOI18N
+            keyField.setAccessible(true);
+            Object key = keyField.get(JEditorPane.class);
+            sun.awt.AppContext.getAppContext().put(key, kitMapping);
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
 
         // Registration of the editor kits to JEditorPane
-        for (int i = 0; i < replacements.length; i++) {
-            JEditorPane.registerEditorKitForContentType(
-                replacements[i].contentType,
-                replacements[i].newKitClassName,
-                getClass().getClassLoader()
-            );
-        }
+//        for (int i = 0; i < replacements.length; i++) {
+//            JEditorPane.registerEditorKitForContentType(
+//                replacements[i].contentType,
+//                replacements[i].newKitClassName,
+//                getClass().getClassLoader()
+//            );
+//        }
 
         // Start listening on DataObject.Registry
         if (rl == null) {
@@ -138,45 +141,37 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
             DataObject.getRegistry().addChangeListener((ChangeListener)(WeakListener.change(rl, DataObject.getRegistry())));
         }
 
-//        if (repoListen==null){
-//            repoListen=new RepositListener();
-//            Repository repo = TopManager.getDefault().getRepository();
-//            if (repo!=null){
-//                repo.addRepositoryListener((RepositoryListener)(WeakListener.repository(repoListen, repo)));
-//            }
-//        }
     }
 
     /** Called when module is uninstalled. Overrides superclass method. */
     public void uninstalled() {
 
         // Options
-        AllOptions ao = (AllOptions) SharedClassObject.findObject(AllOptions.class, true);
         PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
 
-        for (int i = 0; i < replacements.length; i++) {
-            ao.removeOption((SystemOption)SharedClassObject.findObject(replacements[i].optionsClass, true));
-            ps.removeOption((SystemOption)SharedClassObject.findObject(replacements[i].printOptionsClass, true));
+        for (int i = 0; i < printOpts.length; i++) {
+            ps.removeOption((SystemOption)SharedClassObject.findObject(printOpts[i], true));
         }
 
-        if (Boolean.getBoolean("netbeans.module.test")) { // NOI18N
-            /* Reset the hashtable holding the editor kits, so the editor kit
-            * can be refreshed. As the JEditorPane.kitRegistryKey is private
-            * it must be accessed through the reflection.
-            */
-            try {
-                Field kitRegistryKeyField = JEditorPane.class.getDeclaredField("kitRegistryKey");  // NOI18N
-                if (kitRegistryKeyField != null) {
-                    kitRegistryKeyField.setAccessible(true);
-                    Object kitRegistryKey = kitRegistryKeyField.get(JEditorPane.class);
-                    if (kitRegistryKey != null) {
-                        // Set a fresh hashtable. It can't be null as there is a hashtable in AppContext
-                        sun.awt.AppContext.getAppContext().put(kitRegistryKey, new Hashtable());
-                    }
-                }
-            } catch (Throwable t) {
-                t.printStackTrace();
+        Node node = TopManager.getDefault().getPlaces().nodes().session();
+        Node[] ch = node.getChildren().getNodes();
+        Node[] uninstall =new Node[1];
+        for (int i=0; i<ch.length; i++){
+            if (ch[i].getClass().equals(org.netbeans.modules.editor.options.AllOptionsNode.class)){
+                uninstall[0]=ch[i];
             }
+        }
+        if (uninstall[0]!=null)
+            node.getChildren().remove(uninstall);
+
+        // unregister our registry
+        try {
+            Field keyField = JEditorPane.class.getDeclaredField("kitRegistryKey");  // NOI18N
+            keyField.setAccessible(true);
+            Object key = keyField.get(JEditorPane.class);
+            sun.awt.AppContext.getAppContext().put(key, new Hashtable() );
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
     }
 
@@ -202,16 +197,8 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
         // Java completion storage init.
         JCStorage.getStorage();
         
-//        FileSystem rfs = TopManager.getDefault().getRepository().getDefaultFileSystem();
-        
-//        JCStorage.init(rfs.getRoot());
-        // Preloading of some classes for faster editor opening
-//        BaseKit.getKit(JavaKit.class).createDefaultDocument();
-        
-//        BaseKit kit = BaseKit.getKit(JavaKit.class);
-//        kit.createDefaultDocument();
     }
-
+    
     /** Implements <code>PropertyChangeListener</code>.
      * Listens on <code>TopComponent.Registry</code> to init JCC when first 
      * node with java editor is activated and has focus. */
@@ -248,27 +235,39 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
         };
     }
 
+    private static class HackMap extends Hashtable {
 
-    static class KitInfo {
+        private EditorKit findKit(String type) {
+            FileObject fo = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Editors/" + type + "/EditorKit.instance");
+            if (fo == null) return null;
 
-        /** Content type for which the kits will be switched */
-        String contentType;
+            DataObject dobj;
+            try {
+                dobj = DataObject.find(fo);
+                InstanceCookie cookie = (InstanceCookie)dobj.getCookie(InstanceCookie.class);
+                Object instance = cookie.instanceCreate();
+                if(instance instanceof EditorKit) {
+                    return (EditorKit)instance;
+                }
+            }
+            catch (DataObjectNotFoundException e) {}
+            catch (IOException e) {}
+            catch (ClassNotFoundException e) {}
 
-        /** Class name of the kit that will be registered */
-        String newKitClassName;
-        
-        /** Class holding the options for the kit */
-        Class optionsClass;
-        
-        /** Class holding the print options for the kit */
-        Class printOptionsClass;
-
-        KitInfo(String contentType, String newKitClassName, Class optionsClass, Class printOptionsClass) {
-            this.contentType = contentType;
-            this.newKitClassName = newKitClassName;
-            this.optionsClass = optionsClass;
-            this.printOptionsClass = printOptionsClass;
+            return null;
         }
-
+        
+        public synchronized Object get(Object key) {
+            Object retVal = null;
+            // get kit from files
+            if(key instanceof String) retVal = findKit((String)key);
+            return retVal == null ? super.get(key) : retVal;
+        }
+        
+        public synchronized Object put(Object key, Object value) {
+            // maybe so some processing before
+            return super.put(key,value);
+        }
     }
+    
 }

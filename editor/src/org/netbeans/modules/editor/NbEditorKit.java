@@ -47,6 +47,7 @@ import org.netbeans.editor.Utilities;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseTextUI;
+import org.netbeans.modules.editor.options.AllOptionsFolder;
 
 /**
 * Java editor kit with appropriate document
@@ -69,6 +70,7 @@ public class NbEditorKit extends ExtKit {
     }
 
     protected EditorUI createEditorUI() {
+        AllOptionsFolder.getDefault().loadMIMEOption(this.getClass());
         return new NbEditorUI();
     }
 
@@ -104,6 +106,10 @@ public class NbEditorKit extends ExtKit {
 
     public Class getFocusableComponentClass(JTextComponent c) {
         return TopComponent.class;
+    }
+    
+    public String getContentType() {
+        return null;
     }
 
     public class NbBuildPopupMenuAction extends BuildPopupMenuAction {

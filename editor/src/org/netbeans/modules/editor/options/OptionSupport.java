@@ -25,6 +25,10 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
+import java.io.IOException;
+import java.io.ObjectOutput;
+import org.netbeans.editor.SettingsNames;
+import java.util.List;
 
 /**
 * Options for the base editor kit
@@ -45,13 +49,14 @@ public class OptionSupport extends SystemOption {
 
     private String typeName;
 
-    private PropertyChangeListener settingsListener;
     
     private HashMap initializerValuesMap;
     
     private transient SettingsInitializer settingsInitializer;
     
     private static final HashMap kitClass2Type = new HashMap();
+    
+
 
     /** Construct new option support. The pair [kitClass, typeName]
     * is put into a map so it's possible to find a typeName when kitClass is known
@@ -138,10 +143,19 @@ public class OptionSupport extends SystemOption {
         Settings.setValue(kitClass, settingName, newValue);
 
         if (propertyName != null) {
-            firePropertyChange(propertyName, oldValue, newValue);
+            //firePropertyChange(propertyName, oldValue, newValue);[PENDING]
         }
     }
 
+    
+    
+    public void doSetSettingValue(String settingName, Object newValue,
+    String propertyName) {
+        initializerValuesMap.put(settingName, newValue);
+        Settings.setValue(kitClass, settingName, newValue);
+    }
+    
+    
     /** Enables easier handling of the boolean settings.
      * @param settingName name of the setting to change
      * @param newValue new boolean value of the setting
@@ -150,8 +164,8 @@ public class OptionSupport extends SystemOption {
      *  Firing is performed using the given property name. Nothing is fired
      *  when it's set to null.
      */
-    protected final void setSettingBoolean(String settingName, boolean newValue, String propertyName) {
-        setSettingValue(settingName, newValue ? Boolean.TRUE : Boolean.FALSE);
+    protected void setSettingBoolean(String settingName, boolean newValue, String propertyName) {
+        setSettingValue(settingName, newValue ? Boolean.TRUE : Boolean.FALSE, propertyName);
     }
 
     /** Enables easier handling of the integer settings.
@@ -162,7 +176,7 @@ public class OptionSupport extends SystemOption {
      *  Firing is performed using the given property name. Nothing is fired
      *  when it's set to null.
      */
-    protected final void setSettingInteger(String settingName, int newValue, String propertyName) {
+    protected  void setSettingInteger(String settingName, int newValue, String propertyName) {
         setSettingValue(settingName, new Integer(newValue));
     }
 
@@ -210,6 +224,13 @@ public class OptionSupport extends SystemOption {
         return settingsInitializer;
     }
     
+    public void writeExternal() throws IOException{
+    }
+    
+    public void writeExternal(ObjectOutput out) throws IOException{
+    }
+
+    
     class SettingsInitializer implements Settings.Initializer {
         
         String name;
@@ -227,5 +248,6 @@ public class OptionSupport extends SystemOption {
         }
         
     }
+
 
 }
