@@ -95,10 +95,10 @@ public class CallStackActionsProvider implements NodeActionsProvider {
                 popToHere = false;
             }
 
-        return new Action [] {
-            MAKE_CURRENT_ACTION,
-            POP_TO_HERE_ACTION
-        };
+        if (popToHere)
+            return new Action [] { MAKE_CURRENT_ACTION, POP_TO_HERE_ACTION };
+        else
+            return new Action [] { MAKE_CURRENT_ACTION };
     }
     
     public void performDefaultAction (Object node) throws UnknownTypeException {
