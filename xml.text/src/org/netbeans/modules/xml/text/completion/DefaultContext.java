@@ -25,7 +25,7 @@ import org.netbeans.modules.xml.spi.dom.*;
  *
  * @author  Petr Kuzel
  */
-class DefaultContext implements HintContext, Attr {
+class DefaultContext implements HintContext, Attr, Element {
 
     private Node peer;
     private String text;
@@ -564,7 +564,134 @@ class DefaultContext implements HintContext, Attr {
         }
     }
     
+	public String getAttribute(String str) {
+		if (peer instanceof Element) {
+            return ((Element)peer).getAttribute(str);
+		} else {
+			throw new NOE();
+		}
+	}	
     
+	public String getAttributeNS(String str, String str1) {
+		if (peer instanceof Element) {
+            return ((Element)peer).getAttributeNS(str, str1);
+		} else {
+			throw new NOE();
+		}
+	}
+	
+	public org.w3c.dom.Attr getAttributeNode(String str) {
+		if (peer instanceof Element) {
+            return ((Element)peer).getAttributeNode(str);
+		} else {
+			throw new NOE();
+		}
+	}
+	
+	public org.w3c.dom.Attr getAttributeNodeNS(String str, String str1) {
+		if (peer instanceof Element) {
+            return ((Element)peer).getAttributeNodeNS(str, str1);
+		} else {
+			throw new NOE();
+		}
+	}
+	
+	public org.w3c.dom.NodeList getElementsByTagName(String str) {
+		if (peer instanceof Element) {
+            return ((Element)peer).getElementsByTagName(str);
+		} else {
+			throw new NOE();
+		}
+	}
+	
+	public org.w3c.dom.NodeList getElementsByTagNameNS(String str, String str1) {
+		if (peer instanceof Element) {
+            return ((Element)peer).getElementsByTagNameNS(str, str1);
+		} else {
+			throw new NOE();
+		}
+	}
+	
+	public String getTagName() {
+		if (peer instanceof Element) {
+            return ((Element)peer).getTagName();
+		} else {
+			throw new NOE();
+		}
+	}
+	
+	public boolean hasAttribute(String str) {
+		if (peer instanceof Element) {
+            return ((Element)peer).hasAttribute(str);
+		} else {
+			throw new NOE();
+		}
+	}
+	
+	public boolean hasAttributeNS(String str, String str1) {
+		if (peer instanceof Element) {
+            return ((Element)peer).hasAttributeNS(str, str1);
+		} else {
+			throw new NOE();
+		}
+	}
+	
+	public void removeAttribute(String str) throws org.w3c.dom.DOMException {
+		if (peer instanceof Element) {
+            ((Element)peer).removeAttribute(str);
+		} else {
+			throw new NOE();
+		}
+	}
+	
+	public void removeAttributeNS(String str, String str1) throws org.w3c.dom.DOMException {
+		if (peer instanceof Element) {
+            ((Element)peer).removeAttributeNS(str, str1);
+		} else {
+			throw new NOE();
+		}
+	}
+	
+	public org.w3c.dom.Attr removeAttributeNode(org.w3c.dom.Attr attr) throws org.w3c.dom.DOMException {
+		if (peer instanceof Element) {
+            return ((Element)peer).removeAttributeNode(attr);
+		} else {
+			throw new NOE();
+		}
+	}
+	
+	public void setAttribute(String str, String str1) throws org.w3c.dom.DOMException {
+		if (peer instanceof Element) {
+            ((Element)peer).setAttribute(str, str1);
+		} else {
+			throw new NOE();
+		}
+	}
+	
+	public void setAttributeNS(String str, String str1, String str2) throws org.w3c.dom.DOMException {
+		if (peer instanceof Element) {
+            ((Element)peer).setAttributeNS(str, str1, str2);
+		} else {
+			throw new NOE();
+		}
+	}
+	
+	public org.w3c.dom.Attr setAttributeNode(org.w3c.dom.Attr attr) throws org.w3c.dom.DOMException {
+		if (peer instanceof Element) {
+            return ((Element)peer).setAttributeNode(attr);
+		} else {
+			throw new NOE();
+		}
+	}
+	
+	public org.w3c.dom.Attr setAttributeNodeNS(org.w3c.dom.Attr attr) throws org.w3c.dom.DOMException {
+		if (peer instanceof Element) {
+            return ((Element)peer).setAttributeNodeNS(attr);
+		} else {
+			throw new NOE();
+		}
+	}
+	
     //??? or could we throw class casts
     private class NOA extends DOMException {
         
@@ -574,4 +701,14 @@ class DefaultContext implements HintContext, Attr {
             super(DOMException.NOT_SUPPORTED_ERR, "Peer " + peer + " is not instance of Attr!");
         }
     }
+	
+    private class NOE extends DOMException {
+        
+        private static final long serialVersionUID = 4600894053037825159L;
+        
+        NOE() {
+            super(DOMException.NOT_SUPPORTED_ERR, "Peer " + peer + " is not instance of Element!");
+        }
+    }
+	
 }
