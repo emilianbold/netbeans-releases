@@ -295,8 +295,7 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
                 // prepare slide operation
                 Component tabbedComp = tabbed.getComponent();
                 
-                String side = ((WindowManagerImpl)WindowManagerImpl.getDefault()).
-                                guessSlideSide(tc);
+                String side = WindowManagerImpl.getInstance().guessSlideSide(tc);
                 SlideOperation operation = SlideOperationFactory.createSlideIntoEdge(
                     tabbedComp, side, true);
                 operation.setStartBounds(
