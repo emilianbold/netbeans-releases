@@ -239,7 +239,7 @@ is divided into following sections:
                             <xsl:if test="/p:project/p:configuration/j2seproject2:data/j2seproject2:explicit-platform">
                                 <xsl:attribute name="fork">yes</xsl:attribute>
                                 <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
-                                <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute>
+                                <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute> <!-- XXX cf. #51482, Ant #29391 -->
                             </xsl:if>
                             <xsl:attribute name="includeantruntime">false</xsl:attribute>
                             <classpath>
