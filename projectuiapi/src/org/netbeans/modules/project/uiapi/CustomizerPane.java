@@ -65,12 +65,21 @@ public class CustomizerPane extends javax.swing.JPanel implements HelpCtx.Provid
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
+        jLabel1 = new javax.swing.JLabel();
         categoryPanel = new javax.swing.JPanel();
         customizerPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(750, 450));
+        jLabel1.setLabelFor(categoryPanel);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CustomizerPane.class, "LBL_Customizer_Categories"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 11, 0, 0);
+        add(jLabel1, gridBagConstraints);
+
         categoryPanel.setLayout(new java.awt.GridBagLayout());
 
         categoryPanel.setBorder(new javax.swing.border.EtchedBorder());
@@ -80,7 +89,7 @@ public class CustomizerPane extends javax.swing.JPanel implements HelpCtx.Provid
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 11, 8, 11);
+        gridBagConstraints.insets = new java.awt.Insets(3, 11, 8, 11);
         add(categoryPanel, gridBagConstraints);
         categoryPanel.getAccessibleContext().setAccessibleName(null);
         categoryPanel.getAccessibleContext().setAccessibleDescription(null);
@@ -93,7 +102,7 @@ public class CustomizerPane extends javax.swing.JPanel implements HelpCtx.Provid
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 11);
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 8, 11);
         add(customizerPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
@@ -102,6 +111,7 @@ public class CustomizerPane extends javax.swing.JPanel implements HelpCtx.Provid
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel categoryPanel;
     private javax.swing.JPanel customizerPanel;
+    private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
     
     
