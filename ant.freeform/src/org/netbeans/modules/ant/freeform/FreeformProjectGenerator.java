@@ -20,7 +20,6 @@ import java.util.Arrays;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -49,7 +48,7 @@ public class FreeformProjectGenerator {
      * should be set only when ant script is not in default location, that is not
      * in parent folder of nbproject directory.
      */
-    public static final String PROP_ANT_SCRIPT = "ant.script";
+    public static final String PROP_ANT_SCRIPT = "ant.script"; // NOI18N
 
     /** Location of original project. This property should be set/used when NB 
      * project metadata are stored in different folder. */
@@ -251,7 +250,7 @@ public class FreeformProjectGenerator {
         while (it.hasNext()) {
             TargetMapping tm = (TargetMapping)it.next();
             Element action = doc.createElementNS(FreeformProjectType.NS_GENERAL, "action"); //NOI18N
-            action.setAttribute("name", tm.name);
+            action.setAttribute("name", tm.name); // NOI18N
             if (tm.script != null) {
                 Element script = doc.createElementNS(FreeformProjectType.NS_GENERAL, "script"); //NOI18N
                 script.appendChild(doc.createTextNode(tm.script));
@@ -353,7 +352,7 @@ public class FreeformProjectGenerator {
         while (it.hasNext()) {
             TargetMapping tm = (TargetMapping)it.next();
             Element ideAction = doc.createElementNS(FreeformProjectType.NS_GENERAL, "ide-action"); //NOI18N
-            ideAction.setAttribute("name", tm.name);
+            ideAction.setAttribute("name", tm.name); // NOI18N
             appendChildElement(contextMenuEl, ideAction, contextMenuElementsOrder);
         }
         helper.putPrimaryConfigurationData(data, true);
@@ -532,7 +531,7 @@ public class FreeformProjectGenerator {
                     File dirF = FileUtil.toFile(dirFO);
                     if (!locationFO.equals(dirFO)) {
                         Element property = doc.createElementNS(FreeformProjectType.NS_GENERAL, "property"); // NOI18N
-                        property.setAttribute("name", PROP_PROJECT_LOCATION);
+                        property.setAttribute("name", PROP_PROJECT_LOCATION); // NOI18N
                         String path;
                         if (CollocationQuery.areCollocated(dirF, locationF)) {
                             path = PropertyUtils.relativizeFile(dirF, locationF); // NOI18N
@@ -545,10 +544,10 @@ public class FreeformProjectGenerator {
                     String antPath = "build.xml"; // NOI18N
                     if (antScript != null) {
                         Element property = doc.createElementNS(FreeformProjectType.NS_GENERAL, "property"); // NOI18N
-                        property.setAttribute("name", PROP_ANT_SCRIPT);
+                        property.setAttribute("name", PROP_ANT_SCRIPT); // NOI18N
                         antPath = relativizeLocation(locationF, dirF, antScript);
                         property.appendChild(doc.createTextNode(antPath));
-                        antPath = "${"+PROP_ANT_SCRIPT+"}";
+                        antPath = "${"+PROP_ANT_SCRIPT+"}"; // NOI18N
                         props.appendChild(property);
                     }
                     if (props.getChildNodes().getLength() > 0) {
@@ -558,16 +557,8 @@ public class FreeformProjectGenerator {
                     
                     putTargetMappings(h[0], mappings);
                     
-                    List sourceFolders = new ArrayList(sources);
-                    if (!locationFO.equals(dirFO)) {
-                        SourceFolder gen = new SourceFolder();
-                        gen.location = "${"+PROP_PROJECT_LOCATION+"}";
-                        // XXX: uniquefy label
-                        gen.label = locationFO.getName();
-                        sourceFolders.add(gen);
-                    }
-                    if (sourceFolders.size() > 0) {
-                        putSourceFolders(h[0], sourceFolders, null);
+                    if (sources.size() > 0) {
+                        putSourceFolders(h[0], sources, null);
                     }
                     if (sources.size() > 0) {
                         putSourceViews(h[0], sources, null);
@@ -655,15 +646,15 @@ public class FreeformProjectGenerator {
                 continue;
             }
             SourceFolder sf = new SourceFolder();
-            Element el = Util.findElement(sourceFolderEl, "label", FreeformProjectType.NS_GENERAL);
+            Element el = Util.findElement(sourceFolderEl, "label", FreeformProjectType.NS_GENERAL); // NOI18N
             if (el != null) {
                 sf.label = Util.findText(el);
             }
-            el = Util.findElement(sourceFolderEl, "type", FreeformProjectType.NS_GENERAL);
+            el = Util.findElement(sourceFolderEl, "type", FreeformProjectType.NS_GENERAL); // NOI18N
             if (el != null) {
                 sf.type = Util.findText(el);
             }
-            el = Util.findElement(sourceFolderEl, "location", FreeformProjectType.NS_GENERAL);
+            el = Util.findElement(sourceFolderEl, "location", FreeformProjectType.NS_GENERAL); // NOI18N
             if (el != null) {
                 sf.location = Util.findText(el);
             }
@@ -703,7 +694,7 @@ public class FreeformProjectGenerator {
                 if (type == null) {
                     foldersEl.removeChild(sourceFolderEl);
                 } else {
-                    Element typeEl = Util.findElement(sourceFolderEl, "type", FreeformProjectType.NS_GENERAL);
+                    Element typeEl = Util.findElement(sourceFolderEl, "type", FreeformProjectType.NS_GENERAL); // NOI18N
                     if (typeEl != null) {
                         String typeElValue = Util.findText(typeEl);
                         if (type.equals(typeElValue)) {
@@ -764,13 +755,13 @@ public class FreeformProjectGenerator {
                 continue;
             }
             SourceFolder sf = new SourceFolder();
-            sf.style = sourceFolderEl.getAttribute("style");
-            assert sf.style != null && sf.style.length() > 0 : "Bad style attr on <source-folder> in " + helper;
-            Element el = Util.findElement(sourceFolderEl, "label", FreeformProjectType.NS_GENERAL);
+            sf.style = sourceFolderEl.getAttribute("style"); // NOI18N
+            assert sf.style != null && sf.style.length() > 0 : "Bad style attr on <source-folder> in " + helper; // NOI18N
+            Element el = Util.findElement(sourceFolderEl, "label", FreeformProjectType.NS_GENERAL); // NOI18N
             if (el != null) {
                 sf.label = Util.findText(el);
             }
-            el = Util.findElement(sourceFolderEl, "location", FreeformProjectType.NS_GENERAL);
+            el = Util.findElement(sourceFolderEl, "location", FreeformProjectType.NS_GENERAL); // NOI18N
             if (el != null) {
                 sf.location = Util.findText(el);
             }
@@ -813,7 +804,7 @@ public class FreeformProjectGenerator {
             if (!sourceViewEl.getLocalName().equals("source-folder")) { // NOI18N
                 continue;
             }
-            String sourceStyle = sourceViewEl.getAttribute("style");
+            String sourceStyle = sourceViewEl.getAttribute("style"); // NOI18N
             if (style == null || style.equals(sourceStyle)) {
                 itemsEl.removeChild(sourceViewEl);
             }
@@ -821,11 +812,12 @@ public class FreeformProjectGenerator {
         Iterator it2 = sources.iterator();
         while (it2.hasNext()) {
             SourceFolder sf = (SourceFolder)it2.next();
-            Element sourceFolderEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "source-folder"); // NOI18N
             if (sf.style == null || sf.style.length() == 0) {
-                throw new IllegalArgumentException("No style on <source-folder> in " + sources + " for " + helper); // NOI18N
+                // perhaps this is principal source folder?
+                continue;
             }
-            sourceFolderEl.setAttribute("style", sf.style);
+            Element sourceFolderEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "source-folder"); // NOI18N
+            sourceFolderEl.setAttribute("style", sf.style); // NOI18N
             Element el;
             if (sf.label != null) {
                 el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "label"); // NOI18N
@@ -872,7 +864,7 @@ public class FreeformProjectGenerator {
     public static List/*<JavaCompilationUnit>*/ getJavaCompilationUnits(
             AntProjectHelper helper, AuxiliaryConfiguration aux) {
         ArrayList list = new ArrayList();
-        Element data = aux.getConfigurationFragment("java-data", FreeformProjectType.NS_JAVA, true);
+        Element data = aux.getConfigurationFragment("java-data", FreeformProjectType.NS_JAVA, true); // NOI18N
         if (data == null) {
             return list;
         }
@@ -894,7 +886,7 @@ public class FreeformProjectGenerator {
                 if (el.getLocalName().equals("classpath")) { // NOI18N
                     JavaCompilationUnit.CP cp = new JavaCompilationUnit.CP();
                     cp.classpath = Util.findText(el);
-                    cp.mode = el.getAttribute("mode");
+                    cp.mode = el.getAttribute("mode"); // NOI18N
                     if (cp.mode != null && cp.classpath != null) {
                         cps.add(cp);
                     }
@@ -926,10 +918,10 @@ public class FreeformProjectGenerator {
     public static void putJavaCompilationUnits(AntProjectHelper helper, 
             AuxiliaryConfiguration aux, List/*<JavaCompilationUnit>*/ compUnits) {
         ArrayList list = new ArrayList();
-        Element data = aux.getConfigurationFragment("java-data", FreeformProjectType.NS_JAVA, true);
+        Element data = aux.getConfigurationFragment("java-data", FreeformProjectType.NS_JAVA, true); // NOI18N
         if (data == null) {
             data = helper.getPrimaryConfigurationData(true).getOwnerDocument().
-                createElementNS(FreeformProjectType.NS_JAVA, "java-data");
+                createElementNS(FreeformProjectType.NS_JAVA, "java-data"); // NOI18N
         }
         Document doc = data.getOwnerDocument();
         List cus = Util.findSubElements(data); // NOI18N
@@ -959,7 +951,7 @@ public class FreeformProjectGenerator {
                     JavaCompilationUnit.CP cp = (JavaCompilationUnit.CP)it3.next();
                     el = doc.createElementNS(FreeformProjectType.NS_JAVA, "classpath"); // NOI18N
                     el.appendChild(doc.createTextNode(cp.classpath));
-                    el.setAttribute("mode", cp.mode);
+                    el.setAttribute("mode", cp.mode); // NOI18N
                     cuEl.appendChild(el);
                 }
             }
@@ -990,7 +982,7 @@ public class FreeformProjectGenerator {
     public static List/*<WebModule>*/ getWebmodules (
             AntProjectHelper helper, AuxiliaryConfiguration aux) {
         ArrayList list = new ArrayList();
-        Element data = aux.getConfigurationFragment("web-data", FreeformProjectType.NS_WEB, true);
+        Element data = aux.getConfigurationFragment("web-data", FreeformProjectType.NS_WEB, true); // NOI18N
         List/*<Element>*/ wms = Util.findSubElements(data);
         Iterator it = wms.iterator();
         while (it.hasNext()) {
@@ -1030,7 +1022,7 @@ public class FreeformProjectGenerator {
     public static void putWebModules(AntProjectHelper helper, 
             AuxiliaryConfiguration aux, List/*<WebModule>*/ webModules) {
         ArrayList list = new ArrayList();
-        Element data = aux.getConfigurationFragment("web-data", FreeformProjectType.NS_WEB, true);
+        Element data = aux.getConfigurationFragment("web-data", FreeformProjectType.NS_WEB, true); // NOI18N
         if (data == null) {
             data = helper.getPrimaryConfigurationData(true).getOwnerDocument().
                 createElementNS(FreeformProjectType.NS_WEB, "web-data"); // NOI18N
@@ -1126,7 +1118,7 @@ public class FreeformProjectGenerator {
             FileObject fo = FileUtil.toFileObject(f);
             return fo;
         } else {
-            FileObject fo = helper.getProjectDirectory().getFileObject("build.xml");
+            FileObject fo = helper.getProjectDirectory().getFileObject("build.xml"); // NOI18N
             return fo;
         }
     }
