@@ -51,7 +51,7 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
     for( int i = 0; i < EventSetPattern.WELL_KNOWN_LISTENERS.length; i++ ) {
       typeComboBox.addItem( EventSetPattern.WELL_KNOWN_LISTENERS[i] );
     }
-    typeComboBox.setSelectedItem( "" );
+    typeComboBox.setSelectedItem( "" ); // NOI18N
     
     javax.swing.ButtonGroup bg = new javax.swing.ButtonGroup();
     bg.add( emptyRadioButton );
@@ -95,9 +95,9 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
       java.awt.GridBagConstraints gridBagConstraints2;
       eventSetPanel.setBorder (new javax.swing.border.TitledBorder(
       new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)),
-      "eventSetPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black));
+      "eventSetPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black)); // NOI18N
   
-        typeLabel.setText ("typeLabel");
+        typeLabel.setText ("typeLabel"); // NOI18N
     
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         gridBagConstraints2.insets = new java.awt.Insets (2, 4, 2, 2);
@@ -114,7 +114,7 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
         gridBagConstraints2.weightx = 1.0;
         eventSetPanel.add (typeComboBox, gridBagConstraints2);
     
-        textLabel.setText ("textLabel");
+        textLabel.setText ("textLabel"); // NOI18N
     
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         gridBagConstraints2.gridwidth = 0;
@@ -134,10 +134,10 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
       java.awt.GridBagConstraints gridBagConstraints3;
       optionsPanel.setBorder (new javax.swing.border.TitledBorder(
       new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)),
-      "optionsPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black));
+      "optionsPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black)); // NOI18N
   
         emptyRadioButton.setSelected (true);
-        emptyRadioButton.setText ("emptyRadioButton");
+        emptyRadioButton.setText ("emptyRadioButton"); // NOI18N
         emptyRadioButton.addActionListener (new java.awt.event.ActionListener () {
           public void actionPerformed (java.awt.event.ActionEvent evt) {
             emptyRadioButtonActionPerformed (evt);
@@ -153,7 +153,7 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
         gridBagConstraints3.weighty = 1.0;
         optionsPanel.add (emptyRadioButton, gridBagConstraints3);
     
-        implRadioButton.setText ("implRadioButton");
+        implRadioButton.setText ("implRadioButton"); // NOI18N
         implRadioButton.addActionListener (new java.awt.event.ActionListener () {
           public void actionPerformed (java.awt.event.ActionEvent evt) {
             implRadioButtonActionPerformed (evt);
@@ -169,7 +169,7 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
         gridBagConstraints3.weighty = 1.0;
         optionsPanel.add (implRadioButton, gridBagConstraints3);
     
-        fireCheckBox.setText ("fireCheckBox");
+        fireCheckBox.setText ("fireCheckBox"); // NOI18N
         fireCheckBox.setEnabled (false);
         fireCheckBox.addActionListener (new java.awt.event.ActionListener () {
           public void actionPerformed (java.awt.event.ActionEvent evt) {
@@ -186,7 +186,7 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
         gridBagConstraints3.weighty = 1.0;
         optionsPanel.add (fireCheckBox, gridBagConstraints3);
     
-        passEventCheckBox.setText ("passEventCheckBox");
+        passEventCheckBox.setText ("passEventCheckBox"); // NOI18N
         passEventCheckBox.setEnabled (false);
         passEventCheckBox.addActionListener (new java.awt.event.ActionListener () {
           public void actionPerformed (java.awt.event.ActionEvent evt) {
@@ -296,7 +296,7 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
   public void actionPerformed( java.awt.event.ActionEvent e ) {
     if ( dialog != null ) {
       
-      if ( e.getActionCommand().equals( "OK" ) ) { 
+      if ( e.getActionCommand().equals( "OK" ) ) { // NOI18N
         
          //Test wether the string is empty 
          if ( typeComboBox.getEditor().getItem().toString().trim().length() <= 0) {
@@ -340,6 +340,7 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
 
 /*
  * Log
+ *  9    Gandalf   1.8         1/12/00  Petr Hrebejk    i18n  
  *  8    Gandalf   1.7         1/4/00   Petr Hrebejk    Various bugfixes - 5036,
  *       5044, 5045
  *  7    Gandalf   1.6         11/10/99 Petr Hrebejk    Canged to work with 

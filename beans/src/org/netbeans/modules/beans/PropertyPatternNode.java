@@ -89,10 +89,10 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
       mode = bundle.getString("HINT_WriteOnlyProperty"); 
       break;
     default:
-      mode = "";
+      mode = ""; // NOI18N
       break;
     }
-    return mode + " " + getTypeForHint() + " : " + getName();
+    return mode + " " + getTypeForHint() + " : " + getName(); // NOI18N
   }
 
   /** Creates property set for this node 
@@ -268,7 +268,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
       /** Gets the value */
      
       public Object getValue () {
-        ElementFormat fmt = new ElementFormat ("{n} ({p})");
+        ElementFormat fmt = new ElementFormat ("{n} ({p})"); // NOI18N
         MethodElement method = ((PropertyPattern)pattern).getGetterMethod();
         if ( method == null )
           return bundle.getString("LAB_NoMethod");
@@ -289,7 +289,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
       /** Gets the value */
      
       public Object getValue () {
-        ElementFormat fmt = new ElementFormat ("{n} ({p})");
+        ElementFormat fmt = new ElementFormat ("{n} ({p})"); // NOI18N
         MethodElement method = ((PropertyPattern)pattern).getSetterMethod();
         if ( method == null )
           return bundle.getString("LAB_NoMethod");
@@ -310,7 +310,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
       /** Gets the value */
      
       public Object getValue () {
-        ElementFormat fmt = new ElementFormat ("{t} {n}");
+        ElementFormat fmt = new ElementFormat ("{t} {n}"); // NOI18N
         FieldElement field = ((PropertyPattern)pattern).getEstimatedField();
         if ( field == null )
           return bundle.getString("LAB_NoField");
@@ -323,6 +323,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
 
 /*
 * Log
+*  8    Gandalf   1.7         1/12/00  Petr Hrebejk    i18n  
 *  7    Gandalf   1.6         1/4/00   Petr Hrebejk    Various bugfixes - 5036, 
 *       5044, 5045
 *  6    Gandalf   1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 

@@ -42,18 +42,18 @@ public final class BiNode extends AbstractNode {
   /** generated Serialized Version UID */
   //static final long                      serialVersionUID = -6346315017458451778L;
 
-  private static String ICON_BASE = "/com/netbeans/developer/modules/beans/resources/beanInfo";
-  private static String ICON_BASE_PATTERNS = "/com/netbeans/developer/modules/beans/resources/patternGroup";
-  private static String WAIT_ICON_BASE = "/org/openide/resources/src/wait";
+  private static String ICON_BASE = "/com/netbeans/developer/modules/beans/resources/beanInfo"; // NOI18N
+  private static String ICON_BASE_PATTERNS = "/com/netbeans/developer/modules/beans/resources/patternGroup"; // NOI18N
+  private static String WAIT_ICON_BASE = "/org/openide/resources/src/wait"; // NOI18N
 
-  private static String PROP_NULL_PROPERTIES = "nullProperties";
-  private static String PROP_NULL_EVENTS = "nullEvents";
-  private static String PROP_BI_ICON_C16 = "iconColor16x16";
-  private static String PROP_BI_ICON_M16 = "iconMono16x16";
-  private static String PROP_BI_ICON_C32 = "iconColor32x32";
-  private static String PROP_BI_ICON_M32 = "iconMono32x32";
-  private static String PROP_BI_DEFAULT_PROPERTY = "defaultPropertyIndex";
-  private static String PROP_BI_DEFAULT_EVENT = "defaultEventIndex";
+  private static String PROP_NULL_PROPERTIES = "nullProperties"; // NOI18N
+  private static String PROP_NULL_EVENTS = "nullEvents"; // NOI18N
+  private static String PROP_BI_ICON_C16 = "iconColor16x16"; // NOI18N
+  private static String PROP_BI_ICON_M16 = "iconMono16x16"; // NOI18N
+  private static String PROP_BI_ICON_C32 = "iconColor32x32"; // NOI18N
+  private static String PROP_BI_ICON_M32 = "iconMono32x32"; // NOI18N
+  private static String PROP_BI_DEFAULT_PROPERTY = "defaultPropertyIndex"; // NOI18N
+  private static String PROP_BI_DEFAULT_EVENT = "defaultEventIndex"; // NOI18N
   
   // variables ....................................................................................
 
@@ -125,13 +125,13 @@ public final class BiNode extends AbstractNode {
     Node[] subnodes = new Node[] {
       new SubNode( biAnalyser, 
                new Class[] { BiFeature.Property.class, BiFeature.IdxProperty.class },
-               "CTL_NODE_Properties",
+               "CTL_NODE_Properties", // NOI18N
                ICON_BASE_PATTERNS,
                propSubnodeProperties ),
                
       new SubNode( biAnalyser, 
                new Class[] { BiFeature.EventSet.class },
-               "CTL_NODE_EventSets",
+               "CTL_NODE_EventSets", // NOI18N
                ICON_BASE_PATTERNS,
                eventSubnodeProperties )
 
@@ -354,6 +354,7 @@ public final class BiNode extends AbstractNode {
 
 /*
  * Log
+ *  4    Gandalf   1.3         1/12/00  Petr Hrebejk    i18n  
  *  3    Gandalf   1.2         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  2    Gandalf   1.1         8/18/99  Petr Hrebejk    BeanInfo analyse moved 

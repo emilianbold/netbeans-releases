@@ -23,32 +23,33 @@ interface IconBases {
   // and N for non selected features at the end of the string.
 
   public static final String BIF_PROPERTY_RW =
-    "/com/netbeans/developer/modules/beans/resources/bifPropertyRW_";
+    "/com/netbeans/developer/modules/beans/resources/bifPropertyRW_"; // NOI18N
 
   public static final String BIF_PROPERTY_RO =
-    "/com/netbeans/developer/modules/beans/resources/bifPropertyRO_";
+    "/com/netbeans/developer/modules/beans/resources/bifPropertyRO_"; // NOI18N
 
   public static final String BIF_PROPERTY_WO =
-    "/com/netbeans/developer/modules/beans/resources/bifPropertyWO_";
+    "/com/netbeans/developer/modules/beans/resources/bifPropertyWO_"; // NOI18N
     
   public static final String BIF_IDXPROPERTY_RW =
-    "/com/netbeans/developer/modules/beans/resources/bifIndexedPropertyRW_";
+    "/com/netbeans/developer/modules/beans/resources/bifIndexedPropertyRW_"; // NOI18N
 
   public static final String BIF_IDXPROPERTY_RO =
-    "/com/netbeans/developer/modules/beans/resources/bifIndexedPropertyRO_";
+    "/com/netbeans/developer/modules/beans/resources/bifIndexedPropertyRO_"; // NOI18N
 
   public static final String BIF_IDXPROPERTY_WO =
-    "/com/netbeans/developer/modules/beans/resources/bifIndexedPropertyWO_";
+    "/com/netbeans/developer/modules/beans/resources/bifIndexedPropertyWO_"; // NOI18N
   
   public static final String BIF_EVENTSET_MULTICAST =
-    "/com/netbeans/developer/modules/beans/resources/bifEventSetMC_";
+    "/com/netbeans/developer/modules/beans/resources/bifEventSetMC_"; // NOI18N
 
   public static final String BIF_EVENTSET_UNICAST =
-    "/com/netbeans/developer/modules/beans/resources/bifEventSetUC_";  
+    "/com/netbeans/developer/modules/beans/resources/bifEventSetUC_"; // NOI18N
   
   }
 /*
  * Log
+ *  3    Gandalf   1.2         1/12/00  Petr Hrebejk    i18n  
  *  2    Gandalf   1.1         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  1    Gandalf   1.0         7/26/99  Petr Hrebejk    

@@ -43,8 +43,8 @@ public class IdxPropertyPatternPanel extends javax.swing.JPanel
 
   /** Standard types */
   private final String[] types = new String[] {
-    "boolean", "char", "byte", "short", "int",
-    "long", "float", "double", "String"
+    "boolean", "char", "byte", "short", "int", // NOI18N
+    "long", "float", "double", "String" // NOI18N
   };
 
   /** Human representable form of properties modes */  
@@ -63,7 +63,7 @@ static final long serialVersionUID =8551245035767258531L;
     for ( int i = 0; i < types.length; i++ ) {
       typeComboBox.addItem( types[i] );
     }
-    typeComboBox.setSelectedItem( "" );
+    typeComboBox.setSelectedItem( "" ); // NOI18N
 
     // Customize mode checkbox
     for ( int i = 0; i < modes.length; i++ ) {
@@ -133,9 +133,9 @@ static final long serialVersionUID =8551245035767258531L;
       java.awt.GridBagConstraints gridBagConstraints2;
       propertyPanel.setBorder (new javax.swing.border.TitledBorder(
       new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)),
-      "propertyPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black));
+      "propertyPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black)); // NOI18N
   
-        nameLabel.setText ("nameLabel");
+        nameLabel.setText ("nameLabel"); // NOI18N
     
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         gridBagConstraints2.insets = new java.awt.Insets (2, 4, 2, 2);
@@ -153,7 +153,7 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints2.weighty = 1.0;
         propertyPanel.add (nameTextField, gridBagConstraints2);
     
-        typeLabel.setText ("typeLabel");
+        typeLabel.setText ("typeLabel"); // NOI18N
     
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         gridBagConstraints2.insets = new java.awt.Insets (2, 4, 2, 2);
@@ -172,7 +172,7 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints2.weighty = 1.0;
         propertyPanel.add (typeComboBox, gridBagConstraints2);
     
-        modeLabel.setText ("modeLabel");
+        modeLabel.setText ("modeLabel"); // NOI18N
     
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         gridBagConstraints2.insets = new java.awt.Insets (2, 4, 2, 2);
@@ -200,7 +200,7 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         propertyPanel.add (jPanel3, gridBagConstraints2);
     
-        boundCheckBox.setText ("boundCheckBox");
+        boundCheckBox.setText ("boundCheckBox"); // NOI18N
         boundCheckBox.addActionListener (new java.awt.event.ActionListener () {
           public void actionPerformed (java.awt.event.ActionEvent evt) {
             boundCheckBoxActionPerformed (evt);
@@ -220,7 +220,7 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         propertyPanel.add (jPanel4, gridBagConstraints2);
     
-        constrainedCheckBox.setText ("constrainedCheckBox");
+        constrainedCheckBox.setText ("constrainedCheckBox"); // NOI18N
         constrainedCheckBox.addActionListener (new java.awt.event.ActionListener () {
           public void actionPerformed (java.awt.event.ActionEvent evt) {
             constrainedCheckBoxActionPerformed (evt);
@@ -247,9 +247,9 @@ static final long serialVersionUID =8551245035767258531L;
       java.awt.GridBagConstraints gridBagConstraints3;
       optionsPanel.setBorder (new javax.swing.border.TitledBorder(
       new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)),
-      "optionsPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black));
+      "optionsPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black)); // NOI18N
   
-        fieldCheckBox.setText ("fieldCheckBox");
+        fieldCheckBox.setText ("fieldCheckBox"); // NOI18N
         fieldCheckBox.addActionListener (new java.awt.event.ActionListener () {
           public void actionPerformed (java.awt.event.ActionEvent evt) {
             fieldCheckBoxActionPerformed (evt);
@@ -265,7 +265,7 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints3.weighty = 1.0;
         optionsPanel.add (fieldCheckBox, gridBagConstraints3);
     
-        returnCheckBox.setText ("returnCheckBox");
+        returnCheckBox.setText ("returnCheckBox"); // NOI18N
         returnCheckBox.setEnabled (false);
     
         gridBagConstraints3 = new java.awt.GridBagConstraints ();
@@ -276,7 +276,7 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints3.weighty = 1.0;
         optionsPanel.add (returnCheckBox, gridBagConstraints3);
     
-        setCheckBox.setText ("setCheckBox");
+        setCheckBox.setText ("setCheckBox"); // NOI18N
         setCheckBox.setEnabled (false);
     
         gridBagConstraints3 = new java.awt.GridBagConstraints ();
@@ -287,7 +287,7 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints3.weighty = 1.0;
         optionsPanel.add (setCheckBox, gridBagConstraints3);
     
-        supportCheckBox.setText ("supportCheckBox");
+        supportCheckBox.setText ("supportCheckBox"); // NOI18N
         supportCheckBox.setEnabled (false);
     
         gridBagConstraints3 = new java.awt.GridBagConstraints ();
@@ -309,9 +309,9 @@ static final long serialVersionUID =8551245035767258531L;
       java.awt.GridBagConstraints gridBagConstraints4;
       nonIndexOptionsPanel.setBorder (new javax.swing.border.TitledBorder(
       new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)),
-      "nonIndexOptionsPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black));
+      "nonIndexOptionsPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black)); // NOI18N
   
-        niGetterCheckBox.setText ("niGetterCheckBox");
+        niGetterCheckBox.setText ("niGetterCheckBox"); // NOI18N
         niGetterCheckBox.addActionListener (new java.awt.event.ActionListener () {
           public void actionPerformed (java.awt.event.ActionEvent evt) {
             niGetterCheckBoxActionPerformed (evt);
@@ -326,7 +326,7 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints4.weighty = 1.0;
         nonIndexOptionsPanel.add (niGetterCheckBox, gridBagConstraints4);
     
-        niReturnCheckBox.setText ("niReturnCheckBox");
+        niReturnCheckBox.setText ("niReturnCheckBox"); // NOI18N
         niReturnCheckBox.setEnabled (false);
     
         gridBagConstraints4 = new java.awt.GridBagConstraints ();
@@ -337,7 +337,7 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints4.weighty = 1.0;
         nonIndexOptionsPanel.add (niReturnCheckBox, gridBagConstraints4);
     
-        niSetterCheckBox.setText ("niSetterCheckBox");
+        niSetterCheckBox.setText ("niSetterCheckBox"); // NOI18N
         niSetterCheckBox.addActionListener (new java.awt.event.ActionListener () {
           public void actionPerformed (java.awt.event.ActionEvent evt) {
             niSetterCheckBoxActionPerformed (evt);
@@ -352,7 +352,7 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints4.weighty = 1.0;
         nonIndexOptionsPanel.add (niSetterCheckBox, gridBagConstraints4);
     
-        niSetCheckBox.setText ("niSetCheckBox");
+        niSetCheckBox.setText ("niSetCheckBox"); // NOI18N
         niSetCheckBox.setEnabled (false);
     
         gridBagConstraints4 = new java.awt.GridBagConstraints ();
@@ -530,7 +530,7 @@ static final long serialVersionUID =8551245035767258531L;
   public void actionPerformed( java.awt.event.ActionEvent e ) {
     if ( dialog != null ) {
       
-      if ( e.getActionCommand().equals( "OK" ) ) { 
+      if ( e.getActionCommand().equals( "OK" ) ) { // NOI18N
                   //Test wether the string is empty 
          if ( typeComboBox.getEditor().getItem().toString().trim().length() <= 0) {
            TopManager.getDefault().notify(
@@ -583,6 +583,7 @@ static final long serialVersionUID =8551245035767258531L;
 
 /*
  * Log
+ *  8    Gandalf   1.7         1/12/00  Petr Hrebejk    i18n  
  *  7    Gandalf   1.6         1/4/00   Petr Hrebejk    Various bugfixes - 5036,
  *       5044, 5045
  *  6    Gandalf   1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

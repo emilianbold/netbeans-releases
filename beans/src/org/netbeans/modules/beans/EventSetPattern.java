@@ -43,27 +43,27 @@ public class EventSetPattern extends Pattern {
   private static final ResourceBundle bundle = NbBundle.getBundle( EventSetPattern.class );
 
   static final String[] WELL_KNOWN_LISTENERS =  new String[] {
-    "java.awt.event.ActionListener",
-    "java.awt.event.ContainerListener",
-    "java.awt.event.FocusListener",
-    "java.awt.event.ItemListener",
-    "java.awt.event.KeyListener",
-    "java.awt.event.MouseListener",
-    "java.awt.event.MouseMotionListener",
-    "java.awt.event.WindowListener",
-    "java.beans.PropertyChangeListener",
-    "java.beans.VetoableChangeListener",
-    "javax.swing.event.CaretListener",
-    "javax.swing.event.ChangeListener",
-    "javax.swing.event.DocumentListener",
-    "javax.swing.event.HyperlinkListener",
-    "javax.swing.event.MenuListener",
-    "javax.swing.event.MouseInputListener",
-    "javax.swing.event.PopupMenuListener",
-    "javax.swing.event.TableColumnModelListener",
-    "javax.swing.event.TableModelListener",
-    "javax.swing.event.TreeModelListener",
-    "javax.swing.event.UndoableEditListener"
+    "java.awt.event.ActionListener", // NOI18N
+    "java.awt.event.ContainerListener", // NOI18N
+    "java.awt.event.FocusListener", // NOI18N
+    "java.awt.event.ItemListener", // NOI18N
+    "java.awt.event.KeyListener", // NOI18N
+    "java.awt.event.MouseListener", // NOI18N
+    "java.awt.event.MouseMotionListener", // NOI18N
+    "java.awt.event.WindowListener", // NOI18N
+    "java.beans.PropertyChangeListener", // NOI18N
+    "java.beans.VetoableChangeListener", // NOI18N
+    "javax.swing.event.CaretListener", // NOI18N
+    "javax.swing.event.ChangeListener", // NOI18N
+    "javax.swing.event.DocumentListener", // NOI18N
+    "javax.swing.event.HyperlinkListener", // NOI18N
+    "javax.swing.event.MenuListener", // NOI18N
+    "javax.swing.event.MouseInputListener", // NOI18N
+    "javax.swing.event.PopupMenuListener", // NOI18N
+    "javax.swing.event.TableColumnModelListener", // NOI18N
+    "javax.swing.event.TableModelListener", // NOI18N
+    "javax.swing.event.TreeModelListener", // NOI18N
+    "javax.swing.event.UndoableEditListener" // NOI18N
   };
   
   
@@ -134,7 +134,7 @@ public class EventSetPattern extends Pattern {
       return null;
     }
 
-    System.out.println( "Type " + esp.type.toString() );
+    //System.out.println( "Type " + esp.type.toString() );
 
 
     esp.name = Introspector.decapitalize( esp.type.getClassName().getName() );
@@ -200,8 +200,8 @@ public class EventSetPattern extends Pattern {
   /** Sets the name of PropertyPattern */
   public void setName( String name ) throws SourceException {
     
-    if ( !Utilities.isJavaIdentifier( name ) || name.indexOf( "Listener" ) <= 0 )
-      throw new SourceException( "Invalid event source name" );
+    if ( !Utilities.isJavaIdentifier( name ) || name.indexOf( "Listener" ) <= 0 ) // NOI18N
+      throw new SourceException( "Invalid event source name" ); // NOI18N
 
     name = capitalizeFirstLetter( name );
 
@@ -219,7 +219,7 @@ public class EventSetPattern extends Pattern {
     if ( Utilities.isJavaIdentifier(str) == false )
       return false;
 
-    if (str.indexOf( "Listener" ) <= 0 ) 
+    if (str.indexOf( "Listener" ) <= 0 ) // NOI18N
       return false;
 
     return true;
@@ -233,7 +233,7 @@ public class EventSetPattern extends Pattern {
   /** Sets the property to be unicast or multicast */
   public void setIsUnicast( boolean b ) throws SourceException {
     if ( b != isUnicast) {
-      Identifier tooMany = Identifier.create( "java.util.TooManyListenersException" );
+      Identifier tooMany = Identifier.create( "java.util.TooManyListenersException" ); // NOI18N
       Identifier[] exs = addListenerMethod.getExceptions();
 
       if (b) {
@@ -283,7 +283,7 @@ public class EventSetPattern extends Pattern {
       //if (!java.util.EventListener.class.isAssignableFrom( newType.toClass() ) ) {
       if ( !PatternAnalyser.isSubclass( 
           ClassElement.forName( newType.getClassName().getFullName() ),
-          ClassElement.forName( "java.util.EventListener" ) ) ) {
+          ClassElement.forName( "java.util.EventListener" ) ) ) { // NOI18N
  
         TopManager.getDefault().notify(
           new NotifyDescriptor.Message(PatternNode.bundle.getString("MSG_InvalidListenerInterface"),
@@ -408,7 +408,7 @@ public class EventSetPattern extends Pattern {
 
   private void findEventSetType() throws IntrospectionException {
     if ( addListenerMethod == null )
-      throw new InternalError( "add method == nul in event set pattern");
+      throw new InternalError( "add method == nul in event set pattern"); // NOI18N
     
     type = addListenerMethod.getParameters()[0].getType();
   }
@@ -435,7 +435,7 @@ public class EventSetPattern extends Pattern {
    */
 
   Identifier findTooManyListenersException() {
-    Identifier tooMany = Identifier.create( "java.util.TooManyListenersException" );
+    Identifier tooMany = Identifier.create( "java.util.TooManyListenersException" ); // NOI18N
 
     Identifier[] exs = addListenerMethod.getExceptions();
       
@@ -456,9 +456,9 @@ public class EventSetPattern extends Pattern {
     ClassElement declaringClass = getDeclaringClass();
     MethodElement newMethod = new MethodElement();
 
-    MethodParameter[] newParameters = { new MethodParameter( "listener", type, false ) };
+    MethodParameter[] newParameters = { new MethodParameter( "listener", type, false ) }; // NOI18N
     
-    newMethod.setName( Identifier.create( "add" + capitalizeFirstLetter( getName() ) ) );
+    newMethod.setName( Identifier.create( "add" + capitalizeFirstLetter( getName() ) ) ); // NOI18N
     newMethod.setReturn( Type.VOID );
     newMethod.setModifiers( Modifier.PUBLIC | Modifier.SYNCHRONIZED );
     newMethod.setParameters( newParameters );
@@ -469,7 +469,7 @@ public class EventSetPattern extends Pattern {
       newMethod.setBody( body );
     
     if ( isUnicast )
-      newMethod.setExceptions( new Identifier[] { Identifier.create( "java.util.TooManyListenersException" ) } );
+      newMethod.setExceptions( new Identifier[] { Identifier.create( "java.util.TooManyListenersException" ) } ); // NOI18N
     if ( javadoc ) {
       String comment = MessageFormat.format( bundle.getString( "COMMENT_AddListenerMethod" ),
                                              new Object[] { type.getClassName().getName() } );
@@ -492,9 +492,9 @@ public class EventSetPattern extends Pattern {
     ClassElement declaringClass = getDeclaringClass();
     MethodElement newMethod = new MethodElement();
 
-    MethodParameter[] newParameters = { new MethodParameter( "listener", type, false ) };
+    MethodParameter[] newParameters = { new MethodParameter( "listener", type, false ) }; // NOI18N
     
-    newMethod.setName( Identifier.create( "remove" + capitalizeFirstLetter( getName() ) ) );
+    newMethod.setName( Identifier.create( "remove" + capitalizeFirstLetter( getName() ) ) ); // NOI18N
     newMethod.setReturn( Type.VOID );
     newMethod.setModifiers( Modifier.PUBLIC | Modifier.SYNCHRONIZED );
     newMethod.setParameters( newParameters );
@@ -553,6 +553,7 @@ public class EventSetPattern extends Pattern {
 
 /* 
  * Log
+ *  13   Gandalf   1.12        1/12/00  Petr Hrebejk    i18n  
  *  12   Gandalf   1.11        1/4/00   Petr Hrebejk    Various bugfixes - 5036,
  *       5044, 5045
  *  11   Gandalf   1.10        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

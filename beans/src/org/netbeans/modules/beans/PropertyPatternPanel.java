@@ -41,8 +41,8 @@ public class PropertyPatternPanel extends javax.swing.JPanel
   private boolean forInterface = false;
   /** Default types */
   private final String[] types = new String[] {
-    "boolean", "char", "byte", "short", "int",
-    "long", "float", "double", "String"
+    "boolean", "char", "byte", "short", "int", // NOI18N
+    "long", "float", "double", "String" // NOI18N
   };
   /** Human readable values of modes */
   private final String[] modes = new String[] {
@@ -63,7 +63,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
     for ( int i = 0; i < types.length; i++ ) {
       typeComboBox.addItem( types[i] );
     }
-    typeComboBox.setSelectedItem( "" );
+    typeComboBox.setSelectedItem( "" ); // NOI18N
 
     // Customize mode checkbox
     for ( int i = 0; i < modes.length; i++ ) {
@@ -122,9 +122,9 @@ public class PropertyPatternPanel extends javax.swing.JPanel
       java.awt.GridBagConstraints gridBagConstraints2;
       propertyPanel.setBorder (new javax.swing.border.TitledBorder(
       new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)),
-      "propertyPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black));
+      "propertyPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black)); // NOI18N
   
-        nameLabel.setText ("nameLabel");
+        nameLabel.setText ("nameLabel"); // NOI18N
     
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         gridBagConstraints2.insets = new java.awt.Insets (2, 6, 2, 2);
@@ -142,7 +142,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
         gridBagConstraints2.weighty = 1.0;
         propertyPanel.add (nameTextField, gridBagConstraints2);
     
-        typeLabel.setText ("typeLabel");
+        typeLabel.setText ("typeLabel"); // NOI18N
     
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         gridBagConstraints2.insets = new java.awt.Insets (2, 6, 2, 2);
@@ -161,7 +161,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
         gridBagConstraints2.weighty = 1.0;
         propertyPanel.add (typeComboBox, gridBagConstraints2);
     
-        modeLabel.setText ("modeLabel");
+        modeLabel.setText ("modeLabel"); // NOI18N
     
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         gridBagConstraints2.insets = new java.awt.Insets (2, 6, 2, 2);
@@ -189,7 +189,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         propertyPanel.add (jPanel3, gridBagConstraints2);
     
-        boundCheckBox.setText ("boundCheckBox");
+        boundCheckBox.setText ("boundCheckBox"); // NOI18N
         boundCheckBox.addActionListener (new java.awt.event.ActionListener () {
           public void actionPerformed (java.awt.event.ActionEvent evt) {
             boundCheckBoxActionPerformed (evt);
@@ -209,7 +209,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         propertyPanel.add (jPanel4, gridBagConstraints2);
     
-        constrainedCheckBox.setText ("constrainedCheckBox");
+        constrainedCheckBox.setText ("constrainedCheckBox"); // NOI18N
         constrainedCheckBox.addActionListener (new java.awt.event.ActionListener () {
           public void actionPerformed (java.awt.event.ActionEvent evt) {
             constrainedCheckBoxActionPerformed (evt);
@@ -236,9 +236,9 @@ public class PropertyPatternPanel extends javax.swing.JPanel
       java.awt.GridBagConstraints gridBagConstraints3;
       optionsPanel.setBorder (new javax.swing.border.TitledBorder(
       new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)),
-      "optionsPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black));
+      "optionsPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black)); // NOI18N
   
-        fieldCheckBox.setText ("fieldCheckBox");
+        fieldCheckBox.setText ("fieldCheckBox"); // NOI18N
         fieldCheckBox.addActionListener (new java.awt.event.ActionListener () {
           public void actionPerformed (java.awt.event.ActionEvent evt) {
             fieldCheckBoxActionPerformed (evt);
@@ -254,7 +254,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
         gridBagConstraints3.weighty = 1.0;
         optionsPanel.add (fieldCheckBox, gridBagConstraints3);
     
-        returnCheckBox.setText ("returnCheckBox");
+        returnCheckBox.setText ("returnCheckBox"); // NOI18N
         returnCheckBox.setEnabled (false);
     
         gridBagConstraints3 = new java.awt.GridBagConstraints ();
@@ -265,7 +265,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
         gridBagConstraints3.weighty = 1.0;
         optionsPanel.add (returnCheckBox, gridBagConstraints3);
     
-        setCheckBox.setText ("setCheckBox");
+        setCheckBox.setText ("setCheckBox"); // NOI18N
         setCheckBox.setEnabled (false);
     
         gridBagConstraints3 = new java.awt.GridBagConstraints ();
@@ -276,7 +276,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
         gridBagConstraints3.weighty = 1.0;
         optionsPanel.add (setCheckBox, gridBagConstraints3);
     
-        supportCheckBox.setText ("supportCheckBox");
+        supportCheckBox.setText ("supportCheckBox"); // NOI18N
         supportCheckBox.setEnabled (false);
     
         gridBagConstraints3 = new java.awt.GridBagConstraints ();
@@ -484,6 +484,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
 
 /*
  * Log
+ *  10   Gandalf   1.9         1/12/00  Petr Hrebejk    i18n  
  *  9    Gandalf   1.8         1/4/00   Petr Hrebejk    Various bugfixes - 5036,
  *       5044, 5045
  *  8    Gandalf   1.7         11/10/99 Petr Hrebejk    Canged to work with 

@@ -54,12 +54,12 @@ public class JavadocModule extends ModuleInstall {
     
     try {
       Utilities2.createAction (SearchDocAction.class, 
-        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help"),
-        "ModuleHelp", true, true, false, true);
+        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help"), // NOI18N
+        "ModuleHelp", true, true, false, true); // NOI18N
       
       // Create Action in action pool
-      DataFolder helpActions = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help");
-      InstanceDataObject.create (helpActions, "JavaDocIndexSearch", SearchDocAction.class.getName ());
+      DataFolder helpActions = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help"); // NOI18N
+      InstanceDataObject.create (helpActions, "JavaDocIndexSearch", SearchDocAction.class.getName ()); // NOI18N
     } 
     catch (IOException e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) {
@@ -78,10 +78,10 @@ public class JavadocModule extends ModuleInstall {
     // Remove doc search action
     try {
       Utilities2.removeAction (SearchDocAction.class,
-        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help"));
+        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help")); // NOI18N
       
       // remove actions from action pool
-      DataFolder helpActions = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help");
+      DataFolder helpActions = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help"); // NOI18N
       Utilities2.removeAction (SearchDocAction.class, helpActions);
 
     } 
@@ -111,11 +111,11 @@ public class JavadocModule extends ModuleInstall {
     }
       
     // Install the factory for adding JavaDoc property to nodes
-    invokeDynamic( "com.netbeans.developer.modules.loaders.java.JavaDataObject",
-                   "addExplorerFilterFactory",
+    invokeDynamic( "com.netbeans.developer.modules.loaders.java.JavaDataObject", // NOI18N
+                   "addExplorerFilterFactory", // NOI18N
                    new JavaDocPropertySupportFactory() );
-    invokeDynamic( "com.netbeans.developer.modules.loaders.java.JavaDataObject",
-                   "addBrowserFilterFactory",
+    invokeDynamic( "com.netbeans.developer.modules.loaders.java.JavaDataObject", // NOI18N
+                   "addBrowserFilterFactory", // NOI18N
                    new JavaDocPropertySupportFactory() );
     
     // Assign the Ctrl+F1 to JavaDoc Index Search Action
@@ -190,13 +190,13 @@ public class JavadocModule extends ModuleInstall {
     // Try to find Java documantation 
     
     File jdkDocsDir = new File ( System.getProperty ("java.home")  + java.io.File.separator + ".." 
-                                 + java.io.File.separator + "docs" );
+                                 + java.io.File.separator + "docs" ); // NOI18N
     mount( jdkDocsDir, true );
     
     // Try to find NetBeans open-api documentation
         
     File apiDocsDir = new File ( System.getProperty ("netbeans.user")  + java.io.File.separator + "docs" 
-                                 + java.io.File.separator + "openide-api" );
+                                 + java.io.File.separator + "openide-api" ); // NOI18N
     mount( apiDocsDir, true );
     
     // Create default directory for JavaDoc
@@ -267,6 +267,7 @@ public class JavadocModule extends ModuleInstall {
 
 /* 
  * Log
+ *  22   Gandalf   1.21        1/12/00  Petr Hrebejk    i18n
  *  21   Gandalf   1.20        1/10/00  Petr Hrebejk    Bug 4747 - closing of 
  *       output tab fixed
  *  20   Gandalf   1.19        12/21/99 Jesse Glick     Installing after general

@@ -194,12 +194,12 @@ public class IdxPropertyPattern extends PropertyPattern {
     name = capitalizeFirstLetter( name );   
 
     if ( indexedGetterMethod != null ) {
-      Identifier idxGetterMethodID = Identifier.create(( indexedGetterMethod.getName().getName().startsWith("get") ?
-                                                   "get" : "is" ) + name );
+      Identifier idxGetterMethodID = Identifier.create(( indexedGetterMethod.getName().getName().startsWith("get") ? // NOI18N
+                                                   "get" : "is" ) + name ); // NOI18N
       indexedGetterMethod.setName( idxGetterMethodID );
     }
     if ( indexedSetterMethod != null ) {
-      Identifier idxSetterMethodID = Identifier.create( "set" + name );
+      Identifier idxSetterMethodID = Identifier.create( "set" + name ); // NOI18N
       indexedSetterMethod.setName( idxSetterMethodID );
     }
   }
@@ -418,28 +418,28 @@ public class IdxPropertyPattern extends PropertyPattern {
     if ( indexedGetterMethod != null ) {
       MethodParameter[] params = indexedGetterMethod.getParameters();
       if ( params.length != 1 ) {
-        throw new IntrospectionException( "bad indexed read method arg count" );
+        throw new IntrospectionException( "bad indexed read method arg count" ); // NOI18N
       }
       if ( !params[0].getType().compareTo( Type.INT, false ) ) {
-        throw new IntrospectionException( "not int index to indexed read method" );
+        throw new IntrospectionException( "not int index to indexed read method" ); // NOI18N
       }
       indexedType = indexedGetterMethod.getReturn();
       if ( indexedType.compareTo( Type.VOID, false ) ) {
-        throw new IntrospectionException( "indexed read method return void" );
+        throw new IntrospectionException( "indexed read method return void" ); // NOI18N
       }
     }
 
     if (indexedSetterMethod != null ) {
       MethodParameter params[] = indexedSetterMethod.getParameters();
       if ( params.length != 2 ) {
-        throw new IntrospectionException( "bad indexed write method arg count" );
+        throw new IntrospectionException( "bad indexed write method arg count" ); // NOI18N
       }
       if ( !params[0].getType().compareTo( Type.INT, false ) ) {
-        throw new IntrospectionException( "non int index to indexed write method" );
+        throw new IntrospectionException( "non int index to indexed write method" ); // NOI18N
       }
       if (indexedType != null && !indexedType.compareTo( params[1].getType(), false ) ) {
         throw new IntrospectionException( 
-          "type mismatch between indexed read and write methods" );
+          "type mismatch between indexed read and write methods" ); // NOI18N
       }
       indexedType = params[1].getType();
     }
@@ -449,7 +449,7 @@ public class IdxPropertyPattern extends PropertyPattern {
     Type propType = getType();
     if ( propType != null &&  (!propType.isArray() || !propType.getElementType().compareTo(indexedType, false))) {
       throw new IntrospectionException( 
-          "type mismatch between property type and indexed type" );
+          "type mismatch between property type and indexed type" ); // NOI18N
     }
   }
 
@@ -469,9 +469,9 @@ public class IdxPropertyPattern extends PropertyPattern {
       else if ( indexedSetterMethod != null )
         methodName = indexedSetterMethod.getName().getName();
       else 
-        throw new InternalError( "Indexed property with all methods == null" );
+        throw new InternalError( "Indexed property with all methods == null" ); // NOI18N
         
-      return methodName.startsWith( "is" ) ?
+      return methodName.startsWith( "is" ) ? // NOI18N
         Introspector.decapitalize( methodName.substring(2) ) :
         Introspector.decapitalize( methodName.substring(3) );  
         }
@@ -514,9 +514,9 @@ public class IdxPropertyPattern extends PropertyPattern {
 
     ClassElement declaringClass = getDeclaringClass();
     MethodElement newGetter = new MethodElement();
-    MethodParameter[] newParameters = { new MethodParameter( "index", Type.INT, false ) };
+    MethodParameter[] newParameters = { new MethodParameter( "index", Type.INT, false ) }; // NOI18N
 
-    newGetter.setName( Identifier.create( "get" + capitalizeFirstLetter( getName() ) ) );
+    newGetter.setName( Identifier.create( "get" + capitalizeFirstLetter( getName() ) ) ); // NOI18N
     newGetter.setReturn( indexedType );
     newGetter.setModifiers( Modifier.PUBLIC );
     newGetter.setParameters( newParameters );
@@ -560,15 +560,15 @@ public class IdxPropertyPattern extends PropertyPattern {
 
     ClassElement declaringClass = getDeclaringClass();
     MethodElement newSetter = new MethodElement();
-    MethodParameter[] newParameters = { new MethodParameter( "index", Type.INT, false ),
+    MethodParameter[] newParameters = { new MethodParameter( "index", Type.INT, false ), // NOI18N
                                         new MethodParameter( name, indexedType, false ) };
     
-    newSetter.setName( Identifier.create( "set" + capitalizeFirstLetter( getName() ) ) );
+    newSetter.setName( Identifier.create( "set" + capitalizeFirstLetter( getName() ) ) ); // NOI18N
     newSetter.setReturn( Type.VOID );
     newSetter.setModifiers( Modifier.PUBLIC );
     newSetter.setParameters( newParameters );
     if ( constrained )
-      newSetter.setExceptions( ( new Identifier[] { Identifier.create( "java.beans.PropertyVetoException" ) } ) );
+      newSetter.setExceptions( ( new Identifier[] { Identifier.create( "java.beans.PropertyVetoException" ) } ) ); // NOI18N
     if ( declaringClass.isInterface() ) {
       newSetter.setBody( null );
     }
@@ -580,7 +580,7 @@ public class IdxPropertyPattern extends PropertyPattern {
       String comment = MessageFormat.format( bundle.getString( "COMMENT_IdxPropertySetter" ),
                                              new Object[] { getName(), name } );
       if ( constrained ) 
-        comment = comment + "\n@throws PropertyVetoException\n";
+        comment = comment + bundle.getString( "COMMENT_Tag_ThrowsPropertyVeto" );
       newSetter.getJavaDoc().setRawText( comment );
     }
 
@@ -681,6 +681,7 @@ public class IdxPropertyPattern extends PropertyPattern {
 
 /* 
  * Log
+ *  10   Gandalf   1.9         1/12/00  Petr Hrebejk    i18n  
  *  9    Gandalf   1.8         1/4/00   Petr Hrebejk    Various bugfixes - 5036,
  *       5044, 5045
  *  8    Gandalf   1.7         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

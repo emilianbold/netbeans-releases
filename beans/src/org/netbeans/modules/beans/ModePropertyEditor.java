@@ -53,7 +53,7 @@ public class ModePropertyEditor extends PropertyEditorSupport {
       if (values[i] == value) 
         return tags[i];
 
-    return "unupported";
+    return PatternNode.bundle.getString( "LAB_Unsupported" );
   }
 
   /** @param text A text for the current value. */
@@ -70,6 +70,7 @@ public class ModePropertyEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  3    Gandalf   1.2         1/12/00  Petr Hrebejk    i18n  
  *  2    Gandalf   1.1         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    

@@ -102,7 +102,7 @@ public class  PatternGroupNode extends AbstractNode {
   }
 
   public static final String ICON_BASE =              
-    "/com/netbeans/developer/modules/beans/resources/patternGroup";
+    "/com/netbeans/developer/modules/beans/resources/patternGroup"; // NOI18N
   
   public PatternGroupNode( PatternChildren children ) {
     super( (Children)children );
@@ -177,7 +177,7 @@ public class  PatternGroupNode extends AbstractNode {
 
       /** Help context */
       public org.openide.util.HelpCtx getHelpCtx() {
-        return new org.openide.util.HelpCtx (PatternGroupNode.class.getName () + "." + name);
+        return new org.openide.util.HelpCtx (PatternGroupNode.class.getName () + "." + name); // NOI18N
       }
 
       /** Creates new element */
@@ -225,7 +225,7 @@ public class  PatternGroupNode extends AbstractNode {
         PatternNode.bundle.getString( "CTL_TITLE_NewProperty"),            // Title
         true,                                                 // Modal
         propertyPanel );
-      dd.setHelpCtx (new HelpCtx (PatternGroupNode.class.getName () + ".dialogProperty"));
+      dd.setHelpCtx (new HelpCtx (PatternGroupNode.class.getName () + ".dialogProperty")); // NOI18N
       dd.setClosingOptions( new Object[]{} );
       
       dialog = TopManager.getDefault().createDialog( dd );
@@ -384,6 +384,7 @@ public class  PatternGroupNode extends AbstractNode {
 
 /* 
  * Log
+ *  12   Gandalf   1.11        1/12/00  Petr Hrebejk    i18n  
  *  11   Gandalf   1.10        1/11/00  Jesse Glick     Context help.
  *  10   Gandalf   1.9         11/11/99 Jesse Glick     Display miscellany.
  *  9    Gandalf   1.8         11/10/99 Petr Hrebejk    Canged to work with 

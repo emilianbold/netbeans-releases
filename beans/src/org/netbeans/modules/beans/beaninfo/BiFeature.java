@@ -35,11 +35,11 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
   //static final long serialVersionUID = -8680621542479107034L;
 
   // Function names for code generation and reconition
-  private static final String TEXT_EXPERT = "setExpert";
-  private static final String TEXT_HIDDEN = "setHidden";
-  private static final String TEXT_PREFERRED = "setPreferred";
-  private static final String TEXT_DISPLAY_NAME = "setDisplayName";
-  private static final String TEXT_SHORT_DESCRIPTION = "setShortDescription";
+  private static final String TEXT_EXPERT = "setExpert"; // NOI18N
+  private static final String TEXT_HIDDEN = "setHidden"; // NOI18N
+  private static final String TEXT_PREFERRED = "setPreferred"; // NOI18N
+  private static final String TEXT_DISPLAY_NAME = "setDisplayName"; // NOI18N
+  private static final String TEXT_SHORT_DESCRIPTION = "setShortDescription"; // NOI18N
 
 
   // variables ..........................................................................
@@ -134,29 +134,29 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
 
     if ( expert ) {
       sb.setLength( 0 );
-      sb.append( TEXT_EXPERT ).append( " ( true )" );
+      sb.append( TEXT_EXPERT ).append( " ( true )" ); // NOI18N
       col.add( sb.toString() );
     }
     if ( hidden ) {
       sb.setLength( 0 );
-      sb.append( TEXT_HIDDEN ).append( " ( true )" );
+      sb.append( TEXT_HIDDEN ).append( " ( true )" ); // NOI18N
       col.add( sb.toString() );
     }
     if ( preferred ) {
       sb.setLength( 0 );
-      sb.append( TEXT_PREFERRED ).append( " ( true )" );
+      sb.append( TEXT_PREFERRED ).append( " ( true )" ); // NOI18N
       col.add( sb.toString() );
     }
     if ( displayName != null && displayName.trim().length() > 0) {
       sb.setLength( 0 );
-      sb.append( TEXT_DISPLAY_NAME ).append( " ( ");
-      sb.append( displayName ).append( " )" );
+      sb.append( TEXT_DISPLAY_NAME ).append( " ( "); // NOI18N
+      sb.append( displayName ).append( " )" ); // NOI18N
       col.add( sb.toString() );
     }
     if ( shortDescription != null && shortDescription.trim().length() > 0 ) {
       sb.setLength( 0 );
-      sb.append( TEXT_SHORT_DESCRIPTION ).append( " ( ");
-      sb.append( shortDescription ).append( " )" );
+      sb.append( TEXT_SHORT_DESCRIPTION ).append( " ( "); // NOI18N
+      sb.append( shortDescription ).append( " )" ); // NOI18N
       col.add( sb.toString() );
     }
 
@@ -170,12 +170,12 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
 
     Iterator it = code.iterator();
 
-    String stNew = new String( getName() + "]=new" );
-    String stExpert = new String( getName() + "]." + TEXT_EXPERT );
-    String stHidden = new String( getName() + "]." + TEXT_HIDDEN );
-    String stPreferred = new String( getName() + "]." + TEXT_PREFERRED );
-    String stDisplayName = new String( getName() + "]." + TEXT_DISPLAY_NAME );
-    String stShortDescription = new String( getName() + "]." + TEXT_SHORT_DESCRIPTION );
+    String stNew = new String( getName() + "]=new" ); // NOI18N
+    String stExpert = new String( getName() + "]." + TEXT_EXPERT ); // NOI18N
+    String stHidden = new String( getName() + "]." + TEXT_HIDDEN ); // NOI18N
+    String stPreferred = new String( getName() + "]." + TEXT_PREFERRED ); // NOI18N
+    String stDisplayName = new String( getName() + "]." + TEXT_DISPLAY_NAME ); // NOI18N
+    String stShortDescription = new String( getName() + "]." + TEXT_SHORT_DESCRIPTION ); // NOI18N
 
     while( it.hasNext() ) {
       String statement = ( String ) it.next();
@@ -223,9 +223,9 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
     
     private PropertyPattern pattern;
     
-    private static final String TEXT_BOUND = "setBound";
-    private static final String TEXT_CONSTRAINED = "setConstrained";
-    private static final String TEXT_PROPERTY_EDITOR = "setPropertyEditorClass";
+    private static final String TEXT_BOUND = "setBound"; // NOI18N
+    private static final String TEXT_CONSTRAINED = "setConstrained"; // NOI18N
+    private static final String TEXT_PROPERTY_EDITOR = "setPropertyEditorClass"; // NOI18N
     
     private boolean bound;
     private boolean constrained;
@@ -278,30 +278,30 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
     String getCreationString () {
       StringBuffer sb = new StringBuffer( 100 );
 
-      sb.append( "new PropertyDescriptor ( " );
-      sb.append( "\"" + this.getName() + "\", " );
-      sb.append( pattern.getDeclaringClass().getName().getName() + ".class, " );
+      sb.append( "new PropertyDescriptor ( " ); // NOI18N
+      sb.append( "\"" + this.getName() + "\", " ); // NOI18N
+      sb.append( pattern.getDeclaringClass().getName().getName() + ".class, " ); // NOI18N
 
       if ( pattern.getGetterMethod() != null && getMode() != PropertyPattern.WRITE_ONLY )
-        sb.append( "\"" + pattern.getGetterMethod().getName().getName() + "\", " );
+        sb.append( "\"" + pattern.getGetterMethod().getName().getName() + "\", " ); // NOI18N
       else 
-        sb.append( "null, ");
+        sb.append( "null, "); // NOI18N
 
       if ( pattern.getSetterMethod() != null && getMode() != PropertyPattern.READ_ONLY )
-        sb.append( "\"" + pattern.getSetterMethod().getName().getName() + "\" )" );
+        sb.append( "\"" + pattern.getSetterMethod().getName().getName() + "\" )" ); // NOI18N
       else
-        sb.append( "null )");
+        sb.append( "null )"); // NOI18N
 
       return sb.toString();
     }
 
     String getIconBase() {
       if ( mode == PropertyPattern.READ_ONLY )
-        return BIF_PROPERTY_RO + ( this.isIncluded() ? "S" : "N" );
+        return BIF_PROPERTY_RO + ( this.isIncluded() ? "S" : "N" ); // NOI18N
       else if ( mode == PropertyPattern.WRITE_ONLY )
-        return BIF_PROPERTY_WO + ( this.isIncluded() ? "S" : "N" );
+        return BIF_PROPERTY_WO + ( this.isIncluded() ? "S" : "N" ); // NOI18N
       else
-        return BIF_PROPERTY_RW + ( this.isIncluded() ? "S" : "N" );
+        return BIF_PROPERTY_RW + ( this.isIncluded() ? "S" : "N" ); // NOI18N
 
     }
     
@@ -311,18 +311,18 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
 
       if ( bound ) {
         sb.setLength( 0 );
-        sb.append( TEXT_BOUND ).append( " ( true )" );
+        sb.append( TEXT_BOUND ).append( " ( true )" ); // NOI18N
         col.add( sb.toString() );
       }
       if ( constrained ) {
         sb.setLength( 0 );
-        sb.append( TEXT_CONSTRAINED ).append( " ( true )" );
+        sb.append( TEXT_CONSTRAINED ).append( " ( true )" ); // NOI18N
         col.add( sb.toString() );
       }
       if ( propertyEditorClass != null && propertyEditorClass.trim().length() > 0 ) {
         sb.setLength( 0 );
-        sb.append( TEXT_PROPERTY_EDITOR ).append( " ( ");
-        sb.append( propertyEditorClass ).append( " )" );
+        sb.append( TEXT_PROPERTY_EDITOR ).append( " ( "); // NOI18N
+        sb.append( propertyEditorClass ).append( " )" ); // NOI18N
         col.add( sb.toString() );
       }
       
@@ -331,9 +331,9 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
     
     void analyzeCustomizationString( String statement ) {
           
-      String stBound = new String( this.getName() + "]." + TEXT_BOUND );
-      String stConstrained = new String( this.getName() + "]." + TEXT_CONSTRAINED );
-      String stPropertyEditor = new String( this.getName() + "]." + TEXT_PROPERTY_EDITOR );  
+      String stBound = new String( this.getName() + "]." + TEXT_BOUND ); // NOI18N
+      String stConstrained = new String( this.getName() + "]." + TEXT_CONSTRAINED ); // NOI18N
+      String stPropertyEditor = new String( this.getName() + "]." + TEXT_PROPERTY_EDITOR ); // NOI18N
         
       if ( statement.indexOf( stBound ) != -1 ) {
         setBound( true );
@@ -359,9 +359,9 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
 
             // Analyses if there is mode restriction in the existing BeanInfo
       if ( params.length == 4 && mode == PropertyPattern.READ_WRITE ) {
-        if ( params[2].equals( "null" ) )
+        if ( params[2].equals( "null" ) ) // NOI18N
           mode = PropertyPattern.WRITE_ONLY;
-        else if ( params[3].equals( "null" ) )
+        else if ( params[3].equals( "null" ) ) // NOI18N
           mode = PropertyPattern.READ_ONLY;          
       }
     }
@@ -412,40 +412,40 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
 
       StringBuffer sb = new StringBuffer( 100 );
 
-      sb.append( "new IndexedPropertyDescriptor ( " );
-      sb.append( "\"" + this.getName() + "\", " );
-      sb.append( pattern.getDeclaringClass().getName().getName() + ".class, " );
+      sb.append( "new IndexedPropertyDescriptor ( " ); // NOI18N
+      sb.append( "\"" + this.getName() + "\", " ); // NOI18N
+      sb.append( pattern.getDeclaringClass().getName().getName() + ".class, " ); // NOI18N
 
       if ( pattern.getGetterMethod() != null && niGetter )
-        sb.append( "\"" + pattern.getGetterMethod().getName().getName() + "\", " );
+        sb.append( "\"" + pattern.getGetterMethod().getName().getName() + "\", " ); // NOI18N
       else 
-        sb.append( "null, ");
+        sb.append( "null, "); // NOI18N
 
       if ( pattern.getSetterMethod() != null && niSetter )
-        sb.append( "\"" + pattern.getSetterMethod().getName().getName() + "\", " );
+        sb.append( "\"" + pattern.getSetterMethod().getName().getName() + "\", " ); // NOI18N
       else
-        sb.append( "null, ");
+        sb.append( "null, "); // NOI18N
 
       if ( pattern.getIndexedGetterMethod() != null && getMode() != PropertyPattern.WRITE_ONLY )
-        sb.append( "\"" + pattern.getIndexedGetterMethod().getName().getName() + "\", " );
+        sb.append( "\"" + pattern.getIndexedGetterMethod().getName().getName() + "\", " ); // NOI18N
       else 
-        sb.append( "null, ");
+        sb.append( "null, "); // NOI18N
 
       if ( pattern.getIndexedSetterMethod() != null && getMode() != PropertyPattern.READ_ONLY )
-        sb.append( "\"" + pattern.getIndexedSetterMethod().getName().getName() + "\" )" );
+        sb.append( "\"" + pattern.getIndexedSetterMethod().getName().getName() + "\" )" ); // NOI18N
       else
-        sb.append( "null )");
+        sb.append( "null )"); // NOI18N
  
       return sb.toString();
       }
 
       String getIconBase() {
         if ( getMode() == PropertyPattern.READ_ONLY )
-          return BIF_IDXPROPERTY_RO + ( this.isIncluded() ? "S" : "N" );
+          return BIF_IDXPROPERTY_RO + ( this.isIncluded() ? "S" : "N" ); // NOI18N
         else if ( getMode() == PropertyPattern.WRITE_ONLY )
-          return BIF_IDXPROPERTY_WO + ( this.isIncluded() ? "S" : "N" );
+          return BIF_IDXPROPERTY_WO + ( this.isIncluded() ? "S" : "N" ); // NOI18N
         else
-          return BIF_IDXPROPERTY_RW + ( this.isIncluded() ? "S" : "N" );
+          return BIF_IDXPROPERTY_RW + ( this.isIncluded() ? "S" : "N" ); // NOI18N
       }
 
       void analyzeCreationString( String statement ) {
@@ -453,9 +453,9 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
 
               // Analyses if there is mode restriction in the existing BeanInfo
         if ( params.length == 6 && getMode() == PropertyPattern.READ_WRITE ) {
-          if ( params[4].equals( "null" ) )
+          if ( params[4].equals( "null" ) ) // NOI18N
             setMode( PropertyPattern.WRITE_ONLY );
-          else if ( params[5].equals( "null" ) )
+          else if ( params[5].equals( "null" ) ) // NOI18N
             setMode( PropertyPattern.READ_ONLY );          
 
              // Analayses if there is restriction on non indexed getter or setter
@@ -473,8 +473,8 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
 
     EventSetPattern pattern;
     
-    private static final String TEXT_UNICAST = "setUnicast";
-    private static final String TEXT_IN_DEFAULT = "setInDefaultEventSet";
+    private static final String TEXT_UNICAST = "setUnicast"; // NOI18N
+    private static final String TEXT_IN_DEFAULT = "setInDefaultEventSet"; // NOI18N
     
     private boolean isInDefaultEventSet = true;
 
@@ -499,22 +499,22 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
     String getCreationString () {
       StringBuffer sb = new StringBuffer( 100 );
 
-      sb.append( "new EventSetDescriptor ( " );
-      sb.append( pattern.getDeclaringClass().getName().getName() + ".class, " );
-      sb.append( "\"" + this.getName() + "\", " );
-      sb.append( pattern.getType().toString() + ".class, " );
-      sb.append( "new String[0], " );
-      sb.append( "\"" + pattern.getAddListenerMethod().getName().getName() + "\", " );
-      sb.append( "\"" + pattern.getRemoveListenerMethod().getName().getName() + "\" )" );
+      sb.append( "new EventSetDescriptor ( " ); // NOI18N
+      sb.append( pattern.getDeclaringClass().getName().getName() + ".class, " ); // NOI18N
+      sb.append( "\"" + this.getName() + "\", " ); // NOI18N
+      sb.append( pattern.getType().toString() + ".class, " ); // NOI18N
+      sb.append( "new String[0], " ); // NOI18N
+      sb.append( "\"" + pattern.getAddListenerMethod().getName().getName() + "\", " ); // NOI18N
+      sb.append( "\"" + pattern.getRemoveListenerMethod().getName().getName() + "\" )" ); // NOI18N
 
       return sb.toString();
     }
 
     String getIconBase() {
       if ( isUnicast() )
-        return BIF_EVENTSET_UNICAST + ( this.isIncluded() ? "S" : "N" );
+        return BIF_EVENTSET_UNICAST + ( this.isIncluded() ? "S" : "N" ); // NOI18N
       else
-        return BIF_EVENTSET_MULTICAST + ( this.isIncluded() ? "S" : "N" );
+        return BIF_EVENTSET_MULTICAST + ( this.isIncluded() ? "S" : "N" ); // NOI18N
     }
 
     Collection getCustomizationStrings () {
@@ -523,12 +523,12 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
 
       if ( isUnicast() ) {
         sb.setLength( 0 );
-        sb.append( TEXT_UNICAST ).append( " ( true )" );
+        sb.append( TEXT_UNICAST ).append( " ( true )" ); // NOI18N
         col.add( sb.toString() );
       }
       if ( !isInDefaultEventSet ) {
         sb.setLength( 0 );
-        sb.append( TEXT_IN_DEFAULT ).append( " ( false )" );
+        sb.append( TEXT_IN_DEFAULT ).append( " ( false )" ); // NOI18N
         col.add( sb.toString() );
       }
       
@@ -537,8 +537,8 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
     
     void analyzeCustomizationString( String statement ) {
           
-      String stUnicast = new String( this.getName() + "]." + TEXT_UNICAST );
-      String stInDefault = new String( this.getName() + "]." + TEXT_IN_DEFAULT ); 
+      String stUnicast = new String( this.getName() + "]." + TEXT_UNICAST ); // NOI18N
+      String stInDefault = new String( this.getName() + "]." + TEXT_IN_DEFAULT ); // NOI18N
       /*
       if ( statement.indexOf( stUnicast ) != -1 ) {
         setUnicast( true );

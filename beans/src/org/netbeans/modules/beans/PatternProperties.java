@@ -21,33 +21,34 @@ package com.netbeans.developer.modules.beans;
 public interface PatternProperties {
   /** Name of type property for all {@link PropertyPattern}s.
   */
-  public static final String PROP_TYPE = "type";
+  public static final String PROP_TYPE = "type"; // NOI18N
 
-  public static final String PROP_MODE = "mode";
+  public static final String PROP_MODE = "mode"; // NOI18N
 
-  public static final String PROP_NAME = "name";
+  public static final String PROP_NAME = "name"; // NOI18N
 
-  public static final String PROP_GETTER = "getter";
+  public static final String PROP_GETTER = "getter"; // NOI18N
 
-  public static final String PROP_SETTER = "setter";
+  public static final String PROP_SETTER = "setter"; // NOI18N
 
-  public static final String PROP_ESTIMATEDFIELD = "estimatedField";
+  public static final String PROP_ESTIMATEDFIELD = "estimatedField"; // NOI18N
 
-  public static final String PROP_INDEXEDTYPE = "indexedType";
+  public static final String PROP_INDEXEDTYPE = "indexedType"; // NOI18N
 
-  public static final String PROP_INDEXEDGETTER = "indexedGetter";
+  public static final String PROP_INDEXEDGETTER = "indexedGetter"; // NOI18N
 
-  public static final String PROP_INDEXEDSETTER = "indexedSetter";
+  public static final String PROP_INDEXEDSETTER = "indexedSetter"; // NOI18N
 
-  public static final String PROP_ADDLISTENER = "addListener";
+  public static final String PROP_ADDLISTENER = "addListener"; // NOI18N
   
-  public static final String PROP_REMOVELISTENER = "removeListener";
+  public static final String PROP_REMOVELISTENER = "removeListener"; // NOI18N
 
-  public static final String PROP_ISUNICAST = "isUnicast";
+  public static final String PROP_ISUNICAST = "isUnicast"; // NOI18N
 }
 
 /*
  * Log
+ *  3    Gandalf   1.2         1/12/00  Petr Hrebejk    i18n  
  *  2    Gandalf   1.1         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    

@@ -46,40 +46,40 @@ import org.openide.nodes.Sheet;
   // static variables ...........................................................................
 
   private static final String ICON_BASE =
-    "/com/netbeans/developer/modules/beans/resources/dvoj";
+    "/com/netbeans/developer/modules/beans/resources/dvoj"; // NOI18N
 
   /** Property display name constant */
-  public static final String PROP_DISPLAY_NAME = "displayName";
+  public static final String PROP_DISPLAY_NAME = "displayName"; // NOI18N
   /** Property expert constant */
-  public static final String PROP_EXPERT = "expert";
+  public static final String PROP_EXPERT = "expert"; // NOI18N
   /** Property hidden constant */
-  public static final String PROP_HIDDEN = "hidden";
+  public static final String PROP_HIDDEN = "hidden"; // NOI18N
   /** Property name constant */
-  public static final String PROP_NAME = "name";
+  public static final String PROP_NAME = "name"; // NOI18N
   /** Property preffered constant */
-  public static final String PROP_PREFERRED = "preferred";
+  public static final String PROP_PREFERRED = "preferred"; // NOI18N
   /** Property short description constant */
-  public static final String PROP_SHORT_DESCRIPTION = "shortDescription";
+  public static final String PROP_SHORT_DESCRIPTION = "shortDescription"; // NOI18N
   /** Property include constant */
-  public static final String PROP_INCLUDED = "included";
+  public static final String PROP_INCLUDED = "included"; // NOI18N
 
   /** Property bound constant */
-  public static final String PROP_BOUND = "bound";
+  public static final String PROP_BOUND = "bound"; // NOI18N
   /** Property constrained constant */
-  public static final String PROP_CONSTRAINED = "constrained";
+  public static final String PROP_CONSTRAINED = "constrained"; // NOI18N
   /** Property mode constant */
-  public static final String PROP_MODE = "mode";
+  public static final String PROP_MODE = "mode"; // NOI18N
   /** Property editor class constant */
-  public static final String PROP_EDITOR_CLASS = "propertyEditorClass";
+  public static final String PROP_EDITOR_CLASS = "propertyEditorClass"; // NOI18N
   /** Property non-indexed getter constant */
-  public static final String PROP_NI_GETTER = "niGetter";
+  public static final String PROP_NI_GETTER = "niGetter"; // NOI18N
   /** Property non-indexed setter constant */
-  public static final String PROP_NI_SETTER = "niSetter";
+  public static final String PROP_NI_SETTER = "niSetter"; // NOI18N
 
   /** Property unicast constant */
-  public static final String PROP_UNICAST = "unicast";
+  public static final String PROP_UNICAST = "unicast"; // NOI18N
   /** Property in default event set constant */
-  public static final String PROP_IN_DEFAULT_EVENTSET = "inDefaultEventSet";
+  public static final String PROP_IN_DEFAULT_EVENTSET = "inDefaultEventSet"; // NOI18N
 
   
   // variables ..........................................................................

@@ -43,10 +43,10 @@ public class DocumentationSettings extends ContextSystemOption //implements View
   private static boolean externalJavadoc = false;
 
   /** searchpath */
-  private static String[] searchPath = new String[] {"c:/Jdk1.2/doc" };
+  private static String[] searchPath = new String[] {"c:/Jdk1.2/doc" }; // NOI18N
 
   /** Holds value of property idxSearchSort. */
-  private static String idxSearchSort = "A";
+  private static String idxSearchSort = "A"; // NOI18N
   
   /** Holds value of property idxSearchNoHtml. */
   private static boolean idxSearchNoHtml = false;
@@ -197,6 +197,7 @@ public class DocumentationSettings extends ContextSystemOption //implements View
 
 /*
  * Log
+ *  10   Gandalf   1.9         1/12/00  Petr Hrebejk    i18n
  *  9    Gandalf   1.8         11/27/99 Patrik Knakal   
  *  8    Gandalf   1.7         11/5/99  Jesse Glick     Context help jumbo 
  *       patch.

@@ -180,17 +180,17 @@ public class PropertyPattern extends Pattern {
   public void setName( String name ) throws SourceException {
   
     if ( !Utilities.isJavaIdentifier( name )  )
-      throw new SourceException( "Invalid event source name" );
+      throw new SourceException( "Invalid event source name" ); // NOI18N
 
     name = capitalizeFirstLetter( name );
 
     if ( getterMethod != null ) {
-      Identifier getterMethodID = Identifier.create(( getterMethod.getName().getName().startsWith("get") ?
-                                                   "get" : "is" ) + name );
+      Identifier getterMethodID = Identifier.create(( getterMethod.getName().getName().startsWith("get") ? // NOI18N
+                                                   "get" : "is" ) + name ); // NOI18N
       getterMethod.setName( getterMethodID );
       }
     if ( setterMethod != null ) {
-      Identifier setterMethodID = Identifier.create( "set" + name );
+      Identifier setterMethodID = Identifier.create( "set" + name ); // NOI18N
 
       setterMethod.setName( setterMethodID );
       }
@@ -199,7 +199,7 @@ public class PropertyPattern extends Pattern {
 
     // Ask if to set the estimated field    
     if ( estimatedField != null ) {
-       ElementFormat fmt = new ElementFormat ("{m} {t} {n}");
+       ElementFormat fmt = new ElementFormat ("{m} {t} {n}"); // NOI18N
        String mssg = MessageFormat.format( PatternNode.bundle.getString( "FMT_ChangeFieldName" ), 
                                             new Object[] { fmt.format (estimatedField) } );
        NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
@@ -290,7 +290,7 @@ public class PropertyPattern extends Pattern {
     
     if (getterMethod != null ) {
       if ( this.type.compareTo( Type.BOOLEAN, false ) ) {
-        getterMethod.setName( Identifier.create( "get" + capitalizeFirstLetter( getName() ) ) );
+        getterMethod.setName( Identifier.create( "get" + capitalizeFirstLetter( getName() ) ) ); // NOI18N
       }
       else if ( type.compareTo( Type.BOOLEAN, false ) ) {
        String mssg = MessageFormat.format( PatternNode.bundle.getString( "FMT_ChangeToIs" ), 
@@ -298,7 +298,7 @@ public class PropertyPattern extends Pattern {
        NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
        TopManager.getDefault().notify( nd );
        if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
-          getterMethod.setName( Identifier.create( "is" + capitalizeFirstLetter( getName() ) ) );
+          getterMethod.setName( Identifier.create( "is" + capitalizeFirstLetter( getName() ) ) ); // NOI18N
           }
       }
       getterMethod.setReturn( type );      
@@ -317,7 +317,7 @@ public class PropertyPattern extends Pattern {
     // Ask if to change estimated field Type
     
     if ( estimatedField != null ) {
-      ElementFormat fmt = new ElementFormat ("{m} {t} {n}");
+      ElementFormat fmt = new ElementFormat ("{m} {t} {n}"); // NOI18N
       String mssg = MessageFormat.format( PatternNode.bundle.getString( "FMT_ChangeFieldType" ), 
                                            new Object[] { fmt.format (estimatedField) } );
       NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
@@ -361,7 +361,7 @@ public class PropertyPattern extends Pattern {
    */
   public void destroy() throws SourceException {    
     if ( estimatedField != null ) {
-      ElementFormat fmt = new ElementFormat ("{m} {t} {n}");
+      ElementFormat fmt = new ElementFormat ("{m} {t} {n}"); // NOI18N
       String mssg = MessageFormat.format( PatternNode.bundle.getString( "FMT_DeleteField" ), 
                                            new Object[] { fmt.format (estimatedField) } );
       NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
@@ -399,8 +399,8 @@ public class PropertyPattern extends Pattern {
       xr.getDeclaringClass() == yr.getDeclaringClass() &&
       xr.getReturn().compareTo( Type.BOOLEAN, false ) && 
       yr.getReturn().compareTo( Type.BOOLEAN, false ) &&
-      xr.getName().getName().indexOf("is") == 0 &&
-      yr.getName().getName().indexOf("get") == 0 ) {
+      xr.getName().getName().indexOf("is") == 0 && // NOI18N
+      yr.getName().getName().indexOf("get") == 0 ) { // NOI18N
       getterMethod = xr;
     }
 
@@ -421,7 +421,7 @@ public class PropertyPattern extends Pattern {
     catch ( IntrospectionException ex ) {
       //System.out.println (x.getName() + ":" +  y.getName());
       //System.out.println (x.getType() + ":" + y.getType() );
-      throw new InternalError( "Mixing invalid PropertyPattrens" + ex );
+      throw new InternalError( "Mixing invalid PropertyPattrens" + ex ); // NOI18N
     }
 
     name = findPropertyName();
@@ -436,21 +436,21 @@ public class PropertyPattern extends Pattern {
 
     if ( getterMethod != null ) {
       if ( getterMethod.getParameters().length != 0 ) {
-        throw new IntrospectionException( "bad read method arg count" );
+        throw new IntrospectionException( "bad read method arg count" ); // NOI18N
       }
       resolvedType = getterMethod.getReturn();
       if ( resolvedType.compareTo( Type.VOID, false ) ) {
-        throw new IntrospectionException( "read method " + getterMethod.getName().getName() + 
-          " returns void" );
+        throw new IntrospectionException( "read method " + getterMethod.getName().getName() + // NOI18N
+          " returns void" ); // NOI18N
       }
     }
     if ( setterMethod != null ) {
       MethodParameter params[] = setterMethod.getParameters();
       if ( params.length != 1 ) {
-        throw new IntrospectionException( "bad write method arg count" );
+        throw new IntrospectionException( "bad write method arg count" ); // NOI18N
       }
       if ( resolvedType != null && !resolvedType.compareTo( params[0].getType(), false ) ) {
-        throw new IntrospectionException( "type mismatch between read and write methods" );
+        throw new IntrospectionException( "type mismatch between read and write methods" ); // NOI18N
       }
       resolvedType = params[0].getType();
     }
@@ -472,7 +472,7 @@ public class PropertyPattern extends Pattern {
       return null;
     }
 
-    return  methodName.startsWith( "is" ) ?
+    return  methodName.startsWith( "is" ) ? // NOI18N
       Introspector.decapitalize( methodName.substring(2) ) :
       Introspector.decapitalize( methodName.substring(3) );
   }
@@ -496,7 +496,7 @@ public class PropertyPattern extends Pattern {
     ClassElement declaringClass = getDeclaringClass();
     MethodElement newGetter = new MethodElement();
 
-    newGetter.setName( Identifier.create( (type == Type.BOOLEAN ? "is" : "get") + capitalizeFirstLetter( getName() ) ) );
+    newGetter.setName( Identifier.create( (type == Type.BOOLEAN ? "is" : "get") + capitalizeFirstLetter( getName() ) ) ); // NOI18N
     newGetter.setReturn( type );
     newGetter.setModifiers( Modifier.PUBLIC );
     
@@ -541,12 +541,12 @@ public class PropertyPattern extends Pattern {
     ClassElement declaringClass = getDeclaringClass();
     MethodElement newSetter = new MethodElement();
     
-    newSetter.setName( Identifier.create( "set" + capitalizeFirstLetter( getName() ) ) );
+    newSetter.setName( Identifier.create( "set" + capitalizeFirstLetter( getName() ) ) ); // NOI18N
     newSetter.setReturn( Type.VOID );
     newSetter.setModifiers( Modifier.PUBLIC );
     newSetter.setParameters( ( new MethodParameter[] { new MethodParameter( name, type, false ) } ));
     if ( constrained )
-      newSetter.setExceptions( ( new Identifier[] { Identifier.create( "java.beans.PropertyVetoException" ) } ) );
+      newSetter.setExceptions( ( new Identifier[] { Identifier.create( "java.beans.PropertyVetoException" ) } ) ); // NOI18N
     
     if ( declaringClass.isInterface() ) {
       newSetter.setBody( null );
@@ -559,7 +559,7 @@ public class PropertyPattern extends Pattern {
       String comment = MessageFormat.format( bundle.getString( "COMMENT_PropertySetter" ),
                                              new Object[] { getName(), name } );
       if ( constrained ) 
-        comment = comment + "\n@throws PropertyVetoException\n";
+        comment = comment + bundle.getString( "COMMENT_Tag_ThrowsPropertyVeto" );
       newSetter.getJavaDoc().setRawText( comment );
     }
 
@@ -589,7 +589,6 @@ public class PropertyPattern extends Pattern {
     ClassElement declaringClass = getDeclaringClass();
     FieldElement newField = new FieldElement();
     
-    System.out.println( "Field " + getName() );
 
     newField.setName( Identifier.create( Introspector.decapitalize( getName() ) ) );
     newField.setType( type );
@@ -720,6 +719,7 @@ public class PropertyPattern extends Pattern {
 
 /* 
  * Log
+ *  11   Gandalf   1.10        1/12/00  Petr Hrebejk    i18n  
  *  10   Gandalf   1.9         1/4/00   Petr Hrebejk    Various bugfixes - 5036,
  *       5044, 5045
  *  9    Gandalf   1.8         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

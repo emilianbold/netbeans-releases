@@ -36,12 +36,12 @@ import com.netbeans.developer.modules.loaders.java.JavaEditor;
 
 public class BeanInfoSource extends Object {
   
-  private static final String BEANINFO_NAME_EXT = "BeanInfo";
+  private static final String BEANINFO_NAME_EXT = "BeanInfo"; // NOI18N
   
-  private static final String PROPERTIES_SECTION = "Properties";
-  private static final String EVENTSETS_SECTION = "Events";
-  private static final String ICONS_SECTION = "Icons";
-  private static final String IDX_SECTION = "Idx";
+  private static final String PROPERTIES_SECTION = "Properties"; // NOI18N
+  private static final String EVENTSETS_SECTION = "Events"; // NOI18N
+  private static final String ICONS_SECTION = "Icons"; // NOI18N
+  private static final String IDX_SECTION = "Idx"; // NOI18N
   
   private ClassElement classElement;
   
@@ -94,7 +94,7 @@ public class BeanInfoSource extends Object {
      if ( folder == null )
        return;
 
-     FileObject biFile = folder.getFileObject( dataObject.getName() + BEANINFO_NAME_EXT, "java" );
+     FileObject biFile = folder.getFileObject( dataObject.getName() + BEANINFO_NAME_EXT, "java" ); // NOI18N
      if ( biFile == null )
        return;
 
@@ -126,11 +126,11 @@ public class BeanInfoSource extends Object {
     if ( foTemplates == null )
       return;
 
-    FileObject foClassTemplates = foTemplates.getFileObject( "Beans" );
+    FileObject foClassTemplates = foTemplates.getFileObject( "Beans" ); // NOI18N
     if ( foClassTemplates == null )
       return;
     
-    FileObject foBiTemplate = foClassTemplates.getFileObject( "BeanInfo", "java" );
+    FileObject foBiTemplate = foClassTemplates.getFileObject( "BeanInfo", "java" ); // NOI18N
     if ( foBiTemplate == null )
       return;
 
@@ -262,6 +262,7 @@ public class BeanInfoSource extends Object {
 
 /*
  * Log
+ *  5    Gandalf   1.4         1/12/00  Petr Hrebejk    i18n  
  *  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  3    Gandalf   1.2         7/28/99  Petr Hrebejk    Property Mode change fix

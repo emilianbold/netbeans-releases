@@ -32,7 +32,7 @@ class BeanPatternGenerator extends Object {
 
   
   /** Constant for one Tab */
-  private static final String TAB = "  ";
+  private static final String TAB = "  "; // NOI18N
   /** Constant for two Tabs */
   private static final String TABx2 = TAB + TAB;
   /** Constant for three Tabs */
@@ -55,7 +55,7 @@ class BeanPatternGenerator extends Object {
         String supportName, String vetoSupportName) {
 
     StringBuffer setterBody = new StringBuffer( 200 );
-    setterBody.append( "\n" );
+    setterBody.append( "\n" ); // NOI18N
     if ( withSupport ) {
       /* Generates body in the form:
          PropType oldPropName = this.propName;
@@ -64,39 +64,39 @@ class BeanPatternGenerator extends Object {
       */
 
       setterBody.append( TAB + type.toString() );
-      setterBody.append( " old" ).append( Pattern.capitalizeFirstLetter( name ) );
-      setterBody.append( " = this." ).append( name ).append( ";\n");
+      setterBody.append( " old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
+      setterBody.append( " = this." ).append( name ).append( ";\n"); // NOI18N
 
       if ( constrained ) {
-        setterBody.append( TAB + vetoSupportName ).append( ".fireVetoableChange(\"").append( name ).append( "\", " );
+        setterBody.append( TAB + vetoSupportName ).append( ".fireVetoableChange(\"").append( name ).append( "\", " ); // NOI18N
 
         if ( type.isPrimitive() ) {
-          setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" );
-          setterBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) );
-          setterBody.append( "), " );
-          setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" );
-          setterBody.append( name ).append( "));\n" );
+          setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" ); // NOI18N
+          setterBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
+          setterBody.append( "), " ); // NOI18N
+          setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" ); // NOI18N
+          setterBody.append( name ).append( "));\n" ); // NOI18N
         }
         else {
-          setterBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) );
-          setterBody.append( ", " ).append( name ).append( ");\n" );
+          setterBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
+          setterBody.append( ", " ).append( name ).append( ");\n" ); // NOI18N
         }
       }
       if ( bound ) {
-        setterBody.append( TAB + "this." ).append( name );
-        setterBody.append( " = " ).append( name ).append( ";\n");
-        setterBody.append( TAB + supportName ).append( ".firePropertyChange (\"").append( name ).append( "\", " );
+        setterBody.append( TAB + "this." ).append( name ); // NOI18N
+        setterBody.append( " = " ).append( name ).append( ";\n"); // NOI18N
+        setterBody.append( TAB + supportName ).append( ".firePropertyChange (\"").append( name ).append( "\", " ); // NOI18N
 
         if ( type.isPrimitive() ) {
-          setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" );
-          setterBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) );
-          setterBody.append( "), " );
-          setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" );
-          setterBody.append( name ).append( "));\n" );
+          setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" ); // NOI18N
+          setterBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
+          setterBody.append( "), " ); // NOI18N
+          setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" ); // NOI18N
+          setterBody.append( name ).append( "));\n" ); // NOI18N
         }
         else {
-          setterBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) );
-          setterBody.append( ", " ).append( name ).append( ");\n" );
+          setterBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
+          setterBody.append( ", " ).append( name ).append( ");\n" ); // NOI18N
         }
       }
     }
@@ -104,9 +104,9 @@ class BeanPatternGenerator extends Object {
       /* Generates body in the form:
          this.propName = propName;
        */
-      setterBody.append( TAB + "this." );
+      setterBody.append( TAB + "this." ); // NOI18N
       setterBody.append( name );
-      setterBody.append( " = " ).append( name ).append( ";\n" );
+      setterBody.append( " = " ).append( name ).append( ";\n" ); // NOI18N
     }
     return setterBody.toString();
   }
@@ -128,24 +128,24 @@ class BeanPatternGenerator extends Object {
                                     String supportName,
                                     String vetoSupportName ) {
     StringBuffer setterBody = new StringBuffer( 200 );
-    setterBody.append( "\n" );
+    setterBody.append( "\n" ); // NOI18N
 
     if ( withSet || withSupport ) {
       /* Generates body in the form:
          this.propName = propName;
       */
-      setterBody.append( TAB + "this." );
+      setterBody.append( TAB + "this." ); // NOI18N
       setterBody.append( name );
-      setterBody.append( "[index] = " ).append( name ).append( ";\n" );
+      setterBody.append( "[index] = " ).append( name ).append( ";\n" ); // NOI18N
     }
 
     if ( withSupport && constrained ) {
-      setterBody.append( TAB + vetoSupportName ).append( ".fireVetoableChange (\"").append( name ).append( "\", " );
-      setterBody.append( "null, null );\n" );
+      setterBody.append( TAB + vetoSupportName ).append( ".fireVetoableChange (\"").append( name ).append( "\", " ); // NOI18N
+      setterBody.append( "null, null );\n" ); // NOI18N
     }
     if ( withSupport && bound ) {
-      setterBody.append( TAB + supportName ).append( ".firePropertyChange (\"").append( name ).append( "\", " );
-      setterBody.append( "null, null );\n" );
+      setterBody.append( TAB + supportName ).append( ".firePropertyChange (\"").append( name ).append( "\", " ); // NOI18N
+      setterBody.append( "null, null );\n" ); // NOI18N
     }
 
     return setterBody.toString();
@@ -158,13 +158,13 @@ class BeanPatternGenerator extends Object {
    */
   static String propertyGetterBody( String name, boolean withReturn ) {
     StringBuffer getterBody = new StringBuffer( 50 );
-    getterBody.append( "\n");
+    getterBody.append( "\n"); // NOI18N
     if ( withReturn ) {
       /* Generates body in the form:
          return propName;
        */
-      getterBody.append( TAB + "return " );
-      getterBody.append( name ).append( ";\n" );
+      getterBody.append( TAB + "return " ); // NOI18N
+      getterBody.append( name ).append( ";\n" ); // NOI18N
     }
     return getterBody.toString();
   }
@@ -176,13 +176,13 @@ class BeanPatternGenerator extends Object {
    */
   static String idxPropertyGetterBody( String name, boolean withReturn ) {
     StringBuffer getterBody = new StringBuffer( 50 );
-    getterBody.append( "\n");
+    getterBody.append( "\n"); // NOI18N
     if ( withReturn ) {
       /* Generates body in the form:
          return propName;
        */
-      getterBody.append( TAB + "return " );
-      getterBody.append( name ).append( "[index];\n" );
+      getterBody.append( TAB + "return " ); // NOI18N
+      getterBody.append( name ).append( "[index];\n" ); // NOI18N
     }
     return getterBody.toString();
   }
@@ -197,7 +197,7 @@ class BeanPatternGenerator extends Object {
    */
   static String supportField(ClassElement ce) throws SourceException {
     String supportName = null;
-    Identifier supportId = Identifier.create( "java.beans.PropertyChangeSupport" );
+    Identifier supportId = Identifier.create( "java.beans.PropertyChangeSupport" ); // NOI18N
     FieldElement[] fields = ce.getFields();
 
     for( int i = 0; i < fields.length; i++ ) {      // Try to find suitable field
@@ -209,12 +209,12 @@ class BeanPatternGenerator extends Object {
     }
 
     if ( supportName == null ) { // Field not found we create new
-      supportName = "propertyChangeSupport";
+      supportName = "propertyChangeSupport"; // NOI18N
       FieldElement supportField = new FieldElement();
       supportField.setName( Identifier.create( supportName ) );
       supportField.setType( Type.createClass( supportId ) );
       supportField.setModifiers( Modifier.PRIVATE );
-      supportField.setInitValue( " new java.beans.PropertyChangeSupport (this)" );
+      supportField.setInitValue( " new java.beans.PropertyChangeSupport (this)" ); // NOI18N
       supportField.getJavaDoc().setRawText( bundle.getString( "COMMENT_PropertyChangeSupport" ) );
       ce.addField( supportField );
     }
@@ -231,7 +231,7 @@ class BeanPatternGenerator extends Object {
    */  
   static String vetoSupportField( ClassElement ce ) throws SourceException {
     String vetoSupportName = null;
-    Identifier vetoSupportId = Identifier.create( "java.beans.VetoableChangeSupport" ); 
+    Identifier vetoSupportId = Identifier.create( "java.beans.VetoableChangeSupport" ); // NOI18N
     FieldElement[] fields = ce.getFields();
 
     for( int i = 0; i < fields.length; i++ ) {      // Try to find suitable field
@@ -243,12 +243,12 @@ class BeanPatternGenerator extends Object {
     }
 
     if ( vetoSupportName == null ) { // Field not found we create new
-      vetoSupportName = "vetoableChangeSupport";
+      vetoSupportName = "vetoableChangeSupport"; // NOI18N
       FieldElement supportField = new FieldElement();
       supportField.setName( Identifier.create( vetoSupportName ) );
       supportField.setType( Type.createClass( vetoSupportId ) );
       supportField.setModifiers( Modifier.PRIVATE );
-      supportField.setInitValue( " new java.beans.VetoableChangeSupport (this)" );
+      supportField.setInitValue( " new java.beans.VetoableChangeSupport (this)" ); // NOI18N
       supportField.getJavaDoc().setRawText( bundle.getString( "COMMENT_VetoableChangeSupport" ) );
       ce.addField( supportField );
     }
@@ -265,11 +265,11 @@ class BeanPatternGenerator extends Object {
   static void supportListenerMethods( ClassElement classElement, String supportName )
     throws SourceException {
     
-    Identifier addMethodId = Identifier.create( "addPropertyChangeListener" );
+    Identifier addMethodId = Identifier.create( "addPropertyChangeListener" ); // NOI18N
     MethodElement addMethod = null;
-    Identifier removeMethodId = Identifier.create( "removePropertyChangeListener" );
+    Identifier removeMethodId = Identifier.create( "removePropertyChangeListener" ); // NOI18N
     MethodElement removeMethod = null;
-    Identifier listenerTypeId = Identifier.create( "java.beans.PropertyChangeListener" ); 
+    Identifier listenerTypeId = Identifier.create( "java.beans.PropertyChangeListener" ); // NOI18N
     Type listenerType = Type.createClass( listenerTypeId );
 
     addMethod = classElement.getMethod( addMethodId, new Type[] { listenerType }  );
@@ -278,11 +278,11 @@ class BeanPatternGenerator extends Object {
       addMethod.setName( addMethodId );
       addMethod.setReturn( Type.VOID );
       addMethod.setModifiers( Modifier.PUBLIC );
-      addMethod.setParameters( ( new MethodParameter[] { new MethodParameter( "l", listenerType, false ) } ));
+      addMethod.setParameters( ( new MethodParameter[] { new MethodParameter( "l", listenerType, false ) } )); // NOI18N
 
       StringBuffer body = new StringBuffer( 80 );
-      body.append( "\n" ).append( TAB + supportName );
-      body.append( ".addPropertyChangeListener (l);\n" );
+      body.append( "\n" ).append( TAB + supportName ); // NOI18N
+      body.append( ".addPropertyChangeListener (l);\n" ); // NOI18N
       addMethod.setBody( body.toString() );
 
       /*
@@ -301,11 +301,11 @@ class BeanPatternGenerator extends Object {
       removeMethod.setName( removeMethodId );
       removeMethod.setReturn( Type.VOID );
       removeMethod.setModifiers( Modifier.PUBLIC );
-      removeMethod.setParameters( ( new MethodParameter[] { new MethodParameter( "l", listenerType, false ) } ));
+      removeMethod.setParameters( ( new MethodParameter[] { new MethodParameter( "l", listenerType, false ) } )); // NOI18N
 
       StringBuffer body = new StringBuffer( 80 );
-      body.append( "\n" ).append( TAB + supportName );
-      body.append( ".removePropertyChangeListener (l);\n" );
+      body.append( "\n" ).append( TAB + supportName ); // NOI18N
+      body.append( ".removePropertyChangeListener (l);\n" ); // NOI18N
       removeMethod.setBody( body.toString() );
       removeMethod.getJavaDoc().setRawText( bundle.getString( "COMMENT_RemovePropertyChangeListener" ) );
       classElement.addMethod( removeMethod );
@@ -322,11 +322,11 @@ class BeanPatternGenerator extends Object {
   static void vetoSupportListenerMethods( ClassElement classElement, String supportName )
     throws SourceException {
     
-    Identifier addMethodId = Identifier.create( "addVetoableChangeListener" );
+    Identifier addMethodId = Identifier.create( "addVetoableChangeListener" ); // NOI18N
     MethodElement addMethod = null;
-    Identifier removeMethodId = Identifier.create( "removeVetoableChangeListener" );
+    Identifier removeMethodId = Identifier.create( "removeVetoableChangeListener" ); // NOI18N
     MethodElement removeMethod = null;
-    Identifier listenerTypeId = Identifier.create( "java.beans.VetoableChangeListener" ); 
+    Identifier listenerTypeId = Identifier.create( "java.beans.VetoableChangeListener" ); // NOI18N
     Type listenerType = Type.createClass( listenerTypeId );
 
     addMethod = classElement.getMethod( addMethodId, new Type[] { listenerType }  );
@@ -335,11 +335,11 @@ class BeanPatternGenerator extends Object {
       addMethod.setName( addMethodId );
       addMethod.setReturn( Type.VOID );
       addMethod.setModifiers( Modifier.PUBLIC );
-      addMethod.setParameters( ( new MethodParameter[] { new MethodParameter( "l", listenerType, false ) } ));
+      addMethod.setParameters( ( new MethodParameter[] { new MethodParameter( "l", listenerType, false ) } )); // NOI18N
 
       StringBuffer body = new StringBuffer( 80 );
-      body.append( "\n" ).append( TAB + supportName );
-      body.append( ".addVetoableChangeListener (l);\n" );
+      body.append( "\n" ).append( TAB + supportName ); // NOI18N
+      body.append( ".addVetoableChangeListener (l);\n" ); // NOI18N
       addMethod.setBody( body.toString() );
       addMethod.getJavaDoc().setRawText( bundle.getString( "COMMENT_AddVetoableChangeListener" ) );
       classElement.addMethod( addMethod );
@@ -351,11 +351,11 @@ class BeanPatternGenerator extends Object {
       removeMethod.setName( removeMethodId );
       removeMethod.setReturn( Type.VOID );
       removeMethod.setModifiers( Modifier.PUBLIC );
-      removeMethod.setParameters( ( new MethodParameter[] { new MethodParameter( "l", listenerType, false ) } ));
+      removeMethod.setParameters( ( new MethodParameter[] { new MethodParameter( "l", listenerType, false ) } )); // NOI18N
 
       StringBuffer body = new StringBuffer( 80 );
-      body.append( "\n" ).append( TAB + supportName );    
-      body.append( ".removeVetoableChangeListener (l);\n" );
+      body.append( "\n" ).append( TAB + supportName ); // NOI18N
+      body.append( ".removeVetoableChangeListener (l);\n" ); // NOI18N
       removeMethod.setBody( body.toString() );
       removeMethod.getJavaDoc().setRawText( bundle.getString( "COMMENT_RemoveVetoableChangeListener" ) );
       classElement.addMethod( removeMethod );
@@ -374,9 +374,9 @@ class BeanPatternGenerator extends Object {
   static String listenersArrayListField( ClassElement ce, Type type ) throws SourceException {
     
     String fieldName = null;
-    String fieldNameToFind = Introspector.decapitalize( type.getClassName().getName() ) + "List";
+    String fieldNameToFind = Introspector.decapitalize( type.getClassName().getName() ) + "List"; // NOI18N
       
-    Identifier fieldTypeId = Identifier.create( "java.util.ArrayList" ); 
+    Identifier fieldTypeId = Identifier.create( "java.util.ArrayList" ); // NOI18N
     FieldElement[] fields = ce.getFields();
 
     for( int i = 0; i < fields.length; i++ ) {      // Try to find suitable field
@@ -417,7 +417,7 @@ class BeanPatternGenerator extends Object {
     
     String fieldName = null;
     
-    Identifier fieldTypeId = Identifier.create( "javax.swing.event.EventListenerList" ); 
+    Identifier fieldTypeId = Identifier.create( "javax.swing.event.EventListenerList" ); // NOI18N
     FieldElement[] fields = ce.getFields();
 
     for( int i = 0; i < fields.length; i++ ) {      // Try to find suitable field
@@ -429,12 +429,12 @@ class BeanPatternGenerator extends Object {
     }
 
     if ( fieldName == null ) { // Field not found we create new
-      fieldName = "listenerList";
+      fieldName = "listenerList"; // NOI18N
       FieldElement field = new FieldElement();
       field.setName( Identifier.create( fieldName ) );
       field.setType( Type.createClass( fieldTypeId ) );
       field.setModifiers( Modifier.PRIVATE );
-      field.setInitValue( " null" );
+      field.setInitValue( " null" ); // NOI18N
       String comment = MessageFormat.format( bundle.getString( "COMMENT_EventListenerList" ),
                                              new Object[] { type.getClassName().getName() } );                                          
       field.getJavaDoc().setRawText( comment );
@@ -458,7 +458,7 @@ class BeanPatternGenerator extends Object {
     String fieldName = null;
     String fieldNameToFind = Introspector.decapitalize( type.getClassName().getName() );
     if ( fieldNameToFind.equals( type.getClassName().getName() ) ) {
-      fieldNameToFind = new String( "listener" + fieldNameToFind  );
+      fieldNameToFind = new String( "listener" + fieldNameToFind  ); // NOI18N
     }
       
     FieldElement[] fields = ce.getFields();
@@ -478,7 +478,7 @@ class BeanPatternGenerator extends Object {
       field.setName( Identifier.create( fieldName ) );
       field.setType( type );
       field.setModifiers( Modifier.PRIVATE  | Modifier.TRANSIENT );
-      field.setInitValue( " null" );
+      field.setInitValue( " null" ); // NOI18N
       String comment = MessageFormat.format( bundle.getString( "COMMENT_UnicastEventListener" ),
                                              new Object[] { type.getClassName().getName() } );                                          
       field.getJavaDoc().setRawText( comment );
@@ -488,27 +488,27 @@ class BeanPatternGenerator extends Object {
   
   static String mcAddBody( Type type, int implementation, String listenerList ) {
   
-    String fieldName = Introspector.decapitalize( type.getClassName().getName() ) + "List";
+    String fieldName = Introspector.decapitalize( type.getClassName().getName() ) + "List"; // NOI18N
 
     StringBuffer body = new StringBuffer( 50 );
 
     if ( listenerList == null )
-      listenerList = "listenerList";
+      listenerList = "listenerList"; // NOI18N
 
-    body.append( "\n");
+    body.append( "\n"); // NOI18N
 
     if ( implementation == 1 ) {
-      body.append( TAB + "if (" ).append( fieldName ).append( " == null ) {\n" );
-      body.append( TABx2 ).append( fieldName ).append( " = new java.util.ArrayList ();\n" );
-      body.append( TAB ).append( "}\n" );
-      body.append( TAB + fieldName ).append( ".add (listener);\n" );
+      body.append( TAB + "if (" ).append( fieldName ).append( " == null ) {\n" ); // NOI18N
+      body.append( TABx2 ).append( fieldName ).append( " = new java.util.ArrayList ();\n" ); // NOI18N
+      body.append( TAB ).append( "}\n" ); // NOI18N
+      body.append( TAB + fieldName ).append( ".add (listener);\n" ); // NOI18N
     }
     else if ( implementation == 2 ) {
-      body.append( TAB + "if (" ).append( listenerList ).append( " == null ) {\n" );
-      body.append( TABx2 ).append( listenerList ).append( " = new javax.swing.event.EventListenerList();\n" );
-      body.append( TAB ).append( "}\n" );
-      body.append( TAB + listenerList ).append( ".add (" );
-      body.append( type.toString()).append( ".class, listener);\n" );
+      body.append( TAB + "if (" ).append( listenerList ).append( " == null ) {\n" ); // NOI18N
+      body.append( TABx2 ).append( listenerList ).append( " = new javax.swing.event.EventListenerList();\n" ); // NOI18N
+      body.append( TAB ).append( "}\n" ); // NOI18N
+      body.append( TAB + listenerList ).append( ".add (" ); // NOI18N
+      body.append( type.toString()).append( ".class, listener);\n" ); // NOI18N
     }
 
     return body.toString();
@@ -516,22 +516,22 @@ class BeanPatternGenerator extends Object {
 
   static String mcRemoveBody( Type type, int implementation, String listenerList ) {
     
-    String fieldName = Introspector.decapitalize( type.getClassName().getName() ) + "List";
+    String fieldName = Introspector.decapitalize( type.getClassName().getName() ) + "List"; // NOI18N
 
     if ( listenerList == null )
-      listenerList = "listenerList";
+      listenerList = "listenerList"; // NOI18N
 
     StringBuffer body = new StringBuffer( 50 );
-    body.append( "\n");
+    body.append( "\n"); // NOI18N
 
     if ( implementation == 1 ) {
-      body.append( TAB + "if (" ).append( fieldName ).append( " != null ) {\n" );
-      body.append( TABx2 + fieldName ).append( ".remove (listener);\n" );
-      body.append( TAB ).append( "}\n" );
+      body.append( TAB + "if (" ).append( fieldName ).append( " != null ) {\n" ); // NOI18N
+      body.append( TABx2 + fieldName ).append( ".remove (listener);\n" ); // NOI18N
+      body.append( TAB ).append( "}\n" ); // NOI18N
     }
     else if ( implementation == 2 ) {
-      body.append( TAB + listenerList ).append( ".remove (" );
-      body.append( type.toString()).append( ".class, listener);\n" );
+      body.append( TAB + listenerList ).append( ".remove (" ); // NOI18N
+      body.append( type.toString()).append( ".class, listener);\n" ); // NOI18N
     }
 
     return body.toString();
@@ -541,18 +541,18 @@ class BeanPatternGenerator extends Object {
 
     String fieldName = Introspector.decapitalize( type.getClassName().getName() );
     if ( fieldName.equals( type.getClassName().getName() ) ) {
-      fieldName = new String( "listener" + fieldName  );
+      fieldName = new String( "listener" + fieldName  ); // NOI18N
     }
 
     StringBuffer body = new StringBuffer( 50 );
 
-    body.append( "\n");
+    body.append( "\n"); // NOI18N
 
     if ( implementation == 1 ) {
-      body.append( TAB + "if (").append( fieldName ).append( " != null) {\n" );
-      body.append( TABx2 + "throw new java.util.TooManyListenersException ();\n" );
-      body.append( TAB + "}\n" );
-      body.append( TAB + fieldName ).append( " = listener;\n" );
+      body.append( TAB + "if (").append( fieldName ).append( " != null) {\n" ); // NOI18N
+      body.append( TABx2 + "throw new java.util.TooManyListenersException ();\n" ); // NOI18N
+      body.append( TAB + "}\n" ); // NOI18N
+      body.append( TAB + fieldName ).append( " = listener;\n" ); // NOI18N
     }
     
     return body.toString();
@@ -562,14 +562,14 @@ class BeanPatternGenerator extends Object {
     
     String fieldName = Introspector.decapitalize( type.getClassName().getName() );
     if ( fieldName.equals( type.getClassName().getName() ) ) {
-      fieldName = new String( "listener" + fieldName  );
+      fieldName = new String( "listener" + fieldName  ); // NOI18N
     }
 
     StringBuffer body = new StringBuffer( 50 );
-    body.append( "\n");
+    body.append( "\n"); // NOI18N
 
     if ( implementation == 1 ) {
-      body.append( TAB + fieldName ).append( " = null;\n" );
+      body.append( TAB + fieldName ).append( " = null;\n" ); // NOI18N
     }
 
     return body.toString();
@@ -583,10 +583,10 @@ class BeanPatternGenerator extends Object {
     throws SourceException {
     
     if ( listenerList == null )
-      listenerList = "listenerList";
+      listenerList = "listenerList"; // NOI18N
 
     Identifier methodId = Identifier.create( 
-                            "fire" + 
+                            "fire" + // NOI18N
                             Pattern.capitalizeFirstLetter( type.getClassName().getName() ) +
                             Pattern.capitalizeFirstLetter( method.getName().getName() ) );
 
@@ -597,7 +597,7 @@ class BeanPatternGenerator extends Object {
     if ( params.length > 0 )
       eventType = params[0].getType();
     else
-      eventType = Type.createClass( Identifier.create( "java.util.EventObject" ) );
+      eventType = Type.createClass( Identifier.create( "java.util.EventObject" ) ); // NOI18N
 
     ClassElement eventClass = ClassElement.forName( eventType.toString() );
 
@@ -614,63 +614,63 @@ class BeanPatternGenerator extends Object {
       newMethod.setParameters( newMethodParams );
 
       StringBuffer body = new StringBuffer( 80 );
-      body.append( "\n" );
+      body.append( "\n" ); // NOI18N
      
       if ( implementation == 1 ) {
-        String fieldName = Introspector.decapitalize( type.getClassName().getName() ) + "List";
+        String fieldName = Introspector.decapitalize( type.getClassName().getName() ) + "List"; // NOI18N
 
-        body.append( TAB + "java.util.ArrayList list;\n" );
+        body.append( TAB + "java.util.ArrayList list;\n" ); // NOI18N
 
         if ( usesConstructorParameters( eventClass, passEvent ) ) {
-          body.append( TAB + eventType.toString() ).append( " e = new ");
-          body.append( eventType.toString() ).append( " (" );
+          body.append( TAB + eventType.toString() ).append( " e = new "); // NOI18N
+          body.append( eventType.toString() ).append( " (" ); // NOI18N
           body.append( fireParameterstoString( newMethodParams ) );
-          body.append(");\n");
+          body.append(");\n"); // NOI18N
         }
-        body.append( TAB + "synchronized (this) {\n" + TABx2 + "list = (java.util.ArrayList)" );
-        body.append( fieldName ).append( ".clone ();\n" + TAB +"}\n" ); 
-        body.append( TAB + "for (int i = 0; i < list.size (); i++) {\n" );
-        body.append( TABx2 + "((" ).append( type.toString() );
-        body.append( ")list.get (i)).").append( method.getName() );
-        body.append(" (");
+        body.append( TAB + "synchronized (this) {\n" + TABx2 + "list = (java.util.ArrayList)" ); // NOI18N
+        body.append( fieldName ).append( ".clone ();\n" + TAB +"}\n" ); // NOI18N
+        body.append( TAB + "for (int i = 0; i < list.size (); i++) {\n" ); // NOI18N
+        body.append( TABx2 + "((" ).append( type.toString() ); // NOI18N
+        body.append( ")list.get (i)).").append( method.getName() ); // NOI18N
+        body.append(" ("); // NOI18N
         if ( usesConstructorParameters( eventClass, passEvent ) ) {
-          body.append( "e" ); 
+          body.append( "e" ); // NOI18N
         }
         else {
           body.append( fireParameterstoString( newMethodParams ) ); // the event parameter
         }
-        body.append( ");\n" + TAB + "}\n" );
+        body.append( ");\n" + TAB + "}\n" ); // NOI18N
       }
       else if ( implementation == 2 ) {
-        String fooEvent = "theEvent";
+        String fooEvent = "theEvent"; // NOI18N
         if ( usesConstructorParameters( eventClass, passEvent ) ) {
-          body.append( TAB + eventType.toString() ).append( " e = null;\n ");
+          body.append( TAB + eventType.toString() ).append( " e = null;\n "); // NOI18N
         }
-        body.append( TAB + "Object[] listeners = ").append(listenerList).append(".getListenerList ();\n" );
-        body.append( TAB + "for (int i = listeners.length-2; i>=0; i-=2) {\n");
-        body.append( TABx2 + "if (listeners[i]==" ).append( type.toString()).append( ".class) {\n" );
+        body.append( TAB + "Object[] listeners = ").append(listenerList).append(".getListenerList ();\n" ); // NOI18N
+        body.append( TAB + "for (int i = listeners.length-2; i>=0; i-=2) {\n"); // NOI18N
+        body.append( TABx2 + "if (listeners[i]==" ).append( type.toString()).append( ".class) {\n" ); // NOI18N
         if ( usesConstructorParameters( eventClass, passEvent ) ) {
-          body.append( TABx3 + "if (e == null)\n" );
-          body.append( TABx2 + TABx2 + "e = new ").append( eventType.toString() ).append( " (" );
+          body.append( TABx3 + "if (e == null)\n" ); // NOI18N
+          body.append( TABx2 + TABx2 + "e = new ").append( eventType.toString() ).append( " (" ); // NOI18N
           body.append( fireParameterstoString( newMethodParams ) );
-          body.append( ");\n" );
+          body.append( ");\n" ); // NOI18N
           }
-        body.append( TABx3 + "((").append(type.toString()).append(")listeners[i+1]).").append(method.getName());
-        body.append(" (");
+        body.append( TABx3 + "((").append(type.toString()).append(")listeners[i+1]).").append(method.getName()); // NOI18N
+        body.append(" ("); // NOI18N
         if ( usesConstructorParameters( eventClass, passEvent ) ) {
           body.append( "e" ); // the created event
         }
         else {
           body.append( fireParameterstoString( newMethodParams ) ); // the event parameter
         }
-        body.append( ");\n" + TABx2 + "}\n" + TAB + "}\n");
+        body.append( ");\n" + TABx2 + "}\n" + TAB + "}\n"); // NOI18N
       }
       
       newMethod.setBody( body.toString() );
   
       StringBuffer comment = new StringBuffer ( bundle.getString( "COMMENT_FireMethodMC" ) );
       if ( !usesConstructorParameters( eventClass, passEvent ) ) {
-          comment.append( "\n@param e The event to be fired\n" ); 
+          comment.append( "\n@param e The event to be fired\n" ); // NOI18N
         }
         else {
           comment.append( fireParametersComment( newMethodParams, eventType.getClassName().getName() ) ); 
@@ -687,7 +687,7 @@ class BeanPatternGenerator extends Object {
     throws SourceException {
     
     Identifier methodId = Identifier.create( 
-                            "fire" + 
+                            "fire" + // NOI18N
                             Pattern.capitalizeFirstLetter( type.getClassName().getName() ) +
                             Pattern.capitalizeFirstLetter( method.getName().getName() ) );
 
@@ -698,7 +698,7 @@ class BeanPatternGenerator extends Object {
     if ( params.length > 0 )
       eventType = params[0].getType();
     else
-      eventType = Type.createClass( Identifier.create( "java.util.EventObject" ) );
+      eventType = Type.createClass( Identifier.create( "java.util.EventObject" ) ); // NOI18N
 
     ClassElement eventClass = ClassElement.forName( eventType.toString() );
 
@@ -714,37 +714,37 @@ class BeanPatternGenerator extends Object {
       newMethod.setParameters( newMethodParams );
 
       StringBuffer body = new StringBuffer( 80 );
-      body.append( "\n" );
+      body.append( "\n" ); // NOI18N
      
       if ( implementation == 1 ) {
          String fieldName = Introspector.decapitalize( type.getClassName().getName() );
          if ( fieldName.equals( type.getClassName().getName() ) ) {
-          fieldName = new String( "listener" + fieldName  );
+          fieldName = new String( "listener" + fieldName  ); // NOI18N
          }
 
         if ( usesConstructorParameters( eventClass, passEvent ) ) {
-          body.append( TAB + eventType.toString() ).append( " e = new ");
-          body.append( eventType.toString() ).append( " (" );
+          body.append( TAB + eventType.toString() ).append( " e = new "); // NOI18N
+          body.append( eventType.toString() ).append( " (" ); // NOI18N
           body.append( fireParameterstoString( newMethodParams ) );
-          body.append(");\n");
+          body.append(");\n"); // NOI18N
         }
         
-        body.append( TAB + fieldName ).append( "." ).append( method.getName() );
-        body.append(" (");
+        body.append( TAB + fieldName ).append( "." ).append( method.getName() ); // NOI18N
+        body.append(" ("); // NOI18N
         if ( usesConstructorParameters( eventClass, passEvent ) ) {
-          body.append( "e" ); 
+          body.append( "e" ); // NOI18N
         }
         else {
           body.append( fireParameterstoString( newMethodParams ) ); // the event parameter
         }
-        body.append( ");\n" );
+        body.append( ");\n" ); // NOI18N
       }
       
       newMethod.setBody( body.toString() );
 
       StringBuffer comment = new StringBuffer ( bundle.getString( "COMMENT_FireMethodUC" ) );
       if ( !usesConstructorParameters( eventClass, passEvent ) ) {
-          comment.append( "\n@param e The event to be fired\n" ); 
+          comment.append( "\n@param e The event to be fired\n" ); // NOI18N
       }
       else {
         comment.append( fireParametersComment( newMethodParams, eventType.getClassName().getName() ) ); // the event parameter
@@ -769,14 +769,14 @@ class BeanPatternGenerator extends Object {
    
     if ( !usesConstructorParameters( eventClass, passEvent ) ) {
       return new MethodParameter[] 
-        { new MethodParameter( "event", eventType, false ) }; 
+        { new MethodParameter( "event", eventType, false ) }; // NOI18N
     }
     else {
       ConstructorElement constructor = eventClass.getConstructors()[0];
       MethodParameter[] params = constructor.getParameters();
       MethodParameter[] result = new MethodParameter[ params.length ];
       for ( int i = 0; i < params.length; i++ ) {
-        result[i] = new MethodParameter( "param" + (i + 1), params[i].getType(), false  );
+        result[i] = new MethodParameter( "param" + (i + 1), params[i].getType(), false  ); // NOI18N
       }
       return result;
     }
@@ -790,7 +790,7 @@ class BeanPatternGenerator extends Object {
     for( int i = 0; i < params.length; i++ ) {
       buffer.append( params[i].getName() );
       if ( i < params.length -1 )
-        buffer.append( ", " );
+        buffer.append( ", " ); // NOI18N
     }
     return buffer.toString();
   }
@@ -800,11 +800,11 @@ class BeanPatternGenerator extends Object {
     StringBuffer buffer = new StringBuffer( 60 );
 
     for( int i = 0; i < params.length; i++ ) {
-      buffer.append( "\n@param ").append( params[i].getName() );
-      buffer.append( " Parameter #" ).append( i + 1 ).append( " of the <CODE>" );
-      buffer.append( evntType ).append( "<CODE> constructor." ); 
+      buffer.append( "\n@param ").append( params[i].getName() ); // NOI18N
+      buffer.append( " Parameter #" ).append( i + 1 ).append( " of the <CODE>" ); // NOI18N
+      buffer.append( evntType ).append( "<CODE> constructor." ); // NOI18N
     }
-    buffer.append( "\n" );
+    buffer.append( "\n" ); // NOI18N
 
     return buffer.toString();
   }
@@ -820,28 +820,29 @@ class BeanPatternGenerator extends Object {
     if ( type.isClass() )
     return type.getClassName().getName();
     else if ( type == Type.BOOLEAN )
-    return "Boolean";
+    return "Boolean"; // NOI18N
     else if ( type == Type.BYTE )
-    return "Byte";
+    return "Byte"; // NOI18N
     else if ( type == Type.DOUBLE )
-    return "Double";
+    return "Double"; // NOI18N
     else if ( type == Type.FLOAT )
-    return "Float";
+    return "Float"; // NOI18N
     else if ( type == Type.CHAR )
-    return "Character";
+    return "Character"; // NOI18N
     else if ( type == Type.INT )
-    return "Integer";
+    return "Integer"; // NOI18N
     else if ( type == Type.LONG )
-    return "Long";
+    return "Long"; // NOI18N
     else if ( type == Type.SHORT )
-    return "Short";
+    return "Short"; // NOI18N
     else
-    return "Object";
+    return "Object"; // NOI18N
 }
 
 }
 /* 
  * Log
+ *  7    Gandalf   1.6         1/12/00  Petr Hrebejk    i18n  
  *  6    Gandalf   1.5         11/10/99 Petr Hrebejk    Generation of new 
  *       EventListenerList added to MultiCast event sources
  *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

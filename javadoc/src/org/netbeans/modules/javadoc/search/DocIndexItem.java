@@ -71,7 +71,7 @@ class DocIndexItem extends Object {
   }
   
   public String getPackage() {
-    return pckg == null ? "" : pckg;
+    return pckg == null ? "" : pckg; // NOI18N
   }
   
   public void setPackage( String pckg ) {
@@ -122,6 +122,7 @@ class DocIndexItem extends Object {
 
 /* 
  * Log
+ *  4    Gandalf   1.3         1/12/00  Petr Hrebejk    i18n
  *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  2    Gandalf   1.1         6/23/99  Petr Hrebejk    HTML doc view & sort 

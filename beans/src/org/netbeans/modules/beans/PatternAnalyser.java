@@ -43,11 +43,11 @@ import org.openide.src.Identifier;
 public class PatternAnalyser extends Object implements Node.Cookie {
 
   private static final int    PROPERTIES_RESERVE = 11;
-  private static final String GET_PREFIX = "get";
-  private static final String SET_PREFIX = "set";
-  private static final String IS_PREFIX = "is";
-  private static final String ADD_PREFIX = "add";
-  private static final String REMOVE_PREFIX = "remove";
+  private static final String GET_PREFIX = "get"; // NOI18N
+  private static final String SET_PREFIX = "set"; // NOI18N
+  private static final String IS_PREFIX = "is"; // NOI18N
+  private static final String ADD_PREFIX = "add"; // NOI18N
+  private static final String REMOVE_PREFIX = "remove"; // NOI18N
 
   /* Collections which are returned by getters/setters */
   private ArrayList currentPropertyPatterns = new ArrayList(); 
@@ -165,7 +165,7 @@ public class PatternAnalyser extends Object implements Node.Cookie {
         continue;
       }
       // Method name has to end in Listener
-      if (compound.indexOf( "Listener:" ) <= 0 ) {
+      if (compound.indexOf( "Listener:" ) <= 0 ) { // NOI18N
         continue;
       }
       
@@ -183,7 +183,7 @@ public class PatternAnalyser extends Object implements Node.Cookie {
         //if (!java.util.EventListener.class.isAssignableFrom( argType.toClass() ) ) {
         if ( !isSubclass( 
           ClassElement.forName( argType.getClassName().getFullName() ),
-          ClassElement.forName( "java.util.EventListener" ) ) )
+          ClassElement.forName( "java.util.EventListener" ) ) ) // NOI18N
           continue;
       /*
         }
@@ -332,11 +332,11 @@ public class PatternAnalyser extends Object implements Node.Cookie {
     Type returnType = method.getReturn();
 
     if ( name.startsWith( ADD_PREFIX ) && params.length == 1 && returnType == Type.VOID ) {
-      String compound = name.substring(3) + ":" + params[0].getType(); 
+      String compound = name.substring(3) + ":" + params[0].getType(); // NOI18N
       adds.put( compound, method );
     }
     else if ( name.startsWith( REMOVE_PREFIX ) && params.length == 1 && returnType == Type.VOID ) {
-      String compound = name.substring(6) + ":" + params[0].getType(); 
+      String compound = name.substring(6) + ":" + params[0].getType(); // NOI18N
       removes.put( compound, method );
     }
 
@@ -546,6 +546,7 @@ public class PatternAnalyser extends Object implements Node.Cookie {
 
 /* 
  * Log
+ *  9    Gandalf   1.8         1/12/00  Petr Hrebejk    i18n  
  *  8    Gandalf   1.7         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  7    Gandalf   1.6         8/2/99   Petr Hrebejk    EventSetNode chilfren & 

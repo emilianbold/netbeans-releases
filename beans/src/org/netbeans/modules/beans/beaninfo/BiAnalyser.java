@@ -42,17 +42,17 @@ import com.netbeans.developer.modules.beans.EventSetPattern;
 
 public class BiAnalyser extends Object implements Node.Cookie {
   
-  private static final String TAB = "  ";
+  private static final String TAB = "  "; // NOI18N
   private static final String TABx2 = TAB +TAB;
   private static final String TABx3 = TAB + TABx2;
 
-  private static final String ICONNAME_C16 = "iconNameC16";
-  private static final String ICONNAME_C32 = "iconNameC32"; 
-  private static final String ICONNAME_M16 = "iconNameM16"; 
-  private static final String ICONNAME_M32 =  "iconNameM32"; 
+  private static final String ICONNAME_C16 = "iconNameC16"; // NOI18N
+  private static final String ICONNAME_C32 = "iconNameC32"; // NOI18N
+  private static final String ICONNAME_M16 = "iconNameM16"; // NOI18N
+  private static final String ICONNAME_M32 =  "iconNameM32"; // NOI18N
 
-  private static final String DEFAULT_PROPERTY_INDEX = "defaultPropertyIndex";
-  private static final String DEFAULT_EVENT_INDEX = "defaultEventIndex"; 
+  private static final String DEFAULT_PROPERTY_INDEX = "defaultPropertyIndex"; // NOI18N
+  private static final String DEFAULT_EVENT_INDEX = "defaultEventIndex"; // NOI18N
   
   /** Holds all properties */
   List properties;
@@ -271,8 +271,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
     
     if ( nullProperties ) {
       sb.append( TAB + "// Properties information will be obtained from introspection.\n" );
-      sb.append( TAB + "private static PropertyDescriptor[] properties = null;\n" );
-      bis.setPropertiesSection( sb.toString(), "  \n" );
+      sb.append( TAB + "private static PropertyDescriptor[] properties = null;\n" ); // NOI18N
+      bis.setPropertiesSection( sb.toString(), "  \n" ); // NOI18N
       return;
     }
 
@@ -288,42 +288,42 @@ public class BiAnalyser extends Object implements Node.Cookie {
       BiFeature bif = ( BiFeature )it.next();
 
       if ( bif.isIncluded() ) {
-        sb.append( TAB + "private static final int " );
-        sb.append( "PROPERTY_" + bif.getName() );
-        sb.append( " = " + (propertyCount++) + ";" );  
-        sb.append( "\n" );
+        sb.append( TAB + "private static final int " ); // NOI18N
+        sb.append( "PROPERTY_" + bif.getName() ); // NOI18N
+        sb.append( " = " + (propertyCount++) + ";" ); // NOI18N
+        sb.append( "\n" ); // NOI18N
       }
     }            
       
     sb.append( "\n" + TAB + "// Property array \n" );
-    sb.append( TAB + "private static PropertyDescriptor[] properties = new PropertyDescriptor[" +
-               propertyCount + "];\n\n" );
+    sb.append( TAB + "private static PropertyDescriptor[] properties = new PropertyDescriptor[" + // NOI18N
+               propertyCount + "];\n\n" ); // NOI18N
     
     if ( propertyCount > 0) 
-      sb.append( TAB + "static {\n" + TABx2 + "try {\n" );
+      sb.append( TAB + "static {\n" + TABx2 + "try {\n" ); // NOI18N
 
     it = allProperties.iterator();
     for ( int i = 0; it.hasNext(); i++ ) {
       BiFeature bif = ( BiFeature )it.next();
 
       if ( bif.isIncluded() ) {
-        sb.append( TABx3 + "properties[PROPERTY_" ).append( bif.getName() ).append("] = ");
-        sb.append( bif.getCreationString() ).append(";\n");
+        sb.append( TABx3 + "properties[PROPERTY_" ).append( bif.getName() ).append("] = "); // NOI18N
+        sb.append( bif.getCreationString() ).append(";\n"); // NOI18N
 
         Collection cs = bif.getCustomizationStrings();
         Iterator csit = cs.iterator();
         while( csit.hasNext() ) {
-          sb.append(  TABx3 + "properties[PROPERTY_" ).append( bif.getName() ).append("].");
-          sb.append( (String)csit.next() ).append( ";\n" );
+          sb.append(  TABx3 + "properties[PROPERTY_" ).append( bif.getName() ).append("]."); // NOI18N
+          sb.append( (String)csit.next() ).append( ";\n" ); // NOI18N
         }  
       }
     }
     
     if ( propertyCount > 0 )
-      sb.append( TABx2 + "}\n" +  TABx2 + "catch( IntrospectionException e) {}" );
+      sb.append( TABx2 + "}\n" +  TABx2 + "catch( IntrospectionException e) {}" ); // NOI18N
 
 
-    bis.setPropertiesSection( sb.toString(), propertyCount > 0 ? "}\n" : "  \n" );
+    bis.setPropertiesSection( sb.toString(), propertyCount > 0 ? "}\n" : "  \n" ); // NOI18N
   }
 
   /** Regenerates the event set section of BeanInfo */
@@ -333,8 +333,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
     
     if ( nullEventSets ) {
       sb.append( TAB + "// Event sets information will be obtained from introspection.\n" );
-      sb.append( TAB + "private static EventSetDescriptor[] eventSets = null;\n" );
-      bis.setEventSetsSection( sb.toString(), "  \n" );
+      sb.append( TAB + "private static EventSetDescriptor[] eventSets = null;\n" ); // NOI18N
+      bis.setEventSetsSection( sb.toString(), "  \n" ); // NOI18N
       return;
     }    
     
@@ -346,40 +346,40 @@ public class BiAnalyser extends Object implements Node.Cookie {
       BiFeature bif = ( BiFeature )it.next();
 
       if ( bif.isIncluded() ) {
-        sb.append( TAB + "private static final int " );
-        sb.append( "EVENT_" + bif.getName() );
-        sb.append( " = " + (eventCount++) + ";" );  
-        sb.append( "\n" );
+        sb.append( TAB + "private static final int " ); // NOI18N
+        sb.append( "EVENT_" + bif.getName() ); // NOI18N
+        sb.append( " = " + (eventCount++) + ";" ); // NOI18N
+        sb.append( "\n" ); // NOI18N
       }
     }      
 
     sb.append( "\n" + TAB + "// EventSet array\n" );
-    sb.append( TAB + "private static EventSetDescriptor[] eventSets = new EventSetDescriptor[" 
-      + eventCount + "];\n\n" );
+    sb.append( TAB + "private static EventSetDescriptor[] eventSets = new EventSetDescriptor[" // NOI18N
+      + eventCount + "];\n\n" ); // NOI18N
 
     if ( eventCount > 0 )
-      sb.append( TAB + "static {\n" + TABx2 + "try {\n" );
+      sb.append( TAB + "static {\n" + TABx2 + "try {\n" ); // NOI18N
 
     it = eventSets.iterator();
     for ( int i = 0; it.hasNext(); i++ ) {
       BiFeature bif = ( BiFeature )it.next();
       if ( bif.isIncluded() ) {
-        sb.append( TABx3 + "eventSets[EVENT_" ).append( bif.getName() ).append("] = ");
-        sb.append( bif.getCreationString() ).append(";\n");
+        sb.append( TABx3 + "eventSets[EVENT_" ).append( bif.getName() ).append("] = "); // NOI18N
+        sb.append( bif.getCreationString() ).append(";\n"); // NOI18N
 
         Collection cs = bif.getCustomizationStrings();
         Iterator csit = cs.iterator();
         while( csit.hasNext() ) {
-          sb.append(  TABx3 + "eventSets[EVENT_" ).append( bif.getName() ).append("].");
-          sb.append( (String)csit.next() ).append( ";\n" );
+          sb.append(  TABx3 + "eventSets[EVENT_" ).append( bif.getName() ).append("]."); // NOI18N
+          sb.append( (String)csit.next() ).append( ";\n" ); // NOI18N
         }
       }
     } 
     
     if ( eventCount > 0 )
-    sb.append( TABx2 + "}\n" +  TABx2 + "catch( IntrospectionException e) {}" );
+    sb.append( TABx2 + "}\n" +  TABx2 + "catch( IntrospectionException e) {}" ); // NOI18N
   
-    bis.setEventSetsSection( sb.toString(), eventCount > 0 ? "}\n" : "  \n");
+    bis.setEventSetsSection( sb.toString(), eventCount > 0 ? "}\n" : "  \n"); // NOI18N
   }
   
   /** Generate image icon section */
@@ -397,19 +397,19 @@ public class BiAnalyser extends Object implements Node.Cookie {
   private static String getIconDeclaration( String name, String resource ) {
     StringBuffer sb = new StringBuffer( 80 );
     
-    sb.append( TAB + "private static String " ).append( name ).append( " = ");
+    sb.append( TAB + "private static String " ).append( name ).append( " = "); // NOI18N
     if ( resource == null || resource.trim().length() == 0 )
-      sb.append( "null;\n");
+      sb.append( "null;\n"); // NOI18N
     else 
-      sb.append("\"").append( resource.trim() ).append("\";\n");
+      sb.append("\"").append( resource.trim() ).append("\";\n"); // NOI18N
     return sb.toString();  
   }
   
   private void regenerateDefaultIdx() {
     StringBuffer sb = new StringBuffer(100);
     
-    sb.append( TAB + "private static int " + DEFAULT_PROPERTY_INDEX + " = ").append( defaultPropertyIndex ).append( ";\n");
-    sb.append( TAB + "private static int " + DEFAULT_EVENT_INDEX + " = ").append( defaultEventIndex ).append( ";\n");
+    sb.append( TAB + "private static int " + DEFAULT_PROPERTY_INDEX + " = ").append( defaultPropertyIndex ).append( ";\n"); // NOI18N
+    sb.append( TAB + "private static int " + DEFAULT_EVENT_INDEX + " = ").append( defaultEventIndex ).append( ";\n"); // NOI18N
    
     bis.setDefaultIdxSection( sb.toString() );
   }
@@ -432,14 +432,14 @@ public class BiAnalyser extends Object implements Node.Cookie {
     
     section = bis.getPropertiesSection();
     code = normalizeText( section );
-    nullProperties = setPropertiesFromBeanInfo( properties, code, "PropertyDescriptor[]" );
+    nullProperties = setPropertiesFromBeanInfo( properties, code, "PropertyDescriptor[]" ); // NOI18N
     if ( !nullProperties )
-      setPropertiesFromBeanInfo( idxProperties, code, "PropertyDescriptor[]" );
+      setPropertiesFromBeanInfo( idxProperties, code, "PropertyDescriptor[]" ); // NOI18N
    
      
     section = bis.getEventSetsSection();
     code = normalizeText( section );
-    nullEventSets = setPropertiesFromBeanInfo( eventSets, code, "EventSetDescriptor[]" );
+    nullEventSets = setPropertiesFromBeanInfo( eventSets, code, "EventSetDescriptor[]" ); // NOI18N
     
   }
 
@@ -506,7 +506,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
    else
      return new String[0];
     
-   StringTokenizer strTok = new StringTokenizer( paramString, ",)" ); 
+   StringTokenizer strTok = new StringTokenizer( paramString, ",)" ); // NOI18N
    
    String[] resultStrs = new String[ strTok.countTokens() ];
    
@@ -550,7 +550,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
     while( it.hasNext() ) {
       String statement = (String)it.next();    
       if ( statement.indexOf( name ) != -1 ) 
-         if ( getInitializer( statement ).equals( "null" )  )
+         if ( getInitializer( statement ).equals( "null" )  ) // NOI18N
            return true;
          else
            break;
@@ -628,6 +628,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
 }
 /* 
  * Log
+ *  10   Gandalf   1.9         1/12/00  Petr Hrebejk    i18n  
  *  9    Gandalf   1.8         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  8    Gandalf   1.7         10/11/99 Petr Hrebejk    JDK 

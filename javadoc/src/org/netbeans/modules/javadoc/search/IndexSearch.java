@@ -67,19 +67,19 @@ public class IndexSearch
   
   /* Button icons */
   //private static final ImageIcon windowIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif"));
-  private static final ImageIcon refSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/refSort.gif"));
-  private static final ImageIcon typeSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/typeSort.gif"));
-  private static final ImageIcon alphaSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/alphaSort.gif"));
-  private static final ImageIcon listOnlyIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/list_only.gif"));
-  private static final ImageIcon listHtmlIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/list_html.gif"));
-  private static final ImageIcon showSourceIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/showSource.gif"));
+  private static final ImageIcon refSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/refSort.gif")); // NOI18N
+  private static final ImageIcon typeSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/typeSort.gif")); // NOI18N
+  private static final ImageIcon alphaSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/alphaSort.gif")); // NOI18N
+  private static final ImageIcon listOnlyIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/list_only.gif")); // NOI18N
+  private static final ImageIcon listHtmlIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/list_html.gif")); // NOI18N
+  private static final ImageIcon showSourceIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/showSource.gif")); // NOI18N
   
-  private final static String ICON_RESOURCE = "/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif";
+  private final static String ICON_RESOURCE = "/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif"; // NOI18N
   private final static java.awt.Image windowIcon = java.awt.Toolkit.getDefaultToolkit ().getImage (
       IndexSearch.class.getResource (ICON_RESOURCE));
 
   /* Current sort mode */
-  private String currentSort = "A";
+  private String currentSort = "A"; // NOI18N
   
   /* Hand made components */
   private javax.swing.JScrollPane resultsScrollPane;
@@ -252,104 +252,104 @@ public class IndexSearch
     jPanel1.setLayout (new java.awt.GridBagLayout ());
     java.awt.GridBagConstraints gridBagConstraints2;
 
-    searchComboBox.setEditable (true);
-    searchComboBox.addActionListener (new java.awt.event.ActionListener () {
-      public void actionPerformed (java.awt.event.ActionEvent evt) {
-        searchComboBoxActionPerformed (evt);
+      searchComboBox.setEditable (true);
+      searchComboBox.addActionListener (new java.awt.event.ActionListener () {
+        public void actionPerformed (java.awt.event.ActionEvent evt) {
+          searchComboBoxActionPerformed (evt);
+        }
       }
-    }
-    );
-
-    gridBagConstraints2 = new java.awt.GridBagConstraints ();
-    gridBagConstraints2.fill = java.awt.GridBagConstraints.HORIZONTAL;
-    gridBagConstraints2.insets = new java.awt.Insets (0, 3, 0, 8);
-    gridBagConstraints2.anchor = java.awt.GridBagConstraints.NORTH;
-    gridBagConstraints2.weightx = 1.0;
-    jPanel1.add (searchComboBox, gridBagConstraints2);
-
-    searchButton.setText ("Find");
-    searchButton.addActionListener (new java.awt.event.ActionListener () {
-      public void actionPerformed (java.awt.event.ActionEvent evt) {
-        searchButtonActionPerformed (evt);
+      );
+  
+      gridBagConstraints2 = new java.awt.GridBagConstraints ();
+      gridBagConstraints2.fill = java.awt.GridBagConstraints.HORIZONTAL;
+      gridBagConstraints2.insets = new java.awt.Insets (0, 3, 0, 8);
+      gridBagConstraints2.anchor = java.awt.GridBagConstraints.NORTH;
+      gridBagConstraints2.weightx = 1.0;
+      jPanel1.add (searchComboBox, gridBagConstraints2);
+  
+      searchButton.setText (org.openide.util.NbBundle.getBundle(IndexSearch.class).getString("IndexSearch.searchButton.text"));
+      searchButton.addActionListener (new java.awt.event.ActionListener () {
+        public void actionPerformed (java.awt.event.ActionEvent evt) {
+          searchButtonActionPerformed (evt);
+        }
       }
-    }
-    );
-
-    gridBagConstraints2 = new java.awt.GridBagConstraints ();
-    gridBagConstraints2.insets = new java.awt.Insets (0, 0, 0, 3);
-    gridBagConstraints2.anchor = java.awt.GridBagConstraints.WEST;
-    jPanel1.add (searchButton, gridBagConstraints2);
-
-    sourceButton.setPreferredSize (new java.awt.Dimension(25, 25));
-    sourceButton.setMinimumSize (new java.awt.Dimension(25, 25));
-    sourceButton.addActionListener (new java.awt.event.ActionListener () {
-      public void actionPerformed (java.awt.event.ActionEvent evt) {
-        showSource (evt);
+      );
+  
+      gridBagConstraints2 = new java.awt.GridBagConstraints ();
+      gridBagConstraints2.insets = new java.awt.Insets (0, 0, 0, 3);
+      gridBagConstraints2.anchor = java.awt.GridBagConstraints.WEST;
+      jPanel1.add (searchButton, gridBagConstraints2);
+  
+      sourceButton.setPreferredSize (new java.awt.Dimension(25, 25));
+      sourceButton.setMinimumSize (new java.awt.Dimension(25, 25));
+      sourceButton.addActionListener (new java.awt.event.ActionListener () {
+        public void actionPerformed (java.awt.event.ActionEvent evt) {
+          showSource (evt);
+        }
       }
-    }
-    );
-
-    gridBagConstraints2 = new java.awt.GridBagConstraints ();
-    gridBagConstraints2.insets = new java.awt.Insets (0, 0, 0, 3);
-    jPanel1.add (sourceButton, gridBagConstraints2);
-
-    byNameButton.setPreferredSize (new java.awt.Dimension(25, 25));
-    byNameButton.setSelected (true);
-    byNameButton.setMinimumSize (new java.awt.Dimension(25, 25));
-    byNameButton.setActionCommand ("A");
-    byNameButton.setRequestFocusEnabled (false);
-    byNameButton.addActionListener (new java.awt.event.ActionListener () {
-      public void actionPerformed (java.awt.event.ActionEvent evt) {
-        sortButtonActionPerformed (evt);
+      );
+  
+      gridBagConstraints2 = new java.awt.GridBagConstraints ();
+      gridBagConstraints2.insets = new java.awt.Insets (0, 0, 0, 3);
+      jPanel1.add (sourceButton, gridBagConstraints2);
+  
+      byNameButton.setPreferredSize (new java.awt.Dimension(25, 25));
+      byNameButton.setSelected (true);
+      byNameButton.setMinimumSize (new java.awt.Dimension(25, 25));
+      byNameButton.setActionCommand ("A");
+      byNameButton.setRequestFocusEnabled (false);
+      byNameButton.addActionListener (new java.awt.event.ActionListener () {
+        public void actionPerformed (java.awt.event.ActionEvent evt) {
+          sortButtonActionPerformed (evt);
+        }
       }
-    }
-    );
-
-    gridBagConstraints2 = new java.awt.GridBagConstraints ();
-    jPanel1.add (byNameButton, gridBagConstraints2);
-
-    byReferenceButton.setPreferredSize (new java.awt.Dimension(25, 25));
-    byReferenceButton.setMinimumSize (new java.awt.Dimension(25, 25));
-    byReferenceButton.setActionCommand ("R");
-    byReferenceButton.setRequestFocusEnabled (false);
-    byReferenceButton.addActionListener (new java.awt.event.ActionListener () {
-      public void actionPerformed (java.awt.event.ActionEvent evt) {
-        sortButtonActionPerformed (evt);
+      );
+  
+      gridBagConstraints2 = new java.awt.GridBagConstraints ();
+      jPanel1.add (byNameButton, gridBagConstraints2);
+  
+      byReferenceButton.setPreferredSize (new java.awt.Dimension(25, 25));
+      byReferenceButton.setMinimumSize (new java.awt.Dimension(25, 25));
+      byReferenceButton.setActionCommand ("R");
+      byReferenceButton.setRequestFocusEnabled (false);
+      byReferenceButton.addActionListener (new java.awt.event.ActionListener () {
+        public void actionPerformed (java.awt.event.ActionEvent evt) {
+          sortButtonActionPerformed (evt);
+        }
       }
-    }
-    );
-
-    gridBagConstraints2 = new java.awt.GridBagConstraints ();
-    jPanel1.add (byReferenceButton, gridBagConstraints2);
-
-    byTypeButton.setPreferredSize (new java.awt.Dimension(25, 25));
-    byTypeButton.setMinimumSize (new java.awt.Dimension(25, 25));
-    byTypeButton.setActionCommand ("T");
-    byTypeButton.setRequestFocusEnabled (false);
-    byTypeButton.addActionListener (new java.awt.event.ActionListener () {
-      public void actionPerformed (java.awt.event.ActionEvent evt) {
-        sortButtonActionPerformed (evt);
+      );
+  
+      gridBagConstraints2 = new java.awt.GridBagConstraints ();
+      jPanel1.add (byReferenceButton, gridBagConstraints2);
+  
+      byTypeButton.setPreferredSize (new java.awt.Dimension(25, 25));
+      byTypeButton.setMinimumSize (new java.awt.Dimension(25, 25));
+      byTypeButton.setActionCommand ("T");
+      byTypeButton.setRequestFocusEnabled (false);
+      byTypeButton.addActionListener (new java.awt.event.ActionListener () {
+        public void actionPerformed (java.awt.event.ActionEvent evt) {
+          sortButtonActionPerformed (evt);
+        }
       }
-    }
-    );
-
-    gridBagConstraints2 = new java.awt.GridBagConstraints ();
-    jPanel1.add (byTypeButton, gridBagConstraints2);
-
-    quickViewButton.setSelected (true);
-    quickViewButton.setRequestFocusEnabled (false);
-    quickViewButton.addActionListener (new java.awt.event.ActionListener () {
-      public void actionPerformed (java.awt.event.ActionEvent evt) {
-        quickViewButtonActionPerformed (evt);
+      );
+  
+      gridBagConstraints2 = new java.awt.GridBagConstraints ();
+      jPanel1.add (byTypeButton, gridBagConstraints2);
+  
+      quickViewButton.setSelected (true);
+      quickViewButton.setRequestFocusEnabled (false);
+      quickViewButton.addActionListener (new java.awt.event.ActionListener () {
+        public void actionPerformed (java.awt.event.ActionEvent evt) {
+          quickViewButtonActionPerformed (evt);
+        }
       }
-    }
-    );
-
-    gridBagConstraints2 = new java.awt.GridBagConstraints ();
-    gridBagConstraints2.gridwidth = 0;
-    gridBagConstraints2.insets = new java.awt.Insets (0, 5, 0, 0);
-    jPanel1.add (quickViewButton, gridBagConstraints2);
-
+      );
+  
+      gridBagConstraints2 = new java.awt.GridBagConstraints ();
+      gridBagConstraints2.gridwidth = 0;
+      gridBagConstraints2.insets = new java.awt.Insets (0, 5, 0, 0);
+      jPanel1.add (quickViewButton, gridBagConstraints2);
+  
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
     gridBagConstraints1.gridwidth = 0;
@@ -437,8 +437,8 @@ private void showSource (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_show
       // Workaround for bug in FileSystems
       String strUrl = url.toString();
 
-      if ( strUrl.startsWith( "nbfs:" ) && strUrl.charAt( 5 ) != '/' ){
-        url = new URL( "nbfs:/" + strUrl.substring( 5 ) );
+      if ( strUrl.startsWith( "nbfs:" ) && strUrl.charAt( 5 ) != '/' ){ // NOI18N
+        url = new URL( "nbfs:/" + strUrl.substring( 5 ) ); // NOI18N
       }
       if ( quick )
         quickBrowser.setURL( url );
@@ -560,7 +560,10 @@ private void showSource (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_show
     if ( indexSearch == null ) {
       indexSearch = new IndexSearch ();
       Workspace workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();  
-      Mode myMode = workspace.createMode("JavaDocSearch", "JavaDoc Index-Search", IndexSearch.class.getResource (ICON_RESOURCE));
+      Mode myMode = workspace.createMode(
+        "JavaDocSearch", //NOI8N
+        org.openide.util.NbBundle.getBundle(IndexSearch.class).getString("IndexSearch.workspace.name"), 
+        IndexSearch.class.getResource (ICON_RESOURCE));
       myMode.setBounds(new Rectangle( 200, 200, 450, 200 ) );
       myMode.dockInto( indexSearch );
 
@@ -581,9 +584,9 @@ private void showSource (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_show
 
     javax.swing.SwingUtilities.invokeLater( new Runnable() {
     public void run() {
-        byNameButton.setSelected( sort.equals( "A" ) ); 
-        byReferenceButton.setSelected( sort.equals( "R" ) ); 
-        byTypeButton.setSelected( sort.equals( "T" ) ); 
+        byNameButton.setSelected( sort.equals( "A" ) ); // NOI18N
+        byReferenceButton.setSelected( sort.equals( "R" ) ); // NOI18N
+        byTypeButton.setSelected( sort.equals( "T" ) ); // NOI18N
         
         quickViewButton.setSelected( !noHtml );
         
@@ -704,7 +707,7 @@ private void showSource (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_show
            !dii.getPackage().equals( pckg ) &&
             dii.getIconIndex() != DocSearchIcons.ICON_PACKAGE ) {
         // try {
-          DocIndexItem ndii = new DocIndexItem(  "PACKAGE ", dii.getPackage(), null, "" );
+          DocIndexItem ndii = new DocIndexItem(  "PACKAGE ", dii.getPackage(), null, "" ); // NOI18N
           ndii.setIconIndex( DocSearchIcons.ICON_PACKAGE );
           model.addElement( ndii );
           pckg = dii.getPackage();
@@ -725,7 +728,7 @@ private void showSource (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_show
     if ( results.size() < 1 ) {
       resultsList.setModel( notModel );
     }
-    else if ( currentSort.equals( "R" ) ) {
+    else if ( currentSort.equals( "R" ) ) { // NOI18N
       if ( referenceModel == null ) {
         resultsList.setModel( waitModel );
         resultsList.invalidate();
@@ -734,7 +737,7 @@ private void showSource (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_show
       }
       resultsList.setModel( referenceModel );
     }
-    else if ( currentSort.equals( "T" ) ) {
+    else if ( currentSort.equals( "T" ) ) { // NOI18N
       if ( typeModel == null ) {
         resultsList.setModel( waitModel );
         resultsList.invalidate();
@@ -743,7 +746,7 @@ private void showSource (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_show
       }
       resultsList.setModel( typeModel );
     }
-    else if ( currentSort.equals( "A" ) ) {
+    else if ( currentSort.equals( "A" ) ) { // NOI18N
       if ( alphaModel == null ) {
         resultsList.setModel( waitModel );
         resultsList.invalidate();
@@ -764,6 +767,7 @@ private void showSource (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_show
 
 /*
  * Log
+ *  23   Gandalf   1.22        1/12/00  Petr Hrebejk    i18n
  *  22   Gandalf   1.21        1/11/00  Jesse Glick     Context help.
  *  21   Gandalf   1.20        11/23/99 Petr Hrebejk    Show source feature 
  *       added

@@ -33,7 +33,7 @@ import org.openide.src.*;
  */
 public class SrcFinder extends Object {
 
-  private static final ElementFormat FORMATOR = new ElementFormat( "{C}" );
+  private static final ElementFormat FORMATOR = new ElementFormat( "{C}" ); // NOI18N
   
   /** SrcFinder is a singleton */
   private  SrcFinder() {
@@ -69,7 +69,7 @@ public class SrcFinder extends Object {
     
     Repository repository = TopManager.getDefault().getRepository();
      
-    FileObject fo = repository.find( thePackage, filename, "java" );
+    FileObject fo = repository.find( thePackage, filename, "java" ); // NOI18N
     
     if ( fo != null ) {
       try {
@@ -120,7 +120,7 @@ public class SrcFinder extends Object {
     int pi = member.indexOf( '(' );
     String name = member.substring( 0, pi );
     
-    StringTokenizer tokenizer = new StringTokenizer( member.substring( pi ), " ,()" );
+    StringTokenizer tokenizer = new StringTokenizer( member.substring( pi ), " ,()" ); // NOI18N
     ArrayList paramList = new ArrayList();
     
     while( tokenizer.hasMoreTokens() ) {

@@ -163,7 +163,7 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
       /** Gets the value */
      
       public Object getValue () {
-        ElementFormat fmt = new ElementFormat ("{n} ({p})");
+        ElementFormat fmt = new ElementFormat ("{n} ({p})"); // NOI18N
         MethodElement method = ((IdxPropertyPattern)pattern).getIndexedGetterMethod();
         if ( method == null )
           return bundle.getString("LAB_NoMethod");
@@ -184,7 +184,7 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
       /** Gets the value */
      
       public Object getValue () {
-        ElementFormat fmt = new ElementFormat ("{n} ({p})");
+        ElementFormat fmt = new ElementFormat ("{n} ({p})"); // NOI18N
         MethodElement method = ((IdxPropertyPattern)pattern).getIndexedSetterMethod();
         if ( method == null )
           return bundle.getString("LAB_NoMethod");
@@ -198,6 +198,7 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
 
 /*
 * Log
+*  6    Gandalf   1.5         1/12/00  Petr Hrebejk    i18n  
 *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  4    Gandalf   1.3         7/26/99  Petr Hrebejk    Better implementation of 

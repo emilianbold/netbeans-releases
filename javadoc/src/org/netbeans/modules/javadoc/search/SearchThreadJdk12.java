@@ -54,15 +54,15 @@ class SearchThreadJdk12 extends IndexSearchThread {
         fileNumber = new Integer( 27 );
       }
 
-      String fileName = new String( "index-" + fileNumber.toString() );
-      this.fo = fo.getFileObject( fileName, "html" );
+      String fileName = new String( "index-" + fileNumber.toString() ); // NOI18N
+      this.fo = fo.getFileObject( fileName, "html" ); // NOI18N
   
       if ( this.fo != null ) {
         try {
           contextURL = this.fo.getURL();
         }
         catch ( org.openide.filesystems.FileStateInvalidException e ) {
-          throw new InternalError( "Can't create documentation folder URL - file state invalid" );
+          throw new InternalError( "Can't create documentation folder URL - file state invalid" ); // NOI18N
         }
       }
     }
@@ -72,7 +72,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
         //contextURL = this.fo.getParent().getURL();
       }
       catch ( org.openide.filesystems.FileStateInvalidException e ) {
-        throw new InternalError( "Can't create documentation folder URL - file state invalid" );
+        throw new InternalError( "Can't create documentation folder URL - file state invalid" ); // NOI18N
       }
     } 
   }
@@ -244,7 +244,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
         // Add the item when all information is available
         insertDocIndexItem( currentDii );
 
-        if ( text.endsWith( "." ) ) {
+        if ( text.endsWith( "." ) ) { // NOI18N
           where = IN_DESCRIPTION_SUFFIX;
           currentDii.setPackage( text.substring( text.lastIndexOf( ' ' ) ) );
         }
@@ -266,6 +266,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
 
 /*
  * Log
+ *  14   Gandalf   1.13        1/12/00  Petr Hrebejk    i18n
  *  13   Gandalf   1.12        11/3/99  Petr Hrebejk    Missing index file and 
  *       doc/api for single index file fixed
  *  12   Gandalf   1.11        10/27/99 Petr Hrebejk    Bug fixes & back button 
