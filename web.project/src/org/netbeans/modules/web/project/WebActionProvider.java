@@ -796,14 +796,15 @@ class WebActionProvider implements ActionProvider {
         return files;
     }
     private boolean isDebugged() {
-        
         J2eeModuleProvider jmp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-        ServerDebugInfo sdi = jmp.getServerDebugInfo ();
-        if (sdi == null) {
-            return false;
-        }
-//        server.getServerInstance().getStartServer().getDebugInfo(null);
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        ServerDebugInfo sdi = null;
+        
+        if (sessions != null && sessions.length > 0) {
+            sdi = jmp.getServerDebugInfo ();
+            if (sdi == null)
+                return false;
+        }
         
         for (int i=0; i < sessions.length; i++) {
             Session s = sessions[i];
