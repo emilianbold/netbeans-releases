@@ -50,9 +50,9 @@ public class PropertyPattern extends Pattern {
     public static final int WRITE_ONLY = 4;
     
     /** Constant for PropertyChange */
-    private static final String PROPERTY_CHANGE = "firePropertyChange";
+    static final String PROPERTY_CHANGE = "firePropertyChange";
     /** Constant for VetoableChange */
-    private static final String VETOABLE_CHANGE = "fireVetoableChange";
+    static final String VETOABLE_CHANGE = "fireVetoableChange";
     
     /** Getter method of this property */
     protected MethodElement getterMethod = null;
@@ -380,6 +380,7 @@ public class PropertyPattern extends Pattern {
                 setterMethod.setParameters( params );
                 
                 String body = setterMethod.getBody();
+                System.out.println("PropertyPattern " + setterMethod);
                 //test if body contains change support
                 if( body != null && ( body.indexOf(PROPERTY_CHANGE) != -1 || body.indexOf(VETOABLE_CHANGE) != -1 ) ) {
                     String mssg = MessageFormat.format( PatternNode.getString( "FMT_ChangeMethodBody" ),
@@ -430,20 +431,35 @@ public class PropertyPattern extends Pattern {
      * @param oldType old type of property value
      * @return null if no change is possible or new body if it is
      */
-    private String regeneratePropertySupport( String methodBody, String changeType, String name, org.openide.src.Type type, org.openide.src.Type oldType ){
+    protected String regeneratePropertySupport( String methodBody, String changeType, String name, org.openide.src.Type type, org.openide.src.Type oldType ){
         if( methodBody == null )
             return null;
         
         int first = -1;
+        boolean post_index = false;
+        boolean pre_index  = false;
+        String propertyStyle = PropertyActionSettings.getDefault().getPropStyle();
+        
+        if( oldType.isArray() )
+            oldType = getPrimitiveType(oldType);
         //will search for line containing property support or field
         if( changeType != null ){
             if( (first = methodBody.indexOf(changeType)) == -1 )
                 return null; 
         }
         else{
-            String oldVarLine = oldType.toString() + " old" + Pattern.capitalizeFirstLetter( name ) + " = this." + name;
-            if( (first = methodBody.indexOf( oldVarLine )) == -1 )
-                return null;
+            String oldVarLine = " old" + Pattern.capitalizeFirstLetter( name ) + " = " + propertyStyle + name;
+            if( (first = methodBody.indexOf( (oldType.toString() + oldVarLine  + ";") )) == -1 ) {   //non indexed
+                if( (first = methodBody.indexOf( (oldType.toString() + oldVarLine  + "[index];") )) == -1 ) {  //indexed
+                    if( (first = methodBody.indexOf( (oldType.toString() + "[]" + oldVarLine  + ";") )) == -1 ) {  //indexed
+                        return null;
+                    }
+                    else 
+                        pre_index = true;
+                }
+                else 
+                    post_index = true;
+            }
         }
 
         if( first == -1 )
@@ -472,8 +488,14 @@ public class PropertyPattern extends Pattern {
         }
         else{
             newBody.append( type.toString() );
+            //if( pre_index ){
+            //    newBody.append( "[]" );
+            //}
             newBody.append( " old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
-            newBody.append( " = this." ).append( name ); // NOI18N            
+            newBody.append( " = " ).append( propertyStyle ).append( name ); // NOI18N            
+            if( post_index ){
+                newBody.append( "[index]" );
+            }
         }
 
         StringBuffer sb = new StringBuffer(methodBody);
@@ -482,6 +504,15 @@ public class PropertyPattern extends Pattern {
         return sb.toString();        
     }
     
+    private static org.openide.src.Type getPrimitiveType(org.openide.src.Type type){        
+        if( type.isArray() ){
+            return getPrimitiveType( type.getElementType() );
+        }
+        else{
+            return type;
+        }        
+    }
+
     /** Gets the cookie of the first available method
      * @param cookieType Class of the Cookie
      * @return Cookie of Getter or Setter MethodElement
@@ -743,13 +774,15 @@ public class PropertyPattern extends Pattern {
         ClassElement declaringClass = getDeclaringClass();
         FieldElement newField = new FieldElement();
 
-
-        newField.setName( Identifier.create( Introspector.decapitalize( getName() ) ) );
+        String name = getName();
+        if( PropertyActionSettings.getDefault().getPropStyle().equals(PropertyActionSettings.GENERATE_UNDERSCORED))
+            name = PropertyActionSettings.GENERATE_UNDERSCORED + name;
+        newField.setName( Identifier.create( Introspector.decapitalize( name ) ) );
         newField.setType( type );
         newField.setModifiers( Modifier.PRIVATE );
         if ( javadoc ) {
             String comment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertyField" ),
-                                                   new Object[] { getName() } );
+                                                   new Object[] { name } );
             newField.getJavaDoc().setRawText( comment );
         }
 

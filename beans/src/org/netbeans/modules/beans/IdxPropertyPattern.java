@@ -355,6 +355,22 @@ public class IdxPropertyPattern extends PropertyPattern {
             if ( params.length > 1 ) {
                 params[1].setType( type );
                 indexedSetterMethod.setParameters( params );
+
+                String body = indexedSetterMethod.getBody();
+                System.out.println("IdxPropertyPattern " + body);
+                
+                //test if body contains change support
+                if( body != null && ( body.indexOf(PropertyPattern.PROPERTY_CHANGE) != -1 || body.indexOf(PropertyPattern.VETOABLE_CHANGE) != -1 ) ) {
+                    String mssg = MessageFormat.format( PatternNode.getString( "FMT_ChangeMethodBody" ),
+                                                        new Object[] { setterMethod.getName().getName() } );
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
+                    TopManager.getDefault().notify( nd );
+                    if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
+                        String newBody = regeneratePropertySupport( indexedSetterMethod.getBody(), null, params[1].getName(), type, oldType );
+                        if( newBody != null )
+                            indexedSetterMethod.setBody(newBody);
+                    }
+                }
             }
         }
 
@@ -366,6 +382,45 @@ public class IdxPropertyPattern extends PropertyPattern {
         }
 
         indexedType = type;
+    }
+
+    /**
+     * @param methodBody old method body
+     * @param changeType  .. propertyChange, vetoableChange or null if need to change only support field 
+     * @param name of property
+     * @param type new type of property value
+     * @param oldType old type of property value
+     * @return null if no change is possible or new body if it is
+     */
+    private String regenerateIdxPropertySupport( String methodBody, String name, org.openide.src.Type type, org.openide.src.Type oldType ){
+        if( methodBody == null )
+            return null;
+        
+        int first = -1;
+        String propertyStyle = PropertyActionSettings.getDefault().getPropStyle();
+        
+        //will search for line containing property support or field
+        String oldVarLine = oldType.toString() + " old" + Pattern.capitalizeFirstLetter( name ) + " = " + propertyStyle + name;
+        if( (first = methodBody.indexOf( oldVarLine )) == -1 )
+            return null;
+
+        if( first == -1 )
+            return null;
+        
+        //find end of statement
+        int last = methodBody.indexOf(';', first);
+        if( first >= last )
+            return null;
+        
+        StringBuffer newBody = new StringBuffer(100);
+        newBody.append( type.toString() );
+        newBody.append( " old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
+        newBody.append( " = " ).append( propertyStyle ).append( name ); // NOI18N            
+
+        StringBuffer sb = new StringBuffer(methodBody);
+        sb.delete(first, last);
+        sb.insert(first, newBody);
+        return sb.toString();        
     }
 
     /** Returns the mode of the property {@link PropertPattern#READ_WRITE READ_WRITE},

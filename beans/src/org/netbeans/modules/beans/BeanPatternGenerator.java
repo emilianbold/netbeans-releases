@@ -51,6 +51,7 @@ class BeanPatternGenerator extends Object {
                                      String supportName, String vetoSupportName) {
 
         StringBuffer setterBody = new StringBuffer( 200 );
+        String propertyStyle = PropertyActionSettings.getDefault().getPropStyle();
         setterBody.append( "\n" ); // NOI18N
         if ( withSupport ) {
             /* Generates body in the form:
@@ -61,7 +62,7 @@ class BeanPatternGenerator extends Object {
 
             setterBody.append( TAB + type.toString() );
             setterBody.append( " old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
-            setterBody.append( " = this." ).append( name ).append( ";\n"); // NOI18N
+            setterBody.append( " = " ).append( propertyStyle ).append( name ).append( ";\n"); // NOI18N
 
             if ( constrained ) {
                 setterBody.append( TAB + vetoSupportName ).append( ".fireVetoableChange(\"").append( name ).append( "\", " ); // NOI18N
@@ -78,12 +79,12 @@ class BeanPatternGenerator extends Object {
                     setterBody.append( ", " ).append( name ).append( ");\n" ); // NOI18N
                 }
                 if ( !bound ) {
-                    setterBody.append( TAB + "this." ).append( name ); // NOI18N
+                    setterBody.append( TAB ).append( propertyStyle ).append( name ); // NOI18N
                     setterBody.append( " = " ).append( name ).append( ";\n"); // NOI18N
                 }
             }
             if ( bound ) {
-                setterBody.append( TAB + "this." ).append( name ); // NOI18N
+                setterBody.append( TAB ).append( propertyStyle ).append( name ); // NOI18N
                 setterBody.append( " = " ).append( name ).append( ";\n"); // NOI18N
                 setterBody.append( TAB + supportName ).append( ".firePropertyChange (\"").append( name ).append( "\", " ); // NOI18N
 
@@ -104,7 +105,7 @@ class BeanPatternGenerator extends Object {
             /* Generates body in the form:
                this.propName = propName;
              */
-            setterBody.append( TAB + "this." ); // NOI18N
+            setterBody.append( TAB ).append( propertyStyle ); // NOI18N
             setterBody.append( name );
             setterBody.append( " = " ).append( name ).append( ";\n" ); // NOI18N
         }
@@ -128,13 +129,14 @@ class BeanPatternGenerator extends Object {
                                          String supportName,
                                          String vetoSupportName ) {
         StringBuffer setterBody = new StringBuffer( 200 );
+        String propertyStyle = PropertyActionSettings.getDefault().getPropStyle();
         setterBody.append( "\n" ); // NOI18N
 
         if ( withSupport && constrained ) {
 
             setterBody.append( TAB + indexedType.toString() );
             setterBody.append( " old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
-            setterBody.append( " = this." ).append( name ); // NOI18N
+            setterBody.append( " = " ).append( propertyStyle ).append( name ); // NOI18N
             setterBody.append( "[index];\n"); // NOI18N
         }
 
@@ -142,7 +144,7 @@ class BeanPatternGenerator extends Object {
             /* Generates body in the form:
                this.propName = propName;
             */
-            setterBody.append( TAB + "this." ); // NOI18N
+            setterBody.append( TAB ).append( propertyStyle ); // NOI18N
             setterBody.append( name );
             setterBody.append( "[index] = " ).append( name ).append( ";\n" ); // NOI18N
         }
@@ -153,7 +155,7 @@ class BeanPatternGenerator extends Object {
             setterBody.append( "null, null );\n" ); // NOI18N
             setterBody.append( TAB + "}\n" ); // NOI18N
             setterBody.append( TAB + "catch(java.beans.PropertyVetoException vetoException ) {\n" ); //NOI18N
-            setterBody.append( TABx2 + "this." ); // NOI18N
+            setterBody.append( TABx2 ).append( propertyStyle ); // NOI18N
             setterBody.append( name );
             setterBody.append( "[index] = old").append( Pattern.capitalizeFirstLetter( name ) ).append( ";\n" ) ; // NOI18N
             setterBody.append( TABx2 + "throw vetoException;\n" ); //NOI18N
@@ -175,13 +177,14 @@ class BeanPatternGenerator extends Object {
      */
     static String propertyGetterBody( String name, boolean withReturn ) {
         StringBuffer getterBody = new StringBuffer( 50 );
+        String propertyStyle = PropertyActionSettings.getDefault().getPropStyle();
         getterBody.append( "\n"); // NOI18N
         if ( withReturn ) {
             /* Generates body in the form:
                return propName;
              */
             getterBody.append( TAB + "return " ); // NOI18N
-            getterBody.append( name ).append( ";\n" ); // NOI18N
+            getterBody.append( propertyStyle ).append( name ).append( ";\n" ); // NOI18N
         }
         return getterBody.toString();
     }
@@ -193,13 +196,14 @@ class BeanPatternGenerator extends Object {
      */
     static String idxPropertyGetterBody( String name, boolean withReturn ) {
         StringBuffer getterBody = new StringBuffer( 50 );
+        String propertyStyle = PropertyActionSettings.getDefault().getPropStyle();
         getterBody.append( "\n"); // NOI18N
         if ( withReturn ) {
             /* Generates body in the form:
                return propName;
              */
             getterBody.append( TAB + "return " ); // NOI18N
-            getterBody.append( name ).append( "[index];\n" ); // NOI18N
+            getterBody.append( propertyStyle ).append( name ).append( "[index];\n" ); // NOI18N
         }
         return getterBody.toString();
     }

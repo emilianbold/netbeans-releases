@@ -67,7 +67,12 @@ public class PropertyActionSettingsBeanInfo extends SimpleBeanInfo {
                 askBefore.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Ask_Before_Generating"));
                 askBefore.setHidden(true);  //will be set to false ASAP I'll have right panel
                 
-                descriptors = new PropertyDescriptor[] { access, bound, constrained, indexed, inherit, askBefore};
+                PropertyDescriptor propstyle = new PropertyDescriptor("propStyle", PropertyActionSettings.class);
+                propstyle.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Prop_Style"));
+                propstyle.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Prop_Style"));
+                propstyle.setPropertyEditorClass (PropertyStyleEditor.class);
+
+                descriptors = new PropertyDescriptor[] { access, bound, constrained, indexed, inherit, askBefore, propstyle};
             } catch (IntrospectionException ie) {
                 if (Boolean.getBoolean ("netbeans.debug.exceptions"))
                     ie.printStackTrace ();
@@ -128,5 +133,37 @@ public class PropertyActionSettingsBeanInfo extends SimpleBeanInfo {
         }
 
     }
+    
+    public static class PropertyStyleEditor extends PropertyEditorSupport {
 
+        private static final String[] tags = {
+            NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "MSG_Option_Gen_Undescored"),
+            NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "MSG_Option_Gen_This"),
+        };
+
+        public String[] getTags () {
+            return tags;
+        }
+
+        public String getAsText () {
+            String type = (String) getValue ();
+            
+            if(type.equals(PropertyActionSettings.GENERATE_UNDERSCORED)){
+                return tags[0];
+            }
+            else if(type.equals(PropertyActionSettings.GENERATE_WITH_THIS)){
+                return tags[1];
+            }
+            return tags[0];
+        }
+
+        public void setAsText (String text) throws IllegalArgumentException {
+            if (tags[0].equals (text))
+                setValue (PropertyActionSettings.GENERATE_UNDERSCORED);
+            else if (tags[1].equals (text))
+                setValue (PropertyActionSettings.GENERATE_WITH_THIS);
+            else
+                throw new IllegalArgumentException ();
+        }
+    }
 }

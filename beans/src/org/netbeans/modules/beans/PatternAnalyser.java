@@ -218,16 +218,25 @@ public class PatternAnalyser extends Object implements Node.Cookie {
     void resolveFields() {
         // Analyze fields
         FieldElement fields[] = classElement.getFields();
-
+        String propertyStyle = PropertyActionSettings.getDefault().getPropStyle();
+        
         for ( int i = 0; i < fields.length; i++ ) {
             FieldElement field=fields[i];
 
             if ( ( field.getModifiers() & Modifier.STATIC ) != 0 )
                 continue;
-
-            PropertyPattern pp = (PropertyPattern)propertyPatterns.get( field.getName().getName() );
+            
+            System.out.println("Property style " + propertyStyle);   
+            String fieldName = field.getName().getName();
+            System.out.println("Field name1 " + fieldName);
+            if( fieldName.startsWith(propertyStyle) ){
+                fieldName = fieldName.substring(1);
+                System.out.println("Field name2 " + fieldName);
+            }
+            
+            PropertyPattern pp = (PropertyPattern)propertyPatterns.get( fieldName );
             if ( pp == null )
-                pp = (PropertyPattern)idxPropertyPatterns.get( field.getName().getName() );
+                pp = (PropertyPattern)idxPropertyPatterns.get( fieldName );
             if ( pp == null )
                 continue;
             Type ppType = pp.getType();

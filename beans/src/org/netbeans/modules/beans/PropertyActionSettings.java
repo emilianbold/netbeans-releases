@@ -22,7 +22,10 @@ import org.openide.util.NbBundle;
  * @author  Petr Suchomel
  */
 public class PropertyActionSettings extends SystemOption {
-
+    
+    public static final String GENERATE_UNDERSCORED= "_";
+    public static final String GENERATE_WITH_THIS  = "this.";
+    
     /** define value for property marking setting Get/Set property */    
     public static final String PROP_ACCESS  = "gen_access";    
     /** define value for property marking setting bound property */    
@@ -35,18 +38,29 @@ public class PropertyActionSettings extends SystemOption {
     public static final String PROP_INHER   = "gen_use_inher";
     /** define value for property marking setting ask before generating */    
     public static final String ASK_BEFORE   = "ask_before";
+    /** define value for property style of generated property variable */    
+    public static final String PROP_STYLE   = "prop_style";
 
+    private static final long serialVersionUID =45122597471838193L;    
     
     /** inicialize object
      */    
     protected void initialize () {
         super.initialize ();
-        setGenAccess (PropertyPattern.READ_WRITE);
-        setGenBound (false);
-        setGenConstrained (false);
-        setGenIndexed(false);
-        setUseInherit(true);
-        setAskBeforeGen(false);
+        if( getProperty (PROP_ACCESS) == null )
+            setGenAccess (PropertyPattern.READ_WRITE);
+        if( getProperty (PROP_BOUND) == null )
+            setGenBound (false);
+        if( getProperty (PROP_CONSTR) == null )            
+            setGenConstrained (false);
+        if( getProperty (PROP_INDEXED) == null )
+            setGenIndexed(false);
+        if( getProperty (PROP_INHER) == null )
+            setUseInherit(true);
+        if( getProperty (ASK_BEFORE) == null )
+            setAskBeforeGen(false);
+        if( getProperty (PROP_STYLE) == null )
+            setPropStyle(PropertyActionSettings.GENERATE_WITH_THIS);
     }
     
     /** Human readable class name
@@ -152,5 +166,19 @@ public class PropertyActionSettings extends SystemOption {
      */    
     public void setAskBeforeGen (boolean ask ) {
         putProperty (ASK_BEFORE, new Boolean (ask), true);
+    }        
+
+    /** Return setting for generating indexed property
+     * @return setting for indexed property
+     */    
+    public String getPropStyle () {        
+        return (String) getProperty (PROP_STYLE);
+    }
+
+    /** Set setting for generating indexed property
+     * @param indexed setting for indexed property
+     */    
+    public void setPropStyle (String style ) {        
+        putProperty (PROP_STYLE, style, true);
     }        
 }
