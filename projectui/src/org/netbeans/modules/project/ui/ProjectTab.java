@@ -253,6 +253,7 @@ public class ProjectTab extends TopComponent
         out.writeObject( id );
         out.writeObject( rootNode.getHandle() );                
         out.writeObject( btv.getExpandedPaths() );
+        out.writeObject( getSelectedPaths() );
     }
 
     public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {        
@@ -260,8 +261,17 @@ public class ProjectTab extends TopComponent
         id = (String)in.readObject();
         rootNode = ((Node.Handle)in.readObject()).getNode();
         List exPaths = (List)in.readObject();
+        List selPaths = null;
+        try {
+            selPaths = (List)in.readObject();
+        }
+        catch ( java.io.OptionalDataException e ) {
+            // Sel paths missing
+        }
         initValues( id );
         btv.expandNodes( exPaths );
+        selectPaths( selPaths );
+
     }
     
     // MANAGING ACTIONS
@@ -387,6 +397,58 @@ public class ProjectTab extends TopComponent
         System.out.println("");
     }
     */
+    
+    private List /*<String[]>*/ getSelectedPaths() {
+        Node selectedNodes[] = manager.getSelectedNodes();
+        List result = new ArrayList();
+        Node rootNode = manager.getRootContext();
+                
+        for( int i = 0; i < selectedNodes.length; i++ ) {
+            String[] path = NodeOp.createPath( selectedNodes[i], rootNode );
+            if ( path != null ) {
+                result.add( path );
+            }
+        }
+        
+        return result;
+    }
+    
+    
+    private void selectPaths( List /*<String[]>*/ paths ) {
+        
+        if ( paths == null ) {
+            return;
+        }
+        
+        List selectedNodes = new ArrayList();
+        
+        Node rootNode = manager.getRootContext();
+        
+        for( Iterator it = paths.iterator(); it.hasNext(); ) {
+            String[] sp = (String[])it.next();
+            try {
+                Node n = NodeOp.findPath( rootNode, sp );
+                if ( n != null ) {
+                    selectedNodes.add( n );
+                }
+            }
+            catch( NodeNotFoundException e ) {
+                // Node wont be added                
+            }
+        }
+        
+        if ( !selectedNodes.isEmpty() ) {
+            Node nodes[] = new Node[ selectedNodes.size() ];
+            selectedNodes.toArray( nodes );
+            try { 
+                manager.setSelectedNodes( nodes );
+            }
+            catch( PropertyVetoException e ) {
+                // Bad day no selection change
+            }
+        }
+        
+    }
     
     // Private innerclasses ----------------------------------------------------
     
