@@ -253,19 +253,40 @@ public class AbstractVariable implements ObjectVariable {
         Variable[] arguments
     ) throws NoSuchMethodException, InvalidExpressionException {
         try {
-            if (this.getInnerValue() == null) return null;
-            Method method = ((ClassType) this.getInnerValue().type()).
-                concreteMethodByName (methodName, signature);
-            if (method == null) {
-                List l = ((ClassType) this.getInnerValue().type()).
+             
+            // 1) find corrent method
+            if (this.getInnerValue () == null) return null;
+            Method method = null;
+            if (signature != null)
+                method = ((ClassType) this.getInnerValue ().type ()).
+                    concreteMethodByName (methodName, signature);
+            else {
+                List l = ((ClassType) this.getInnerValue ().type ()).
                     methodsByName (methodName);
                 int j, jj = l.size ();
                 for (j = 0; j < jj; j++)
-                    System.out.println( ((Method) l.get (j)).signature ());
+                    if ( ((Method) l.get (j)).isAbstract () == false &&
+                         ((Method) l.get (j)).argumentTypeNames ().size () == 0
+                    ) {
+                        method = (Method) l.get (j);
+                        break;
+                    }
+            }
+            
+            // 2) method not found => print all method signatures
+            if (method == null) {
+                List l = ((ClassType) this.getInnerValue ().type ()).
+                    methodsByName (methodName);
+                int j, jj = l.size ();
+                for (j = 0; j < jj; j++)
+                    System.out.println (((Method) l.get (j)).signature ());
                 throw new NoSuchMethodException (
-                    this.getInnerValue().type().name () + "." + methodName + " : " + signature
+                    this.getInnerValue ().type ().name () + "." + 
+                        methodName + " : " + signature
                 );
             }
+            
+            // 3) call this method
             Value[] vs = new Value [arguments.length];
             int i, k = arguments.length;
             for (i = 0; i < k; i++)
@@ -275,13 +296,16 @@ public class AbstractVariable implements ObjectVariable {
                 method,
                 vs
             );
+            
+            // 4) encapsulate result
             if (v instanceof ObjectReference)
-                return new org.netbeans.modules.debugger.jpda.models.ObjectVariable (
-                    getModel(),
-                    (ObjectReference) v,
-                    id + method + "^"
-                );
-            return new AbstractVariable (getModel(), v, id + method);
+                return new org.netbeans.modules.debugger.jpda.models.
+                    ObjectVariable (
+                        getModel (),
+                        (ObjectReference) v,
+                        id + method + "^"
+                    );
+            return new AbstractVariable (getModel (), v, id + method);
         } catch (VMDisconnectedException ex) {
             return null;
         }
