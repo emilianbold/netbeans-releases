@@ -187,11 +187,11 @@ implements ItemListener, Runnable {
     
     ExplorerManager currentManager = 
       getRootPanel (currentRoot).getExplorerManager ();
-    // attach actions if we are activated
+    // create actions and attach them if we are activated
+    if (actions == null) {
+      actions = new ExplorerActions();
+    }
     if (this.equals(TopComponent.getRegistry().getActivated())) {
-      if (actions == null) {
-        actions = new ExplorerActions();
-      }
       actions.attach(currentManager);
     }
     
@@ -679,6 +679,8 @@ implements ItemListener, Runnable {
 
 /*
 * Log
+*  36   Gandalf   1.35        9/15/99  David Simonek   cut/copy/delete actions 
+*       bugfix
 *  35   Gandalf   1.34        8/29/99  Ian Formanek    Removed obsoleted import
 *  34   Gandalf   1.33        8/20/99  Ian Formanek    Reverted last 2 changes
 *  33   Gandalf   1.32        8/20/99  Ian Formanek    Fixed bug with explorer 
