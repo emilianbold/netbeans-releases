@@ -27,24 +27,18 @@
         <file name="org-netbeans-modules-debugger-support-actions-ConnectAction.instance" />
         <attr name="org-netbeans-modules-debugger-support-actions-ConnectAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
 
+        <attr name="org-openide-actions-GoAction.instance/org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction.instance" boolvalue="true" />
+        <file name="org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction.instance" />
+        <attr name="org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
+
         <attr name="org-openide-actions-ToggleBreakpointAction.instance/org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" boolvalue="true" />
         <file name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" />
         <attr name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance/org-openide-actions-AddWatchAction.instance" boolvalue="true" />
 
-        <attr name="Separator2[javax-swing-JSeparator].instance/org-netbeans-modules-debugger-support-actions-DebuggerViewAction.instance" boolvalue="true" />
+        <attr name="org-openide-actions-AddWatchAction.instance/Separator4[javax-swing-JSeparator].instance" boolvalue="true" />
+        <file name="Separator4[javax-swing-JSeparator].instance" />
+        <attr name="Separator4[javax-swing-JSeparator].instance/org-netbeans-modules-debugger-support-actions-DebuggerViewAction.instance" boolvalue="true" />
         <file name="org-netbeans-modules-debugger-support-actions-DebuggerViewAction.instance" />
-        <attr name="org-netbeans-modules-debugger-support-actions-DebuggerViewAction.instance/org-openide-actions-GoToCursorAction.instance" boolvalue="true" />
-
-        <attr name="org-openide-actions-StepOutAction.instance/Separator3[javax-swing-JSeparator].instance" boolvalue="true" />
-        <file name="Separator3[javax-swing-JSeparator].instance" />
-        <attr name="Separator3[javax-swing-JSeparator].instance/org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction.instance" boolvalue="true" />
-
-        <attr name="Separator3[javax-swing-JSeparator].instance/org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction.instance" boolvalue="true" />
-        <file name="org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction.instance" />
-
-        <attr name="org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction.instance/org-netbeans-modules-debugger-support-actions-ResumeDebuggerAction.instance" boolvalue="true" />
-
-        <file name="org-netbeans-modules-debugger-support-actions-ResumeDebuggerAction.instance" />
 
      </folder>
 

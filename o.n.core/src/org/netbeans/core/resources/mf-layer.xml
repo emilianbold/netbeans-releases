@@ -249,26 +249,28 @@ Microsystems, Inc. All Rights Reserved.
        <folder name="Debug">
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
           <file name="org-openide-actions-StartDebuggerAction.instance"/>
-          <attr name="org-openide-actions-StartDebuggerAction.instance/org-openide-actions-GoAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-GoAction.instance"/>
-          <attr name="org-openide-actions-GoAction.instance/org-openide-actions-FinishDebuggerAction.instance" boolvalue="true" />
+          <attr name="org-openide-actions-StartDebuggerAction.instance/org-openide-actions-FinishDebuggerAction.instance" boolvalue="true" />
           <file name="org-openide-actions-FinishDebuggerAction.instance"/>
           <attr name="org-openide-actions-FinishDebuggerAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
           <file name="Separator1[javax-swing-JSeparator].instance"/>
-          <attr name="Separator1[javax-swing-JSeparator].instance/org-openide-actions-ToggleBreakpointAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-ToggleBreakpointAction.instance"/>
-          <attr name="org-openide-actions-ToggleBreakpointAction.instance/org-openide-actions-AddWatchAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-AddWatchAction.instance"/>
-          <attr name="org-openide-actions-AddWatchAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
+          <attr name="Separator1[javax-swing-JSeparator].instance/org-openide-actions-GoAction.instance" boolvalue="true" />
+          <file name="org-openide-actions-GoAction.instance"/>
+          <attr name="org-openide-actions-GoAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
           <file name="Separator2[javax-swing-JSeparator].instance"/>
           <attr name="Separator2[javax-swing-JSeparator].instance/org-openide-actions-GoToCursorAction.instance" boolvalue="true" />
           <file name="org-openide-actions-GoToCursorAction.instance"/>
-          <attr name="org-openide-actions-GoToCursorAction.instance/org-openide-actions-TraceIntoAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-TraceIntoAction.instance"/>
-          <attr name="org-openide-actions-TraceIntoAction.instance/org-openide-actions-TraceOverAction.instance" boolvalue="true" />
+          <attr name="org-openide-actions-GoToCursorAction.instance/org-openide-actions-TraceOverAction.instance" boolvalue="true" />
           <file name="org-openide-actions-TraceOverAction.instance"/>
-          <attr name="org-openide-actions-TraceOverAction.instance/org-openide-actions-StepOutAction.instance" boolvalue="true" />
+          <attr name="org-openide-actions-TraceOverAction.instance/org-openide-actions-TraceIntoAction.instance" boolvalue="true" />
+          <file name="org-openide-actions-TraceIntoAction.instance"/>
+          <attr name="org-openide-actions-TraceIntoAction.instance/org-openide-actions-StepOutAction.instance" boolvalue="true" />
           <file name="org-openide-actions-StepOutAction.instance"/>
+          <attr name="org-openide-actions-StepOutAction.instance/Separator3[javax-swing-JSeparator].instance" boolvalue="true" />
+          <file name="Separator3[javax-swing-JSeparator].instance"/>
+          <attr name="Separator3[javax-swing-JSeparator].instance/org-openide-actions-ToggleBreakpointAction.instance" boolvalue="true" />
+          <file name="org-openide-actions-ToggleBreakpointAction.instance"/>
+          <attr name="org-openide-actions-ToggleBreakpointAction.instance/org-openide-actions-AddWatchAction.instance" boolvalue="true" />
+          <file name="org-openide-actions-AddWatchAction.instance"/>
        </folder>
        <attr name="Debug/Tools" boolvalue="true" />
        <folder name="Tools">
