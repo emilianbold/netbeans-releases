@@ -183,9 +183,12 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
 
         getCaret().addChangeListener(this);
         Integer i = (Integer) UIManager.get("customFontSize"); //NOI18N
-        int size = 11;
+        int size;
         if (i != null) {
             size = i.intValue();
+        } else {
+            Font f = (Font) UIManager.get("controlFont");
+            size = f != null ? f.getSize() : 11;
         }
         textView.setFont (new Font ("Monospaced", Font.PLAIN, size)); //NOI18N
         setBorder (BorderFactory.createEmptyBorder());
