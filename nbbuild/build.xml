@@ -295,9 +295,9 @@ workspaceswitcher
   </target>
   <target name="tryme" depends="maybe-firststart">
     <exec os="indows" dir="firststart/bin" command="runide.exe ${tryme.args}" failonerror="yes"/>
-    <exec os="Linux" dir="firststart/bin" command="./runide.sh ${tryme.args}" failonerror="yes"/>
-    <exec os="SunOS" dir="firststart/bin" command="./runide.sh ${tryme.args}" failonerror="yes"/>
-    <exec os="Solaris" dir="firststart/bin" command="./runide.sh ${tryme.args}" failonerror="yes"/>
+    <exec os="Linux" dir="firststart/bin" command="sh runide.sh ${tryme.args}" failonerror="yes"/>
+    <exec os="SunOS" dir="firststart/bin" command="sh runide.sh ${tryme.args}" failonerror="yes"/>
+    <exec os="Solaris" dir="firststart/bin" command="sh runide.sh ${tryme.args}" failonerror="yes"/>
   </target>
 
   <target name="update-info" depends="all-openide,all-core">
