@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,6 +32,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectInformation;
@@ -93,14 +94,15 @@ final class NbModuleProject implements Project {
                 "${build.classes.dir}/*.class", // NOI18N
             });
         }
-        SourcesHelper sourcesHelper = new SourcesHelper(helper, eval);
-        // External source roots are not supported, so don't bother.
-        // Temp build dir is also internal; NBM build products go elsewhere, but
+        final SourcesHelper sourcesHelper = new SourcesHelper(helper, eval);
+        // Temp build dir is always internal; NBM build products go elsewhere, but
         // difficult to predict statically exactly what they are!
         // XXX would be good to mark at least the module JAR as owned by this project
         // (currently FOQ/SH do not support that)
         // XXX I18N
+        sourcesHelper.addPrincipalSourceRoot("${src.dir}", "Source Packages", null, null); // #56457
         sourcesHelper.addTypedSourceRoot("${src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Source Packages", null, null);
+        // XXX other principal source roots, as needed...
         sourcesHelper.addTypedSourceRoot("${test.unit.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Unit Test Packages", null, null);
         sourcesHelper.addTypedSourceRoot("${test.qa-functional.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Functional Test Packages", null, null);
         // #42332: also any other misc. test dirs (just add source roots, no CP etc. for now)
@@ -136,6 +138,12 @@ final class NbModuleProject implements Project {
             FileObject pkgroot = (FileObject) entry.getKey();
             sourcesHelper.addTypedSourceRoot(pkgrootS, JavaProjectConstants.SOURCES_TYPE_JAVA, /* XXX should schema incl. display name? */pkgroot.getNameExt(), null, null);
         }
+        // #56457: support external source roots too.
+        ProjectManager.mutex().postWriteRequest(new Runnable() {
+            public void run() {
+                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+            }
+        });
         lookup = Lookups.fixed(new Object[] {
             new Info(),
             helper.createAuxiliaryConfiguration(),
@@ -413,15 +421,6 @@ final class NbModuleProject implements Project {
     
     public ModuleList getModuleList() {
         return moduleList;
-    }
-    
-    public FileObject getArchXml() {
-        String loc = eval.getProperty("javadoc.arch"); // NOI18N
-        if (loc != null) {
-            return helper.resolveFileObject(loc);
-        } else {
-            return null;
-        }
     }
     
     public boolean supportsJavadoc() {

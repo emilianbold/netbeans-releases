@@ -7,18 +7,18 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Test functionality of NbModuleProject.
@@ -92,6 +92,18 @@ public class NbModuleProjectTest extends TestBase {
         eval = loadersProject.evaluator();
         assertEquals("right module JAR", file("nbbuild/netbeans/platform5/core/openide-loaders.jar"),
             loadersProject.getHelper().resolveFile(eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")));
+    }
+    
+    /** #56457 */
+    public void testExternalSourceRoots() throws Exception {
+        FileObject documentFinderJava = nbroot.getFileObject("editor/libsrc/org/netbeans/editor/DocumentFinder.java");
+        assertNotNull("have DocumentFinder.java", documentFinderJava);
+        FileObject editorLib = nbroot.getFileObject("editor/lib");
+        assertNotNull("have editor/lib", editorLib);
+        Project editorLibProject = ProjectManager.getDefault().findProject(editorLib);
+        assertNotNull("have editor/lib project", editorLibProject);
+        Thread.sleep(1000);
+        assertEquals("correct owner of DocumentFinder.java", editorLibProject, FileOwnerQuery.getOwner(documentFinderJava));
     }
     
 }
