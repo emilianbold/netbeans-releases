@@ -302,7 +302,9 @@ public class FormCustomEditor extends JPanel
         FormCustomEditorAdvanced fcea = new FormCustomEditorAdvanced(preCode, postCode);
         DialogDescriptor dd = new DialogDescriptor(
             fcea,
-            FormUtils.getBundleString("CTL_AdvancedInitializationCode")); // NOI18N
+            FormUtils.getFormattedBundleString(
+                "FMT_CTL_AdvancedInitializationCode", // NOI18N
+                 new Object[] { editor.getProperty().getName() }));
 
         dd.setHelpCtx(new HelpCtx("gui.source.modifying.property")); // NOI18N
         TopManager.getDefault().createDialog(dd).show();
