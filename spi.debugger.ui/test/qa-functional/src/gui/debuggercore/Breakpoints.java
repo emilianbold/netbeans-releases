@@ -210,6 +210,7 @@ public class Breakpoints extends JellyTestCase {
         Utilities.sleep(2000);
         //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
         new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
+        Utilities.sleep(500);
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         new JComboBoxOperator(dialog, 0).selectItem("Method");
         assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 1).getText()));
@@ -221,6 +222,7 @@ public class Breakpoints extends JellyTestCase {
         Utilities.sleep(2000);
         //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
         new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
+        Utilities.sleep(500);
         dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         new JComboBoxOperator(dialog, 0).selectItem("Method");
         assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 1).getText()));
@@ -279,6 +281,7 @@ public class Breakpoints extends JellyTestCase {
         Utilities.sleep(2000);
         //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
         new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
+        Utilities.sleep(500);
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         new JComboBoxOperator(dialog, 0).selectItem("Class");
         assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 0).getText()));
@@ -289,6 +292,7 @@ public class Breakpoints extends JellyTestCase {
         Utilities.sleep(2000);
         //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
         new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
+        Utilities.sleep(500);
         dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         new JComboBoxOperator(dialog, 0).selectItem("Class");
         assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 0).getText()));
@@ -299,6 +303,7 @@ public class Breakpoints extends JellyTestCase {
         Utilities.sleep(2000);
         //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
         new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
+        Utilities.sleep(500);
         dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         new JComboBoxOperator(dialog, 0).selectItem("Class");
         assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 0).getText()));
@@ -309,6 +314,7 @@ public class Breakpoints extends JellyTestCase {
         Utilities.sleep(2000);
         //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
         new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
+        Utilities.sleep(500);
         dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         new JComboBoxOperator(dialog, 0).selectItem("Class");
         assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 0).getText()));
@@ -372,6 +378,7 @@ public class Breakpoints extends JellyTestCase {
         // create new breakpoint and check pre-filled values
         //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
         new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
+        Utilities.sleep(500);
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         new JComboBoxOperator(dialog, 0).selectItem("Variable");
         assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 1).getText()));
@@ -431,6 +438,7 @@ public class Breakpoints extends JellyTestCase {
         // create new breakpoint and check pre-filled values
         //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
         new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
+        Utilities.sleep(500);
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         new JComboBoxOperator(dialog, 0).selectItem("Variable");
         assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 1).getText()));
@@ -555,11 +563,12 @@ public class Breakpoints extends JellyTestCase {
 
         // create new breakpoint and check pre-filled values
         //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new Action(null, null, Utilities.newBreakpointShortcut).performShortcut();
+        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
+        Utilities.sleep(500);
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         new JComboBoxOperator(dialog, 0).selectItem("Exception");
-        new JComboBoxOperator(dialog, 2).typeText("java.lang");
-        new JComboBoxOperator(dialog, 3).typeText("Exception");
+        new JTextFieldOperator(dialog, 2).setText("java.lang");
+        new JComboBoxOperator(dialog, 2).typeText("Exception");
         new JComboBoxOperator(dialog, 1).selectItem("Catched or Uncatched");
         dialog.ok();
         
