@@ -41,16 +41,13 @@ Microsystems, Inc. All Rights Reserved.
         </fileset>
 	<pathelement location="../core/netbeans/lib/core.jar"/>
 	<pathelement location="../core/netbeans/lib/ext/boot.jar"/>
-        <!-- XXX stop using this! -->
-        <fileset dir="../ant/external">
-          <include name="ant-1.*.jar"/>
-        </fileset>
-        <!-- use junit with already compiled extensions -->
+        <!-- use junit with already compiled extensions -->        
 	<pathelement location="src"/>
         <fileset dir="external">
           <include name="xml-apis*.jar"/>
           <include name="xerces*.jar"/>
           <include name="xalan*.jar"/>
+          <include name="ant-1.*.jar"/>
         </fileset>
         <fileset dir="../junit/external">
           <include name="junit*.jar"/>
@@ -124,7 +121,7 @@ Microsystems, Inc. All Rights Reserved.
   
   
   <!-- PES targets -->
-  <target name="compile-pes">
+  <target name="compile-pes" depends="init">
   	<javac srcdir="src" destdir="src"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">
@@ -136,11 +133,8 @@ Microsystems, Inc. All Rights Reserved.
           <include name="xml-apis*.jar"/>
           <include name="xerces*.jar"/>
           <include name="xalan*.jar"/>
+          <include name="ant-1.*.jar"/>
         </fileset>
-    	<!-- XXX stop using this! -->
-    	<fileset dir="../ant/external">
-        	<include name="ant-1.*.jar"/>
-     	</fileset>		
       </classpath>
     </javac>
   </target>
@@ -165,7 +159,7 @@ Microsystems, Inc. All Rights Reserved.
      	<zipfileset dir="lib" prefix="lib" includes="**/*.jar,**/*.xsl"/>
      	<zipfileset dir="bin" prefix="bin" includes="xtest-pes.sh"/>
      	<!-- again - this shoudn't be done this way -->
-     	<zipfileset  dir="../ant/external" prefix="lib" includes="ant-1.4.1.jar"/>
+     	<zipfileset  dir="external/" prefix="lib" includes="ant-1.4.1.jar"/>
      </zip>  
   </target>
 
