@@ -123,6 +123,9 @@ public class NbEditorUI extends ExtEditorUI {
         JScrollPane scroller = new JScrollPane(component);
         scroller.getViewport().setMinimumSize(new Dimension(4,4));
 
+        // remove default scroll-pane border, winsys will handle borders itself           
+        scroller.setBorder(null);
+        
         CustomizableSideBar bar = new CustomizableSideBar(component);
 
         scroller.setRowHeaderView(bar);
