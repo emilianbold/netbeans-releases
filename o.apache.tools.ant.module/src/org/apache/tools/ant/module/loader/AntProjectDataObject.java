@@ -48,6 +48,7 @@ public class AntProjectDataObject extends MultiDataObject implements PropertyCha
             cookies.add (new AntCompilerSupport.Build (pe));
             cookies.add (new AntCompilerSupport.Clean (pe));
             cookies.add (new AntExecSupport (pe));
+            cookies.add (new AntActionInstance (proj));
         }
         checkIterator ();
         addPropertyChangeListener (this);
