@@ -260,63 +260,71 @@ public class BaseOptions extends OptionSupport {
      *  via XML layers, if not, it will be created.
      *  Instances of all XML file in this folder will be created.
      */
-    protected synchronized MIMEOptionFolder getMIMEFolder(){
-        // return already initialized folder
-        if (settingsFolder!=null) return settingsFolder;
-        
-        if (BaseKit.getKit(getKitClass()).getContentType() == null) return null;
+    protected MIMEOptionFolder getMIMEFolder(){
+        /* #25541 - Instead of synchronized getMIMEFolder() the kit
+         * is first obtained and then the synchronization is done
+         * to avoid the deadlock caused by locking in opposite order.
+         */
+        BaseKit kit = BaseKit.getKit(getKitClass());
+        String name = kit.getContentType();
+        if (kit == null || name == null) {
+            return null;
+        }
 
-        String name = BaseKit.getKit(getKitClass()).getContentType();
-        
-        FileObject f = TopManager.getDefault().getRepository().getDefaultFileSystem().
-        findResource(AllOptionsFolder.FOLDER+"/"+name); //NOI18N
-        
-        // MIME folder doesn't exist, let's create it
-        if (f==null){
-            FileObject fo = TopManager.getDefault().getRepository().getDefaultFileSystem().
-            findResource(AllOptionsFolder.FOLDER);
+        synchronized (this) {
+            // return already initialized folder
+            if (settingsFolder!=null) return settingsFolder;
             
-            if (fo != null){
-                try{
-                    StringTokenizer stok = new StringTokenizer(name,"/");
-                    while (stok.hasMoreElements()) {
-                        String newFolder = stok.nextToken();
-                        if (fo.getFileObject(newFolder) == null){
-                            fo = fo.createFolder(newFolder);
-                        }
-                        else
-                            fo = fo.getFileObject(newFolder);
-                    }
-                }catch(IOException ioe){
-                    ioe.printStackTrace();
-                }
+            FileObject f = TopManager.getDefault().getRepository().getDefaultFileSystem().
+            findResource(AllOptionsFolder.FOLDER+"/"+name); //NOI18N
+            
+            // MIME folder doesn't exist, let's create it
+            if (f==null){
+                FileObject fo = TopManager.getDefault().getRepository().getDefaultFileSystem().
+                findResource(AllOptionsFolder.FOLDER);
                 
-                f = TopManager.getDefault().getRepository().getDefaultFileSystem().
-                findResource(AllOptionsFolder.FOLDER+"/"+name);
-            }
-        }
-        
-        if (f != null) {
-            try {
-                DataObject d = DataObject.find(f);
-                DataFolder df = (DataFolder)d.getCookie(DataFolder.class);
-                if (df != null) {
+                if (fo != null){
+                    try{
+                        StringTokenizer stok = new StringTokenizer(name,"/");
+                        while (stok.hasMoreElements()) {
+                            String newFolder = stok.nextToken();
+                            if (fo.getFileObject(newFolder) == null){
+                                fo = fo.createFolder(newFolder);
+                            }
+                            else
+                                fo = fo.getFileObject(newFolder);
+                        }
+                    }catch(IOException ioe){
+                        ioe.printStackTrace();
+                    }
                     
-                    /* hack for listenning on mime folder
-                       for creation of Settings.settings file. Only file on 
-                       default layer is valid, so if Settings.settings is created, we need to delete it.
-                     */
-                    attachSettingsFileListener(f);
-                    
-                    settingsFolder = new MIMEOptionFolder(df, this);
-                    return settingsFolder;
+                    f = TopManager.getDefault().getRepository().getDefaultFileSystem().
+                    findResource(AllOptionsFolder.FOLDER+"/"+name);
                 }
-            } catch (org.openide.loaders.DataObjectNotFoundException ex) {
-                ex.printStackTrace();
             }
+            
+            if (f != null) {
+                try {
+                    DataObject d = DataObject.find(f);
+                    DataFolder df = (DataFolder)d.getCookie(DataFolder.class);
+                    if (df != null) {
+                        
+                        /* hack for listenning on mime folder
+                           for creation of Settings.settings file. Only file on 
+                           default layer is valid, so if Settings.settings is created, we need to delete it.
+                         */
+                        attachSettingsFileListener(f);
+                        
+                        settingsFolder = new MIMEOptionFolder(df, this);
+                        return settingsFolder;
+                    }
+                } catch (org.openide.loaders.DataObjectNotFoundException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            
+            return null;
         }
-        
-        return null;
     }
     
     /** Gets MIMEOptionNode that belongs to this bean */
