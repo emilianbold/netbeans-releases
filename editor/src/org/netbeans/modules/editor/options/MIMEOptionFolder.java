@@ -142,11 +142,6 @@ public class MIMEOptionFolder{
             }
         }
         
-        if (KeyBindingsMultiPropertyFolder.FOLDER_NAME.equals(folderName)){
-            mpFolder = new KeyBindingsMultiPropertyFolder(subFolder, base);
-            mpFolderMap.put(folderName, mpFolder);
-            return mpFolder;
-        }
         
         return null;
     }
