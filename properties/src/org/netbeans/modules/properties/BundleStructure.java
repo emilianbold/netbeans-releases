@@ -144,6 +144,8 @@ public class BundleStructure extends PropertyChangeSupport {
   public String getNthKey(int keyIndex) {
     if (keyList == null)
       throw new InternalError(getClass().getName() +" - KeyList not initialized");
+    if ((keyIndex >= keyList.size()) || (keyIndex < 0))
+      return null;
     return (String)keyList.get(keyIndex);
   }
     
