@@ -20,6 +20,8 @@ import java.util.*;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderListener;
 
+import org.openide.util.RequestProcessor;
+
 
 /** 
  * Manages some set of actions. Loads some set of ActionProviders registerred 
@@ -94,6 +96,13 @@ public final class ActionsManager {
     
     // main public methods .....................................................
 
+    private static RequestProcessor requestProcessor;
+    public static RequestProcessor getRequestProcessor () {
+        if (requestProcessor == null)
+            requestProcessor = new RequestProcessor ("ActionsManager");
+        return requestProcessor;
+    }
+    
     /**
      * Performs action on this DebbuggerEngine.
      *
@@ -101,21 +110,44 @@ public final class ActionsManager {
      *    in this class with ACTION_ prefix)
      * @return true if action has been performed
      */
-    public final void doAction (Object action) {
-        doiingDo = true;
-        if (actionProviders == null) initActionImpls ();
-        ArrayList l = (ArrayList) actionProviders.get (action);
-        if (l != null) {
-            l = (ArrayList) l.clone ();
-            int i, k = l.size ();
-            for (i = 0; i < k; i++)
-                if (((ActionsProvider) l.get (i)).isEnabled (action))
-                    ((ActionsProvider) l.get (i)).doAction (action);
-        }
-        fireActionDone (action);
-        doiingDo = false;
-        if (destroy) destroyIn ();
+    public final void doAction (final Object action) {
+        getRequestProcessor ().post (new Runnable() {
+            public void run() {
+                doiingDo = true;
+                if (actionProviders == null) initActionImpls ();
+                ArrayList l = (ArrayList) actionProviders.get (action);
+                if (l != null) {
+                    l = (ArrayList) l.clone ();
+                    int i, k = l.size ();
+                    for (i = 0; i < k; i++)
+                    if (((ActionsProvider) l.get (i)).isEnabled (action))
+                        ((ActionsProvider) l.get (i)).doAction (action);
+                }
+                fireActionDone (action);
+                doiingDo = false;
+                if (destroy) destroyIn (); 
+            }
+        });
     }
+
+// New version above uses request processor
+//
+//    public final void doAction (final Object action) {
+//                doiingDo = true;
+//                if (actionProviders == null) initActionImpls ();
+//                ArrayList l = (ArrayList) actionProviders.get (action);
+//                if (l != null) {
+//                    l = (ArrayList) l.clone ();
+//                    int i, k = l.size ();
+//                    for (i = 0; i < k; i++)
+//                    if (((ActionsProvider) l.get (i)).isEnabled (action))
+//                        ((ActionsProvider) l.get (i)).doAction (action);
+//                }
+//                fireActionDone (action);
+//                doiingDo = false;
+//                if (destroy) destroyIn ();
+//     
+//    }    
     
     /**
      * Returns true if given action can be performed on this DebuggerEngine.
