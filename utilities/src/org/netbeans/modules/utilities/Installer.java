@@ -36,6 +36,14 @@ import com.netbeans.developer.modules.openfile.*;
 */
 public class Installer extends ModuleInstall {
 
+  private final static long serialVersionUID = 1;
+  
+  private final com.netbeans.developer.modules.search.Installer searchInstaller;
+  
+  public Installer() {
+    searchInstaller = new com.netbeans.developer.modules.search.Installer();
+  }
+  
   /** Module installed for the first time. */
   public void installed () {
   // -----------------------------------------------------------------------------
@@ -53,6 +61,8 @@ public class Installer extends ModuleInstall {
 
     // OpenFile:
     Settings.DEFAULT.setRunning (true);
+    
+    searchInstaller.installed();
   }
   
   public void uninstalled () {
@@ -62,6 +72,8 @@ public class Installer extends ModuleInstall {
   
     // OpenFile:
     Server.shutdown ();
+    
+    searchInstaller.uninstalled();
   }
 
   public boolean closing () {
@@ -69,6 +81,10 @@ public class Installer extends ModuleInstall {
     Server.shutdown ();
     
     return true;
+  }
+  
+  public void restored () {
+    searchInstaller.restored();
   }
 
 // -----------------------------------------------------------------------------
@@ -156,6 +172,7 @@ public class Installer extends ModuleInstall {
 
 /*
  * Log
+ *  5    Gandalf   1.4         1/4/00   Petr Kuzel      Search module.
  *  4    Gandalf   1.3         1/4/00   Jesse Glick     OpenFile module 
  *       installation.
  *  3    Gandalf   1.2         1/4/00   Ian Formanek    Uses Utilities2 to 
