@@ -37,13 +37,6 @@ public class FormDataNode extends JavaNode {
         super(fdo);
     }
 
-    public Object getValue(String attributeName) {
-        if ("propertiesHelpID".equals(attributeName)) // NOI18N
-            return "org.netbeans.modules.form.FormObjectProperties"; // NOI18N
-
-        return super.getValue(attributeName);
-    }
-
     protected String getBareIconBase() {
         return FORM_ICON_BASE;
     }

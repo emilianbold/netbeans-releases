@@ -123,13 +123,6 @@ public class FormDataObject extends JavaDataObject {
         return formEntry;
     }
 
-    /** Help context for this object.
-     * @return help context
-     */
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return new org.openide.util.HelpCtx(FormDataObject.class);
-    }
-
     /** Provides node that should represent this data object. When a node for
      * representation in a parent is requested by a call to getNode(parent) it
      * is the exact copy of this node with only parent changed. This
