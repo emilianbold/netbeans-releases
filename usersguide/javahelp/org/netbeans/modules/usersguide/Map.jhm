@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ? 2005 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -362,7 +362,7 @@ the Options window:-->
 <mapID target="ProjectTab_Files" url="project/csh/proj_files_window.html" />
 
 <!-- Navigator window :-->
-<mapID target="org.netbeans.modules.navigator.Navigator.java" url="editing/csh/nav_window.html" />
+<mapID target="navigator.java" url="editing/csh/nav_window.html" />
 
 <!-- New Wizard templates page :-->
 <mapID target="org.netbeans.modules.project.ui.TemplatesPanel" url="project/csh/proj_wiz.html" />
@@ -380,8 +380,8 @@ the Options window:-->
 <!-- Freeform J2SE and Web Project wizards:-->
 <mapID target="org.netbeans.modules.ant.freeform.ui.BasicProjectInfoWizardPanel" url="project/csh/proj_j2sefree_wiz1.html" />
 <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingWizardPanel" url="project/csh/proj_j2sefree_wiz2.html" />
-<mapID target="org.netbeans.modules.ant.freeform.ui.SourceFoldersWizardPanel" url="project/csh/proj_j2sefree_wiz3.html" />
-<mapID target="org.netbeans.modules.ant.freeform.ui.ClasspathWizardPanel" url="project/csh/proj_j2sefree_wiz4.html" />
+<mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersWizardPanel" url="project/csh/proj_j2sefree_wiz3.html" />
+<mapID target="org.netbeans.modules.java.freeform.ui.ClasspathWizardPanel" url="project/csh/proj_j2sefree_wiz4.html" />
 <mapID target="org.netbeans.modules.ant.freeform.ui.WebLocationsWizardPanel" url="project/csh/proj_j2sefree_wiz5.html" />
 
 <!-- Standard J2SE Project Properties dialog:-->
@@ -396,7 +396,7 @@ the Options window:-->
 <mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersPanel" url="project/csh/proj_j2sefree_props_sources.html" />
 <mapID target="org.netbeans.modules.java.freeform.ui.ClasspathPanel" url="project/csh/proj_j2sefree_props_classpath.html" />
 <mapID target="org.netbeans.modules.java.freeform.ui.OutputPanel" url="project/csh/proj_j2sefree_props_output.html" />
-<mapID target="org.netbeans.modules.java.freeform.ui.TargetMappingPanel" url="project/csh/proj_j2sefree_props_buildrun.html" />
+<mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel" url="project/csh/proj_j2sefree_props_buildrun.html" />
 
 
 
