@@ -17,7 +17,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
 import java.io.*;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLStreamHandlerFactory;
@@ -32,7 +31,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.*;
-import org.openide.awt.HtmlBrowser.BrowserComponent;
 import org.openide.loaders.*;
 import org.openide.actions.*;
 import org.openide.cookies.SaveCookie;
@@ -54,11 +52,11 @@ import org.netbeans.core.projects.TrivialProjectManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.modules.ModuleInfo;
 
-/** This class is a TopManager for Corona environment.
-*
-* @author Ales Novak, Jaroslav Tulach, Ian Formanek, Petr Hamernik, Jan Jancura, Jesse Glick
-*/
-public abstract class NbTopManager /*extends TopManager*/ {
+/**
+ * Main switchboard for the NetBeans core.
+ * Manages startup sequence, holds references to important objects, etc.
+ */
+public abstract class NbTopManager {
     /* masks to define the interactivity level */
 
     /** initialize the main window?
@@ -205,7 +203,11 @@ public abstract class NbTopManager /*extends TopManager*/ {
     }
         
     private static NbTopManager defaultTopManager; 
-    
+
+    /**
+     * Checks whether the top manager has been loaded already.
+     * Used during early startup sequence.
+     */
     public static synchronized boolean isInitialized () {
         return defaultTopManager != null;
     }
@@ -236,28 +238,15 @@ public abstract class NbTopManager /*extends TopManager*/ {
     }
 
     /** Test method to check whether some level of interactivity is enabled.
+     * XXX this method is unused; can it be deleted?
     * @param il mask composed of the constants of IL_XXXX
     * @return true if such level is enabled
     */
     public abstract boolean isInteractive (int il);
     
-    // XXX Seems to be needless, was used in RegistryImpl, but was dummy.
-//    /** Allows subclasses to override this method and return different default set of nodes
-//    * the should be "selected". If no top component is active then this method is called to
-//    * allow the top manager to decide which nodes should be pointed as selected.
-//    *
-//    * @param activated true if the result cannot be null
-//    * @return the array of nodes to return from TopComponent.getRegistry ().getSelectedNodes or
-//    *    getActivatedNodes ()
-//    */
-//    public Node[] getDefaultNodes (boolean activated) {
-//        return activated ? new Node[0] : null;
-//    }
-    
     //
     // The main method allows access to registration service
     //
-    
     
     /** Register new instance.
      */
@@ -323,6 +312,8 @@ public abstract class NbTopManager /*extends TopManager*/ {
      * Implementation of URL displayer, which shows documents in the configured web browser.
      */
     public static final class NbURLDisplayer extends HtmlBrowser.URLDisplayer {
+        /** Default constructor for lookup. */
+        public NbURLDisplayer() {}
         /** WWW browser window. */
         private HtmlBrowser.BrowserComponent htmlViewer;
         public void showURL(final URL u) {
@@ -337,37 +328,13 @@ public abstract class NbTopManager /*extends TopManager*/ {
         }
     }
 
-    /** Adds new explorer manager that will rule the selection of current
-    * nodes until the runnable is running.
-     * <b>Attention: This method is no longer supported and is going to 
-     * be removed soon, see http://www.netbeans.org/issues/show_bug.cgi?id=28804.</b>
-    *
-    * @param run runnable to execute (till it is running the explorer manager is in progress)
-    * @param em explorer manager 
-    */
-    public void attachExplorer (Runnable run, ExplorerManager em) {
-        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-            new UnsupportedOperationException("Method NbTopManager.attachExplorer" // NOI18N
-            + " is no more supported and is going to be removed, see more at:" // NOI18N
-            + " http://www.netbeans.org/issues/show_bug.cgi?id=28804")); // NOI18N
-    }
 
-
-    /** Opens specified project. Asks to save the previously opened project.
-    * @exception IOException if error occurs accessing the project
-    * @exception UserCancelException if the selection is interrupted by the user
-    */
-//    public void openProject (ProjectCookie project) throws IOException, UserCancelException {
-//        if (ExitDialog.showDialog (null, true)) {
-//            NbProjectOperation.setOpeningProject (project);
-//        }
-//        else {
-//            throw new UserCancelException ();
-//        }
-//    } 
-
-
+    /**
+     * Default status displayer implementation; GUI is in StatusLine.
+     */
     public static final class NbStatusDisplayer extends org.openide.awt.StatusDisplayer {
+        /** Default constructor for lookup. */
+        public NbStatusDisplayer() {}
         private List listeners = null;
         private String text = ""; // NOI18N
         public void setStatusText(String text) {
@@ -438,22 +405,22 @@ public abstract class NbTopManager /*extends TopManager*/ {
             NbBundle.getBundle (NbTopManager.class).getString ("MSG_AllSaved"));
     }
     
-    // XXX
+    // XXX who uses this interface outside core?
     /** Interface describing basic control over window system. 
      * @since 1.15 */
     public interface WindowSystem {
-        public void show();
-        public void hide();
-        public void load();
-        public void save();
+        void show();
+        void hide();
+        void load();
+        void save();
 
         // Project specific.
         /** @since 1.20 */
-        public void saveProjectData();
+        void saveProjectData();
         /** @since 1.20 */
-        public void loadProjectData();
+        void loadProjectData();
         /** @since 1.20 */
-        public void setProjectName(String projectName);
+        void setProjectName(String projectName);
     } // End of WindowSystem interface.
     
     public static boolean isModalDialogPresent() {
@@ -576,8 +543,14 @@ public abstract class NbTopManager /*extends TopManager*/ {
             doingExit = false; 
         }
     }
-    
+
+    /**
+     * Default implementation of the lifecycle manager interface that knows
+     * how to save all modified DataObject's, and to exit the IDE safely.
+     */
     public static final class NbLifecycleManager extends LifecycleManager {
+        /** Default constructor for lookup. */
+        public NbLifecycleManager() {}
         public void saveAll() {
             NbTopManager.get().saveAll();
         }
