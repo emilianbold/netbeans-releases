@@ -199,7 +199,7 @@ Microsystems, Inc. All Rights Reserved.
         <file name="F4.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
         </file>
-        <file name="SA-F7.shadow">
+        <file name="SO-F7.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
         </file>
         <file name="F7.shadow">
@@ -220,10 +220,10 @@ Microsystems, Inc. All Rights Reserved.
         <file name="DA-DOWN.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-MakeCallerCurrentAction.instance"/>
         </file>
-        <file name="SA-4.shadow">
+        <file name="SO-4.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-ClassesViewAction.instance"/>
         </file>
-        <file name="SA-8.shadow">
+        <file name="SO-8.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance"/>
         </file>
     </folder>

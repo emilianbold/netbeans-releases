@@ -64,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Shortcuts">
-        <file name="C-A-T.instance">
+        <file name="DO-T.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.xsl.actions.TransformAction"/>
         </file>
     </folder> <!-- Shortcuts -->

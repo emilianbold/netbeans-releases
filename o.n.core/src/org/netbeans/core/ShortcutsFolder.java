@@ -56,7 +56,7 @@ final class ShortcutsFolder extends FolderInstance {
     private static final String KEYS_EXT = "keys"; // NOI18N
     
     /** Folder name under the system folder.*/
-    static final String SHORTCUTS_FOLDER = "Shortcuts"; // NOI18N
+    private static final String SHORTCUTS_FOLDER = "Shortcuts"; // NOI18N
 
     /** Info for old XML file.*/
     private static final String XML_BINDING = "Binding"; // NOI18N
@@ -421,6 +421,7 @@ final class ShortcutsFolder extends FolderInstance {
     public static void applyChanges(java.util.List changes) {
         FileObject fo = Repository.getDefault().getDefaultFileSystem()
             .getRoot().getFileObject(SHORTCUTS_FOLDER);
+        
         DataFolder f = DataFolder.findFolder(fo);
         Iterator it = changes.listIterator();
         while (it.hasNext()) {
@@ -449,7 +450,7 @@ final class ShortcutsFolder extends FolderInstance {
                         String instanceName = r.instanceName();
                         ArrayList arr = new ArrayList ();
                         arr.add (instanceName);
-                        arr.addAll (Arrays.asList (getPermutations (instanceName)));
+                        arr.addAll (Arrays.asList (getPermutations (instanceName, (Utilities.getOperatingSystem() & Utilities.OS_MAC) !=0)));
                         for (Iterator iter = arr.iterator(); iter.hasNext(); ) {
                             String name = (String)iter.next ();
                             DataObject[] ch = f.getChildren();
@@ -471,10 +472,11 @@ final class ShortcutsFolder extends FolderInstance {
                         foAdd.setAttribute("originalFile", originalFilePath); // NOI18N
                     } else {
                         FileObject foRemove = root.getFileObject(r.instanceName(), "shadow"); // NOI18N
+                        
                         if(foRemove != null) {
                             foRemove.delete();
                         }
-                        String[] permutations = getPermutations(r.instanceName());
+                        String[] permutations = getPermutations(r.instanceName(), (Utilities.getOperatingSystem() & Utilities.OS_MAC) != 0);
                         //We may be deleting a wildcard keystroke, and/or the
                         //order defined in the layer may not be the same as
                         //what we were fed by the shortcuts editor, so search
@@ -485,6 +487,7 @@ final class ShortcutsFolder extends FolderInstance {
                                 foRemove.delete();
                                 break;
                             }
+                            
                         }
                     }
                 }
@@ -513,16 +516,24 @@ final class ShortcutsFolder extends FolderInstance {
      * hyphenation (M-AS-F5) is not supported.  It either is or it isn't.
      *
      */
-    static String[] getPermutations (String name) {
+    static String[] getPermutations (String name, boolean mac) {
         //IMPORTANT: THERE IS A COPY OF THE SAME CODE IN 
         //org.netbeans.modules.editor.options.KeyBindingsMIMEOptionFile
         //ANY CHANGES MADE HERE SHOULD ALSO BE MADE THERE!
-        String key = KeyEvent.META_MASK == Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() ?
+        String key = mac ?
             "M" : "C"; //NOI18N
-            
+        
+        String ctrlWildcard = "D"; //NOI18N
+        
+        String altKey = mac ?
+            "C" : "A"; //NOI18N
+        
+        String altWildcard = "O"; //NOI18N
+        
+        
         int pos = name.lastIndexOf ("-"); //NOI18N
         String keyPart = name.substring (pos);
-        String modsPart = Utilities.replaceString (name.substring (0, pos), "-", "");
+        String modsPart = Utilities.replaceString (name.substring (0, pos), "-", ""); //NOI18N
         if (modsPart.length() > 1) {
             Collection perms = new HashSet(modsPart.length() * modsPart.length());
             int idx = name.indexOf(key);
@@ -530,26 +541,77 @@ final class ShortcutsFolder extends FolderInstance {
                 //First, try with the wildcard key.  Remove all hyphens - we'll
                 //put them back later
                 StringBuffer sb = new StringBuffer(modsPart);
-                sb.replace(idx, idx+1, "D");
+                sb.replace(idx, idx+1, ctrlWildcard);
                 perms.add (sb.toString() + keyPart);
                 getAllPossibleOrderings (sb.toString(), keyPart, perms);
                 createHyphenatedPermutation(sb.toString().toCharArray(), perms, keyPart);
+                idx = name.indexOf (altKey);
+                if (idx != -1) {
+                    sb.replace (idx, idx+1, altWildcard);
+                    perms.add (sb.toString() + keyPart);
+                    getAllPossibleOrderings (sb.toString(), keyPart, perms);
+                    createHyphenatedPermutation(sb.toString().toCharArray(), perms, keyPart);
+                } else {
+                    idx = name.indexOf(altWildcard);
+                    if (idx != -1) {
+                        sb.replace (idx, idx+1, altKey);
+                        perms.add (sb.toString() + keyPart);
+                        getAllPossibleOrderings (sb.toString(), keyPart, perms);
+                        createHyphenatedPermutation(sb.toString().toCharArray(), perms, keyPart);
+                    }
+                }                
             } else {
-                idx = name.indexOf ("D"); //NOI18N
+                idx = name.indexOf (ctrlWildcard); //NOI18N
                 if (idx != -1) {
                     StringBuffer sb = new StringBuffer(modsPart);
                     sb.replace(idx, idx+1, key);
                     perms.add (sb.toString() + keyPart);
                     getAllPossibleOrderings (sb.toString(), keyPart, perms);
                     createHyphenatedPermutation(sb.toString().toCharArray(), perms, keyPart);
+                    idx = name.indexOf (altKey);
+                    if (idx != -1) {
+                        sb.replace (idx, idx+1, altWildcard);
+                        perms.add (sb.toString() + keyPart);
+                        getAllPossibleOrderings (sb.toString(), keyPart, perms);
+                    } else {
+                        idx = name.indexOf(altWildcard);
+                        if (idx != -1) {
+                            sb.replace (idx, idx+1, altKey);
+                            perms.add (sb.toString() + keyPart);
+                            getAllPossibleOrderings (sb.toString(), keyPart, perms);
+                            createHyphenatedPermutation(sb.toString().toCharArray(), perms, keyPart);
+                        }
+                    }                    
                 }
             }
+            
+            idx = name.indexOf (altKey);
+            if (idx != -1) {
+                StringBuffer sb = new StringBuffer(modsPart);
+                sb.replace (idx, idx+1, altWildcard);
+                perms.add (sb.toString() + keyPart);
+                getAllPossibleOrderings (sb.toString(), keyPart, perms);
+                createHyphenatedPermutation(sb.toString().toCharArray(), perms, keyPart);
+            } else {
+                StringBuffer sb = new StringBuffer(modsPart);
+                idx = name.indexOf(altWildcard);
+                if (idx != -1) {
+                    sb.replace (idx, idx+1, altKey);
+                    perms.add (sb.toString() + keyPart);
+                    getAllPossibleOrderings (sb.toString(), keyPart, perms);
+                    createHyphenatedPermutation(sb.toString().toCharArray(), perms, keyPart);
+                }
+            }
+            
             getAllPossibleOrderings (modsPart, keyPart, perms);
             createHyphenatedPermutation(modsPart.toCharArray(), perms, keyPart);
             return (String[]) perms.toArray(new String[perms.size()]);
         } else {
             return key.equals (modsPart) ?
-                new String[] {"D" + keyPart} : new String[0];
+                new String[] {ctrlWildcard + keyPart} : altKey.equals(modsPart) ?
+                    new String[]{altWildcard + keyPart} : altWildcard.equals(modsPart) ? 
+                    new String[] {altKey + keyPart} : 
+                    new String[0];
         }
     }
     

@@ -460,7 +460,9 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Shortcuts">
-        <file name="D-R.instance">
+        <!-- Bind explicitly to Ctrl-R, not D-R for Command on mac - Command-R
+             is already bound to Replace -->
+        <file name="C-R.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.form.actions.ReloadAction"/>
         </file>
         

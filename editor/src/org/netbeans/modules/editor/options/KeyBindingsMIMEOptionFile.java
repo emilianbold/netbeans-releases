@@ -271,14 +271,23 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
      *
      */
     static String[] getPermutations (String name) {
-        //IMPORTANT: THIS IS A COPY OF THE SAME CODE IN org.netbeans.core.ShortcutsFolder.
+        //IMPORTANT: THERE IS A COPY OF THE SAME CODE IN 
+        //org.netbeans.core.ShortcutsFolder (it has unit tests there)
         //ANY CHANGES MADE HERE SHOULD ALSO BE MADE THERE!
         String key = KeyEvent.META_MASK == Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() ?
             "M" : "C"; //NOI18N
-            
+        
+        String ctrlWildcard = "D"; //NOI18N
+        
+        String altKey = System.getProperty ("mrj.version") != null ?
+            "C" : "A"; //NOI18N
+        
+        String altWildcard = "O"; //NOI18N
+        
+        
         int pos = name.lastIndexOf ("-"); //NOI18N
         String keyPart = name.substring (pos);
-        String modsPart = org.openide.util.Utilities.replaceString (name.substring (0, pos), "-", "");
+        String modsPart = org.openide.util.Utilities.replaceString (name.substring (0, pos), "-", ""); //NOI18N
         if (modsPart.length() > 1) {
             Collection perms = new HashSet(modsPart.length() * modsPart.length());
             int idx = name.indexOf(key);
@@ -286,26 +295,77 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
                 //First, try with the wildcard key.  Remove all hyphens - we'll
                 //put them back later
                 StringBuffer sb = new StringBuffer(modsPart);
-                sb.replace(idx, idx+1, "D");
+                sb.replace(idx, idx+1, ctrlWildcard);
                 perms.add (sb.toString() + keyPart);
                 getAllPossibleOrderings (sb.toString(), keyPart, perms);
                 createHyphenatedPermutation(sb.toString().toCharArray(), perms, keyPart);
+                idx = name.indexOf (altKey);
+                if (idx != -1) {
+                    sb.replace (idx, idx+1, altWildcard);
+                    perms.add (sb.toString() + keyPart);
+                    getAllPossibleOrderings (sb.toString(), keyPart, perms);
+                    createHyphenatedPermutation(sb.toString().toCharArray(), perms, keyPart);
+                } else {
+                    idx = name.indexOf(altWildcard);
+                    if (idx != -1) {
+                        sb.replace (idx, idx+1, altKey);
+                        perms.add (sb.toString() + keyPart);
+                        getAllPossibleOrderings (sb.toString(), keyPart, perms);
+                        createHyphenatedPermutation(sb.toString().toCharArray(), perms, keyPart);
+                    }
+                }                
             } else {
-                idx = name.indexOf ("D"); //NOI18N
+                idx = name.indexOf (ctrlWildcard); //NOI18N
                 if (idx != -1) {
                     StringBuffer sb = new StringBuffer(modsPart);
                     sb.replace(idx, idx+1, key);
                     perms.add (sb.toString() + keyPart);
                     getAllPossibleOrderings (sb.toString(), keyPart, perms);
                     createHyphenatedPermutation(sb.toString().toCharArray(), perms, keyPart);
+                    idx = name.indexOf (altKey);
+                    if (idx != -1) {
+                        sb.replace (idx, idx+1, altWildcard);
+                        perms.add (sb.toString() + keyPart);
+                        getAllPossibleOrderings (sb.toString(), keyPart, perms);
+                    } else {
+                        idx = name.indexOf(altWildcard);
+                        if (idx != -1) {
+                            sb.replace (idx, idx+1, altKey);
+                            perms.add (sb.toString() + keyPart);
+                            getAllPossibleOrderings (sb.toString(), keyPart, perms);
+                            createHyphenatedPermutation(sb.toString().toCharArray(), perms, keyPart);
+                        }
+                    }                    
                 }
             }
+            
+            idx = name.indexOf (altKey);
+            if (idx != -1) {
+                StringBuffer sb = new StringBuffer(modsPart);
+                sb.replace (idx, idx+1, altWildcard);
+                perms.add (sb.toString() + keyPart);
+                getAllPossibleOrderings (sb.toString(), keyPart, perms);
+                createHyphenatedPermutation(sb.toString().toCharArray(), perms, keyPart);
+            } else {
+                StringBuffer sb = new StringBuffer(modsPart);
+                idx = name.indexOf(altWildcard);
+                if (idx != -1) {
+                    sb.replace (idx, idx+1, altKey);
+                    perms.add (sb.toString() + keyPart);
+                    getAllPossibleOrderings (sb.toString(), keyPart, perms);
+                    createHyphenatedPermutation(sb.toString().toCharArray(), perms, keyPart);
+                }
+            }
+            
             getAllPossibleOrderings (modsPart, keyPart, perms);
             createHyphenatedPermutation(modsPart.toCharArray(), perms, keyPart);
             return (String[]) perms.toArray(new String[perms.size()]);
         } else {
             return key.equals (modsPart) ?
-                new String[] {"D" + keyPart} : new String[0];
+                new String[] {ctrlWildcard + keyPart} : altKey.equals(modsPart) ?
+                    new String[]{altWildcard + keyPart} : altWildcard.equals(modsPart) ? 
+                    new String[] {altKey + keyPart} : 
+                    new String[0];
         }
     }
     

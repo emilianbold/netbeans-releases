@@ -93,7 +93,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Shortcuts">
-        <file name="AS-O.shadow">
+        <file name="OS-O.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-editor-java-JavaFastOpenAction.instance"/>
         </file>
     </folder>

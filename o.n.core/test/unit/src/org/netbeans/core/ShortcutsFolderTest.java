@@ -18,6 +18,8 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,10 +32,12 @@ import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
+import javax.swing.text.Keymap;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.LocalFileSystem;
@@ -63,15 +67,60 @@ public class ShortcutsFolderTest extends NbTestCase {
         super(s);
     }
     
+    ShortcutsFolder sf = null;
+    FileSystem fs = null;
+    FileObject fld = null;
+    FileObject fo = null;
+    
+    static Repository repository = null;
+    protected void setUp () {
+        fs = createTestingFilesystem();
+        fo = getFolderForShortcuts(fs);
+        sf = createShortcutsFolder(fs);
+        sf.waitShortcutsFinished();
+    }
+    
+    protected void tearDown() {
+        try {
+            FileLock lock = fo.lock();
+            fo.delete(lock);
+            lock.releaseLock();
+        } catch (Exception ioe) {
+        }
+        
+        ShortcutsFolder.shortcutsFolder = null;
+        sf = null;
+        fs = null;
+        fld = null;
+        fo = null;
+        try {
+            if (dir.exists()) {
+                File[] f = dir.listFiles();
+                for (int i=0; i < f.length; i++) {
+                    f[i].delete();
+                }
+                dir.delete();
+            }
+            dir = null;
+            folderName = null;
+            repository = null;
+            
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void testHyphenation (String s) {
+        System.out.println("testHyphenation");
         HashSet set = new HashSet();
         char[] c = new String("ABCD").toCharArray();
         ShortcutsFolder.createHyphenatedPermutation (c, set, "-F5");
         
         assertTrue (set.contains("A-B-C-D-F5"));
     }
-    
+   
     public void testPermutations () {
+        System.out.println("testPermutations");
         HashSet set = new HashSet();
         
         ShortcutsFolder.getAllPossibleOrderings("BANG", "-F5", set);
@@ -89,6 +138,7 @@ public class ShortcutsFolderTest extends NbTestCase {
     }
     
     public void testPermutationsIncludeHyphenatedVariants() {
+        System.out.println("testPermutationsIncludeHyphenatedVariants");
         HashSet set = new HashSet();
         
         ShortcutsFolder.getAllPossibleOrderings("BANG", "-F5", set);
@@ -106,10 +156,16 @@ public class ShortcutsFolderTest extends NbTestCase {
     }
     
     public void testPermutationsContainConvertedWildcard () {
-        String targetChar = (Utilities.getOperatingSystem() & Utilities.OS_MAC) != 0
+        doPermutationsContainConvertedWildcard (true);
+        doPermutationsContainConvertedWildcard (false);
+    }
+    
+    public void doPermutationsContainConvertedWildcard (boolean mac) {
+        System.out.println("testPermutationsContainConvertedWildcard mac=" + mac);
+        String targetChar = mac
             ? "M" : "C";
         
-        String[] s = ShortcutsFolder.getPermutations("DA-F5");
+        String[] s = ShortcutsFolder.getPermutations("DA-F5", mac);
         HashSet set = new HashSet (Arrays.asList(s));
         set.add ("DA-F5"); //Permutations will not contain the passed value
         
@@ -125,12 +181,18 @@ public class ShortcutsFolderTest extends NbTestCase {
                 set.contains(permutations[i]));
         }
     }
-
+    
     public void testPermutationsIncludeWildcardIfSpecifiedKeyIsToolkitAccelerator () {
-        String targetChar = (Utilities.getOperatingSystem() & Utilities.OS_MAC) != 0
+        doTestPermutationsIncludeWildcardIfSpecifiedKeyIsToolkitAccelerator(true);
+        doTestPermutationsIncludeWildcardIfSpecifiedKeyIsToolkitAccelerator(false);
+    }
+
+    public void doTestPermutationsIncludeWildcardIfSpecifiedKeyIsToolkitAccelerator (boolean macintosh) {
+        System.out.println("testPermutationsIncludeWildcardIfSpecifiedKeyIsToolkitAccelerator - mac=" + macintosh);
+        String targetChar = macintosh
             ? "M" : "C";
         
-        String[] s = ShortcutsFolder.getPermutations(targetChar + "A-F5");
+        String[] s = ShortcutsFolder.getPermutations(targetChar + "A-F5", macintosh);
         
         String[] permutations = new String[] {
             "A" + targetChar + "-F5", "A-" + targetChar + "-F5",
@@ -147,14 +209,156 @@ public class ShortcutsFolderTest extends NbTestCase {
         }
     } 
     
+    public void testPermutationsContainConvertedAltWildcard () {
+        doTestPermutationsContainConvertedAltWildcard (true);
+        doTestPermutationsContainConvertedAltWildcard (false);
+    }
+    
+    public void doTestPermutationsContainConvertedAltWildcard (boolean macintosh) {
+        System.out.println("testPermutationsContainConvertedAltWildcard mac = " + macintosh);
+        String cmdChar = macintosh
+            ? "M" : "C";        
+        
+        String altKey = macintosh ?
+            "C" : "A"; //NOI18N        
+        
+        String[] s = ShortcutsFolder.getPermutations("DO-F5", macintosh);
+        HashSet set = new HashSet (Arrays.asList(s));
+        set.add ("DO-F5"); //Permutations will not contain the passed value
+        
+        String[] permutations = new String[] {
+            "OD-F5", 
+            "O" + cmdChar + "-F5", 
+            "DO-F5", 
+            "D-O-F5",
+            "O-D-F5", 
+            altKey + "-D-F5", 
+            altKey + "-" + cmdChar + "-F5", 
+            altKey + "D-F5",
+        };
+        
+        for (int i=0; i < permutations.length; i++) {
+            assertTrue ("Permutation of D"+ altKey + "-F5 not generated:" 
+                + permutations[i] + "; (generated:" + set + ")",
+                set.contains(permutations[i]));
+        }
+    } 
+
+    public void testDualWildcardPermutations() {
+        doTestDualWildcardPermutations(true);
+        doTestDualWildcardPermutations(false);
+    }   
+    
+    public void doTestDualWildcardPermutations(boolean macintosh) {
+        System.out.println("testDualWildcardPermutations mac=" + macintosh);
+        String cmdChar = macintosh
+            ? "M" : "C";        
+        
+        String altKey = macintosh ?
+            "C" : "A"; //NOI18N        
+        
+        String[] s = ShortcutsFolder.getPermutations("OD-F5", macintosh);
+        HashSet set = new HashSet (Arrays.asList(s));
+        set.add ("OD-F5"); //Permutations will not contain the passed value
+        
+        String[] permutations = new String[] {
+            "OD-F5", "O" + cmdChar + "-F5", "DO-F5", "D-O-F5",
+            "O-D-F5", altKey + "-D-F5", altKey + "-" + cmdChar + "-F5", altKey + "D-F5",
+            altKey + cmdChar + "-F5"
+        };
+        
+        for (int i=0; i < permutations.length; i++) {
+            assertTrue ("Permutation of OD-F5 not generated:" 
+                + permutations[i] + "; (generated:" + set + ")",
+                set.contains(permutations[i]));
+        }
+    }
+    
+    public void testOPermutationOfAlt () throws Exception {
+        System.out.println("testOPermutationOfAlt");
+//        FileSystem fs = createTestingFilesystem();
+//        FileObject fo = getFolderForShortcuts(fs);
+        
+//        assertEquals (lastDir, repository.getDefaultFileSystem().getRoot().getPath());
+        
+        FileObject data1 = fo.createData("OD-F6.instance");
+        assertNotNull(data1);
+        data1.setAttribute("instanceClass", "org.netbeans.core.ShortcutsFolderTest$TestAction");
+        
+        FileObject data2 = fo.createData("OS-F6.instance");
+        assertNotNull(data2);
+        data2.setAttribute("instanceClass", "org.netbeans.core.ShortcutsFolderTest$TestAction");
+        
+        File file = new File (lastDir + folderName + File.separator + "OD-F6.instance");
+        assertTrue ("Actual file not created: " + file.getPath(), file.exists());
+
+        sf.refreshGlobalMap();
+        
+        DataObject ob = DataObject.find (data1);
+        assertNotNull("Data object not found: " + data1.getPath(), ob);
+        
+        InstanceCookie ck = (InstanceCookie) ob.getCookie(InstanceCookie.class);
+        Object obj = ck.instanceCreate();
+        
+        assertTrue ("InstanceCookie was not an instanceof TestAction - " + obj, obj instanceof TestAction);
+        
+        int mask = System.getProperty("mrj.version") == null ? KeyEvent.ALT_MASK :
+            KeyEvent.CTRL_MASK;
+        
+        KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_F6, mask | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+        Action action = (Action) obj;
+        
+        ShortcutsFolder.applyChanges(Arrays.asList(new Object[] {new ShortcutsFolder.ChangeRequest (stroke, action, false)}));
+        
+        ShortcutsFolder.refreshGlobalMap();
+
+        FileObject now = fo.getFileObject ("OD-F6.instance");
+        //XXX WTF??
+        assertNull ("File object should be deleted - but is " + (now == null ? " null " : now.getPath()), now);
+        
+        assertFalse ("File still exists: " + lastDir + "OD-F6.instance", file.exists());
+        
+        file = new File (lastDir + "Shortcuts" + File.separator + "OS-F6.instance");
+        assertTrue ("File should not have been deleted: " + file.getPath(), file.exists());
+        
+    }  
+
+  
+    
+    private static String lastDir = null;
+    private static File dir = null;
+    private File getTempDir() {
+        String outdir = System.getProperty("java.io.tmpdir"); //NOI18N
+        if (!outdir.endsWith(File.separator)) {
+            outdir += File.separator;
+        }
+        String dirname = Long.toHexString(System.currentTimeMillis());
+        lastDir = outdir + dirname + File.separator;
+        dir = new File (outdir + dirname);
+        try {
+            dir.mkdir();
+        } catch (Exception ioe) {
+            ioe.printStackTrace();
+            fail ("Exception creating temporary dir for tests " + dirname + " - " + ioe.getMessage());
+        }
+        dir.deleteOnExit();
+        
+        return dir;
+    }
+    
     private FileSystem createTestingFilesystem () {
         FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
         try {
+            LocalFileSystem result = new LocalFileSystem();
+            result.setRootDirectory(getTempDir());
+            repository = new Repository (result);
+            fixDefaultRepository();
+            System.setProperty ("org.openide.util.Lookup", "org.netbeans.core.ShortcutsFolderTest$LKP");
             FileObject[] arr = root.getChildren ();
             for (int i = 0; i < arr.length; i++) {
                 arr[i].delete ();
             }
-            return root.getFileSystem ();
+            return result;
         } catch (Exception e) {
             e.printStackTrace();
             fail (e.getMessage());
@@ -162,12 +366,24 @@ public class ShortcutsFolderTest extends NbTestCase {
         return null;
     }
     
+    private void fixDefaultRepository () {
+        try {
+            Class c = ClassLoader.getSystemClassLoader().loadClass("org.openide.filesystems.ExternalUtil");
+            Method m = c.getDeclaredMethod ("setRepository", new Class[] {Repository.class});
+            m.setAccessible(true);
+            m.invoke (null, new Object[] { repository });
+        } catch (Exception e) {
+            throw new RuntimeException (e);
+        }
+    }
+    
     private FileObject getFolderForShortcuts(FileSystem fs) {
         FileObject result = null;
         try {
-            result = fs.getRoot().getFileObject("Shortcuts");
+            folderName = "Shortcuts";
+            result = fs.getRoot().getFileObject(folderName);
             if (result == null) {
-                result = fs.getRoot().createFolder("Shortcuts");
+                result = fs.getRoot().createFolder(folderName);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -176,6 +392,7 @@ public class ShortcutsFolderTest extends NbTestCase {
         return result;
     }
     
+    private String folderName = null;
     private ShortcutsFolder createShortcutsFolder(FileSystem fs) {
         try {
             DataObject dob = DataObject.find(getFolderForShortcuts(fs));
@@ -219,7 +436,6 @@ public class ShortcutsFolderTest extends NbTestCase {
         ShortcutsFolder.applyChanges(Arrays.asList(new Object[] {new ShortcutsFolder.ChangeRequest (stroke, action, false)}));
         
         ShortcutsFolder.refreshGlobalMap();
-
         FileObject now = fo.getFileObject ("AD-F5.instance");
         assertNull ("File object should be deleted - ", now);
         

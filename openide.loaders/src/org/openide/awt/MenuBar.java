@@ -16,9 +16,11 @@ package org.openide.awt;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.*;
+import java.awt.event.KeyEvent;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.KeyStroke;
 
 import org.openide.ErrorManager;
 import org.openide.loaders.*;
@@ -26,6 +28,7 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.nodes.*;
+import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 import org.openide.util.*;
 
@@ -73,7 +76,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
      * If the parameter is null, default menu folder is obtained.
      */
     public MenuBar(DataFolder folder) {
-        super();
+        this();
         setBorder (javax.swing.BorderFactory.createEmptyBorder());
         DataFolder theFolder = folder;
         if (theFolder == null) {
@@ -100,6 +103,56 @@ public class MenuBar extends JMenuBar implements Externalizable {
         }
         super.addImpl (c, constraint, idx);
     }
+    
+    /**
+     * Overridden to handle mac conversion from Alt to Ctrl and vice versa so
+     * Alt can be used as the compose character on international keyboards.
+     */
+    protected boolean processKeyBinding(KeyStroke ks,
+                                    KeyEvent e,
+                                    int condition,
+                                    boolean pressed) {
+        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            int mods = e.getModifiers();
+            boolean isCtrl = (mods & KeyEvent.CTRL_MASK) != 0;
+            boolean isAlt = (mods & KeyEvent.ALT_MASK) != 0;
+            if (isAlt) {
+                return false;
+            }
+            if (isAlt && !isCtrl) {
+                mods = mods & ~ KeyEvent.ALT_MASK;
+                mods = mods & ~ KeyEvent.ALT_DOWN_MASK;
+                mods |= KeyEvent.CTRL_MASK;
+                mods |= KeyEvent.CTRL_DOWN_MASK;
+            } else if (!isAlt && isCtrl) {
+                mods = mods & ~ KeyEvent.CTRL_MASK;
+                mods = mods & ~ KeyEvent.CTRL_DOWN_MASK;
+                mods |= KeyEvent.ALT_MASK;
+                mods |= KeyEvent.ALT_DOWN_MASK;
+            } else if (!isAlt && !isCtrl) {
+                return super.processKeyBinding (ks, e, condition, pressed);
+            }
+            
+            KeyEvent newEvent = new MarkedKeyEvent ((Component) e.getSource(), e.getID(), 
+                e.getWhen(), mods, e.getKeyCode(), e.getKeyChar(), 
+                e.getKeyLocation());
+            
+            KeyStroke newStroke = e.getID() == KeyEvent.KEY_TYPED ?
+                KeyStroke.getKeyStroke (ks.getKeyChar(), mods) :
+                KeyStroke.getKeyStroke (ks.getKeyCode(), mods, 
+                !ks.isOnKeyRelease());
+            
+            boolean result = super.processKeyBinding (newStroke, newEvent, 
+                condition, pressed);
+            
+            if (newEvent.isConsumed()) {
+                e.consume();
+            }
+            return result;
+        } else {
+            return super.processKeyBinding (ks, e, condition, pressed);
+        }                     
+    }    
 
     /** Blocks until the menubar is completely created. */
     public void waitFinished () {
@@ -295,6 +348,18 @@ public class MenuBar extends JMenuBar implements Externalizable {
         }
 
     }
+    
+    /**
+     * A marker class to allow different processing of remapped key events
+     * on mac - allows them to be recognized by LazyMenu. 
+     */
+    private static final class MarkedKeyEvent extends KeyEvent {
+        public MarkedKeyEvent (Component c, int id, 
+                    long when, int mods, int code, char kchar, 
+                    int loc) {
+            super(c, id, when, mods, code, kchar, loc);
+        }
+    }
 
     /** Menu based on the folder content whith lazy items creation. */
     private static class LazyMenu extends JMenuPlus implements NodeListener, Runnable {
@@ -313,6 +378,47 @@ public class MenuBar extends JMenuBar implements Externalizable {
 	    updateProps();
 
         }
+        
+        protected boolean processKeyBinding(KeyStroke ks,
+                                        KeyEvent e,
+                                        int condition,
+                                        boolean pressed) {
+            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                int mods = e.getModifiers();
+                boolean isCtrl = (mods & KeyEvent.CTRL_MASK) != 0;
+                boolean isAlt = (mods & KeyEvent.ALT_MASK) != 0;
+                if (isAlt && (e instanceof MarkedKeyEvent)) {
+                    mods = mods & ~ KeyEvent.CTRL_MASK;
+                    mods = mods & ~ KeyEvent.CTRL_DOWN_MASK;
+                    mods |= KeyEvent.ALT_MASK;
+                    mods |= KeyEvent.ALT_DOWN_MASK;
+                    
+                    KeyEvent newEvent = new MarkedKeyEvent (
+                        (Component) e.getSource(), e.getID(), 
+                        e.getWhen(), mods, e.getKeyCode(), e.getKeyChar(), 
+                        e.getKeyLocation());
+                    
+                    KeyStroke newStroke = e.getID() == KeyEvent.KEY_TYPED ?
+                        KeyStroke.getKeyStroke (ks.getKeyChar(), mods) :
+                        KeyStroke.getKeyStroke (ks.getKeyCode(), mods, 
+                        !ks.isOnKeyRelease());
+                    
+                    boolean result = super.processKeyBinding (newStroke, 
+                        newEvent, condition, pressed);
+                    
+                    if (newEvent.isConsumed()) {
+                        e.consume();
+                    }
+                    return result;
+                } else if (!isAlt) {
+                    return super.processKeyBinding (ks, e, condition, pressed);
+                } else {
+                    return false;
+                }
+            } else {
+                return super.processKeyBinding (ks, e, condition, pressed);
+            }                     
+        }            
 
 	private void updateProps() {
             // set the text and be aware of mnemonics

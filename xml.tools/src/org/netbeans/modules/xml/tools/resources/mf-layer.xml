@@ -88,10 +88,10 @@ Microsystems, Inc. All Rights Reserved.
     </folder> <!-- xml -->
 
     <folder name="Shortcuts">
-        <file name="A-F9.instance">
+        <file name="O-F9.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.actions.CheckAction"/>
 	</file>
-        <file name="A-S-F9.instance">
+        <file name="O-S-F9.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.actions.ValidateAction"/>
 	</file>        
     </folder> <!-- Shortcuts -->

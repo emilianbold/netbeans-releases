@@ -69,22 +69,22 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Shortcuts">
-        <file name="SA-6.shadow">
+        <file name="SO-6.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SessionsViewAction.instance"/>
         </file>
-        <file name="SA-7.shadow">
+        <file name="SO-7.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.instance"/>
         </file>
-        <file name="SA-3.shadow">
+        <file name="SO-3.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-CallStackViewAction.instance"/>
         </file>
-        <file name="SA-1.shadow">
+        <file name="SO-1.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-LocalsViewAction.instance"/>
         </file>
-        <file name="SA-2.shadow">
+        <file name="SO-2.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-WatchesViewAction.instance"/>
         </file>
-        <file name="SA-5.shadow">
+        <file name="SO-5.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.instance"/>
         </file>
     </folder>

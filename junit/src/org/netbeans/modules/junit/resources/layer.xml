@@ -80,10 +80,10 @@
 
     <!-- shortcuts -->
     <folder name="Shortcuts">
-        <file name="DA-J.instance">
+        <file name="DO-J.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.modules.junit.CreateTestAction"/>
 	</file>
-        <file name="DA-K.instance">
+        <file name="DO-K.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.modules.junit.OpenTestAction"/>
 	</file>
     </folder>
