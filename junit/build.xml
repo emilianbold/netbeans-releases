@@ -43,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
   
 
   <target name="compile" depends="init">
-    <javac srcdir="src" destdir="src"
+    <javac srcdir="src" destdir="build"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}"
            source="1.4">
@@ -57,9 +57,18 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/junit.jar"
          manifest="manifest-subst.mf"
-         basedir="src"
-         excludesfile="../nbbuild/standard-jar-excludes.txt"
-         compress="false"/>
+         compress="false">
+
+      <fileset dir="build">
+        <include name="**"/>
+        <excludesfile name="../nbbuild/standard-jar-excludes.txt"/>
+      </fileset>
+      <fileset dir="src">
+        <include name="**"/>
+        <excludesfile name="../nbbuild/standard-jar-excludes.txt"/>
+      </fileset>
+    </jar>
+
   </target>
 
   <target name="parserdb" depends="init">
@@ -107,6 +116,9 @@ Microsystems, Inc. All Rights Reserved.
   <target name="clean" depends="init" description="Clean build products.">
     <delete>
       <fileset dir="src">
+        <include name="**/*.class"/>
+      </fileset>
+      <fileset dir="build">
         <include name="**/*.class"/>
       </fileset>
       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
