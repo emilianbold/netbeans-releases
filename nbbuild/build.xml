@@ -72,7 +72,7 @@ workspaceswitcher
     <!-- Overridable. Note: need not necessarily be a number at all): -->
     <property name="buildnumber" value="dev-000"/>
     <!-- Best to leave this alone, though, unless you know what you are doing: -->
-    <property name="firststart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true"/>
+    <property name="firststart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true -single"/>
     <!-- But this it is OK to change: -->
     <property name="tryme.args" value=" -J-Dnetbeans.debug.exceptions=true"/>
     <!-- Override this with the Ant command, e.g. -Dmoduleconfig=superslim -->
