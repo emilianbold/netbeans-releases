@@ -12,7 +12,7 @@
  */
 
 // XXX uses: FolderChildren, Children.MutexChildren, module system
-// XXX EventSynch?
+// XXX lock wrapper for AbstractDocument (or Document + NbDocument.WriteLockable)
 
 package threaddemo.locking;
 
