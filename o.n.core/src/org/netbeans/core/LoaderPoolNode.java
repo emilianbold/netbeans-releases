@@ -594,9 +594,12 @@ public final class LoaderPoolNode extends AbstractNode {
     /** Listener to property changes.
     */
     public void propertyChange (PropertyChangeEvent ev) {
+      String prop = ev.getPropertyName ();
+      if (DataLoader.PROP_ACTIONS.equals (ev) || DataLoader.PROP_DISPLAY_NAME.equals (ev))
+        return; // these are not important to the pool, i.e. to file recognition
       if (installationFinished) {
         superFireChangeEvent ();
-      };
+      }
     }
     
     /** Fires change event to all listeners
@@ -689,6 +692,9 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  37   Jaga      1.35.1.0    3/28/00  Jesse Glick     No longer refiring 
+*       irrelevant loader changes to the pool: i.e. display name and actions. 
+*       Only things like extension lists, etc.
 *  36   Gandalf   1.35        1/16/00  Jaroslav Tulach TemplatesExplorer 
 *       removed, startup faster
 *  35   Gandalf   1.34        1/13/00  Jesse Glick     System loaders are 
