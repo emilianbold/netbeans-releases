@@ -1041,4 +1041,9 @@ the ${netbeans.dest}/bin/ directory.
   <target name="print-selected-modules" depends="init" description="Prints list of modules to build in selected moduleconfig.">
     <echo message="modules=${allmodules}"/>
   </target>
+
+  <target name="print-cvs-modules" depends="init" description="Prints list of cvs modules required to build in selected moduleconfig.">
+    <taskdef name="printcvsmodules" classname="org.netbeans.nbbuild.PrintCvsModules" classpath="nbantext.jar"/>
+    <printcvsmodules modules="${fixedmodules},${modules}" targetprefix="all-" />
+  </target>
 </project>
