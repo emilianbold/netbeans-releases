@@ -50,22 +50,9 @@ import org.w3c.dom.NodeList;
  * make sure loading proceeds naturally with a clean checkout, i.e. no nbproject/private/ dir
  * and that appropriate private.xml and private.properties files are created on demand
  * (this is perhaps already tested adequately by ProjectGeneratorTest)
- * - testActionProviderImpl
- * How to run Ant from a unit test?
- * Can perhaps use InstalledFileLocator to define "ant" to be ${ant.home}.
- * Then set up a build script and check that outputs are correct?
- * Also need to install an IOProvider and ExecutionEngine, probably.
- * Tricky!
  * - testVCSFriendliness
- * make various modifications to project metadata files and ensure that the
- * number of lines changed in the diff is kept to a minimum; specifically, need
- * to check that project.xml and private.xml are written in canonical order
- * (probably need schema); separate tests needed for EditableProperties
- * - testDiskChanges
- * check that various modifications on disk (at FS level, i.e. refreshed)
- * do load to firing "unexpected" changes in XML and properties
- * and that the APH loads the new data
- * (also that something reasonable happens if it is locking the data)
+ * make various modifications to project/private.xml files and ensure that the
+ * number of lines changed in the diff is kept to a minimum
  * - testIsProject
  */
 
