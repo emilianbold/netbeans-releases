@@ -274,6 +274,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
         URLConnection conn = null;
         InputStreamReader reader = null;
         
+        URL urlToConnectTo = null;
         try {
 
             // Create a connection for this command
@@ -282,7 +283,8 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                 // strip home & base
                 uri = uri.substring (uri.indexOf ("http:")); // NOI18N
             }
-            conn = (new URL(uri + command)).openConnection();
+            urlToConnectTo = new URL(uri + command);
+            conn = urlToConnectTo.openConnection();
             HttpURLConnection hconn = (HttpURLConnection) conn;
 
             // Set up standard connection characteristics
@@ -372,6 +374,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, msg, StateType.COMPLETED));
 
         } catch (Exception e) {
+            TomcatFactory.getEM().log("TomcatManagerImpl connecting to: " + urlToConnectTo); // NOI18N
             TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, e);
             pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, e.getLocalizedMessage (), StateType.FAILED));
             // throw t;
