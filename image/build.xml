@@ -65,6 +65,18 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 
+  <target name="test-build" depends="compile">
+    <mkdir dir="test"/>
+    <filter token="BUILD_NUMBER_SUBST" value="testing"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+    <jar jarfile="test/image.jar" manifest="manifest-subst.mf" compress="false">
+      <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+    </jar>
+  </target>
+  <target name="test" depends="test-build">
+    <nbinstaller module="test/image.jar" action="reinstall"/>
+  </target>
+
   <target name="clean">
     <delete>
       <fileset dir="src">
@@ -75,6 +87,10 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="image.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>
+  </target>
+
+  <target name="real-clean" depends="clean">
+    <delete dir="test"/>
   </target>
 
 </project>
