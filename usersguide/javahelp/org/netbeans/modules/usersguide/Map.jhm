@@ -167,7 +167,7 @@
 <mapID target="gui.csh.handlers" url="gui/events/intro.html" />
 <!-- csh page for Form Editor property Variables Modifier (also for the Java module's "Modifiers" property) -->
 <mapID target="org.openide.explorer.propertysheet.editors.ModifierEditor" url="gui/csh/modifiers.html" /> 
-<!-- GUI csh page needed -->
+<!-- GUI csh page needed; 2003/03/07 can't find this ID in the code-->
 <mapID target="gui.csh.icon" url="pending.html" />
 
 
@@ -254,17 +254,14 @@
    <mapID target="org.netbeans.core.filesystems.MIMEResolverImpl" url="pending.html" /> 
    <mapID target="org.netbeans.core.filesystems.MIMEResolverImpl.FileTypeNode" url="pending.html" />         
 
-   <mapID target="org.netbeans.core.ExLocalFileSystem" url="pending.html" />
-
-   <mapID target="org.netbeans.modules.usersguide.UGModule$GlobalJarFileSystem" url="pending.html" />
-   <mapID target="org.netbeans.modules.usersguide.UGModule$GlobalLocalFileSystem" url="pending.html" />
-   <mapID target="org.netbeans.core.projects.SystemFileSystem" url="pending.html" />
+   <mapID target="org.netbeans.modules.usersguide.UGModule$GlobalJarFileSystem" url="filesystems/filesystems_node-JAR.html" />
+   <mapID target="org.netbeans.modules.usersguide.UGModule$GlobalLocalFileSystem" url="filesystems/filesystems_node-dir.html" />
    
-   <mapID target="org.netbeans.modules.jarpackager.JarContentChildren$ContentMemberNode.Properties" url="pending.html" />
-   <mapID target="org.netbeans.modules.jarpackager.JarDataObject$JarNode.Properties" url="pending.html" />
-   <mapID target="org.netbeans.modules.jarpackager.JarChildren$GeneratedJarNode.Properties" url="pending.html" />
-   <mapID target="org.netbeans.modules.jarpackager.JarContentChildren$ContentMemberNode.Properties" url="pending.html" />
-   <mapID target="org.netbeans.modules.jarpackager.JarDataObject$JarNode.Execution" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.jarpackager.JarContentChildren$ContentMemberNode.Properties" url="jarpackager/jarpackager_nodes.html" />
+   <mapID target="org.netbeans.modules.jarpackager.JarDataObject$JarNode.Properties" url="jarpackager/jarpackager_nodes.html" />
+   <mapID target="org.netbeans.modules.jarpackager.JarChildren$GeneratedJarNode.Properties" url="jarpackager/jarpackager_nodes.html" />
+   <mapID target="org.netbeans.modules.jarpackager.JarChildren$RecipeContentsNode.Properties" url="jarpackager/jarpackager_nodes.html" />
+   <mapID target="org.netbeans.modules.jarpackager.JarDataObject$JarNode.Execution" url="jarpackager/jarpackager_nodes.html" /> 
 
 
 
@@ -691,7 +688,6 @@
 <mapID target="configure.tbdelete" url="configure/tb_delete.html" />
 <mapID target="configure.output" url="configure/output.html" />
 <mapID target="configure.system.settings" url="configure/system_settings.html" />
-<mapID target="configure.welcome" url="configure/welcome_node.html" />
 <mapID target="configure.fontsize" url="configure/font_size.html" />
 
 <mapID target="shortcuts.editor" url="shortcuts/editorcuts.html" />
@@ -799,6 +795,12 @@
 
 <mapID target="NetbeansDebuggerJPDAPopOldFrame" url="debug/fix/old_stack_call.html" />
 
+<mapID target="debug.add.breakpoint.java.line" url="debug/breakpoint/breakpoint_line.html" />
+<mapID target="debug.add.breakpoint.java.method" url="debug/breakpoint/breakpoint_method.html" />
+<mapID target="debug.add.breakpoint.java.field" url="debug/breakpoint/breakpoint_variable.html" />
+<mapID target="debug.add.breakpoint.java.class" url="debug/breakpoint/breakpoint_class.html" />
+<mapID target="debug.add.breakpoint.java.exception" url="debug/breakpoint/breakpoint_exception.html" />
+<mapID target="debug.add.breakpoint.java.thread" url="debug/breakpoint/breakpoint_thread.html" />
 
 <mapID target="org.netbeans.modules.httpserver.HttpServerNode_properties" url="webbrowser/httpserver_properties.html" />
 <mapID target="org.netbeans.modules.httpserver.HttpServerNode_expert" url="webbrowser/httpserver_expert.html" />
@@ -939,7 +941,9 @@
    
    <mapID target="org.netbeans.core.execution.ExecutionSettings" url="run/options.html" />
    <mapID target="org.netbeans.core.execution.ExecutorRepositoryNode" url="pending.html" /> 
-   <mapID target="org.netbeans.core.DataSystem" url="filesystems/filesystems_classpath.html" />
+
+<!--root filesystems node in Explorer-->   
+    <mapID target="org.netbeans.core.DataSystem" url="filesystems/filesystems_classpath.html" />
    
    <!--nodes for Diff Settings and Diff and Merge Types-->
    <mapID target="org.netbeans.modules.diff.DiffSettings" url="filesystems/filesystems_diff.html" />
@@ -1241,7 +1245,10 @@
    <mapID target="org.netbeans.modules.projects.settings.ProjectOption" url="project/project_adding-new.html" />
    <mapID target="org.netbeans.modules.projects.settings.OptionsAction" url="project/project_adding-new.html" />
    <mapID target="org.openide.actions.BuildProjectAction" url="project/project_comp-run-debug.html" />
-   <mapID target="org.netbeans.modules.projects.ProjectDataObject" url="project/project.html" /> 
+
+<!--root node on Projects tab of Explorer-->   
+   <mapID target="org.netbeans.modules.projects.ProjectDataObject" url="project/project_node.html" /> 
+   
    <mapID target="org.netbeans.modules.projects.AddToProjectAction" url="project/project_adding-existing.html" /> 
    <mapID target="org.netbeans.modules.projects.Add2ProjectAction" url="project/project_adding-existing.html" />
    <mapID target="org.netbeans.modules.projects.ImportProjectAction" url="project/project_importing.html" /> 
