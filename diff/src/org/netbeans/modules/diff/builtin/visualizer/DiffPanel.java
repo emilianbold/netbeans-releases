@@ -880,7 +880,7 @@ public class DiffPanel extends javax.swing.JPanel {
         int lastOffset = doc.getEndPosition().getOffset();
         int totLines = org.openide.text.NbDocument.findLineNumber(doc, lastOffset);
         //int totLines = doc.getDefaultRootElement().getElementIndex(lastOffset);
-        int offset = lastOffset;
+        int offset = lastOffset-1;
         if (line <= totLines) {
             offset = org.openide.text.NbDocument.findLineOffset(doc, line);
             //offset = doc.getDefaultRootElement().getElement(line).getStartOffset();
