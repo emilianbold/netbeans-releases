@@ -425,7 +425,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     
 
     //////////////////////////////////////////////////////////
-    private void showWindowSystem(WindowSystemAccessor wsa) {
+    private void showWindowSystem(final WindowSystemAccessor wsa) {
         long start = System.currentTimeMillis();
         if(DEBUG) {
             debugLog("ShowWindowSystem--"); // NOI18N
@@ -487,7 +487,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         // Updates frame states of separate modes.
         hierarchy.updateFrameStates();
         
-        hierarchy.activateMode(wsa.getActiveModeAccessor());
         hierarchy.setProjectName(wsa.getProjectName());
         
         // XXX PENDING
@@ -513,6 +512,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                     debugLog("Installing main window listeners.");
                 }
                 hierarchy.updateSplits();
+                //#40501 it seems that activating mode needs to be done after the splits are recalculated.
+                //otherwise it possibly failes.
+                hierarchy.activateMode(wsa.getActiveModeAccessor());
                 hierarchy.installMainWindowListeners();
             }
         });
