@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,9 +32,11 @@ import org.openide.awt.StatusDisplayer;
 */
 public class Plain extends NbTopManager implements Runnable, ChangeListener {
     
+    /* #31891: undesirable
     static {
         NbSAXParserFactoryImpl.install();
     }
+    */
     
     private final StatusDisplayer status;
 
