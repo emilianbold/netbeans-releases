@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="xtest/external" default="unscramble" basedir=".">
@@ -36,8 +36,8 @@ Microsystems, Inc. All Rights Reserved.
         </and>
     </condition>
     <target name="emma" unless="skip-download-emma" depends="setup-proxy" >
-        <echo message="Going to download emma. If it fails download it from http://emma.sf.net or invoke with -Dproxy.host='host' -Dproxy.port='port'" />
-        <get src="http://mesh.dl.sourceforge.net/sourceforge/emma/emma-2.0.4217-lib.zip" dest="emma-2.0.4217-lib.zip" />
+        <echo message="Going to download emma. If it fails download it from http://emma.sf.net/ (and unpack into ${basedir}) or invoke with -Dproxy.host='host' -Dproxy.port='port'" />
+        <get src="http://voxel.dl.sourceforge.net/sourceforge/emma/emma-2.0.4217-lib.zip" dest="emma-2.0.4217-lib.zip" />
         <unzip dest="." src="emma-2.0.4217-lib.zip" />
     </target>
     
