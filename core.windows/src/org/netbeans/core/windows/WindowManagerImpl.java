@@ -179,7 +179,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     /** Returns <code>TopComponent</code> for given unique ID.
      * @param tcID unique <code>TopComponent</code> ID
      * @return <code>TopComponent</code> instance corresponding to unique ID
-     * @since 4.14 */
+     */
     public TopComponent findTopComponent(String tcID) {
         return PersistenceManager.getDefault().getTopComponentForID(tcID);
     }
