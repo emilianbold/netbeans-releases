@@ -70,7 +70,7 @@ public class LaunchDebuggerTest extends DebuggerApiTestBase {
         List events;
         TestDebuggerManagerListener.Event event;
         events = dml.getEvents();
-        assertEquals("Wrong number of events generated", events.size(), 4);
+        assertEquals("Wrong number of events generated", events.size(), 5);
         for (Iterator i = events.iterator(); i.hasNext();) {
             event = (TestDebuggerManagerListener.Event) i.next();
             if (event.getName().equals("sessionRemoved")) {
@@ -78,6 +78,8 @@ public class LaunchDebuggerTest extends DebuggerApiTestBase {
             } else if (event.getName().equals("propertyChange")) {
                 PropertyChangeEvent pce = (PropertyChangeEvent) event.getParam();
                 if (pce.getPropertyName().equals("sessions")) {
+                    i.remove();
+                } else if (pce.getPropertyName().equals("debuggerEngines")) {
                     i.remove();
                 } else if (pce.getPropertyName().equals("currentEngine")) {
                     assertNull("Bad current engine", pce.getNewValue());
@@ -95,7 +97,7 @@ public class LaunchDebuggerTest extends DebuggerApiTestBase {
         List events;
         TestDebuggerManagerListener.Event event;
         events = dml.getEvents();
-        assertEquals("Wrong number of events generated", events.size(), 4);
+        assertEquals("Wrong number of events generated", events.size(), 5);
         for (Iterator i = events.iterator(); i.hasNext();) {
             event = (TestDebuggerManagerListener.Event) i.next();
             if (event.getName().equals("sessionAdded")) {
@@ -103,6 +105,8 @@ public class LaunchDebuggerTest extends DebuggerApiTestBase {
             } else if (event.getName().equals("propertyChange")) {
                 PropertyChangeEvent pce = (PropertyChangeEvent) event.getParam();
                 if (pce.getPropertyName().equals("sessions")) {
+                    i.remove();
+                } else if (pce.getPropertyName().equals("debuggerEngines")) {
                     i.remove();
                 } else if (pce.getPropertyName().equals("currentEngine")) {
                     assertSame("Bad PCE new current engine", pce.getNewValue(), engines[0]);
