@@ -35,7 +35,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  * it simplifies testing on different platforms. This test may or may not
  * be reliable and may or may not work at all.
  *
- * @author  Jan Lahoda
+ * @author  eh103527
  */
 public class FocusTestPerformer extends JellyTestCase {
     
@@ -278,10 +278,22 @@ public class FocusTestPerformer extends JellyTestCase {
         }
     }
     
+    /**
+     *  This test case should not be run with solaris operation system.
+     *  Alt+Left/Right switch the X workspaces there.
+     *
+     */
     public void testTabsSwitching() {
         try {
             log("TabsSwitching starting");
             
+            String osname=System.getProperty("os.name").toLowerCase();
+            
+            if (osname.indexOf("solaris") > -1 || osname.indexOf("sunos") > -1) {
+                log("This test case couldn't be run in Solaris platform.");
+                this.assertTrue("Solaris system.",true);
+                return;
+            }
             Robot robot=new Robot();
             log("testFind Robot created");
             prepare2FilesEditors();

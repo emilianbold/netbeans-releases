@@ -333,9 +333,14 @@ public class TestCallAction extends TestAction {
             
             if ((actualTime - time) > TIMEOUT) {
                 System.err.println("CallAction "+getName()+" timeout expired "+TIMEOUT+" ms.");
+                getLogger().stopPerforming();
+                getLogger().clear();
                 return;
             }
-            Thread.yield();
+            try {
+                Thread.currentThread().sleep(500);
+            } catch (Exception ex) {
+            }
         }
     }
     
