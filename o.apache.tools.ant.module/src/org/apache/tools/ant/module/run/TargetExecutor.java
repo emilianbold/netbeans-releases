@@ -46,7 +46,7 @@ public class TargetExecutor implements Runnable {
     private InputOutput io;
     private boolean ok = false;
     private int verbosity = AntSettings.getDefault ().getVerbosity ();
-    private Properties properties = AntSettings.getDefault ().getProperties ();
+    private Properties properties = (Properties) AntSettings.getDefault ().getProperties ().clone ();
     private List targetNames;
 
     /** targets may be null to indicate default target */
@@ -72,7 +72,7 @@ public class TargetExecutor implements Runnable {
     }
     
     public synchronized void setProperties (Properties p) {
-        properties = p;
+        properties = (Properties) p.clone ();
     }
     
     public synchronized void addProperties (Properties p) {

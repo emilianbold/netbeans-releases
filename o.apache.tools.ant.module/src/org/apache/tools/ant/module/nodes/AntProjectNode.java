@@ -122,7 +122,9 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         if (xsupp != null) xsupp.addProperties (exec);
         exec.remove (ExecSupport.PROP_FILE_PARAMS);
         exec.remove (ExecSupport.PROP_DEBUGGER_TYPE);
-        sheet.put (exec);
+        if (csupp != null || xsupp != null) {
+            sheet.put (exec);
+        }
 
         return sheet;
     }
@@ -133,6 +135,17 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         }
         protected Element getElement () {
             return ((AntProjectCookie) getCookie (AntProjectCookie.class)).getProjectElement ();
+        }
+        public boolean supportsDefaultValue () {
+            return false;
+        }
+        public void setValue (Object value) throws IllegalArgumentException, InvocationTargetException {
+            if (value == null || value.equals ("")) {
+                IllegalArgumentException iae = new IllegalArgumentException ("no default for " + this.getName ()); // NOI18N
+                AntModule.err.annotate (iae, NbBundle.getMessage (AntProjectNode.class, "EXC_no_default_value_for_prop", this.getDisplayName ()));
+                throw iae;
+            }
+            super.setValue (value);
         }
     }
 
@@ -177,6 +190,14 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
             return new File (getElement ().getAttribute ("basedir")); // NOI18N
         }
         public void setValue (Object o) throws IllegalArgumentException, InvocationTargetException {
+            if (o == null || o.toString ().equals ("")) { // NOI18N
+                try {
+                    getElement ().removeAttribute ("basedir"); // NOI18N
+                } catch (DOMException dome) {
+                    throw new InvocationTargetException (dome);
+                }
+                return;
+            }
             if (! (o instanceof File)) throw new IllegalArgumentException ();
             try {
                 getElement ().setAttribute ("basedir", ((File) o).getPath ()); // NOI18N
@@ -188,11 +209,14 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
             return true;
         }
         public void restoreDefaultValue () throws InvocationTargetException {
-            try {
-                getElement ().setAttribute ("basedir", "."); // NOI18N
-            } catch (DOMException dome) {
-                throw new InvocationTargetException (dome);
-            }
+            setValue (null);
+            /*
+             try {
+                 getElement ().setAttribute ("basedir", "."); // NOI18N
+             } catch (DOMException dome) {
+                 throw new InvocationTargetException (dome);
+             }
+             */
         }
     }
 
