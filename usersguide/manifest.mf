@@ -2,7 +2,7 @@ OpenIDE-Module: org.netbeans.modules.usersguide/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/usersguide/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/usersguide/UGModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/usersguide/layer.xml
-OpenIDE-Module-Specification-Version: 1.10
+OpenIDE-Module-Specification-Version: 1.11
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.2
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.javahelp/1 > 1.0

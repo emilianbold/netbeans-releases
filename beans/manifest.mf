@@ -1,10 +1,11 @@
 OpenIDE-Module: org.netbeans.modules.beans/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/beans/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/beans/resources/mf-layer.xml
-OpenIDE-Module-Specification-Version: 1.8
+OpenIDE-Module-Specification-Version: 1.9
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1 > 1.7
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.12
 
 Name: org/netbeans/modules/beans/AddPropertyAction.class
 OpenIDE-Module-Class: Action
+

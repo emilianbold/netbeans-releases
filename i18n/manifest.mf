@@ -4,7 +4,7 @@ OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
 OpenIDE-Module-Module-Dependencies: 
  org.netbeans.modules.properties/1, 
  org.netbeans.core/1 > 1.0
-OpenIDE-Module-Specification-Version: 1.10
+OpenIDE-Module-Specification-Version: 1.11
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/i18n/Layer.xml
 OpenIDE-Module-Package-Dependencies: org.apache.regexp[RE]
@@ -14,3 +14,4 @@ OpenIDE-Module-Class: Action
 
 Name: org/netbeans/modules/i18n/I18nGroupPopupAction.class
 OpenIDE-Module-Class: Action
+

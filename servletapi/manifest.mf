@@ -1,7 +1,8 @@
 OpenIDE-Module: org.netbeans.modules.servletapi/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/servletapi/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Specification-Version: 1.2
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.29
 OpenIDE-Module-Package-Dependencies: [javax.servlet.Servlet]
 Class-Path: ext/servlet-2.2.jar
+
