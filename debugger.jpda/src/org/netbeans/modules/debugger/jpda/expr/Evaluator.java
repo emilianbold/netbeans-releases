@@ -506,36 +506,38 @@ public class Evaluator implements JavaParserVisitor {
             return (ReferenceType) classes.get(0);
         }
 
-        if (forName == null) {
-            try {
-                ClassObjectReference executingClass = frame.location().declaringType().classObject();
-                ClassType currentClass = (ClassType) executingClass.referenceType();
-                forName = currentClass.concreteMethodByName("forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;");
-            } catch (Exception e) {
-                // The should not happen
-            }
-        }
-
-        try {
-            ClassLoaderReference executingClassloader = frame.location().declaringType().classLoader();
-            ClassObjectReference executingClass = frame.location().declaringType().classObject();
-            List args = new ArrayList();
-            args.add(vm.mirrorOf(typeName));
-            args.add(vm.mirrorOf(true));
-            args.add(executingClassloader);
-            if (verbose) 
-                throw new UnsupportedOperationException (NbBundle.getMessage (
-                    Evaluator.class, 
-                    "CTL_UnsupportedOperationException"
-                )); 
-            ClassObjectReference cor = (ClassObjectReference) executingClass.invokeMethod(frameThread, forName, args, 0);
-            return cor.reflectedType();
-        } catch (Exception e) {
-            // The class cannot be loaded, return null
-        } finally {
-            // the stack frame may have been invalidated by invoking the forName method
-            frame = frameThread.frame(frameIndex);
-        }
+//        if (forName == null) {
+//            try {
+//                ClassObjectReference executingClass = frame.location().declaringType().classObject();
+//                ClassType currentClass = (ClassType) executingClass.referenceType();
+//                forName = currentClass.concreteMethodByName("forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;");
+//            } catch (Exception e) {
+//                // The should not happen
+//            }
+//        }
+//
+//        try {
+//            ClassLoaderReference executingClassloader = frame.location().declaringType().classLoader();
+//            ClassObjectReference executingClass = frame.location().declaringType().classObject();
+//            List args = new ArrayList();
+//            args.add(vm.mirrorOf(typeName));
+//            args.add(vm.mirrorOf(true));
+//            args.add(executingClassloader);
+//            if (verbose) {
+//                throw new UnsupportedOperationException (NbBundle.getMessage (
+//                    Evaluator.class, 
+//                    "CTL_UnsupportedOperationException"
+//                )); 
+//            }
+//            ClassObjectReference cor = (ClassObjectReference) executingClass.
+//                invokeMethod (frameThread, forName, args, 0);
+//            return cor.reflectedType();
+//        } catch (Exception e) {
+//            // The class cannot be loaded, return null
+//        } finally {
+//            // the stack frame may have been invalidated by invoking the forName method
+//            frame = frameThread.frame(frameIndex);
+//        }
         return null;
     }
 
