@@ -112,5 +112,28 @@ public class NbClipboardNativeTest extends NbTestCase {
             }
         }
     }
-    
+
+
+    // #25537
+    public void testOwnershipLostEvent() throws Exception {
+        final int[] holder = new int[] { 0 };
+        ExTransferable transferable = ExTransferable.create (new StringSelection("A"));
+
+        // listen on ownershipLost
+        transferable.addTransferListener (new TransferListener () {
+            public void accepted (int action) {}
+            public void rejected () {}
+            public void ownershipLost () { holder[0]++; }
+        });
+
+        Clipboard c = (Clipboard)Lookup.getDefault().lookup(Clipboard.class);
+
+        c.setContents(transferable, null);
+
+        assertTrue("Still has ownership", holder[0] == 0);
+
+        c.setContents(new StringSelection("B"), null);
+
+        assertTrue("Exactly one ownershipLost event have happened.", holder[0] == 1);
+    }
 }
