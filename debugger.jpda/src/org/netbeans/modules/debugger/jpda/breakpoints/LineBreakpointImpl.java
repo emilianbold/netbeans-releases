@@ -76,6 +76,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     }
     
     protected void setRequests () {
+        lineNumber = breakpoint.getLineNumber ();
         String className = EditorContextBridge.getClassName (
             breakpoint.getURL (),
             lineNumber
