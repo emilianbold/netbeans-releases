@@ -833,6 +833,10 @@
       java.sql.Types.VARBINARY = VARBINARY;
       java.sql.Types.VARCHAR = VARCHAR;
     };
+    SizelessTypes = (BINARY,BIT,IMAGE,DATETIME,"DOUBLE PRECISION",INT,REAL,SMALLINT,TIMESTAMP,TINYINT,VARBINARY,VARCHAR);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
+    CharacterTypes = (CHAR);
+    
   };
 
 //  ********************************************************************************
@@ -881,24 +885,27 @@
     TriggerEventListDelimiter = ", ";
 
     TypeMap = {
+      java.sql.Types.BIGINT = BIGINT;  
       java.sql.Types.BINARY = BINARY;  
       java.sql.Types.BIT = BOOLEAN;
       java.sql.Types.CHAR = CHAR;    
       java.sql.Types.DATE = DATE;
       java.sql.Types.DECIMAL = DECIMAL;  
       java.sql.Types.DOUBLE = DOUBLE;
-      java.sql.Types.REAL = REAL;    
+      java.sql.Types.INTEGER = INTEGER;
       java.sql.Types.LONGVARBINARY = LONGVARBINARY;
       java.sql.Types.LONGVARCHAR = LONGVARCHAR;
-      java.sql.Types.BIGINT = BIGINT;  
       java.sql.Types.NUMERIC = NUMERIC;      
+      java.sql.Types.REAL = REAL;    
       java.sql.Types.SMALLINT = SMALLINT;  
       java.sql.Types.TIME = TIME;    
       java.sql.Types.TIMESTAMP = TIMESTAMP;  
       java.sql.Types.TINYINT = TINYINT;    
       java.sql.Types.VARCHAR = VARCHAR;  
-      java.sql.Types.INTEGER = INTEGER;
     };
+    SizelessTypes = (BIGINT,BINARY,BOOLEAN,DATE,DOUBLE,INTEGER,LONGVARBINARY,LONGVARCHAR,REAL,SMALLINT,TIME,TIMESTAMP,TINYINT,VARCHAR);
+    DecimalTypes = (DECIMAL,NUMERIC);
+    CharacterTypes = (CHAR);
 
     CreateTableCommand = {
       Class = com.netbeans.ddl.impl.CreateTable;
