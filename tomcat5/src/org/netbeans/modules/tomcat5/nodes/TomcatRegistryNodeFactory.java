@@ -31,16 +31,6 @@ public class TomcatRegistryNodeFactory implements RegistryNodeFactory {
     }
     
     /**
-      *  Return node representing the plugin.  Children of this node are filtered.
-      *  @param lookup contains DeploymentFactory, DeploymentManager(s)
-      *  @return a Node
-      */
-    public Node getFactoryNode(Lookup lookup) {
-        TomcatFactoryNode factoryNode = new TomcatFactoryNode(new Children.Map(), lookup);
-        return factoryNode;
-    }
-    
-    /**
       * Return node representing the admin server.  Children of this node are filtered.
       * @param lookup will contain DeploymentFactory, DeploymentManager, Management objects. 
       * @return admin server node.

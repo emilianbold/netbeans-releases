@@ -15,14 +15,14 @@ package org.netbeans.modules.tomcat5.ide;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.tomcat5.jsps.FindJSPServletImpl;
-import org.netbeans.modules.tomcat5.ide.*;
+
+import org.openide.WizardDescriptor;
 
 /**
  *
  * @author  Pavel Buzek
  */
 public final class OptionalFactory extends OptionalDeploymentManagerFactory {
-    
     /** Creates a new instance of OptionalFactory */
     public OptionalFactory () {
     }
@@ -41,5 +41,9 @@ public final class OptionalFactory extends OptionalDeploymentManagerFactory {
     
     public TargetModuleIDResolver getTargetModuleIDResolver(javax.enterprise.deploy.spi.DeploymentManager dm) {
         return new TMIDResolver (dm);
+    }
+
+    public WizardDescriptor.InstantiatingIterator getAddInstanceIterator() {
+        return new TomcatAddInstanceIterator();
     }
 }
