@@ -104,7 +104,7 @@ public class SystemFileSystemTest extends NbTestCase {
         assertEquals("correct icon", h1, h2);
     }
     
-    /** @see #18832 */
+    /** @see "#18832" */
     public void testIconFromImageMethod() throws Exception {
         FileObject baz = Repository.getDefault().getDefaultFileSystem().findResource("foo/baz.txt");
         Node n = DataObject.find(baz).getNodeDelegate();

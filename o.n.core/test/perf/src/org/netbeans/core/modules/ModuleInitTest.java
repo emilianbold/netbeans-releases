@@ -83,7 +83,7 @@ import org.openide.xml.XMLUtil;
  * reading their manifests; computing dependencies; loading XML layers;
  * turning everything on.
  * @author Jesse Glick
- * @see #26786
+ * @see "#26786"
  */
 public class ModuleInitTest extends Benchmark {
     

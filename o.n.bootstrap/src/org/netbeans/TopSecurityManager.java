@@ -100,7 +100,7 @@ public class TopSecurityManager extends SecurityManager {
     /** Can be called from core classes to exit the system.
      * Direct calls to System.exit will not be honored, for safety.
      * @param status the status code to exit with
-     * @see #20751
+     * @see "#20751"
      */
     public static void exit(int status) {
         officialExit = true;

@@ -79,7 +79,7 @@ public class TargetExecutor implements Runnable {
      * The exact workspace (if any) is that given in the IDE's general settings.
      * By default, false.
      * @since 2.7
-     * @see #17039
+     * @see "#17039"
      */
     public void setSwitchWorkspace(boolean sw) {
         switchWorkspace = sw;

@@ -158,7 +158,7 @@ public class JarClassLoader extends ProxyClassLoader {
     }
 
     /** Try to release any JAR locks held by this classloader.
-     * @see #21114
+     * @see "#21114"
      */
     public final void releaseLocks() {
         if (deadJars != null) throw new IllegalStateException("Already had dead JARs: " + deadJars); // NOI18N

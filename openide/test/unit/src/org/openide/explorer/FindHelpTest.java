@@ -28,7 +28,7 @@ import org.openide.util.actions.ActionsInfraHid;
 
 /** Test finding help IDs on explorers.
  * @author Jesse Glick
- * @see #14701
+ * @see "#14701"
  */
 public class FindHelpTest extends NbTestCase {
     

@@ -169,7 +169,7 @@ public final class NbErrorManager extends ErrorManager {
      * Thus by default INFORMATIONAL stack traces are displayed, but not
      * messages. By playing with min log severity levels, you can get
      * both, or neither.
-     * @see #24056
+     * @see "#24056"
      */
     public boolean isNotifiable(int severity) {
         return isLoggable(severity + 1);

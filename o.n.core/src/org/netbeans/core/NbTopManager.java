@@ -778,7 +778,7 @@ public abstract class NbTopManager /*extends TopManager*/ {
         }
 
         /** Called when Lookup<ModuleInfo> is ready from the ModuleManager.
-         * @see #28465
+         * @see "#28465"
          */
         public static final void moduleLookupReady(Lookup moduleLookup) {
             Lkp l = (Lkp)Lookup.getDefault();

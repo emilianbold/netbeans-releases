@@ -43,7 +43,7 @@ import org.netbeans.junit.*;
  * Run test with attached patch in issue 11928.
  *
  * @author Jiri Rechtacek
- * @see #11928
+ * @see "#11928"
  */
 public class SelectionModeTest extends NbTestCase {
     
