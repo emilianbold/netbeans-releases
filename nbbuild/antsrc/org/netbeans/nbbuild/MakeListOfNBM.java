@@ -108,8 +108,8 @@ public class MakeListOfNBM extends Task {
                     } catch (IOException ex) {
                         log ( ex.toString() );
                     }
-		    track.write();		    
                 }
+		track.write();		    
             }
         }
     }
