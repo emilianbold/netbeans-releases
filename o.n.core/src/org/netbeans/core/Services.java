@@ -136,8 +136,6 @@ final class Services extends ServiceType.Registry implements Comparator {
     throws InstantiationException {
         synchronized (INSTANCE) {
             sections.remove (s);
-            recomputeKinds ();
-            supp.firePropertyChange (PROP_KINDS, null, null);
             
             // removes the default service, if present
             ServiceType st = s.getServiceType();
@@ -151,6 +149,9 @@ final class Services extends ServiceType.Registry implements Comparator {
                     one = true;
                 }
             }
+            
+            recomputeKinds ();
+            supp.firePropertyChange (PROP_KINDS, null, null);
             
             if (one) {
                 servicesChangedNotify();
@@ -191,7 +192,8 @@ final class Services extends ServiceType.Registry implements Comparator {
                   mainExc = ex;
             }
         }
-        kinds = newKinds;
+        kinds.clear();
+        kinds.addAll(newKinds);
         if (mainExc != null) {
             // notify to error manager
             TopManager.getDefault ().getErrorManager ().notify (
@@ -534,6 +536,10 @@ final class Services extends ServiceType.Registry implements Comparator {
 
 /*
 * $Log$
+* Revision 1.43  2001/04/11 12:53:09  dstrupl
+* #9945 - Newly formed ServiceType subclasses not shown in Project Settings
+* Method recomputeKinds fixed.
+*
 * Revision 1.42  2001/03/26 15:40:24  jtulach
 * Fix of 9629. When a service is uninstalled all instances with the same class are removed too.
 *
