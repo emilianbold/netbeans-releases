@@ -11,15 +11,7 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<!--
-XXX should not have changed /1 to /2 for URI of *all* macrodefs; only the ones
-that actually changed semantically as a result of supporting multiple compilation
-units. E.g. <j2seproject1:property/> did not change at all, whereas
-<j2seproject1:javac/> did. Need to only update URIs where necessary; otherwise we
-cause gratuitous incompatibilities for people overriding macrodef targets. Also
-we will need to have an upgrade guide that enumerates all build script incompatibilities
-introduced by support for multiple source roots. -jglick
--->
+
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:p="http://www.netbeans.org/ns/project/1"
@@ -340,7 +332,7 @@ is divided into following sections:
             <target name="-init-macrodef-debug">
                 <macrodef>
                     <xsl:attribute name="name">debug</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/2</xsl:attribute>
                     <attribute>
                         <xsl:attribute name="name">classname</xsl:attribute>
                         <xsl:attribute name="default">${main.class}</xsl:attribute>
@@ -349,10 +341,10 @@ is divided into following sections:
                         <xsl:attribute name="name">classpath</xsl:attribute>
                         <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
                     </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">args</xsl:attribute>
-                        <xsl:attribute name="default">${application.args}</xsl:attribute>
-                    </attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
                     <sequential>
                         <java fork="true" classname="@{{classname}}">
                             <xsl:attribute name="dir">${work.dir}</xsl:attribute>
@@ -371,7 +363,7 @@ is divided into following sections:
                                 <propertyref prefix="run-sys-prop."/>
                                 <mapper type="glob" from="run-sys-prop.*" to="*"/>
                             </syspropertyset>
-                            <arg line="@{{args}}"/>
+                            <customize/>
                         </java>
                     </sequential>
                 </macrodef>
@@ -576,7 +568,11 @@ is divided into following sections:
 
             <target name="-debug-start-debuggee">
                 <xsl:attribute name="depends">init,compile</xsl:attribute>
-                <j2seproject1:debug/>
+                <j2seproject2:debug>
+                    <customize>
+                        <arg line="${{application.args}}"/>
+                    </customize>
+                </j2seproject2:debug>
             </target>
 
             <target name="debug">
@@ -600,7 +596,7 @@ is divided into following sections:
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-single</xsl:attribute>
                 <fail unless="debug.class">Must select one file in the IDE or set debug.class</fail>
-                <j2seproject1:debug classname="${{debug.class}}"/>
+                <j2seproject2:debug classname="${{debug.class}}"/>
             </target>
 
             <target name="debug-single">
@@ -917,7 +913,11 @@ is divided into following sections:
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test</xsl:attribute>
                 <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
-                <j2seproject1:debug classname="junit.textui.TestRunner" classpath="${{debug.test.classpath}}" args="${{test.class}}"/>
+                <j2seproject2:debug classname="junit.textui.TestRunner" classpath="${{debug.test.classpath}}">
+                    <customize>
+                        <arg line="${{test.class}}"/>
+                    </customize>
+                </j2seproject2:debug>
             </target>
 
             <target name="-debug-start-debugger-test">
@@ -968,7 +968,11 @@ is divided into following sections:
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-single</xsl:attribute>
                 <fail unless="applet.url">Must select one file in the IDE or set applet.url</fail>
-                <j2seproject1:debug classname="sun.applet.AppletViewer" args='"${{applet.url}}"'/>
+                <j2seproject2:debug classname="sun.applet.AppletViewer">
+                    <customize>
+                        <arg value="${{applet.url}}"/>
+                    </customize>
+                </j2seproject2:debug>
             </target>
 
             <target name="debug-applet">
