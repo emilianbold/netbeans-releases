@@ -12,6 +12,6 @@ OpenIDE-Module-Class: Action
 Name: org/netbeans/modules/javadoc/comments/CorrectJavaDocAction.class
 OpenIDE-Module-Class: Action
 
-Name: org/netbeans/modules/javadoc/search/ShowDocAction.class
+Name: org/netbeans/modules/javadoc/search/SearchDocAction.class
 OpenIDE-Module-Class: Action
 
