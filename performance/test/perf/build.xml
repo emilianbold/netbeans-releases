@@ -54,6 +54,15 @@ Microsystems, Inc. All Rights Reserved.
 		excludesfile="../../../nbbuild/standard-jar-excludes.txt"
 		jarfile="lib/tests.jar"/>
     </target>
+
+    <target name="clean">
+	<delete>
+	    <fileset dir="src">
+		<include name="**/*.class"/>
+	    </fileset>
+	</delete>
+	<delete dir="lib"/>
+    </target>
     
     <target depends="jars,prop_runner_init,prop_test_init,prop_output_init" name="init">
 	<mkdir dir="report"/>
