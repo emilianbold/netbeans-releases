@@ -38,7 +38,7 @@ public final class LineBreakpoint extends JPDABreakpoint {
     public static final String          PROP_CONDITION = "condition"; // NOI18N
     
     
-    private String                      className = "";
+    private String                      url = "";
     private int                         lineNumber;
     private String                      condition = ""; // NOI18N
 
@@ -48,16 +48,16 @@ public final class LineBreakpoint extends JPDABreakpoint {
     /**
      * Creates a new breakpoint for given parameters.
      *
-     * @param className a class name filter
+     * @param url a url
      * @param lineNumber a line number
      * @return a new breakpoint for given parameters
      */
     public static LineBreakpoint create (
-        String className,
+        String url,
         int lineNumber
     ) {
         LineBreakpoint b = new LineBreakpoint ();
-        b.setClassName (className);
+        b.setURL (url);
         b.setLineNumber (lineNumber);
         return b;
     }
@@ -67,14 +67,13 @@ public final class LineBreakpoint extends JPDABreakpoint {
      *
      * @param cn a new name of class to stop on
      */
-    public void setClassName (String cn) {
-        if (cn != null) cn = cn.trim ();
-        if ( (cn == className) ||
-             ((cn != null) && (className != null) && className.equals (cn))
+    public void setURL (String url) {
+        if ( (url == this.url) ||
+             ((url != null) && (this.url != null) && url.equals (this.url))
         ) return;
-        Object old = className;
-        className = cn;
-        firePropertyChange (PROP_CLASS_NAME, old, className);
+        String old = url;
+        this.url = url;
+        firePropertyChange (PROP_CLASS_NAME, old, url);
     }
 
     /**
@@ -82,8 +81,8 @@ public final class LineBreakpoint extends JPDABreakpoint {
      *
      * @return name of class to stop on
      */
-    public String getClassName () {
-        return className;
+    public String getURL () {
+        return url;
     }
     
     /**
@@ -91,7 +90,7 @@ public final class LineBreakpoint extends JPDABreakpoint {
      *
      * @return line number to stop on
      */
-    public int getLineNumber() {
+    public int getLineNumber () {
         return lineNumber;
     }
     
@@ -133,5 +132,14 @@ public final class LineBreakpoint extends JPDABreakpoint {
      */
     public String getCondition () {
         return condition;
+    }
+
+    /**
+     * Returns a string representation of this object.
+     *
+     * @return  a string representation of the object
+     */
+    public String toString () {
+        return "LineBreakpoint " + url + " : " + lineNumber;
     }
 }

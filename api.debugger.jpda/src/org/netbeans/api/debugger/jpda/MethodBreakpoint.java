@@ -220,4 +220,13 @@ public final class MethodBreakpoint extends JPDABreakpoint {
         className = cn;
         firePropertyChange (PROP_CLASS_NAME, old, className);
     }
+
+    /**
+     * Returns a string representation of this object.
+     *
+     * @return  a string representation of the object
+     */
+    public String toString () {
+        return "MethodBreakpoint " + className + "." + methodName;
+    }
 }

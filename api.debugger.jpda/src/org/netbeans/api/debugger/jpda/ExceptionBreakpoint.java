@@ -145,4 +145,13 @@ public final class ExceptionBreakpoint extends JPDABreakpoint {
             new Integer (catchType)
         );
     }
+
+    /**
+     * Returns a string representation of this object.
+     *
+     * @return  a string representation of the object
+     */
+    public String toString () {
+        return "ExceptionBreakpoint" + exceptionClassName;
+    }
 }

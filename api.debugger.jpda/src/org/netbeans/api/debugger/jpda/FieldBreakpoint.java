@@ -173,4 +173,13 @@ public final class FieldBreakpoint extends JPDABreakpoint {
         condition = cond;
         firePropertyChange (PROP_CONDITION, old, cond);
     }
+
+    /**
+     * Returns a string representation of this object.
+     *
+     * @return  a string representation of the object
+     */
+    public String toString () {
+        return "FieldBreakpoint " + className + "." + fieldName;
+    }
 }

@@ -172,7 +172,7 @@ PropertyChangeListener {
             try {
                 String sourceName = t.getSourceName (language);
                 CallStackFrame f = t.getCallStack () [0];
-                String sourceName1 = Context.getResourceName
+                String sourceName1 = Context.getRelativePath
                     (f, language);
                 IOManager.Line line = null;
                 if (lineNumber > 0)

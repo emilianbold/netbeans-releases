@@ -43,13 +43,16 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 public class BreakpointsEngineListener extends LazyDebuggerEngineListener 
 implements PropertyChangeListener, DebuggerManagerListener {
 
-    private JPDADebuggerImpl  debugger;
+    private JPDADebuggerImpl        debugger;
+    private DebuggerEngine          engine;
     private boolean                 started = false;
+    
     
     public BreakpointsEngineListener (DebuggerEngine engine) {
         super (engine);
         this.debugger = (JPDADebuggerImpl) engine.lookupFirst 
             (JPDADebugger.class);
+        this.engine = engine;
         debugger.addPropertyChangeListener (
             JPDADebugger.PROP_STATE,
             this
@@ -132,7 +135,8 @@ implements PropertyChangeListener, DebuggerManagerListener {
                 b,
                 new JPDALineBreakpointImpl (
                     (LineBreakpoint) b,
-                    debugger
+                    debugger,
+                    engine
                 )
             );
         } else

@@ -76,4 +76,13 @@ public final class ThreadBreakpoint extends JPDABreakpoint {
         this.breakpointType = breakpointType;
         firePropertyChange (PROP_BREAKPOINT_TYPE, new Integer (old), new Integer (breakpointType));
     }
+
+    /**
+     * Returns a string representation of this object.
+     *
+     * @return  a string representation of the object
+     */
+    public String toString () {
+        return "ThreadBreakpoint " + breakpointType;
+    }
 }

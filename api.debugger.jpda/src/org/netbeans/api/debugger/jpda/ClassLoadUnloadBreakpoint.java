@@ -149,5 +149,15 @@ public final class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
         ) return;
         String old = this.classFilter;
         this.classFilter = classFilter;
-        firePropertyChange (PROP_CLASS_NAME_FILTER, old, classFilter);    }
+        firePropertyChange (PROP_CLASS_NAME_FILTER, old, classFilter);    
+    }
+
+    /**
+     * Returns a string representation of this object.
+     *
+     * @return  a string representation of the object
+     */
+    public String toString () {
+        return "ClassLoadUnloadBreakpoint " + classFilter;
+    }
 }

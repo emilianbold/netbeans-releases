@@ -485,17 +485,9 @@ public class IOManager {
         }
         
         void show () {
-/*
-            Context.showSource (
-                resourceName,
-                lineNumber
-            );
-            EngineContext ectx = (EngineContext) session.lookup(EngineContext.class).get(0);
-            ectx.showSource(resourceName, lineNumber);
-*/
-            EngineContext ectx = (EngineContext) session.lookup(EngineContext.class).get(0);
-            Context.showSource(ectx.getContextPath(resourceName), lineNumber);
-
+            EngineContext ectx = (EngineContext) session.lookupFirst 
+                (EngineContext.class);
+            Context.showSource (ectx.getURL (resourceName), lineNumber);
         }
     }
 }

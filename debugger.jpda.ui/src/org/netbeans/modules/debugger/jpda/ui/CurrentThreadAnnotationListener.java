@@ -129,9 +129,11 @@ implements PropertyChangeListener {
                 // show current line
                 if (currentPC != null)
                     Context.removeAnnotation (currentPC);
-                Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
+                Session currentSession = DebuggerManager.getDebuggerManager ().
+                    getCurrentSession();
                 if (currentSession != null) {
-                    EngineContext ectx = (EngineContext) currentSession.lookupFirst(EngineContext.class);
+                    EngineContext ectx = (EngineContext) currentSession.
+                        lookupFirst (EngineContext.class);
                     ectx.showSource (ct, language);
 
                     // annotate current line
@@ -186,7 +188,7 @@ implements PropertyChangeListener {
                 for (i = 1; i < k; i++) {
 
                     // 1) check Line
-                    String resourceName = Context.getResourceName
+                    String resourceName = Context.getRelativePath
                         (stack [i], language);
                     int lineNumber = stack [i].getLineNumber (language);
 //                    if ( !Context.getContext (currentEngine).canShowLine
@@ -202,7 +204,9 @@ implements PropertyChangeListener {
                     Object da = stackAnnotations.remove (line);
                     if (da == null) {
                         // line has not been annotated -> create annotation
-                        EngineContext ectx = (EngineContext) DebuggerManager.getDebuggerManager().getCurrentSession().lookup(EngineContext.class).get(0);
+                        EngineContext ectx = (EngineContext) DebuggerManager.
+                            getDebuggerManager ().getCurrentSession ().
+                            lookupFirst (EngineContext.class);
                         da = ectx.annotate (stack [i], language);
 //                        da = Context.annotate (stack [i], language);
                     }

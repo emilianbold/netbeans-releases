@@ -44,13 +44,17 @@ public class SmartSteppingImpl extends SmartSteppingListener {
      * @param f a filter
      * @return true if execution should be stopped on the current position
      */
-    public boolean stopHere (DebuggerEngine engine, JPDAThread thread, SmartSteppingFilter f) {
+    public boolean stopHere (
+        DebuggerEngine engine, 
+        JPDAThread thread, 
+        SmartSteppingFilter f
+    ) {
         String className = thread.getClassName ();
         if (className == null) return false;
 
-        EngineContext ectx = (EngineContext) engine.lookup(EngineContext.class).get(0);
+        EngineContext ectx = (EngineContext) engine.lookupFirst 
+            (EngineContext.class);
         boolean b = ectx.sourceAvailable (thread, null);
-//        boolean b = Context.sourceAvailable (thread, null);
         if (b) return true;
         
         // find pattern
@@ -61,7 +65,6 @@ public class SmartSteppingImpl extends SmartSteppingListener {
             if (i < 0) break;
             n1 = name.substring (0, i);
         } while (!ectx.sourceAvailable (n1));
-//        } while (!Context.sourceAvailable (n1));
         HashSet s = new HashSet ();
         s.add (name.replace ('/', '.') + ".*");
         f.addExclusionPatterns (s);
