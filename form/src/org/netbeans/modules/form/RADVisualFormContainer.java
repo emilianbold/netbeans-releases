@@ -107,7 +107,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     public void setDesignerSize(Dimension value) {
-        Object old = getAuxValue(FormDesigner.PROP_DESIGNER_SIZE);
+        Object old = getDesignerSize();//getAuxValue(FormDesigner.PROP_DESIGNER_SIZE);
         setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, value);
         getFormModel().fireSyntheticPropertyChanged(
             this, FormDesigner.PROP_DESIGNER_SIZE, old, value);
