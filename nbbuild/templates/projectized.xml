@@ -264,7 +264,7 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}"
                debug="true" deprecation="${build.compiler.deprecation}"
                source="1.4" optimize="${build.compiler.optimize}" includeantruntime="false">
-               <exclude name="**/jars/**" />
+               <exclude name="**/jars/**"/><!-- XXX for core only; fix in core, not here -->
             <classpath refid="test.unit.cp"/>
         </javac>
         <copy todir="${build.test.unit.classes.dir}">
