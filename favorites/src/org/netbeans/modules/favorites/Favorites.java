@@ -209,6 +209,11 @@ final class Favorites extends FilterNode {
             }
         }
         
+        // Must be overridden since getDisplayName is.
+        public String getHtmlDisplayName() {
+            return getOriginal().getHtmlDisplayName();
+        }
+        
         public boolean canDestroy () {
             boolean canDestroy = super.canDestroy ();
             DataShadow link = (DataShadow) getCookie (DataShadow.class);
