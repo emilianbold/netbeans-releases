@@ -47,7 +47,6 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new ChangingOfBeanPropertyProperties("testChangePropertyNameAndType"));
         suite.addTest(new ChangingOfBeanPropertyProperties("testChangeMode"));
-        suite.addTest(new ChangingOfBeanPropertyProperties("testChangeOptionsForListener"));
         suite.addTest(new ChangingOfBeanPropertyProperties("testDeleteAnyPropertiesAndEvents"));
         suite.addTest(new ChangingOfBeanPropertyProperties("testChangeSourceCode"));
         suite.addTest(new ChangingOfBeanPropertyProperties("testChangeOfStyleOfDeclaredVariable"));
@@ -445,9 +444,6 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         assertEquals("Type","String",new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_type")).getValue());
     }
     
-    public void testChangeOptionsForListener() {
-        System.out.println("This testcase cannot be performed due a problem with properties window after change of listener");
-    }
     
     private void createContent() {
         // Start - NonIndexProperty

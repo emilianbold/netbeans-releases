@@ -374,7 +374,8 @@ public class BeanInfoGeneration extends JellyTestCase {
         new EventTool().waitNoEvent(DELAY);
         dialogTitle = Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_TITLE_GenerateBeanInfo");
         nbDialogOperator = new NbDialogOperator(dialogTitle);
-        
+        jTreeOperator = new JTreeOperator(nbDialogOperator);
+
         new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_Descriptor")).select();
         propertySheetOperator = new PropertySheetOperator(nbDialogOperator);
         propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator(Bundle.getString("org.openide.nodes.Bundle", "Properties"));
