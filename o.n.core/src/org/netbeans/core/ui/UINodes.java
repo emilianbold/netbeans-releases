@@ -210,7 +210,8 @@ public final class UINodes extends Object {
         public SystemAction[] getActions () {
             if (staticActions == null) {
                 staticActions = new SystemAction[] {
-                                    SystemAction.get(NewAction.class),
+                                    // #17707: NewAction is now useless (no NewType's)
+                                    SystemAction.get(NewTemplateAction.class),
                                     null,
                                     SystemAction.get(ToolsAction.class),
                                     SystemAction.get(PropertiesAction.class)
