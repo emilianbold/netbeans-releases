@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Editor Test Application's Tests
     -->
     
-    <testbag testattribs="all,full" name="apps-all">
+    <testbag testattribs="all,experimental,apps" name="apps-all">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/app/tests/*Performer.class"/>
