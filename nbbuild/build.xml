@@ -3690,7 +3690,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </condition>
     
     
-    <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="diff" failonerror="no" timeout="60000" >
+    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP Linux SunOS Solaris Mac OS X" dir="." executable="diff" failonerror="no" timeout="60000" >
       <arg value="-u" />
       <arg value="${check.files.layout.template}" />
       <arg value="${check.files.layout.generated}" />
@@ -3699,7 +3699,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <fail unless="check-files-are-they-the-same" >!
     *** Layout of files has changed! ***
     
-    Differences were found while comparing file build/files-layout.txt with 
+    Differences were found while comparing file ${check.files.layout.generated} with 
     ${check.files.layout.template}
     This means that the layout of files changed since the previously known one.
     Some files may have been added, some of them may have been removed or renamed. 
