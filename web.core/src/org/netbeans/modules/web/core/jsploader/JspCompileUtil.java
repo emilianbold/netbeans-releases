@@ -225,6 +225,7 @@ public class JspCompileUtil {
         return myRoot;
     }
 
+    
     /** Does the following:
     * <ul>
     * <li>creates a hidden LocalFileSystem (with compile, execute and debug capabilities)
@@ -246,13 +247,17 @@ public class JspCompileUtil {
         if (!intendedRoot.exists()) {
             boolean success = WebExecUtil.myMkdirs(intendedRoot);
         }
-
-        FileSystemCapability.Bean cap = new FileSystemCapability.Bean();
+        
+        DebugSourceCapabilityBean cap = new DebugSourceCapabilityBean();
+        
         cap.setCompile(true);
         cap.setExecute(true);
         cap.setDebug(true);
         cap.setDoc(false);
+        cap.setDebugsource(true);
+        
         LocalFileSystem newFs = new LocalFileSystem(cap);
+        
         try {
             newFs.setRootDirectory(intendedRoot);
         }
