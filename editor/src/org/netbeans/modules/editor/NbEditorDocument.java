@@ -42,6 +42,7 @@ implements NbDocument.PositionBiasable, NbDocument.WriteLockable {
 
   public void setCharacterAttributes(int offset, int length, AttributeSet s,
   boolean replace) {
+//    System.out.println("NbEditorDocument.java:48 setCharacterAttributes(): offset=" + offset + ", length=" + length + ", attrSet=" + s);
     if (s != null) {
       Object val = s.getAttribute(NbDocument.GUARDED);
       if (val != null && val instanceof Boolean) {
@@ -61,6 +62,7 @@ implements NbDocument.PositionBiasable, NbDocument.WriteLockable {
 
 /*
  * Log
+ *  2    Gandalf   1.1         3/23/99  Miloslav Metelka 
  *  1    Gandalf   1.0         3/18/99  Miloslav Metelka 
  * $
  */
