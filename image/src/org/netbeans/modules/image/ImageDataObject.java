@@ -40,11 +40,7 @@ public class ImageDataObject extends MultiDataObject {
   */
   public ImageDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
     super(pf, loader);
-    getCookieSet ().add (new OpenSupport (getPrimaryEntry ()) {
-      public CloneableTopComponent createCloneableTopComponent () {
-        return new ImageViewer(ImageDataObject.this);
-      }
-    });
+    getCookieSet ().add (new Open (getPrimaryEntry ()));
   }
 
   /** Help context for this object.
@@ -82,11 +78,25 @@ public class ImageDataObject extends MultiDataObject {
     return node;
   }
 
+  /** Implementation of open cookie.
+  */
+  private class Open extends OpenSupport implements OpenCookie {
+    public Open (MultiDataObject.Entry ent) {
+      super (ent);
+    }
+
+    /** Creates the viewer */
+    public CloneableTopComponent createCloneableTopComponent () {
+      return new ImageViewer(ImageDataObject.this);
+    }
+  }
+
 }
 
 
 /*
  * Log
+ *  7    Gandalf   1.6         2/3/99   Jaroslav Tulach 
  *  6    Gandalf   1.5         1/22/99  Ian Formanek    
  *  5    Gandalf   1.4         1/15/99  Petr Hamernik   image source repaired
  *  4    Gandalf   1.3         1/7/99   Jaroslav Tulach Uses OpenSupport

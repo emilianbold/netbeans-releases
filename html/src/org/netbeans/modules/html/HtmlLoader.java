@@ -23,8 +23,8 @@ import com.netbeans.ide.loaders.UniFileLoader;
 import com.netbeans.ide.loaders.MultiDataObject;
 import com.netbeans.ide.loaders.DataObject;
 import com.netbeans.ide.loaders.DataObjectExistsException;
-import com.netbeans.ide.loaders.EditorSupport;
-import com.netbeans.ide.loaders.ViewSupport;
+import com.netbeans.ide.text.EditorSupport;
+import com.netbeans.ide.loaders.OpenSupport;
 import com.netbeans.ide.filesystems.FileObject;
 import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.util.actions.SystemAction;
@@ -88,7 +88,7 @@ public class HtmlLoader extends UniFileLoader {
   
   // innerclasses ......................................................................
   
-  public static class ICEView extends ViewSupport {
+  public static class ICEView extends OpenSupport implements ViewCookie {
     DataObject obj;
   
     ICEView (DataObject obj) {
@@ -154,14 +154,14 @@ public class HtmlLoader extends UniFileLoader {
     protected void componentDeactivated () {
     }
   }
-  
-  public static class View implements ViewCookie {
+     /*
+  public static class View implements OpenCookie {
     EditorSupport es;
   
     /**
     * Creates cookie for the file specified.
     * @param fo file object of a class or ser file
-    */
+    *
     public View (MultiDataObject.Entry entry) {
       es = new EditorSupport (entry);
       es.setEditable (false);
@@ -171,15 +171,17 @@ public class HtmlLoader extends UniFileLoader {
     * immediatelly return and the viewer be openned later.
     * There can be more viewers opened, so one of them is
     * randomly choosen and opened.
-    */
+    *
     public void view () {
       es.open ();
     }
-  }  
+    }
+    */
 }
 
 /*
 * Log
+*  4    Gandalf   1.3         2/3/99   Jaroslav Tulach 
 *  3    Gandalf   1.2         1/11/99  Jan Jancura     
 *  2    Gandalf   1.1         1/11/99  Jan Jancura     
 *  1    Gandalf   1.0         1/8/99   Jan Jancura     
