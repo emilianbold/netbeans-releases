@@ -63,7 +63,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   private static ResourceBundle bundle = NbBundle.getBundle(HttpServerSettings.class);
 
   /** port */
-  private static int port = 8082; //8080
+//  private static int port = 8082; //8080
+  private static final int DEFAULT_PORT = 8082;
 
   /** allowed connections hosts - local/any */
   private static String host = LOCALHOST;
@@ -143,8 +144,12 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
       setPort(getPort() + 1);
       setRunning(true);
     }
-    else 
+    else {
       currentRetries = 0;
+      TopManager.getDefault().notify(new NotifyDescriptor.Message(
+        NbBundle.getBundle(HttpServerSettings.class).getString("MSG_HTTP_SERVER_START_FAIL"), 
+        NotifyDescriptor.Message.WARNING_MESSAGE));
+    }  
   }
 
   /** Restarts the server if it is running - must be called in a synchronized block */
@@ -277,16 +282,18 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
                                               
   /** setter for port */
   public void setPort(int p) {
+    Object old = null;
     synchronized (HttpServerSettings.OPTIONS) {
-      port = p;
+      old = putProperty("port", new Integer(p), false);
       restartIfNecessary(true);
     }                
-    firePropertyChange("port", null, new Integer(port));
+    firePropertyChange("port", old, new Integer(p));
   }
 
   /** getter for port */
   public int getPort() {
-    return port;
+    Object prop = getProperty("port");
+    return ((prop == null) ? DEFAULT_PORT : ((Integer)prop).intValue());
   }
 
   /** setter for host */
@@ -479,6 +486,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  28   Gandalf   1.27        1/9/00   Petr Jiricka    Cleanup
  *  27   Gandalf   1.26        1/4/00   Petr Jiricka    Added to project options
  *  26   Gandalf   1.25        1/3/00   Petr Jiricka    Bugfix 5133
  *  25   Gandalf   1.24        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

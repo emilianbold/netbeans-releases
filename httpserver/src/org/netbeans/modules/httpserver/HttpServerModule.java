@@ -18,6 +18,7 @@ import java.io.*;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.InetAddress;
+import java.lang.reflect.InvocationTargetException;
 
 import org.openide.modules.ModuleInstall;
 import org.openide.execution.Executor;
@@ -108,16 +109,14 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
                   System.out.println(java.text.MessageFormat.format(NbBundle.getBundle(HttpServerModule.class).
                     getString("CTL_ServerStarted"), new Object[] {new Integer(HttpServerSettings.OPTIONS.getPort())}));
               } 
+              catch (ThreadDeath td) {
+                throw td;
+              }
               catch (Throwable ex) {
                 // couldn't start
-//ex.printStackTrace();
                 serverThread = null;
                 inSetRunning = false;
                 HttpServerSettings.OPTIONS.runFailure();
-                if (!HttpServerSettings.OPTIONS.running)
-                  TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getBundle(HttpServerModule.class).getString("MSG_HTTP_SERVER_START_FAIL"), 
-                    NotifyDescriptor.Message.WARNING_MESSAGE));
               }
               finally {
                 HttpServerSettings.OPTIONS.setStartStopMessages(true);
@@ -215,7 +214,7 @@ System.out.println("is " + MyHttpServer.class.getResourceAsStream("server.proper
     
     public void start() throws HttpServerException {
       File wd = NbClassPath.toFile(
-                                   TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot());
+        TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot());
       wd = new File(wd, "httpwork");
         
       try {
@@ -232,9 +231,25 @@ System.out.println("is " + MyHttpServer.class.getResourceAsStream("server.proper
         mm.setAccessible(true);
         mm.invoke(endpointmanager, new Object[] { this });
       }
-      catch (Exception e) {
-        TopManager.getDefault().notifyException(e);
-      }  
+      catch (NoSuchMethodException e) {
+        if (Boolean.getBoolean("netbeans.debug.exceptions")) 
+          e.printStackTrace();
+        throw new IllegalArgumentException();  
+      }
+      catch (NoSuchFieldException e) {
+        if (Boolean.getBoolean("netbeans.debug.exceptions")) 
+          e.printStackTrace();
+        throw new IllegalArgumentException();  
+      }
+      catch (IllegalAccessException e) {
+        if (Boolean.getBoolean("netbeans.debug.exceptions")) 
+          e.printStackTrace();
+        throw new IllegalArgumentException();  
+      }
+      catch (InvocationTargetException e) {
+        Throwable th = e.getTargetException();
+        throw ((HttpServerException)th);
+      }
     }
       
   }
@@ -292,6 +307,7 @@ System.out.println("security check OK 2");
 
 /*
  * Log
+ *  35   Gandalf   1.34        1/9/00   Petr Jiricka    Cleanup
  *  34   Gandalf   1.33        12/1/99  Ales Novak      bugfix - working 
  *       directory is not system - system is deleted no more
  *  33   Gandalf   1.32        11/27/99 Patrik Knakal   
