@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -27,6 +27,9 @@ semantic change: adding a new question or significantly changing the meaning of
 an old one. Changing this field ensures that arch pages answering the old version
 print a warning during Javadoc generation. If you only change hints or make small
 edits in the text of a question, you need not change the version number.
+
+Also rerun openide/www/tutorial/build.xml#question when you are done and commit
+openide/www/tutorial/questions.html.
 -->
 <api-questions version="1.23">
     <category id="arch" name="General Information">
