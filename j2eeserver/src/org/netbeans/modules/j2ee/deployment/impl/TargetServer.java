@@ -576,8 +576,21 @@ public class TargetServer {
                 handleDeployProgress(ui, po);
             }
         }
-
         return (TargetModule[]) deployedRootTMIDs.toArray(new TargetModule[deployedRootTMIDs.size()]);
+    }
+    
+    /**
+     * Inform the plugin about the deploy action, even if there was
+     * really nothing needed to be deployed.
+     *
+     * @param modules list of modules which are being deployed
+     */
+    public void notifyIncrementalDeployment(TargetModuleID[] modules) {
+        if (modules !=  null && incremental != null) {
+            for (int i = 0; i < modules.length; i++) {
+                incremental.notifyDeployment(modules[i]);
+            }
+        }
     }
     
     public static boolean anyChanged(AppChangeDescriptor acd) {

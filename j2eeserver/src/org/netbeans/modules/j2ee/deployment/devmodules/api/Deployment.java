@@ -96,6 +96,9 @@ public final class Deployment {
             
             progress.recordWork(2);
             modules = targetserver.deploy(progress, forceRedeploy);
+            // inform the plugin about the deploy action, even if there was
+            // really nothing needed to be deployed
+            targetserver.notifyIncrementalDeployment(modules);
             progress.recordWork(MAX_DEPLOY_PROGRESS-1);
             
         } catch (Exception ex) {            
