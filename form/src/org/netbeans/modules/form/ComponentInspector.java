@@ -25,8 +25,7 @@ import org.openide.explorer.*;
 import org.openide.explorer.propertysheet.*;
 import org.openide.awt.SplittedPanel;
 import org.openide.explorer.view.BeanTreeView;
-import org.openide.windows.Workspace;
-import org.openide.windows.Mode;
+import org.openide.windows.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.SharedClassObject; 
 
@@ -244,8 +243,12 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
         }
         updateTitle();
 
-        if (visibility > 0) open();
-        else if (visibility < 0) close();
+        if (visibility > 0)
+            open();
+        else if (visibility < 0) {
+            setCloseOperation(TopComponent.CLOSE_EACH);
+            close();
+        }
     }
 
     protected void updateTitle() {
