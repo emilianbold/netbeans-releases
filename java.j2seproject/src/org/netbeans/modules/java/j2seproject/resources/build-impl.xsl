@@ -963,7 +963,7 @@ is divided into following sections:
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-single</xsl:attribute>
                 <fail unless="applet.url">Must select one file in the IDE or set applet.url</fail>
-                <j2seproject:debug classname="sun.applet.AppletViewer" args="${{applet.url}}"/>
+                <j2seproject:debug classname="sun.applet.AppletViewer" args='"${{applet.url}}"'/>
             </target>
 
             <target name="debug-applet">
