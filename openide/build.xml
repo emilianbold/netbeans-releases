@@ -12,7 +12,9 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!-- ToDo: target to build API documentation...would be used by API Support -->
+<!-- Special properties: -->
+<!-- -Dproxy=proxy.netbeans.com:3128 to use an HTTP proxy for building APIs -->
+
 <project name="openide" default="netbeans" basedir=".">
   <target name="init">
     <available property="jdk13proxies" classname="java.lang.reflect.Proxy"/>
@@ -43,11 +45,30 @@ Microsystems, Inc. All Rights Reserved.
 	 compress="false"/>
   </target>
   <target name="netbeans" depends="jars"/>
+  <!-- XXX don't build unless out of date -->
+  <!-- XXX preferably would be a special task to do all this stuff... -->
+  <target name="open-apis" depends="open-apis-premessage,open-apis-noproxy,open-apis-proxy"/>
+  <target name="open-apis-noproxy" unless="proxy">
+    <exec dir="." command="perl api/doc/build --output OpenAPIs --noshowstatus --jdkurl public --zip zip --zipbare --zipandkill --nofastlinks" os="Linux" output="OpenAPIs.log" failonerror="yes"/>
+    <exec dir="." command="perl api/doc/build --output OpenAPIs --noshowstatus --jdkurl public --zip zip --zipbare --zipandkill --nofastlinks" os="SunOS" output="OpenAPIs.log" failonerror="yes"/>
+    <exec dir="." command="echo Sorry, no Windows support for building OpenAPIs documentation yet" os="Windows NT" output="con:"/>
+  </target>
+  <target name="open-apis-proxy" if="proxy">
+    <exec dir="." command="perl api/doc/build --output OpenAPIs --noshowstatus --jdkurl public --zip zip --zipbare --zipandkill --nofastlinks --proxy ${proxy}" os="Linux" output="OpenAPIs.log" failonerror="yes"/>
+    <exec dir="." command="perl api/doc/build --output OpenAPIs --noshowstatus --jdkurl public --zip zip --zipbare --zipandkill --nofastlinks --proxy ${proxy}" os="SunOS" output="OpenAPIs.log" failonerror="yes"/>
+    <exec dir="." command="echo Sorry, no Windows support for building OpenAPIs documentation yet" os="Windows NT" output="con:"/>
+  </target>
+  <target name="open-apis-premessage">
+    <echo message="Building Open APIs...warning, this may take a while."/>
+  </target>
   <target name="clean">
     <delete dir="src">
       <include name="**/*.class"/>
     </delete>
     <delete file="manifest-subst.mf"/>
     <deltree dir="netbeans"/>
+    <deltree dir="OpenAPIs"/>
+    <delete file="OpenAPIs.zip"/>
+    <delete file="OpenAPIs.log"/>
   </target>
 </project>
