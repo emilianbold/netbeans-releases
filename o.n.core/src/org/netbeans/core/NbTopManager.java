@@ -366,37 +366,6 @@ public abstract class NbTopManager extends TopManager {
         }
     }
 
-    /** Get the default exception manager for the IDE. It can be used to rafine
-    * handling of exception and the way they are presented to the user.
-    * @deprecated Do not call directly! Use ErrorManager.getDefault. This method
-    * is here only for the purpose of being referenced from the core layer.
-    * @return the manager
-    */
-    public static synchronized ErrorManager getDefaultErrorManager () {
-        if (defaultErrorManager == null) {
-            String className = System.getProperty("org.openide.ErrorManager"); // NOI18N
-            if (className != null) {
-                try {
-                    // Use the startup classloader. This will be called early anyway, long before
-                    // modules are ready to be used. So there is no point in trying systemClassLoader.
-                    Class c = Class.forName(className);
-                    defaultErrorManager = (ErrorManager)c.newInstance();
-                    System.err.println("WARNING - use of the system property org.openide.ErrorManager is deprecated."); // NOI18N
-                    System.err.println("Please register Services/Hidden/" + className.replace('.', '-') + ".instance instead."); // NOI18N
-                    System.err.println("This should be placed before Services/Hidden/org-netbeans-core-default-error-manager.instance."); // NOI18N
-                } catch (Exception e) {
-                    System.err.println("Cannot create ErrorManager: " + className); // NOI18N
-                    e.printStackTrace();
-                }
-            }
-        }
-        if (defaultErrorManager == null) {
-            defaultErrorManager = new NbErrorManager();
-            //System.err.println("Creating NbErrorManager");
-        }
-        return defaultErrorManager;
-    }
-
     /** Notifies user by a dialog.
     * @param descriptor description that contains needed informations
     * @return the option that has been choosen in the notification
@@ -827,7 +796,6 @@ public abstract class NbTopManager extends TopManager {
             super (new Lookup[] {
                        // #14722: pay attention also to META-INF/services/class.Name resources:
                        createMetaInfServicesLookup(false),
-                       createInitialErrorManagerLookup(),
                    });
         }
         
@@ -835,6 +803,7 @@ public abstract class NbTopManager extends TopManager {
         private static Lookup createMetaInfServicesLookup(boolean modules) {
             //System.err.println("cMISL: modules=" + modules);
             try {
+                // XXX consider just making this a public class!
                 Class clazz = Class.forName("org.openide.util.MetaInfServicesLookup"); // NOI18N
                 Constructor c = clazz.getDeclaredConstructor(new Class[] {ClassLoader.class});
                 c.setAccessible(true);
@@ -851,63 +820,11 @@ public abstract class NbTopManager extends TopManager {
             }
         }
         
-        private static Lookup createInitialErrorManagerLookup() {
-            InstanceContent c = new InstanceContent();
-            c.add(Boolean.TRUE, new ConvertorListener());
-            return new AbstractLookup(c);
-        }
-        
-        private static int propModulesReceived = 0;
-        private static boolean folderLookupFinished = false;
         private static final class ConvertorListener
-                implements InstanceContent.Convertor, TaskListener, PropertyChangeListener {
-            public Object convert(Object obj) {
-                //System.err.println("IEMC.convert");
-                return getDefaultErrorManager();
-            }
-            public Class type(Object obj) {
-                return ErrorManager.class;
-            }
-            public String id(Object obj) {
-                return "NbTopManager.defaultErrorManager"; // NOI18N
-            }
-            public String displayName(Object obj) {
-                return id(obj); // ???
-            }
-            public void taskFinished(Task task) {
-                //System.err.println("FolderLookup finished, removing old EM");
-                folderLookupFinished = true;
-                // FolderLookup has finished recognizing things. Remove the forced ErrorManager
-                // override from the set of lookups.
-                task.removeTaskListener(this);
-                Lookup lookup = Lookup.getDefault();
-                if (lookup instanceof Lkp) {
-                    Lkp lkp = (Lkp)lookup;
-                    Lookup[] old = lkp.getLookups();
-                    if (old.length !=  5) throw new IllegalStateException();
-                    Lookup[] nue = new Lookup[] {
-                        // maybe replace it now with module-based lookup, if PROP_ENABLED_MODULES
-                        // has not taken care of it yet
-                        propModulesReceived > 0 ? old[0] : createMetaInfServicesLookup(true),
-                        // do NOT include initialErrorManagerLookup; this is now replaced by the layer entry
-                        // Services/Hidden/org-netbeans-core-default-error-manager.instance
-                        old[2], // NbTM.instanceLookup
-                        old[3], // FolderLookup
-                        old[4], // moduleLookup
-                    };
-                    lkp.setLookups(nue);
-                }
-            }
+                implements PropertyChangeListener {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt == null || ModuleManager.PROP_ENABLED_MODULES.equals(evt.getPropertyName())) {
                     //System.err.println("modules changed; changing metaInfServicesLookup");
-                    propModulesReceived++;
-                    if (propModulesReceived == 1 && folderLookupFinished) {
-                        // Just called from startup code. But we already set it to the full
-                        // lookup in taskFinished; don't do it twice.
-                        //System.err.println("skipping first modules change");
-                        return;
-                    }
                     // Time to refresh META-INF/services/ lookup; modules turned on or off.
                     Lookup lookup = Lookup.getDefault();
                     if (lookup instanceof Lkp) {
@@ -974,7 +891,6 @@ public abstract class NbTopManager extends TopManager {
             if (services != null) {
                 StartLog.logProgress("Got Services folder"); // NOI18N
                 FolderLookup f = new FolderLookup(DataFolder.findFolder(services), "SL["); // NOI18N
-                f.addTaskListener(new ConvertorListener());
                 StartLog.logProgress("created FolderLookup"); // NOI18N
                 nue = f.getLookup();
             } else {
@@ -984,9 +900,6 @@ public abstract class NbTopManager extends TopManager {
             // extend the lookup
             Lookup[] arr = new Lookup[] {
                 getLookups()[0], // metaInfServicesLookup; still keep classpath one till later...
-                // Include initialErrorManagerLookup provisionally, until the folder lookup
-                // is actually ready and usable
-                getLookups()[1], // initialErrorManagerLookup
                 NbTopManager.get ().getInstanceLookup (),
                 nue,
                 NbTopManager.get().getModuleSystem().getManager().getModuleLookup(),

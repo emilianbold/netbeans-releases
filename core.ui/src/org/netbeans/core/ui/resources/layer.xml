@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
@@ -213,6 +213,15 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     
     <folder name="Toolbars">
+        <!-- 
+            Specifying the file Standard.xml in this place in your layer will
+            override the default toolbar configuration.
+            The file should contain a description of a toolbar configuration; for syntax
+            reference see for example the file Standard.xml.
+            Adding actions into subfolders of this folder in the XML layer
+            of your module will customize the main window toolbars.
+        -->
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/core/resources/toolbarsOption.gif" />
         <folder name="Data">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />

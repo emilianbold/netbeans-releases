@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
@@ -17,6 +17,18 @@ Microsystems, Inc. All Rights Reserved.
 
 <filesystem>
     
+    <folder name="Windows">
+        <attr name="SystemFileSystem.layer" stringvalue="project"/>
+        <file name="WindowManager.wswmgr" url="nbres:/org/netbeans/core/resources/windowmanager/windowmanager.wswmgr"/>
+        <folder name="WindowManager"/>
+        
+        <!-- 
+        Use this folder and subfolders in your XML layer to define
+        workspaces, frames, and their layout.
+        -->
+        
+    </folder>
+
     <folder name="Actions">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
         

@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -8,101 +8,24 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
 
-    <!--
-    <folder name="Actions">
-        You can add Actions into this folder in xml-layer of
-        your module.
-    </folder>
-    -->
-
-    <!-- 
-    <folder name="Welcome">
-        Folder for customizing Welcome dialog. You can add 
-        components into the welcome dialog using your xml-layer
-        in your module.
-    </folder>
-    -->
-    
-    <!-- moved to various packages see comments
-    <folder name="Menu">
-        Adding Actions into subfolders of this folder in xml-layer
-        of your module will customize the MainWindow.
-    </folder>    
-    -->  
-    
-
-    <folder name="Toolbars">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-
-        <!-- 
-            Specifying file Standard.xml on this place in your layer will
-            override default toolbar configuration.
-            File should contain description of toolbar configuration, for syntax
-            reference see for example Standard.xml file in core/ui.
-        -->   
-        
-        <!--
-            If you wish to have no toolbars at all, make all subfolders and 
-            configuration hidden (using _hidden suffix) and run system with
-            command line option -J-Dnetbeans.windows.no_wswitcher
-        -->
-        
-        <!--
-            Adding Actions into subfolders of this folder in xml-layer
-            of your module will customize the MainWindow toolbars.
-        -->
-
-    </folder>
-
-    <!-- 
-    <folder name="Shortcuts">
-        You can customize keyboard shorcuts using this folder in the
-        xml-layer of your module.
-    </folder>
-    -->
-
-    <folder name="Startup">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-    </folder>
-
-
     <folder name="Templates">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
         <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesRootDescription.html"/>
-
-        <!-- 
-        <folder name="Services">
-            templates for services in Lookup, should have the same subdirectory as 
-            objects under the
-        </folder>
-        -->
-            
-        <!-- 
-        <folder name="Mount">
-            folder for all registered filesystem templates
-        </folder>
-        -->
     </folder>
-
-    <!-- 
-    <folder name="Wizards">
-        You can customize the SetupWizard in this folder in xml-layer
-        of your module.
-    </folder>
-    -->
 
     <folder name="Services">
     
         <!-- 
         Register services with Lookup here in xml-layer of 
         your module.
+        Singletons can also be easily added using META-INF/services/pgk.Class files.
         -->
     
         <folder name="MIMEResolver">
@@ -121,42 +44,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceCreate" methodvalue="org.openide.loaders.XMLDataObject.createEntityCatalog"/>
             </file>
 
-            <!-- Permit test modules to be (re)deployed. -->
-            <file name="org-netbeans-core-module-tester.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.core.modules.TestModuleDeployer"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.core.modules.TestModuleDeployer"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.core.modules.ModuleSystem.getTestModuleDeployer"/>
-            </file>
-        
-            <!--
-            Register the default error manager. It looks for the system property org.openide.ErrorManager
-            first, but normally just loads an NbErrorManager singleton. Modules wishing to provide a
-            different error manager should place an instance in this folder and make sure it comes before
-            this one so it can override. However this one will still be used during the early startup
-            phases before module layer merging and folder lookup are ready.
-            -->
-            <file name="org-netbeans-core-default-error-manager.instance">
-                <attr name="instanceClass" stringvalue="org.openide.ErrorManager"/>
-                <attr name="instanceOf" stringvalue="org.openide.ErrorManager"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.core.NbTopManager.getDefaultErrorManager"/>
-            </file>
-        
         </folder>
     </folder> 
-
-    <!-- moved to various modules
-    <folder name="UI">
-        You can customize the appearance of the options tree in the 
-        Tools | Options dialog uising this folder in the xml-layer
-        of your module.
-    </folder>
-    -->
-    
-    <!--
-    <folder name="Workplace">
-         Workplace of the IDE - an alternative to projects. 
-    </folder>
-    -->
 
     <folder name="Mount">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
@@ -176,22 +65,6 @@ Microsystems, Inc. All Rights Reserved.
         Mounted filesystems
         -->    
     </folder>  
-
-    <!-- PENDING: This should be moved to the core-windows
-         as soon as the classes are better separated.
-    -->
-    <folder name="Windows">
-        <attr name="SystemFileSystem.layer" stringvalue="project"/>
-        <file name="WindowManager.wswmgr" url="windowmanager/windowmanager.wswmgr" />
-        <folder name="WindowManager">
-        </folder>
-        
-        <!-- 
-        Use this folder and it's subfolfder in your xml-layer to define
-        workspaces, frames and their layout.
-        -->
-        
-    </folder>
 
     <!-- For debugging only, comment out if desired: -->
     <file name="debug-sfs-structure.instance">
@@ -249,11 +122,6 @@ Microsystems, Inc. All Rights Reserved.
             	</file>            
 
         	</folder>
-
-        	<!-- folder name="Forte_for_Java">
-            	<file name="DTD_xmlinfo" url="nbresboot:/org/openide/resources/xmlinfo.dtd" />
-            	<file name="DTD_toolbar" url="nbresboot:/org/netbeans/core/windows/resources/toolbar.dtd" />
-        	</folder -->
 
     	</folder>
 

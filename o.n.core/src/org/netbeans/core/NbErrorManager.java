@@ -28,9 +28,12 @@ import org.openide.util.NbBundle;
 
 /** This is the implementation of the famous exception manager.
 *
-* @author  Jaroslav Tulach
+* @author Jaroslav Tulach, Jesse Glick
 */
-final class NbErrorManager extends ErrorManager {
+public final class NbErrorManager extends ErrorManager {
+
+    public NbErrorManager() {}
+
     /** maps Throwables to java.util.List (Ann) */
     private static Map map = new WeakHashMap (11);
 
