@@ -152,19 +152,19 @@ public class FileUtils {
     }
     
     
-    public static boolean unpackZip(String zip, String dest) {
-        return unpackZip(new File(zip), new File(dest),"");
+    public static void unpackZip(String zip, String dest) throws IOException {
+        unpackZip(new File(zip), new File(dest),"");
     }
     
-    public static boolean unpackZip(String zip, String dest, String fileToUnpack) {
-        return unpackZip(new File(zip), new File(dest), fileToUnpack);
+    public static void unpackZip(String zip, String dest, String fileToUnpack) throws IOException {
+        unpackZip(new File(zip), new File(dest), fileToUnpack);
     }
     
-    public static boolean unpackZip(File zipFile, File destFile) {
-        return unpackZip(zipFile,destFile,"");
+    public static void unpackZip(File zipFile, File destFile) throws IOException {
+        unpackZip(zipFile,destFile,"");
     }
     
-    public static boolean unpackZip(File zipFile, File destFile, String fileToUnpack) {
+    public static void unpackZip(File zipFile, File destFile, String fileToUnpack) throws IOException {
         
         if (DEBUG) System.out.println("Unpacking zip:"+zipFile+" to:"+destFile+" fileToUnpack:"+fileToUnpack);
         
@@ -174,7 +174,7 @@ public class FileUtils {
         }        
         if (!zipFile.exists()) {
             if (DEBUG) System.out.println("unpackZip: File "+zipFile.getName()+" does not exist");
-            return false;
+            throw new IllegalArgumentException("Zip "+zipFile.getName()+" does not exist");
         }
         FileInputStream fis = null;
         ZipInputStream zis = null;
@@ -188,7 +188,7 @@ public class FileUtils {
                 if (DEBUG) System.out.println("Not a valid zip file - does not have entry");
                 fis.close();
                 zis.close();
-                return false;
+                throw new IOException("File "+zipFile.getName()+"Not a valid zip file - does not have Zip entry");
             }
                    
                        
@@ -212,48 +212,30 @@ public class FileUtils {
                         }
                     } else {
                         if (DEBUG) System.out.println("Extracting file");
-                        try {
+
                             out = new FileOutputStream(outFilename);
                             byte[] buffer = new byte[4096];
                             int bytesRead;
                             while ((bytesRead = zis.read(buffer)) != -1) {
                                 out.write(buffer,0,bytesRead);
                             }
-                            out.close();
-                        } catch (IOException ioe) {
-                            if (DEBUG) {
-                                System.out.println("IOException "+ioe);
-                                ioe.printStackTrace();
-                            }
-                            // we have problem ...
-                            out.close();
-                            zis.close();
-                            fis.close();
-                            return false;
-                        }
+                            out.close();                            
                     }
                 }
                 // next entry
-                entry = zis.getNextEntry();
-                
+                entry = zis.getNextEntry();   
             }
-            zis.close();
-            fis.close();
-            
-        } catch (IOException ioe) {
-            if (DEBUG) {
-                System.out.println("IOException "+ioe);
-                ioe.printStackTrace();
-            }
-            try {
-                if (DEBUG) System.out.println("Another try to close the files");
+        } finally {
+            if (zis != null) {
                 zis.close();
-                fis.close();
-            } catch (Exception e) {
             }
-            return false;
+            if (fis != null) {
+                fis.close();
+            }
+            if (out != null) {
+                out.close();
+            }
         }
-        return true;
     }
     
     /** delete directory including its contents
