@@ -20,6 +20,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
+import org.openide.util.datatransfer.NewType;
 import com.netbeans.developer.modules.loaders.form.actions.*;
 
 import java.awt.Image;
@@ -90,6 +91,13 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     return component.getProperties ();
   }
 
+  /* List new types that can be created in this node.
+  * @return new types
+  */
+  public NewType[] getNewTypes () {
+    return component.getNewTypes ();
+  }
+
   /** Lazily initialize set of node's actions (overridable).
   * The default implementation returns <code>null</code>.
   * <p><em>Warning:</em> do not call {@link #getActions} within this method.
@@ -118,6 +126,8 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
       actions.add (SystemAction.get(GotoEditorAction.class));
       actions.add (SystemAction.get(GotoInspectorAction.class));
       actions.add (null);
+      actions.add (SystemAction.get(CutAction.class));
+      actions.add (SystemAction.get(CopyAction.class));
       actions.add (SystemAction.get(PasteAction.class));
     } else {
       actions.add (SystemAction.get(GotoFormAction.class));
@@ -127,16 +137,21 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
       actions.add (SystemAction.get(MoveUpAction.class));
       actions.add (SystemAction.get(MoveDownAction.class));
       actions.add (null);
+      actions.add (SystemAction.get(CutAction.class));
+      actions.add (SystemAction.get(CopyAction.class));
     }
      
-    actions.add (SystemAction.get(CopyAction.class));
-    actions.add (SystemAction.get(CutAction.class));
     actions.add (null);
     if (!(component instanceof FormContainer)) {
       actions.add (SystemAction.get(RenameAction.class));
       actions.add (SystemAction.get(DeleteAction.class));
       actions.add (null);
     }
+    if (getNewTypes ().length != 0) {
+      actions.add (SystemAction.get(NewAction.class));
+      actions.add (null);
+    }
+
     actions.add (SystemAction.get(ToolsAction.class));
     actions.add (SystemAction.get(PropertiesAction.class));
 
@@ -382,7 +397,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
                 pasteManager.getFormTopComponent ().validate();
                 pasteManager.fireFormChange ();
               } else {
-                pasteManager.addNonVisualComponent (originalComp);
+                pasteManager.addNonVisualComponent (originalComp, null);
                 // [PENDING - should the component be selected after paste or rather the selection should stay on the container to allow further pasting?]
                 //pasteManager.selectComponent (originalComp, false);
                 pasteManager.fireFormChange ();
@@ -508,6 +523,8 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  22   Gandalf   1.21        7/5/99   Ian Formanek    provides NewTypes and 
+ *       New action
  *  21   Gandalf   1.20        7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
  *        getComponentClass->getBeanClass
  *  20   Gandalf   1.19        7/5/99   Ian Formanek    CustomizeLayout action
