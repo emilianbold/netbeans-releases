@@ -74,7 +74,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
 
             <file name="javax-swing-JLabel.instance">
-                name=Jlabel
+                name=JLabel
                 icon=/javax/swing/beaninfo/images/JLabelColor16.gif
             </file>
             <file name="javax-swing-JButton.instance">
