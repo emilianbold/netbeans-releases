@@ -58,7 +58,8 @@ public class EditorsAction extends AbstractAction
            }
         };
         TopComponent.Registry registry = TopComponent.getRegistry();
-        registry.addPropertyChangeListener(WeakListeners.propertyChange(propListener, registry));
+//        registry.addPropertyChangeListener(WeakListeners.propertyChange(propListener, registry));
+        registry.addPropertyChangeListener(propListener);
 
         // #37529 WindowsAPI to be called from AWT thread only.
         if(SwingUtilities.isEventDispatchThread()) {
@@ -90,7 +91,8 @@ public class EditorsAction extends AbstractAction
     
     private void updateState() {
         Mode mode = (Mode)WindowManager.getDefault().findMode("editor"); // NOI18N
-        setEnabled(mode == null ? false : mode.getSelectedTopComponent() != null);
+        boolean enabled = mode == null ? false : mode.getSelectedTopComponent() != null;
+        setEnabled(enabled);
         updateMenu();
     }
     
