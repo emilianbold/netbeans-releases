@@ -1,0 +1,25 @@
+public class TestFile {
+    
+    /** Holds value of property _initialName. */
+    private requiredType requiredName;
+    
+    /** Creates a new instance of TestFile */
+    public TestFile() {
+    }
+    
+    /** Getter for property initialName.
+     * @return Value of property initialName.
+     */
+    public requiredType getRequiredName() {
+        return _requiredName;
+    }
+    
+    /** Setter for property initialName.
+     * @param initialName New value of property initialName.
+     */
+    public void setRequiredName(requiredType requiredName) {
+        _requiredName = requiredName;
+    }
+    
+}
+

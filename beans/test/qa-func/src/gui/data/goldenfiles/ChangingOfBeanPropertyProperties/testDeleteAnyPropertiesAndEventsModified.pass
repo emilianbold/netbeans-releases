@@ -1,0 +1,109 @@
+import java.beans.*;
+public class TestFile extends Object implements java.io.Serializable {
+    
+    private static final String PROP_SAMPLE_PROPERTY = "SampleProperty";
+    
+    private String sampleProperty;
+    
+    private PropertyChangeSupport propertySupport;
+    
+    /** Utility field used by constrained properties. */
+    private java.beans.VetoableChangeSupport vetoableChangeSupport =  new java.beans.VetoableChangeSupport(this);
+    
+    /** Utility field holding the ActionListener. */
+    private transient java.awt.event.ActionListener actionListener =  null;
+    
+    /** Utility field holding list of ContainerListeners. */
+    private transient java.util.ArrayList containerListenerList;
+    
+    /** Utility field used by event firing mechanism. */
+    private javax.swing.event.EventListenerList listenerList =  null;
+    
+    /** Creates new TestFile */
+    public TestFile() {
+        propertySupport = new PropertyChangeSupport( this );
+    }
+    
+    public String getSampleProperty() {
+        return sampleProperty;
+    }
+    
+    public void setSampleProperty(String value) {
+        String oldValue = sampleProperty;
+        sampleProperty = value;
+        propertySupport.firePropertyChange(PROP_SAMPLE_PROPERTY, oldValue, sampleProperty);
+    }
+    
+    
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertySupport.addPropertyChangeListener(listener);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertySupport.removePropertyChangeListener(listener);
+    }
+    
+    /** Adds a VetoableChangeListener to the listener list.
+     * @param l The listener to add.
+     */
+    public void addVetoableChangeListener(java.beans.VetoableChangeListener l) {
+        vetoableChangeSupport.addVetoableChangeListener(l);
+    }
+    
+    /** Removes a VetoableChangeListener from the listener list.
+     * @param l The listener to remove.
+     */
+    public void removeVetoableChangeListener(java.beans.VetoableChangeListener l) {
+        vetoableChangeSupport.removeVetoableChangeListener(l);
+    }
+    
+    /** Registers ContainerListener to receive events.
+     * @param listener The listener to register.
+     */
+    public synchronized void addContainerListener(java.awt.event.ContainerListener listener) {
+        if (containerListenerList == null ) {
+            containerListenerList = new java.util.ArrayList();
+        }
+        containerListenerList.add(listener);
+    }
+    
+    /** Removes ContainerListener from the list of listeners.
+     * @param listener The listener to remove.
+     */
+    public synchronized void removeContainerListener(java.awt.event.ContainerListener listener) {
+        if (containerListenerList != null ) {
+            containerListenerList.remove(listener);
+        }
+    }
+    
+    /** Notifies all registered listeners about the event.
+     *
+     * @param event The event to be fired
+     */
+    private void fireContainerListenerComponentRemoved(java.awt.event.ContainerEvent event) {
+        java.util.ArrayList list;
+        synchronized (this) {
+            if (containerListenerList == null) return;
+            list = (java.util.ArrayList)containerListenerList.clone();
+        }
+        for (int i = 0; i < list.size(); i++) {
+            ((java.awt.event.ContainerListener)list.get(i)).componentRemoved(event);
+        }
+    }
+    
+    /** Notifies all registered listeners about the event.
+     *
+     * @param event The event to be fired
+     */
+    private void fireContainerListenerComponentAdded(java.awt.event.ContainerEvent event) {
+        java.util.ArrayList list;
+        synchronized (this) {
+            if (containerListenerList == null) return;
+            list = (java.util.ArrayList)containerListenerList.clone();
+        }
+        for (int i = 0; i < list.size(); i++) {
+            ((java.awt.event.ContainerListener)list.get(i)).componentAdded(event);
+        }
+    }
+    
+}

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mconfig name="QA Beans config">
+    
+    <testbag testattribs="stable" executor="ide" name="testbag_beans" resultsprocessor="qa-exampless">
+        <testset dir="qa-func/src">
+            <patternset>
+                <!-- Tonga tests converted to XTest -->
+                <!-- <include name="**/XTest*"/> -->
+                <!-- Simple gui test -->
+<!--                <include name="gui/BeanInfoGeneration.class"/>  -->
+                <include name="gui/BeansTemplates.class"/> 
+<!--                <include name="gui/ChangingOfBeanPropertyProperties.class"/> 
+                <include name="gui/CreateNewIndexedProperty.class"/> 
+                <include name="gui/CreateNewNonIndexedProperty.class"/> 
+                <include name="gui/NewMulticastEventSource.class"/> 
+                <include name="gui/NewUnicastEventSource.class"/> 
+-->                <!-- Exclude all Tonga examples -->
+                <exclude name="**/*Tonga*"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <resultsprocessor name="qa-beans" antfile="build.xml" target="test_report"/>
+    <executor name="ide" antfile="build.xml" target="runidetest"/>
+    <compiler name="default-compiler" default="true" antfile="build.xml" target="default-compiler"/>
+
+</mconfig>

@@ -1,0 +1,251 @@
+import java.beans.*;
+public class TestFile extends Object implements java.io.Serializable {
+    
+    private static final String PROP_SAMPLE_PROPERTY = "SampleProperty";
+    
+    private String sampleProperty;
+    
+    private PropertyChangeSupport propertySupport;
+    
+    /** Holds value of property nonIndexProperty. */
+    private String nonIndexProperty;
+    
+    /** Utility field used by constrained properties. */
+    private java.beans.VetoableChangeSupport vetoableChangeSupport =  new java.beans.VetoableChangeSupport(this);
+    
+    /** Holds value of property indexProperty. */
+    private String[] indexProperty;
+    
+    /** Utility field holding the ActionListener. */
+    private transient java.awt.event.ActionListener actionListener =  null;
+    
+    /** Utility field holding list of ContainerListeners. */
+    private transient java.util.ArrayList containerListenerList;
+    
+    /** Utility field used by event firing mechanism. */
+    private javax.swing.event.EventListenerList listenerList =  null;
+    
+    /** Creates new TestFile */
+    public TestFile() {
+        propertySupport = new PropertyChangeSupport( this );
+    }
+    
+    public String getSampleProperty() {
+        return sampleProperty;
+    }
+    
+    public void setSampleProperty(String value) {
+        String oldValue = sampleProperty;
+        sampleProperty = value;
+        propertySupport.firePropertyChange(PROP_SAMPLE_PROPERTY, oldValue, sampleProperty);
+    }
+    
+    
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertySupport.addPropertyChangeListener(listener);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertySupport.removePropertyChangeListener(listener);
+    }
+    
+    /** Adds a VetoableChangeListener to the listener list.
+     * @param l The listener to add.
+     */
+    public void addVetoableChangeListener(java.beans.VetoableChangeListener l) {
+        vetoableChangeSupport.addVetoableChangeListener(l);
+    }
+    
+    /** Removes a VetoableChangeListener from the listener list.
+     * @param l The listener to remove.
+     */
+    public void removeVetoableChangeListener(java.beans.VetoableChangeListener l) {
+        vetoableChangeSupport.removeVetoableChangeListener(l);
+    }
+    
+    /** Getter for property nonIndexProperty.
+     * @return Value of property nonIndexProperty.
+     */
+    public String getNonIndexProperty() {
+        return this.nonIndexProperty;
+    }
+    
+    /** Setter for property nonIndexProperty.
+     * @param nonIndexProperty New value of property nonIndexProperty.
+     *
+     * @throws PropertyVetoException
+     */
+    public void setNonIndexProperty(String nonIndexProperty) throws java.beans.PropertyVetoException {
+        String oldNonIndexProperty = this.nonIndexProperty;
+        vetoableChangeSupport.fireVetoableChange("nonIndexProperty", oldNonIndexProperty, nonIndexProperty);
+        this.nonIndexProperty = nonIndexProperty;
+        propertySupport.firePropertyChange("nonIndexProperty", oldNonIndexProperty, nonIndexProperty);
+    }
+    
+    /** Indexed getter for property indexProperty.
+     * @param index Index of the property.
+     * @return Value of the property at <CODE>index</CODE>.
+     */
+    public String getIndexProperty(int index) {
+        return this.indexProperty[index];
+    }
+    
+    /** Getter for property indexProperty.
+     * @return Value of property indexProperty.
+     */
+    public String[] getIndexProperty() {
+        return this.indexProperty;
+    }
+    
+    /** Indexed setter for property indexProperty.
+     * @param index Index of the property.
+     * @param indexProperty New value of the property at <CODE>index</CODE>.
+     *
+     * @throws PropertyVetoException
+     */
+    public void setIndexProperty(int index, String indexProperty) throws java.beans.PropertyVetoException {
+        String oldIndexProperty = this.indexProperty[index];
+        this.indexProperty[index] = indexProperty;
+        try {
+            vetoableChangeSupport.fireVetoableChange("indexProperty", null, null );
+        }
+        catch(java.beans.PropertyVetoException vetoException ) {
+            this.indexProperty[index] = oldIndexProperty;
+            throw vetoException;
+        }
+        propertySupport.firePropertyChange("indexProperty", null, null );
+    }
+    
+    /** Setter for property indexProperty.
+     * @param indexProperty New value of property indexProperty.
+     *
+     * @throws PropertyVetoException
+     */
+    public void setIndexProperty(String[] indexProperty) throws java.beans.PropertyVetoException {
+        String[] oldIndexProperty = this.indexProperty;
+        vetoableChangeSupport.fireVetoableChange("indexProperty", oldIndexProperty, indexProperty);
+        this.indexProperty = indexProperty;
+        propertySupport.firePropertyChange("indexProperty", oldIndexProperty, indexProperty);
+    }
+    
+    /** Registers ActionListener to receive events.
+     * @param listener The listener to register.
+     */
+    public synchronized void addActionListener(java.awt.event.ActionListener listener) throws java.util.TooManyListenersException {
+        if (actionListener != null) {
+            throw new java.util.TooManyListenersException();
+        }
+        actionListener = listener;
+    }
+    
+    /** Removes ActionListener from the list of listeners.
+     * @param listener The listener to remove.
+     */
+    public synchronized void removeActionListener(java.awt.event.ActionListener listener) {
+        actionListener = null;
+    }
+    
+    /** Notifies the registered listener about the event.
+     *
+     * @param event The event to be fired
+     */
+    private void fireActionListenerActionPerformed(java.awt.event.ActionEvent event) {
+        if (actionListener == null) return;
+        actionListener.actionPerformed(event);
+    }
+    
+    /** Registers ContainerListener to receive events.
+     * @param listener The listener to register.
+     */
+    public synchronized void addContainerListener(java.awt.event.ContainerListener listener) {
+        if (containerListenerList == null ) {
+            containerListenerList = new java.util.ArrayList();
+        }
+        containerListenerList.add(listener);
+    }
+    
+    /** Removes ContainerListener from the list of listeners.
+     * @param listener The listener to remove.
+     */
+    public synchronized void removeContainerListener(java.awt.event.ContainerListener listener) {
+        if (containerListenerList != null ) {
+            containerListenerList.remove(listener);
+        }
+    }
+    
+    /** Notifies all registered listeners about the event.
+     *
+     * @param event The event to be fired
+     */
+    private void fireContainerListenerComponentRemoved(java.awt.event.ContainerEvent event) {
+        java.util.ArrayList list;
+        synchronized (this) {
+            if (containerListenerList == null) return;
+            list = (java.util.ArrayList)containerListenerList.clone();
+        }
+        for (int i = 0; i < list.size(); i++) {
+            ((java.awt.event.ContainerListener)list.get(i)).componentRemoved(event);
+        }
+    }
+    
+    /** Notifies all registered listeners about the event.
+     *
+     * @param event The event to be fired
+     */
+    private void fireContainerListenerComponentAdded(java.awt.event.ContainerEvent event) {
+        java.util.ArrayList list;
+        synchronized (this) {
+            if (containerListenerList == null) return;
+            list = (java.util.ArrayList)containerListenerList.clone();
+        }
+        for (int i = 0; i < list.size(); i++) {
+            ((java.awt.event.ContainerListener)list.get(i)).componentAdded(event);
+        }
+    }
+    
+    /** Registers FocusListener to receive events.
+     * @param listener The listener to register.
+     */
+    public synchronized void addFocusListener(java.awt.event.FocusListener listener) {
+        if (listenerList == null ) {
+            listenerList = new javax.swing.event.EventListenerList();
+        }
+        listenerList.add(java.awt.event.FocusListener.class, listener);
+    }
+    
+    /** Removes FocusListener from the list of listeners.
+     * @param listener The listener to remove.
+     */
+    public synchronized void removeFocusListener(java.awt.event.FocusListener listener) {
+        listenerList.remove(java.awt.event.FocusListener.class, listener);
+    }
+    
+    /** Notifies all registered listeners about the event.
+     *
+     * @param event The event to be fired
+     */
+    private void fireFocusListenerFocusGained(java.awt.event.FocusEvent event) {
+        if (listenerList == null) return;
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = listeners.length-2; i>=0; i-=2) {
+            if (listeners[i]==java.awt.event.FocusListener.class) {
+                ((java.awt.event.FocusListener)listeners[i+1]).focusGained(event);
+            }
+        }
+    }
+    
+    /** Notifies all registered listeners about the event.
+     *
+     * @param event The event to be fired
+     */
+    private void fireFocusListenerFocusLost(java.awt.event.FocusEvent event) {
+        if (listenerList == null) return;
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = listeners.length-2; i>=0; i-=2) {
+            if (listeners[i]==java.awt.event.FocusListener.class) {
+                ((java.awt.event.FocusListener)listeners[i+1]).focusLost(event);
+            }
+        }
+    }
+    
+}
