@@ -11,27 +11,75 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/* $Id$ */
-
 package org.netbeans.modules.form.editors2;
 
-import javax.swing.AbstractListModel;
+import javax.swing.*;
+import org.openide.explorer.propertysheet.editors.*;
+import org.netbeans.modules.form.FormDesignValue;
+import org.netbeans.modules.form.RADComponent;
 
-/** A property editor for ListModel.
- * @author  Ian Formanek
+/** A simple property editor for ListModel.
+ *
+ * @author Tomas Pavek
  */
-public class ListModelEditor extends Object {
+public class ListModelEditor extends StringArrayEditor {
 
-    public static class NbListModel extends AbstractListModel implements java.io.Serializable {
-        static final long serialVersionUID =-1806930448622666787L;
-        public NbListModel(String[] data) {
-            this.data = data;
+    private NbListModel listModel = null;
+
+    public void setValue(Object val) {
+        if (val instanceof NbListModel) {
+            listModel = (NbListModel)val;
         }
-
-        public int getSize() { return data.length; }
-        public Object getElementAt(int i) { return data[i]; }
-
-        private String[] data;
+        else if (val instanceof String[]) {
+            listModel = new NbListModel((String[])val);
+        }
+        else return;
+        super.setValue(listModel.data);
     }
 
+    public Object getValue() {
+        return listModel;
+    }
+
+    public void setStringArray(String[] value) {
+        listModel = new NbListModel(value);
+        super.setValue(value);
+    }
+
+    public String[] getStringArray () {
+        return (String[])super.getValue ();
+    }
+
+    public String getJavaInitializationString() {
+        StringBuffer buf = new StringBuffer("new javax.swing.AbstractListModel() {\n"); // NOI18N
+        buf.append("String[] strings = { "); // NOI18N
+        buf.append(getStrings(true));
+        buf.append(" };\n"); // NOI18N
+        buf.append("public int getSize() { return strings.length; }\n"); // NOI18N
+        buf.append("public Object getElementAt(int i) { return strings[i]; }\n"); // NOI18N
+        buf.append("}"); // NOI18N
+
+        return buf.toString();
+    }
+
+
+    public static class NbListModel implements FormDesignValue{
+        private String[] data;
+        private DefaultListModel model;
+
+        public NbListModel(String[] data) {
+            this.data = data;
+            model = new DefaultListModel();
+            for (int i=0; i < data.length; i++)
+                model.addElement(data[i]);
+        }
+
+        /** Provides a value which should be used during design-time
+         * as the real value of a property on the JList instance.
+         * @return the real property value to be used during design-time
+         */
+        public Object getDesignValue(RADComponent radComponent) {
+            return model;
+        }
+    }
 }
