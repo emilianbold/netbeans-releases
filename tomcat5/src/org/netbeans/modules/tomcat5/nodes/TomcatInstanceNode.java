@@ -177,7 +177,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     public javax.swing.Action[] getActions(boolean context) {
         return new SystemAction[] {
                    null,
-                   SystemAction.get (AccessLogAction.class),
+                   //SystemAction.get (AccessLogAction.class),
                    SystemAction.get (ContextLogAction.class),
                    null,
                    SystemAction.get(PropertiesAction.class),
