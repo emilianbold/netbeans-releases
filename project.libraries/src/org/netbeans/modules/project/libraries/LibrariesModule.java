@@ -30,7 +30,11 @@ public class LibrariesModule extends ModuleInstall {
         super.restored();
         Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template(LibraryProvider.class));
         for (Iterator it = result.allInstances().iterator(); it.hasNext();) {
-            it.next();
+            //XXX: Workaround of lookup non reentrant issue (#49405)            
+            //Library can not do an initialization in its constructor
+            //For promo-E the LibraryProvider should be extended by init method
+            LibraryProvider lp = (LibraryProvider) it.next();
+            lp.getLibraries();
         }
     }
     

@@ -49,29 +49,25 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
     private ResourceBundle bundle;
 
     private PropertyChangeSupport support;
+    
+    //Flag if the storage is initialized
+    //The storage needs to be lazy initialized, it is in lookup
+    private boolean initialized;
 
 
     /**
      * Create libraries that need to be populated later.
      */
     public LibrariesStorage() {
-        this(initStorage());           
+        this.support = new PropertyChangeSupport(this);
     }
     
     /**
      * Constructor for tests
      */
     LibrariesStorage (FileObject storage) {
-        this.storage = storage;
-        if (storage != null) {
-            this.loadFromStorage();
-            this.storage.addFileChangeListener (this);
-        } else {
-            // Storage broken. May happen e.g. inside unit tests.
-            libraries = Collections.EMPTY_MAP;
-            librariesByFileNames = Collections.EMPTY_MAP;
-        }
-        this.support = new PropertyChangeSupport(this);
+        this ();
+        this.storage = storage;               
     }
 
 
@@ -80,7 +76,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
      * Initialize the default storage.
      * @return new storage or null on I/O error.
      */
-    private static final FileObject initStorage () {
+    private static final FileObject createStorage () {
         FileSystem storageFS = Repository.getDefault().getDefaultFileSystem();        
         try {
             return FileUtil.createFolder(storageFS.getRoot(), LIBRARIES_REPOSITORY);
@@ -126,6 +122,24 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
                 // Other problem.
                 ErrorManager.getDefault().notify (e);
             }
+        }
+    }
+    
+    private synchronized void initStorage () {
+        if (!initialized) {
+            if (this.storage == null) {
+                this.storage = createStorage();
+                if (storage == null) {
+                    // Storage broken. May happen e.g. inside unit tests.
+                    libraries = Collections.EMPTY_MAP;
+                    librariesByFileNames = Collections.EMPTY_MAP;
+                    initialized = true;
+                    return;
+                }
+            }
+            this.loadFromStorage();
+            this.storage.addFileChangeListener (this);
+            initialized = true;
         }
     }
 
@@ -227,18 +241,21 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
     /**
      * Return all libraries in memory.
      */
-    public synchronized final LibraryImplementation[] getLibraries() {
+    public final LibraryImplementation[] getLibraries() {
+        this.initStorage();
         assert this.storage != null : "Storage is not initialized";
         return (LibraryImplementation[]) libraries.values().toArray(new LibraryImplementation[libraries.size()]);
     } // end getLibraries
 
 
     public void addLibrary (LibraryImplementation library) throws IOException {
+        this.initStorage();
         assert this.storage != null : "Storage is not initialized";
         writeLibrary(this.storage,library);
     }
 
     public void removeLibrary (LibraryImplementation library) throws IOException {
+        this.initStorage();
         assert this.storage != null : "Storage is not initialized";
         for (Iterator jt = this.librariesByFileNames.keySet().iterator(); jt.hasNext();) {
             String key = (String) jt.next ();
@@ -254,6 +271,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
     }
 
     public void updateLibrary(final LibraryImplementation oldLibrary, final LibraryImplementation newLibrary) throws IOException {
+        this.initStorage();
         assert this.storage != null : "Storage is not initialized";
         for (Iterator it = this.librariesByFileNames.keySet().iterator(); it.hasNext();) {
             String key = (String) it.next ();
