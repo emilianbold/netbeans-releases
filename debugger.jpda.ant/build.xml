@@ -67,7 +67,7 @@ Microsystems, Inc. All Rights Reserved.
                  module="netbeans/modules/org-netbeans-modules-debugger-jpda-ant.jar"
                  homepage="http://debuggerjpda.netbeans.org/"
                  needsrestart="false"
-                 distribution="http://${dist.base}/org-netbeans-modules-debugger-jpda-ant.jar">
+                 distribution="http://${dist.base}/org-netbeans-modules-debugger-jpda-ant.nbm">
             <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
@@ -82,6 +82,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="netbeans"/>
         <delete dir="Info"/>
         <delete file="org-netbeans-modules-debugger-jpda-ant.nbm"/>
+        <delete file="manifest-subst.mf"/>
     </target>
 
 </project>

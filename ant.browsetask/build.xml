@@ -63,7 +63,7 @@ Microsystems, Inc. All Rights Reserved.
                  module="netbeans/modules/org-netbeans-modules-ant-browsetask.jar"
                  homepage="http://ant.netbeans.org/"
                  needsrestart="false"
-                 distribution="http://${dist.base}/org-netbeans-modules-ant-browsetask.jar">
+                 distribution="http://${dist.base}/org-netbeans-modules-ant-browsetask.nbm">
             <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
@@ -77,11 +77,8 @@ Microsystems, Inc. All Rights Reserved.
         </delete>
         <delete dir="netbeans"/>
         <delete dir="Info"/>
-        <delete>
-            <fileset dir=".">
-                <include name="org-netbeans-modules-ant-browsetask.nbm"/>
-            </fileset>
-        </delete>
+        <delete file="org-netbeans-modules-ant-browsetask.nbm"/>
+        <delete file="manifest-subst.mf"/>
     </target>
 
 </project>
