@@ -58,7 +58,7 @@ import org.netbeans.api.xml.parsers.*;
 public class CheckXMLSupport implements CheckXMLCookie, ValidateXMLCookie {
 
     // it will viasualize our results
-    private ProcessorListener console;
+    private ProcessorNotifier console;
     
     // associated data object
     private final DataObject dataObject;
@@ -115,7 +115,7 @@ public class CheckXMLSupport implements CheckXMLCookie, ValidateXMLCookie {
     }
 
     // inherit JavaDoc
-    public boolean checkXML(ProcessorListener l) {
+    public boolean checkXML(ProcessorNotifier l) {
         console = l;
 
         parse(false);
@@ -124,7 +124,7 @@ public class CheckXMLSupport implements CheckXMLCookie, ValidateXMLCookie {
     }
     
     // inherit JavaDoc
-    public boolean validateXML(ProcessorListener l) {
+    public boolean validateXML(ProcessorNotifier l) {
         console = l;
 
         if (mode != DOCUMENT_MODE) {
@@ -321,11 +321,7 @@ public class CheckXMLSupport implements CheckXMLCookie, ValidateXMLCookie {
     private class Handler extends DefaultHandler {
     
         public void warning (SAXParseException ex) {
-            try {
-                if (console != null) console.warning(ex);
-            } catch (SAXException sex) {
-                // it is not allowed to throw it
-            }
+            if (console != null) console.warning(new ProcessorNotifier.Message(ex));
         }
 
         /**
@@ -338,22 +334,14 @@ public class CheckXMLSupport implements CheckXMLCookie, ValidateXMLCookie {
                 if (console != null) console.message(msg);
                 throw ex; // stop the parser                
             } else {
-                try {
-                    if (console != null) console.error(ex);
-                } catch (SAXException sex) {
-                    // it is not allowed to throw it
-                }                
+                if (console != null) console.error(new ProcessorNotifier.Message(ex));
             }
         }
 
         public void fatalError (SAXParseException ex) {        
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Just diagnostic exception", ex); // NOI18N
-            try {
-                fatalErrors++;
-                if (console != null) console.fatalError(ex);
-            } catch (SAXException sex) {
-                // it is not allowed to throw it
-            }
+            fatalErrors++;
+            if (console != null) console.fatalError(new ProcessorNotifier.Message(ex));
         }
         
         public void setDocumentLocator(Locator locator) {

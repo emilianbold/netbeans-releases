@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="storepass" value="?"/>
     <property name="nbm_alias" value="nb_ide"/>
     <property name="release" value="dev"/>
-
+    <property name="jaxp-transform" value="${binroot}/xml/core/xalan/release/modules/autoload/ext/jaxp-transform-1.1.2.jar"/>
     <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext_root}/nbantext.jar"/>
@@ -56,6 +56,7 @@ Microsystems, Inc. All Rights Reserved.
                     <include name="openide*.jar"/>
                 </fileset>
                 <pathelement location="${parserimpl}"/> <!-- JAXP and SAX dependency -->
+                <pathelement location="${jaxp-transform}"/>
             </classpath>
         </javac>
     </target>
@@ -121,9 +122,8 @@ Microsystems, Inc. All Rights Reserved.
     <target name="javadoc">
         <delete dir="javadoc"/>
         <mkdir dir="javadoc"/>
-        <genjavadoc destdir="javadoc" modules="openide">
-            <topdir path="${nbroot}"/>
-        </genjavadoc>
+        <javadoc destdir="javadoc" sourcepath="src" packagenames="org.netbeans.api.xml.*,org.netbeans.spi.xml.*">
+        </javadoc>
     </target>
 
 

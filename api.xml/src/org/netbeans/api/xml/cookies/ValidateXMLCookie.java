@@ -15,14 +15,13 @@ package org.netbeans.api.xml.cookies;
 
 import org.openide.nodes.Node;
 
+import org.netbeans.api.xml.parsers.ProcessorNotifier;
+
 /**
  * Validate XML document entity (in polyform manner).
- * <p>Implemenmtation must
- * fulfill <a href="http://www.w3.org/TR/REC-xml#proc-types">XML 1.0</a>
- * specification for non-validating processors if no DTD is referenced and
- * specification for validating processors if a DTD is referenced.
- * It is allowed to extend the contract to support domain specifics semantics
- * checks. It must not change UI state.
+ * <p>Implemenmtation must follow XML 1.0 specification for processors
+ * conformance. It is allowed to extend the contract to support domain
+ * specifics semantics checks. It must not change UI state.
  * <p>
  * <h3>Use Cases</h3>
  * <ul>
@@ -32,8 +31,10 @@ import org.openide.nodes.Node;
  *     appriory knowledge how to perform it for specifics XML document type.
  * </ul>
  *
- * @author  Petr Kuzel
- * @deprecated XML tools API candidate
+ * @author      Petr Kuzel
+ * @deprecated  XML tools API candidate
+ * @see         CheckXMLCookie
+ * @see         <a href="http://www.w3.org/TR/REC-xml#proc-types">XML 1.0</a>     
  */
 public interface ValidateXMLCookie extends Node.Cookie {
 
@@ -43,6 +44,6 @@ public interface ValidateXMLCookie extends Node.Cookie {
      *               giving judgement details
      * @return true if validity check passes
      */
-    boolean validateXML(ProcessorListener l);
+    boolean validateXML(ProcessorNotifier l);
 
 }

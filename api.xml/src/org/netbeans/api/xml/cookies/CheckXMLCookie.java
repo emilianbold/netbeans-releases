@@ -15,15 +15,18 @@ package org.netbeans.api.xml.cookies;
 
 import org.openide.nodes.Node;
 
+import org.netbeans.api.xml.parsers.ProcessorNotifier;
+
 /**
- * Check XML parsed entity syntax.
- * <p>Implemenmtation must
- * fulfill <a href="http://www.w3.org/TR/REC-xml#proc-types">XML 1.0</a>
- * specification for non-validating processors. It is allowed to extend the
- * contract to support parsed entities. It must not change UI state.
+ * Fast XML parsed entity syntax checker.
+ * <p>Implemenmtation should follow XML specification for non-validating
+ * processors. It is allowed to extend the contract to support parsed entities.
+ * It must not change UI state.
  *
- * @author  Petr Kuzel
- * @deprecated XML tools API candidate
+ * @author      Petr Kuzel
+ * @deprecated  XML tools API candidate
+ * @see         ValidateXMLCookie
+ * @see         <a href="http://www.w3.org/TR/REC-xml#proc-types">XML 1.0</a>     
  */
 public interface CheckXMLCookie extends Node.Cookie {
     
@@ -33,6 +36,6 @@ public interface CheckXMLCookie extends Node.Cookie {
      *               giving judgement details.
      * @return <code>true</code> if syntax check passes
      */
-    boolean checkXML(ProcessorListener l);
+    boolean checkXML(ProcessorNotifier l);
     
 }
