@@ -65,6 +65,8 @@ is divided into following sections:
             <isfalse value="${javadoc.preview}"/>
         </condition>
         <property name="run.jvmargs" value=""/>
+        <property name="javac.compilerargs" value=""/>
+        <property name="work.dir" value="${basedir}"/>
         <condition property="no.deps">
             <and>
                 <istrue value="${no.dependencies}"/>
@@ -108,6 +110,7 @@ is divided into following sections:
                     <classpath>
                         <path path="@{classpath}"/>
                     </classpath>
+                    <compilerarg line="${javac.compilerargs}"/>
                     <customize/>
                 </javac>
             </sequential>
@@ -117,13 +120,17 @@ is divided into following sections:
         <macrodef name="junit" uri="http://www.netbeans.org/ns/j2se-project/1">
             <attribute name="includes" default="**/*Test.java"/>
             <sequential>
-                <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
+                <junit showoutput="true" fork="true" dir="${basedir}" failureproperty="tests.failed" errorproperty="tests.failed">
                     <batchtest todir="${build.test.results.dir}">
                         <fileset dir="${test.src.dir}" includes="@{includes}"/>
                     </batchtest>
                     <classpath>
                         <path path="${run.test.classpath}"/>
                     </classpath>
+                    <syspropertyset>
+                        <propertyref prefix="test-sys-prop."/>
+                        <mapper type="glob" from="test-sys-prop.*" to="*"/>
+                    </syspropertyset>
                     <formatter type="brief" usefile="false"/>
                 </junit>
             </sequential>
@@ -157,7 +164,7 @@ is divided into following sections:
             <attribute name="classpath" default="${debug.classpath}"/>
             <attribute name="args" default="${application.args}"/>
             <sequential>
-                <java fork="true" classname="@{classname}">
+                <java fork="true" classname="@{classname}" dir="${work.dir}">
                     <jvmarg value="-Xdebug"/>
                     <jvmarg value="-Xnoagent"/>
                     <jvmarg value="-Djava.compiler=none"/>
@@ -180,7 +187,7 @@ is divided into following sections:
             <attribute name="classname" default="${main.class}"/>
             <element name="customize" optional="true"/>
             <sequential>
-                <java fork="true" classname="@{classname}">
+                <java fork="true" classname="@{classname}" dir="${work.dir}">
                     <jvmarg line="${run.jvmargs}"/>
                     <classpath>
                         <path path="${run.classpath}"/>
@@ -326,7 +333,7 @@ is divided into following sections:
     -->
     <target name="-javadoc-build" depends="init">
         <mkdir dir="${dist.javadoc.dir}"/>
-        <javadoc destdir="${dist.javadoc.dir}" source="${javac.source}" notree="${javadoc.notree}" use="${javadoc.use}" nonavbar="${javadoc.nonavbar}" noindex="${javadoc.noindex}" splitindex="${javadoc.splitindex}" author="${javadoc.author}" version="${javadoc.version}" windowtitle="${javadoc.windowtitle}" private="${javadoc.private}">
+        <javadoc destdir="${dist.javadoc.dir}" source="${javac.source}" notree="${javadoc.notree}" use="${javadoc.use}" nonavbar="${javadoc.nonavbar}" noindex="${javadoc.noindex}" splitindex="${javadoc.splitindex}" author="${javadoc.author}" version="${javadoc.version}" windowtitle="${javadoc.windowtitle}" private="${javadoc.private}" failonerror="true">
             <classpath>
                 <path path="${javac.classpath}"/>
             </classpath>
