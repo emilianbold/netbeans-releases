@@ -114,17 +114,21 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
     }
     
     
-    public void addChangeListener(ChangeListener l) {
+    public synchronized void addChangeListener(ChangeListener l) {
         listeners.add(l);
     }
     
-    public void removeChangeListener(ChangeListener l) {
+    public synchronized void removeChangeListener(ChangeListener l) {
         listeners.remove(l);
     }
     
     private void fireChange() {
         ChangeEvent e = new ChangeEvent(this);
-        Iterator it = listeners.iterator();
+        List templist;
+        synchronized (this) {
+            templist = new ArrayList (listeners);
+        }
+        Iterator it = templist.iterator();
         while (it.hasNext()) {
             ((ChangeListener)it.next()).stateChanged(e);
         }
