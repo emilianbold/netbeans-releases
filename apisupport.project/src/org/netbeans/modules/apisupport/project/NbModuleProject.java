@@ -35,8 +35,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ProjectInformation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
@@ -61,7 +59,6 @@ final class NbModuleProject implements Project {
     private static final String BUILD_XSL = "nbbuild/templates/build.xsl";
 
     private final AntProjectHelper helper;
-    private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
     private final ModuleList moduleList;
     private Map/*<String,String>*/ evalPredefs;
@@ -72,7 +69,6 @@ final class NbModuleProject implements Project {
         Util.err.log("Loading project in " + getProjectDirectory());
         File nbroot = helper.resolveFile(getNbrootRel());
         moduleList = ModuleList.getModuleList(nbroot);
-        genFilesHelper = new GeneratedFilesHelper(helper);
         FileBuiltQueryImplementation fileBuilt;
         if (supportsUnitTests()) {
             fileBuilt = helper.createGlobFileBuiltQuery(new String[] {
@@ -95,7 +91,7 @@ final class NbModuleProject implements Project {
             new Info(),
             helper.createAuxiliaryConfiguration(),
             helper.createCacheDirectoryProvider(),
-            new SavedHook(),
+            //new SavedHook(),
             new OpenedHook(),
             new Actions(this),
             new ClassPathProviderImpl(this),
@@ -327,14 +323,6 @@ final class NbModuleProject implements Project {
         return length == 1;
     }
     
-    private void refreshBuildScripts(boolean p) throws IOException {
-        FileObject buildXsl = getNbrootFile(BUILD_XSL);
-        if (buildXsl != null) {
-            genFilesHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_XML_PATH,
-                buildXsl.getURL(), p);
-        }
-    }
-    
     private final class Info implements ProjectInformation {
         
         private String displayName;
@@ -417,27 +405,11 @@ final class NbModuleProject implements Project {
         
     }
     
-    private final class SavedHook extends ProjectXmlSavedHook {
-        
-        SavedHook() {}
-        
-        protected void projectXmlSaved() throws IOException {
-            refreshBuildScripts(false);
-        }
-        
-    }
-    
     private final class OpenedHook extends ProjectOpenedHook {
         
         OpenedHook() {}
         
         protected void projectOpened() {
-            try {
-                refreshBuildScripts(true);
-            } catch (IOException e) {
-                Util.err.notify(e);
-            }
-            
             // register project's classpaths to GlobalClassPathRegistry
             ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
