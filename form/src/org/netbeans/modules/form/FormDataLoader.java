@@ -66,6 +66,7 @@ public class FormDataLoader extends JavaDataLoader {
     if (indx > 0) {
       name = name.substring (0, indx);
     }
+    if (javaFile.getParent() == null) return null; // handle critical situation
     return javaFile.getParent().getFileObject (name, ext);
 
   }
@@ -141,6 +142,8 @@ public class FormDataLoader extends JavaDataLoader {
 
 /*
  * Log
+ *  17   Gandalf   1.16        8/2/99   Ian Formanek    Fixes potential 
+ *       deserialization problem
  *  16   Gandalf   1.15        7/20/99  Ian Formanek    
  *  15   Gandalf   1.14        6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
