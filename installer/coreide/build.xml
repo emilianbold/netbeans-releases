@@ -42,10 +42,11 @@ Microsystems, Inc. All Rights Reserved.
     <tstamp>
     	<format property="buildnumber" pattern="yyMMdd"/>
     </tstamp>
+    <property name="buildnumber" value="dev-${buildnumber}"/>
   </target>
   
   <target name="set-installer.basename" unless="unstaller.basename" depends="set-buildnumber">
-    <property name="installer.basename" value="NetBeans-dev-${buildnumber}"/>
+    <property name="installer.basename" value="NetBeans-${buildnumber}"/>
   </target>
   
   <target name="build" depends="init, compile, unzip" description="build the installers">
@@ -86,7 +87,12 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="unzip" depends="init">
     <delete dir="build/netbeans" failonerror="false"/>
-    <unzip src="${nb.zipfile}" dest="build"/>
+    <!-- we must use external unzip utility because the ant unzip task does not handle executable file mode correctly -->
+    <exec executable="unzip" failonerror="true">
+      <arg value="-d"/>
+      <arg value="build"/>
+      <arg value="${nb.zipfile}"/>
+    </exec>
   </target>
   
   <target name="run" depends="init" description="run the installer">
