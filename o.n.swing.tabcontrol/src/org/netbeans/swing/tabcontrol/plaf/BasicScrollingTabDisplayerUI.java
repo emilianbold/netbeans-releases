@@ -255,6 +255,8 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
      */
     protected static class TimerButton extends JButton implements ActionListener {
         Timer timer = null;
+        Image disabledImage = null;
+        Image enabledImage = null;
 
         public TimerButton(Action a) {
             super(a);
@@ -326,6 +328,29 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
             if (fe.getID() == fe.FOCUS_LOST) {
                 stopTimer();
             }
+        }
+
+        protected void paintComponent(Graphics g) {
+            boolean enabled = isEnabled();
+            if (enabled && enabledImage == null
+            || !enabled && disabledImage == null) {
+                GraphicsConfiguration gc = getGraphicsConfiguration();
+                Image intermediateImage = gc.createCompatibleImage(16, 18, Transparency.BITMASK);
+                Graphics2D gImg = (Graphics2D)intermediateImage.getGraphics();
+                gImg.setComposite(AlphaComposite.Src);
+                gImg.setColor(new Color(0, 0, 0, 0));
+                gImg.fillRect(0, 0, 16, 18);
+                super.paintComponent(gImg);
+                gImg.dispose();
+                if (enabled) {
+                    enabledImage = intermediateImage;
+                }
+                else {
+                    disabledImage = intermediateImage;
+                }
+            }
+
+            g.drawImage(enabled? enabledImage: disabledImage, 0, 0, null);
         }
     }
 
