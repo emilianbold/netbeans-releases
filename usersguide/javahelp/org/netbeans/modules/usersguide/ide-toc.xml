@@ -329,7 +329,7 @@
   </tocitem>
 </tocitem>
 
-<tocitem text="Web Module Basics">
+<tocitem text="Web Module Basics" target="intro">
 
 <tocitem text="About Web Modules" target="intro" >
    <tocitem text="About Web Modules" target="intro" />
@@ -384,10 +384,10 @@
       <tocitem text="Working With XML Files" target="webmod_xml" />		
   </tocitem> <!-- Introduction to Web Modules-->
   
-  <tocitem text="JAR Files" target="concepts_jar" >
+  <!--  <tocitem text="JAR Files" target="concepts_jar" >
 	    <tocitem text="About JAR Files in Web Modules" target="concepts_jar"  />   
-            <tocitem text="Adding JAR Files to a Web Module" target="webmod_addjar" />
-  </tocitem> <!-- Working With JAR Files -->
+	    <tocitem text="Adding JAR Files to a Web Module" target="webmod_addjar" /> 
+    </tocitem>--> <!-- Working With JAR Files --> 
   
   <tocitem text="JSP" target="concepts_jsp" > 
       <tocitem text="About JavaServer Pages Technology" target="concepts_jsp" />
@@ -416,28 +416,26 @@
       <tocitem text="About the JSTL" target="webmod_jstl" />
       <tocitem text="Tag Libraries" >
       <tocitem text="Using the Library Manager" target="ctx_repaddto"/>
-      <tocitem text="Adding a Tag Library To a Project" target="tagsupport_fromfilesys" />        
+      <tocitem text="Adding a Tag Library to a Project" target="tagsupport_fromfilesys" />        
       <tocitem text="Using a Tag Library in a JSP File" target="webmod_usetags"/>
       <tocitem text="Deploying a Tag Library"  target="taglib_packlib"/>
       </tocitem>
     
-      <tocitem text="Tag Library Descriptors" >
+      <tocitem text="Tag Library Descriptors" target="concepts_tldfile" >
       <tocitem text="About Tag Library Descriptors" target="concepts_tldfile"  />        
       <tocitem text="Creating a Tag Library Descriptor" target="taglib_createtaglib" />
       <tocitem text="Editing a Tag Library Descriptor" target="ctx_taglibcust" />
       </tocitem>
 
-      <tocitem text="Tag Files (JSP syntax)" >
+      <tocitem text="Tag Files (JSP syntax)" target="webmod_abouttagf" >
       <tocitem text="About Tag Files" target="webmod_abouttagf" />
       <tocitem text="Creating a Tag File" target="webmod_addtagf" />
       <tocitem text="Editing a JSP File" target="jsp_edit" />
       </tocitem>
 	    
-      <tocitem text="Tag Handlers (Java programming language)" >
-      <tocitem text="Creating and Editing Tags" target="ctx_tagcust" />
-      <tocitem text="Creating and Editing Tag Attributes" target="ctx_tagattcust" />
-      <tocitem text="Creating and Editing Scripting Variables" target="ctx_scrvarcust"/>
-      <tocitem text="Generating Java Source Tag Handlers" target="taglib_generate"/>
+      <tocitem text="Tag Handlers (Java programming language)" target="ctx_tagcust">
+      <tocitem text="Creating a Tag Handler" target="ctx_tagcust" />
+      <tocitem text="Defining a Tag Handler's TLD Information" target="edit_taghandler" />
       </tocitem>
   </tocitem> <!-- Developing Tag Libraries and Tag Files -->
 

@@ -381,6 +381,7 @@
 <mapID target="concepts_jar" url="web/concepts/jar.html" />
 <mapID target="ctx_tagattcust" url="web/taglib/ctx_tagattcust.html" />
 <mapID target="taglib_createtaglib" url="web/taglib/createtaglib.html" />
+<mapID target="edit_taghandler" url="web/taglib/edit_taghandler.html" />
 <mapID target="taglib_generate" url="web/taglib/generate.html" />
 <mapID target="taglib_packlib" url="web/taglib/packlib.html" />
 <mapID target="ctx_taglibcust" url="web/taglib/ctx_taglibcust.html" />
