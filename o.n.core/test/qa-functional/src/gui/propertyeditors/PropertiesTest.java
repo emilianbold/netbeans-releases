@@ -136,7 +136,7 @@ public class PropertiesTest {
             props.put(new TestProperty("NbProcessDescriptor",   org.openide.execution.NbProcessDescriptor.class));            
             props.put(new TestProperty("Object",                java.lang.Object.class));            
             props.put(new TestProperty("Point",                 java.awt.Point.class));            
-            props.put(new TestProperty("Properties",            java.util.Properties.class));            
+            props.put(new TestProperty("property_Properties",   java.util.Properties.class));            
             props.put(new TestProperty("Rectangle",             java.awt.Rectangle.class));            
             props.put(new TestProperty("Service Type",          org.openide.ServiceType.class));            
             props.put(new TestProperty("Short",                 java.lang.Short.class));            

@@ -40,7 +40,7 @@ public class PropertyType_Properties extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "Properties";
+        propertyName_L = "property_Properties";
         super.setUp();
     }
     
