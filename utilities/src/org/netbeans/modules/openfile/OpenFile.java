@@ -418,7 +418,7 @@ class OpenFile extends Object {
     File[] mount = new File[] { null };
     String[] pkg = new String[] { null };
     askForMountPoint (f, lvl, mount, pkg);
-    System.out.println ("Mount dir: " + mount[0] + " package: " + pkg[0]);
+//    System.out.println ("Mount dir: " + mount[0] + " package: " + pkg[0]);
   }
   
 }

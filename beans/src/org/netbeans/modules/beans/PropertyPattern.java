@@ -640,7 +640,6 @@ public class PropertyPattern extends Pattern {
     ClassElement declaringClass = getDeclaringClass();
 
     if ( declaringClass == null ) {
-      System.out.println ("nodecl - del getter");
       throw new SourceException();
       }
     else {   
@@ -660,7 +659,6 @@ public class PropertyPattern extends Pattern {
     ClassElement declaringClass = getDeclaringClass();
 
     if ( declaringClass == null ) {
-      System.out.println ("nodecl - del setter");
       throw new SourceException();
       }
     else {
@@ -720,6 +718,8 @@ public class PropertyPattern extends Pattern {
 
 /* 
  * Log
+ *  8    Gandalf   1.7         10/10/99 Petr Hamernik   console debug messages 
+ *       removed.
  *  7    Gandalf   1.6         9/13/99  Petr Hrebejk    Creating multiple 
  *       Properties/EventSet with the same name vorbiden. Forms made i18n
  *  6    Gandalf   1.5         7/29/99  Petr Hrebejk    Fix - change 

@@ -141,7 +141,7 @@ public class PropertiesOpen extends OpenSupport implements ModalOpenCookie {
         final DialogDescriptor dd = new DialogDescriptor(mainPanel, obj.getName());
         dd.setButtonListener(new ActionListener() {
           public void actionPerformed(ActionEvent event) {           
-System.out.println("closing ...");          
+//System.out.println("closing ...");
             boolean closeIt;
             if (!hasOpenComponent())
               closeIt = closeLast();

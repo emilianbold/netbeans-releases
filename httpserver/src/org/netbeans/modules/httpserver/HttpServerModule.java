@@ -101,7 +101,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
               } 
               catch (Throwable ex) {
                 // couldn't start
-ex.printStackTrace();                
+//ex.printStackTrace();
                 serverThread = null;
                 inSetRunning = false;
                 HttpServerSettings.OPTIONS.runFailure();
@@ -150,7 +150,7 @@ ex.printStackTrace();
                only if everything else failed */
           } 
           catch (HttpServerException e) {
-e.printStackTrace();
+//e.printStackTrace();
             serverThread.stop(); 
             /* deprecated, but this really is the last resort,
                only if everything else failed */
@@ -198,6 +198,8 @@ e.printStackTrace();
 
 /*
  * Log
+ *  29   Gandalf   1.28        10/10/99 Petr Hamernik   console debug messages 
+ *       removed.
  *  28   Gandalf   1.27        10/7/99  Petr Jiricka    
  *  27   Gandalf   1.26        10/6/99  Petr Jiricka    Removed module 
  *       (de)serialization
