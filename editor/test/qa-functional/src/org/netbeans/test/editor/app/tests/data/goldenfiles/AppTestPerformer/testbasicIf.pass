@@ -1,0 +1,20 @@
+public class X {
+    
+    public static void main(String args[]) {
+        
+        if (a == a) {
+            if (b == b) {
+                a = b;
+            } else {
+                b = a;
+            };
+        } else {
+            if (c == c) {
+                a = c;
+            } else {
+                c = a;
+            };
+        };
+    }
+    
+}
