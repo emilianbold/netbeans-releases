@@ -18,9 +18,7 @@ import java.awt.Image;
 import java.beans.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.*;
 
 import com.netbeans.ide.loaders.DataFolder;
 import com.netbeans.ide.loaders.DataFilter;
@@ -35,31 +33,15 @@ import com.netbeans.ide.util.actions.SystemAction;
 *
 * @author Jaroslav Tulach, Petr Hamernik
 */
-final class DataSystem extends AbstractNode {
+final class DataSystem extends AbstractNode implements RepositoryListener {
   /** generated Serialized Version UID */
   static final long serialVersionUID = -7272169513973465669L;
 
   /** the file system pool to work with */
   private transient Repository fileSystemPool;
 
-  /** list of folders. Vector of DataFolder.
-  * This item is non-transient because DataObjects are in the ObjectStream
-  * and they will be not created by calling constructor. So in initialize
-  * method will be acquired these instances instead of new ones.
-  */
-  Vector roots;
-
-  /** array of subnodes */
-  private transient Node[] rootArray;
-
   /** filter for the data system */
   DataFilter filter;
-
-  /** listener for file system pool actions. */
-  private transient RepositoryListener fsPoolL;
-
-  /** listeners for changes in hidden state of the file system */
-  transient PropertyChangeListener propL;
 
   /** Constructor.
   * @param fsp file system pool
@@ -68,7 +50,7 @@ final class DataSystem extends AbstractNode {
   private DataSystem(Children ch, Repository fsp, DataFilter filter) {
     super (ch);
     fileSystemPool = fsp;
-    preinitialize (filter);
+    this.filter = filter;
     initialize();
     setIconBase ("/com/netbeans/developer/impl/resources/repository");
     setName (NbBundle.getBundle (this).getString ("dataSystemName"));
@@ -86,9 +68,7 @@ final class DataSystem extends AbstractNode {
   /** Factory for DataSystem instances */
   public static DataSystem getDataSystem(DataFilter filter) {
     if (filter == null) filter = DataFilter.ALL;
-    DSMap my = new DSMap();
-    DataSystem ds = new DataSystem(my, filter);
-    my.setDS(ds);
+    DataSystem ds = new DataSystem(new DSMap (), filter);
     return ds;
   }
 
@@ -97,60 +77,14 @@ final class DataSystem extends AbstractNode {
     return getDataSystem(null);
   }
 
-  /** Used in constructor and immediatelly after deserialization.
-  * @param filter the filter to use
-  */
-  void preinitialize (DataFilter filter) {
-    this.filter = filter;
-    roots = new Vector ();
-  }
-
-  /** Initializes object. Called from constructor and read method.
-  */
   void initialize () {
-    fsPoolL = new RepositoryListener () {
-      /** Called when new file system is added to the pool.
-      * @param ev event describing the action
-      */
-      public void fileSystemAdded (RepositoryEvent ev) {
-        addFS (ev.getFileSystem (), false);
-      }
-
-      /** Called when a file system is deleted from the pool.
-      * @param ev event describing the action
-      */
-      public void fileSystemRemoved (RepositoryEvent ev) {
-        removeFS (ev.getFileSystem (), false);
-      }
-      /** Called when the fsp is reordered */
-      public void fileSystemPoolReordered(RepositoryReorderedEvent ev) {
-        reorder(ev);
-      }
-    };
-    // PENDING - turn the listener to weak one in JDK 1.2
-    //   and add removing of the listener when this object is finalized
-    fileSystemPool.addRepositoryListener (fsPoolL);
-
-    propL = new PropertyChangeListener () {
-      public void propertyChange (PropertyChangeEvent ev) {
-        if (ev.getPropertyName ().equals ("hidden")) {
-          // change in the hidden state of a file system
-          FileSystem fs = (FileSystem)ev.getSource ();
-          if (fs.isHidden ()) {
-            removeFS(fs, true);
-          } else {
-            addFS (fs, true);
-          }
-        } else if (ev.getPropertyName().equals("name")) {
-          FileSystem fs = (FileSystem)ev.getSource ();
-          removeFS(fs, false);
-          addFS(fs, false);
-        }
-      }
-    };
-
-    // clear array of nodes
-    rootArray = null;
+    fileSystemPool.addRepositoryListener (new WeakListener.Repository (this));
+    Enumeration en = fileSystemPool.getFileSystems ();
+    while (en.hasMoreElements ()) {
+      FileSystem fs = (FileSystem)en.nextElement ();
+      fs.addPropertyChangeListener (new WeakListener.PropertyChange ((DSMap)getChildren ()));
+    }
+    refresh ();
   }
 
   /** Initializes properties by adding them to the sheet.
@@ -199,7 +133,7 @@ final class DataSystem extends AbstractNode {
   * @param fs the file system
   * @return the DataFolder that will represent it
   */
-  DataFolder createRoot (FileSystem fs) {
+  static DataFolder createRoot (FileSystem fs) {
     return DataFolder.findFolder (fs.getRoot());
   }
 
@@ -219,184 +153,84 @@ final class DataSystem extends AbstractNode {
     };
   }
 
-  /** Adds a file system as a child.
-  * @param fs file system to add
-  * @param light only hidden (<CODE>true</CODE>) => do not attach listeners
+  /** Called when new file system is added to the pool.
+  * @param ev event describing the action
   */
-  void addFS(FileSystem fs, boolean light) {
-    if (!light) {
-      fs.addPropertyChangeListener (propL);
-    }
-    if (!fs.isHidden ()) {
-      DataFolder df = createRoot(fs);
-      roots.addElement (df);
-      Node n = new RootFolderNode(df, df.createNodeChildren(filter));
-      getDSMap().addFS(df, n);
-      rootArray = null;
-    }
+  public void fileSystemAdded (RepositoryEvent ev) {
+    ev.getFileSystem ().addPropertyChangeListener (new WeakListener.PropertyChange ((DSMap)getChildren ()));
+    refresh ();
   }
 
-  /** Removes a file system from list of children.
-  * @param fs file system
-  * @param light only hidden (<CODE>true</CODE>) => do not detach listeners
+  /** Called when a file system is deleted from the pool.
+  * @param ev event describing the action
   */
-  void removeFS(FileSystem fs, boolean light) {
-    DataFolder df = createRoot(fs);
-    if (!light) {
-      fs.removePropertyChangeListener(propL);
-    }
-    if (roots.removeElement(df)) {
-      Node n = getDSMap().removeFS(df);
-      rootArray = null;
-    }
+  public void fileSystemRemoved (RepositoryEvent ev) {
+    refresh ();
+  }
+  /** Called when the fsp is reordered */
+  public void fileSystemPoolReordered(RepositoryReorderedEvent ev) {
+    refresh ();
+  }
+  
+  /** Refreshes the pool.
+  */
+  void refresh () {
+    refresh (null);
+  }
+  
+  /** Refreshes the pool.
+  * @param fs file system to remove
+  */
+  void refresh (FileSystem fs) {
+    ((DSMap)getChildren ()).refresh (fileSystemPool, fs);
   }
 
-  /** Reorders nodes.
-  * @param ev
-  * Acquires from ev.getPermutation() a permutation. However, this one contains
-  * filesystems that are hidden. So the method creates new permutation e.g
-  * 3,4,1,5 (from original 3,4,1,0,2,5 where 0,2 are hidden). This new permutation
-  * is then changed to 1,2,0,3 and sent to ChildrenMap.reorder().
+  /** Children that listens to changes in filesystem pool.
   */
-  final void reorder(RepositoryReorderedEvent ev) {
-    if (getChildren().getNodesCount() < 2) return; // nothing to do
-    final FileSystem[] fss = ev.getRepository().toArray();
-    Heap heap = new Heap();
+  static class DSMap extends Children.Keys implements PropertyChangeListener {
 
-    int[] perm = ev.getPermutation();
-    int[] nperm = new int[getDSMap().size()];  // there is is stored 3,4,1,5
-    int npermptr = 0;
-
-    for (int i = 0; i < fss.length; i++) {
-      if (! fss[perm[i]].isHidden()) {
-        heap.add(perm[i], npermptr);
-        nperm[npermptr++] = i;    // store now
+    public void propertyChange (PropertyChangeEvent ev) {
+      System.out.println ("Property change");
+      if (ev.getPropertyName ().equals ("hidden")) {
+        // change in the hidden state of a file system
+        getDS ().refresh ();
+      } else if (ev.getPropertyName().equals("root")) {
+        FileSystem fs = (FileSystem)ev.getSource ();
+        getDS ().refresh (fs);
+        getDS ().refresh ();
       }
     }
-
-    int size = heap.size();
-
-    for (int i = 0; i < size; i++) {
-      nperm[heap.getMin()[1]] = i;   // change to 1,2,0,3
+    
+    /** The node */
+    private DataSystem getDS() {
+      return (DataSystem)getNode ();
     }
 
-    getDSMap().reorder(nperm);
-  }
-
-  /** @return a reference to DSMap */
-  DSMap getDSMap() {
-    return (DSMap) getChildren();
-  }
-
-  static class DSMap extends Index.MapChildren {
-    DataSystem ref;
-    void setDS(DataSystem ref) {
-      this.ref = ref;
-    }
-    void addFS(Object key, Node fsn) {
-      super.put(key, fsn);
-    }
-    Node removeFS(Object key) {
-      Node n = (Node) nodes.get(key);
-      super.remove(key);
-      return n;
-    }
-    int size() {
-      return nodes.size();
+    protected Node[] createNodes (Object key) {
+      DataFolder df = createRoot ((FileSystem)key);
+      return new Node[] { new RootFolderNode (df, df.createNodeChildren (getDS ().filter)) };
     }
 
-    // must not be called from constructor of DataSystem
-    protected java.util.Map initMap() {
-      if (ref == null) throw new RuntimeException();
-      Enumeration en = NbTopManager.getDefaultRepository ().getFileSystems();
-      java.util.Map map = new java.util.HashMap();
+    /** Refreshes the pool.
+    * @param fileSystemPool the pool
+    * @param fs file system to remove
+    */
+    public void refresh (Repository fileSystemPool, FileSystem fs) {
+      Enumeration en = fileSystemPool.getFileSystems ();
+      ArrayList list = new ArrayList ();
       while (en.hasMoreElements ()) {
-        // the root that should represent the file system
-        FileSystem fs = (FileSystem)en.nextElement ();
-        fs.addPropertyChangeListener(ref.propL);
-        if (!fs.isHidden ()) {
-          DataFolder df = ref.createRoot(fs);
-          ref.roots.addElement(df);
-          map.put(df, new RootFolderNode(df, df.createNodeChildren(ref.filter)));
+        Object o = en.nextElement ();
+        if (fs != o && !((FileSystem)o).isHidden ()) {
+          list.add (o);
         }
       }
-      return map;
+      setKeys (list);
     }
-  }
-
-  /** Like heapsort heap. */
-  static class Heap {
-    /** array of integers */
-    private int[][] array;
-    /** size */
-    private int size;
-
-    public Heap() {
-      array = new int[10][];
-      size = 0;
-    }
-
-    /** @return a size of the heap */
-    public int size() {
-      return size;
-    }
-
-    /** Adds an integer to the heap */
-    public void add(int key, int val) {
-      if (size == array.length) {
-        int[][] narray = new int[2 * size][];
-        System.arraycopy(array, 0, narray, 0, size);
-        array = narray;
-      }
-      int index = size, prev;
-      int[] neu = new int[] {key, val};
-      array[size++] = neu;
-      while (index > 0) {
-        prev = ((index + 1) / 2) - 1;  // prev item
-        if (array[index][0] == array[prev][0]) throw new IllegalArgumentException();
-        if (array[index][0] < array[prev][0]) {
-          int tmp[] = array[index];
-          array[index] = array[prev];
-          array[prev] = tmp;
-        } else {
-          break;
-        }
-        index = prev;
-      }
-    }
-
-    /** Removes min. */
-    public int[] getMin() {
-      if (size == 0) throw new java.util.NoSuchElementException();
-      int[] ret = array[0];
-      array[0] = array[--size];
-      int r, l, index = 0;
-
-      do {
-        r = 2 * (index + 1);
-        l = 2 * (index + 1) - 1;
-
-        if (l >= size) break; // at the bottom
-        if (r >= size) {
-          int[] tmp = array[l];
-          array[l] = array[index];
-          array[index] = tmp;
-          break;
-        }
-        int next = array[l][0] < array[r][0] ? l : r;
-        if (array[index][0] > array[next][0]) {
-          int tmp[] = array[next];
-          array[next] = array[index];
-          array[index] = tmp;
-        }
-        index = next;
-      } while(true);
-      return ret;
-    }
+    
   }
 
   /** Serialization. */
-  static class DSHandle implements Handle {
+  private static class DSHandle implements Handle {
     DataFilter filter;
 
     public DSHandle(DataFilter f) {
@@ -411,6 +245,7 @@ final class DataSystem extends AbstractNode {
 
 /*
  * Log
+ *  9    Gandalf   1.8         3/21/99  Jaroslav Tulach Repository displayed ok.
  *  8    Gandalf   1.7         3/19/99  Jaroslav Tulach TopManager.getDefault 
  *       ().getRegistry ()
  *  7    Gandalf   1.6         3/17/99  Ian Formanek    Short Description, 
