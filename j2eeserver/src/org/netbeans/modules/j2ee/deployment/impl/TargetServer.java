@@ -43,12 +43,11 @@ public class TargetServer {
     public TargetServer(ServerInstance instance, Target[] targets, String[] ids) {
         this.targets = targets; this.instance = instance; this.ids = ids;
     }
-    private Target[] getTargets() 
-	{
+    private Target[] getTargets() {
         if (targets == null)
-			targets = instance.getDeploymentManager().getTargets();
-		return targets;
-	}
+            targets = instance.getDeploymentManager().getTargets();
+        return targets;
+    }
     private TargetModuleID[] getModules() {
         if(modules == null && ids != null) {
             try {
@@ -65,7 +64,7 @@ public class TargetServer {
                 }
             } catch (TargetException te) {
                 // PENDING log this exception.
-				te.printStackTrace();
+                te.printStackTrace();
             }
         }
         return modules;
@@ -85,52 +84,51 @@ public class TargetServer {
     public boolean canReceiveDirectory(InplaceDeployment inplace) {
         return inplace.canReceiveDirectory(getTargets());
     }
-		
+    
     public void start(DeployProgressUI ui) {
-		start(ui, false);
-	}
-    public void /*DebuggerInfo[] */ startDebugging(DeployProgressUI ui)
-    {
-      return ;//start_private(ui, true);
+        start(ui, false);
     }
-
+    public void /*DebuggerInfo[] */ startDebugging(DeployProgressUI ui) {
+        return ;//start_private(ui, true);
+    }
+    
     public void start(DeployProgressUI ui, boolean debugMode) {
-      start_private(ui, debugMode);
+        start_private(ui, debugMode);
     }
     private void /* DebuggerInfo[] */ start_private(DeployProgressUI ui, boolean debugMode) {
         StartServer starter = instance.getStartServer();
         if(starter == null || ! starter.supportsStartDeploymentManager())
-			return ;//null;
-
-		int work = 0;
-                // PENDING  Get a non-null ProgressObject
-		progressObject = starter.startDeploymentManager();
+            return ;//null;
+        
+        int work = 0;
+        // PENDING  Get a non-null ProgressObject
+        progressObject = starter.startDeploymentManager();
+        if ( progressObject == null) {
+            ui.addMessage("Starting deployment manager");
+            ui.addError("");    // NOI18N
+            ui.recordWork(++work);
+        }
+        else {
+            setProgressObject(ui, progressObject);
+        }
+        
+        for (int i = 0; i < getTargets().length; i++) {
+            if (debugMode)
+                return ;// starter.startDebugging(getTargets()[i]);
+            else {
+                // PENDING get a non-null progress object
+                progressObject = starter.startServer(getTargets()[i]);
                 if ( progressObject == null) {
-                    ui.addMessage("Starting deployment manager");
+                    ui.addMessage("Starting target: "+ getTargets()[i]);
                     ui.addError("");    // NOI18N
-                    ui.recordWork(++work);
+                    ui.recordWork(++work>2 ? 2 : work);
                 }
                 else {
                     setProgressObject(ui, progressObject);
                 }
-
-		for (int i = 0; i < getTargets().length; i++) {
-			if (debugMode)
-				return ;// starter.startDebugging(getTargets()[i]);
-			else {
-                                // PENDING get a non-null progress object
-				progressObject = starter.startServer(getTargets()[i]);
-                                if ( progressObject == null) {
-                                    ui.addMessage("Starting target: "+ getTargets()[i]);
-                                    ui.addError("");    // NOI18N
-                                    ui.recordWork(++work>2 ? 2 : work);
-                                }
-                                else {
-                                    setProgressObject(ui, progressObject);
-                                }
-                        }
-		}
-       return ;//null;
+            }
+        }
+        return ;//null;
     }
     
     private boolean setProgressObject(DeployProgressUI progUI, ProgressObject obj) {
@@ -139,7 +137,7 @@ public class TargetServer {
     
     public Map deploy(DeployProgressUI progressUI, File application, InputStream plan, InplaceDeployment inplace, IncrementalDeployment incremental, Map changeList) throws Exception {
         progressObject = null;
-		
+        System.err.println(application.getAbsolutePath());
         getModules();
         if(incremental != null) {
             progressObject = incremental.incrementalRedeploy(modules, application, plan, changeList);
@@ -150,64 +148,64 @@ public class TargetServer {
             setProgressObject(progressUI, progressObject);
         }
         else {
-			System.out.println("Distributing "+application+" to "+java.util.Arrays.asList(getTargets()));
-
-                        progressObject = instance.getDeploymentManager().distribute(getTargets(),new FileInputStream(application),plan);
-                        setProgressObject(progressUI, progressObject);
-
-			//<short-circuit>
-			int count = 0, guard = 7, work = 3;
-                        
-                        final ProgressObject distObj = progressObject;
-                        final Timer timer = new Timer();
-                        timer.schedule(new  TimerTask() {
-                            public void run() {
-                                System.out.println("TimerTask dist command: " + distObj.getDeploymentStatus().getCommand()
-                                    + " is completed: " + distObj.getDeploymentStatus().isCompleted());
-                                if (!distObj.getDeploymentStatus().isCompleted()) {
-                                    throw new RuntimeException("Call to distribute() takes too long...");
-                                }
-                                timer.cancel(); //Terminate the timer thread
-                            }
-                        }
-                        , 15000);   
-
-			
-			TargetModuleID[] modules = progressObject.getResultTargetModuleIDs();
-			System.out.println("Distributed modules: "+Arrays.asList(modules));
-
-			progressObject = instance.getDeploymentManager().start(modules);
-                        setProgressObject(progressUI, progressObject);
-                        
-                        final Timer timer2 = new Timer();
-                        final ProgressObject startObj = progressObject;
-                        timer2.schedule(new  TimerTask() {
-                            public void run() {
-                                System.out.println("TimerTask start command: " + startObj.getDeploymentStatus().getCommand()
-                                    + " is completed: " + startObj.getDeploymentStatus().isCompleted());
-                                if (!startObj.getDeploymentStatus().isCompleted()) {
-                                    System.out.println("Call to start() takes too long...");
-                                }
-                                timer2.cancel(); //Terminate the timer thread
-                            }
-                        }
-                        , 120000);
-                        
-			modules = progressObject.getResultTargetModuleIDs();
-			System.out.println("Started modules: "+Arrays.asList(modules));
-
-                        Map ret = new HashMap();
-                        for(int i = 0; i < modules.length; i++)
-                            ret.put(modules[i].getTarget(), modules[i].getModuleID());
-                                    return ret;
-                                    //</short-circuit>
-		}
+            System.out.println("Distributing "+application+" to "+java.util.Arrays.asList(getTargets()));
+            
+            progressObject = instance.getDeploymentManager().distribute(getTargets(),new FileInputStream(application),plan);
+            setProgressObject(progressUI, progressObject);
+            
+            //<short-circuit>
+            int count = 0, guard = 7, work = 3;
+            
+            final ProgressObject distObj = progressObject;
+            final Timer timer = new Timer();
+            timer.schedule(new  TimerTask() {
+                public void run() {
+                    System.out.println("TimerTask dist command: " + distObj.getDeploymentStatus().getCommand()
+                    + " is completed: " + distObj.getDeploymentStatus().isCompleted());
+                    if (!distObj.getDeploymentStatus().isCompleted()) {
+                        throw new RuntimeException("Call to distribute() takes too long...");
+                    }
+                    timer.cancel(); //Terminate the timer thread
+                }
+            }
+            , 15000);
+            
+            
+            TargetModuleID[] modules = progressObject.getResultTargetModuleIDs();
+            System.out.println("Distributed modules: "+Arrays.asList(modules));
+            
+            progressObject = instance.getDeploymentManager().start(modules);
+            setProgressObject(progressUI, progressObject);
+            
+            final Timer timer2 = new Timer();
+            final ProgressObject startObj = progressObject;
+            timer2.schedule(new  TimerTask() {
+                public void run() {
+                    System.out.println("TimerTask start command: " + startObj.getDeploymentStatus().getCommand()
+                    + " is completed: " + startObj.getDeploymentStatus().isCompleted());
+                    if (!startObj.getDeploymentStatus().isCompleted()) {
+                        System.out.println("Call to start() takes too long...");
+                    }
+                    timer2.cancel(); //Terminate the timer thread
+                }
+            }
+            , 120000);
+            
+            modules = progressObject.getResultTargetModuleIDs();
+            System.out.println("Started modules: "+Arrays.asList(modules));
+            
             Map ret = new HashMap();
-            TargetModuleID[] ids = progressObject.getResultTargetModuleIDs();
-            for(int i = 0; i < ids.length; i++)
-                ret.put(ids[i].getTarget(),ids[i].getModuleID());
-            ProgressObject st = instance.getDeploymentManager().start(progressObject.getResultTargetModuleIDs());
-            setProgressObject(progressUI, st);
+            for(int i = 0; i < modules.length; i++)
+                ret.put(modules[i].getTarget(), modules[i].getModuleID());
             return ret;
+            //</short-circuit>
+        }
+        Map ret = new HashMap();
+        TargetModuleID[] ids = progressObject.getResultTargetModuleIDs();
+        for(int i = 0; i < ids.length; i++)
+            ret.put(ids[i].getTarget(),ids[i].getModuleID());
+        ProgressObject st = instance.getDeploymentManager().start(progressObject.getResultTargetModuleIDs());
+        setProgressObject(progressUI, st);
+        return ret;
     }
 }

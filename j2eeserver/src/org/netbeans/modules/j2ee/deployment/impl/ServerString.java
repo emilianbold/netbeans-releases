@@ -70,6 +70,7 @@ public class ServerString implements java.io.Serializable {
     }
     
     public String toString() {
+        if (targets == null) return "Server " + plugin + " Instance " + instance + " Targets none";
         return "Server " + plugin + " Instance " + instance + " Targets " + targets.length;
         }
 }

@@ -70,6 +70,7 @@ public class ServerInstance implements Node.Cookie {
 	
     public StartServer getStartServer() {
         StartServer ret = server.getStartServer();
+        if (ret == null) return null;
         ret.setDeploymentManager(manager);
         return ret;
     }
