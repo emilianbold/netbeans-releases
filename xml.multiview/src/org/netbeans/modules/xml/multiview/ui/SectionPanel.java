@@ -90,7 +90,9 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     }
 
     protected void openInnerPanel() {
-        closeInnerPanel(); // close previous inner panel if exists
+        if (innerPanel != null) {
+            return;
+        }
         innerPanel = createInnerpanel();
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -146,7 +148,6 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
      */
     public void open() {
         foldButton.setSelected(false);
-        //contentPanel.setVisible(true);
         openInnerPanel();
         filler.setVisible(true);
     }
