@@ -136,6 +136,7 @@ public class BaseOptions extends OptionSupport {
     public static final String TEXT_LIMIT_LINE_COLOR_PROP = "textLimitLineColor"; // NOI18N
     public static final String TEXT_LIMIT_LINE_VISIBLE_PROP = "textLimitLineVisible"; // NOI18N
     public static final String TEXT_LIMIT_WIDTH_PROP = "textLimitWidth"; // NOI18N
+    public static final String TOOLBAR_VISIBLE_PROP = "toolbarVisible"; // NOI18N
     
     static final String[] BASE_PROP_NAMES = {
         ABBREV_MAP_PROP,
@@ -1099,7 +1100,15 @@ public class BaseOptions extends OptionSupport {
         setSettingBoolean(ExtSettingsNames.HIGHLIGHT_CARET_ROW, highlight,
         HIGHLIGHT_CARET_ROW_PROP);
     }
+
+    public boolean isToolbarVisible() {
+        return getSettingBoolean(TOOLBAR_VISIBLE_PROP);
+    }
     
+    public void setToolbarVisible(boolean toolbarVisible) {
+        setSettingBoolean(TOOLBAR_VISIBLE_PROP, toolbarVisible, TOOLBAR_VISIBLE_PROP);
+    }
+        
     /** Retrieves the actions from XML file */
     public void initPopupMenuItems(){
         if (!BASE.equals(getTypeName())){

@@ -259,6 +259,14 @@ public class AllOptionsFolder{
         getBase().setKeyBindingList(list);
     }
     
+    public boolean isToolbarVisible() {
+        return getBase().isToolbarVisible();
+    }
+    
+    public void setToolbarVisible(boolean toolbarVisible) {
+        getBase().setToolbarVisible(toolbarVisible);
+    }
+
     /** Loads default global keyBindings List and initializes it.
      *  It is used mainly by other options for initializing global keyBindings */
     protected void loadDefaultKeyBindings(){

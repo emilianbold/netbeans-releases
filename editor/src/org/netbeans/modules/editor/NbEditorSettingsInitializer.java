@@ -42,6 +42,8 @@ import org.openide.actions.DeleteAction;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.editor.options.OptionUtilities;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
+import org.netbeans.editor.BaseKit;
+import org.netbeans.modules.editor.options.BaseOptions;
 
 /**
 * Customized settings for NetBeans editor
@@ -84,13 +86,17 @@ public class NbEditorSettingsInitializer extends Settings.AbstractInitializer {
     *   that updates it or if no previous initializers updated it.
     */
     public void updateSettingsMap(Class kitClass, Map settingsMap) {
-  
+
+        if (kitClass == BaseKit.class) {
+            settingsMap.put(BaseOptions.TOOLBAR_VISIBLE_PROP, Boolean.TRUE);
+        }
+
         if (kitClass == NbEditorKit.class) {
             // init popup menu items from layer folder
             if (AllOptionsFolder.getDefault().baseInitialized()){
                 // put to the settings map only if base options has been initialized. See #19470
                 settingsMap.put(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST,
-                OptionUtilities.getPopupStrings(OptionUtilities.getGlobalPopupMenuItems())
+                    OptionUtilities.getPopupStrings(OptionUtilities.getGlobalPopupMenuItems())
                 );
             }
         }
