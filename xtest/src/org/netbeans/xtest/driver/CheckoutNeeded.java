@@ -66,6 +66,11 @@ public class CheckoutNeeded extends Task {
             String module = tokenizer.nextToken();          
             String branches = this.getProject().getProperty( module + ".branch" ); //NOI18N
             if (branches == null) throw new BuildException("Module "+module+" hasn't specified branches");  //NOI18N
+            checkoutModule(module,branches);
+        }
+    }
+            
+    public void checkoutModule(String module, String branches) {
             StringTokenizer branchTokens = new StringTokenizer( branches, "," );
             while (branchTokens.hasMoreElements()) {
                 String repository = branchTokens.nextToken();
@@ -98,7 +103,6 @@ public class CheckoutNeeded extends Task {
                 log( module + " OK" ); //NOI18N
                 
             }
-        }        
     }
 
     public void execute() throws BuildException {
@@ -145,9 +149,10 @@ public class CheckoutNeeded extends Task {
           String instance_dir = cvs_workdir + File.separator + instance.replace('/',File.separatorChar);
           if (master_config == null) master_config = instance_dir + File.separator + "master-config.xml";
           
-          if (getProject().getProperty(instance+".branch") == null) 
-              getProject().setProperty(instance+".branch",cvs_root);
-          checkout(instance);
+          String instance_branch = getProject().getProperty(instance+".branch");
+          if (instance_branch == null) 
+              instance_branch = cvs_root;
+          checkoutModule(instance,instance_branch);
           
           readMasterConfig(modules_set,project.resolveFile(master_config),config,testroot);
           log("Master config read: "+modules_set);
