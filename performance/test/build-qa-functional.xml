@@ -142,4 +142,26 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
     
+    
+    <target name="runidetest_memory_usage" depends="ide_command_line_suffix">
+        <delete dir="${xtest.workdir}/sys/ide"/>
+        <copy todir="${xtest.workdir}/sys/ide">
+            <fileset dir="${xtest.workdir}/sys/ide_backup"/>
+        </copy>
+        <antcall target="copy_released_ide_cfg_file"/>
+       
+        <executeTests pluginName="ide">
+            <classpath refid="jemmy.and.jelly.path"/>
+            <classpath refid="performance.testutilities"/>
+            
+            <property name="xtest.ide.reuse.userdir" value="true"/>
+            <property name="xtest.timeout" value="3600000" />
+            
+            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.memory.repeat=20" />
+        </executeTests>
+        
+        <antcall target="copy_original_ide_cfg_file"/>
+    </target>
+    
+    
 </project>

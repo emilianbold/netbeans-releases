@@ -67,9 +67,6 @@ public class MeasureActions  {
         suite.addTest(new CloseEditor("testClosing20kBJavaFile", "Close Java file (20kB)"));
 //TODO Form designer isn't TopComponent        suite.addTest(new CloseEditor("testClosing20kBFormFile", "Close Form file (20kB)"));
 
-/*
-    TEMPORARY commented -> try to solve never finixhed tests
- 
         suite.addTest(new CloseAllEditors("testClosingAllJavaFiles", "Close All Documents if 10 Java files opened"));
         
         suite.addTest(new CloseEditorTab("testClosingTab", "Close on tab from Editor window"));
@@ -77,7 +74,7 @@ public class MeasureActions  {
         suite.addTest(new CloseEditorModified("testClosingModifiedJavaFile", "Close modified Java file"));
         
         suite.addTest(new SaveModifiedFile("testSaveModifiedJavaFile", "Save modified Java file"));
-*/
+
         suite.addTest(new SelectCategoriesInNewFile("testSelectGUIForms","Select GUI Forms in New File"));
         suite.addTest(new SelectCategoriesInNewFile("testSelectXML","Select XML in New File"));
         suite.addTest(new SelectCategoriesInNewFile("testSelectOther","Select Other in New File"));
