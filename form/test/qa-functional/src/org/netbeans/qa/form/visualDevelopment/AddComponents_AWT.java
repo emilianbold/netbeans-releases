@@ -20,7 +20,6 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.modules.form.*;
-import org.netbeans.jellytools.modules.form.actions.FormEditorViewAction;
 import org.netbeans.jellytools.modules.form.properties.editors.*;
 import org.netbeans.jellytools.nodes.*;
 import org.netbeans.jellytools.properties.*;
@@ -66,9 +65,6 @@ public class AddComponents_AWT extends JellyTestCase {
     
     protected void setUp() {
         mainWindow = MainWindowOperator.getDefault();
-        //mainWindow.setSDI();
-        mainWindow.switchToGUIEditingWorkspace();
-        
         FilesystemNode node = new FilesystemNode("src");
         fileSystem = node.getTreePath().getPathComponent(1).toString();
         
@@ -92,17 +88,17 @@ public class AddComponents_AWT extends JellyTestCase {
         FormNode formnode = new FormNode("src|" + packageName + "|" + fileName);
         formnode.open();
         log("Try to find Form Editor window ");
-        FormEditorOperator formeditor = new FormEditorOperator();
-        formeditor.selectForm(fileName);        
+        FormDesignerOperator formDesigner = new FormDesignerOperator(fileName);
+//        formeditor.selectForm(fileName);        
         log("\t - Form Editor Window found OK");
                 
         log("Try to find Form Designer ");        
-        FormDesignerOperator formDesigner = formeditor.designer();        
+//        FormDesignerOperator formDesigner = formeditor.designer();        
         log("\t - Form Designer found OK");
         
         
         // add all beans from tab to form
-        ComponentPaletteOperator palette = formeditor.palette();
+        ComponentPaletteOperator palette = new ComponentPaletteOperator();
         PaletteUtil paletteUtil = new PaletteUtil(palette);        
         JListOperator list = palette.selectPage(categoryName);
         for (int i=0;i<list.getModel().getSize();i++) {
@@ -112,20 +108,21 @@ public class AddComponents_AWT extends JellyTestCase {
             System.out.println("component: " + component);
             sleep(1000);
            //formeditor.addComponent(categoryName, component, formDesigner.componentLayer().getSource());
-            formeditor.palette().selectPage(categoryName);
-            formeditor.palette().selectComponent(component);
-            formeditor.designer().clickOnComponent(formDesigner.componentLayer().getSource(), new Point(20,100));
+            palette.selectPage(categoryName);
+            palette.selectComponent(component);
+            formDesigner.clickOnComponent(formDesigner.componentLayer().getSource(), new Point(20,100));
         }        
         
         // close form editor window
         log("Try to close Form Editor window ");
-        formeditor.close();
+        formDesigner.close();
         log(" - ok");
         
         // try compile created source file and check compile errors
         formnode.compile();
         
         log("All components from Component Palette : " + categoryName + " - were added to " + fileName);
+     
     }
     
     

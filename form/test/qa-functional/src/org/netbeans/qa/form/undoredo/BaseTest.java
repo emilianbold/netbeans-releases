@@ -19,7 +19,6 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.modules.form.*;
-import org.netbeans.jellytools.modules.form.actions.FormEditorViewAction;
 import org.netbeans.jellytools.modules.form.properties.editors.*;
 import org.netbeans.jellytools.nodes.*;
 import org.netbeans.jellytools.properties.*;
@@ -35,9 +34,14 @@ import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 public class BaseTest extends JellyTestCase {
-    EditorOperator editor;
+    
     ComponentInspectorOperator inspector;
+    FormDesignerOperator formDesigner;
+    ComponentPaletteOperator palette;
+    
+    EditorOperator editor;
     EditorWindowOperator ewo;
+    String fileName;
     
     /** */
     public BaseTest(String testName) {
@@ -75,22 +79,19 @@ public class BaseTest extends JellyTestCase {
       
     public void testScenario() {
         Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
-        
+        fileName = "clear_JFrame";        
+
         log("Open clear form");
-        FormEditorOperator formWindow;
-        String fileName = "clear_JFrame";
         String packageName = "data";
-        FormNode node = new FormNode("src|data|clear_JFrame");
+        FormNode node = new FormNode("src|data|clear_JFrame"); 
         node.open();
-        formWindow = new FormEditorOperator();
-        formWindow.selectForm("clear_JFrame");
         ewo = new EditorWindowOperator();
         editor = ewo.getEditor("clear_JFrame");
+
+        formDesigner = new FormDesignerOperator(fileName);
+        palette = new ComponentPaletteOperator();
+        inspector = new ComponentInspectorOperator();
         
-        //editor.switchToTab(fileName);
-        //MainFrame mf = MainFrame.getMainFrame();
-        // add Jpanel1, JPanel2
-        inspector = formWindow.inspector();
         PropertySheetOperator pso = inspector.properties();
         
         new Action(null,"Add From Palette|Swing|JPanel").performPopup(new Node(inspector.treeComponents(),"[JFrame]"));
@@ -98,6 +99,8 @@ public class BaseTest extends JellyTestCase {
         
         //change properties (color)
         inspector.selectComponent("[JFrame]|JPanel1 [JPanel]");
+        selectTab(pso, "Properties");
+        
         new ColorProperty(pso, "background").setRGBValue(202,234,223);
         inspector.selectComponent("[JFrame]|JPanel2 [JPanel]");
         new ColorProperty(pso, "background").setRGBValue(252,34,3);
@@ -115,7 +118,6 @@ public class BaseTest extends JellyTestCase {
         // change properties
         inspector.selectComponent("[JFrame]|JPanel2 [JPanel]|jButton1 [JButton]");
   
-        selectTab(pso, "Properties");
         new Property(pso, "text").setValue("<html><font color='red' size='+3'>QA</font> test");
         
         // change order
@@ -146,8 +148,10 @@ public class BaseTest extends JellyTestCase {
         selectTab(pso, "Events");
         Property prop = new Property(pso, "actionPerformed");
         prop.setValue("myAction");
+        formDesigner = new FormDesignerOperator(fileName);
         selectTab(pso, "Properties");
         
+       
         
         //2x
         for (int i=0;i<2;i++) {
@@ -252,6 +256,8 @@ public class BaseTest extends JellyTestCase {
     }
     
     void undo(int n) {
+        //first switch to FormEditor tab
+        formDesigner = new FormDesignerOperator(fileName);
         MainWindowOperator mainWindow = MainWindowOperator.getDefault();
         inspector.selectComponent("[JFrame]");
         for (int i=0;i<n;i++) {
@@ -262,6 +268,8 @@ public class BaseTest extends JellyTestCase {
     }
     
     void redo(int n) {
+        //first switch to FormEditor tab
+        formDesigner = new FormDesignerOperator(fileName);
         MainWindowOperator mainWindow = MainWindowOperator.getDefault();
         inspector.selectComponent("[JFrame]");
         for (int i=0;i<n;i++) {
@@ -315,6 +323,7 @@ public class BaseTest extends JellyTestCase {
     public static junit.framework.Test suite() {
         return new NbTestSuite(BaseTest.class);
     }
+
     
 }
 
