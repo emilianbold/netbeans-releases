@@ -151,19 +151,19 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
             } catch (FileStateInvalidException x) {
                 throw new AssertionError(x);
             }
+            // There is important calling this. Withouth calling this, will not work java cc in Jsp editor correctly.
             SourceForBinaryQuery.Result res = SourceForBinaryQuery.findSourceRoots (entry);
             FileObject srcForBin [] = res.getRoots ();
             for (int j = 0; j < srcForBin.length; j++) {
                 srcRootSet.add (srcForBin [j]);
             }
         }
-        Set filteredSources = new HashSet ();
+        
+        FileObject[] roots = new FileObject [sg.length];
         for (int i = 0; i < sg.length; i++) {
-            if (srcRootSet.contains (sg [i].getRootFolder ())) {
-                filteredSources.add (sg [i].getRootFolder ());
-            }
+            roots[i] = sg[i].getRootFolder();
         }
-        return (FileObject []) filteredSources.toArray (new FileObject [filteredSources.size ()]);
+        return roots;
     }
     
     /**
@@ -219,6 +219,7 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         private FileObject [] sourcesFOs;
         private ClassPath webClassPath;
         private ClassPath javaSourcesClassPath;
+        private ClassPath composedClassPath = null;
         private String j2eeSpec;
         private String contextPath;
         
@@ -248,17 +249,22 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         public ClassPath findClassPath (FileObject file, String type) {
            int fileType = getType(file);
             
-            if (fileType == 0)
+           if (fileType == 0)
                 return javaSourcesClassPath;
             else 
-                if (fileType == 1)
-                    return webClassPath;
-           // This code shouldn't be executed. Always a source file includes in javasources or websources.
-            FileObject [] all = new FileObject [sourcesFOs.length+1];
-            all[0] = getDocumentBase ();
-            for (int i = 1; i<= sourcesFOs.length; i++)
-                all[i] =sourcesFOs[i-1];
-            return ClassPathSupport.createClassPath(all);
+                if (fileType == 1){
+                    if (composedClassPath == null) {
+                        FileObject [] all = new FileObject [sourcesFOs.length+webClassPath.getRoots().length+1];
+                        all[0] = getDocumentBase();
+                        for (int i = 1; i<= sourcesFOs.length; i++)
+                            all[i] = sourcesFOs[i-1];
+                        for (int i = sourcesFOs.length+1; i < sourcesFOs.length+ webClassPath.getRoots().length +1; i++)
+                            all [i] = webClassPath.getRoots()[i-sourcesFOs.length-1];
+                        composedClassPath = ClassPathSupport.createClassPath(all);
+                    }
+                    return composedClassPath;
+                }
+            return webClassPath;
         }
         
         public String getJ2eePlatformVersion () {
