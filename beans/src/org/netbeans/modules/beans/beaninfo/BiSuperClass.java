@@ -23,6 +23,7 @@ import java.util.Collections;
 import org.netbeans.modules.beans.JMIUtils;
 import org.netbeans.modules.beans.GenerateBeanException;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+import org.netbeans.modules.javacore.jmiimpl.javamodel.MetadataElement;
 import org.netbeans.jmi.javamodel.*;
 
 import javax.jmi.reflect.JmiException;
@@ -95,12 +96,11 @@ final class BiSuperClass extends Object {
                 null,
                 duplicateTypeParameters(orig, jmodel),
                 duplicateParameters(orig, jmodel),
-                null,
+                duplicateExceptionNames(orig, jmodel),
                 null,
                 orig.getDimCount()
                 );
         m.setType(orig.getType());
-        m.getExceptions().addAll(orig.getExceptions());
         return m;
     }
 
@@ -177,6 +177,18 @@ final class BiSuperClass extends Object {
             types.add(param.getType());
         }
         return types;
+    }
+
+    private static List/*<MultipartId>*/ duplicateExceptionNames(Method orig, JavaModelPackage jmodel) {
+        List/*<JavaClass>*/ exIds = orig.getExceptions();
+        
+        List/*<MultipartId>*/ duplicates = new ArrayList/*<MultipartId>*/(exIds.size());
+        for (Iterator it = exIds.iterator(); it.hasNext(); ) {
+            JavaClass ex = (JavaClass) it.next();
+            MultipartId duplicate = jmodel.getMultipartId().createMultipartId(ex.getName(), null, null);
+            duplicates.add(duplicate);
+        }
+        return duplicates;
     }
 
 }

@@ -794,8 +794,9 @@ public class PropertyPattern extends Pattern {
         param.setType(type);
         newSetter.getParameters().add(param);
         if ( constrained ) {
-            JavaClass exception = patternAnalyser.findClassElement("java.beans.PropertyVetoException"); // NOI18N
-            newSetter.getExceptions().add(exception);
+            MultipartId exception = jmodel.getMultipartId().
+                    createMultipartId("java.beans.PropertyVetoException", null, null); // NOI18N
+            newSetter.getExceptionNames().add(exception);
         }
 
         if ( declaringClass.isInterface() ) {

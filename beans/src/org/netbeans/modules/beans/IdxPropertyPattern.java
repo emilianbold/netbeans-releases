@@ -774,10 +774,11 @@ public final class IdxPropertyPattern extends PropertyPattern {
         params.add(newParamValue);
         
         if ( constrained ) {
-            JavaClass propVetoEx = patternAnalyser.findClassElement("java.beans.PropertyVetoException"); // NOI18N
+            MultipartId propVetoEx = jmodel.getMultipartId().
+                    createMultipartId("java.beans.PropertyVetoException", null, null); // NOI18N
             if (propVetoEx == null) 
                 throw new GenerateBeanException("cannot resolve java.beans.PropertyVetoException"); // NOI18N
-            newSetter.getExceptions().add(propVetoEx);
+            newSetter.getExceptionNames().add(propVetoEx);
         }
         if ( declaringClass.isInterface() ) {
             newSetter.setBodyText( null );

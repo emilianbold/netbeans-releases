@@ -220,18 +220,22 @@ public final class EventSetPattern extends Pattern {
             if (!addListenerMethod.isValid()) {
                 return; 
             }
-            JavaClass tooMany = patternAnalyser.findClassElement("java.util.TooManyListenersException"); // NOI18N
-            assert tooMany != null;
-            List/*<JavaClass>*/ exs = addListenerMethod.getExceptions();
+            List/*<MultipartId>*/ exs = addListenerMethod.getExceptionNames();
 
             if (b) {
-                exs.add(tooMany);
+                JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(addListenerMethod);
+                MultipartId tooManyId = jmodel.getMultipartId().
+                        createMultipartId("java.util.TooManyListenersException", null, null); // NOI18N
+                exs.add(tooManyId);
             } else {
-                List/*<JavaClass>*/ remove = new LinkedList/*<JavaClass>*/();
+                JavaClass tooMany = patternAnalyser.findClassElement("java.util.TooManyListenersException"); // NOI18N
+                assert tooMany != null;
+                List/*<MultipartId>*/ remove = new LinkedList/*<MultipartId>*/();
                 for (Iterator it = exs.iterator(); it.hasNext();) {
-                    JavaClass ex = (JavaClass) it.next();
+                    MultipartId exId = (MultipartId) it.next();
+                    JavaClass ex = (JavaClass) exId.getElement();
                     if (tooMany.isSubTypeOf(ex)) {
-                        remove.add(ex);
+                        remove.add(exId);
                     }
                 }
                 exs.removeAll(remove);
