@@ -247,28 +247,28 @@ public class BaseOptions extends OptionSupport {
         kbList.set(i, new MultiKeyBinding(b.key, b.actionName));
       }
     }
-
-    List kb2= new ArrayList( kbList );                                         
-    kb2.add( 0, kitClass.getName() ); //insert kit class name                   
-    return kb2; 
+    
+    List kb2 = new ArrayList( kbList );
+    kb2.add( 0, kitClass.getName() ); //insert kit class name
+    return kb2;
   }
   
   public void setKeyBindingList(List list) {
-    if( list.get( 0 ) instanceof Class || list.get( 0 ) instanceof String ) {   
-      list.remove( 0 ); //remove kit class name                                 
+    if( list.get( 0 ) instanceof Class || list.get( 0 ) instanceof String ) {
+      list.remove( 0 ); //remove kit class name
     }
     setSettingValue(Settings.KEY_BINDING_LIST, list);
   }
 
   public Map getColoringMap() {
-    Map cm = SettingsUtil.getColoringMap(getKitClass(), false);
-    cm.put(null, getKitClass(),getName() ); // add kit class
+    Map cm = new HashMap( SettingsUtil.getColoringMap(getKitClass(), false) );
+    cm.put(null, getKitClass().getName() ); // add kit class name
     return cm;
   }
 
   public void setColoringMap(Map coloringMap) {
     if (coloringMap != null) {
-      coloringMap.remove(null); // remove kit class
+      coloringMap.remove(null); // remove kit class name
       SettingsUtil.updateColoringSettings(getKitClass(), coloringMap, false);
     }
   }
@@ -375,7 +375,7 @@ public class BaseOptions extends OptionSupport {
   }
 
   public Map getFindHistory() {
-    return (Map)getSettingValue(Settings.FIND_HISTORY);
+    return new HashMap( (Map)getSettingValue(Settings.FIND_HISTORY) );
   }
   
   public void setFindHistory(Map m) {
@@ -434,6 +434,7 @@ public class BaseOptions extends OptionSupport {
 
 /*
  * Log
+ *  17   Gandalf-post-FCS1.14.1.1    2/28/00  Petr Nejedly    
  *  16   Gandalf-post-FCS1.14.1.0    2/28/00  Petr Nejedly    Redesign of 
  *       ColoringEditor
  *  15   Gandalf   1.14        1/13/00  Miloslav Metelka Localization
