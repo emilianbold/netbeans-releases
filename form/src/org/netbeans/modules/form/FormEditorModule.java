@@ -27,7 +27,7 @@ public class FormEditorModule implements ModuleInstall {
 
   /** Module installed for the first time. */
   public void installed () {
-    System.out.println("FormEditorModule.java:32");
+    // [PENDING] IAN - Highly temporary solution
     IDESettings is = new IDESettings ();
     String[] bisp = is.getBeanInfoSearchPath ();
     String[] bisp2 = new String[bisp.length+1];
@@ -38,8 +38,7 @@ public class FormEditorModule implements ModuleInstall {
 
   /** Module installed again. */
   public void restored () {
-    System.out.println("FormEditorModule.java:43");
-
+    // [PENDING] IAN - Highly temporary solution
     IDESettings is = new IDESettings ();
     String[] bisp = is.getBeanInfoSearchPath ();
     String[] bisp2 = new String[bisp.length+1];
@@ -64,6 +63,7 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  4    Gandalf   1.3         3/27/99  Ian Formanek    
  *  3    Gandalf   1.2         3/26/99  Ian Formanek    
  *  2    Gandalf   1.1         3/22/99  Ian Formanek    
  *  1    Gandalf   1.0         3/22/99  Ian Formanek    
