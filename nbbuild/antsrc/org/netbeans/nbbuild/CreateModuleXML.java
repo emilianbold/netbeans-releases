@@ -142,7 +142,8 @@ public class CreateModuleXML extends Task {
                     }
                     File xml = new File(xmldir, codenamebase.replace('.', '-') + ".xml");
                     if (xml.exists()) {
-                        log("Will not overwrite " + xml + "; skipping...");
+                        // XXX should check that the old file actually matches what we would have written
+                        log("Will not overwrite " + xml + "; skipping...", Project.MSG_VERBOSE);
                         continue;
                     }
                     String displayname = attr.getValue("OpenIDE-Module-Name");
