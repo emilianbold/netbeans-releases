@@ -30,6 +30,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jar-nbjunit" depends="compile-nbjunit">
+      <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
       <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/nbjunit.jar"
             basedir="src"
             excludesfile="../../nbbuild/standard-jar-excludes.txt"
@@ -58,6 +59,7 @@ Microsystems, Inc. All Rights Reserved.
           </fileset>
         </classpath>
       </javadoc>
+      <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
       <zip zipfile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/nbjunit-api.zip"
            basedir="javadoc/nbjunit-api"/>
   </target>
