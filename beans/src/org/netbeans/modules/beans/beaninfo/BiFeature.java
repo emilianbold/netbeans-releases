@@ -514,9 +514,14 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
             }
 
             sb.append( "new EventSetDescriptor ( " ); // NOI18N
-            sb.append( pattern.getDeclaringClass().getName().getName() + ".class, " ); // NOI18N
+            sb.append( pattern.getDeclaringClass().getName().getFullName() + ".class, " ); // NOI18N
             sb.append( "\"" + this.getName() + "\", " ); // NOI18N
-            sb.append( pattern.getType().toString() + ".class, " ); // NOI18N
+            try {
+                sb.append( pattern.getType().getClassName().getFullName() + ".class, " ); // NOI18N
+            } catch (IllegalStateException e) {
+                org.openide.TopManager.getDefault().notifyException( e );
+                listenerMethods = new org.openide.src.MethodElement[0];
+            }
             sb.append( "new String[] {" ); // NOI18N
             for (int i = 0; i < listenerMethods.length; i++) {
                 if (i > 0) {
