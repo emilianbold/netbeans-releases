@@ -33,12 +33,14 @@ public interface JavaProjectConstants {
     String ARTIFACT_TYPE_JAR = "jar"; // NOI18N
 
     /**
-     * Standard command for running javadoc on the project.
+     * Standard command for running Javadoc on a project.
+     * @see ActionProvider
      */
     String COMMAND_JAVADOC = "javadoc"; // NOI18N
     
     /** 
-     * Standard command for reloading class ino VM and continue debugging.
+     * Standard command for reloading a class in a foreign VM and continuing debugging.
+     * @see ActionProvider
      */
     String COMMAND_DEBUG_FIX = "debug.fix"; // NOI18N
     

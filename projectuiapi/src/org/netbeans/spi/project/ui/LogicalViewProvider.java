@@ -29,6 +29,7 @@ public interface LogicalViewProvider {
      * Projects should not attempt to cache this node in any way;
      * this call should always create a fresh node with no parent.
      * The node's lookup should contain the project object.
+     * It is recommended for the lookup to also contain a {@link NodePathResolver}.
      * @return a node displaying the contents of the project in an intuitive way
      */
     Node createLogicalView();
