@@ -116,7 +116,7 @@ Tests Details
 
 ### Unexpected Passes ###
 <xsl:call-template name="test-details">
-	<xsl:with-param name="test-result">unexpected-pass</xsl:with-param>
+	<xsl:with-param name="test-result">unexpected pass</xsl:with-param>
 	<xsl:with-param name="currentRunID" select="$currentRunID"/>
 </xsl:call-template>
 
@@ -130,7 +130,7 @@ Tests Details
 
 ### Expected Failures ###
 <xsl:call-template name="test-details">
-	<xsl:with-param name="test-result">expected-fail</xsl:with-param>
+	<xsl:with-param name="test-result">expected fail</xsl:with-param>
 	<xsl:with-param name="currentRunID" select="$currentRunID"/>
 </xsl:call-template>
 
