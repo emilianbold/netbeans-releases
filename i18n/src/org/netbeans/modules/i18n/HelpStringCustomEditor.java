@@ -30,7 +30,7 @@ import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
 
 /**
- * Custom editor for editing string type formats with help  pettarn descritions.
+ * Custom editor for editing string type formats with help pattern descritions.
  *
  * @author  Peter Zavadsky
  */
@@ -54,7 +54,7 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
         String[] helpItems = new String[help[0].length];
         
         for(int i=0; i<helpItems.length; i++) {
-            helpItems[i] = help[0][i] + "\t - " + help[1][i]; // NOI18N
+            helpItems[i] = help[0][i] + " - " + help[1][i]; // NOI18N
         }
         
         replaceItems = help[0];
@@ -94,21 +94,21 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
         
         
         list.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-          list.addKeyListener(new java.awt.event.KeyAdapter() {
-              public void keyPressed(java.awt.event.KeyEvent evt) {
-                  listKeyPressed(evt);
-              }
-          }
-          );
-          list.addMouseListener(new java.awt.event.MouseAdapter() {
-              public void mouseClicked(java.awt.event.MouseEvent evt) {
-                  listMouseClicked(evt);
-              }
-          }
-          );
-          scrollPane.setViewportView(list);
-          
-          
+        list.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                listKeyPressed(evt);
+            }
+        }
+        );
+        list.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                listMouseClicked(evt);
+            }
+        }
+        );
+        scrollPane.setViewportView(list);
+        
+        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 1;

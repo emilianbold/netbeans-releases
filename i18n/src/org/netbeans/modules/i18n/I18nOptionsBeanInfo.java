@@ -21,9 +21,6 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.SimpleBeanInfo;
 import java.beans.PropertyDescriptor;
-import java.util.ResourceBundle;
-
-import org.openide.util.NbBundle;
 
 
 /**
@@ -53,14 +50,11 @@ public class I18nOptionsBeanInfo extends SimpleBeanInfo {
             replaceCodePD.setExpert(true);
             regExpPD.setExpert(true);
 
-            // Resource bundle.
-            ResourceBundle bundle = I18nUtil.getBundle();
-            
             // Set display names.
-            genFieldPD.setDisplayName(bundle.getString("TXT_GenerateField"));
-            initCodePD.setDisplayName(bundle.getString("TXT_InitCodeFormat"));
-            replaceCodePD.setDisplayName(bundle.getString("TXT_ReplaceCodeFormat"));
-            regExpPD.setDisplayName(bundle.getString("TXT_RegularExpression"));
+            genFieldPD.setDisplayName(I18nUtil.getBundle().getString("TXT_GenerateField"));
+            initCodePD.setDisplayName(I18nUtil.getBundle().getString("TXT_InitCodeFormat"));
+            replaceCodePD.setDisplayName(I18nUtil.getBundle().getString("TXT_ReplaceCodeFormat"));
+            regExpPD.setDisplayName(I18nUtil.getBundle().getString("TXT_RegularExpression"));
             
             // Set property editors.
             initCodePD.setPropertyEditorClass(HelpStringCustomEditor.InitCodeEditor.class);

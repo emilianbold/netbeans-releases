@@ -16,52 +16,60 @@ package org.netbeans.modules.i18n;
 
 
 import java.awt.BorderLayout;
-import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.ObjectStreamException;
 import java.lang.ref.WeakReference;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.SwingUtilities;
+import javax.swing.JPanel;
 import javax.swing.text.Caret;
 import javax.swing.text.StyledDocument;
-
-import org.netbeans.modules.properties.PropertiesModule;
 
 import org.netbeans.modules.form.FormDataObject;
 
 import org.openide.cookies.EditorCookie;
+import org.openide.DialogDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.NbBundle;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
+import org.openide.windows.Workspace;
 
 
 /**
- * Internationalization manager.
+ * Manages perfroming of i18n action -> i18n-zation of one source.
  *
  * @author   Peter Zavadsky
  */
 public class I18nManager {
     
+    /** Internationalization mode. */
+    public static final String I18N_MODE = "internationalization"; // NOI18N
+    
     /** Singleton instance of I18nManager. */
     private static I18nManager manager;
 
     /** Support for this internatioanlize session. */
-    private I18nJavaSupport support;
+    private I18nSupport support;
 
     /** Weak reference to i18n panel. */
-    private WeakReference i18nPanelWRef;
+    private WeakReference i18nPanelWRef = new WeakReference(null);
     
     /** Weak reference to top component in which internationalizing will be provided. */
-    private WeakReference topComponentWRef;
+    private WeakReference topComponentWRef = new WeakReference(null);
     
     /** Weak reference to caret in editor pane. */
     private WeakReference caretWRef;
+
+    /** Found hard coded string. */
+    private HardCodedString hcString;
     
     
     /** Private constructor. To ge instance use <code>getI18nMananger</code> method instead. */
@@ -82,15 +90,16 @@ public class I18nManager {
     }
     
     /** Get i18n support. */
-    private void initSupport(StyledDocument document, DataObject targetDataObject) {
-        if(isFormDataObject(targetDataObject))
-            support = new I18nFormSupport(document, (FormDataObject)targetDataObject);
+    private void initSupport(StyledDocument document, DataObject sourceDataObject) {
+        
+        if(isFormDataObject(sourceDataObject))
+            support = new FormI18nSupport(sourceDataObject, document);
         else
-            support = new I18nJavaSupport(document, targetDataObject);
+            support = new JavaI18nSupport(sourceDataObject, document);
     }
     
     /** The 'heart' method called by <code>I18nAction</code>. */
-    public void internationalize(StyledDocument document, DataObject targetDataObject) {
+    public void internationalize(StyledDocument document, DataObject sourceDataObject) {
         // If there is insert i18n action working on the same document -> cancel it.
         ((InsertI18nStringAction)SystemAction.get(InsertI18nStringAction.class)).cancel();
         
@@ -98,56 +107,49 @@ public class I18nManager {
         closeDialog();
 
         // Initilialize support.
-        initSupport(document, targetDataObject);
+        initSupport(document, sourceDataObject);
        
         // initialize the component
-        EditorCookie ec = (EditorCookie)targetDataObject.getCookie(EditorCookie.class);
+        EditorCookie ec = (EditorCookie)sourceDataObject.getCookie(EditorCookie.class);
         if(ec == null)
             return;
         
         JEditorPane[] panes = ec.getOpenedPanes();
         if(panes == null) {
-            NotifyDescriptor.Message message = new NotifyDescriptor.Message(NbBundle.getBundle(I18nModule.class).
-                getString("MSG_CouldNotOpen"), NotifyDescriptor.ERROR_MESSAGE);
+            NotifyDescriptor.Message message = new NotifyDescriptor.Message(
+                I18nUtil.getBundle().getString("MSG_CouldNotOpen"), NotifyDescriptor.ERROR_MESSAGE);
             TopManager.getDefault().notify(message);
+            
             return;
         }
-
-        // Gets the top component and keep weak reference to it.
-        topComponentWRef = new WeakReference((TopComponent)SwingUtilities.getAncestorOfClass(TopComponent.class, panes[0]));
-        
-        // Add i18n panel to top component.
-        addI18nPanel();
         
         // Keep only weak ref to caret, the strong one maintains editor pane itself.
         caretWRef = new WeakReference(panes[0].getCaret());
-        
-        // Initializes support.
-        support.initialize();
-        
+
         // do the search
-        if(find())
-            fillDialogValues();
-        else {
-            NotifyDescriptor.Message message = new NotifyDescriptor.Message(NbBundle.getBundle(I18nModule.class).
-                getString("MSG_NoInternationalizableString"), NotifyDescriptor.INFORMATION_MESSAGE); // to info message
-            TopManager.getDefault().notify(message);
+        if(find()) {
+            // Add i18n panel to top component.
+            getDialog(sourceDataObject.getName());
             
-            cancel();
+            fillDialogValues();
+        } else {
+            NotifyDescriptor.Message message = new NotifyDescriptor.Message(
+                I18nUtil.getBundle().getString("MSG_NoInternationalizableString"), NotifyDescriptor.INFORMATION_MESSAGE); // to info message
+            TopManager.getDefault().notify(message);
         }
     }
 
     /** Finds hard coded string. */
     private boolean find() {
         // Actual find on finder.
-        boolean found = support.findNext();
-
-        if(found) {
+        hcString = support.getFinder().findNextHardCodedString();
+        
+        if(hcString != null) {
             // Highlight found hard coded string.
-            Object referent = caretWRef.get();
-            if(referent != null) {
-                ((Caret)referent).setDot(support.getHardStringStartOffset());
-                ((Caret)referent).moveDot(support.getHardStringEndOffset());
+            Caret caret = (Caret)caretWRef.get();
+            if(caret != null) {
+                caret.setDot(hcString.getStartPosition().getOffset());
+                caret.moveDot(hcString.getEndPosition().getOffset());
             }
 
             return true;
@@ -161,41 +163,34 @@ public class I18nManager {
     private void fillDialogValues() {
         // It has to work this way, at this time the strong reference in top component have to exist.
         I18nPanel i18nPanel = (I18nPanel)i18nPanelWRef.get();
-        
-        ResourceBundleString oldRbString = i18nPanel.getResourceBundlePanel().getResourceBundleString();
-        ResourceBundleString newRbString = support.getDefaultBundleString(oldRbString);
-        
-        i18nPanel.setResourceBundleString(newRbString);
-        i18nPanel.setI18nInfo(support.getInfo());
+
+        i18nPanel.getI18nString().setKey(hcString.getText().replace(' ', '_' ));
+        i18nPanel.getI18nString().setValue(hcString.getText());
         
         showDialog();
     }
     
     /** Replaces current found hard coded string and continue the search for next one. */
     private void replace() {
-        ResourceBundleString rbString = null;
+        I18nString i18nString = null;
+        
         try {
-            // To call weak without check have to be save here cause stronmg reference in top component have to exist.
-            rbString = ((I18nPanel)i18nPanelWRef.get()).getResourceBundlePanel().getResourceBundleString();
+            // To call weak without check have to be save here cause strong reference in the top component have to exist.
+            i18nString = ((I18nPanel)i18nPanelWRef.get()).getI18nString();
         } catch (IllegalStateException e) {
-            NotifyDescriptor.Message nd = new NotifyDescriptor.Message(NbBundle.getBundle(I18nModule.class).
-            getString("EXC_BadKey"), NotifyDescriptor.ERROR_MESSAGE);
+            NotifyDescriptor.Message nd = new NotifyDescriptor.Message(
+                I18nUtil.getBundle().getString("EXC_BadKey"), NotifyDescriptor.ERROR_MESSAGE);
             TopManager.getDefault().notify(nd);
             return;
         }
 
         // Try to add key to bundle.
-        I18nUtil.addKeyToBundle(rbString);
+        i18nString.addProperty(i18nString.getKey(), i18nString.getValue(), i18nString.getComment());
 
         // Replace hardcoded string.
-        support.replace(rbString);
+        support.getReplacer().replace(hcString, i18nString);
 
         skip();
-    }
-    
-    /** At the time not implemented. */
-    private void replaceAll() {
-        // PENDING
     }
     
     /** Skips foudn hard coded string and conitnue to search for next one. */
@@ -206,6 +201,22 @@ public class I18nManager {
             cancel();
     }
     
+    /** Shows info about found hard coded string. */
+    private void showInfo() {
+        JPanel infoPanel = support.getInfo(hcString);
+
+        DialogDescriptor dd = new DialogDescriptor(infoPanel, I18nUtil.getBundle().getString("CTL_InfoPanelTitle"));
+        
+        dd.setModal(true);
+        dd.setOptionType(DialogDescriptor.DEFAULT_OPTION);
+        dd.setOptions(new Object[] {DialogDescriptor.OK_OPTION});
+        dd.setAdditionalOptions(new Object[0]);
+
+        
+        Dialog infoDialog = TopManager.getDefault().createDialog(dd);
+        infoDialog.setVisible(true);
+    }
+    
     /** Cancels current internationalizing session and re-layout top component to original layout. */
     public void cancel() {
         // No memory leaks.
@@ -214,104 +225,114 @@ public class I18nManager {
         closeDialog();
     }
     
-    /** Creates dialog. In our case it is a top component. */
-    private void addI18nPanel() {
-        // Create i18n panel.
-        I18nPanel i18nPanel = new I18nPanel();
-        
-        final JButton[] buttons = i18nPanel.getButtons();
+    /** Gets dialog. In our case it is a top component. 
+     * @param name name of top component */
+    private void getDialog(String name) {
+        TopComponent topComponent = (TopComponent)topComponentWRef.get();
+        I18nPanel i18nPanel = (I18nPanel)i18nPanelWRef.get();
 
-        for(int i = 0; i < buttons.length; i++) {
-            buttons[i].addActionListener(
-            new ActionListener() {
+        // Dialog was not created yet or garbaged already.
+        if(i18nPanel == null) {
+            
+            // Create i18n panel.
+            i18nPanel = new I18nPanel();
+
+            // Helper final.
+            final I18nPanel panel = i18nPanel;
+            
+            // Set button listeners.
+            ActionListener listener = new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
-                    if (evt.getSource() == buttons[0]) // Replace button.
+                    if(evt.getSource() == panel.getReplaceButton())
                         replace();
-                    if (evt.getSource() == buttons[1]) // Replace All button.
-                        replaceAll();
-                    if (evt.getSource() == buttons[2]) // Skip button.
+                    else if(evt.getSource() == panel.getSkipButton())
                         skip();
-                    if (evt.getSource() == buttons[3]) // Cancel button.
+                    else if(evt.getSource() == panel.getInfoButton())
+                        showInfo();
+                    else if(evt.getSource() == panel.getCancelButton())
                         cancel();
                 }
-            });
+            };
+            
+            i18nPanel.getReplaceButton().addActionListener(listener);
+            i18nPanel.getSkipButton().addActionListener(listener);
+            i18nPanel.getInfoButton().addActionListener(listener);
+            i18nPanel.getCancelButton().addActionListener(listener);
+            
+            // Reset weak reference.
+            i18nPanelWRef = new WeakReference(i18nPanel);
         }
+        
+        // Set default i18n string.
+        i18nPanel.setI18nString(support.getDefaultI18nString());
+        
+        if(topComponent == null) {
+            // Actually create dialog, as non serializable top component.
+            topComponent = new TopComponent() {
+                public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+                }
+                
+                public void writeExternal(ObjectOutput out) throws IOException {
+                }
+                
+                protected Object writeReplace() throws ObjectStreamException {
+                    return null;
+                }
+            };
+            topComponent.setCloseOperation(TopComponent.CLOSE_EACH);
+            topComponent.setLayout(new BorderLayout());
+            topComponent.add(i18nPanel, BorderLayout.CENTER);
+            topComponent.setName(name);
 
-        // Get top component from weak reference.
-        Object referent = topComponentWRef.get();
-
-        if(referent == null) {
-            // Shouldn't happen.
-            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                throw new InternalError("I18n: Manager. Top componnet has been lost from weak reference."); // NOI18N
+             // dock into I18N mode if possible
+            Workspace[] currentWs = TopManager.getDefault().getWindowManager().getWorkspaces();
+            for (int i = currentWs.length; --i >= 0; ) {
+                Mode i18nMode = currentWs[i].findMode(I18N_MODE);
+                if (i18nMode == null) {
+                    i18nMode = currentWs[i].createMode(
+                        I18N_MODE,
+                        I18nUtil.getBundle().getString("CTL_I18nDialogTitle"),
+                        I18nManager.class.getResource("/org/netbeans/modules/i18n/i18nAction.gif") // NOI18N
+                    );
+                }
+                i18nMode.dockInto(topComponent);
+            }
+                
+            // Reset weak reference.
+            topComponentWRef = new WeakReference(topComponent);
         }
- 
-        TopComponent topComponent = (TopComponent)referent;
         
-        // Change layout the way split pane is first component i18n panel at the left and original component at the right side.
-        Component component = topComponent.getComponent(0);
-
-        // Keep weak reference to i18n panel only.
-        i18nPanelWRef = new WeakReference(i18nPanel);
-        
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(i18nPanel), component);
-        splitPane.setOneTouchExpandable(true);
-        
-        // Remove original component.
-        topComponent.remove(component);
-        
-        // Add our split pane.
-        topComponent.add(splitPane, BorderLayout.CENTER);
-
-        topComponent.revalidate();
+        topComponent.open();
+        topComponent.requestFocus();
     }
     
     /** Shows dialog. In our case opens top component if it is necessary and
      * sets caret visible in editor part. */
     private void showDialog() {
         // Open top component if it is not already.
-        Object topCompReferent = topComponentWRef.get();
-        if(topCompReferent != null) {
-            if(!((TopComponent)topCompReferent).isOpened()) {
-                ((TopComponent)topCompReferent).open();
-                ((TopComponent)topCompReferent).requestFocus();
+        TopComponent topComponent = (TopComponent)topComponentWRef.get();
+        if(topComponent != null) {
+            if(!topComponent.isOpened()) {
+                topComponent.open();
+                topComponent.requestFocus();
             }
         }
 
         // Set caret visible.
-        Object caretReferent = caretWRef.get();
-        if(caretReferent != null) {
-            if(!((Caret)caretReferent).isVisible())
-                ((Caret)caretReferent).setVisible(true);
+        Caret caret = (Caret)caretWRef.get();
+        if(caret != null) {
+            if(!caret.isVisible())
+                caret.setVisible(true);
         }
     }
     
     /** Closes dialog. In our case removes <code>I18nPanel</code> from top component
      * and 'reconstruct it' to it's original layout. */
     private void closeDialog() {
-        // At start check if there is open from previous internationalize action.
-        if(topComponentWRef == null)
-            return;
+        TopComponent topComponent = (TopComponent)topComponentWRef.get();
         
-        Object referent = topComponentWRef.get();
-
-        if(referent != null) {
-            TopComponent topComponent = (TopComponent)referent;
-        
-            if(topComponent != null && topComponent.getComponentCount() == 1 && topComponent.getComponent(0) instanceof JSplitPane) {
-
-                JSplitPane splitPane = (JSplitPane)topComponent.getComponent(0);
-
-                // Remove our split pane.
-                topComponent.remove(splitPane);
-
-                // Add original component.
-                topComponent.add(splitPane.getRightComponent(), BorderLayout.CENTER);
-
-                topComponent.revalidate();
-                topComponent.repaint();
-            }
-        }
+        if(topComponent != null)
+            topComponent.close();
     }
 
     /** Utility method. 
@@ -333,29 +354,4 @@ public class I18nManager {
         return false;
     }
 
-    
-    /** Interface providing information about i18n parameters
-     * used in <code>I18nPanel</code>.
-     */
-    public interface I18nInfo {
-        /** Getter for property hardString.
-         *@return Value of property hardString.
-         */
-        public String getHardString();
-        
-        /** Getter for property hardLine.
-         *@return Value of property hardLine.
-         */
-        public String getHardLine();
-        
-        /** Getter for property componentName.
-         * @return Value of property componentName. */
-        public String getComponentName();
-        
-        /** Getter for property propertyName.
-         *@return Value of property propertyName. */
-        public String getPropertyName();
-        
-    } // End of I18nInfo interface.
-    
 }

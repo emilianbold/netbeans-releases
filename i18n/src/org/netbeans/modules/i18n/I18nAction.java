@@ -21,7 +21,6 @@ import org.openide.cookies.SourceCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CookieAction;
 
@@ -79,7 +78,7 @@ public class I18nAction extends CookieAction {
      * @return the action's icon 
      */
     public String getName() {
-        return NbBundle.getBundle(I18nModule.class).getString("CTL_I18nAction");
+        return I18nUtil.getBundle().getString("CTL_I18nAction");
     }
 
     /** @return the action's help context */

@@ -16,11 +16,11 @@ package org.netbeans.modules.i18n;
 
 
 import org.openide.options.SystemOption;
-import org.openide.util.NbBundle;
 
 
 /**
  * Options for i18n module.
+ *
  * @author  Peter Zavadsky
  */
 public class I18nOptions extends SystemOption {
@@ -37,7 +37,7 @@ public class I18nOptions extends SystemOption {
     /** Property name for replacing init java . */
     public static final String PROP_REGULAR_EXPRESSION = "regularExpression"; // NOI18N
 
-
+    
     /** Provided due exeternaliazation only. 
      * Don't create this object directly use superclass <code>findObject</code> method instead. */
     public I18nOptions() {
@@ -51,8 +51,11 @@ public class I18nOptions extends SystemOption {
 
     /** Getter for init java code property. */
     public boolean isGenerateField() {
-        Boolean prop = (Boolean)getProperty(PROP_GENERATE_FIELD);
-        return prop == null ? true : prop.booleanValue();
+        // Lazy init.
+        if(getProperty(PROP_GENERATE_FIELD) == null)
+            putProperty(PROP_GENERATE_FIELD, Boolean.FALSE, true);
+        
+        return ((Boolean)getProperty(PROP_GENERATE_FIELD)).booleanValue();
     }
 
     /** Setter for init java code property. */
@@ -65,8 +68,8 @@ public class I18nOptions extends SystemOption {
     public String getInitJavaCode() {
         // Lazy init.
         if(getProperty(PROP_INIT_JAVA_CODE) == null)
-            setInitJavaCode(I18nUtil.getInitFormatItems()[0]);
-        
+            putProperty(PROP_INIT_JAVA_CODE, I18nUtil.getInitFormatItems()[0], true);
+            
         return (String)getProperty(PROP_INIT_JAVA_CODE);
     }
 
@@ -84,7 +87,7 @@ public class I18nOptions extends SystemOption {
     public String getReplaceJavaCode() {
         // Lazy init.
         if(getProperty(PROP_REPLACE_JAVA_CODE) == null)
-            setReplaceJavaCode(I18nUtil.getReplaceFormatItems()[0]);
+            putProperty(PROP_REPLACE_JAVA_CODE, I18nUtil.getReplaceFormatItems()[2], true);
         
         return (String)getProperty(PROP_REPLACE_JAVA_CODE);
     }
@@ -103,7 +106,7 @@ public class I18nOptions extends SystemOption {
     public String getRegularExpression() {
         // Lazy init.
         if(getProperty(PROP_REGULAR_EXPRESSION) == null)
-            setRegularExpression(I18nUtil.getRegExpItems()[0]);
+            putProperty(PROP_REGULAR_EXPRESSION, I18nUtil.getRegExpItems()[0], true);
         
         return (String)getProperty(PROP_REGULAR_EXPRESSION);
     }

@@ -16,44 +16,69 @@ package org.netbeans.modules.i18n;
 
 
 import java.util.ResourceBundle;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-
-import org.openide.util.NbBundle;
+import javax.swing.JTextField;
+import javax.swing.text.StyledDocument;
 
 
 /**
- * Former part of ResourceBundlePanel. Shows information
- * about found hard coded string by Internationalization action.
+ * Former part of ResourceBundlePanel (now <code>I18nPanel</code>). Helper base class for showing information
+ * about found hard coded in java sources (java & form objects).
  *
  * @author  Peter Zavadsky
  */
 
-public class InfoPanel extends JPanel {
+public abstract class InfoPanel extends JPanel {
 
-    /** Bundle in which are internationalized string from this source. */
+    /** Helper bundle in which are internationalized string from this source. */
     private static ResourceBundle bundle;
 
     
     /** Creates new form InfoPanel */
-    public InfoPanel() {
-        initBundle();
-        initComponents ();
-    }
-    
-    /** Helper method for bundle initialization. */
-    private static void initBundle() {
+    public InfoPanel(HardCodedString hcString, StyledDocument document) {
         if(bundle == null)
             bundle = I18nUtil.getBundle();
+
+        initComponents ();
+        
+        setHardCodedString(hcString, document);
+    }
+
+    /** Sets <code>HardCodedString</code> to inform about. 
+     * @param hcString hard coded string to inform about
+     * @param document document contaning hard coded string */
+    protected abstract void setHardCodedString(HardCodedString hcString, StyledDocument document);
+
+    /** String text field accessor. */
+    protected JTextField getStringText() {
+        return stringText;
     }
     
-    /** Fills values. */
-    public void setI18nInfo(I18nManager.I18nInfo i18nInfo) {
-        stringText.setText(i18nInfo.getHardString());
-        foundInText.setText(i18nInfo.getHardLine());
-        componentText.setText(i18nInfo.getComponentName());
-        propertyText.setText(i18nInfo.getPropertyName());
+    /** Found in text fiedl accessor. */
+    protected JTextField getFoundInText() {
+        return foundInText;
     }
     
+    /** Component text field accessor. */
+    protected JTextField getComponentText() {
+        return componentText;
+    }
+    
+    /** Property text field accessor. */
+    protected JTextField getPropertyText() {
+        return propertyText;
+    }
+    
+    /** Componenet label accessor. */
+    protected JLabel getComponentLabel() {
+        return componentLabel;
+    }
+    
+    /** Property label accessor. */
+    protected JLabel getPropertyLabel() {
+        return propertyLabel;
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.

@@ -16,17 +16,18 @@ package org.netbeans.modules.i18n;
 
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.ObjectStreamException;
 import java.lang.ref.WeakReference;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 
@@ -36,20 +37,21 @@ import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
+import org.openide.windows.Workspace;
 
 
 /**
-* Insert internationalized string at caret position (if it is not in guarded block).
-*
-* @author   Petr Jiricka
-*/
+ * Insert internationalized string at caret position (if it is not in guarded block).
+ *
+ * @author   Petr Jiricka
+ */
 public class InsertI18nStringAction extends CookieAction {
 
     /** Weak reference to top component to which the i18n string will be added. */
-    private WeakReference topComponentWRef;
+    private WeakReference topComponentWRef = new WeakReference(null);
     
     /** Generated serial version UID. */
     static final long serialVersionUID =-7002111874047983222L;
@@ -57,7 +59,7 @@ public class InsertI18nStringAction extends CookieAction {
     
     /** 
      * Actually performs InsertI18nStringAction
-     * @param activatedNodes Currently activated nodes.
+     * @param activatedNodes currently activated nodes
      */
     public void performAction (final Node[] activatedNodes) {
         final SourceCookie.Editor sec = (SourceCookie.Editor)(activatedNodes[0]).getCookie(SourceCookie.Editor.class);
@@ -79,9 +81,6 @@ public class InsertI18nStringAction extends CookieAction {
         // Set position. 
         int position = panes[0].getCaret().getDot();
 
-        // Init top component.
-        topComponentWRef = new WeakReference(SwingUtilities.getAncestorOfClass(TopComponent.class, panes[0]));
-        
         // Set document.
         StyledDocument document = sec.getDocument();
         if(document == null) {
@@ -95,9 +94,7 @@ public class InsertI18nStringAction extends CookieAction {
         // If there is a i18n action in run on the same editor, cancel it.
         I18nManager.getDefault().cancel();
 
-        JPanel panel = createPanel(dataObject, document, position);
-
-        addPanel(panel);
+        addPanel(dataObject, document, position);
 
         // Ensure caret is visible.
         panes[0].getCaret().setVisible(true);;
@@ -105,12 +102,14 @@ public class InsertI18nStringAction extends CookieAction {
 
     /** Create panel used for specifying i18n string. */
     private JPanel createPanel(final DataObject dataObject, final StyledDocument document, final int position) {
-        final ResourceBundlePanel rbPanel = new ResourceBundlePanel();
+        I18nSupport support = new JavaI18nSupport(dataObject, document);
         
-        rbPanel.setResourceBundleString(new ResourceBundleString());
+        final I18nPanel i18nPanel = new I18nPanel(false, true);
         
-        JButton OKButton = new JButton(NbBundle.getBundle(I18nModule.class).getString("CTL_OKButton"));
-        JButton cancelButton = new JButton(NbBundle.getBundle(I18nModule.class).getString("CTL_CancelButton"));
+        i18nPanel.setI18nString(support.getDefaultI18nString());
+        
+        JButton OKButton = new JButton(I18nUtil.getBundle().getString("CTL_OKButton"));
+        JButton cancelButton = new JButton(I18nUtil.getBundle().getString("CTL_CancelButton"));
 
         JPanel buttonPanel = new JPanel(new GridBagLayout());
 
@@ -135,10 +134,11 @@ public class InsertI18nStringAction extends CookieAction {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = GridBagConstraints.NONE;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 11, 11);
+        gridBagConstraints.insets = new java.awt.Insets(17, 12, 11, 11);
         gridBagConstraints.weightx = 0.0;
         gridBagConstraints.weighty = 0.0;
-        rbPanel.add(buttonPanel, gridBagConstraints);
+        
+        i18nPanel.add(buttonPanel, gridBagConstraints);
 
         // Set listeners for buttons.
         OKButton.addActionListener(
@@ -146,29 +146,34 @@ public class InsertI18nStringAction extends CookieAction {
                 public void actionPerformed(ActionEvent evt) {
                     // OK button.
                     try {
-                        ResourceBundleString newRbString = rbPanel.getResourceBundleString();
+                        I18nString i18nString = i18nPanel.getI18nString();
 
-                        // Try to add key to bundle.
-                        I18nUtil.addKeyToBundle(newRbString);
+                        if(i18nString.key == null) {
+                            return;
+                        }
+                        
+                        // Try to add key to bundle.                            
+                        i18nString.addProperty(i18nString.getKey(), i18nString.getValue(), i18nString.getComment());
 
                         // Create field in necessary.
-                        I18nUtil.createField(newRbString, dataObject);
+                        I18nUtil.createField((JavaI18nString)i18nString, dataObject);
                         // Replace string.
-                        document.insertString(position, I18nUtil.getReplaceJavaCode(newRbString, dataObject), null);
+                        document.insertString(position, I18nUtil.getReplaceJavaCode((JavaI18nString)i18nString, dataObject), null);
 
-                        cancel();
                     } catch (IllegalStateException e) {
                         NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                            NbBundle.getBundle(I18nModule.class).getString("EXC_BadKey"),
+                            I18nUtil.getBundle().getString("EXC_BadKey"),
                             NotifyDescriptor.ERROR_MESSAGE);
                         TopManager.getDefault().notify(msg);
                     } catch (BadLocationException e) {
                         TopManager.getDefault().notify(
                             new NotifyDescriptor.Message(
-                                NbBundle.getBundle(I18nModule.class).getString("MSG_CantInsertInGuarded"),
+                                I18nUtil.getBundle().getString("MSG_CantInsertInGuarded"),
                                 NotifyDescriptor.INFORMATION_MESSAGE
                             )
                         );
+                    } finally { 
+                        cancel();
                     }
                 }
             }
@@ -182,58 +187,61 @@ public class InsertI18nStringAction extends CookieAction {
             }
         );
 
-        return rbPanel;
+        return i18nPanel;
     }
     
     /** Adds panel to top component in split pane. */
-    private void addPanel(JPanel panel) {
-        Object referent = topComponentWRef.get();
-        
-        if(referent == null)
-            return;
-        
-        TopComponent topComponent = (TopComponent)referent;
-        
-        // Change layout the way split pane is first component i18n panel at the left and original component at the right side.
-        Component component = topComponent.getComponent(0);
-        
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panel, component);
-        splitPane.setOneTouchExpandable(true);
-        
-        // Remove original component.
-        topComponent.remove(component);
-        
-        // Add our split pane.
-        topComponent.add(splitPane, BorderLayout.CENTER);
+    private void addPanel(DataObject sourceDataObject, StyledDocument document, int position) {
+        TopComponent topComponent = (TopComponent)topComponentWRef.get();
 
-        topComponent.revalidate();
+        if(topComponent == null) {
+            JPanel panel = createPanel(sourceDataObject, document, position);
+            
+            // actually create the dialog as top component
+            topComponent = new TopComponent() {
+                public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+                }
+                
+                public void writeExternal(ObjectOutput out) throws IOException {
+                }
+                
+                protected Object writeReplace() throws ObjectStreamException {
+                    return null;
+                }
+            };            
+            topComponent.setCloseOperation(TopComponent.CLOSE_EACH);
+            topComponent.setLayout(new BorderLayout());
+            topComponent.add(panel, BorderLayout.CENTER);
+            topComponent.setName(sourceDataObject.getName());
+
+            // dock into I18N mode if possible
+            Workspace[] currentWs = TopManager.getDefault().getWindowManager().getWorkspaces();
+            for (int i = currentWs.length; --i >= 0; ) {
+                Mode i18nMode = currentWs[i].findMode(I18nManager.I18N_MODE);
+                if (i18nMode == null) {
+                    i18nMode = currentWs[i].createMode(
+                        I18nManager.I18N_MODE,
+                        I18nUtil.getBundle().getString("CTL_I18nDialogTitle"),
+                        I18nManager.class.getResource("/org/netbeans/modules/i18n/i18nAction.gif") // NOI18N
+                    );
+                }
+                i18nMode.dockInto(topComponent);
+            }
+            
+            // Reset weak reference.
+            topComponentWRef = new WeakReference(topComponent);
+        }
+
+        topComponent.open();
+        topComponent.requestFocus();
     }
     
     /** Cancels the current insert i18n string action. */
     public void cancel() {
-        if(topComponentWRef == null)
-            return;
+        TopComponent topComponent= (TopComponent)topComponentWRef.get();
         
-        Object referent = topComponentWRef.get();
-        
-        if(referent == null)
-            return;
-        
-        TopComponent topComponent = (TopComponent)referent;
-        
-        if(topComponent != null && topComponent.getComponentCount() == 1 && topComponent.getComponent(0) instanceof JSplitPane) {
-
-            JSplitPane splitPane = (JSplitPane)topComponent.getComponent(0);
-
-            // Remove our split pane.
-            topComponent.remove(splitPane);
-
-            // Add original component.
-            topComponent.add(splitPane.getRightComponent(), BorderLayout.CENTER);
-
-            topComponent.revalidate();
-            topComponent.repaint();
-        }
+        if(topComponent != null)
+            topComponent.close();
     }
     
     /** Overrides superclass method.
@@ -284,7 +292,7 @@ public class InsertI18nStringAction extends CookieAction {
      * @return the action's icon
      */
     public String getName() {
-        return org.openide.util.NbBundle.getBundle(I18nModule.class).getString("CTL_InsertI18nString");
+        return I18nUtil.getBundle().getString("CTL_InsertI18nString");
     }
 
     /** 

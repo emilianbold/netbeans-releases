@@ -16,16 +16,11 @@ package org.netbeans.modules.i18n;
 
 
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
-import java.text.MessageFormat;
-
-import org.netbeans.modules.properties.BundleStructure;
-import org.netbeans.modules.properties.Element;
-import org.netbeans.modules.properties.PropertiesOpen;
-import org.netbeans.modules.properties.PropertiesStructure;
 
 import org.openide.cookies.SourceCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataObject;
 import org.openide.src.ClassElement;
 import org.openide.src.FieldElement;
@@ -33,13 +28,13 @@ import org.openide.src.Identifier;
 import org.openide.src.SourceElement;
 import org.openide.src.SourceException;
 import org.openide.src.Type;
-import org.openide.TopManager;
+import org.openide.util.MapFormat;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 
 
 /**
- * Utilities class for internationalization module.
+ * Utilities class for I18N module.
  *
  * @author  Peter Zavadsky
  */
@@ -74,8 +69,8 @@ public abstract class I18nUtil {
     public static String[] getInitFormatItems() { 
         if(initFormatItems == null) {
             initFormatItems = new String[] {
-                "java.util.ResourceBundle.getBundle(\"{0}\")", // NOI18N
-                "org.openide.util.NbBundle.getBundle({2}.class)" // NOI18N
+                "java.util.ResourceBundle.getBundle(\"{bundleNameSlashes}\")", // NOI18N
+                "org.openide.util.NbBundle.getBundle({sourceFileName}.class)" // NOI18N
             };
         }
               
@@ -86,26 +81,26 @@ public abstract class I18nUtil {
     public static String[][] getInitHelpItems() {
         if(initHelpItems == null) {
             initHelpItems = new String[][] {
-                new String[] {"{0}","{1}","{2}"}, // NOI18N
+                new String[] {"{bundleNameSlashes}","{bundleNameDots}","{sourceFileName}"}, // NOI18N
                 new String[] {
                     getBundle().getString("TXT_PackageNameSlashes"),
                     getBundle().getString("TXT_PackageNameDots"),
-                    getBundle().getString("TXT_TargetDataObjectName")
+                    getBundle().getString("TXT_SourceDataObjectName")
                 }
             };
         }
          
         return initHelpItems;
-    };
+    }
 
     /** Gets <code>replaceFormatItems</code>. */
     public static String[] getReplaceFormatItems() {
         if(replaceFormatItems == null) {
             replaceFormatItems = new String[] {
-                "{0}.getString(\"{1}\")", // NOI18N
-                "Utilities.getString(\"{1}\")", // NOI18N
-                "java.util.ResourceBundle.getBundle(\"{2}\").getString(\"{1}\")", // NOI18N
-                "org.openide.util.NbBundle.getBundle({4}.class).getString(\"{1}\")" // NOI18N
+                "{identifier}.getString(\"{key}\")", // NOI18N
+                "Utilities.getString(\"{key}\")", // NOI18N
+                "java.util.ResourceBundle.getBundle(\"{bundleNameSlashes}\").getString(\"{key}\")", // NOI18N
+                "org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(\"{key}\")" // NOI18N
             };
         }
             
@@ -116,13 +111,13 @@ public abstract class I18nUtil {
     public static String[][] getReplaceHelpItems() {
         if(replaceHelpItems == null) {
             replaceHelpItems = new String[][] { 
-                new String[] {"{0}", "{1}", "{2}", "{3}", "{4}"}, // NOI18N
+                new String[] {"{identifier}", "{key}", "{bundleNameSlashes}", "{bundleNameDots}", "{sourceFileName}"}, // NOI18N
                 new String[] {
                     getBundle().getString("TXT_FieldIdentifier"),
-                    getBundle().getString("TXT_Key"),
+                    getBundle().getString("TXT_KeyHelp"),
                     getBundle().getString("TXT_PackageNameSlashes"),
                     getBundle().getString("TXT_PackageNameDots"),
-                    getBundle().getString("TXT_TargetDataObjectName")
+                    getBundle().getString("TXT_SourceDataObjectName")
                 }
             };
         }
@@ -130,13 +125,13 @@ public abstract class I18nUtil {
         return replaceHelpItems;
     }
 
-    /** Gets  */
+    /** Gets <code>regExpItems</code>. */
     public static String[] getRegExpItems() {
         if(regExpItems == null) {
             regExpItems = new String[] {
-                "(getString|getBundle)([:space:]*)\\(([:space:])*{0}", // NOI18N
+                "(getString|getBundle)([:space:]*)\\(([:space:])*{hardString}", // NOI18N
                 "// NOI18N", // NOI18N
-                "((getString|getBundle)([:space:]*)\\(([:space:])*{0})|(// NOI18N)" // NOI18N
+                "((getString|getBundle)([:space:]*)\\(([:space:])*{hardString})|(// NOI18N)" // NOI18N
             };
         }
             
@@ -148,7 +143,7 @@ public abstract class I18nUtil {
         if(regExpHelpItems == null) {
             regExpHelpItems = new String[][] {
                 new String[] {
-                    "{0}", // NOI18N
+                    "{hardString}", // NOI18N
                     "[:alnum:]", // NOI18N
                     "[:alpha:]", // NOI18N
                     "[:blank:]", // NOI18N
@@ -188,39 +183,42 @@ public abstract class I18nUtil {
     }
     
     /** Gets the string used to replace found hardcoded string. */
-    public static String getReplaceJavaCode(ResourceBundleString rbString, DataObject targetDataObject) {
-        if(rbString != null) {
-            if(rbString.getResourceBundle() != null && rbString.getKey() != null) {
-                String replaceJavaFormat = rbString.getReplaceFormat();
+    public static String getReplaceJavaCode(JavaI18nString javaI18nString, DataObject sourceDataObject) {
+        if(javaI18nString != null) {
+            if(javaI18nString.getResource() != null && javaI18nString.getKey() != null) {
+                String replaceJavaFormat = javaI18nString.getReplaceFormat();
                 
                 if(replaceJavaFormat == null)
                     replaceJavaFormat = ((I18nOptions)SharedClassObject.findObject(I18nOptions.class, true)).getReplaceJavaCode();
+
+                // Create map.
+                Map map = new HashMap(5);
+                
+                map.put("identifier", javaI18nString.getIdentifier()); // NOI18N
+                map.put("key", javaI18nString.getKey()); // NOI18N
+                map.put("bundleNameSlashes", javaI18nString.getResource().getPrimaryFile().getPackageName('/')); // NOI18N
+                map.put("bundleNameDots", javaI18nString.getResource().getPrimaryFile().getPackageName('.')); // NOI18N
+                map.put("sourceFileName", sourceDataObject == null ? "" : sourceDataObject.getPrimaryFile().getName()); // NOI18N
                 
                 // Gets the default replace string.
-                String result = MessageFormat.format(
-                    replaceJavaFormat, 
-                    new Object[] {
-                        rbString.getIdentifier(), // {0}
-                        rbString.getKey(),         // {1}
-                        rbString.getResourceBundle().getPrimaryFile().getPackageName('/'),                  // {2}
-                        rbString.getResourceBundle().getPrimaryFile().getPackageName('.'),                  // {3}
-                        targetDataObject == null ? "" : targetDataObject.getPrimaryFile().getName() // NOI18N // {4}
-                    }
+                String result = MapFormat.format(
+                    replaceJavaFormat,
+                    map
                 );
                     
                 // If arguments were set get the message format replace string.
-                String[] arguments = rbString.getArguments();
+                String[] arguments = javaI18nString.getArguments();
                 if (arguments.length > 0) {
-                    StringBuffer sb = new StringBuffer("java.text.MessageFormat.format("); // NOI18N
-                    sb.append(result);
-                    sb.append(", new Object[] {"); // NOI18N
+                    StringBuffer stringBuffer = new StringBuffer("java.text.MessageFormat.format("); // NOI18N
+                    stringBuffer.append(result);
+                    stringBuffer.append(", new Object[] {"); // NOI18N
                     for (int i = 0; i < arguments.length; i++) {
-                        sb.append(arguments[i]);
+                        stringBuffer.append(arguments[i]);
                         if (i < arguments.length - 1)
-                            sb.append(", "); // NOI18N
+                            stringBuffer.append(", "); // NOI18N
                     }
-                    sb.append("})"); // NOI18N
-                    result = sb.toString();
+                    stringBuffer.append("})"); // NOI18N
+                    result = stringBuffer.toString();
                 }
                 return result;
             }
@@ -229,27 +227,27 @@ public abstract class I18nUtil {
     }
     
     /** Creates a new field in java source hierarchy. 
-     * @param rbString which holds info about going-to-be created field element
-     * @param targetDataObject object to which source will be new field added,
+     * @param javaI18nString which holds info about going-to-be created field element
+     * @param sourceDataObject object to which source will be new field added,
      * the object have to have <code>SourceCookie</code>
      * @see org.openide.cookies.SourceCookie */
-    public static void createField(ResourceBundleString rbString, DataObject targetDataObject) {
+    public static void createField(JavaI18nString javaI18nString, DataObject sourceDataObject) {
         // Check if we have to generate field.
-        if(!rbString.getGenerateField())
+        if(!javaI18nString.isGenerateField())
             return;
 
-        ClassElement sourceClass = getSourceClassElement(targetDataObject);
+        ClassElement sourceClass = getSourceClassElement(sourceDataObject);
 
-        if(sourceClass.getField(Identifier.create(rbString.getIdentifier())) != null)
+        if(sourceClass.getField(Identifier.create(javaI18nString.getIdentifier())) != null)
             // Field with such identifer exsit already, do nothing.
             return;
         
         try {
             FieldElement newField = new FieldElement();
-            newField.setName(Identifier.create(rbString.getIdentifier()));
-            newField.setModifiers(rbString.getModifiers());
+            newField.setName(Identifier.create(javaI18nString.getIdentifier()));
+            newField.setModifiers(javaI18nString.getModifiers());
             newField.setType(Type.parse("java.util.ResourceBundle")); // NOI18N
-            newField.setInitValue(getInitJavaCode(rbString, targetDataObject));
+            newField.setInitValue(getInitJavaCode(javaI18nString, sourceDataObject));
             
             if(sourceClass != null)
                 // Trying to add new field.
@@ -259,7 +257,7 @@ public abstract class I18nUtil {
             if(Boolean.getBoolean(DEBUG)) // NOI18N
                 se.printStackTrace();
         } catch(NullPointerException npe) {
-            // something wrong happened, probably targetDataObject was not initialized
+            // something wrong happened, probably sourceDataObject was not initialized
             if(Boolean.getBoolean(DEBUG)) // NOI18N
                 npe.printStackTrace();
         }
@@ -272,26 +270,31 @@ public abstract class I18nUtil {
      * <p>
      * java.util.ResourceBundle <identifier name> = <b>java.util.ResourceBundle.getBundle("<package name></b>")
      * @return String -> piece of initilizing code. */
-    private static String getInitJavaCode(ResourceBundleString rbString, DataObject targetDataObject) {
-        if(rbString != null) {
-            String initJavaFormat = rbString.getInitFormat();
+    private static String getInitJavaCode(JavaI18nString javaI18nString, DataObject sourceDataObject) {
+        if(javaI18nString != null) {
+            String initJavaFormat = javaI18nString.getInitFormat();
             
             if(initJavaFormat == null)
                 initJavaFormat = ((I18nOptions)SharedClassObject.findObject(I18nOptions.class, true)).getInitJavaCode();
+
+            // Create map.
+            Map map = new HashMap(3);
+
+            map.put("bundleNameSlashes", javaI18nString.getResource().getPrimaryFile().getPackageName('/')); // NOI18N
+            map.put("bundleNameDots", javaI18nString.getResource().getPrimaryFile().getPackageName('.')); // NOI18N
+            map.put("sourceFileName", sourceDataObject == null ? "" : sourceDataObject.getPrimaryFile().getName()); // NOI18N
             
-            return MessageFormat.format(initJavaFormat, new Object[] {
-                rbString.getResourceBundle().getPrimaryFile().getPackageName('/'),                  // {0}
-                rbString.getResourceBundle().getPrimaryFile().getPackageName('.'),                  // {1}
-                targetDataObject == null ? "" : targetDataObject.getPrimaryFile().getName() // NOI18N // {2}
-            });
+            return MapFormat.format(initJavaFormat, 
+                map 
+            );
         } else
             return null;
     }
     
-    /** Helper method. Finds main top-level class element for <code>targetDataObject</code> which should be initialized. */
-    private static ClassElement getSourceClassElement(DataObject targetDataObject) {
-        SourceElement sourceElem = ((SourceCookie)targetDataObject.getCookie(SourceCookie.class)).getSource();
-        ClassElement sourceClass = sourceElem.getClass(Identifier.create(targetDataObject.getName()));
+    /** Helper method. Finds main top-level class element for <code>sourceDataObject</code> which should be initialized. */
+    private static ClassElement getSourceClassElement(DataObject sourceDataObject) {
+        SourceElement sourceElem = ((SourceCookie)sourceDataObject.getCookie(SourceCookie.class)).getSource();
+        ClassElement sourceClass = sourceElem.getClass(Identifier.create(sourceDataObject.getName()));
         
         if(sourceClass != null)
             return sourceClass;
@@ -310,80 +313,6 @@ public abstract class I18nUtil {
         return sourceClass;
     }
 
-    /** Attempts to create a new key corresponding to its settings in the resource bundle and opens open support of that bundle. */
-    public static void addKeyToBundle(ResourceBundleString rbString) {
-        if((rbString.getResourceBundle() == null) || (rbString.getKey() == null))
-            return;
-
-        try {
-            BundleStructure bundleStructure = rbString.getResourceBundle().getBundleStructure();
-            
-            String key = rbString.getKey();
-            String value = rbString.getDefaultValue();
-            String comment = rbString.getDefaultComment();
-
-            for(int i=0; i<bundleStructure.getEntryCount(); i++) {
-                PropertiesStructure propStructure = bundleStructure.getNthEntry(i).getHandler().getStructure();
-                org.netbeans.modules.properties.Element.ItemElem item = propStructure.getItem(key);
-
-                if (item == null) {
-                    // Item doesn't exist in this entry -> create it.
-                    propStructure.addItem(key, value, comment);
-                } // else { // PENDING>>
-                    // if item exist in that entry leave it unchanged, don't reset the old value.
-                    // Maybe it would be nice if to reset the existing value or leave it unchanged
-                    // propbably the best is to make it optional for user -> I18N OPTIONS.
-                //} // PENDING<<
-            }
-            
-        } catch (NullPointerException e) {
-            if(Boolean.getBoolean(DEBUG)) // NOI18N
-                e.printStackTrace();
-            TopManager.getDefault().notifyException(e);
-        }
-        
-        // Open table component if is not opened already.
-        try {
-            PropertiesOpen po = (PropertiesOpen)rbString.getResourceBundle().getCookieSet().getCookie(OpenCookie.class);
-            if(!po.hasOpenedTableComponent())
-                po.open();
-        } catch(NullPointerException npe) {
-            if(Boolean.getBoolean(DEBUG)) // NOI18N
-                npe.printStackTrace();
-        }
-    }
-
-    /** Gets the value of the property for key from the resource bundle specified in given <code>ResourceBundleString</code>. */
-    public static String getExistingValue(ResourceBundleString rbString) {
-        Element.ItemElem item = getItem(rbString);
-        return (item != null) ? item.getValue() : null;
-    }
-
-    /** Gets the comment of the property for key from the resource bundle specified in given <code>ResourceBundleString</code>. */
-    public static String getExistingComment(ResourceBundleString rbString) {
-        Element.ItemElem item = getItem(rbString);
-        return (item != null) ? item.getComment() : null;
-    }
-    
-    /** Helper method. Returns the item for the property from the bundle or null if either the bundle or the key is not valid. */
-    private static Element.ItemElem getItem(ResourceBundleString rbString) {
-        if ((rbString.getResourceBundle() == null) || (rbString.getKey() == null))
-            return null;
-        BundleStructure bundleStructure = rbString.getResourceBundle().getBundleStructure();
-        if (bundleStructure == null)
-            return null;
-
-        // Get item from the first file entry which contains the key.
-        // Is looks in default (=primary) entry first.
-        for(int i=0; i<bundleStructure.getEntryCount(); i++) {
-            Element.ItemElem item = bundleStructure.getItem(i, bundleStructure.getKeyIndexByName(rbString.getKey()));
-            if(item != null)
-                return item;
-        }
-        
-        return null;
-    }
-    
     /** Gets resource bundle for i18n module. */
     public static ResourceBundle getBundle() {
         if(bundle == null)
@@ -391,4 +320,5 @@ public abstract class I18nUtil {
         
         return bundle;
     }
+    
 }
