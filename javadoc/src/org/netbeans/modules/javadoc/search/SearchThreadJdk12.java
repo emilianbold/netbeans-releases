@@ -71,7 +71,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
   }
 
   public void run () {
-    System.out.println ( "START RUNNING :" + fo );
+    //System.out.println ( "START RUNNING :" + fo );
 
     ParserDelegator pd = new ParserDelegator();
 
@@ -223,7 +223,6 @@ class SearchThreadJdk12 extends IndexSearchThread {
           where = IN_BALAST;
       }
       else if ( where == IN_DESCRIPTION_SUFFIX ) {
-        System.out.println ( currentDii.getRemark() + ": " + data );
         currentDii.setRemark( currentDii.getRemark() + new String( data ));
       } 
       else 

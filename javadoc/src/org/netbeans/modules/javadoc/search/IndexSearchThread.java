@@ -41,7 +41,7 @@ public abstract class IndexSearchThread extends Thread  {
     this.ddiConsumer = ddiConsumer;
     this.fo = fo;
     this.toFind = toFind;
-    rpTask = RequestProcessor.createRequest( this );
+    //rpTask = RequestProcessor.createRequest( this );
   };
 
 
@@ -50,7 +50,9 @@ public abstract class IndexSearchThread extends Thread  {
   }
 
   public void go() {
-    rpTask.schedule( 0 );
+    rpTask = RequestProcessor.postRequest( this, 0, NORM_PRIORITY );
+    //rpTask.
+    //rpTask.schedule( 0 );
   }
 
   public void finish() {
@@ -60,7 +62,7 @@ public abstract class IndexSearchThread extends Thread  {
   }
 
   public void taskFinished() {
-    System.out.println ("Task ended");
+    //System.out.println ("Task ended");
     ddiConsumer.indexSearchThreadFinished( this );    
   }
 
@@ -83,6 +85,7 @@ public abstract class IndexSearchThread extends Thread  {
 
 /* 
  * Log
+ *  2    Gandalf   1.1         5/14/99  Petr Hrebejk    
  *  1    Gandalf   1.0         5/13/99  Petr Hrebejk    
  * $ 
  */ 

@@ -65,8 +65,6 @@ public class SearchDocAction extends CallableSystemAction {
   */
   public void performAction () {
 
-    //DocFileSystem.getFolders();  
-
     if (indexSearch != null) 
       indexSearch.open ();
     else 
@@ -88,6 +86,7 @@ public class SearchDocAction extends CallableSystemAction {
 
 /*
  * Log
+ *  2    Gandalf   1.1         5/14/99  Petr Hrebejk    
  *  1    Gandalf   1.0         5/13/99  Petr Hrebejk    
  * $
  * Beta Change History:
