@@ -47,7 +47,12 @@ public abstract class ViewElement {
         return resizeWeight;
     }
     
+    /**
+     * lets the visual components adjust to the current state.
+     * @returns true if a change was performed.
+     */
     public abstract boolean updateAWTHierarchy(Dimension availableSpace);
+    
     
 }
 
