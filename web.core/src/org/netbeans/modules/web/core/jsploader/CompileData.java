@@ -52,7 +52,6 @@ public class CompileData {
     public CompileData(JspDataObject jspPage) {
         this.jspPage = jspPage;
         this.docRoot = JspCompileUtil.getContextRoot(jspPage.getPrimaryFile());
-        //FileObject jspFileObject = jspPage.getPrimaryFile();
         serverInstance = JspCompileUtil.getCurrentServerInstance(jspPage);
         servletJavaRoot = getServletJavaRootFromServer();
         servletResourceName = getServletResourceNameFromServer();
