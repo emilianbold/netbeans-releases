@@ -96,7 +96,7 @@ public class MethodPicker extends javax.swing.JDialog {
     componentLabel.setText (FormEditor.getFormBundle ().getString ("CTL_CW_Component")); // "Component:"
     okButton.setText (FormEditor.getFormBundle ().getString ("CTL_OK")); // "OK"
     cancelButton.setText (FormEditor.getFormBundle ().getString ("CTL_CANCEL")); //"Cancel"
-    parametersButton.setText (FormEditor.getFormBundle ().getString ("CTL_CW_Parameters")); // "Parameters"
+//    parametersButton.setText (FormEditor.getFormBundle ().getString ("CTL_CW_Parameters")); // "Parameters"
 
     updateButtons ();
 
@@ -172,7 +172,7 @@ public class MethodPicker extends javax.swing.JDialog {
   }
 
   private void updateButtons () {
-    parametersButton.setEnabled (false); // [FUTURE: - disabled for now]
+//    parametersButton.setEnabled (false); // [FUTURE: - disabled for now]
     if ((getSelectedComponent () == null) || (getSelectedMethod () == null)) {
       okButton.setEnabled (false);
 //      parametersButton.setEnabled (false);
@@ -241,10 +241,10 @@ public class MethodPicker extends javax.swing.JDialog {
       leftButtonsPanel = new javax.swing.JPanel ();
       leftButtonsPanel.setLayout (new java.awt.FlowLayout (0, 5, 5));
 
-        parametersButton = new javax.swing.JButton ();
-        parametersButton.setText ("Parameters");
+//        parametersButton = new javax.swing.JButton ();
+//        parametersButton.setText ("Parameters");
 
-      leftButtonsPanel.add (parametersButton);
+//      leftButtonsPanel.add (parametersButton);
 
     buttonsPanel.add (leftButtonsPanel, "West");
 
@@ -344,6 +344,9 @@ public class MethodPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  10   Gandalf   1.9         7/31/99  Ian Formanek    Parameters Button is not
+ *       displayed - not in the .form file (i.e. when opened as a form, it will 
+ *       be recreated !)
  *  9    Gandalf   1.8         7/31/99  Ian Formanek    Localization completed
  *  8    Gandalf   1.7         6/29/99  Ian Formanek    Removed incorrect cast
  *  7    Gandalf   1.6         6/9/99   Ian Formanek    ---- Package Change To 
