@@ -447,7 +447,7 @@ public class EditorModule extends ModuleInstall {
     private final class RepositOperations extends OperationAdapter {
 
         public void operationMove(OperationEvent.Move ev){
-            DataObject dobj = ev.getObject();
+            final DataObject dobj = ev.getObject();
             if (dobj==null){
                 return;
             }
@@ -456,15 +456,12 @@ public class EditorModule extends ModuleInstall {
                 return;
             }
 
-            final Node node = dobj.getNodeDelegate();
-            if (node!=null){
-                getCCUpdateProcessor().post(new Runnable() {
-                    public void run() {
-                        JCUpdater update = new JCUpdater();
-                        update.processNode(node, null);
-                    }
-                });
-            }
+            getCCUpdateProcessor().post(new Runnable() {
+                public void run() {
+                    JCUpdater update = new JCUpdater();
+                    update.processDataObject(dobj, null);
+                }
+            });
             
             removeClass(ev.getOriginalPrimaryFile(),null);
         }
