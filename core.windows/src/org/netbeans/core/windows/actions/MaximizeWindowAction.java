@@ -72,14 +72,19 @@ public class MaximizeWindowAction extends AbstractAction {
         
         if(wm.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
             if (topComponent != null) {
-                wm.setMaximizedMode(getModeToMaximize(topComponent));
+                ModeImpl mode = getModeToMaximize(topComponent);
+                // maximize only non-sliding windows..
+                if ( mode == null || mode.getKind() != Constants.MODE_KIND_SLIDING) {
+                    wm.setMaximizedMode(mode);
+                }
             } else {
+                ModeImpl activeMode = wm.getActiveMode();
                 ModeImpl mode = wm.getMaximizedMode();
-                if(mode != null) {
-                    wm.setMaximizedMode(null);
-                } else {
-                    ModeImpl activeMode = wm.getActiveMode();
-                    if(activeMode != null) {
+                // maximize only non-sliding windows..
+                if(activeMode != null && activeMode.getKind() != Constants.MODE_KIND_SLIDING) {
+                    if(mode != null) {
+                        wm.setMaximizedMode(null);
+                    } else {
                         wm.setMaximizedMode(activeMode);
                     }
                 }
@@ -99,12 +104,14 @@ public class MaximizeWindowAction extends AbstractAction {
                     } else {
                         wm.setEditorAreaFrameState(Frame.NORMAL);
                     }
-                } else {
+                } else if (activeMode.getKind() == Constants.MODE_KIND_VIEW) {
                     if(activeMode.getFrameState() == Frame.NORMAL) {
                         activeMode.setFrameState(Frame.MAXIMIZED_BOTH);
                     } else {
                         activeMode.setFrameState(Frame.NORMAL);
                     }
+                } else {
+                    // do nothing for slidinbg windows..maximize only non-sliding windows..
                 }
             }
         }
@@ -120,12 +127,11 @@ public class MaximizeWindowAction extends AbstractAction {
             active = TopComponent.getRegistry().getActivated();
         }
         Object param = active == null ? "" : active.getName(); // NOI18N
-
         boolean maximize;
-        if(WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
+        ModeImpl activeMode = (ModeImpl)WindowManagerImpl.getInstance().findMode(active);
+        if (WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
             maximize = WindowManagerImpl.getInstance().getMaximizedMode() == null;
         } else {
-            ModeImpl activeMode = (ModeImpl)WindowManagerImpl.getInstance().findMode(active);
             if(activeMode != null) {
                 if(activeMode.getKind() == Constants.MODE_KIND_EDITOR) {
                     maximize = WindowManagerImpl.getInstance().getEditorAreaFrameState() == Frame.NORMAL;
@@ -144,15 +150,16 @@ public class MaximizeWindowAction extends AbstractAction {
             label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_UnmaximizeWindowAction", param);
         }
         putValue(Action.NAME, (isPopup ? Actions.cutAmpersand(label) : label));
-
-        setEnabled(active != null);
+        if (activeMode != null && activeMode.getKind() == Constants.MODE_KIND_SLIDING) {
+            maximize = false;
+        }
+        setEnabled(activeMode != null && activeMode.getKind() != Constants.MODE_KIND_SLIDING);
     }
     
     private static ModeImpl getModeToMaximize(TopComponent tc) {
          WindowManagerImpl wm = WindowManagerImpl.getInstance();
          ModeImpl mode = (ModeImpl)wm.findMode(tc);
          ModeImpl maximizedMode = wm.getMaximizedMode();
-         
          if(mode == maximizedMode) {
              return null;
          } else {

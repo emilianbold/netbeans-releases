@@ -146,7 +146,7 @@ final class CommandManager implements ActionListener {
                 
             }
         }
-        if (TabbedContainer.COMMAND_DISABLE_AUTO_HIDE.equals(e.getActionCommand())) {
+        else if (TabbedContainer.COMMAND_DISABLE_AUTO_HIDE.equals(e.getActionCommand())) {
             slideIntoDesktop(curSlidedIndex, true);
         } else {
             // convert event - fix index, local tabbed container index isn't right in slide bar context
