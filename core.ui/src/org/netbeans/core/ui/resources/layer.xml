@@ -75,8 +75,13 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-CustomizeAction.instance"/>
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
         </folder>        
+
+        <folder name="Tools">
+           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+        </folder>
         
         <folder name="Window">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
         </folder>
         
