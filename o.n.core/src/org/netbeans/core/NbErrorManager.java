@@ -251,6 +251,15 @@ final class NbErrorManager extends ErrorManager {
         public String getLocalizedMessage () {
             return (String)find (2);
         }
+	
+	public boolean isLocalized() {
+	    if (find(2, false) == null) {
+		String locMsg = getLocalizedMessage();
+		return locMsg != null && !locMsg.equals(getMessage());
+	    } 
+	    else
+		return true;	
+	}
 
         /** @return class name of the exception */
         public String getClassName () {
@@ -312,6 +321,16 @@ final class NbErrorManager extends ErrorManager {
         * @return the found object
         */
         private Object find (int kind) {
+	    return find(kind, true);
+	}
+
+        /** Method that iterates over annotations to find out
+        * the first annotation that brings the requested value.
+        *
+        * @param kind what to look for (1, 2, 3, 4, ...);
+        * @return the found object
+        */
+        private Object find (int kind, boolean def) {
             for (int i = 0; i < arr.length; i++) {
                 Annotation a = arr[i];
 
@@ -335,6 +354,9 @@ final class NbErrorManager extends ErrorManager {
                     return o;
                 }
             }
+	    
+	    if (!def)
+		return null;
 
             switch (kind) {
             case 1: // message
