@@ -272,7 +272,7 @@ public class JPDAStart extends Task implements Runnable {
     private MethodBreakpoint createBreakpoint (String stopClassName) {
         MethodBreakpoint breakpoint = MethodBreakpoint.create (
             stopClassName,
-            ""
+            "*"
         );
         breakpoint.setHidden (true);
         DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
