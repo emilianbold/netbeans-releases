@@ -4,7 +4,7 @@ OpenIDE-Module-Public-Packages: -
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/monitor/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/web/monitor/MonitorModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/web/monitor/resources/layer.xml
-OpenIDE-Module-Specification-Version: 1.11
+OpenIDE-Module-Specification-Version: 1.12
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Requires: org.openide.util.HttpServer$Impl
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.servletapi/1,

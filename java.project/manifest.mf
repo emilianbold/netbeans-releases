@@ -3,6 +3,6 @@ OpenIDE-Module: org.netbeans.modules.java.project/0
 OpenIDE-Module-Install: org/netbeans/modules/java/project/JavaProjectModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/java/project/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/java/project/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Specification-Version: 1.2
 OpenIDE-Module-Requires: org.netbeans.modules.project.uiapi.ActionsFactory
 

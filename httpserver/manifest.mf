@@ -3,7 +3,7 @@ OpenIDE-Module: org.netbeans.modules.httpserver/2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/httpserver/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/httpserver/HttpServerModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/httpserver/layer.xml
-OpenIDE-Module-Specification-Version: 2.0.1
+OpenIDE-Module-Specification-Version: 2.1
 OpenIDE-Module-Implementation-Version: 2.0-release40
 OpenIDE-Module-Provides: org.openide.util.HttpServer$Impl
 OpenIDE-Module-Package-Dependencies: [org.apache.tomcat.core.Context]
