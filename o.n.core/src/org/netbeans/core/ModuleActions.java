@@ -22,6 +22,8 @@ import javax.swing.event.*;
 
 import org.openide.actions.ActionManager;
 import org.openide.modules.ManifestSection;
+import org.openide.nodes.Node;
+import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.*;
 
@@ -71,7 +73,15 @@ class ModuleActions extends ActionManager
         //System.err.println ("invokeAction -> run: rp=" + rp);
         Runnable r = new Runnable () {
                 public void run () {
-                    if (a.isEnabled ()) {
+                    // [PENDING] Ugly, but see e.g. TemplateWizard.DefaultIterator.instantiate:
+                    // NodeAction called w/ ActionEvent whose source is Node or Node[] should
+                    // be called directly, even if action is not globally enabled, since the
+                    // particular node selection is passed in. Ideally would also call enable(Node[])
+                    // before doing this, but that would require this method to be public.
+                    if (a.isEnabled () ||
+                        ((a instanceof NodeAction) && e != null &&
+                         ((e.getSource () instanceof Node) ||
+                          (e.getSource () instanceof Node[])))) {
                         //System.err.println ("invokeAction -> run: " + a);
                         a.actionPerformed (e);
                     } else {
