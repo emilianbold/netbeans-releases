@@ -4,4 +4,4 @@ Jellytools-MinorVersion: 2
 Jellytools-IDEVersion: NB dev
 Jellytools-Build: @BUILD_NUMBER_SUBST@
 Jemmy-MajorVersion: 2.2
-Jemmy-MinorVersion: 4.8
+Jemmy-MinorVersion: 4.10
