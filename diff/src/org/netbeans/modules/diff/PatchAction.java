@@ -13,6 +13,10 @@
 
 package org.netbeans.modules.diff;
 
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.io.FileReader;
@@ -25,8 +29,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
+import javax.swing.JDialog;
 
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -137,11 +143,20 @@ public class PatchAction extends NodeAction {
         chooser.setApproveButtonText(NbBundle.getMessage(PatchAction.class, "BTN_Patch"));
         chooser.setApproveButtonMnemonic(NbBundle.getMessage(PatchAction.class, "BTN_Patch_mnc").charAt(0));
         chooser.setApproveButtonToolTipText(NbBundle.getMessage(PatchAction.class, "BTN_Patch_tooltip"));
-        int ret = chooser.showDialog(new javax.swing.JFrame(title), null);
-        if (ret == JFileChooser.APPROVE_OPTION) {
-            return chooser.getSelectedFile();
-        }
-        return null;
+        JFrame parent = new JFrame();
+        final JDialog dialog = new JDialog(parent, title, true);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PatchAction.class, "ACSD_PatchDialog")); 
+        Container contentPane = dialog.getContentPane();
+        contentPane.setLayout(new BorderLayout());
+        contentPane.add(chooser, BorderLayout.CENTER); 
+        dialog.pack();        
+        dialog.setLocationRelativeTo(parent);         
+    
+        ChooserListener listener = new PatchAction.ChooserListener(dialog,chooser);
+	chooser.addActionListener(listener);
+        dialog.show();
+        
+        return listener.getFile();
     }
     
     private void applyFileDiffs(Patch.FileDifferences[] fileDiffs, FileObject fo) {
@@ -284,6 +299,37 @@ public class PatchAction extends NodeAction {
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx(PatchAction.class);
+    }
+    
+    class ChooserListener implements ActionListener{
+        private JDialog dialog;
+        private JFileChooser chooser;
+        private File file = null;
+        
+        public ChooserListener(JDialog dialog,JFileChooser chooser){
+            super();
+            this.dialog = dialog;
+            this.chooser = chooser;
+        }
+        
+        public void actionPerformed(ActionEvent e){
+            String command  = e.getActionCommand();
+            if(command == JFileChooser.APPROVE_SELECTION){                
+                if(dialog != null) {
+                    file = chooser.getSelectedFile();
+                    dialog.setVisible(false);
+                    
+                }
+            }else{
+                if(dialog != null){
+                    file = null;
+                    dialog.setVisible(false);                    
+                }
+            }
+        }
+        public File getFile(){            
+            return file;
+        }
     }
 
 }
