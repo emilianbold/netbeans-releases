@@ -72,7 +72,7 @@ public class PropertyUtils {
     static {
         String nbuser = System.getProperty("netbeans.user"); // NOI18N
         if (nbuser != null) {
-            USER_BUILD_PROPERTIES = new File(nbuser, "build.properties"); // NOI18N
+            USER_BUILD_PROPERTIES = FileUtil.normalizeFile(new File(nbuser, "build.properties")); // NOI18N
         } else {
             USER_BUILD_PROPERTIES = null;
         }

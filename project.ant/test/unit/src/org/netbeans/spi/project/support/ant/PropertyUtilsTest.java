@@ -55,7 +55,7 @@ public class PropertyUtilsTest extends NbTestCase {
         PropertyUtilsTest.class.getClassLoader().setDefaultAssertionStatus(true);
         System.setProperty("netbeans.user", System.getProperty("java.io.tmpdir"));
         assertEquals("correct build.properties location",
-            new File(System.getProperty("java.io.tmpdir"), "build.properties"),
+            FileUtil.normalizeFile(new File(System.getProperty("java.io.tmpdir"), "build.properties")),
             PropertyUtils.USER_BUILD_PROPERTIES);
     }
     
