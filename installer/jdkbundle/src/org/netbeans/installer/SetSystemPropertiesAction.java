@@ -110,7 +110,8 @@ public class SetSystemPropertiesAction extends WizardAction {
             logEvent(this, Log.DBG,"Checking Win32 Registry ... ");
             File regFile = File.createTempFile("forte",".reg");
             
-            String command = "regedit -e " + regFile.getAbsolutePath() + " \"HKEY_LOCAL_MACHINE\\SOFTWARE\\JavaSoft\\Java Development Kit\"";
+            String command = "regedit -e " + regFile.getAbsolutePath()
+            + " \"HKEY_LOCAL_MACHINE\\SOFTWARE\\JavaSoft\\Java Development Kit\"";
             RunCommand runCommand = new RunCommand();
             runCommand.execute(command);
             runCommand.waitFor();
@@ -164,6 +165,7 @@ public class SetSystemPropertiesAction extends WizardAction {
                 }
             }
             reader.close();
+            regFile.delete();
         } catch(Exception ex){
             ex.printStackTrace();
         }
@@ -172,11 +174,12 @@ public class SetSystemPropertiesAction extends WizardAction {
     
     private String findJreHome() {
         String jreHome = null;
-        try{
+        try {
             logEvent(this, Log.DBG,"Checking Win32 Registry ... ");
             File regFile = File.createTempFile("forte",".reg");
             
-            String command = "regedit -e " + regFile.getAbsolutePath() + " \"HKEY_LOCAL_MACHINE\\SOFTWARE\\JavaSoft\\Java Runtime Environment\"";
+            String command = "regedit -e " + regFile.getAbsolutePath()
+            + " \"HKEY_LOCAL_MACHINE\\SOFTWARE\\JavaSoft\\Java Runtime Environment\"";
             RunCommand runCommand = new RunCommand();
             runCommand.execute(command);
             runCommand.waitFor();
@@ -230,6 +233,7 @@ public class SetSystemPropertiesAction extends WizardAction {
                 }
             }
             reader.close();
+            regFile.delete();
         } catch(Exception ex){
             ex.printStackTrace();
         }
