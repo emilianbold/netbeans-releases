@@ -68,7 +68,6 @@
 <!--<mapID target="gui.mdi" url="gui/gui_mdi.html" />-->
 <mapID target="gui.configuring" url="gui/gui_configuring.html" />
 <mapID target="gui.source.modifying" url="gui/gui_modifysource.html" />
-<mapID target="gui.source.modifying.property" url="gui/gui_modifysource.html" />
 <mapID target="gui.accessibleform" url="gui/gui_accessibleform.html" />
 <mapID target="gui.testing" url="gui/gui_testing.html" />
 

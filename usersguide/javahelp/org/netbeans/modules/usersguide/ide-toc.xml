@@ -327,7 +327,6 @@
     <!--<tocitem text="Creating a Multiple Document Interface (MDI) Application" target="gui.mdi" />-->
     <tocitem text="Configuring the Form Editor" target="gui.configuring" />
     <tocitem text="Modifying GUI Source Code" target="gui.source.modifying"/>
-    <tocitem text="Modifying Code Generation for a Property" target="gui.source.modifying.property" />
     <tocitem text="Creating Accessible Forms" target="gui.accessibleform" />
     <tocitem text="Testing a Form" target="gui.testing" />
   </tocitem>
