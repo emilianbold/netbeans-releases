@@ -32,7 +32,7 @@ public class ImageDataObject extends MultiDataObject {
   static final long serialVersionUID = -6035788991669336965L;
 
   private static final String IMAGE_ICON_BASE =
-    "com/netbeans/developer/modules/loaders/image/imageObject";
+    "com/netbeans/developer/modules/loaders/image/imageObject"; // NOI18N
 
   /** New instance.
   * @param pf primary file object for this data object
@@ -88,6 +88,7 @@ public class ImageDataObject extends MultiDataObject {
 
 /*
  * Log
+ *  14   Gandalf   1.13        1/5/00   Ian Formanek    NOI18N
  *  13   Gandalf   1.12        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  12   Gandalf   1.11        6/24/99  Jesse Glick     Gosh-honest HelpID's.

@@ -34,10 +34,10 @@ public class ImageDataLoader extends UniFileLoader {
                    getString("PROP_ImageLoader_Name"));
     // List of recognized extensions.
     ExtensionList ext = new ExtensionList();
-    ext.addExtension("jpg");
-    ext.addExtension("jpeg");
-    ext.addExtension("jpe");
-    ext.addExtension("gif");
+    ext.addExtension("jpg"); // NOI18N
+    ext.addExtension("jpeg"); // NOI18N
+    ext.addExtension("jpe"); // NOI18N
+    ext.addExtension("gif"); // NOI18N
     setExtensions(ext);
 
     // Common actions for all images.
@@ -76,6 +76,7 @@ public class ImageDataLoader extends UniFileLoader {
 
 /*
  * Log
+ *  12   Gandalf   1.11        1/5/00   Ian Formanek    NOI18N
  *  11   Gandalf   1.10        11/27/99 Patrik Knakal   
  *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

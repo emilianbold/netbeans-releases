@@ -42,7 +42,7 @@ public class ImageViewer extends CloneableTopComponent {
     storedObject = obj;
     javax.swing.JScrollPane scroll = new javax.swing.JScrollPane(label = new javax.swing.JLabel(new NBImageIcon(obj)));
     setLayout(new java.awt.BorderLayout());
-    add(scroll, "Center");
+    add(scroll, "Center"); // NOI18N
   }
 
   /** Show the component on given workspace. If given workspace is
@@ -81,6 +81,7 @@ public class ImageViewer extends CloneableTopComponent {
 
 /*
  * Log
+ *  14   Gandalf   1.13        1/5/00   Ian Formanek    NOI18N
  *  13   Gandalf   1.12        11/27/99 Patrik Knakal   
  *  12   Gandalf   1.11        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
