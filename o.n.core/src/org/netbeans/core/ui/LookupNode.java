@@ -291,6 +291,11 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
                 ctx = new HelpCtx(LookupNode.class);
             return ctx;
         }
+        
+        public SystemAction getDefaultAction () {
+            return null;
+        }
+
     }
     
 
