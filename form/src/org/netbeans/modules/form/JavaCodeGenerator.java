@@ -1437,10 +1437,10 @@ class JavaCodeGenerator extends CodeGenerator {
                 break;
         }
 
+        codeWriter.write(");\n"); // NOI18N
+
         if (exceptions != null)
             generateCatchCode(exceptions, codeWriter);
-
-        codeWriter.write(");\n"); // NOI18N
     }
 
     private void addVariables(Writer variablesWriter)
