@@ -194,6 +194,26 @@ a.leftmenu	{
 		}
 
 
+pre,samp,code,tt {
+  font-family: "Courier New", monospace;
+}
+
+
+/* show some code*/
+.codes	{
+	background-color: #f0f0f0
+	}
+.textbox {
+  font-family: Courier New, Monospaced;
+  }
+
+dt {font-weight: bold}
+dd {margin-left: 1.5em}
+
+/* --- IMPORT FOR JAVADOC -- */
+/* this part of css is automaticaly exported to file nb_special.css 
+if you need make some changes please edit into netbeans.css*/ 
+
 /* TABLE STYLES */
 
 
@@ -218,6 +238,10 @@ a.leftmenu	{
 	background-color: #FFFFFF;
 	}
 
+.tablersh	{
+	background-color: rgb(240,240,240);
+	}
+
 .tablecfont	{
   font-weight: bold;
 	color: #000000;
@@ -238,19 +262,10 @@ a.leftmenu	{
 .titlectable	{
   font-weight: bold;
 	color: #000000;
+        line-height: 20px;
 	}
 
-pre,samp,code,tt {
-  font-family: Courier New, Monospaced;
-  }
 
-/* Codding show */
-.codes	{
-	background-color: #f0f0f0
-	}
-.textbox {
-  font-family: Courier New, Monospaced;
-  }
 
 .constant {
   color: #b03060;
@@ -289,6 +304,7 @@ pre,samp,code,tt {
   color: #0000ff;
   }
 
+/* --- END IMPORT FOR JAVADOC -- */
   
 /* Collab css*/
 
