@@ -16,9 +16,7 @@ package org.netbeans.modules.search;
 
 
 import java.awt.Image;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import java.beans.*;
 import java.io.IOException;
 import java.util.*;
 import java.text.MessageFormat;
@@ -578,9 +576,14 @@ public class ResultModel implements TaskListener {
 
         /** Optimalized JavaNode.getIcon that starts parser! */
         public Image getIcon(int type) {
-            if (originalDataObject.getPrimaryFile().hasExt("java") ) {
-                // TODO take better icon
-                return AbstractNode.EMPTY.getIcon(type);
+            if (originalDataObject.getPrimaryFile().hasExt("java") ) { // NOI18N
+                // take icon from loader, it should be similar to dataobject's one
+                try {
+                    BeanInfo info = Utilities.getBeanInfo(originalDataObject.getLoader().getClass());
+                    return info.getIcon(type);
+                } catch (IntrospectionException e) {
+                    return AbstractNode.EMPTY.getIcon(type);
+                }
             } else {
                 return super.getIcon(type);
             }
@@ -588,9 +591,14 @@ public class ResultModel implements TaskListener {
 
         /** Optimalized JavaNode.getIcon that starts parser! */
         public Image getOpenedIcon(int type) {
-            if (originalDataObject.getPrimaryFile().hasExt("java") ) {
-                // TODO take better icon
-                return AbstractNode.EMPTY.getIcon(type);
+            if (originalDataObject.getPrimaryFile().hasExt("java") ) { // NOI18N
+                // take icon from loader, it should be similar to dataobject's one
+                try {
+                    BeanInfo info = Utilities.getBeanInfo(originalDataObject.getLoader().getClass());
+                    return info.getIcon(type);
+                } catch (IntrospectionException e) {
+                    return AbstractNode.EMPTY.getIcon(type);
+                }
             } else {
                 return super.getOpenedIcon(type);
             }
