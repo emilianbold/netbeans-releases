@@ -20,12 +20,11 @@ Microsystems, Inc. All Rights Reserved.
 
   <config name="config-1">
       <module name="core" testtypes="unit" attributes="stable"/>
-      <module name="java" testtypes="unit" attributes="stable"/>
       <module name="openide" testtypes="unit" attributes="stable"/>
       <module name="projects/projectapi" testtypes="unit" attributes="stable"/>
       <module name="projects/queries" testtypes="unit" attributes="stable"/>
       <module name="ant/project" testtypes="unit" attributes="stable"/>
-<!--      <module name="ant/grammar" testtypes="unit" attributes="commit"/> -->
+<!--      <module name="ant/grammar" testtypes="unit" attributes="stable"/> -->
       <module name="java/api" testtypes="unit" attributes="stable"/>
       <module name="java/j2seplatform" testtypes="unit" attributes="stable"/>
       <module name="java/platform" testtypes="unit" attributes="stable"/>
@@ -37,12 +36,11 @@ Microsystems, Inc. All Rights Reserved.
   
   <config name="unit-nb">
       <module name="core" testtypes="unit" attributes="stable"/>
-      <module name="java" testtypes="unit" attributes="stable"/>
       <module name="openide" testtypes="unit" attributes="stable"/>
       <module name="projects/projectapi" testtypes="unit" attributes="stable"/>
       <module name="projects/queries" testtypes="unit" attributes="stable"/>
       <module name="ant/project" testtypes="unit" attributes="stable"/>
-<!--      <module name="ant/grammar" testtypes="unit" attributes="commit"/> -->
+<!--      <module name="ant/grammar" testtypes="unit" attributes="stable"/> -->
       <module name="java/api" testtypes="unit" attributes="stable"/>
       <module name="java/j2seplatform" testtypes="unit" attributes="stable"/>
       <module name="java/platform" testtypes="unit" attributes="stable"/>
@@ -230,7 +228,6 @@ Microsystems, Inc. All Rights Reserved.
   <config name="re-validation">
       <!-- developer's unit tests -->
       <module name="core" testtypes="unit" attributes="stable"/>
-      <module name="java" testtypes="unit" attributes="stable"/>
       <module name="openide" testtypes="unit" attributes="stable"/>
       <!-- qa's functional tests -->
       <module name="ide"       	testtypes="qa-functional"  attributes="validation"/>
