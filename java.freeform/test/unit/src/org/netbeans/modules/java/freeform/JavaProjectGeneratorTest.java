@@ -816,7 +816,9 @@ public class JavaProjectGeneratorTest extends NbTestCase {
             PropertyUtils.fixedPropertyProvider(m)});
         
         List exports = JavaProjectGenerator.guessExports(evaluator, targets, units);
-        assertEquals("no one export was created because build script is not in project folder", 0, exports.size());
+        assertEquals("one export was created even though build script is not in project folder", 1, exports.size());
+        // XXX test stuff about that export
+        
         m.put("ant", "etc/antScript");
         evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{
             PropertyUtils.fixedPropertyProvider(m)});
