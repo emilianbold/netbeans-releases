@@ -7,7 +7,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
@@ -72,15 +72,14 @@ Microsystems, Inc. All Rights Reserved.
 <h2><a name="intro">Introduction</a></h2>
 <p>The IDE's architecture enables you to:</p>
 <ul>
-  <li> Create separate help sets and associate them with given modules</li>
-  <li> Speficy the order in which the help set is displayed in the Help | Help 
-    Sets menu relative to another installed help set</li>
-  <li> Speficy the order in which the help set is displayed in the help window 
+  <li> Create separate help sets and associate them with given modules.</li>
+  <li> Specify the order in which the help set is displayed in the help window 
     (after the user chooses Help | Contents - the merged help sets view) relative 
     to another installed help set</li>
   <li> Associate an IDE component with a specific help topic by means of a help 
     ID for the component. When the user presses F1 or a Help button on the component, 
     the help is displayed in the JavaHelp viewer.</li>
+  <li>Create separate a separate menu item for the help set</li>  
 </ul>
 <p>In order to take advantage of these help features, a NetBeans module writer 
   must be aware of different aspects of the NetBeans help system, specifically: 
@@ -334,16 +333,60 @@ the NetBeans Module Document</a>.
 </ul>
 
 <h3><a name="layer">Layer File</a></h3>
-<p>A module's help set must be defined in the <samp>JavaHelp</samp> folder and this 
-  is specified in its Layer file. Layer files are typically called
+<p>A module's help set must be defined in its layer file. Layer files are typically called
   <samp>mf-layer.xml</samp>, <samp>layer.xml</samp>, or <samp><i>Module</i>Layer.xml</samp>.
-  You can find the name of your module's layer file in the module JAR's manifest.
-  The following was taken from the HTTP Monitor 
-  Module <samp>mf-layer.xml</samp> file:
-</p>
+  You can find the name of your module's layer file in the module JAR's manifest.</p>
+  
+<p>The layer file consists of a <samp>filesystem</samp> element, within which are 
+nested various <samp>folder</samp> elements, where various types of information are declared. 
+  For help sets, three types of folders are relevant:</p>
+  <ul>
+  <li><b>Services</b> - (<i>Required</i>). Used to install the help set in the IDE. </li>
+  <li><b>Actions</b> - (<i>Optional, but not recommended</i>). Used to make it possible to open only that specific help set.<b>Optional</b></li>
+  <li><b>Menu</b> - (<i>Optional, but not recommended</i>). Used to create a menu item for that help set. By convention, we have 
+  used the HelpShortcuts folder (within the <samp>Menu</samp> folder) to put help sets on the 
+  Help Sets submenu.</li>
+  </ul>
+  
+  <p>For the NetBeans IDE 3.6 standard distribution, only the <samp>Services</samp> 
+  folder is needed. (With better merging capabilities and the fact that existing help 
+sets do not always closely correspond to complete user workflows, the Help Sets submenu 
+  is no longer a useful construction.)</p>
+
+<p><b>Services Folder - </b>Insert a <samp>JavaHelp</samp> folder into the 
+<samp>Services</samp> folder to merge the help set into the IDE's JavaHelp viewer. 
+This mainly affects the order into which help sets are merged into the table of contents. 
+By convention, module help sets that come with the distribution are located after the Core IDE 
+Help (usersguide) and before third-party help. For example, this is the Services/JavaHelp entry 
+in the layer file for the HTTP Monitor module:</p>
 
 <pre>
-&lt;<span class="function-name">filesystem</span>&gt;
+  &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Services"</span>&gt; 
+    &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"JavaHelp"</span>&gt;
+      <span class="comment">&lt;!-- Merge after Core IDE Help: --&gt;</span>
+      &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-web-monitor-resources-helpset.xml"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
+      <span class="comment">&lt;!-- Merge after JSP/Servlet Help: --&gt;</span>
+      &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-ie-helpset.xml/org-netbeans-modules-web-monitor-resources-helpset.xml"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
+      &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-monitor-resources-helpset.xml"</span> <span class="variable-name">url</span>=<span class="string">"helpset-decl.xml"</span>/&gt;
+      <span class="comment">&lt;!-- Merge before 3rd party help: --&gt;</span>
+      &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-monitor-resources-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
+    &lt;/<span class="function-name">folder</span>&gt;
+  &lt;/<span class="function-name">folder</span>&gt;
+</pre>
+
+<p><b>Menu Folder -</b> You can place a <samp>Help</samp> folder within the <samp>Menu</samp> 
+folder to place a shortcut to the individual help set in the IDE's Help menu. 
+In releases up through NetBeans IDE 3.5.1, the <samp>HelpShortcuts</samp> folder 
+was specified within the <samp>Help</samp> folder to place shortcuts to help sets 
+in the Help Sets submenu. In NetBeans IDE 3.6, this approach is discouraged. 
+However, if you would like to create a shortcut, you can use the sample code below as  
+ a guide. The sample below is an excerpt from the HTTP Monitor module's layer file 
+ for the NetBeans 3.5.1 release. It creates a menu item 
+for the help set on the Help | Help Sets menu (after Core IDE Help and JSP/Servlet Help, 
+but before help for third party modules). There are separators after the Core IDE 
+Help shortcut and before the third-party help shortcuts.</p>
+
+<pre>
   &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Menu"</span>&gt;
     &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Help"</span>&gt;
       &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"HelpShortcuts"</span>&gt;
@@ -360,47 +403,6 @@ the NetBeans Module Document</a>.
       &lt;/<span class="function-name">folder</span>&gt;
     &lt;/<span class="function-name">folder</span>&gt;
   &lt;/<span class="function-name">folder</span>&gt;
-
-  &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Actions"</span>&gt;
-    &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Help"</span>&gt;
-      &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-monitor-mainpage.xml"</span> <span class="variable-name">url</span>=<span class="string">"help-main-ref.xml"</span>&gt;
-        &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"SystemFileSystem.localizingBundle"</span> <span class="variable-name">stringvalue</span>=<span class="string">"org.netbeans.modules.web.monitor.Bundle"</span>/&gt;
-        &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"SystemFileSystem.icon"</span> <span class="variable-name">urlvalue</span>=<span class="string">"nbresloc:/org/netbeans/modules/web/monitor/resources/blank.gif"</span>/&gt;
-      &lt;/<span class="function-name">file</span>&gt;
-    &lt;/<span class="function-name">folder</span>&gt;
-  &lt;/<span class="function-name">folder</span>&gt;
-
-  &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Services"</span>&gt; 
-    &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"JavaHelp"</span>&gt;
-      <span class="comment">&lt;!-- Merge after Core IDE Help: --&gt;</span>
-      &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-web-monitor-resources-helpset.xml"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-      <span class="comment">&lt;!-- Merge after JSP/Servlet Help: --&gt;</span>
-      &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-ie-helpset.xml/org-netbeans-modules-web-monitor-resources-helpset.xml"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-      &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-monitor-resources-helpset.xml"</span> <span class="variable-name">url</span>=<span class="string">"helpset-decl.xml"</span>/&gt;
-      <span class="comment">&lt;!-- Merge before 3rd party help: --&gt;</span>
-      &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-monitor-resources-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-    &lt;/<span class="function-name">folder</span>&gt;
-  &lt;/<span class="function-name">folder</span>&gt;
-&lt;/<span class="function-name">filesystem</span>&gt;
-</pre>
-
-<p><b>Menu Folder -</b> Use the <samp>Menu</samp> folder to place the shortcut to 
-  the help set in the IDE's Help | Help Sets menu. Notice that in standard NetBeans 
-  releases this submenu contains two separators. One is below the Core IDE Help 
-  shortcut, the other is above all third-party help sets like the Ant manual. 
-  (If you do not have the Ant Documentation module installed, this second separator 
-  doesn't appear. Sun One Studio or third-party releases may have additional separators 
-  between the Core IDE Help and 3rd party help.) 
-<p>The shortcuts to all module help sets should appear between these two separators. Thus the layer
-file should always specify the following:</p>
-
-<pre>
-<span class="comment">&lt;!-- Insert help set under the separator line below the Usersguide help --&gt;</span>
-&lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-usersguide-sep.instance/org-netbeans-modules-web-monitor-mainpage.xml"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-<span class="comment">&lt;!-- Set the location of the help set by specifying which help set it should follow --&gt;</span>
-&lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-ie-mainpage.xml/org-netbeans-modules-web-monitor-mainpage.xml"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-<span class="comment">&lt;!-- Insert help set above the separator line separating 3rd party help --&gt;</span>
-&lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-monitor-mainpage.xml/org-netbeans-modules-usersguide-second-sep.instance"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
 </pre>
 
 <p>The <samp>Menu</samp> folder also lets you set the icon that precedes the shortcut 
@@ -413,27 +415,34 @@ file should always specify the following:</p>
 </pre>
 
 
-<p><b>Actions Folder -</b> Provides the general action that opens the HTTP Monitor 
+<p><b>Actions Folder -</b> Provides the general action that opens the individual HTTP Monitor 
   help set in the IDE's help viewer. By default this action displays in the Help 
-  | Help Sets menu, but it can also be configured in Tools | Options.</p>
-<p><b>Services Folder - </b>Use the <samp>Services</samp> folder to merge the help 
-  set into the IDE's JavaHelp viewer. This folder also specifies the order in 
-  which the help sets appear in the table of contents and index. As with the shortcuts 
-  in the Help menu, all module help sets should be located between the Core IDE 
-  Help and third party help. You can specify this by with the following:</p>
+  | Help Sets menu, but it can also be configured in Tools | Options. This action is not 
+necessary if you do not need to display the help set individually.</p>
+
+<p>The following is the <samp>Help</samp> folder entry in the <samp>Actions</samp> folder 
+for the HTTP Monitor help set in NetBeans IDE 3.5.1.</p>
 
 <pre>
-<span class="comment">&lt;!-- Merge after Core IDE Help: --&gt;</span>
-&lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-web-monitor-resources-helpset.xml"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-<span class="comment">&lt;!-- Set the location of the help set by specifying which help set it should follow: --&gt;</span>
-&lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-ie-helpset.xml/org-netbeans-modules-web-monitor-resources-helpset.xml"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-<span class="comment">&lt;!-- Merge before 3rd party help: --&gt;</span>
-&lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-monitor-resources-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
+  &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Actions"</span>&gt;
+    &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Help"</span>&gt;
+      &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"org-netbeans-modules-web-monitor-mainpage.xml"</span> <span class="variable-name">url</span>=<span class="string">"help-main-ref.xml"</span>&gt;
+        &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"SystemFileSystem.localizingBundle"</span> <span class="variable-name">stringvalue</span>=<span class="string">"org.netbeans.modules.web.monitor.Bundle"</span>/&gt;
+        &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"SystemFileSystem.icon"</span> <span class="variable-name">urlvalue</span>=<span class="string">"nbresloc:/org/netbeans/modules/web/monitor/resources/blank.gif"</span>/&gt;
+      &lt;/<span class="function-name">file</span>&gt;
+    &lt;/<span class="function-name">folder</span>&gt;
+  &lt;/<span class="function-name">folder</span>&gt;
 </pre>
 
-<p>If you have any questions about this, please <a href="mailto:paul.fussell@sun.com">send 
-  e-mail to Paul Fussell</a> as he is the one who added this to the various Layer 
-  files and understands it. </p>
+
+<h3>Removing your help set from Help | Help Sets</h3>
+
+<p>If you are updating an existing module to work with NetBeans IDE 3.6, we recommend that 
+you remove the <samp>Help</samp> folders from the <samp>Menu</samp> and 
+<samp>Actions</samp> folders. 
+
+<p>If you have any questions about this, please <a href="mailto:patrick.keegan@sun.com">send 
+  e-mail to Patrick Keegan</a>. </p>
 
 <h2><a name="putfiles">Where to Put Help Files in the Module Source</a></h2>
 <p>Typically, the Help files are added under a <samp>javahelp</samp> subdirectory 
