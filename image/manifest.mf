@@ -2,6 +2,7 @@ OpenIDE-Module: org.netbeans.modules.image/1
 OpenIDE-Module-Name: Image
 OpenIDE-Module-Specification-Version: 1.5
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-Layer: org/netbeans/modules/image/Layer.xml
 
 Name: org/netbeans/modules/image/ImageDataLoader.class
 OpenIDE-Module-Class: Loader
