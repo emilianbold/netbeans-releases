@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.form.layoutsupport;
 
+import java.awt.*;
+
 /**
  * This class is used internally to provide default support for any layout
  * manager class. The layout manager is handled as a JavaBean, no component
@@ -32,5 +34,23 @@ class DefaultLayoutSupport extends AbstractLayoutSupport {
 
     public Class getSupportedClass() {
         return layoutClass;
+    }
+
+    public void addComponentsToContainer(Container container,
+                                         Container containerDelegate,
+                                         Component[] components,
+                                         int index)
+    {
+        // for better robustness catch exceptions that might occur because
+        // the default support does not deal with constraints
+        try {
+            super.addComponentsToContainer(container,
+                                           containerDelegate,
+                                           components,
+                                           index);
+        }
+        catch (RuntimeException ex) { // just ignore
+            ex.printStackTrace();
+        }
     }
 }
