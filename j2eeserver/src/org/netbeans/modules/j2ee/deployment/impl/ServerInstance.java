@@ -156,7 +156,8 @@ public class ServerInstance implements Node.Cookie {
     }
     
     public void remove() {
-        String title = NbBundle.getMessage(ServerInstance.class, "LBL_StopServerProgressMonitor", getUrl());
+        String displayName = getDisplayName();
+        String title = NbBundle.getMessage(ServerInstance.class, "LBL_StopServerProgressMonitor", displayName);
         DeployProgressUI ui = new DeployProgressMonitor(title, false, true);  // modeless with stop/cancel buttons
         
         for (Iterator i=targetsStartedByIde.iterator(); i.hasNext(); ){
@@ -363,8 +364,8 @@ public class ServerInstance implements Node.Cookie {
                 }
             }, 0, Thread.MAX_PRIORITY);
             return;
-        } else {
-            String title = NbBundle.getMessage(ServerInstance.class, "LBL_StartServerProgressMonitor", getUrl());
+        } else {            
+            String title = NbBundle.getMessage(ServerInstance.class, "LBL_StartServerProgressMonitor", getDisplayName());
             final DeployProgressUI ui = new DeployProgressMonitor(title, false, true);  // modeless with stop/cancel buttons
             ui.startProgressUI(5);
             if (start(ui)) {
@@ -434,7 +435,8 @@ public class ServerInstance implements Node.Cookie {
     //------------------------------------------------------------
     // startDeploymentManager
     private synchronized boolean _start(DeployProgressUI ui) {
-        output(ui, NbBundle.getMessage(ServerInstance.class, "MSG_StartingServer", url));
+        String displayName = getDisplayName();
+        output(ui, NbBundle.getMessage(ServerInstance.class, "MSG_StartingServer", displayName));
 
         DeployProgressUI.CancelHandler ch = getCancelHandler();
         ProgressObject po = null;
@@ -456,14 +458,14 @@ public class ServerInstance implements Node.Cookie {
                 // wait until done or cancelled
                 boolean done = sleep();
                 if (! done) {
-                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", url);
+                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", displayName);
                 } else if (! hasCommandSucceeded()) {
-                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerFailed", url);
+                    return false;
                 } else if (ui != null && ui.checkCancelled()) {
                     error = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerCanceled");
                 }
             } else if (hasFailed(po)) {
-                error = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerCanceled");
+                return false;
             }
             
             if (error != null) {
@@ -471,7 +473,6 @@ public class ServerInstance implements Node.Cookie {
                 return false;
             }
 
-            output(ui, NbBundle.getMessage(ServerInstance.class, "MSG_StartedServer", url));
             managerStartedByIde = true;
             refresh(true);
             return true;
@@ -489,7 +490,8 @@ public class ServerInstance implements Node.Cookie {
 
     // startDebugging
     private synchronized boolean _startDebug(Target target, DeployProgressUI ui) {
-        output(ui, NbBundle.getMessage(ServerInstance.class, "MSG_StartingDebugServer", url));
+        String displayName = getDisplayName();
+        output(ui, NbBundle.getMessage(ServerInstance.class, "MSG_StartingDebugServer", displayName));
         
         DeployProgressUI.CancelHandler ch = getCancelHandler();
         ProgressObject po = null;
@@ -511,14 +513,14 @@ public class ServerInstance implements Node.Cookie {
                 // wait until done or cancelled
                 boolean done = sleep();
                 if (! done) {
-                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StartDebugTimeout", url);
+                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StartDebugTimeout", displayName);
                 } else if (! hasCommandSucceeded()) {
-                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StartDebugFailed", url);
+                    return false;
                 } else if (ui != null && ui.checkCancelled()) {
                     error = NbBundle.getMessage(ServerInstance.class, "MSG_StartDebugCancelled");
                 }
             } else if (hasFailed(po)) {
-                error = NbBundle.getMessage(ServerInstance.class, "MSG_StartDebugCancelled");
+                return false;
             }
 
             if (error != null) {
@@ -526,7 +528,6 @@ public class ServerInstance implements Node.Cookie {
                 return false;
             }
 
-            output(ui, NbBundle.getMessage(ServerInstance.class, "MSG_StartedDebugServer", url));
             managerStartedByIde = true;
             refresh(true);
             return true;
@@ -543,7 +544,8 @@ public class ServerInstance implements Node.Cookie {
     }
     // stopDeploymentManager
     private synchronized boolean _stop(DeployProgressUI ui) {
-        output(ui, NbBundle.getMessage(ServerInstance.class, "MSG_StoppingServer", url));
+        String displayName = getDisplayName();
+        output(ui, NbBundle.getMessage(ServerInstance.class, "MSG_StoppingServer", displayName));
         
         DeployProgressUI.CancelHandler ch = getCancelHandler();
         StartProgressHandler handler = new StartProgressHandler();
@@ -565,14 +567,14 @@ public class ServerInstance implements Node.Cookie {
                 // wait until done or cancelled
                 boolean done = sleep();
                 if (! done) {
-                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerTimeout", url);
+                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerTimeout", displayName);
                 } else if (ui != null && ui.checkCancelled()) {
-                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerCancelled", url);
+                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerCancelled", displayName);
                 } else if (! hasCommandSucceeded()) {
-                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerFailed", url);
+                    return false;
                 }
             } else if (hasFailed(po)) {
-                error = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerFailed", url);
+                return false;
             }
             
             if (error != null) {
@@ -580,7 +582,6 @@ public class ServerInstance implements Node.Cookie {
                 return false;
             }
             
-            output(ui, NbBundle.getMessage(ServerInstance.class, "MSG_ServerStopped", url));
             managerStartedByIde = false;
             refresh(false);
             return true;
@@ -659,7 +660,7 @@ public class ServerInstance implements Node.Cookie {
     
     private String checkStartDM(StartServer ss) {
         if (ss != null && ! ss.supportsStartDeploymentManager()) {
-            return NbBundle.getMessage(ServerInstance.class, "MSG_StartingThisServerNotSupported", getUrl());
+            return NbBundle.getMessage(ServerInstance.class, "MSG_StartingThisServerNotSupported", getDisplayName());
         }
         return null;
     }
