@@ -20,11 +20,10 @@ Microsystems, Inc. All Rights Reserved.
       <patternset id="core/ide.files">
         <include name="${nb.modules.dir}/core-ide.jar"/>
         <include name="${nb.bin.dir}/icons/*"/>
-        <include name="${nb.bin.dir}/docs/NetBeansWeb.html"/>
-        <include name="CHANGES.html"/>
+        <include name="${nb.docs.dir}/NetBeansWeb.html"/>
         <include name="README.html"/>
-        <include name="netbeans-whatisnew.css"/>
         <include name="netbeans.css"/>
+        <include name="shortcuts.pdf"/>
       </patternset>
       <path id="cp">
         <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
@@ -62,6 +61,13 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
         <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}" includeEmptyDirs="false">
             <fileset dir="release/docs" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
+        </copy>
+        <copy todir="${netbeans.dest.dir}/${cluster.dir}">
+            <fileset dir="release">
+                <include name="README.html"/>
+                <include name="netbeans.css"/>
+                <include name="shortcuts.pdf"/>
+            </fileset>
         </copy>
     </target>
 

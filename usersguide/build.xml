@@ -97,8 +97,8 @@ Microsystems, Inc. All Rights Reserved.
         <exclude name="org/netbeans/modules/usersguide/ide.css"/>
       </fileset>
     </jar>
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}/org/netbeans/modules/usersguide"/>
-    <copy file="javahelp/org/netbeans/modules/usersguide/ide.css" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}/org/netbeans/modules/usersguide/ide.css"/>
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/org/netbeans/modules/usersguide"/>
+    <copy file="javahelp/org/netbeans/modules/usersguide/ide.css" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/org/netbeans/modules/usersguide/ide.css"/>
   </target>
 
   <target name="netbeans" depends="jars,release,javahelp">
