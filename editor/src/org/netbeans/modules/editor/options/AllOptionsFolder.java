@@ -327,8 +327,8 @@ public class AllOptionsFolder{
                     }
                 }
             }
-            uninstallOption();        
         }
+        uninstallOption();        
     }
     
     /** Returns true if BaseOptions has been initialized */
