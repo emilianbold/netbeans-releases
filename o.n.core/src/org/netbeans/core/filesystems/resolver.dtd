@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
   Update also public ID version.
   You must manage back compatability.
 -->
-<!ENTITY % components "(xml-rule)">
+<!ENTITY % components "(xml-rule)?">
 
 
 
