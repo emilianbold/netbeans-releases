@@ -103,7 +103,8 @@ final class ButtonPopupSwitcher
         Toolkit.getDefaultToolkit().addAWTEventListener(this,
                 AWTEvent.MOUSE_EVENT_MASK
                 | AWTEvent.KEY_EVENT_MASK);
-        popup = PopupFactory.getSharedInstance().getPopup(null, pTable, x, y);
+        popup = PopupFactory.getSharedInstance().getPopup(
+                invokingComponent, pTable, x, y);
         popup.show();
         shown = true;
         invocationTime = System.currentTimeMillis();
