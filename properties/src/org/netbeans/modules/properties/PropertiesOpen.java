@@ -40,10 +40,10 @@ import javax.swing.table.TableColumn;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
+import org.openide.actions.FindAction;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
-import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.FileEntry;
@@ -52,8 +52,11 @@ import org.openide.loaders.OpenSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.text.EditorSupport;
 import org.openide.TopManager;
+import org.openide.util.actions.CallbackSystemAction;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListener;
 import org.openide.util.WeakSet;
 import org.openide.windows.CloneableTopComponent;
@@ -424,6 +427,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
 
     }
 
+    /** Cloneable top component which represents table view of resource bundles. */
     public static class PropertiesCloneableTopComponent extends CloneableTopComponent {
 
         private PropertiesDataObject dobj;
@@ -436,7 +440,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
         * when top component becomes modified */
         protected String modifiedAppendix = " *";
 
-//        static final long serialVersionUID =2836248291419024296L;
+        static final long serialVersionUID =2836248291419024296L;
         /** Default constructor for deserialization */
         public PropertiesCloneableTopComponent() {
         }
@@ -496,13 +500,31 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
             return new HelpCtx (PropertiesCloneableTopComponent.class);
         }
 
+        /** Set editable specified cell of table view.
+         * @param row Row index of cell to edit. 
+         * @param column Column index of cell to edit. 
+         */
         public void editCellAt(final int row,final int column) {
-            SwingUtilities.invokeLater(new Runnable() {
-                                           public void run() {
-                                               ((BundleEditPanel)mainPanel).stopEditing();
-                                               ((BundleEditPanel)mainPanel).getTable().editCellAt(row, column);
-                                           }
-                                       });
+            SwingUtilities.invokeLater(
+                new Runnable() {
+                    public void run() {
+                        JTable table = ((BundleEditPanel)mainPanel).getTable();
+                        // Autoscroll to cell if possible and necessary.
+                        if (table.getAutoscrolls()) { 
+                            Rectangle cellRect = table.getCellRect(row, column, false);
+                            if (cellRect != null) {
+                                table.scrollRectToVisible(cellRect);
+                            }
+                        }
+                        // Update selection & edit.
+                        table.getColumnModel().getSelectionModel().setSelectionInterval(row, column);
+                        table.getSelectionModel().setSelectionInterval(row, column);
+
+                        ((BundleEditPanel)mainPanel).stopEditing();
+                        table.editCellAt(row, column);
+                    }
+                }
+            );
         }
 
         /** Inits the subcomponents. */
@@ -574,7 +596,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
               m = cur.createMode(PROPERTIES_MODE, 
                                  NbBundle.getBundle(PropertiesOpen.class).getString("LAB_PropertiesModeName"),
                                  null);
-        } */
+            } */
             // PENDING
             //m.setBounds(new Rectangle(x, y, width, height));
 
@@ -583,20 +605,31 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
 
         /** This method is called when parent window of this component has focus,
         * and this component is preferred one in it.
-        * Override this method to perform special action on component activation.
-        * (Typical thing to do here is set performers for your actions)
-        * Remember to call superclass to
+        * Overrides superclass's method. Sets action performer for Find action of this componnet.
         */
         protected void componentActivated () {
+            // Set our action performer for Find action.
+            RequestProcessor.postRequest(new Runnable() {
+                public void run() {
+                    CallbackSystemAction action = (CallbackSystemAction) SystemAction.get(FindAction.class);
+                    action.setActionPerformer(FindPerformer.getFindPerformer(((BundleEditPanel)mainPanel).getTable()));
+                }
+            });
         }
 
         /**
         * This method is called when parent window of this component losts focus,
         * or when this component losts preferrence in the parent window.
-        * Override this method to perform special action on component deactivation.
-        * (Typical thing to do here is unset performers for your actions)
+        * Overrides superclass's method. Unsets action performer for Find action of this component.
         */
         protected void componentDeactivated () {
+            // Unset our action performer for Find action.
+            RequestProcessor.postRequest(new Runnable() {
+                public void run() {
+                    CallbackSystemAction action = (CallbackSystemAction) SystemAction.get(FindAction.class);
+                    action.setActionPerformer(null);
+                }
+            });
         }
 
         /** Serialize this top component.
