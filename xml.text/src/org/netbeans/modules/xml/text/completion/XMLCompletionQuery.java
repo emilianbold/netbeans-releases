@@ -318,7 +318,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
         while (els.hasMoreElements()) {
             GrammarResult next = (GrammarResult) els.nextElement();
             if (prefix.equals(next.getNodeName())) {
-// XXX It's probably OK that perfomer has returned it, we just do not want to visualize it                 
+// XXX It's probably OK that perfomer has returned it, we just do not want to visualize it
 //                ErrorManager err =ErrorManager.getDefault();
 //                err.log(ErrorManager.WARNING, "Grammar " + perfomer.getClass().getName() + " result '"  + prefix + "' eliminated to avoid #28224.");  // NOi18N
                 continue;
@@ -334,7 +334,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
         List result = new ArrayList(13);
         while (attrs.hasMoreElements()) {
             GrammarResult next = (GrammarResult) attrs.nextElement();            
-            AttributeResultItem attr = new AttributeResultItem(next, boundary == false);
+            AttributeResultItem attr = new AttributeResultItem(next, false);
             result.add( attr );
         }
         return result;

@@ -32,10 +32,6 @@ class AttributeResultItem extends XMLResultItem {
         selectionForeground = foreground = Color.green.darker().darker();        
     }
     
-    public AttributeResultItem(GrammarResult res){
-        this(res, false);
-    }
-
     public AttributeResultItem(GrammarResult res, boolean inline){
         super(res.getNodeName());
         selectionForeground = foreground = Color.green.darker().darker();        
@@ -43,7 +39,7 @@ class AttributeResultItem extends XMLResultItem {
     }
     
     public String getReplacementText(int modifiers) {
-        String extend = inline ? "" : "=\"";
+        String extend = inline ? "" : "=\"";     // NOI18N
         return super.getReplacementText(modifiers) + extend;
     }
     

@@ -36,7 +36,7 @@ import org.openide.ErrorManager;
  *
  * @author  asgeir@dimonsoftware.com
  */
-public class SyntaxQueryHelper {
+final class SyntaxQueryHelper {
     
     public final static int COMPLETION_TYPE_UNKNOWN = 0;
     public final static int COMPLETION_TYPE_ATTRIBUTE = 1;
@@ -45,7 +45,8 @@ public class SyntaxQueryHelper {
     public final static int COMPLETION_TYPE_ENTITY = 4;
     public final static int COMPLETION_TYPE_NOTATION = 5;
     public final static int COMPLETION_TYPE_DTD = 6;
-    
+
+    /** Currect oken or previous one if at token boundary */
     private TokenItem token = null;
     
     private String preText = "";
@@ -58,7 +59,7 @@ public class SyntaxQueryHelper {
     
     private int completionType = 0;
     
-    private boolean boundary;
+    private boolean tokenBoundary;
 
     // shared context instance, - we are always called from AWT thread
     private static DefaultContext ctx = new DefaultContext();
@@ -68,7 +69,7 @@ public class SyntaxQueryHelper {
         tunedOffset = offset;
         token = sup.getPreviousToken( tunedOffset);
         if( token != null ) { // inside document
-            boundary = token.getOffset() + token.getImage().length() == tunedOffset;
+            tokenBoundary = token.getOffset() + token.getImage().length() == tunedOffset;
         } else {
             //??? start of document no choice now, but should be prolog if not followed by it
             throw new BadLocationException("No token found at current position", offset); // NOI18N
@@ -84,7 +85,7 @@ public class SyntaxQueryHelper {
 
         // determine last typed text, prefix text
 
-        if ( boundary == false ) {
+        if ( tokenBoundary == false ) {
 
             preText = token.getImage().substring( 0, tunedOffset - token.getOffset() );
             if ("".equals(preText)) throw new IllegalStateException("Cannot get token prefix at " + tunedOffset);
@@ -363,7 +364,8 @@ public class SyntaxQueryHelper {
             return null;
         }
     }
-    
+
+    /** Current token or previous one if at token boundary. */
     public TokenItem getToken() {
         return token;
     }
@@ -387,9 +389,10 @@ public class SyntaxQueryHelper {
     public int getCompletionType() {
         return completionType;
     }
-    
+
+    /** token boundary */
     public boolean isBoundary() {
-        return boundary;
+        return tokenBoundary;
     }
 
 

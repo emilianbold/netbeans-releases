@@ -20,6 +20,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="tax_root" location="${xml_root}/tax"/>
     <property name="tax_lib_root" location="${tax_root}/lib"/>
     <property name="core_root" location="${xml_root}/core"/>
+    <property name="build.compiler.debug" value="on"/>
 
     <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nb_all}/nbbuild/nbantext.jar"/>
 
