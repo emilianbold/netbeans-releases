@@ -41,11 +41,33 @@ To implement:
       <include name="regexp*.jar"/>
     </fileset>
   </path>
+
   <target name="init">
     <ant dir="." target="bootstrap"/>
     <taskdef name="checklicense" classname="org.netbeans.nbbuild.CheckLicense" classpathref="nbantext"/>
     <taskdef name="findbad" classname="org.netbeans.nbbuild.FindBadConstructions" classpathref="nbantext"/>
     <taskdef name="kvetch" classname="org.netbeans.nbbuild.Kvetcher" classpathref="nbantext"/>
+    <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpathref="nbantext"/>
+    <taskdef name="checkbundles" classname="org.netbeans.nbbuild.CheckBundles" classpathref="nbantext"/>
+  </target>
+
+  <!-- the same configuration of module list as in build.xml -->
+  <target name="init-module-list" depends="init">
+    <!-- Read the user property file at first -->
+    <property file="user.build.properties"/>
+
+    <!-- Read standard property file -->
+    <property file="build.properties"/>
+
+    <!-- Define modules. -->
+    <!-- The following is not permitted by Ant: -->
+    <!-- <property name="modules" value="${config.modules.${moduleconfig}}"/> -->
+    <!-- So this is a little trick to do it anyway. -->
+    <echo file="moduledefs-tmp.properties">modules=$${config.modules.${moduleconfig}}
+fixedmodules=$${config.fixedmodules.${moduleconfig}}
+</echo>
+    <property file="moduledefs-tmp.properties"/>
+    <property name="allmodules" value="${fixedmodules},${modules}"/>
   </target>
 
   <target name="all" depends="check-licenses,check-dbl-checked-locking,check-bundle-snafus" description="Run all implemented tests."/>
@@ -174,4 +196,23 @@ an exception can be made for your code so you do not get further mail about it.
     </findbad>
   </target>
 
+  <target name="check-noi18n-comments" depends="init-module-list" description="print info about configured modules">
+    <echo message="Running NOI18N check..."/>
+    <echo message="Selected modules: ${allmodules}"/>
+    <apply executable="misc/i18ncheck.pl" type="dir">
+      <fileset dir="..">
+        <patternset includes="${allmodules}"/>
+      </fileset>
+    </apply>
+  </target>
+
+  <target name="check-bundle-usage" depends="init-module-list" description="Check bundles for unused strings.">
+    <repeat target="check-bundle-usage-in-module" name="modulename" values="${allmodules}"/>
+  </target>
+  
+  <!-- expects ${modulename} to be set -->
+  <target name="check-bundle-usage-in-module">
+    <echo message="Looking for unused keys in bundles in module ${modulename}"/>
+    <checkbundles srcdir="../${modulename}"/>
+  </target>
 </project>
