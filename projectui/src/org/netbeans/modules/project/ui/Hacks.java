@@ -113,4 +113,28 @@ public class Hacks {
         }
     }
     
+    
+    /** Forces reload of panels in TemplateWizard. Public method updateState doesn't re-read
+     * the new panels from new iterator.
+     * Note: it should be solved better either fixing TemplateWizard or implement
+     * whole NewFileWizard (w/o TemplateWizard).
+     *
+     * @param tw instance of TemplateWizard (thus NewFileWizard)
+     * @param dobj tempate
+     */    
+    static void reloadPanelsInWizard (final TemplateWizard tw, final DataObject dobj) {
+        try {
+            Class twClazz = Class.forName(
+                "org.openide.loaders.TemplateWizard", true, // NOI18N
+                Thread.currentThread().getContextClassLoader());
+            if (twClazz != null) {
+                Method reloadPanels = twClazz.getDeclaredMethod ("reload", new Class[] {DataObject.class}); // NOI18N
+                reloadPanels.setAccessible (true);
+                reloadPanels.invoke (tw, new Object[] {dobj});
+            }
+        } catch (Exception e) {
+            // XXX
+            e.printStackTrace();
+        }
+    }
 }

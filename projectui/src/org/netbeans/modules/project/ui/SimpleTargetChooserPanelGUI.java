@@ -67,7 +67,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         if ( bottomPanel != null ) {
             bottomPanelContainer.add( bottomPanel, java.awt.BorderLayout.CENTER );
         }
-        initValues( project, null, null );
+        initValues( null, null );
         
         browseButton.addActionListener( this );
         locationComboBox.addActionListener( this );
@@ -77,10 +77,12 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         setName (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_SimpleTargetChooserPanel_Name")); // NOI18N
     }
     
-    public void initValues( Project p, FileObject template, FileObject preselectedFolder ) {
-        projectTextField.setText(ProjectUtils.getInformation(p).getDisplayName());
+    public void initValues( FileObject template, FileObject preselectedFolder ) {
+        assert project != null;
         
-        Sources sources = ProjectUtils.getSources( p );
+        projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
+        
+        Sources sources = ProjectUtils.getSources( project );
                         
         folders = sources.getSourceGroups( Sources.TYPE_GENERIC );
         

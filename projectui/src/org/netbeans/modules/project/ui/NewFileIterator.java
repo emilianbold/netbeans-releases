@@ -42,6 +42,7 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator {
     private transient WizardDescriptor.Iterator simpleIterator;
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
+    private transient Project currentProject;
     
     private transient boolean isFolder;
     
@@ -72,8 +73,10 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator {
     }
             
     private WizardDescriptor.Panel[] getPanels (WizardDescriptor wizardDescriptor) {
-        if (panels == null) { 
-            Project project = Templates.getProject( wizardDescriptor );
+        Project project = Templates.getProject( wizardDescriptor );
+        assert project != null : wizardDescriptor;
+        if (!project.equals (currentProject) || panels == null) {
+            currentProject = project;
             Sources sources = ProjectUtils.getSources(project);
             if (isFolder) {
                 panels = new WizardDescriptor.Panel[] {            
@@ -90,19 +93,17 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator {
     
     private String[] createSteps (String[] before) {
         assert panels != null;
-        // hack to use the steps set before this panel processed
-        int diff = 0;
+        
         if (before == null) {
             before = new String[0];
-        } else if (before.length > 0) {
-            diff = ("...".equals (before[before.length - 1])) ? 1 : 0; // NOI18N
         }
-        String[] res = new String[ (before.length - diff) + panels.length];
+        
+        String[] res = new String[ (before.length - 1) + panels.length];
         for (int i = 0; i < res.length; i++) {
-            if (i < (before.length - diff)) {
+            if (i < (before.length - 1)) {
                 res[i] = before[i];
             } else {
-                res[i] = panels[i - before.length + diff].getComponent ().getName ();
+                res[i] = panels[i - before.length + 1].getComponent ().getName ();
             }
         }
         return res;

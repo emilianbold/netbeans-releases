@@ -61,10 +61,14 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     private String expectedExtension;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     private boolean isPackage;
+    private SourceGroup folders[];
     
     /** Creates new form SimpleTargetChooserGUI */
-    public JavaTargetChooserPanelGUI( Component bottomPanel, boolean isPackage ) {
+    public JavaTargetChooserPanelGUI( Project p, SourceGroup[] groups, Component bottomPanel, boolean isPackage ) {
         this.isPackage = isPackage;
+        this.project = p;
+        this.folders = groups;
+        
         initComponents();        
         if ( isPackage ) {
             packageComboBox.setVisible( false );
@@ -100,17 +104,17 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         setName( NbBundle.getBundle (JavaTargetChooserPanelGUI.class).getString ("LBL_JavaTargetChooserPanelGUI_Name") ); // NOI18N
     }
     
-    public void initValues( Project p, SourceGroup[] groups, FileObject template, FileObject preselectedFolder ) {
-        this.project = p;
+    public void initValues( FileObject template, FileObject preselectedFolder ) {
+        assert project != null : "Project must be specified."; // NOI18N
         
         // Create list of groups
-        this.groupItems = new ModelItem[ groups.length ]; 
-        for( int i = 0; i < groups.length; i++ ) {
-            this.groupItems[i] = new ModelItem( groups[i] ); 
+        this.groupItems = new ModelItem[ folders.length ]; 
+        for( int i = 0; i < folders.length; i++ ) {
+            this.groupItems[i] = new ModelItem( folders[i] ); 
         }
                 
         // Show name of the project
-        projectTextField.setText( ProjectUtils.getInformation(p).getDisplayName() );
+        projectTextField.setText( ProjectUtils.getInformation(project).getDisplayName() );
         assert template != null;
         
         String displayName = null;

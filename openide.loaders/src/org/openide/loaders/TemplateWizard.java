@@ -62,7 +62,7 @@ public class TemplateWizard extends WizardDescriptor {
     private static final String CUSTOM_DESCRIPTION = "instantiatingWizardURL"; // NOI18N
     /** Defines custom iterator */
     private static final String CUSTOM_ITERATOR = "instantiatingIterator"; // NOI18N
-
+    
     /** See org.openide.WizardDescriptor.PROP_CONTENT_SELECTED_INDEX
      */
     private static final String PROP_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; // NOI18N
@@ -241,6 +241,18 @@ public class TemplateWizard extends WizardDescriptor {
             targetDataFolder = DataFolder.findFolder (getEnabledSystem ().getRoot ());
         }
         return targetDataFolder;
+    }
+    
+    // Note: called by reflection from projects/projectui/Hacks
+    private void reload (DataObject obj) {
+        Iterator it;
+        if (
+            obj == null ||
+            (it = getIterator (obj)) == null
+        ) {
+            it = defaultIterator ();
+        }
+        this.iterator.setIterator (it, true);
     }
     
     /** Sets the target folder.
@@ -672,7 +684,7 @@ public class TemplateWizard extends WizardDescriptor {
      */
     protected void updateState() {
         super.updateState();
-
+        
         if (lastComp != null) {
             lastComp.removePropertyChangeListener(propL());
         }

@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -20,22 +22,70 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 
 public final class NewFileWizard extends TemplateWizard {
         
-    private Project p;
+    private Project currP;
     private MessageFormat format;
     // private String[] recommendedTypes;
+    
+    private Project getCurrentProject () {
+        return currP;
+    }
 
-    public NewFileWizard( Project p /*, String recommendedTypes[] */ ) {
-        this.p = p;
-        putProperty( ProjectChooserFactory.WIZARD_KEY_PROJECT, p );
+    private void setCurrentProject (Project p) {
+        this.currP = p;
+    }
+
+    public NewFileWizard( Project project /*, String recommendedTypes[] */ ) {
+        setCurrentProject (project);
+        putProperty( ProjectChooserFactory.WIZARD_KEY_PROJECT, getCurrentProject () );
         format = new MessageFormat (NbBundle.getBundle (NewFileWizard.class).getString ("LBL_NewFileWizard_MessageFormat"));
         // this.recommendedTypes = recommendedTypes;        
         //setTitleFormat( new MessageFormat( "{0}") );
+        addPropertyChangeListener (new PropertyChangeListener () {
+            public void propertyChange (PropertyChangeEvent evt) {
+                // check ProjectChooserFactory.WIZARD_KEY_PROJECT property
+                if (ProjectChooserFactory.WIZARD_KEY_PROJECT.equals (evt.getPropertyName ())) {
+                    Project newProject = (Project)evt.getNewValue ();
+                    if (!getCurrentProject ().equals (newProject)) {
+                        // set the new project and force reload panels in wizard
+                        setCurrentProject (newProject);
+                        try {
+                            //reload (DataObject.find (Templates.getTemplate (NewFileWizard.this)));
+                            Hacks.reloadPanelsInWizard (NewFileWizard.this, DataObject.find (Templates.getTemplate (NewFileWizard.this)));
+                        } catch (DataObjectNotFoundException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    public static Iterator getIterator (DataObject obj) {
+        
+        // read the attributes declared in module's layer
+        Object unknownIterator = obj.getPrimaryFile ().getAttribute ("instantiatingIterator"); //NOI18N
+        if (unknownIterator == null) {
+            unknownIterator = obj.getPrimaryFile ().getAttribute ("templateWizardIterator"); //NOI18N
+        }
+        // set default NewFileIterator if no attribute is set
+        if (unknownIterator == null) {
+            try {
+                obj.getPrimaryFile ().setAttribute ("instantiatingIterator", NewFileIterator.genericFileIterator ()); //NOI18N
+            } catch (java.io.IOException e) {
+                // can ignore it because a iterator will created though
+            }
+        }
+        
+        // returns iterator created by given attributes
+        return TemplateWizard.getIterator (obj);
     }
     
     public void updateState () {
@@ -56,15 +106,15 @@ public final class NewFileWizard extends TemplateWizard {
     public void setTitle (String ignore) {}
     
     protected WizardDescriptor.Panel createTemplateChooser () {
-        return new TemplateChooserPanel( p /*, recommendedTypes */ );
+        return new TemplateChooserPanel( getCurrentProject () /*, recommendedTypes */ );
 
     }        
 
     protected WizardDescriptor.Panel createTargetChooser () {
-        Sources c = ProjectUtils.getSources(p);
-        return Templates.createSimpleTargetChooser(p, c.getSourceGroups(Sources.TYPE_GENERIC));
+        Sources c = ProjectUtils.getSources(getCurrentProject ());
+        return Templates.createSimpleTargetChooser(getCurrentProject (), c.getSourceGroups(Sources.TYPE_GENERIC));
     }
-        
+    
 }
 
 /** Old impl might be usefull later in Wizards API

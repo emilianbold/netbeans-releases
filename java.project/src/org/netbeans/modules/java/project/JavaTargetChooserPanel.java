@@ -61,7 +61,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
 
     public Component getComponent() {
         if (gui == null) {
-            gui = new JavaTargetChooserPanelGUI( bottomPanel == null ? null : bottomPanel.getComponent(), isPackage );
+            gui = new JavaTargetChooserPanelGUI( project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), isPackage );
             gui.addChangeListener(this);
         }
         return gui;
@@ -138,14 +138,12 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
         wizard = (WizardDescriptor)settings;
         
         if ( gui != null ) {
-            
-            Project project = Templates.getProject( wizard );
-            
             // Try to preselect a folder
             FileObject preselectedFolder = Templates.getTargetFolder( wizard );            
             // Init values
-            gui.initValues( project, folders, Templates.getTemplate( wizard ), preselectedFolder );
+            gui.initValues( Templates.getTemplate( wizard ), preselectedFolder );
         }
+        
         if ( bottomPanel != null ) {
             bottomPanel.readSettings( settings );
         }        

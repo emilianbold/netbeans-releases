@@ -28,8 +28,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
-
-// XXX I18N
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -41,17 +40,17 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListen
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     private TemplateChooserPanelGUI gui;
 
-    private Project p;
+    private Project project;
     // private String[] recommendedTypes;
 
     TemplateChooserPanel( Project p /*, String recommendedTypes[] */ ) {
-        this.p = p;
+        this.project = p;
         /* this.recommendedTypes = recommendedTypes; */
     }
 
     public Component getComponent() {
         if (gui == null) {
-            gui = new TemplateChooserPanelGUI(p /*, recommendedTypes */ );
+            gui = new TemplateChooserPanelGUI(project /*, recommendedTypes */ );
             gui.addChangeListener(this);
         }
         return gui;
@@ -88,13 +87,12 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListen
 
     public void readSettings(Object settings) {
         if ( gui != null ) {
-            gui.initValues( p );
+            gui.initValues( project );
         }
-        
-        WizardDescriptor wd = (WizardDescriptor)settings;
-        wd.setTitle( "New File - Choose File Type" );
-        wd.putProperty( "WizardPanel_contentData", new String[] { "Choose Template", "..." } ); // NOI18N
-        wd.putProperty( "WizardPanel_contentSelectedIndex", new Integer( 0 ) ); // NOI18N
+        ((WizardDescriptor)settings).putProperty ("WizardPanel_contentSelectedIndex", new Integer (0)); // NOI18N
+        ((WizardDescriptor)settings).putProperty ("WizardPanel_contentData", new String[] { // NOI18N
+                NbBundle.getBundle (TemplateChooserPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
+                NbBundle.getBundle (TemplateChooserPanel.class).getString ("LBL_TemplatesPanel_Dots")}); // NOI18N
     }
 
     public void storeSettings(Object settings) {
@@ -107,7 +105,11 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListen
              NotifyDescriptor.CLOSED_OPTION != value ) {        
             try { 
 
-                wd.putProperty( ProjectChooserFactory.WIZARD_KEY_PROJECT, gui.getProject() );
+                Project newProject = gui.getProject ();
+                if (!project.equals (newProject)) {
+                    project = newProject;
+                    wd.putProperty( ProjectChooserFactory.WIZARD_KEY_PROJECT, newProject );
+                }
                 
                 if (wd instanceof TemplateWizard) {
                     ((TemplateWizard)wd).setTemplate( DataObject.find( gui.getTemplate() ) );

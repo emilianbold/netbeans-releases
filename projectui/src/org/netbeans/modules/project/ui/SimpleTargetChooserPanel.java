@@ -15,6 +15,7 @@ package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -54,6 +55,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
             bottomPanel.addChangeListener( this );
         }
         this.isFolder = isFolder;
+        this.gui = null;
     }
 
     public Component getComponent() {
@@ -78,10 +80,9 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
         }
         
         // check if the file name can be created
-        FileObject dir = Templates.getTargetFolder( wizard );
         FileObject template = Templates.getTemplate( wizard );
 
-        String errorMessage = ProjectUtilities.canUseFileName (dir, gui.getTargetName(), template.getExt ());
+        String errorMessage = ProjectUtilities.canUseFileName (getTargetFolderFromGUI (), gui.getTargetName(), template.getExt ());
         wizard.putProperty ("WizardPanel_errorMessage", errorMessage); // NOI18N
 
         return errorMessage == null;
@@ -115,12 +116,10 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
             getComponent();
         }
         
-        Project project = Templates.getProject( wizard );
-
         // Try to preselect a folder            
         FileObject preselectedTarget = Templates.getTargetFolder( wizard );
         // Init values
-        gui.initValues( project, Templates.getTemplate( wizard ), preselectedTarget );
+        gui.initValues( Templates.getTemplate( wizard ), preselectedTarget );
         
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
         // this name is used in NewFileWizard to modify the title
@@ -143,31 +142,9 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
             if ( bottomPanel != null ) {
                 bottomPanel.storeSettings( settings );
             }
-            // XXX Better test for canWrite
             
-            FileObject rootFolder = gui.getTargetGroup().getRootFolder();
-            String folderName = gui.getTargetFolder();
-            
-            FileObject targetFolder;
-            if ( folderName == null ) {
-                targetFolder = rootFolder;
-            }
-            else {            
-                targetFolder = rootFolder.getFileObject( folderName );
-            }
-            
-            try {
-                if ( targetFolder == null ) {
-                    // XXX add deletion of the file in uninitalize ow the wizard
-                    targetFolder = FileUtil.createFolder( rootFolder, folderName );
-                }                
-                Templates.setTargetFolder( (WizardDescriptor)settings, targetFolder );
-                Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
-            }
-            catch( java.io.IOException e ) {
-                // XXX
-                // Can't create the folder
-            }
+            Templates.setTargetFolder( (WizardDescriptor)settings, getTargetFolderFromGUI () );
+            Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
         }
         ((WizardDescriptor)settings).putProperty ("NewFileWizard_Title", null); // NOI18N
     }
@@ -175,5 +152,29 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
     public void stateChanged(ChangeEvent e) {        
         fireChange();
     }
+    
+    private FileObject getTargetFolderFromGUI () {
+        FileObject rootFolder = gui.getTargetGroup().getRootFolder();
+        String folderName = gui.getTargetFolder();
 
+        FileObject targetFolder;
+        if ( folderName == null ) {
+            targetFolder = rootFolder;
+        }
+        else {            
+            targetFolder = rootFolder.getFileObject( folderName );
+        }
+
+        if ( targetFolder == null ) {
+            // XXX add deletion of the file in uninitalize ow the wizard
+            try {
+                targetFolder = FileUtil.createFolder( rootFolder, folderName );
+            } catch (IOException ioe) {
+                // XXX
+                // Can't create the folder
+            }
+        }
+        
+        return targetFolder;
+    }
 }
