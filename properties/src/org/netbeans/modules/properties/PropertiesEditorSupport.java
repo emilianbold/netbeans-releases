@@ -113,12 +113,6 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
         myEntry.getHandler().reparseNowBlocking();
         return true;
     }
-
-    // PENDING very ugly, has to revised.
-    /** Hack to close(boolean) method. */
-    boolean closeHack(boolean ask) {
-        return close(ask);
-    }
     
     /** 
      * Overrides superclass method.
@@ -500,7 +494,7 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
                     // will ask for save
                     unmarkModified();
 
-                    support.closeHack(false);
+                    support.close(false);
                 }
             } else {
                 firePropertyChange (

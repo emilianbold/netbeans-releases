@@ -124,12 +124,6 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
         return true;
     }
     
-    // PENDING very ugly, has to revised.
-    /** Hack to close(boolean) method. */
-    boolean closeHack(boolean ask) {
-        return close(ask);
-    }
-    
     /** 
      * Overrides superclass abstract method. 
      * A method to create a new component.
@@ -350,7 +344,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
                     // will ask for save.
                     unmarkModified();
                     
-                    support.closeHack(false);
+                    support.close(false);
                 }
             } else {
                 firePropertyChange (
