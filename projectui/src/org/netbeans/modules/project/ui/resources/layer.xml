@@ -372,23 +372,19 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugMainProject.instance"/>
             </file>
            
-            <attr name="org-netbeans-modules-project-ui-DebugMainProject.shadow/RunOther" boolvalue="true" />                             
-                        
+            <attr name="org-netbeans-modules-project-ui-DebugMainProject.shadow/org-netbeans-modules-project-ui-TestProject.shadow" boolvalue="true" />                             
+                
+            <file name="org-netbeans-modules-project-ui-TestProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
+            </file>
+            
+            <attr name="org-netbeans-modules-project-ui-TestProject.shadow/RunOther" boolvalue="true" />                             
+            
+                    
             <folder name="RunOther">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/empty.gif" />
                                                 
-                <file name="org-netbeans-modules-project-ui-TestProject.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
-                </file>
-
-                <attr name="org-netbeans-modules-project-ui-TestProject.shadow/SeparatorTest.instance" boolvalue="true" />                                                    
-                <file name="SeparatorTest.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                </file>
-
-                <attr name="SeparatorTest.instance/org-netbeans-modules-project-ui-RunSingle.shadow" boolvalue="true" />                
-
                 <file name="org-netbeans-modules-project-ui-RunSingle.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
                 </file>
