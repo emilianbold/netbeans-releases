@@ -1711,7 +1711,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../web/project" target="netbeans" />
   </target>
-  <target name="all-web/core" depends="init,all-web/ddapi,all-web/webapi,all-j2eeserver,all-web/jspsyntax">
+  <target name="all-web/core" depends="init,all-web/ddapi,all-web/webapi,all-j2eeserver,all-web/jspsyntax,all-xml/multiview">
     <echo message="Building module web/core..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
