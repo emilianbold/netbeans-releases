@@ -575,7 +575,7 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="Actions">
                     <file name="NewTemplateAction.instance_hidden" />
                     <file name="NewProjectFile.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.NewFile"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.NewFile$WithSubMenu"/>
                     </file>
                     <attr boolvalue="true" name="NewProjectFile.instance/FileSystemAction.instance" />
                 </folder>
@@ -591,6 +591,64 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
         </folder>
+    </folder>
+    
+    <folder name="ProjectsTabActions"> <!-- #57068; cf. ProjectsRootNode.ACTIONS_FOLDER -->
+        <file name="org-netbeans-modules-project-ui-NewProject.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewProject.instance"/>
+        </file>
+        <attr name="org-netbeans-modules-project-ui-NewProject.shadow/org-netbeans-modules-project-ui-NewFile.shadow" boolvalue="true"/>
+        <file name="org-netbeans-modules-project-ui-NewFile.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile.instance"/>
+        </file>
+        <attr name="org-netbeans-modules-project-ui-NewFile.shadow/sep-1.instance" boolvalue="true"/>
+        <file name="sep-1.instance">
+            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+        </file>
+        <attr name="sep-1.instance/org-netbeans-modules-project-ui-OpenProject.shadow" boolvalue="true"/>
+        <file name="org-netbeans-modules-project-ui-OpenProject.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance"/>
+        </file>
+        <attr name="org-netbeans-modules-project-ui-OpenProject.shadow/org-netbeans-modules-project-ui-RecentProjects.shadow" boolvalue="true"/>
+        <file name="org-netbeans-modules-project-ui-RecentProjects.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RecentProjects.instance"/>
+        </file>
+        <attr name="org-netbeans-modules-project-ui-RecentProjects.shadow/sep-2.instance" boolvalue="true"/>
+        <file name="sep-2.instance">
+            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+        </file>
+        <attr name="sep-2.instance/org-netbeans-modules-project-ui-BuildMainProject.shadow" boolvalue="true"/>
+        <file name="org-netbeans-modules-project-ui-BuildMainProject.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"/>
+        </file>
+        <attr name="org-netbeans-modules-project-ui-BuildMainProject.shadow/org-netbeans-modules-project-ui-RebuildMainProject.shadow" boolvalue="true"/>
+        <file name="org-netbeans-modules-project-ui-RebuildMainProject.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RebuildMainProject.instance"/>
+        </file>
+        <attr name="org-netbeans-modules-project-ui-RebuildMainProject.shadow/sep-3.instance" boolvalue="true"/>
+        <file name="sep-3.instance">
+            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+        </file>
+        <attr name="sep-3.instance/org-netbeans-modules-project-ui-RunMainProject.shadow" boolvalue="true"/>
+        <file name="org-netbeans-modules-project-ui-RunMainProject.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
+        </file>
+        <attr name="org-netbeans-modules-project-ui-RunMainProject.shadow/org-netbeans-modules-project-ui-DebugMainProject.shadow" boolvalue="true"/>
+        <file name="org-netbeans-modules-project-ui-DebugMainProject.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugMainProject.instance"/>
+        </file>
+        <attr name="org-netbeans-modules-project-ui-DebugMainProject.shadow/sep-4.instance" boolvalue="true"/>
+        <file name="sep-4.instance">
+            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+        </file>
+        <attr name="sep-4.instance/org-netbeans-modules-project-ui-SetMainProject.instance" boolvalue="true"/>
+        <file name="org-netbeans-modules-project-ui-SetMainProject.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.SetMainProject$PopupWithoutContext"/>
+        </file>
+        <attr name="org-netbeans-modules-project-ui-SetMainProject.instance/sep-below-main-actions.instance" boolvalue="true"/>
+        <file name="sep-below-main-actions.instance">
+            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+        </file>
     </folder>
         
 </filesystem>

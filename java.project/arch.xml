@@ -972,7 +972,8 @@ Microsystems, Inc. All Rights Reserved.
   <p>
    Registers iterators for Java templates.
    Also registers context menu actions for Java source files.
-   Registers a couple of options, including one visible for the package view.
+   Registers a couple of options, and adds an action to the <b>Projects</b> tab
+   to switch package display style.
   </p>
  </answer>
 

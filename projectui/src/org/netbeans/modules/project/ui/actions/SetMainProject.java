@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,7 +30,6 @@ import org.netbeans.api.project.ProjectInformation;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 
 public class SetMainProject extends ProjectAction implements Presenter.Menu, PropertyChangeListener {
@@ -43,7 +42,7 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
      */
     private static final String PROJECT_KEY = "org.netbeans.modules.project.ui.MainProjectItem"; // NOI18N
     
-    private JMenu subMenu;
+    protected JMenu subMenu;
     
     // private PropertyChangeListener wpcl;
     
@@ -60,7 +59,7 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
         }
         refresh( getLookup() );
     }
-
+    
     protected void actionPerformed( Lookup context ) {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );        
         
@@ -182,6 +181,30 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
             
         }
         
+    }
+    
+    /**
+     * Variant which behaves just like the menu presenter without a context, but
+     * can be displayed in a context menu.
+     */
+    public static final class PopupWithoutContext extends SetMainProject implements Presenter.Popup {
+        
+        public PopupWithoutContext() {}
+        
+        private PopupWithoutContext(Lookup actionContext) {
+            super(actionContext);
+        }
+        
+        public JMenuItem getPopupPresenter() {
+            // Hack!
+            subMenu = null;
+            return getMenuPresenter();
+        }
+        
+        public Action createContextAwareInstance(Lookup actionContext) {
+            return new PopupWithoutContext(actionContext);
+        }
+
     }
     
 }

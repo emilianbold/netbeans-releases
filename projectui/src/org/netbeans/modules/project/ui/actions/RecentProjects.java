@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,9 +21,12 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.OpenProjectList;
@@ -40,7 +43,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 
-public class RecentProjects extends AbstractAction implements Presenter.Menu, PropertyChangeListener, PopupMenuListener {
+public class RecentProjects extends AbstractAction implements Presenter.Menu, Presenter.Popup, PropertyChangeListener, PopupMenuListener {
     
     private static final String ICON = "org/netbeans/modules/project/ui/resources/empty.gif"; //NOI18N    
     
@@ -68,36 +71,44 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     /** Perform the action. Tries the performer and then scans the ActionMap
      * of selected topcomponent.
      */
-    public void actionPerformed(java.awt.event.ActionEvent ev) {
+    public void actionPerformed(ActionEvent ev) {
         // no operation
     }
     
     public JMenuItem getMenuPresenter() {
-        createSubMenu();
+        createMainSubMenu();
         return subMenu;
     }
-        
     
-    private void createSubMenu() {
+    public JMenuItem getPopupPresenter() {
+        JMenu menu = createSubMenu();
+        fillSubMenu(menu);
+        return menu;
+    }
+    
+    private JMenu createSubMenu() {
+        JMenu menu = new JMenu(this);
+        menu.setMnemonic(NbBundle.getMessage(RecentProjects.class, "MNE_RecentProjectsAction_Name").charAt(0));
+        return menu;
+    }
+    
+    private void createMainSubMenu() {
         if ( subMenu == null ) {
-            subMenu = new JMenu(this);
-            subMenu.setMnemonic (NbBundle.getMessage(RecentProjects.class, "MNE_RecentProjectsAction_Name").charAt (0)); // NOI18N
+            subMenu = createSubMenu();
             subMenu.getPopupMenu().addPopupMenuListener( this );
         }
     }
         
-    private void fillSubMenu() {
-        
-        createSubMenu();        
-        subMenu.removeAll();
+    private void fillSubMenu(JMenu menu) {
+        menu.removeAll();
         
         List projects = OpenProjectList.getDefault().getRecentProjects();
         if ( projects.isEmpty() ) {
-            subMenu.setEnabled( false );
+            menu.setEnabled( false );
             return;
         }
         
-        subMenu.setEnabled( true );
+        menu.setEnabled( true );
         ActionListener jmiActionListener = new MenuItemActionListener(); 
                         
         // Fill menu with items
@@ -114,7 +125,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
                 prjDir.addFileChangeListener(prjDirListener);
                 ProjectInformation pi = ProjectUtils.getInformation(p);
                 JMenuItem jmi = new JMenuItem(pi.getDisplayName(), pi.getIcon());
-                subMenu.add( jmi );            
+                menu.add( jmi );            
                 jmi.putClientProperty( PROJECT_URL_KEY, prjDirURL );
                 jmi.addActionListener( jmiActionListener );
             }
@@ -122,8 +133,6 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
                 // Don't put the project into the menu
             }
         }
-        
-        recreate = false;
     }
 
     // Implementation of change listener ---------------------------------------
@@ -132,7 +141,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     public void propertyChange( PropertyChangeEvent e ) {
         
         if ( OpenProjectList.PROPERTY_RECENT_PROJECTS.equals( e.getPropertyName() ) ) {
-            createSubMenu();
+            createMainSubMenu();
             subMenu.setEnabled( !OpenProjectList.getDefault().isRecentProjectsEmpty() );
             recreate = true;
         }
@@ -142,16 +151,18 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     
     // Implementation of PopupMenuListener -------------------------------------
     
-    public void popupMenuWillBecomeVisible( javax.swing.event.PopupMenuEvent e ) {
+    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
         if ( recreate ) {
-            fillSubMenu();
+            createMainSubMenu();
+            fillSubMenu(subMenu);
+            recreate = false;
         }
     }
     
-    public void popupMenuWillBecomeInvisible( javax.swing.event.PopupMenuEvent e ) {
+    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
     }
 
-    public void popupMenuCanceled( javax.swing.event.PopupMenuEvent e ) {
+    public void popupMenuCanceled(PopupMenuEvent e) {
     }
 
     

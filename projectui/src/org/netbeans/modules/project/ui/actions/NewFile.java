@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -34,6 +34,7 @@ import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -44,7 +45,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter.Popup;
-
 
 /** Action for invoking the project sensitive NewFile Wizard
  */
@@ -72,6 +72,14 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     protected void refresh( Lookup context ) {
         setEnabled( OpenProjectList.getDefault().getOpenProjects().length > 0 );
         setDisplayName( NAME );
+    }
+
+    public JMenuItem getPopupPresenter() {
+        JMenuItem menu = new JMenuItem(this);
+        menu.setIcon(null);
+        Mnemonics.setLocalizedText(menu, (String) getValue(Action.NAME));
+        // XXX accelerator not displayed here for some reason...why???
+        return menu;
     }
 
     //private NewFileWizard wizardIterator;  
@@ -148,7 +156,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     
     // Presenter.Popup implementation ------------------------------------------
     
-    public JMenuItem getPopupPresenter() {
+    public JMenuItem getSubmenuPopupPresenter() {
         if (subMenu == null) {
             subMenu = new JMenu(POPUP_NAME);
             subMenu.getPopupMenu().addPopupMenuListener(this);
@@ -312,7 +320,25 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     public void popupMenuCanceled(PopupMenuEvent e) {
     }
     
+    /**
+     * Variant for folder context menus that makes a submenu.
+     */
+    public static final class WithSubMenu extends NewFile {
+        
+        public WithSubMenu() {}
+        
+        private WithSubMenu(Lookup actionContext) {
+            super(actionContext);
+        }
+        
+        public JMenuItem getPopupPresenter() {
+            return getSubmenuPopupPresenter();
+        }
+        
+        public Action createContextAwareInstance(Lookup actionContext) {
+            return new WithSubMenu(actionContext);
+        }
+
+    }
+    
 }
-    
-    
-    

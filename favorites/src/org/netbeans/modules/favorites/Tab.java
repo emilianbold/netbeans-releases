@@ -7,23 +7,22 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.favorites;
-
 
 import java.awt.BorderLayout;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.io.ObjectStreamException;
 import java.util.Stack;
 import javax.swing.ActionMap;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
-
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
@@ -35,12 +34,20 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
-import org.openide.nodes.*;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeOp;
+import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
-/** Special class for projects tab in main explorer */
+/**
+ * Physical tree view showing list of favorites.
+ */
 public class Tab extends TopComponent
 implements Runnable, ExplorerManager.Provider {
     static final long serialVersionUID =-8178367548546385799L;
@@ -110,7 +117,7 @@ implements Runnable, ExplorerManager.Provider {
     */
     protected TreeView initGui () {
         TreeView view = new BeanTreeView();
-        view.setRootVisible (true);
+        view.setRootVisible(false);
         view.setDragSource (true);
         setLayout(new BorderLayout());
         add (view);
@@ -200,14 +207,14 @@ implements Runnable, ExplorerManager.Provider {
         updateTitle();
         // attach listener
         if (weakRcL == null) {
-            weakRcL = org.openide.util.WeakListeners.propertyChange(
+            weakRcL = WeakListeners.propertyChange(
                 rcListener(), rc
             );
         }
         rc.addPropertyChangeListener(weakRcL);
 
         if (weakNRcL == null) {
-            weakNRcL = org.openide.nodes.NodeOp.weakNodeListener (
+            weakNRcL = NodeOp.weakNodeListener (
                 rcListener(), rc
             );
         }
@@ -260,14 +267,14 @@ implements Runnable, ExplorerManager.Provider {
             }
         }
 
-        public void nodeDestroyed(org.openide.nodes.NodeEvent nodeEvent) {
+        public void nodeDestroyed(NodeEvent nodeEvent) {
             //Tab.this.setCloseOperation(TopComponent.CLOSE_EACH);
             Tab.this.close();
         }            
 
-        public void childrenRemoved(org.openide.nodes.NodeMemberEvent e) {}
-        public void childrenReordered(org.openide.nodes.NodeReorderEvent e) {}
-        public void childrenAdded(org.openide.nodes.NodeMemberEvent e) {}
+        public void childrenRemoved(NodeMemberEvent e) {}
+        public void childrenReordered(NodeReorderEvent e) {}
+        public void childrenAdded(NodeMemberEvent e) {}
 
     } // end of RootContextListener inner class
 
@@ -446,7 +453,7 @@ implements Runnable, ExplorerManager.Provider {
     }
 
     /** Old (3.2) deserialization of the ProjectTab */
-    public Object readResolve() throws java.io.ObjectStreamException {
+    public Object readResolve() throws ObjectStreamException {
         getDefault().scheduleValidation();
         return getDefault();
     }

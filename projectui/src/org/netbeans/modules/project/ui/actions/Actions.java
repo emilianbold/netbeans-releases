@@ -79,7 +79,7 @@ public class Actions implements ActionsFactory {
     
     public synchronized Action newFileAction() {
         if ( NEW_FILE == null ) {
-            NEW_FILE = new NewFile();
+            NEW_FILE = new NewFile.WithSubMenu();
         }
         return NEW_FILE;
     }    

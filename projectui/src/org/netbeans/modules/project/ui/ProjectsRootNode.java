@@ -18,6 +18,7 @@ import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.WeakHashMap;
 import javax.swing.Action;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -36,7 +38,10 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.FolderLookup;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
@@ -59,19 +64,15 @@ public class ProjectsRootNode extends AbstractNode {
     static final int LOGICAL_VIEW = 1;
         
     private static final String ICON_BASE = "org/netbeans/modules/project/ui/resources/projectsRootNode"; //NOI18N
-    
-    private static final Action[] NO_ACTIONS = new Action[0];
-    
-    private static Action[] ACTIONS;
+    private static final String ACTIONS_FOLDER = "ProjectsTabActions"; // NOI18N
     
     private ResourceBundle bundle;
-    
-    private Node.Handle handle;
+    private final int type;
     
     public ProjectsRootNode( int type ) {
         super( new ProjectChildren( type ) ); 
         setIconBase( ICON_BASE );
-        handle = new Handle( type );
+        this.type = type;
     }
         
     public String getName() {
@@ -90,27 +91,26 @@ public class ProjectsRootNode extends AbstractNode {
     }
         
     public Node.Handle getHandle() {        
-        return handle;        
+        return new Handle(type);
     }
     
     public Action[] getActions( boolean context ) {
-        
-        if ( context ) {
-            return NO_ACTIONS;
-        }
-        else {
-            if ( ACTIONS == null ) {
-                // Create the actions
-                ACTIONS = new Action[] {
-                    // XXX                    
-                    // SystemAction.get( NodeNewProjectAction.class ),
-                    // SystemAction.get( NodeOpenProjectAction.class ),                    
-                };
+        if (context || type == PHYSICAL_VIEW) {
+            return new Action[0];
+        } else {
+            List/*<Action>*/ actions = new ArrayList();
+            DataFolder actionsFolder = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource(ACTIONS_FOLDER));
+            Iterator/*<Object>*/ instances = new FolderLookup(actionsFolder).getLookup().lookup(new Lookup.Template(Object.class)).allInstances().iterator();
+            while (instances.hasNext()) {
+                Object o = instances.next();
+                if (o instanceof Action) {
+                    actions.add((Action) o);
+                } else if (o instanceof JSeparator) {
+                    actions.add(null);
+                }
             }
-            
-            return ACTIONS;
+            return (Action[]) actions.toArray(new Action[actions.size()]);
         }
-        
     }
     
     /** Finds node for given object in the view

@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
@@ -985,9 +985,15 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="resources-read">
-  <p>
-   No.
-  </p>
+  <ul>
+   <api category="friend" group="layer" name="ProjectsTabActions" type="export">
+    <p>
+     Actions for the <b>Projects</b> tab root context menu are taken from
+     the layer folder <code>ProjectsTabActions</code>. Foreign modules ought
+     to place entries below <code>sep-below-main-actions.instance</code>.
+    </p>
+   </api>
+  </ul>
  </answer>
 
 

@@ -84,10 +84,7 @@ Microsystems, Inc. All Rights Reserved.
   
     <folder name="Services">
         <file name="javaSettings.settings" url="javaSettings.settings"/>
-        <file name="org-netbeans-modules-java-project-packageViewSettings.settings" url="packageViewSettings.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/spi/java/project/support/ui/package.gif"/>
-        </file>
+        <file name="org-netbeans-modules-java-project-packageViewSettings.settings" url="packageViewSettings.settings"/>
     </folder>
     
   <folder name="Loaders">
@@ -125,15 +122,9 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
   </folder>
   
-  <folder name="UI">
-      <folder name="Services">
-          <folder name="IDEConfiguration">
-              <folder name="LookAndFeel">
-                  <file name="org-netbeans-modules-java-project-PackageViewSettings.shadow">
-                      <attr name="originalFile" stringvalue="Services/org-netbeans-modules-java-project-packageViewSettings.settings"/>
-                  </file>
-              </folder>
-          </folder>
-      </folder> <!-- Services -->
-  </folder> <!-- UI --> 
+    <folder name="ProjectsTabActions">
+        <attr name="sep-below-main-actions.instance/org-netbeans-modules-java-project-ChangePackageViewTypeAction.instance" boolvalue="true"/>
+        <file name="org-netbeans-modules-java-project-ChangePackageViewTypeAction.instance"/>
+    </folder>
+    
 </filesystem>
