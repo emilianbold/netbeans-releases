@@ -151,6 +151,7 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator {
     }
 
     public void uninitialize (WizardDescriptor wiz) {
+        this.simpleIterator = null;
         this.wiz = null;
         panels = null;
     }

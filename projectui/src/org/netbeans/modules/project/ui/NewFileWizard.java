@@ -61,7 +61,22 @@ public final class NewFileWizard extends TemplateWizard {
                             //reload (DataObject.find (Templates.getTemplate (NewFileWizard.this)));
                             // bugfix #44481, check if the template is null
                             if (Templates.getTemplate (NewFileWizard.this) != null) {
-                                Hacks.reloadPanelsInWizard (NewFileWizard.this, DataObject.find (Templates.getTemplate (NewFileWizard.this)));
+                                DataObject obj = DataObject.find (Templates.getTemplate (NewFileWizard.this));
+
+                                // read the attributes declared in module's layer
+                                Object unknownIterator = obj.getPrimaryFile ().getAttribute ("instantiatingIterator"); //NOI18N
+                                if (unknownIterator == null) {
+                                    unknownIterator = obj.getPrimaryFile ().getAttribute ("templateWizardIterator"); //NOI18N
+                                }
+                                // set default NewFileIterator if no attribute is set
+                                if (unknownIterator == null) {
+                                    try {
+                                        obj.getPrimaryFile ().setAttribute ("instantiatingIterator", NewFileIterator.genericFileIterator ()); //NOI18N
+                                    } catch (java.io.IOException e) {
+                                        // can ignore it because a iterator will created though
+                                    }
+                                }
+                                Hacks.reloadPanelsInWizard (NewFileWizard.this, obj);
                             }
                         } catch (DataObjectNotFoundException ex) {
                             ex.printStackTrace();
@@ -70,26 +85,6 @@ public final class NewFileWizard extends TemplateWizard {
                 }
             }
         });
-    }
-    
-    public static Iterator getIterator (DataObject obj) {
-        
-        // read the attributes declared in module's layer
-        Object unknownIterator = obj.getPrimaryFile ().getAttribute ("instantiatingIterator"); //NOI18N
-        if (unknownIterator == null) {
-            unknownIterator = obj.getPrimaryFile ().getAttribute ("templateWizardIterator"); //NOI18N
-        }
-        // set default NewFileIterator if no attribute is set
-        if (unknownIterator == null) {
-            try {
-                obj.getPrimaryFile ().setAttribute ("instantiatingIterator", NewFileIterator.genericFileIterator ()); //NOI18N
-            } catch (java.io.IOException e) {
-                // can ignore it because a iterator will created though
-            }
-        }
-        
-        // returns iterator created by given attributes
-        return TemplateWizard.getIterator (obj);
     }
     
     public void updateState () {
