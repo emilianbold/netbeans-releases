@@ -767,6 +767,11 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             } catch (OutOfMemoryError error) {
                 size = size / 2;
             }
+            try {
+                if (i % 3 == 0) Thread.sleep(321);
+            } catch (InterruptedException t) {
+                // ignore
+            }
         }
         fail(text + " " + ref.get());
     }
