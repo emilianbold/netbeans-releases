@@ -155,9 +155,11 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
         
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
         // this name is used in NewFileWizard to modify the title
-        Object substitute = gui.getClientProperty ("NewFileWizard_Title"); // NOI18N
-        if (substitute != null) {
-            wizard.putProperty ("NewFileWizard_Title", substitute); // NOI18N
+        if (gui != null) {
+            Object substitute = gui.getClientProperty ("NewFileWizard_Title"); // NOI18N
+            if (substitute != null) {
+                wizard.putProperty ("NewFileWizard_Title", substitute); // NOI18N
+            }
         }
     }
 
