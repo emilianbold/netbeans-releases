@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="binroot" location="../../nbextra"/>
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="license.file" location="org-openide-nbm-license.txt"/>
+  <property name="license.file" location="../nbbuild/standard-nbm-license.txt"/>
 
   <property name="nbm_alias" value="nb_ide"/>
 
@@ -191,6 +191,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="jars" depends="compile,13javac-workaround,vers-prep" description="Create JAR files.">
     <mkdir dir="netbeans/lib"/>
     <filter token="Class-Path" value="Class-Path"/>
+    <filter token="OpenIDE-Module" value="OpenIDE-Module"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <locjar jarfile="netbeans/lib/openide.jar"
             manifest="manifest-subst.mf"
@@ -220,6 +221,7 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="netbeans/lib/patches"/>
     <!-- Use the same manifest to ensure that packages are defined correctly. -->
     <filter token="Class-Path" value="X-Commented-Out-Class-Path"/>
+    <filter token="OpenIDE-Module" value="X-Commented-Out-OpenIDE-Module"/>
     <copy file="manifest.mf" tofile="manifest-compat-subst.mf" filtering="on"/>
     <jar jarfile="netbeans/lib/patches/openide-compat.jar"
          basedir="compatkit-work"
@@ -231,6 +233,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="jars-with-lib" depends="libs,compile,13javac-workaround,vers-prep" description="Create JAR files.">
     <mkdir dir="standalone"/>
     <filter token="Class-Path" value="Class-Path"/>
+    <filter token="OpenIDE-Module" value="OpenIDE-Module"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <locjar jarfile="standalone/openide-remainder.jar"
             manifest="manifest-subst.mf"
@@ -310,7 +313,20 @@ Microsystems, Inc. All Rights Reserved.
     -->
   </target>
 
-  <target name="netbeans" depends="jars" description="Build everything needed for inclusion in the IDE."/>
+  <target name="netbeans" depends="jars" description="Build everything needed for inclusion in the IDE.">
+    <genlist targetname="nbm" outputfiledir="../nbbuild/netbeans"/>
+  </target>
+
+  <target name="nbm" depends="netbeans">
+    <makenbm file="openide.nbm"
+             topdir="."
+             module="netbeans/lib/openide.jar"
+	     homepage="http://openide.${homepage.base}/"
+	     distribution="http://${dist.base}/openide.nbm">
+      <license file="${license.file}"/>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+    </makenbm>
+  </target>
 
   
   <!-- Build separate libraries for the IDE -->
@@ -837,7 +853,8 @@ Set jmf.home to the location of your JMF installation to continue."/>
     <delete dir="examplemodules"/>
     <delete dir="compatkit-work"/>
     <delete dir="standalone"/>
-    <delete dir="fake" />
+    <delete dir="Info"/>
+    <delete file="openide.nbm"/>
   </target>
   <target name="real-clean" depends="clean" description="As for clean, but also remove example module reload area.">
     <delete dir="examplemodulereload"/>
@@ -895,67 +912,4 @@ Comments or questions? Post to the dev@openide.netbeans.org mailing list.
         <style in="api/doc/changes/apichanges.xml" out="www/apichanges.html" destdir="www" style="${basedir}/api/doc/changes/apichanges.xsl"/>
     </target>
     
-  <!-- creating a fake module for distribution of openide & core as nbm -->
-
-  <target name="nbm" depends="netbeans, preparenbm">
-    <makenbm file="org-openide.nbm"
-             topdir="fake"
-             module="fake/netbeans/modules/org-openide.jar"
-	     homepage="http://openide.${homepage.base}/"
-	     distribution="http://${dist.base}/org-openide.nbm">
-      <license file="${license.file}"/>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
-  </target>
-  
-  <target name="preparenbm" depends="vers-prep" >
-    <!-- our fake directory, where we are going to copy all modules -->
-    <mkdir dir="fake" />
-    <copy todir="fake/netbeans">
-        <fileset dir="netbeans" />
-    </copy>
-    
-  
-    <!-- we need to build also core -->
-    <antcall target="buildandcopy">   
-        <param name="dir" value="../core" />
-    </antcall>
-    <antcall target="buildandcopy">   
-        <param name="dir" value="../core/compiler" />
-    </antcall>
-    <antcall target="buildandcopy">   
-        <param name="dir" value="../core/execution" />
-    </antcall>
-    <antcall target="buildandcopy">   
-        <param name="dir" value="../core/ui" />
-    </antcall>
-    <antcall target="buildandcopy">   
-        <param name="dir" value="../core/windows" />
-    </antcall>
-    <antcall target="buildandcopy">   
-        <param name="dir" value="../core/ide" />
-    </antcall>
-    
-    <copy file="org-openide.mf" tofile="org-openide-subst.mf" filtering="on"/>
-    
-    <locjar jarfile="fake/netbeans/modules/org-openide.jar"
-            manifest="org-openide-subst.mf"
-	    compress="false">
-      <locale name="ja"/>
-      
-      <!-- Include just the Bundle.properties describing the module -->
-      <fileset dir="." excludesfile="../nbbuild/standard-jar-excludes.txt" >
-           <include name="org-openide.properties" />
-      </fileset>
-    </locjar>
-    
-    <genlist targetname="nbm" outputfiledir="../nbbuild/netbeans"/>
-  </target>
-  
-  <target name="buildandcopy" >
-    <ant dir="${dir}" />   
-    <copy todir="fake/netbeans">
-        <fileset dir="${dir}/netbeans" />
-    </copy>
-  </target>
 </project>

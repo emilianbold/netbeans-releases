@@ -824,6 +824,7 @@ the ${netbeans.dest}/bin/ directory.
     <echo message="Making NBM for module ui/welcome..."/>
     <ant dir="../ui/welcome" target="nbm"/>
     <makeupdatedesc desc="../www/www/updates/40_1.1_.xml">
+      <!-- XXX missing openide.nbm, core.nbm, core-*.nbm -->
       <!-- Not for now:
       <group name="Standard">
         <fileset dir=".">

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version='1.0' encoding='ISO-8859-1' ?><!-- -*- sgml-indent-step: 2 -*- -->
 <!--
                 Sun Public License Notice
 
@@ -15,8 +15,13 @@ Microsystems, Inc. All Rights Reserved.
 <project name="core" default="netbeans" basedir=".">
 
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
+  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
   <property name="binroot" location="../../nbextra"/>
   <property name="xml-apis" value="xml-apis.jar"/>
+  <property name="homepage.base" value="netbeans.org"/>
+  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+  <property name="license.file" location="../nbbuild/standard-nbm-license.txt"/>
 
   <target name="compile">
     <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">    
@@ -84,6 +89,24 @@ Microsystems, Inc. All Rights Reserved.
   <target name="netbeans" depends="jars,release" description="Build everything.">
     <mkdir dir="netbeans/lib/patches"/>
     <mkdir dir="netbeans/modules"/>
+    <genlist targetname="nbm" outputfiledir="../nbbuild/netbeans"/>
+  </target>
+
+  <target name="nbm" depends="netbeans" description="Build an NBM.">
+    <makenbm file="core.nbm"
+             topdir="."
+             module="netbeans/lib/core.jar"
+	     homepage="http://core.${homepage.base}/"
+	     distribution="http://${dist.base}/core.nbm">
+      <license name="core-license.txt">
+        <text>For the NetBeans core code itself:</text>
+        <file location="${license.file}"/>
+        <text>For the Crimson, Regexp, XML Commons, and Xerces software products
+included with the NetBeans core:</text>
+        <file location="apache-license.txt"/>
+      </license>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+    </makenbm>
   </target>
 
   <target name="lib-modules" description="Create a standalone Modules API and implementation.">
@@ -148,8 +171,8 @@ Microsystems, Inc. All Rights Reserved.
     </delete>
     <delete dir="netbeans"/>
     <delete dir="modules-lib"/>
+    <delete dir="Info"/>
+    <delete file="core.nbm"/>
   </target>
-
-  <target name="nbm" depends="netbeans" description="Dummy target."/>
 
 </project>
