@@ -151,7 +151,8 @@ public class SwitcherTable extends JTable {
         ren.setIconTextGap(26 - icon.getIconWidth());
         
         if (item.isActive()) {
-            ren.setFont(getFont().deriveFont(Font.BOLD));
+            // don't use deriveFont() - see #49973 for details
+            ren.setFont(new Font(getFont().getName(), Font.BOLD, getFont().getSize()));
         }
         
         ren.setOpaque(true);

@@ -64,7 +64,8 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
     protected Font createFont() {
         //XXX Sideways text is more readable with a slightly larger bold font
         Font f = super.createFont();
-        f = f.deriveFont (Font.BOLD, f.getSize2D() + 1);
+                // don't use deriveFont() - see #49973 for details
+        f = new Font(f.getName(), Font.BOLD, f.getSize() + 1);
         return f;
     }
 

@@ -41,6 +41,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  * Defines editor for choosing of any object using lookup.
@@ -239,9 +240,18 @@ implements ExPropertyEditor {
             GridBagConstraints gbc = new GridBagConstraints();
             int row = 0;
             ButtonGroup bg = new ButtonGroup();
-            Font bold = getFont().deriveFont(Font.BOLD);
-            //For default metal L&F where labels are by default bold
-            Font plain = getFont().deriveFont(Font.PLAIN); 
+            Font bold;
+            Font plain;
+            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                // don't use deriveFont() - see #49973 for details
+                bold = new Font(getFont().getName(), Font.BOLD, getFont().getSize());
+                //For default metal L&F where labels are by default bold
+                // don't use deriveFont() - see #49973 for details
+                plain = new Font(getFont().getName(), Font.PLAIN, getFont().getSize());
+            } else {
+                bold = getFont().deriveFont(Font.BOLD);
+                plain = getFont().deriveFont(Font.PLAIN);
+            }
             
             Collection c = res.allItems();
             Lookup.Item[] items = new Lookup.Item[c.size()];

@@ -28,6 +28,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
 * A property editor for Font class.
@@ -138,7 +139,12 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
         Font paintFont = font;
         FontMetrics fm = g.getFontMetrics (paintFont);
         if (fm.getHeight() > rectangle.height) {
-            paintFont = font.deriveFont(12f);
+            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                // don't use deriveFont() - see #49973 for details
+                paintFont = new Font(font.getName(), font.getStyle(), 12);
+            } else {
+                paintFont = font.deriveFont(12f);
+            }
             fm = g.getFontMetrics (paintFont);
         }
         g.setFont (paintFont);

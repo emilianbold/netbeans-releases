@@ -28,11 +28,12 @@ import javax.swing.JPanel;
 import org.openide.util.NbBundle;
 
 import org.netbeans.core.TopLogging;
+import org.openide.util.Utilities;
 
 
 public class ProductInformationPanel extends JPanel {
 
-    private static final float FONT_SIZE_PLUS = 5f;
+    private static final int FONT_SIZE_PLUS = 5;
 
     private static final Color COLOR = Color.black;
 
@@ -378,20 +379,28 @@ public class ProductInformationPanel extends JPanel {
     }
     
     private void updateLabelFont (javax.swing.JComponent label, Color color) {
-        updateLabelFont(label, 0, 0f, color);
+        updateLabelFont(label, 0, 0, color);
     }
 
     private void updateLabelFont (javax.swing.JComponent label, int style, Color color) {
-        updateLabelFont(label, style, 0f, color);
+        updateLabelFont(label, style, 0, color);
     }
 
-    private void updateLabelFont (javax.swing.JComponent label, int style, float plusSize, Color color) {
+    private void updateLabelFont (javax.swing.JComponent label, int style, int plusSize, Color color) {
         Font font = label.getFont();
         if(style != 0) {
-            label.setFont(font = label.getFont().deriveFont(Font.BOLD));
+            // don't use deriveFont() - see #49973 for details
+            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                font = new Font(label.getFont().getName(), Font.BOLD, label.getFont().getSize());
+            } else {
+                font = label.getFont().deriveFont(Font.BOLD);
+            }
+            label.setFont(font);
         }
         if(plusSize != 0f) {
-            label.setFont(font = font.deriveFont(font.getSize() + plusSize));
+            // don't use deriveFont() - see #49973 for details
+            font = new Font(font.getName(), font.getStyle(), font.getSize() + plusSize);
+            label.setFont(font);
         }
         if(color != null) {
             label.setForeground(color);

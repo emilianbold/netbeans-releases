@@ -80,7 +80,8 @@ class AquaToolBarButtonUI extends ButtonUI implements ChangeListener {
         g.setColor (b.getForeground());
         Font f = b.getFont();
         if (b.isSelected()) {
-            f = f.deriveFont (Font.BOLD);
+            // don't use deriveFont() - see #49973 for details
+            f = new Font(f.getName(), Font.BOLD, f.getSize());
         }
         g.setFont (f);
         FontMetrics fm = g.getFontMetrics();

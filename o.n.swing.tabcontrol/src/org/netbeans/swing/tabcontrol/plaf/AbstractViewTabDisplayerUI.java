@@ -227,7 +227,8 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             if (txtFont == null) {
                 txtFont = new Font("Dialog", Font.PLAIN, 11);
             } else if (txtFont.isBold()) {
-                txtFont = txtFont.deriveFont(Font.PLAIN);
+                // don't use deriveFont() - see #49973 for details
+                txtFont = new Font(txtFont.getName(), Font.PLAIN, txtFont.getSize());
             }
         }
         return txtFont;
