@@ -142,9 +142,10 @@ public class NbExecutor extends Task {
                 log("Executed successfully.");
               }
               catch (BuildException e) {
+                  String er = findErrorMessage(outputfile);
                   String msg = "ERROR executing test (module="+test.getModule()+",type="+test.getType()+").\n" +
                                (outputfile == null ? "" : "Look at " + outputfile.getName() + " for more details.\n") +
-                               e.toString();
+                               er;
                   log(msg,Project.MSG_ERR);
                   logError(msg,outputfile);
               }
@@ -158,6 +159,26 @@ public class NbExecutor extends Task {
         } 
         if (mode.equalsIgnoreCase("run") && setup != null) executeStop(setup);
     } 
+    
+    private String findErrorMessage(File f) {
+        if (f == null) return "";
+        StringBuffer buff = new StringBuffer();
+        try { 
+            BufferedReader r = new BufferedReader(new FileReader(f));
+            String line = r.readLine();
+            while (line != null && !line.trim().equals("BUILD FAILED") ) 
+                line = r.readLine();
+            if (line == null || !line.trim().equals("BUILD FAILED"))
+                return "";
+            while ((line = r.readLine()) != null && !line.startsWith("Total time")) {
+                if (!line.trim().equals("")) 
+                    buff.append(line+"\n");
+            }
+            r.close();
+        }
+        catch (IOException e) { return ""; }
+        return buff.toString();
+    }
     
     private File getLogFile(String prefix) {
         String testrundir = project.getProperty("xtest.results.testrun.dir");
