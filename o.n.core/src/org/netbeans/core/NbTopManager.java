@@ -300,10 +300,10 @@ public class NbTopManager extends TopManager {
   public void saveAll () {
     DataObject dobj = null;
     ArrayList bad = new ArrayList ();
-    Iterator ee = DataObject.getRegistry ().getModifiedSet ().iterator ();
-    while (ee.hasNext ()) {
+    DataObject[] modifs = DataObject.getRegistry ().getModified ();
+    for (int i = 0; i < modifs.length; i++) {
       try {
-        dobj = (DataObject) ee.next ();
+        dobj = modifs[i];
         SaveCookie sc = (SaveCookie)dobj.getCookie(SaveCookie.class);
         if (sc != null) {
           TopManager.getDefault().setStatusText (
@@ -320,7 +320,7 @@ public class NbTopManager extends TopManager {
     }
     NotifyDescriptor descriptor;
     //recode this part to show only one dialog?
-    ee = bad.iterator ();
+    Iterator ee = bad.iterator ();
     while (ee.hasNext ()) {
       descriptor = new NotifyDescriptor.Message(
         MessageFormat.format (
@@ -331,7 +331,10 @@ public class NbTopManager extends TopManager {
       final NotifyPresenter presenter = new NotifyPresenter(descriptor);
       presenter.setVisible(true);
     }
-  }
+    // notify user that everything is done
+    TopManager.getDefault().setStatusText(
+      NbBundle.getBundle (NbTopManager.class).getString ("MSG_AllSaved"));
+  }    
 
   /** The ide is left after calling this method.
   * The method return iff Runtim.getRuntime().exit() fails
