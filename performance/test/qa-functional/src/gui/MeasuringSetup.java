@@ -7,35 +7,40 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui;
 
-import org.netbeans.junit.*;
-import junit.framework.*;
+import gui.setup.IDESetupTest;
+
+import org.netbeans.junit.NbTestSuite;
 
 /**
  * Test suite that actually does not perform any test but sets up user directory
  * for UI responsiveness tests
  *
- * @author  Radim Kubacki
+ * @author  rkubacki@netbeans.org, mmirilovic@netbeans.org
  */
-public class MeasuringSetup extends NbTestCase {
+public class MeasuringSetup extends NbTestSuite {
     
     public MeasuringSetup (java.lang.String testName) {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite("UI Responsiveness Setup suite");
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite");
         
-        suite.addTest(new gui.setup.IDESetupTest("testCloseMemoryToolbar"));
-        suite.addTest(new gui.setup.IDESetupTest("testCloseWelcome"));
-        suite.addTest(new gui.setup.IDESetupTest("testOpenFoldersProject"));
-        suite.addTest(new gui.setup.IDESetupTest("testOpenDataProject"));
-        suite.addTest(new gui.setup.IDESetupTest("testOpenWebProject"));
+        suite.addTest(new IDESetupTest("testCloseMemoryToolbar"));
+        
+        // replaced by close all documents suite.addTest(new gui.setup.IDESetupTest("testCloseWelcome"));
+        // replaced by close all documents suite.addTest(new gui.setup.IDESetupTest("testCloseBluePrints"));
+        suite.addTest(new IDESetupTest("testCloseAllDocuments"));
+        
+        suite.addTest(new IDESetupTest("testOpenFoldersProject"));
+        suite.addTest(new IDESetupTest("testOpenDataProject"));
+        suite.addTest(new IDESetupTest("testOpenWebProject"));
 
         return suite;
     }

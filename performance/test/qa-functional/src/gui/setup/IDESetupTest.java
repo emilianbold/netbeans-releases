@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,6 +15,7 @@ package gui.setup;
 
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
 import org.netbeans.junit.ide.ProjectSupport;
 
@@ -49,6 +50,19 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
         new TopComponentOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title")).close();
     }
     
+    /** 
+     * Close BluePrints. 
+     */
+    public void testCloseBluePrints(){
+        new TopComponentOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.blueprints.Bundle","LBL_Tab_Title")).close();
+    }
+    
+    /** 
+     * Close All Documents. 
+     */
+    public void testCloseAllDocuments(){
+        new CloseAllDocumentsAction().perform();
+    }
     
     /** 
      * Close Memory Toolbar. 
