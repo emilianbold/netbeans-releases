@@ -160,8 +160,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     public int getFormSizePolicy() {
-        return java.awt.Window.class.isAssignableFrom(getBeanClass()) ?
-               formSizePolicy : GEN_NOTHING;
+        return java.awt.Window.class.isAssignableFrom(getBeanClass())
+                   || javax.swing.JInternalFrame.class.isAssignableFrom(getBeanClass())
+               ? formSizePolicy : GEN_NOTHING;
     }
 
     public void setFormSizePolicy(int value) {
@@ -310,7 +311,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
         java.util.List propList = new java.util.ArrayList();
 
-        if (java.awt.Window.class.isAssignableFrom(getBeanClass())) {
+        if (java.awt.Window.class.isAssignableFrom(getBeanClass())
+            || javax.swing.JInternalFrame.class.isAssignableFrom(getBeanClass()))
+        {
             propList.add(sizeProperty);
             propList.add(positionProperty);
             propList.add(policyProperty);
