@@ -64,6 +64,8 @@ import javax.swing.text.EditorKit;
 
 public class JEditorPaneOperator extends JTextComponentOperator {
 
+    public static final String CONTENT_TYPE_DPROP = "Content type";
+
     private boolean pageNavigation = false;
 
     /**
@@ -262,7 +264,7 @@ public class JEditorPaneOperator extends JTextComponentOperator {
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put("Content type", ((JEditorPane)getSource()).getContentType());
+	result.put(CONTENT_TYPE_DPROP, ((JEditorPane)getSource()).getContentType());
 	return(result);
     }
 

@@ -66,6 +66,9 @@ import javax.swing.plaf.ListUI;
 public class JListOperator extends JComponentOperator
     implements Outputable {
 
+    public static final String ITEM_PREFIX_DPROP = "Item";
+    public static final String SELECTED_ITEM_PREFIX_DPROP = "SelectedItem";
+
     private TestOut output;
     private MultiSelListDriver driver;
 
@@ -689,8 +692,8 @@ public class JListOperator extends JComponentOperator
 	for(int i = 0; i < selectedIndices.length; i++) {
 	    selectedItems[i] = items[selectedIndices[i]];
 	}
-	addToDump(result, "Item", items);
-	addToDump(result, "SelectedItem", selectedItems);
+	addToDump(result, ITEM_PREFIX_DPROP, items);
+	addToDump(result, SELECTED_ITEM_PREFIX_DPROP, selectedItems);
 	return(result);
     }
 

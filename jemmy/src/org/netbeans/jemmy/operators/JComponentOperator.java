@@ -68,6 +68,8 @@ import javax.swing.event.AncestorListener;
 public class JComponentOperator extends ContainerOperator
     implements Timeoutable, Outputable{
 
+    public static final String TOOLTIP_TEXT_DPROP = "Tooltip text";
+
     /**
      * Default value for JComponentOperator.WaitToolTipTimeout timeout.
      */
@@ -336,7 +338,7 @@ public class JComponentOperator extends ContainerOperator
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	if(((JComponent)getSource()).getToolTipText() != null) {
-	    result.put("Tooltip text", ((JComponent)getSource()).getToolTipText());
+	    result.put(TOOLTIP_TEXT_DPROP, ((JComponent)getSource()).getToolTipText());
 	}
 	return(result);
     }

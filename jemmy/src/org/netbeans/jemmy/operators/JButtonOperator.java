@@ -43,6 +43,8 @@ import javax.swing.JButton;
 
 public class JButtonOperator extends AbstractButtonOperator{
 
+    public static final String IS_DEFAULT_DPROP = "Default button";
+
     /**
      * Constructor.
      */
@@ -230,8 +232,8 @@ public class JButtonOperator extends AbstractButtonOperator{
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.remove("Selected");
-	result.put("Default button", ((JButton)getSource()).isDefaultButton() ? "true" : "false");
+	result.remove(AbstractButtonOperator.IS_SELECTED_DPROP);
+	result.put(IS_DEFAULT_DPROP, ((JButton)getSource()).isDefaultButton() ? "true" : "false");
 	return(result);
     }
 

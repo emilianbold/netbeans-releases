@@ -59,11 +59,13 @@ public class Application_005 extends TestFrame {
 
         JMenu sbm = new JMenu("submenu");
         sbm.add(sbsbm);
+        sbm.add(new JSeparator());
         sbm.add(sbsbm2);
 
 	JMenuItem pb = new JMenu("XXX");
         pb.add(sbm);
 	popup.add(pb);
+        popup.add(new JSeparator());
 	//	tree.add(popup);
 	
 	tree.addMouseListener(new PopupListener());

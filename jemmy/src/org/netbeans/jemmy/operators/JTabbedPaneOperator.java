@@ -55,6 +55,9 @@ import javax.swing.plaf.TabbedPaneUI;
 public class JTabbedPaneOperator extends JComponentOperator
     implements Outputable {
 
+    public static final String SELECTED_PAGE_DPROP = "Selected";
+    public static final String PAGE_PREFIX_DPROP = "Page";
+
     private TestOut output;
     private ListDriver driver;
 
@@ -349,12 +352,7 @@ public class JTabbedPaneOperator extends JComponentOperator
     public Component selectPage(TabPageChooser chooser) {
 	output.printLine("Selecting \"" + chooser.getDescription() + 
                          "\" page in tabbed pane\n    :" + getSource().toString());
- 	int index = findPage(chooser);
- 	if(index != -1) {
- 	    return(selectPage(index));
- 	} else {
- 	    throw(new NoSuchPageException(chooser.getDescription()));
- 	}
+ 	return(selectPage(waitPage(chooser)));
     }
 
     public Component selectPage(String title, StringComparator comparator) {
@@ -435,14 +433,14 @@ public class JTabbedPaneOperator extends JComponentOperator
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	if(((JTabbedPane)getSource()).getSelectedIndex() != -1) {
-	    result.put("Selected", ((JTabbedPane)getSource()).
+	    result.put(SELECTED_PAGE_DPROP, ((JTabbedPane)getSource()).
 		       getTitleAt(((JTabbedPane)getSource()).getSelectedIndex()));
 	}
 	String[] pages = new String[((JTabbedPane)getSource()).getTabCount()];
 	for(int i = 0; i < ((JTabbedPane)getSource()).getTabCount(); i++) {
 	    pages[i] = ((JTabbedPane)getSource()).getTitleAt(i);
 	}
-	addToDump(result, "Page", pages);
+	addToDump(result, PAGE_PREFIX_DPROP, pages);
 	return(result);
     }
 

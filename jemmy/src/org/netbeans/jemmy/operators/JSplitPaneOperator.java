@@ -63,6 +63,14 @@ import javax.swing.plaf.basic.BasicSplitPaneDivider;
 public class JSplitPaneOperator extends JComponentOperator
     implements Timeoutable, Outputable{
 
+    public static final String MINIMUM_DPROP = "Minimum";
+    public static final String MAXIMUM_DPROP = "Maximum";
+    public static final String VALUE_DPROP = "Value";
+    public static final String ORIENTATION_DPROP = "Orientation";
+    public static final String HORIZONTAL_ORIENTATION_DPROP_VALUE = "HORIZONTAL";
+    public static final String VERTICAL_ORIENTATION_DPROP_VALUE = "VERTICAL";
+    public static final String IS_ONE_TOUCH_EXPANDABLE_DPROP = "One touch expandable";
+
     private final static long SCROLL_CLICK_TIMEOUT = 0;
     private final static long BETWEEN_CLICK_TIMEOUT = 0;
     private final static long WHOLE_SCROLL_TIMEOUT = 60000;
@@ -413,13 +421,13 @@ public class JSplitPaneOperator extends JComponentOperator
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put("Minimum", Integer.toString(((JSplitPane)getSource()).getMinimumDividerLocation()));
-	result.put("Maximum", Integer.toString(((JSplitPane)getSource()).getMaximumDividerLocation()));
-	result.put("Orientation", (((JSplitPane)getSource()).getOrientation() == JSplitPane.HORIZONTAL_SPLIT) ? 
-		   "HORIZONTAL" : 
-		   "VERTICAL");
-	result.put("Value", Integer.toString(((JSplitPane)getSource()).getDividerLocation()));
-	result.put("One touch expandable", ((JSplitPane)getSource()).isOneTouchExpandable() ? "true" : "false");
+	result.put(MINIMUM_DPROP, Integer.toString(((JSplitPane)getSource()).getMinimumDividerLocation()));
+	result.put(MAXIMUM_DPROP, Integer.toString(((JSplitPane)getSource()).getMaximumDividerLocation()));
+	result.put(ORIENTATION_DPROP, (((JSplitPane)getSource()).getOrientation() == JSplitPane.HORIZONTAL_SPLIT) ? 
+		   HORIZONTAL_ORIENTATION_DPROP_VALUE : 
+		   VERTICAL_ORIENTATION_DPROP_VALUE);
+	result.put(VALUE_DPROP, Integer.toString(((JSplitPane)getSource()).getDividerLocation()));
+	result.put(IS_ONE_TOUCH_EXPANDABLE_DPROP, ((JSplitPane)getSource()).isOneTouchExpandable() ? "true" : "false");
 	return(result);
     }
 

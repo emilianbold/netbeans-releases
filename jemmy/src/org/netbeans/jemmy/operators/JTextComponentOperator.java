@@ -89,6 +89,10 @@ import javax.swing.text.Keymap;
 public class JTextComponentOperator extends JComponentOperator
     implements Timeoutable, Outputable{
 
+    public static final String TEXT_DPROP = "Text";
+    public static final String SELECTED_TEXT_DPROP = "Selected text";
+    public static final String IS_EDITABLE_DPROP = "Editable";
+
     private final static long PUSH_KEY_TIMEOUT = 0;
     private final static long BETWEEN_KEYS_TIMEOUT = 0;
     private final static long CHANGE_CARET_POSITION_TIMEOUT = 60000;
@@ -722,12 +726,12 @@ public class JTextComponentOperator extends JComponentOperator
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put("Text", ((JTextComponent)getSource()).getText());
+	result.put(TEXT_DPROP, ((JTextComponent)getSource()).getText());
 	if(((JTextComponent)getSource()).getSelectedText() != null &&
 	   !((JTextComponent)getSource()).getSelectedText().equals("")) {
-	    result.put("Selected text", ((JTextComponent)getSource()).getSelectedText());
+	    result.put(SELECTED_TEXT_DPROP, ((JTextComponent)getSource()).getSelectedText());
 	}
-	result.put("Editable", ((JTextComponent)getSource()).isEditable() ? "true" : "false");
+	result.put(IS_EDITABLE_DPROP, ((JTextComponent)getSource()).isEditable() ? "true" : "false");
 	return(result);
     }
 

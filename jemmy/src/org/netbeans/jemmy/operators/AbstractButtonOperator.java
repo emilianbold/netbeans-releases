@@ -64,6 +64,9 @@ import javax.swing.plaf.ButtonUI;
 public class AbstractButtonOperator extends JComponentOperator
     implements Timeoutable, Outputable{
 
+    public static final String TEXT_DPROP = "Text";
+    public static final String IS_SELECTED_DPROP = "Selected";
+
     /**
      * Default value for AbstractButtonOperator.PushButtonTimeout timeout.
      */
@@ -440,9 +443,9 @@ public class AbstractButtonOperator extends JComponentOperator
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
         if(((AbstractButton)getSource()).getText() != null) {
-            result.put("Text", ((AbstractButton)getSource()).getText());
+            result.put(TEXT_DPROP, ((AbstractButton)getSource()).getText());
         }
-	result.put("Selected", ((AbstractButton)getSource()).isSelected() ? "true" : "false");
+	result.put(IS_SELECTED_DPROP, ((AbstractButton)getSource()).isSelected() ? "true" : "false");
 	return(result);
     }
 

@@ -35,6 +35,7 @@ import java.awt.event.MouseEvent;
 import java.util.Hashtable;
 
 import javax.swing.Action;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.MenuElement;
@@ -302,7 +303,7 @@ implements Timeoutable, Outputable{
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.remove("Selected");
+	result.remove(AbstractButtonOperator.IS_SELECTED_DPROP);
 	return(result);
     }
 
@@ -432,6 +433,32 @@ implements Timeoutable, Outputable{
 			 timeouts.getTimeout("JMenuItemOperator.PushMenuTimeout"));
 	super.setTimeouts(times);
 	super.setOutput(output.createErrorOutput());
+    }
+
+    static JMenuItemOperator[] getMenuItems(Object[] elements, Operator env) {
+        int size = 0;
+        for(int i = 0; i < elements.length; i++) {
+            if(elements[i] instanceof JMenuItem) {
+                size++;
+            }
+        }
+        JMenuItemOperator[] result = new JMenuItemOperator[size];
+        int index = 0;
+        for(int i = 0; i < elements.length; i++) {
+            if(elements[i] instanceof JMenuItem) {
+                result[index] = new JMenuItemOperator((JMenuItem)elements[i]);
+                result[index].copyEnvironment(env);
+            }
+        }
+        return(result);
+    }
+
+    static JMenuItemOperator[] getMenuItems(MenuElement parent, Operator env) {
+        return(getMenuItems(parent.getSubElements(), env));
+    }
+
+    static JMenuItemOperator[] getMenuItems(JMenu parent, Operator env) {
+        return(getMenuItems(parent.getMenuComponents(), env));
     }
 
     static ComponentChooser[] createChoosers(String[] names, StringComparator comparator) {

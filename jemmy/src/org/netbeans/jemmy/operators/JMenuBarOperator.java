@@ -63,6 +63,8 @@ import javax.swing.plaf.MenuBarUI;
 public class JMenuBarOperator extends JComponentOperator
     implements Outputable, Timeoutable {
 
+    public static final String SUBMENU_PREFIX_DPROP = "Submenu";
+
     private TestOut output;
     private Timeouts timeouts;
     private MenuDriver driver;
@@ -279,6 +281,10 @@ public class JMenuBarOperator extends JComponentOperator
  	return(pushMenu(parseString(path, delim), comparator));
     }
  
+    public JMenuItem pushMenu(String path, StringComparator comparator) {
+ 	return(pushMenu(parseString(path), comparator));
+    }
+ 
     /**
      * Pushes menu.
      * @param path String menupath representation ("File/New", for example).
@@ -296,6 +302,10 @@ public class JMenuBarOperator extends JComponentOperator
 
     public void pushMenuNoBlock(String path, String delim, StringComparator comparator) {
  	pushMenuNoBlock(parseString(path, delim), comparator);
+    }
+ 
+    public void pushMenuNoBlock(String path, StringComparator comparator) {
+ 	pushMenuNoBlock(parseString(path), comparator);
     }
  
     /**
@@ -318,6 +328,10 @@ public class JMenuBarOperator extends JComponentOperator
 	return(pushMenu(parseString(path, delim)));
     }
 
+    public JMenuItem pushMenu(String path) {
+	return(pushMenu(parseString(path)));
+    }
+
     /**
      * Executes <code>pushMenu(path, delim)</code> in a separate thread.
      * @see #pushMenu(String, String)
@@ -326,24 +340,16 @@ public class JMenuBarOperator extends JComponentOperator
 	pushMenuNoBlock(parseString(path, delim));
     }
 
+    public void pushMenuNoBlock(String path) {
+	pushMenuNoBlock(parseString(path));
+    }
+
     public JMenuItemOperator[] showMenuItems(String[] path, StringComparator comparator) {
-        JMenuItemOperator[] result;
-        if(path.length == 0) {
-            MenuElement[] elems =  getSubElements();
-            result = new JMenuItemOperator[elems.length];
-            for(int i = 0; i < elems.length; i++) {
-                result[i] = new JMenuItemOperator((JMenuItem)elems[i]);
-                result[i].copyEnvironment(this);
-            }
+        if(path == null || path.length == 0) {
+            return(JMenuItemOperator.getMenuItems((MenuElement)getSource(), this));
         } else {
-            JMenu menu = (JMenu)pushMenu(path, comparator);
-            result = new JMenuItemOperator[menu.getMenuComponentCount()];
-            for(int i = 0; i < result.length; i++) {
-                result[i] = new JMenuItemOperator((JMenuItem)menu.getMenuComponent(i));
-                result[i].copyEnvironment(this);
-            }
+            return(JMenuItemOperator.getMenuItems((JMenu)pushMenu(path, comparator), this));
         }
-        return(result);
     }
 
     public JMenuItemOperator[] showMenuItems(String[] path) {
@@ -354,8 +360,16 @@ public class JMenuBarOperator extends JComponentOperator
         return(showMenuItems(parseString(path, delim), comparator));
     }
 
+    public JMenuItemOperator[] showMenuItems(String path, StringComparator comparator ) {
+        return(showMenuItems(parseString(path), comparator));
+    }
+
     public JMenuItemOperator[] showMenuItems(String path, String delim) {
         return(showMenuItems(path, delim, getComparator()));
+    }
+
+    public JMenuItemOperator[] showMenuItems(String path) {
+        return(showMenuItems(path, getComparator()));
     }
 
     public JMenuItemOperator showMenuItem(String[] path, StringComparator comparator ) {
@@ -382,22 +396,33 @@ public class JMenuBarOperator extends JComponentOperator
         return(showMenuItem(parseString(path, delim), comparator));
     }
 
+    public JMenuItemOperator showMenuItem(String path, StringComparator comparator ) {
+        return(showMenuItem(parseString(path), comparator));
+    }
+
     public JMenuItemOperator showMenuItem(String path, String delim) {
         return(showMenuItem(path, delim, getComparator()));
+    }
+
+    public JMenuItemOperator showMenuItem(String path) {
+        return(showMenuItem(path, getComparator()));
     }
 
     public void closeSubmenus() {
         JMenu menu = (JMenu)findSubComponent(new ComponentChooser() {
                 public boolean checkComponent(Component comp) {
-                    return(((JMenu)comp).isPopupMenuVisible());
+                    return(comp instanceof JMenu &&
+                           ((JMenu)comp).isPopupMenuVisible());
                 }
                 public String getDescription() {
                     return("Expanded JMenu");
                 }
             });
-        JMenuOperator oper = new JMenuOperator(menu);
-        oper.copyEnvironment(this);
-        oper.push();
+        if(menu != null) {
+            JMenuOperator oper = new JMenuOperator(menu);
+            oper.copyEnvironment(this);
+            oper.push();
+        }
     }
 
     /**
@@ -413,7 +438,7 @@ public class JMenuBarOperator extends JComponentOperator
 		items[i] = "null";
 	    }
 	}
-	addToDump(result, "Submenu", items);
+	addToDump(result, SUBMENU_PREFIX_DPROP, items);
 	return(result);
     }
 

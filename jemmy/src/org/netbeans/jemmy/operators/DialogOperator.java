@@ -44,6 +44,11 @@ import java.util.Hashtable;
  */
 
 public class DialogOperator extends WindowOperator {
+
+    public static final String TITLE_DPROP = "Title";
+    public static final String IS_MODAL_DPROP = "Modal";
+    public static final String IS_RESIZABLE_DPROP = "Resizable";
+
     public DialogOperator(Dialog w) {
 	super(w);
     }
@@ -228,9 +233,9 @@ public class DialogOperator extends WindowOperator {
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put("Title", ((Dialog)getSource()).getTitle());
-	result.put("Modal", ((Dialog)getSource()).isModal() ? "true" : "false");
-	result.put("Resizable", ((Dialog)getSource()).isResizable() ? "true" : "false");
+	result.put(TITLE_DPROP, ((Dialog)getSource()).getTitle());
+	result.put(IS_MODAL_DPROP, ((Dialog)getSource()).isModal() ? "true" : "false");
+	result.put(IS_RESIZABLE_DPROP, ((Dialog)getSource()).isResizable() ? "true" : "false");
 	return(result);
     }
 

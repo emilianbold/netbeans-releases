@@ -111,6 +111,13 @@ import java.util.Locale;
 public class ComponentOperator extends Operator
     implements Timeoutable, Outputable {
 
+    public static final String IS_VISIBLE_DPROP = "Visible";
+    public static final String IS_SHOWING_DPROP = "Showing";
+    public static final String X_DPROP = "X";
+    public static final String Y_DPROP = "Y";
+    public static final String WIDTH_DPROP = "Width";
+    public static final String HEIGHT_DPROP = "Height";
+
     private final static long PUSH_KEY_TIMEOUT = 0;
     private final static long MOUSE_CLICK_TIMEOUT = 0;
     private final static long BEFORE_DRAG_TIMEOUT = 0;
@@ -903,12 +910,12 @@ public class ComponentOperator extends Operator
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put("Visible", getSource().isVisible() ? "true" : "false");
-	result.put("Showing", getSource().isShowing() ? "true" : "false");
-	result.put("X", Integer.toString(getSource().getX()));
-	result.put("Y", Integer.toString(getSource().getY()));
-	result.put("Width", Integer.toString(getSource().getWidth()));
-	result.put("Height", Integer.toString(getSource().getHeight()));
+	result.put(IS_VISIBLE_DPROP, getSource().isVisible() ? "true" : "false");
+	result.put(IS_SHOWING_DPROP, getSource().isShowing() ? "true" : "false");
+	result.put(X_DPROP, Integer.toString(getSource().getX()));
+	result.put(Y_DPROP, Integer.toString(getSource().getY()));
+	result.put(WIDTH_DPROP, Integer.toString(getSource().getWidth()));
+	result.put(HEIGHT_DPROP, Integer.toString(getSource().getHeight()));
 	return(result);
     }
 

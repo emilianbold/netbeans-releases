@@ -58,6 +58,9 @@ import java.util.Vector;
 public class ListOperator extends ComponentOperator
     implements Outputable {
 
+    public static final String ITEM_PREFIX_DPROP = "Item";
+    public static final String SELECTED_ITEM_PREFIX_DPROP = "SelectedItem";
+
     private TestOut output;
     private MultiSelListDriver driver;
 
@@ -299,8 +302,8 @@ public class ListOperator extends ComponentOperator
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	addToDump(result, "Item", ((List)getSource()).getItems());
-	addToDump(result, "SelectedItem", ((List)getSource()).getSelectedItems());
+	addToDump(result, ITEM_PREFIX_DPROP, ((List)getSource()).getItems());
+	addToDump(result, SELECTED_ITEM_PREFIX_DPROP, ((List)getSource()).getSelectedItems());
 	return(result);
     }
 

@@ -54,6 +54,9 @@ import java.util.Hashtable;
 
 public class ChoiceOperator extends ComponentOperator implements Outputable{
 
+    public static final String SELECTED_ITEM_DPROP = "Selected item";
+    public static final String ITEM_PREFIX_DPROP = "Item";
+
     private TestOut output;
     private ListDriver driver;
 
@@ -343,12 +346,14 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put("SelectedItem", ((Choice)getSource()).getSelectedItem());
+        if(((Choice)getSource()).getSelectedItem() != null) {
+            result.put(SELECTED_ITEM_DPROP, ((Choice)getSource()).getSelectedItem());
+        }
         String[] items = new String[((Choice)getSource()).getItemCount()];
         for (int i=0; i<((Choice)getSource()).getItemCount(); i++) {
             items[i] = ((Choice)getSource()).getItem(i);
         }
-        addToDump(result,"Item", items);
+        addToDump(result, ITEM_PREFIX_DPROP, items);
 	return(result);
     }
 

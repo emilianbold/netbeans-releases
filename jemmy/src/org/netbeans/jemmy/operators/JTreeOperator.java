@@ -90,6 +90,11 @@ import javax.swing.tree.TreeSelectionModel;
 public class JTreeOperator extends JComponentOperator
     implements Timeoutable, Outputable{
 
+    public static final String ROOT_DPROP = "Root";
+    public static final String NODE_PREFIX_DPROP = "Node";
+    public static final String SELECTION_FIRST_DPROP = "First selected";
+    public static final String SELECTION_LAST_DPROP = "Last selected";
+
     private final static long WAIT_NODE_EXPANDED_TIMEOUT = 60000;
     private final static long WAIT_NODE_COLLAPSED_TIMEOUT = 60000;
     private final static long WAIT_AFTER_NODE_EXPANDED_TIMEOUT = 0;
@@ -807,6 +812,10 @@ public class JTreeOperator extends JComponentOperator
 	return(findPath(parseString(path, delim), comparator));
     }
 
+    public TreePath findPath(String path, StringComparator comparator) {
+	return(findPath(parseString(path), comparator));
+    }
+
     /**
      * Searches path in tree.
      * @param path String representing tree path.
@@ -838,6 +847,10 @@ public class JTreeOperator extends JComponentOperator
      */
     public TreePath findPath(String path, String delim) {
 	return(findPath(parseString(path, delim)));
+    }
+
+    public TreePath findPath(String path) {
+	return(findPath(parseString(path)));
     }
 
     /**
@@ -1277,22 +1290,20 @@ public class JTreeOperator extends JComponentOperator
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	Object root = ((JTree)getSource()).getModel().getRoot();
-	result.put("Root", root.toString());
-	addChildrenToDump(result, "Node", root, new TreePath(root));
+	result.put(ROOT_DPROP, root.toString());
+	addChildrenToDump(result, NODE_PREFIX_DPROP, root, new TreePath(root));
 	int minSelection = ((JTree)getSource()).getMinSelectionRow();
 	if( minSelection >= 0) {
 	    Object minObject = ((JTree)getSource()).
 		getPathForRow(minSelection).
 		getLastPathComponent();
+            result.put(SELECTION_FIRST_DPROP, minObject.toString());
 	    int maxSelection = ((JTree)getSource()).getMaxSelectionRow();
 	    if(maxSelection > minSelection) {
 		Object maxObject = ((JTree)getSource()).
 		    getPathForRow(maxSelection).
 		    getLastPathComponent();
-		result.put("Selection from", minObject.toString());
-		result.put("Selection to", maxObject.toString());
-	    } else {
-		result.put("Selection", minObject.toString());
+		result.put(SELECTION_LAST_DPROP, maxObject.toString());
 	    }
 	}
 	return(result);

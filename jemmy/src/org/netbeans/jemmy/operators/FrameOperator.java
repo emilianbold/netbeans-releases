@@ -49,6 +49,12 @@ import java.util.Hashtable;
 
 public class FrameOperator extends WindowOperator implements Outputable {
 
+    public static final String TITLE_DPROP = "Title";
+    public static final String STATE_DPROP = "State";
+    public static final String STATE_NORMAL_DPROP_VALUE = "NORMAL";
+    public static final String STATE_ICONIFIED_DPROP_VALUE = "ICONIFIED";
+    public static final String IS_RESIZABLE_DPROP = "Resizable";
+
     TestOut output;
     FrameDriver driver;
 
@@ -244,11 +250,11 @@ public class FrameOperator extends WindowOperator implements Outputable {
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put("Title", ((Frame)getSource()).getTitle());
-	result.put("State", 
+	result.put(TITLE_DPROP, ((Frame)getSource()).getTitle());
+	result.put(STATE_DPROP, 
 		   (((Frame)getSource()).getState() == Frame.ICONIFIED) ?
-		   "ICONIFIED" : "NORMAL");
-	result.put("Resizable", ((Frame)getSource()).isResizable() ? "true" : "false");
+		   STATE_ICONIFIED_DPROP_VALUE : STATE_NORMAL_DPROP_VALUE);
+	result.put(IS_RESIZABLE_DPROP, ((Frame)getSource()).isResizable() ? "true" : "false");
 	return(result);
     }
 

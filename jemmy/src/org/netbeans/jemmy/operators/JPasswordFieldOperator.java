@@ -47,6 +47,8 @@ import javax.swing.JPasswordField;
 
 public class JPasswordFieldOperator extends JTextFieldOperator{
 
+    public static final String ECHO_CHAR_DPROP = "Echo char";
+
     /**
      * Constructor.
      */
@@ -234,7 +236,7 @@ public class JPasswordFieldOperator extends JTextFieldOperator{
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put("Echo char", 
+	result.put(ECHO_CHAR_DPROP, 
 		   new Character(((JPasswordField)getSource()).getEchoChar()).toString());
 	return(result);
     }

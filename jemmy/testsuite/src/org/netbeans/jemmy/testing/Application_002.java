@@ -43,10 +43,14 @@ public class Application_002 extends TestFrame {
 	subsubmenu.add(menuItem);
 	MyMenu subsubmenu2 = new MyMenu("subsubmenu2");
         subsubmenu2.setEnabled(false);
+	JRadioButtonMenuItem subsubradio = new JRadioButtonMenuItem("radio");
 
 	MyMenu submenu = new MyMenu("submenu");
 	submenu.add(subsubmenu);
+        submenu.add(new JSeparator());
 	submenu.add(subsubmenu2);
+        submenu.add(new JSeparator());
+	submenu.add(subsubradio);
 
 	MyMenu menu = new MyMenu("menu");
 	menu.add(submenu);

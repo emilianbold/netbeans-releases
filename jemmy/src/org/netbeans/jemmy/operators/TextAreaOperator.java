@@ -50,6 +50,8 @@ import java.util.Hashtable;
 public class TextAreaOperator extends TextComponentOperator
     implements Timeoutable, Outputable {
 
+    public static final String TEXT_DPROP = "Text";
+
     private final static long PUSH_KEY_TIMEOUT = 0;
     private final static long BETWEEN_KEYS_TIMEOUT = 0;
     private final static long CHANGE_CARET_POSITION_TIMEOUT = 60000;
@@ -307,7 +309,7 @@ public class TextAreaOperator extends TextComponentOperator
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put("Text", ((TextArea)getSource()).getText());
+	result.put(TEXT_DPROP, ((TextArea)getSource()).getText());
 	return(result);
     }
 

@@ -43,6 +43,8 @@ import javax.swing.plaf.LabelUI;
 
 public class JLabelOperator extends JComponentOperator {
 
+    public static final String TEXT_DPROP = "Text";
+
     /**
      * Constructor.
      */
@@ -232,9 +234,9 @@ public class JLabelOperator extends JComponentOperator {
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	if(((JLabel)getSource()).getText() != null) {
-	    result.put("Text", ((JLabel)getSource()).getText());
+	    result.put(TEXT_DPROP, ((JLabel)getSource()).getText());
 	} else {
-	    result.put("Text", "null");
+	    result.put(TEXT_DPROP, "null");
 	}
 	return(result);
     }

@@ -57,6 +57,10 @@ import java.util.Vector;
 public abstract class Operator extends Object 
     implements Timeoutable, Outputable {
 
+    public static final String CLASS_DPROP = "Class";
+    public static final String TO_STRING_DPROP = "toString";
+
+
     private static Vector operatorPkgs;
 
     private Timeouts timeouts;
@@ -66,6 +70,7 @@ public abstract class Operator extends Object
     private CharBindingMap map;
     private ComponentVisualizer visualizer;
     private StringComparator comparator;
+    private PathParser parser;
     private QueueTool queueTool;
     private boolean verification = false;
     private JemmyProperties properties;
@@ -122,6 +127,16 @@ public abstract class Operator extends Object
     public static StringComparator getDefaultStringComparator() {
 	return((StringComparator)JemmyProperties.
 	       getCurrentProperty("ComponentOperator.StringComparator"));
+    }
+
+    public static PathParser setDefaultPathParser(PathParser comparator) {
+	return((PathParser)JemmyProperties.
+	       setCurrentProperty("ComponentOperator.PathParser", comparator));
+    }
+
+    public static PathParser getDefaultPathParser() {
+	return((PathParser)JemmyProperties.
+	       getCurrentProperty("ComponentOperator.PathParser"));
     }
 
     /**
@@ -243,6 +258,7 @@ public abstract class Operator extends Object
         }
 	operatorPkgs = new Vector ();
 	setDefaultStringComparator(new DefaultStringComparator(false, false));
+	setDefaultPathParser(new DefaultPathParser("|"));
 	addOperatorPackage("org.netbeans.jemmy.operators");
 	setDefaultVerification(true);
     }
@@ -381,6 +397,14 @@ public abstract class Operator extends Object
 	this.comparator = comparator;
     }
 
+    public PathParser getPathParser() {
+	return(parser);
+    }
+
+    public void setPathParser(PathParser parser) {
+	this.parser = parser;
+    }
+
     /**
      * Defines weither operator should perform operation verifications.
      * @see #setDefaultVerification(boolean)
@@ -419,26 +443,15 @@ public abstract class Operator extends Object
         }
     }
 
+    public String[] parseString(String path) {
+        return(getPathParser().parse(path));
+    }
+
     /**
      * Parses strings like "1|2|3" into arrays {"1", "2", "3"}
      */
     public String[] parseString(String path, String delim) {
-	if(path.equals("")) {
-	    return(new String[0]);
-	}
-	Vector nameVector = new Vector();
-	int curIndex = 0;
-	String restPath = path;
-	while((curIndex = nextDelimIndex(restPath, delim)) != -1) {
-	    nameVector.add(restPath.substring(0, curIndex));
-	    restPath = restPath.substring(curIndex + 1);
-	}
-	nameVector.add(restPath);
-	String[] spath = new String[nameVector.size()];
-	for(int i = 0; i < spath.length; i++) {
-	    spath[i] = (String)nameVector.get(i);
-	}
-	return(spath);
+        return(new DefaultPathParser(delim).parse(path));
     }
 
     /**
@@ -530,8 +543,8 @@ public abstract class Operator extends Object
      */
     public Hashtable getDump() {
 	Hashtable result = new Hashtable();
-	result.put("Class", getSource().getClass().getName());
-	result.put("toString", getSource().toString());
+	result.put(CLASS_DPROP, getSource().getClass().getName());
+	result.put(TO_STRING_DPROP, getSource().toString());
 	return(result);
     }
 
@@ -809,6 +822,7 @@ public abstract class Operator extends Object
 	setComparator(getDefaultStringComparator());
 	setVerification(getDefaultVerification());
 	setProperties(JemmyProperties.getProperties());
+	setPathParser(getDefaultPathParser());
     }
 
     private int nextDelimIndex(String path, String delim) {
@@ -846,7 +860,6 @@ public abstract class Operator extends Object
 	 */
 	public boolean equals(String caption, String match);
     }
-
 
     /**
      * Default StringComparator implementation.
@@ -889,6 +902,36 @@ public abstract class Operator extends Object
 		return(c.indexOf(t) != -1);
 	    }
 	}
+    }
+
+    public interface PathParser {
+	public String[] parse(String path);
+    }
+
+    public static class DefaultPathParser implements PathParser {
+        String separator;
+        public DefaultPathParser(String separator) {
+            this.separator = separator;
+        }
+	public String[] parse(String path) {
+            if(path.length() > 0) {
+                Vector parsed = new Vector();
+                int position = 0;
+                int sepIndex = 0;
+                while((sepIndex = path.indexOf(separator, position)) != -1) {
+                    parsed.add(path.substring(position, sepIndex));
+                    position = sepIndex + separator.length();
+                }
+                parsed.add(path.substring(position));
+                String[] result = new String[parsed.size()];
+                for(int i = 0; i < parsed.size(); i++) {
+                    result[i] = (String)parsed.get(i);
+                }
+                return(result);
+            } else {
+                return(new String[0]);
+            }
+        }
     }
 
     public static class Finder implements ComponentChooser {

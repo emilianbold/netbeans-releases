@@ -82,6 +82,9 @@ import javax.swing.plaf.basic.ComboPopup;
 public class JComboBoxOperator extends JComponentOperator
 implements Timeoutable, Outputable {
 
+    public static final String TEXT_DPROP = "Text";
+    public static final String ITEM_PREFIX_DPROP = "Item";
+
     private final static long BEFORE_SELECTING_TIMEOUT = 0;
     private final static long WAIT_LIST_TIMEOUT = 60000;
 
@@ -542,7 +545,7 @@ implements Timeoutable, Outputable {
 	Hashtable result = super.getDump();
 	if(((JComboBox)getSource()).getSelectedItem() != null &&
 	   ((JComboBox)getSource()).getSelectedItem().toString() != null) {
-	    result.put("Text", ((JComboBox)getSource()).getSelectedItem().toString());
+	    result.put(TEXT_DPROP, ((JComboBox)getSource()).getSelectedItem().toString());
 	}
 	String[] items = new String[((JComboBox)getSource()).getItemCount()];
 	for(int i = 0; i < ((JComboBox)getSource()).getItemCount(); i++) {
@@ -551,7 +554,7 @@ implements Timeoutable, Outputable {
 		items[i] = ((JComboBox)getSource()).getItemAt(i).toString();
 	    }
 	}
-	addToDump(result, "Item", items);
+	addToDump(result, ITEM_PREFIX_DPROP, items);
 	return(result);
     }
 

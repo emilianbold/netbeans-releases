@@ -62,6 +62,14 @@ public class JSliderOperator extends JComponentOperator
     private final static long ONE_SCROLL_CLICK_TIMEOUT = 0;
     private final static long WHOLE_SCROLL_TIMEOUT = 60000;
 
+    public static final String MINIMUM_DPROP = "Minimum";
+    public static final String MAXIMUM_DPROP = "Maximum";
+    public static final String VALUE_DPROP = "Value";
+    public static final String ORIENTATION_DPROP = "Orientation";
+    public static final String HORIZONTAL_ORIENTATION_DPROP_VALUE = "HORIZONTAL";
+    public static final String VERTICAL_ORIENTATION_DPROP_VALUE = "VERTICAL";
+    public static final String IS_INVERTED_DPROP = "Inverted";
+
     /**
      * Click scroll model. Mouse is clicked till necessary position reached.
      * @see #setScrollModel(int)
@@ -315,13 +323,13 @@ public class JSliderOperator extends JComponentOperator
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put("Minimum", Integer.toString(((JSlider)getSource()).getMinimum()));
-	result.put("Maximum", Integer.toString(((JSlider)getSource()).getMaximum()));
-	result.put("Orientation", (((JSlider)getSource()).getOrientation() == JSlider.HORIZONTAL) ? 
-		   "HORIZONTAL" : 
-		   "VERTICAL");
-	result.put("Inverted", ((JSlider)getSource()).getInverted() ? "true" : "false");
-	result.put("Value", Integer.toString(((JSlider)getSource()).getValue()));
+	result.put(MINIMUM_DPROP, Integer.toString(((JSlider)getSource()).getMinimum()));
+	result.put(MAXIMUM_DPROP, Integer.toString(((JSlider)getSource()).getMaximum()));
+	result.put(ORIENTATION_DPROP, (((JSlider)getSource()).getOrientation() == JSlider.HORIZONTAL) ? 
+		   HORIZONTAL_ORIENTATION_DPROP_VALUE : 
+		   VERTICAL_ORIENTATION_DPROP_VALUE);
+	result.put(IS_INVERTED_DPROP, ((JSlider)getSource()).getInverted() ? "true" : "false");
+	result.put(VALUE_DPROP, Integer.toString(((JSlider)getSource()).getValue()));
 	return(result);
     }
 

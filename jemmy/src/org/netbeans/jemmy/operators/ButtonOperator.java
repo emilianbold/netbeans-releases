@@ -56,6 +56,8 @@ import java.util.Hashtable;
 public class ButtonOperator extends ComponentOperator
     implements Timeoutable, Outputable {
 
+    public static final String TEXT_DPROP = "Label";
+
     /**
      * Default value for ButtonOperator.PushButtonTimeout timeout.
      */
@@ -364,7 +366,9 @@ public class ButtonOperator extends ComponentOperator
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put("Label", ((Button)getSource()).getLabel());
+        if(((Button)getSource()).getLabel() != null) {
+            result.put(TEXT_DPROP, ((Button)getSource()).getLabel());
+        }
 	return(result);
     }
 

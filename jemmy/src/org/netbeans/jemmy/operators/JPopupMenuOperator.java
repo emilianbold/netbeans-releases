@@ -71,6 +71,8 @@ import javax.swing.plaf.PopupMenuUI;
 public class JPopupMenuOperator extends JComponentOperator
 implements Outputable, Timeoutable {
 
+    public static final String LABEL_DPROP = "Label";
+
     private TestOut output;
     private Timeouts timeouts;
     private MenuDriver driver;
@@ -463,6 +465,10 @@ implements Outputable, Timeoutable {
 	return(pushMenu(parseString(path, delim), comparator));
     }
 
+    public JMenuItem pushMenu(String path, StringComparator comparator) {
+	return(pushMenu(parseString(path), comparator));
+    }
+
     /**
      * Pushes menu.
      * @param path String menupath representation ("File/New", for example).
@@ -480,6 +486,10 @@ implements Outputable, Timeoutable {
 
     public void pushMenuNoBlock(String path, String delim, StringComparator comparator) {
 	pushMenuNoBlock(parseString(path, delim), comparator);
+    }
+
+    public void pushMenuNoBlock(String path, StringComparator comparator) {
+	pushMenuNoBlock(parseString(path), comparator);
     }
 
     /**
@@ -502,6 +512,10 @@ implements Outputable, Timeoutable {
 	return(pushMenu(parseString(path, delim)));
     }
 
+    public JMenuItem pushMenu(String path) {
+	return(pushMenu(parseString(path)));
+    }
+
     /**
      * Executes <code>pushMenu(path, delim)</code> in a separate thread.
      * @see #pushMenu(String, String)
@@ -510,24 +524,16 @@ implements Outputable, Timeoutable {
 	pushMenuNoBlock(parseString(path, delim));
     }
 
+    public void pushMenuNoBlock(String path) {
+	pushMenuNoBlock(parseString(path));
+    }
+
     public JMenuItemOperator[] showMenuItems(String[] path, StringComparator comparator) {
-        JMenuItemOperator[] result;
-        if(path.length == 0) {
-            MenuElement[] elems =  getSubElements();
-            result = new JMenuItemOperator[elems.length];
-            for(int i = 0; i < elems.length; i++) {
-                result[i] = new JMenuItemOperator((JMenuItem)elems[i]);
-                result[i].copyEnvironment(this);
-            }
+        if(path == null || path.length == 0) {
+            return(JMenuItemOperator.getMenuItems((MenuElement)getSource(), this));
         } else {
-            JMenu menu = (JMenu)pushMenu(path, comparator);
-            result = new JMenuItemOperator[menu.getMenuComponentCount()];
-            for(int i = 0; i < result.length; i++) {
-                result[i] = new JMenuItemOperator((JMenuItem)menu.getMenuComponent(i));
-                result[i].copyEnvironment(this);
-            }
+            return(JMenuItemOperator.getMenuItems((JMenu)pushMenu(path, comparator), this));
         }
-        return(result);
     }
 
     public JMenuItemOperator[] showMenuItems(String[] path) {
@@ -538,8 +544,16 @@ implements Outputable, Timeoutable {
         return(showMenuItems(parseString(path, delim), comparator));
     }
 
+    public JMenuItemOperator[] showMenuItems(String path, StringComparator comparator ) {
+        return(showMenuItems(parseString(path), comparator));
+    }
+
     public JMenuItemOperator[] showMenuItems(String path, String delim) {
         return(showMenuItems(path, delim, getComparator()));
+    }
+
+    public JMenuItemOperator[] showMenuItems(String path) {
+        return(showMenuItems(path, getComparator()));
     }
 
     public JMenuItemOperator showMenuItem(String[] path, StringComparator comparator ) {
@@ -565,8 +579,14 @@ implements Outputable, Timeoutable {
     public JMenuItemOperator showMenuItem(String path, String delim, StringComparator comparator ) {
         return(showMenuItem(parseString(path, delim), comparator));
     }
+    public JMenuItemOperator showMenuItem(String path, StringComparator comparator ) {
+        return(showMenuItem(parseString(path), comparator));
+    }
     public JMenuItemOperator showMenuItem(String path, String delim) {
         return(showMenuItem(path, delim, getComparator()));
+    }
+    public JMenuItemOperator showMenuItem(String path) {
+        return(showMenuItem(path, getComparator()));
     }
 
     /**
@@ -575,7 +595,7 @@ implements Outputable, Timeoutable {
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	if(((JPopupMenu)getSource()).getLabel() != null) {
-	    result.put("Label", ((JPopupMenu)getSource()).getLabel());
+	    result.put(LABEL_DPROP, ((JPopupMenu)getSource()).getLabel());
 	}
 	return(result);
     }

@@ -64,6 +64,9 @@ import javax.swing.text.BadLocationException;
 public class JTextAreaOperator extends JTextComponentOperator
     implements Timeoutable, Outputable {
 
+    public static final String COLUMN_COUNT_DPROP = "Column count";
+    public static final String ROW_COUNT_DPROP = "Row count";
+
     private Timeouts timeouts;
     private TestOut output;
     private boolean pageNavigation = false;
@@ -399,8 +402,8 @@ public class JTextAreaOperator extends JTextComponentOperator
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put("Row count", Integer.toString(((JTextArea)getSource()).getRows()));
-	result.put("Column count", Integer.toString(((JTextArea)getSource()).getColumns()));
+	result.put(COLUMN_COUNT_DPROP, Integer.toString(((JTextArea)getSource()).getRows()));
+	result.put(ROW_COUNT_DPROP, Integer.toString(((JTextArea)getSource()).getColumns()));
 	return(result);
     }
 

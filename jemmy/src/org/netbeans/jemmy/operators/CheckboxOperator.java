@@ -53,6 +53,8 @@ import java.util.Hashtable;
 
 public class CheckboxOperator extends ComponentOperator implements Outputable {
 
+    public static final String TEXT_DPROP = "Label";
+
     private TestOut output;
     ButtonDriver driver;
 
@@ -318,7 +320,7 @@ public class CheckboxOperator extends ComponentOperator implements Outputable {
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put("Label", ((Checkbox)getSource()).getLabel());
+	result.put(TEXT_DPROP, ((Checkbox)getSource()).getLabel());
 	return(result);
     }
 

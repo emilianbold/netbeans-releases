@@ -7,12 +7,7 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 
 import org.netbeans.jemmy.demo.Demonstrator;
 
-import org.netbeans.jemmy.operators.AbstractButtonOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JFrameOperator;
-import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.*;
 
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
@@ -21,11 +16,7 @@ import java.io.PrintWriter;
 
 import java.lang.reflect.InvocationTargetException;
 
-import javax.swing.AbstractButton;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuBar;
+import javax.swing.*;
 
 public class jemmy_002 extends JemmyTest {
     public int runIt(Object obj) {
@@ -73,49 +64,78 @@ public class jemmy_002 extends JemmyTest {
             mbo.getTimeouts().setTimeout("JMenuOperator.PushMenuTimeout",
                                          600000);
 
-            if(mbo.showMenuItems("menu|submenu", "|").length != 2) {
+            if(mbo.showMenuItems("menu|submenu").length != 3) {
 		finalize();
 		return(1);
             }
 
-                mbo.closeSubmenus();
 
-            if(!mbo.showMenuItem("menu|submenu", "|").getText().equals("submenu")) {
+            mbo.closeSubmenus();
+
+            if(!mbo.showMenuItem("menu|submenu").getText().equals("submenu")) {
 		finalize();
 		return(1);
             }
 
-            mbo.pushMenu("menu", "|");
+            mbo.pushMenu("menu");
 
-            if(!mbo.showMenuItem("menu", "|").getText().equals("menu")) {
+            if(!mbo.showMenuItem("menu").getText().equals("menu")) {
 		finalize();
 		return(1);
             }
 
-            if(!mbo.showMenuItem("menu|submenu|subsubmenu|menuItem", "|").getText().equals("menuItem")) {
+            if(!mbo.showMenuItem("menu|submenu|subsubmenu|menuItem").getText().equals("menuItem")) {
 		finalize();
 		return(1);
             }
 
-            mbo.pushMenu("menu", "|");
+            JMenuItemOperator radioItem = mbo.showMenuItem("menu|submenu|radio");
 
-            if(!mbo.showMenuItem("menu|submenu|subsubmenu", "|").getText().equals("subsubmenu")) {
+            JRadioButtonMenuItemOperator radio = 
+                new JRadioButtonMenuItemOperator((JRadioButtonMenuItem)radioItem.getSource());
+
+            JMenuItemOperator menu = mbo.showMenuItem("menu|submenu");
+            mbo.showMenuItems("menu|submenu");
+            JPopupMenuOperator popup = 
+                new JPopupMenuOperator(((JMenu)menu.getSource()).getPopupMenu());
+            JRadioButtonMenuItemOperator radio1 = 
+                new JRadioButtonMenuItemOperator(popup, "radio");
+
+            if(radio.isSelected()) {
+                getOutput().printErrLine("Radio should not be selected");
+		finalize();
+		return(1);
+            } else {
+                getOutput().printLine("Radio is not selected - that's right.");
+            }
+            mbo.pushMenu("menu|submenu|radio");
+            if(!radio.isSelected()) {
+                getOutput().printErrLine("Radio should be selected");
+		finalize();
+		return(1);
+            } else {
+                getOutput().printLine("Radio is selected - that's right.");
+            }
+
+            mbo.pushMenu("menu");
+
+            if(!mbo.showMenuItem("menu|submenu|subsubmenu").getText().equals("subsubmenu")) {
 		finalize();
 		return(1);
             }
 
-	    mbo.pushMenu("menu|submenu|subsubmenu|menuItem", "|");
+	    mbo.pushMenu("menu|submenu|subsubmenu|menuItem");
 	    JLabelOperator lbo = new JLabelOperator(wino, "Menu \"menu/menuItem\" has been pushed");
 
 
 	    
 	    Demonstrator.nextStep("Push menu0");
 
-	    mbo.pushMenu("menu0", "|");
+	    mbo.pushMenu("menu0");
 
 	    Demonstrator.nextStep("Push menu1Item");
 
-	    mbo.pushMenu("menu1Item", "|");
+	    mbo.pushMenu("menu1Item");
 	    new JLabelOperator(wino, "Menu \"menu1Item\" has been pushed");
 
 	    Demonstrator.nextStep("Push button");
@@ -130,7 +150,7 @@ public class jemmy_002 extends JemmyTest {
             mbo.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 1000);
             mbo.getTimeouts().setTimeout("JMenuOperator.WaitPopupTimeout", 1000);
             try {
-                mbo.pushMenu("menu|submenu|subsubmenu2", "|", true, true);
+                mbo.pushMenu("menu|submenu|subsubmenu2");
                 printLine("Exception was not thrown!");
 		finalize();
 		return(1);

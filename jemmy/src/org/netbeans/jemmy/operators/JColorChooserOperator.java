@@ -50,6 +50,9 @@ import javax.swing.plaf.ColorChooserUI;
 public class JColorChooserOperator extends JComponentOperator 
     implements Outputable {
 
+    public static final String COLOR_DPROP = "Color";
+    public static final String SELECTED_PAGE_DPROP = "Selected page";
+
     private static final String RGB_TITLE = "RGB";
 
     private final static long WAIT_LIST_PAINTED_TIMEOUT = 60000;
@@ -307,9 +310,9 @@ public class JColorChooserOperator extends JComponentOperator
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put("Color", ((JColorChooser)getSource()).getColor().toString());
+	result.put(COLOR_DPROP, ((JColorChooser)getSource()).getColor().toString());
 	JTabbedPane tb = (JTabbedPane)tabbed.getSource();
-	result.put("Selected page", tb.getTitleAt(tb.getSelectedIndex()));
+	result.put(SELECTED_PAGE_DPROP, tb.getTitleAt(tb.getSelectedIndex()));
 	return(result);
     }
 

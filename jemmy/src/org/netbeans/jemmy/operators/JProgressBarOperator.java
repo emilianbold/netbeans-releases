@@ -58,6 +58,10 @@ import javax.swing.plaf.ProgressBarUI;
 public class JProgressBarOperator extends JComponentOperator
     implements Timeoutable, Outputable {
 
+    public static final String MINIMUM_DPROP = "Minimum";
+    public static final String MAXIMUM_DPROP = "Maximum";
+    public static final String VALUE_DPROP = "Value";
+
     private static long WAIT_VALUE_TIMEOUT = 60000;
 
     private Timeouts timeouts;
@@ -288,9 +292,9 @@ public class JProgressBarOperator extends JComponentOperator
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put("Minimum", Integer.toString(((JProgressBar)getSource()).getMinimum()));
-	result.put("Maximum", Integer.toString(((JProgressBar)getSource()).getMaximum()));
-	result.put("Value", Integer.toString(((JProgressBar)getSource()).getValue()));
+	result.put(MINIMUM_DPROP, Integer.toString(((JProgressBar)getSource()).getMinimum()));
+	result.put(MAXIMUM_DPROP, Integer.toString(((JProgressBar)getSource()).getMaximum()));
+	result.put(VALUE_DPROP, Integer.toString(((JProgressBar)getSource()).getValue()));
 	return(result);
     }
 

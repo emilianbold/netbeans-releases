@@ -74,6 +74,13 @@ import javax.swing.plaf.ScrollBarUI;
 public class JScrollBarOperator extends JComponentOperator
     implements Timeoutable, Outputable{
 
+    public static final String MINIMUM_DPROP = "Minimum";
+    public static final String MAXIMUM_DPROP = "Maximum";
+    public static final String VALUE_DPROP = "Value";
+    public static final String ORIENTATION_DPROP = "Orientation";
+    public static final String HORIZONTAL_ORIENTATION_DPROP_VALUE = "HORIZONTAL";
+    public static final String VERTICAL_ORIENTATION_DPROP_VALUE = "VERTICAL";
+
     private final static long ONE_SCROLL_CLICK_TIMEOUT = 0;
     private final static long WHOLE_SCROLL_TIMEOUT = 60000;
     private final static long BEFORE_DROP_TIMEOUT = 0;
@@ -405,12 +412,12 @@ public class JScrollBarOperator extends JComponentOperator
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put("Minimum", Integer.toString(((JScrollBar)getSource()).getMinimum()));
-	result.put("Maximum", Integer.toString(((JScrollBar)getSource()).getMaximum()));
-	result.put("Orientation", (((JScrollBar)getSource()).getOrientation() == JScrollBar.HORIZONTAL) ? 
-		   "HORIZONTAL" : 
-		   "VERTICAL");
-	result.put("Value", Integer.toString(((JScrollBar)getSource()).getValue()));
+	result.put(MINIMUM_DPROP, Integer.toString(((JScrollBar)getSource()).getMinimum()));
+	result.put(MAXIMUM_DPROP, Integer.toString(((JScrollBar)getSource()).getMaximum()));
+	result.put(ORIENTATION_DPROP, (((JScrollBar)getSource()).getOrientation() == JScrollBar.HORIZONTAL) ? 
+		   HORIZONTAL_ORIENTATION_DPROP_VALUE : 
+		   VERTICAL_ORIENTATION_DPROP_VALUE);
+	result.put(VALUE_DPROP, Integer.toString(((JScrollBar)getSource()).getValue()));
 	return(result);
     }
 

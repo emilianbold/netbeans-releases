@@ -84,6 +84,13 @@ import javax.swing.text.JTextComponent;
 public class JTableOperator extends JComponentOperator
 implements Outputable, Timeoutable {
 
+    public static final String CELL_PREFIX_DPROP = "Cell";
+    public static final String COLUMN_PREFIX_DPROP = "Column";
+    public static final String SELECTED_COLUMN_PREFIX_DPROP = "SelectedColumn";
+    public static final String SELECTED_ROW_PREFIX_DPROP = "SelectedRow";
+    public static final String COLUMN_COUNT_DPROP = "Column count";
+    public static final String ROW_COUNT_DPROP = "Row count";
+
     private final static long WAIT_EDITING_TIMEOUT = 60000;
 
     private TestOut output;
@@ -978,26 +985,26 @@ implements Outputable, Timeoutable {
 		}
 	    }
 	}
-	addToDump(result, "Cell", items);
+	addToDump(result, CELL_PREFIX_DPROP, items);
 	String[] columns = new String[colCount];
 	for(int j = 0; j < colCount; j++) {
 	    columns[j] = ((JTable)getSource()).getColumnName(j);
 	}
-	addToDump(result, "Column", columns);
+	addToDump(result, COLUMN_PREFIX_DPROP, columns);
 	int[] selColNums = ((JTable)getSource()).getSelectedColumns();
 	String[] selColumns = new String[selColNums.length];
 	for(int j = 0; j < selColNums.length; j++) {
 	    selColumns[j] = Integer.toString(selColNums[j]);
 	}
-	addToDump(result, "SelectedColumn", selColumns);
+	addToDump(result, SELECTED_COLUMN_PREFIX_DPROP, selColumns);
 	int[] selRowNums = ((JTable)getSource()).getSelectedRows();
 	String[] selRows = new String[selRowNums.length];
 	for(int i = 0; i < selRowNums.length; i++) {
 	    selRows[i] = Integer.toString(selRowNums[i]);
 	}
-	addToDump(result, "SelectedRow", selRows);
-	result.put("Column count", Integer.toString(colCount));
-	result.put("Row count", Integer.toString(rowCount));
+	addToDump(result, SELECTED_ROW_PREFIX_DPROP, selRows);
+	result.put(COLUMN_COUNT_DPROP, Integer.toString(colCount));
+	result.put(ROW_COUNT_DPROP, Integer.toString(rowCount));
 	return(result);
     }
 

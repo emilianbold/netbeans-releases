@@ -61,6 +61,8 @@ import javax.swing.event.MenuListener;
 public class JMenuOperator extends JMenuItemOperator 
 implements Outputable, Timeoutable{
 
+    public static final String SUBMENU_PREFIX_DPROP = "Submenu";
+
     private final static long WAIT_POPUP_TIMEOUT = 60000;
     private final static long WAIT_BEFORE_POPUP_TIMEOUT = 0;
     private final static long PUSH_MENU_TIMEOUT = 60000;
@@ -387,6 +389,12 @@ implements Outputable, Timeoutable{
 	return(pushMenu(parseString(path, delim), comparator));
     }
 
+    public JMenuItem pushMenu(String path, StringComparator comparator) {
+	output.printLine("Pushing " + path + " menu in \n    " + getSource().toString());
+	output.printGolden("Pushing " + path + " menu in \n    " + getSource().toString());
+	return(pushMenu(parseString(path), comparator));
+    }
+
     /**
      * Pushes menu.
      * @param path String menupath representation ("File/New", for example).
@@ -406,6 +414,12 @@ implements Outputable, Timeoutable{
 	output.printLine("Pushing " + path + " menu in \n    " + getSource().toString());
 	output.printGolden("Pushing " + path + " menu in \n    " + getSource().toString());
 	pushMenuNoBlock(parseString(path, delim), comparator);
+    }
+
+    public void pushMenuNoBlock(String path, StringComparator comparator) {
+	output.printLine("Pushing " + path + " menu in \n    " + getSource().toString());
+	output.printGolden("Pushing " + path + " menu in \n    " + getSource().toString());
+	pushMenuNoBlock(parseString(path), comparator);
     }
 
     /**
@@ -432,6 +446,12 @@ implements Outputable, Timeoutable{
 	return(pushMenu(parseString(path, delim)));
     }
 
+    public JMenuItem pushMenu(String path) {
+	output.printLine("Pushing " + path + " menu in \n    " + getSource().toString());
+	output.printGolden("Pushing " + path + " menu in \n    " + getSource().toString());
+	return(pushMenu(parseString(path)));
+    }
+
     /**
      * Executes <code>pushMenu(path, delim)</code> in a separate thread.
      * @see #pushMenu(String, String)
@@ -442,14 +462,14 @@ implements Outputable, Timeoutable{
 	pushMenuNoBlock(parseString(path, delim));
     }
 
+    public void pushMenuNoBlock(String path) {
+	output.printLine("Pushing " + path + " menu in \n    " + getSource().toString());
+	output.printGolden("Pushing " + path + " menu in \n    " + getSource().toString());
+	pushMenuNoBlock(parseString(path));
+    }
+
     public JMenuItemOperator[] showMenuItems(String[] path, StringComparator comparator) {
-        JMenu menu = (JMenu)pushMenu(path, comparator);
-        JMenuItemOperator[] result = new JMenuItemOperator[menu.getMenuComponentCount()];
-        for(int i = 0; i < result.length; i++) {
-            result[i] = new JMenuItemOperator((JMenuItem)menu.getMenuComponent(i));
-            result[i].copyEnvironment(this);
-        }
-        return(result);
+        return(JMenuItemOperator.getMenuItems((JMenu)pushMenu(path, comparator), this));
     }
 
     public JMenuItemOperator[] showMenuItems(String[] path) {
@@ -461,6 +481,12 @@ implements Outputable, Timeoutable{
     }
     public JMenuItemOperator[] showMenuItems(String path, String delim) {
         return(showMenuItems(path, delim, getComparator()));
+    }
+    public JMenuItemOperator[] showMenuItems(String path, StringComparator comparator ) {
+        return(showMenuItems(parseString(path), comparator));
+    }
+    public JMenuItemOperator[] showMenuItems(String path) {
+        return(showMenuItems(path, getComparator()));
     }
 
     public JMenuItemOperator showMenuItem(String[] path, StringComparator comparator) {
@@ -489,6 +515,12 @@ implements Outputable, Timeoutable{
     public JMenuItemOperator showMenuItem(String path, String delim) {
         return(showMenuItem(path, delim, getComparator()));
     }
+    public JMenuItemOperator showMenuItem(String path, StringComparator comparator ) {
+        return(showMenuItem(parseString(path), comparator));
+    }
+    public JMenuItemOperator showMenuItem(String path) {
+        return(showMenuItem(path, getComparator()));
+    }
 
     /**
      * Returns information about component.
@@ -504,7 +536,7 @@ implements Outputable, Timeoutable{
 		items[i] = "null";
 	    }
 	}
-	addToDump(result, "Submenu", items);
+	addToDump(result, SUBMENU_PREFIX_DPROP, items);
 	return(result);
     }
 

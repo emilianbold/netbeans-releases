@@ -76,6 +76,15 @@ import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 public class JInternalFrameOperator extends JComponentOperator
     implements Outputable, Timeoutable {
 
+    public static final String TITLE_DPROP = "Title";
+    public static final String STATE_DPROP = "State";
+    public static final String STATE_NORMAL_DPROP_VALUE = "NORMAL";
+    public static final String STATE_CLOSED_DPROP_VALUE = "CLOSED";
+    public static final String STATE_ICONIFIED_DPROP_VALUE = "ICONIFIED";
+    public static final String STATE_MAXIMAZED_DPROP_VALUE = "MAXIMIZED";
+    public static final String IS_RESIZABLE_DPROP = "Resizable";
+    public static final String IS_SELECTED_DPROP = "Selected";
+
     protected JButtonOperator minOper = null;
     protected JButtonOperator maxOper = null;
     protected JButtonOperator closeOper = null;
@@ -591,20 +600,18 @@ public class JInternalFrameOperator extends JComponentOperator
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put("Title", ((JInternalFrame)getSource()).getTitle());
-	String state = "NORMAL";
+	result.put(TITLE_DPROP, ((JInternalFrame)getSource()).getTitle());
+	String state = STATE_NORMAL_DPROP_VALUE;
 	if       (((JInternalFrame)getSource()).isClosed()) {
-	    state = "CLOSED";
+	    state = STATE_CLOSED_DPROP_VALUE;
 	} else if(((JInternalFrame)getSource()).isIcon()) {
-	    state = "ICONIFIED";
+	    state = STATE_ICONIFIED_DPROP_VALUE;
 	} else if(((JInternalFrame)getSource()).isMaximum()) {
-	    state = "MAXIMIZED";
-	} else if(((JInternalFrame)getSource()).isMaximum()) {
-	    state = "MAXIMIZED";
+	    state = STATE_MAXIMAZED_DPROP_VALUE;
 	}
-	result.put("State", state);
-	result.put("Resizable", ((JInternalFrame)getSource()).isResizable() ? "true" : "false");
-	result.put("Selected", ((JInternalFrame)getSource()).isSelected() ? "true" : "false");
+	result.put(STATE_DPROP, state);
+	result.put(IS_RESIZABLE_DPROP, ((JInternalFrame)getSource()).isResizable() ? "true" : "false");
+	result.put(IS_SELECTED_DPROP, ((JInternalFrame)getSource()).isSelected() ? "true" : "false");
 	return(result);
     }
 

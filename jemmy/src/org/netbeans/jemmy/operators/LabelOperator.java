@@ -38,6 +38,8 @@ import java.util.Hashtable;
 
 public class LabelOperator extends ComponentOperator {
 
+    public static final String TEXT_DPROP = "Text";
+
     /**
      * Constructor.
      */
@@ -216,9 +218,9 @@ public class LabelOperator extends ComponentOperator {
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	if(((Label)getSource()).getText() != null) {
-	    result.put("Text", ((Label)getSource()).getText());
+	    result.put(TEXT_DPROP, ((Label)getSource()).getText());
 	} else {
-	    result.put("Text", "null");
+	    result.put(TEXT_DPROP, "null");
 	}
 	return(result);
     }
