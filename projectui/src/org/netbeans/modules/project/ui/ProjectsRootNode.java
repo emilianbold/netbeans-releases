@@ -192,20 +192,35 @@ public class ProjectsRootNode extends AbstractNode {
             
             LogicalViewProvider lvp = (LogicalViewProvider)project.getLookup().lookup( LogicalViewProvider.class );
             
-            if ( lvp == null || type == PHYSICAL_VIEW ) {
-                // Provide physical view as a fallback for projects whic do not
-                // have logical view or set it when the node represents logical view
-                lvp = LogicalViews.physicalView(project);
+            Node nodes[] = null;
+                        
+            if ( type == PHYSICAL_VIEW ) {
+                nodes = PhysicalViewFactoryImpl.createNodesForProject( project );
             }
             
-            Node n = lvp.createLogicalView();
-            
-            if (n.getLookup().lookup(Project.class) != project) {
-                // Various actions, badging, etc. are not going to work.
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply itself in the lookup of the root node of its own logical view");
+            else if ( lvp == null || type == PHYSICAL_VIEW ) {
+                nodes = new Node[] { PhysicalViewFactoryImpl.INSTANCE.createPhysicalView( project ).createLogicalView() };
             }
-            
-            return new Node[] { new BadgingNode( n ) };
+            else {
+                nodes = new Node[] { lvp.createLogicalView() };
+                if (nodes[0].getLookup().lookup(Project.class) != project) {
+                    // Various actions, badging, etc. are not going to work.
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply itself in the lookup of the root node of its own logical view");
+                }
+            }
+
+            Node[] badgedNodes = new Node[ nodes.length ];
+            for( int i = 0; i < nodes.length; i++ ) {
+                if ( type == PHYSICAL_VIEW && !PhysicalViewFactoryImpl.isProjectDirNode( nodes[i] ) ) {
+                    // Don't badge external sources
+                    badgedNodes[i] = nodes[i];
+                }
+                else {
+                    badgedNodes[i] = new BadgingNode( nodes[i] );
+                }
+            }
+                        
+            return badgedNodes;
         }        
         
         // PropertyChangeListener impl -------------------------------------------------
