@@ -172,11 +172,11 @@ public final class NbSheet extends TopComponent {
         }
         return sharedSheet;
     }
-
-    public String preferredId() {
+    
+    protected String preferredID () {
         return "properties"; //NOI18N
     }
-
+    
     /* Singleton accessor reserved for window system ONLY. Used by window system to create
      * NbSheet instance from settings file when method is given. Use <code>findDefault</code>
      * to get correctly deserialized instance of NbSheet. */
