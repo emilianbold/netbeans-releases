@@ -400,7 +400,6 @@
 <mapID target="spec_version" url="web/concepts/spec_version.html" />
 <mapID target="concepts_html" url="web/concepts/html.html" />
 <mapID target="concepts_jar" url="web/concepts/jar.html" />
-<mapID target="ctx_tagattcust" url="web/taglib/ctx_tagattcust.html" />
 <mapID target="taglib_createtaglib" url="web/taglib/createtaglib.html" />
 <mapID target="edit_taghandler" url="web/taglib/edit_taghandler.html" />
 <mapID target="taglib_generate" url="web/taglib/generate.html" />
@@ -436,7 +435,6 @@
 <mapID target="webmod_packagewar" url="web/webmod/mod_packagewar.html" />
 <mapID target="webmod_deploy" url="web/webmod/mod_deploy.html" />
 <mapID target="webmod_webxmlprops" url="web/webmod/mod_webxml_props.html" />
-<mapID target="webmod_webinfprops" url="web/webmod/mod_webinf_props.html" />
 <mapID target="webmod_xml" url="web/webmod/mod_xml.html" />
 <mapID target="webmod_browser" url="web/webmod/mod_browser.html" />
 <mapID target="webmod_addtglb" url="web/webmod/mod_addtglb.html" />
@@ -449,7 +447,6 @@
 <mapID target="war_delete" url="web/warpkg/war_delete.html" />
 <mapID target="war_editprop" url="web/warpkg/war_editprop.html" />
 <mapID target="war_unpack" url="web/warpkg/war_unpack.html" />
-<mapID target="war_viewcont" url="web/warpkg/war_viewcont.html" />
 <mapID target="war_xtrafiles" url="web/warpkg/war_xtrafiles.html" />
 <mapID target="mod_process" url="web/overvw/mod_process.html" />
 <mapID target="filter_addtodd" url="web/servlet/filter_addtodd.html" />
@@ -510,7 +507,6 @@
 <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWar" url="web/overvw/WebCustomizerWar.html" />
 <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerJavadoc" url="web/overvw/WebCustomizerJavadoc.html" />
 <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerRun" url="web/overvw/WebCustomizerRun.html" />
-<mapID target="org.netbeans.modules.ant.freeform.ui.WebLocationsPanel" url="project/csh/proj_j2sefree_wiz5.html" />
 
 <!-- Freeform J2SE and Web Project Properties dialog-->
 <mapID target="org.netbeans.modules.ant.freeform.ui.GeneralPanel" url="project/csh/proj_j2sefree_props1.html" />
@@ -1175,12 +1171,6 @@
 
 <!-- context sensitive help map IDs -->
 
-<mapID target="org.netbeans.modules.web.html.HtmlDataObject" 
-        url="web/webmod/mod_html_node.html" />
-  <!-- NOTE THE INTENTIONAL EXCLUSION OF .web -->
-  <!-- this might be a generic (not web module) object -->
-<mapID target="org.netbeans.modules.html.HtmlDataNode.PropertySheet" 
-        url="web/webmod/mod_html_props.html" />
 
 <mapID target="org.netbeans.modules.web.dd.DDDataObject" 
         url="web/webmod/mod_webxml_node.html" />
@@ -1193,23 +1183,12 @@
 <mapID target="org.netbeans.modules.web.context.WebInfObject.PropertySheet" 
         url="web/webmod/mod_webinf_props.html" />
 
-<mapID target="org.netbeans.modules.web.context.BaseWizardPanel" 
-	url="web/overvw/BasicProjectInfoWizPanel.html" />  
-
 <mapID target="org.netbeans.modules.web.dd.wizards.ListenerPanel" 
         url="web/servlet/listen_addtodd.html" />
 
-<mapID target="org.netbeans.modules.web.war.WarNode" 
-   url="web/warpkg/war_node.html" />
-<!-- called from dialog boxes invoked from WEB-INF property sheet -->
-<mapID target="org.netbeans.modules.web.war.WarNode.PropertySheet" 
-   url="web/warpkg/war_editprop.html" />
 <mapID target="org.netbeans.modules.web.war.ui.ExtraFilesPropertyEditorSupport" 
         url="web/warpkg/war_xtrafiles.html" />
-  <!-- NOTE: There is no property sheet for WAR files. You edit from
-       WEB-INF property sheet. This was an error -->
-<mapID target="org.netbeans.modules.web.war.ui.WarFilterPropertyEditorSupport" 
-        url="web/warpkg/war_editprop.html" />
+
 
 <!-- reference issue 39843 -->
 
@@ -1220,13 +1199,6 @@
 
 <mapID target="org.netbeans.modules.web.core.jsploader.JspNode" 
 	url="web/concepts/jsp.html" />
-<mapID target="org.netbeans.modules.web.core.jsploader.JspNode.PropertySheet" 
-    url="web/create_jsp/jsp_props.html" />
-
-<mapID target="org.netbeans.modules.web.core.jsploader.JspNode.Tag" 
-    url="web/create_jsp/tag_node.html" />
-<mapID target="org.netbeans.modules.web.core.jsploader.JspNode.Tag.PropertySheet" 
-    url="web/create_jsp/tag_props.html" />
 
 <mapID target="org.netbeans.modules.web.dd.wizards.new.servlet"
         url="web/servlet/servlet_create.html" /><!-- TEMP -->
