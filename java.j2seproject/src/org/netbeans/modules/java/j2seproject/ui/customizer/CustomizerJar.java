@@ -45,6 +45,8 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
         
         jTextFieldDistDir.setDocument( uiProperties.DIST_JAR_MODEL );
         jTextFieldExcludes.setDocument( uiProperties.BUILD_CLASSES_EXCLUDES_MODEL );
+        
+        uiProperties.JAR_COMPRESS_MODEL.setMnemonic( jCheckBoxCommpress.getMnemonic() );
         jCheckBoxCommpress.setModel( uiProperties.JAR_COMPRESS_MODEL ); 
     } 
     
