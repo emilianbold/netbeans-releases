@@ -67,6 +67,10 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     protected AbstractViewTabDisplayerUI.Controller createController() {
         return new OwnController();
     }
+    
+    protected void installPinButton() {
+        //do nothing
+    }    
 
     public Dimension getPreferredSize(JComponent c) {
         FontMetrics fm = getTxtFontMetrics();
@@ -99,6 +103,7 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
 
     }
 
+    private Rectangle pinButtonRect = new Rectangle();
     protected void paintTabContent(Graphics g, int index, String text, int x,
                                    int y, int width, int height) {
         FontMetrics fm = getTxtFontMetrics();
@@ -143,8 +148,21 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             // pin button
             JButton pinButton = getPinButton(index);
             int space4Pin = pinButton != null ? pinButton.getWidth() + 1 : 0;
-            if (pinButton != null) {
-                pinButton.setLocation(iconX - space4Pin, iconY - 1);
+            if (pinButton != null && isSelected(index)) {
+//                pinButton.setLocation(iconX - space4Pin, iconY - 1);
+                
+                //Ugly for now - really we should get rid of the button 
+                //entirely
+                
+                Icon ic = pinButton.getIcon();
+                pinButtonRect.setBounds(iconX - space4Pin, iconY - 4, 
+                    ic.getIconWidth(), ic.getIconHeight());
+                
+                if (ic != null) {
+                    ic.paintIcon(displayer, g, pinButtonRect.x, pinButtonRect.y);
+                }
+                
+
             }
 
             textW -= iconWidth + 7 + space4Pin;
@@ -276,6 +294,10 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             int result = rect.contains(point) ? index : -1;
             return result;
         }
+        
+        private boolean inPinButtonRect(Point p) {
+            return pinButtonRect.contains(p);
+        }
 
         public void mousePressed(MouseEvent e) {
             Point p = e.getPoint();
@@ -289,6 +311,12 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                 setClosePressed(closeRectIdx);
                 return;
             } 
+            
+            if (pinButton != null && inPinButtonRect (p)) {
+                //XXX better to do on mouse release
+                performPinAction();
+            }
+            
             // update pressed state
         }
 

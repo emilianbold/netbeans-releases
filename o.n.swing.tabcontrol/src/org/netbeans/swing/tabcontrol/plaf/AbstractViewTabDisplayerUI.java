@@ -65,7 +65,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     
     protected static IconLoader iconCache = new IconLoader();
     
-    private PinButton pinButton;
+    protected PinButton pinButton;
 
     /** Pin action */
     private final Action pinAction = new PinAction();
@@ -90,6 +90,10 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         if (locInfo != null) {
             pinButton = createPinButton();
         }
+        installPinButton();
+    }
+    
+    protected void installPinButton() {
         if (pinButton != null) {
             displayer.add(pinButton);
             pinButton.addActionListener(controller);
@@ -328,7 +332,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     /** Reaction to pin button / pin shortcut toggle. Does nothing itself,but
      * produces event for outer window system.
      */
-    private void performPinAction() {
+    protected void performPinAction() {
         // pin button only active on selected index, so this is safe here
         int index = getSelectionModel().getSelectedIndex();
         PinButton pinB = getPinButton(index);
