@@ -482,7 +482,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             
             if ( !context ) {
                 if ( actions == null ) {                
-                    // Copy actions and leave out the PropertiesAction.                
+                    // Copy actions and leave out the PropertiesAction and FileSystemAction.                
                     Action superActions[] = super.getActions( context );            
                     ArrayList actionList = new ArrayList( superActions.length );
 
@@ -492,6 +492,9 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                             continue;
                         }
                         else if ( superActions[i] instanceof org.openide.actions.PropertiesAction ) {
+                            continue;
+                        }
+                        else if ( superActions[i] instanceof org.openide.actions.FileSystemAction ) {
                             continue;
                         }
                         else {
