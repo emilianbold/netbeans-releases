@@ -93,7 +93,7 @@ public class PanelConfigureProjectVisual extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(550, 350));
+        setPreferredSize(new java.awt.Dimension(500, 340));
         setRequestFocusEnabled(false);
         locationContainer.setLayout(new java.awt.BorderLayout());
 
@@ -122,7 +122,7 @@ public class PanelConfigureProjectVisual extends JPanel {
 
     }//GEN-END:initComponents
 
-     // Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JPanel locationContainer;
     private javax.swing.JPanel optionsContainer;
