@@ -968,11 +968,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                     l.addAll(cs.itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
                     WebProjectProperties.storeLibrariesLocations(l.iterator(), privateProps);
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
-                    try {
-                        ProjectManager.getDefault().saveProject(WebProject.this);
-                    } catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
-                    }
                 }
             });
         }

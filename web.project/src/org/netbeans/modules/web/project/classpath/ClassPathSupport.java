@@ -614,7 +614,8 @@ public class ClassPathSupport {
                     + ", property=" + property
                     + ", pathInWar=" + pathInWar
                     + ", raw=" + raw
-                    + ", eval=" + eval;
+                    + ", eval=" + eval
+                    + ", object=" + object;
         }
         
     }

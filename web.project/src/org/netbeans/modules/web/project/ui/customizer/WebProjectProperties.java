@@ -742,21 +742,19 @@ public class WebProjectProperties {
             getFilesForItem (item, files, dirs);
             String key;
             if (files.size() > 0) {
-                key = getAntPropertyName(item.getReference())+".libfiles"; //NOI18N
-                exLibs.remove(key);
+                String ref = item.getType() == ClassPathSupport.Item.TYPE_LIBRARY ? item.getRaw() : item.getReference();
                 for (int i = 0; i < files.size(); i++) {
                     File f = (File) files.get(i);
-                    key = getAntPropertyName(item.getReference())+".libfile." + (i+1); //NOI18N
+                    key = getAntPropertyName(ref)+".libfile." + (i+1); //NOI18N
                     privateProps.setProperty (key, "" + f.getAbsolutePath()); //NOI18N
                     exLibs.remove(key);
                 }
             }
             if (dirs.size() > 0) {
-                key = getAntPropertyName(item.getReference())+".libdirs"; //NOI18N
-                exLibs.remove(key);
+                String ref = item.getType() == ClassPathSupport.Item.TYPE_LIBRARY ? item.getRaw() : item.getReference();
                 for (int i = 0; i < dirs.size(); i++) {
                     File f = (File) dirs.get(i);
-                    key = getAntPropertyName(item.getReference())+".libdir." + (i+1); //NOI18N
+                    key = getAntPropertyName(ref)+".libdir." + (i+1); //NOI18N
                     privateProps.setProperty (key, "" + f.getAbsolutePath()); //NOI18N
                     exLibs.remove(key);
                 }
