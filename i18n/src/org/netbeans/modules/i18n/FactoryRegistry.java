@@ -19,16 +19,21 @@ import java.util.HashMap;
 
 
 /**
- * Registry ofr i18n support factories.
+ * Registry which maps i18n support factories to data object names.
+ * E.g. for <code>FormDataObject</code> i18n-form module registers <code>FormI18nSupportFactory</code>.
  *
  * @author  Peter Zavadsky
+ * @see I18nSupport
+ * @see I18nSupport.Factory
+ * @see org.netbeans.modules.i18n.form.FormI18nSupport
+ * @see org.netbeans.modules.i18n.form.FormI18nSupport.Factory
  */
-public class FactoryRegistry extends Object {
+public abstract class FactoryRegistry extends Object {
 
-    /** Default i18n support factory. */
-    private static final I18nSupport.Factory defaultFactory = new JavaI18nSupport.JavaI18nSupportFactory();
+    /** Default i18n support factory. Now <code>JavaI18nSupportFactory<code>. */
+    private static final I18nSupport.Factory defaultFactory = new JavaI18nSupport.Factory();
 
-    /** Maps dataobject class to i18n support class. */
+    /** Maps data object class names to i18n support factory objects. */
     private static HashMap map = new HashMap(2);
 
     /** Registers factory to data object class. */
@@ -36,14 +41,16 @@ public class FactoryRegistry extends Object {
         map.put(dataObjectClassName, factory);
     }
 
-    /** Gets <code>I18nSupportFactory</code> for specified data object class. */
+    /** Gets <code>I18nSupportFactory</code> for specified data object class.
+     * @return registered factory for specified data object class name or default factory
+     * if no was registered */
     public static I18nSupport.Factory getFactory(String dataObjectClassName) {
         I18nSupport.Factory factory = (I18nSupport.Factory)map.get(dataObjectClassName);
 
         if(factory == null)
             factory = defaultFactory;
 
-        return defaultFactory;
+        return factory;
     }
 
     
