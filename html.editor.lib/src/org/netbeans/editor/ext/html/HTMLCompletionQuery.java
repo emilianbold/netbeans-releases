@@ -115,7 +115,7 @@ public class HTMLCompletionQuery implements CompletionQuery {
 
                 }
                 // end of smartcase deciding
-                inside = item.getOffset() <= offset;
+                inside = item.getOffset() < offset;
             } else {                           // @ end of document
                 prev = sup.getTokenChain( offset-1, offset ); //!!!
             }

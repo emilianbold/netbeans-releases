@@ -123,13 +123,13 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
 		int poss = -1; // how many the same tags is inside the mathed tag
                 
                 //test whether we are in a close tag
-		if (token.getTokenID().getNumericID() == HTMLTokenContext.TAG_CLOSE_ID) {
+		if (token.getTokenID() == HTMLTokenContext.TAG_CLOSE) {
                     //we are in a close tag
 		    String tag = token.getImage().trim().toLowerCase();
 		    while ( token != null){
 			if (isTag(token)) {
 			    if (token.getImage().trim().toLowerCase().equals(tag) &&
-                                token.getTokenID().getNumericID() == HTMLTokenContext.TAG_OPEN_ID){
+                                token.getTokenID() == HTMLTokenContext.TAG_OPEN){
                                 //it's an open tag
 				if (poss == 0){  
                                     //get offset of previous token: < or </
@@ -167,7 +167,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
 		    while ( token != null){
 			if (isTag(token)) {
                             if (token.getImage().trim().toLowerCase().equals(tag) &&
-                                token.getTokenID().getNumericID() == HTMLTokenContext.TAG_CLOSE_ID){
+                                token.getTokenID() == HTMLTokenContext.TAG_CLOSE){
 				if (poss == 0) {
                                     //get offset of previous token: < or </
 				    start = token.getPrevious().getOffset();
@@ -251,7 +251,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         }
 
         if( isTag(item)) {
-            if( item.getTokenID().getNumericID() == HTMLTokenContext.TAG_OPEN_ID)  return getNextElement( item.getOffset() );  // TAGO/ETAGO // NOI18N
+            if( item.getTokenID() == HTMLTokenContext.TAG_OPEN)  return getNextElement( item.getOffset() );  // TAGO/ETAGO // NOI18N
             else {
                 do { 
                     item = item.getPrevious();
@@ -399,7 +399,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         }
 
         String text = item.getImage();
-        if( id.getNumericID() == HTMLTokenContext.TAG_CLOSE_ID) {
+        if( id == HTMLTokenContext.TAG_CLOSE) {
                 // endtag // NOI18N
                 String name = text;
                 item = item.getNext();
@@ -418,7 +418,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 }
             }
         
-        if( id.getNumericID() == HTMLTokenContext.TAG_OPEN_ID) {
+        if( id == HTMLTokenContext.TAG_OPEN) {
                 // starttag
                 String name = text;
                 ArrayList attrs = new ArrayList();
@@ -520,8 +520,8 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
     }
         
     public static boolean isTag(TokenItem ti) {
-        return (( ti.getTokenID().getNumericID() == HTMLTokenContext.TAG_OPEN_ID ) ||
-                ( ti.getTokenID().getNumericID() == HTMLTokenContext.TAG_CLOSE_ID ));
+        return (( ti.getTokenID() == HTMLTokenContext.TAG_OPEN ) ||
+                ( ti.getTokenID() == HTMLTokenContext.TAG_CLOSE ));
     }
     
 }
