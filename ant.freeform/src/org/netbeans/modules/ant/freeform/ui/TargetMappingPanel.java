@@ -656,7 +656,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
     }
     
     /* ProjectCustomizer.Panel init */
-    public void show(FreeformProject project, AntProjectHelper helper, ProjectCustomizer.ProjectModel model) {
+    public void show(FreeformProject project, AntProjectHelper helper, ProjectModel model) {
         if (!initialized) {
             FileObject as = FreeformProjectGenerator.getAntScript(helper, project.evaluator());
             List l = Util.getAntScriptTargetNames(as);
@@ -680,11 +680,11 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
     }
 
     /* ProjectCustomizer.Panel hide */
-    public void hide(FreeformProject project, AntProjectHelper helper, ProjectCustomizer.ProjectModel model) {
+    public void hide(FreeformProject project, AntProjectHelper helper, ProjectModel model) {
     }
     
     /* ProjectCustomizer.Panel save */
-    public void storeValues(FreeformProject project, AntProjectHelper helper, ProjectCustomizer.ProjectModel model) {
+    public void storeValues(FreeformProject project, AntProjectHelper helper, ProjectModel model) {
         if (!initialized) {
             return;
         }

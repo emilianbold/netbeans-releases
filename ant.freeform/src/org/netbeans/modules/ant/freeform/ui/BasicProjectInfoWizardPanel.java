@@ -94,9 +94,7 @@ public class BasicProjectInfoWizardPanel implements WizardDescriptor.Panel, Chan
     
     public void storeSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor)settings;        
-        wizardDescriptor.putProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_LOCATION, component.getProjectLocation());
         wizardDescriptor.putProperty(NewJ2SEFreeformProjectWizardIterator.PROP_ANT_SCRIPT, component.getAntScript());
-        wizardDescriptor.putProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_FOLDER, component.getProjectFolder());
         wizardDescriptor.putProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_NAME, component.getProjectName());
         wizardDescriptor.putProperty("NewProjectWizard_Title", null); //NOI18N
         wizardDescriptor.putProperty("setAsMain", component.getMainProject()); // NOI18N
@@ -105,7 +103,11 @@ public class BasicProjectInfoWizardPanel implements WizardDescriptor.Panel, Chan
             PropertyUtils.fixedPropertyProvider(
             Collections.singletonMap(FreeformProjectGenerator.PROP_PROJECT_LOCATION, component.getProjectLocation().getAbsolutePath()))});
 
-        wizardDescriptor.putProperty(NewJ2SEFreeformProjectWizardIterator.PROP_EVALUATOR, evaluator); // NOI18N
+        ProjectModel pm = (ProjectModel) wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_MODEL);
+        if (pm == null) {
+            pm = ProjectModel.createEmptyModel(component.getProjectLocation(), component.getProjectFolder(), evaluator);
+            wizardDescriptor.putProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_MODEL, pm);
+        }
     }
     
     public void stateChanged(ChangeEvent e) {
