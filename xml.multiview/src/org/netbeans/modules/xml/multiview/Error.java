@@ -13,8 +13,6 @@
 
 package org.netbeans.modules.xml.multiview;
 
-import org.netbeans.modules.xml.multiview.cookies.ErrorComponentContainer;
-
  /** Error.java
  *
  * Created on November 20, 2004, 12:27 PM
@@ -32,9 +30,9 @@ public class Error {
 
     private int errorType;
     private int severityLevel;
-    private String errorMessage, errorId;
+    private String errorMessage;
     private javax.swing.JComponent focusableComponent;
-    private ErrorComponentContainer errorContainer;
+    private ErrorLocation errorLocation;
     
     /*
     public Error(int errorType, String errorMessage, javax.swing.JComponent focusableComponent) {
@@ -59,16 +57,15 @@ public class Error {
         this.focusableComponent=focusableComponent;
     }  
     
-    public Error(int errorType, String errorMessage, ErrorComponentContainer errorContainer, String errorId) {
-        this(TYPE_WARNING,errorType, errorMessage, errorContainer, errorId);
+    public Error(int errorType, String errorMessage, ErrorLocation errorLocation) {
+        this(TYPE_WARNING,errorType, errorMessage, errorLocation);
     }   
     
-    public Error(int severityLevel, int errorType, String errorMessage, ErrorComponentContainer errorContainer, String errorId) {
+    public Error(int severityLevel, int errorType, String errorMessage, ErrorLocation errorLocation) {
         this.severityLevel=severityLevel;
         this.errorType=errorType;
         this.errorMessage=errorMessage;
-        this.errorContainer=errorContainer;
-        this.errorId=errorId;
+        this.errorLocation=errorLocation;
     }
 
     public int getSeverityLevel() {
@@ -87,16 +84,32 @@ public class Error {
         return focusableComponent;
     }
 
-    public ErrorComponentContainer getErrorComponentContainer() {
-        return errorContainer;
-    }
-    
-    public String getErrorId() {
-        return errorId;
+    public ErrorLocation getErrorLocation() {
+        return errorLocation;
     }
     
     public boolean isEditError() {
         return (focusableComponent!=null);
+    }
+    
+    /** Object that will enable to identify the place in section view where the error 
+     * should be fixed. This is intended to use in SectionView:validateView() method.
+     */
+    public static class ErrorLocation {
+        private Object key;
+        private String componentId;
+        
+        public ErrorLocation (Object key, String componentId) {
+            this.key=key;
+            this.componentId=componentId;
+        }
+        
+        public Object getKey() {
+            return key;
+        }
+        public String getComponentId() {
+            return componentId;
+        }
     }
     
 }

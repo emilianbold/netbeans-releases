@@ -15,7 +15,7 @@
 package org.netbeans.modules.xml.multiview.ui;
 
 import org.netbeans.modules.xml.multiview.Error;
-import org.netbeans.modules.xml.multiview.cookies.ErrorComponentContainer;
+import org.netbeans.modules.xml.multiview.cookies.ErrorLocator;
 import org.netbeans.modules.xml.multiview.cookies.LinkCookie;
 import org.openide.nodes.Node;
 
@@ -28,7 +28,7 @@ import java.awt.event.FocusListener;
 /**
  * @author mkuchtiak
  */
-public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel, ErrorComponentContainer {
+public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel, ErrorLocator {
 
     private SectionView sectionView;
     private String title;
@@ -263,7 +263,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     private javax.swing.JButton titleButton;
     // End of variables declaration//GEN-END:variables
     
-    public static abstract class CustomPanel extends javax.swing.JPanel implements LinkCookie, ErrorComponentContainer {
+    public static abstract class CustomPanel extends javax.swing.JPanel implements LinkCookie, ErrorLocator {
         private SectionView sectionView;
 
         private boolean localFocusListenerInitialized = false;

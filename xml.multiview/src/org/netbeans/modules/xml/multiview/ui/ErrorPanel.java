@@ -15,7 +15,7 @@ package org.netbeans.modules.xml.multiview.ui;
 
 import javax.swing.UIManager;
 import org.netbeans.modules.xml.multiview.Error;
-import org.netbeans.modules.xml.multiview.cookies.ErrorComponentContainer;
+//import org.netbeans.modules.xml.multiview.cookies.ErrorComponentContainer;
 
 /** ErrorPanel.java
  *
@@ -26,12 +26,11 @@ public class ErrorPanel extends javax.swing.JPanel {
     
     private Error error;
     private ErrorLabel errorLabel;
-    //private ErrorComponentContainer errorContainer;
     private String errorMessage;
     
     
     /** Creates new form ErrorPanel */
-    public ErrorPanel() {
+    public ErrorPanel(final ToolBarDesignEditor editor) {
         initComponents();
         
         errorLabel = new ErrorLabel();
@@ -39,14 +38,12 @@ public class ErrorPanel extends javax.swing.JPanel {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 Error error = getError();
                 if (error!=null) {
-                    ErrorComponentContainer errorCont = error.getErrorComponentContainer();
-                    if (errorCont!=null) {
-                        if (errorCont instanceof SectionPanel) {
-                            SectionPanel sectPanel = (SectionPanel)errorCont;
-                            if (sectPanel.getCustomPanel()==null) sectPanel.open();
-                            sectPanel.scroll();                   
-                        }
-                        javax.swing.JComponent errorComp = errorCont.getErrorComponent(error.getErrorId());
+                    Error.ErrorLocation errorLocation = error.getErrorLocation();
+                    if (errorLocation!=null) {
+                        SectionPanel sectPanel = ((SectionView)editor.getContentView()).findSectionPanel(errorLocation.getKey());
+                        if (sectPanel.getCustomPanel()==null) sectPanel.open();
+                        sectPanel.scroll();
+                        javax.swing.JComponent errorComp = sectPanel.getErrorComponent(errorLocation.getComponentId());
                         if (errorComp!=null) errorComp.requestFocus();
                     }
                 }

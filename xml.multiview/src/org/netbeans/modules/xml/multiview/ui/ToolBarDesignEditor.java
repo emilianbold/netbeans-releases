@@ -91,7 +91,7 @@ public class ToolBarDesignEditor extends AbstractDesignEditor implements org.ope
     }
     
     private ErrorPanel createErrorPanel() {
-        errorPanel = new ErrorPanel();
+        errorPanel = new ErrorPanel(this);
         return errorPanel;
     }
     
