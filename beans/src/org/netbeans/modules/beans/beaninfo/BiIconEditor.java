@@ -242,18 +242,24 @@ class BiIconEditor extends PropertyEditorSupport {
             c.anchor = GridBagConstraints.WEST;
             
             p2.add(rbClasspath = new JRadioButton(bundle.getString("CTL_Classpath")));
+            rbClasspath.setToolTipText(bundle.getString("ACS_ClasspathA11yDesc"));
+            rbClasspath.setMnemonic(bundle.getString("CTL_Classpath_Mnemonic").charAt(0));
             c.gridwidth = 1;
             l.setConstraints(rbClasspath, c);
             
             p2.add(lab = new JLabel(bundle.getString("CTL_ClasspathExample")));
+            lab.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_ClasspathExampleA11yDesc"));
             c.gridwidth = GridBagConstraints.REMAINDER;
             l.setConstraints(lab, c);
             
             p2.add(rbNoPicture = new JRadioButton(bundle.getString("CTL_NoPicture")));
+            rbNoPicture.setToolTipText(bundle.getString("ACS_NoPictureA11yDesc"));
+            rbNoPicture.setMnemonic(bundle.getString("CTL_NoPicture_Mnemonic").charAt(0));
             c.gridwidth = 1;
             l.setConstraints(rbNoPicture, c);
             
             p2.add(lab = new JLabel(bundle.getString("CTL_Null")));
+            lab.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_NullA11yDesc"));
             c.gridwidth = GridBagConstraints.REMAINDER;
             l.setConstraints(lab, c);
             
@@ -264,9 +270,17 @@ class BiIconEditor extends PropertyEditorSupport {
             p1.add(p2, "West"); // NOI18N
             p.add(p1, "North"); // NOI18N
             p1 = new JPanel(new BorderLayout(6, 6));
-            p1.add(new JLabel(bundle.getString("CTL_ImageSourceName")), "West");
+            JLabel nameLabel = new JLabel(bundle.getString("CTL_ImageSourceName"));
+            nameLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_ImageSourceNameA11yDesc"));
+            nameLabel.setDisplayedMnemonic(bundle.getString("CTL_ImageSourceName_Mnemonic").charAt(0));
+            p1.add(nameLabel, "West");
             p1.add(tfName = new JTextField(), "Center"); // NOI18N
+            nameLabel.setLabelFor(tfName);
+            tfName.getAccessibleContext().setAccessibleName(bundle.getString("ACS_ImageSourceNameTextFieldA11yName"));
+            tfName.setToolTipText(bundle.getString("ACS_ImageSourceNameTextFieldA11yDesc"));
             p1.add(bSelect = new JButton("..."), "East"); // NOI18N
+            bSelect.getAccessibleContext().setAccessibleName(bundle.getString("ACS_ImageSourceNameBrowseButtonA11yName"));
+            bSelect.setToolTipText(bundle.getString("ACS_ImageSourceNameBrowseButtonA11yDesc"));
             bSelect.setEnabled(false);
             p.add(p1, "South"); // NOI18N
             add(p, "North"); // NOI18N
