@@ -781,7 +781,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
                 
             } else {
                 
-                int i = displayName.indexOf ("[read only]"); 
+                int i = displayName.indexOf ("[r/o]"); 
                 if (i > 0) {
                     String nuName = "<html><font color='#555555'><i>" +
                         displayName.substring (0, i-1);
