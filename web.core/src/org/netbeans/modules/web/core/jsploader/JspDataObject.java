@@ -67,7 +67,6 @@ import org.openidex.nodes.looks.DefaultLook;
 import org.openidex.nodes.looks.CompositeLook;
 import org.netbeans.modules.web.core.WebExecSupport;
 
-import org.netbeans.modules.web.jsps.parserapi.*;
 /** Object that provides main functionality for internet data loader.
 *
 * @author Petr Jiricka
