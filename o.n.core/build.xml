@@ -65,7 +65,7 @@ Microsystems, Inc. All Rights Reserved.
         <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}" includeEmptyDirs="false">
             <fileset dir="release/system" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
         </copy>
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}" file="release/CREDITS.html"/>
+        <copy todir="${netbeans.dest.dir}" file="release/CREDITS.html"/>
         <fixcrlf srcdir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" eol="crlf">
             <include name="**/*.bat"/>
             <include name="**/*.cmd"/>
