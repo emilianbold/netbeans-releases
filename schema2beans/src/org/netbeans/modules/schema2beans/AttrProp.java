@@ -88,6 +88,7 @@ public class AttrProp implements BaseAttribute {
     
     private int 	enumMode;
 
+    private List extraData;
     //private GraphNode sourceGraphNode;
     
     //	The state values when the attribute is populated
@@ -358,6 +359,18 @@ public class AttrProp implements BaseAttribute {
     
     private void failed(String err) {
         throw new RuntimeException(Common.getMessage("ATTLISTParseError_msg", this.name, err));
+    }
+
+    public void addExtraData(Object data) {
+        if (extraData == null)
+            extraData = new ArrayList();
+        extraData.add(data);
+    }
+
+    public List getExtraData() {
+        if (extraData == null)
+            return Collections.EMPTY_LIST;
+        return extraData;
     }
     
     public String toString() {
