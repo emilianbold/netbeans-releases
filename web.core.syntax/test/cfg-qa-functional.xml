@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/web/core/syntax/JspColoringTest.class"/>
-		<!--include name="org/netbeans/test/web/core/syntax/CompletionTest.class"/-->
+		<include name="org/netbeans/test/web/core/syntax/CompletionTest.class"/>
             </patternset>
         </testset>
     </testbag>
