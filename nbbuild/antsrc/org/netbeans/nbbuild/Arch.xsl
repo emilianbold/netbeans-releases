@@ -14,11 +14,11 @@
     <xsl:template match="/">
         <html>
             <head>
-                <title>Arch Questions</title>
+                <title><xsl:value-of select="api-answers/@module" /> - NetBeans Architecture Questions</title>
             </head>
             <body>
             
-                <H1>Arch Answers for <xsl:value-of select="api-answers/@module" /><xsl:text> module</xsl:text></H1>
+                <H1>NetBeans Architecture Answers for <xsl:value-of select="api-answers/@module" /><xsl:text> module</xsl:text></H1>
                 
                 <xsl:variable name="qver" select="substring-before(substring-after(api-answers/api-questions/@version,'Revision: '),' $')" />
                 <xsl:variable name="aver" select="substring-before(substring-after(api-answers/@version,'Revision:'),' $')" />
