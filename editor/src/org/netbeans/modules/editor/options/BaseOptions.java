@@ -358,13 +358,16 @@ public class BaseOptions extends OptionSupport {
                 if (value instanceof Coloring) {
                     Coloring c = (Coloring)value;
                     Font font = c.getFont();
-                    if (font != null && font.getSize() == oldSize) {
+                    if (font != null && font.getSize() != size) {
                         font = font.deriveFont((float)size);
-                        entry.setValue(Coloring.changeFont(c, font));
+                        Coloring newColoring = new Coloring(font, c.getFontMode(),
+                            c.getForeColor(), c.getBackColor()); // this way due to bug in Coloring
+                        entry.setValue(newColoring);
                     }
                 }
             }
-            SettingsUtil.setColoringMap( getKitClass(), cm, false );
+            setColoringMap(cm);
+
             firePropertyChange(FONT_SIZE_PROP, null, null);
         }
     }
