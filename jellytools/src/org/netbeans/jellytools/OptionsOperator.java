@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -45,22 +45,16 @@ import org.netbeans.jemmy.operators.Operator;
 public class OptionsOperator extends NbDialogOperator {
 
     /** 
-     * Constant used for indication of project property definition level
+     * Constant used for indication of user property definition level
      * (first column after ">>").
      */
-    public static final int PROJECT_LEVEL = 2;
-
-    /** 
-     * Constant used for indication of user property definition level
-     * (second column after ">>").
-     */
-    public static final int USER_LEVEL = 3;
+    public static final int USER_LEVEL = 2;
 
     /** 
      * Constant used for indication of default property definition level
-     * (third column after ">>").
+     * (second column after ">>").
      */
-    public static final int DEFAULT_LEVEL = 4;
+    public static final int DEFAULT_LEVEL = 3;
 
     private static final Action invokeAction = new OptionsViewAction();
 
@@ -182,7 +176,7 @@ public class OptionsOperator extends NbDialogOperator {
     /**
      * Sets definition level for the option.
      * @param optionPath Path to the option in left (tree-like) column.
-     * @param level One of the PROJECT_LEVEL, USER_LEVEL or DEFAULT_LEVEL
+     * @param level One of the USER_LEVEL or DEFAULT_LEVEL
      */
     public void setLevel(String optionPath, final int level) {
         showLevels();
@@ -209,13 +203,11 @@ public class OptionsOperator extends NbDialogOperator {
     /**
      * Gets definition level for the option.
      * @param optionPath Path to the option in left (tree-like) column.
-     * @return level One of the PROJECT_LEVEL, USER_LEVEL or DEFAULT_LEVEL
+     * @return level One of the USER_LEVEL or DEFAULT_LEVEL
      */
     public int getLevel(String optionPath) {
         int row = selectOption(optionPath);
-        if       (getValue(row, PROJECT_LEVEL) == DEFINE_HERE) {
-            return PROJECT_LEVEL;
-        } else if(getValue(row, USER_LEVEL)    == DEFINE_HERE) {
+        if(getValue(row, USER_LEVEL) == DEFINE_HERE) {
             return USER_LEVEL;
         } else if(getValue(row, DEFAULT_LEVEL) == DEFINE_HERE) {
             return DEFAULT_LEVEL;
@@ -223,13 +215,6 @@ public class OptionsOperator extends NbDialogOperator {
         return -1;
     }
     
-    /** Make an option to be difined on the project level.
-     * @param optionPath Path to the option in left (tree-like) column.
-     */
-    public void setProjectLevel(String optionPath) {
-        setLevel(optionPath, PROJECT_LEVEL);
-    }
-
     /** Make an option to be difined on the user level.
      * @param optionPath Path to the option in left (tree-like) column.
      */
@@ -252,9 +237,7 @@ public class OptionsOperator extends NbDialogOperator {
      * @param level level value
      */
     protected void setLevel(int row, int level) {
-        if       (level == PROJECT_LEVEL) {
-            defineHere(row, level);
-        } else if(level == USER_LEVEL) {
+        if(level == USER_LEVEL) {
             defineHere(row, level);
         } else if(level == DEFAULT_LEVEL) {
             revertLevel(row, level);

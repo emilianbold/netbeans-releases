@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -33,7 +33,6 @@ import org.netbeans.jemmy.operators.JTabbedPaneOperator;
  * <pre>
  *      OutputOperator oo = new OutputOperator();
  *      System.out.println("TEXT from active term="+oo.getText().substring(0, 10));
- *      System.out.println("Compiler messages="+oo.getCompilerTerm().getText()+"\n");
  *      // get TermOperator instance
  *      TermOperator to1 = oo.getActiveTerm();
  *      TermOperator to2 = oo.getTerm("MyTerm");
@@ -128,17 +127,6 @@ public class OutputOperator extends TopComponentOperator {
     }
     
     /**
-     * Selects "Compiler" page.
-     *
-     * @deprecated Use {@link #getCompilerTerm} if you need compiler
-     * {@link TermOperator}. If there is the only output term there is no
-     * tabbed pane and method selectCompilerPage can fail.
-     */
-    public void selectCompilerPage()  {
-        selectPage(Bundle.getString("org.netbeans.core.compiler.Bundle", "CTL_CompileTab"));
-    }
-    
-    /**
      * Returns instance of TermOperator of given name.
      * It is activated by default.
      * @param termName name of term to be selected
@@ -146,14 +134,6 @@ public class OutputOperator extends TopComponentOperator {
      */
     public TermOperator getTerm(String termName) {
         return new TermOperator(termName);
-    }
-    
-    /** Returns instance of Compiler TermOperator.
-     * It is activated by default.
-     * @return instance of TermOperator
-     */
-    public TermOperator getCompilerTerm() {
-        return getTerm(Bundle.getString("org.netbeans.core.compiler.Bundle", "CTL_CompileTab"));
     }
     
     /**
