@@ -28,17 +28,17 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
         super(testName);
     }
 
-    public void testOpenDataProject() {
+    public void openDataProject() {
         ProjectSupport.openProject(System.getProperty("xtest.data")+"/PerformanceTestData");
         ProjectSupport.waitScanFinished();
     }
 
-    public void testOpenWebProject() {
+    public void openWebProject() {
         ProjectSupport.openProject(System.getProperty("xtest.data")+"/PerformanceTestWebApplication");
         ProjectSupport.waitScanFinished();
     }
     
-    public void testOpenFoldersProject() {
+    public void openFoldersProject() {
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/PerformanceTestFoldersData");
         ProjectSupport.waitScanFinished();
     }
@@ -46,28 +46,28 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
     /** 
      * Close Welcome. 
      */
-    public void testCloseWelcome(){
+    public void closeWelcome(){
         new TopComponentOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title")).close();
     }
     
     /** 
      * Close BluePrints. 
      */
-    public void testCloseBluePrints(){
+    public void closeBluePrints(){
         new TopComponentOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.blueprints.Bundle","LBL_Tab_Title")).close();
     }
     
     /** 
      * Close All Documents. 
      */
-    public void testCloseAllDocuments(){
+    public void closeAllDocuments(){
         new CloseAllDocumentsAction().perform();
     }
     
     /** 
      * Close Memory Toolbar. 
      */
-    public void testCloseMemoryToolbar(){
+    public void closeMemoryToolbar(){
         String MENU = 
             org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
             org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +

@@ -32,15 +32,15 @@ public class MeasuringSetup extends NbTestSuite {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite");
         
-        suite.addTest(new IDESetupTest("testCloseMemoryToolbar"));
+        suite.addTest(new IDESetupTest("closeMemoryToolbar"));
         
-        // replaced by close all documents suite.addTest(new gui.setup.IDESetupTest("testCloseWelcome"));
-        // replaced by close all documents suite.addTest(new gui.setup.IDESetupTest("testCloseBluePrints"));
-        suite.addTest(new IDESetupTest("testCloseAllDocuments"));
+        // replaced by close all documents suite.addTest(new gui.setup.IDESetupTest("closeWelcome"));
+        // replaced by close all documents suite.addTest(new gui.setup.IDESetupTest("closeBluePrints"));
+        suite.addTest(new IDESetupTest("closeAllDocuments"));
         
-        suite.addTest(new IDESetupTest("testOpenFoldersProject"));
-        suite.addTest(new IDESetupTest("testOpenDataProject"));
-        suite.addTest(new IDESetupTest("testOpenWebProject"));
+        suite.addTest(new IDESetupTest("openFoldersProject"));
+        suite.addTest(new IDESetupTest("openDataProject"));
+        suite.addTest(new IDESetupTest("openWebProject"));
 
         return suite;
     }
