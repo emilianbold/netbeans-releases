@@ -1,7 +1,7 @@
 /*
 ==========================================================
-CSS for new NetBeans web site
-REeport problem to marek.vinar@sun.com
+CSS for NetBeans web site
+Reeport problems to marek.vinar@sun.com
 ==========================================================
 
 ==========================================================
@@ -18,14 +18,10 @@ COLORS (bgcolor / font-color)
 - h2-h4,.h2-.h4,titlec : ? / #bf6212
 - .code : #ffe8bc / ?
 
-
 FONT supported sizes: 130%, 125%, 110%, 100%, 85%, 10pt, 75%, 60% (default is 10pt)
 SUPPORTED FONTS : Verdana, sans-serif, helvetica, arial
 =============================================================
-
 */
-
-
 
 body	{
 	font-family: Verdana, sans-serif, helvetica, arial;
@@ -42,19 +38,17 @@ td	{
 	font-family: Verdana, sans-serif, helvetica, arial;
 	}
 
-
-
 h1 {font-size: 17px; font-weight : bold; color: #080c77; line-height: 35px; border-right-color: #ffffff; border-left-color: #ffffff; border-bottom-color: #ff9843; border-top-color: #ff9843; border-width: 1px; border-style: solid;}
 h2 {font-size: 15px; font-weight: bold; color: #ee6d06; }
 h3 {font-size: 13px; font-weight: bold; color: #ee6d06; }
 h4 {font-size: 12px; font-weight: normal; color: #ee6d06; }
 h5,h6 {font-size: 11px%; font-weight: normal; color: #ee6d06; }
 
-
 .h1 {font-size: 17px; font-weight : bold; color: #ee6d06;}
 .h2 {font-size: 15px; font-weight: bold; color: #ee6d06; }
 .h3 {font-size: 13px; font-weight: bold; color: #ee6d06; }
 .h4 {font-size: 12px; font-weight: normal; color: #ee6d06; }
+
 .smalltextbase {
 	font-family: Verdana, sans-serif, helvetica, arial;
 	font-size: 10px;
@@ -71,30 +65,20 @@ h5,h6 {font-size: 11px%; font-weight: normal; color: #ee6d06; }
 	line-height: 1.2em;
 	}
 
-/*
-textarea {
-		width: 500px;
-		}	
-*/
-a:link {
+a:link, a:visited {
   color: #0E0E76;
   font-weight : bold;
   text-decoration: none;
 }
 
-a:visited {
-  color: #0E0E76;
-  font-weight : bold;
-  text-decoration: none;
-}
-
-a:hover {
+a:link:hover, a:visited:hover  {
   color: #080c77;
   font-weight : bold;
   text-decoration : underline;
 }
 
-
+/* Interesting Trick : add envelope icon in front of mailto links
+a[href^="mailto:"]:before { content: "\2709    " } */
 
 /* NAVIGATION TOP */
 
@@ -104,7 +88,7 @@ a:hover {
 			font-size: 12px;
 			font-weight : bold;
 			text-decoration : none;
-			}	
+			}
 
 .bgtopmenucur {
                        background-color: #fbf3e1;
@@ -116,7 +100,7 @@ a:hover {
 			font-size: 12px;
 			font-weight : bold;
 			text-decoration : none;
-			}				
+			}
 .bgtopmenu {
                        background-color: #000069;
               		}
@@ -142,7 +126,7 @@ a.tops       {
   line-height: 1.8em;
   background-color: #f6dcac;
   }
-	
+
 .leftmenu	{
   font-family: Verdana, sans-serif, helvetica, arial;
   font-size: 10px;
@@ -178,9 +162,9 @@ a.leftmenu	{
         background-repeat: no-repeat;
 	font-size: 10px;
 	line-height: 1.2em;
-        font-weight : bold; 
+        font-weight : bold;
         color: #080c77;
-        
+
 		}
 
 .plaginon 	{
@@ -188,9 +172,9 @@ a.leftmenu	{
         background-repeat: no-repeat;
 	font-size: 10px;
 	line-height: 1.2em;
-        font-weight : bold; 
+        font-weight : bold;
         color: #ffffff;
-        
+
 		}
 
 
@@ -211,8 +195,8 @@ dt {font-weight: bold}
 dd {margin-left: 1.5em}
 
 /* --- IMPORT FOR JAVADOC -- */
-/* this part of css is automaticaly exported to file nb_special.css 
-if you need make some changes please edit into netbeans.css*/ 
+/* this part of css is automaticaly exported to file nb_special.css
+if you need make some changes please edit into netbeans.css*/
 
 /* TABLE STYLES */
 
@@ -251,7 +235,7 @@ if you need make some changes please edit into netbeans.css*/
   font-weight: bold;
 	color: #000000;
 	}
-	
+
 /* END TABLES */
 
 .titlec	{
@@ -305,7 +289,7 @@ if you need make some changes please edit into netbeans.css*/
   }
 
 /* --- END IMPORT FOR JAVADOC -- */
-  
+
 /* Collab css*/
 
 leftnav1, .Footer, .footer1    {
@@ -663,7 +647,7 @@ A.Crumbing:hover, A.FooterNav:active, A.FooterNav:hover, A.FooterTextLink  {
 	font-weight : normal;
 	color : #99ccff;
 }
-	  
+
 	.navtablebg {
 	background-color : #669;
 }
