@@ -198,9 +198,6 @@ public class TargetExecutor implements Runnable {
             LifecycleManager.getDefault ().saveAll ();
         }
         
-        // see the method body for description of this workaround
-        regexpLibraryWorkaroundForAnt151();
-        
         //PrintStream out = new PrintStream (new OutputWriterOutputStream (io.getOut ()));
         PrintStream err;
         if (outputStream == null) {
@@ -220,23 +217,4 @@ public class TargetExecutor implements Runnable {
                                           out, err, properties, verbosity, outputStream == null);
     }
 
-    // See #29245 for more details. Relevant only for Ant 1.5.1
-    // It checks for presence of misc regexp classes and if some is found
-    // and system property "ant.regexp.regexpimpl" is not set then it
-    // sets this property. 
-    private boolean workarounded = false;
-    private void regexpLibraryWorkaroundForAnt151() {
-        if (workarounded) {
-            return;
-        } else {
-            workarounded = true;
-        }
-        if (System.getProperty("ant.regexp.regexpimpl") != null) {
-            return;
-        }
-        
-        // We use JDK 1.4 -> this will be available.
-        System.setProperty("ant.regexp.regexpimpl", "org.apache.tools.ant.util.regexp.Jdk14RegexpRegexp");
-   }
-    
 }
