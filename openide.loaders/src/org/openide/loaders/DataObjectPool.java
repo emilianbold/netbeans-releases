@@ -918,7 +918,11 @@ implements ChangeListener {
     /** Validator to allow rescan of files.
     */
     private static final class Validator extends Object
-        implements DataLoader.RecognizedFiles {
+    implements DataLoader.RecognizedFiles {
+        /** error manager to log what is happening here */
+        private static final ErrorManager err = ErrorManager.getDefault().getInstance("org.openide.loaders.DataObject.Validator"); // NOI18N
+        private static final boolean errLog = err.isLoggable(err.INFORMATIONAL);
+        
         /** set of all files that should be revalidated (FileObject) */
         private Set files;
         /** current thread that is in the validator */
@@ -941,10 +945,20 @@ implements ChangeListener {
         * @return the set of files concatenated with any previous sets
         */
         private synchronized Set enter (Set set) {
+            boolean log = err.isLoggable (err.INFORMATIONAL);
+            if (log) {
+                err.log ("enter: " + set + " on thread: " + Thread.currentThread ()); // NOI18N
+            }
             if (current == Thread.currentThread ()) {
                 reenterCount++;
+                if (log) {
+                    err.log ("current thread, rentered: " + reenterCount); // NOI18N
+                }
             } else {
                 waiters++;
+                if (log) {
+                    err.log ("Waiting as waiter: " + waiters); // NOI18N
+                }
                 while (current != null) {
                     try {
                         wait ();
@@ -953,12 +967,22 @@ implements ChangeListener {
                 }
                 current = Thread.currentThread ();
                 waiters--;
+                if (log) {
+                    err.log ("Wait finished, waiters: " + waiters + " new current: " + current); // NOI18N
+                }
             }
             
             if (files == null) {
+                if (log) {
+                    err.log ("New files: " + set); // NOI18N
+                }
                 files = set;
             } else {
                 files.addAll (set);
+                if (log) {
+                    err.log ("Added files: " + set); // NOI18N
+                    err.log ("So they are: " + files); // NOI18N
+                }
             }
 
             return files;
@@ -967,14 +991,21 @@ implements ChangeListener {
         /** Leaves the critical section.
         */
         private synchronized void exit () {
+            boolean log = err.isLoggable (err.INFORMATIONAL);
             if (reenterCount == 0) {
                 current = null;
                 if (waiters == 0) {
                     files = null;
                 }
                 notify ();
+                if (log) {
+                    err.log ("Exit and notify from " + Thread.currentThread ()); // NOI18N
+                }
             } else {
                 reenterCount--;
+                if (log) {
+                    err.log ("Exit reentrant: " + reenterCount); // NOI18N
+                }
             }
         }
 
@@ -1057,6 +1088,7 @@ implements ChangeListener {
             // holds all created object, so they are not garbage
             // collected till this method ends
             LinkedList createObjects = new LinkedList ();
+            boolean log = err.isLoggable (err.INFORMATIONAL);
             try {
                 
                 s = enter (s);
@@ -1070,12 +1102,19 @@ implements ChangeListener {
                 while (it.hasNext () && goOn ()) {
                     try {
                         FileObject fo = (FileObject)it.next ();
+                        if (log) {
+                            err.log ("Iterate: " + fo); // NOI18N
+                        }
+                        
                         if (!recognizedFiles.contains (fo)) {
                             // first of all test if the file is on a valid filesystem
                             boolean invalidate = false;
 
                             // the previous data object should be canceled
                             DataObject orig = getPOOL().find (fo);
+                            if (log) {
+                                err.log ("Original: " + orig); // NOI18N
+                            }
                             if (orig == null) {
                                 // go on
                                 continue;
@@ -1090,11 +1129,17 @@ implements ChangeListener {
                             invalidate = obj != orig;
 
                             if (invalidate) {
+                                if (log) {
+                                    err.log ("Invalidate: " + obj); // NOI18N
+                                }
                                 it.remove();                                
                                 try {
                                     orig.setValid (false);
                                 } catch (java.beans.PropertyVetoException ex) {
                                     refusingObjects.add (orig);
+                                    if (log) {
+                                        err.log ("  Refusing: " + orig); // NOI18N
+                                    }
                                 }
                             }
                         }
@@ -1114,6 +1159,10 @@ implements ChangeListener {
                         //[catch] at org.openide.util.RequestProcessor$Processor.run(RequestProcessor.java:635)
                         // is to ignore the exception and continue
                         it = s.iterator();
+                        if (log) {
+                            err.notify (err.INFORMATIONAL, cme);
+                            err.log ("New iterator over: " + s); // NOI18N
+                        }
                     }
                 }
                 return refusingObjects;
@@ -1124,6 +1173,9 @@ implements ChangeListener {
 
                 exit ();
 
+                if (log) {
+                    err.log ("will do refreshAllFolders: "+ s.size ()); // NOI18N
+                }
                 if ( s.size() > 1 )
                     getPOOL().refreshAllFolders ();
             }
