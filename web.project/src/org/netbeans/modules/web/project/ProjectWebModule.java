@@ -32,6 +32,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
+import org.openide.filesystems.FileUtil;
 import org.xml.sax.SAXException;
 
 /** A web module implementation on top of project.
@@ -89,7 +90,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     public FileObject getArchive () {
-        return getFile ("dist.jar"); //NOI18N
+        return getFile ("dist.war"); //NOI18N
     }
     
     private FileObject getFile(String propname) {
@@ -126,7 +127,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     public Iterator getArchiveContents () throws java.io.IOException {
-        return new IT (getDocumentBase ());
+        return new IT (getContentDirectory ());
     }
 
     public FileObject getContentDirectory() throws java.io.IOException {
@@ -257,9 +258,11 @@ public final class ProjectWebModule extends J2eeModuleProvider
     
     private static class IT implements Iterator {
         java.util.Enumeration ch;
+        FileObject root;
         
         private IT (FileObject f) {
             this.ch = f.getChildren (true);
+            this.root = f;
         }
         
         public boolean hasNext () {
@@ -268,7 +271,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         
         public Object next () {
             FileObject f = (FileObject) ch.nextElement ();
-            return new FSRootRE (f);
+            return new FSRootRE (root, f);
         }
         
         public void remove () {
@@ -279,8 +282,11 @@ public final class ProjectWebModule extends J2eeModuleProvider
 
     private static final class FSRootRE implements J2eeModule.RootedEntry {
         FileObject f;
-        FSRootRE (FileObject f) {
+        FileObject root;
+        
+        FSRootRE (FileObject root, FileObject f) {
             this.f = f;
+            this.root = root;
         }
         
         public FileObject getFileObject () {
@@ -288,7 +294,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         }
         
         public String getRelativePath () {
-            return f.getPath ();
+            return FileUtil.getRelativePath (root, f);
         }
     }
 }
