@@ -4,6 +4,7 @@ Build Popup Menu [build-popup-menu]:
 Build Tool Tip [build-tool-tip]: 
 Copy [copy-to-clipboard]: Ctrl+C Ctrl+Insert Copy 
 Cut [cut-to-clipboard]: Shift+Delete Ctrl+X Cut 
+Declaration [goto-declaration]: Alt+G 
 Default Typed [default-typed]: 
 Delete Line [remove-line]: Ctrl+E 
 Delete Next Character [delete-next]: Delete 
@@ -35,7 +36,6 @@ Find Next Occurrence [find-next]: F3
 Find Previous Occurrence [find-previous]: Shift+F3 
 Find Selection [find-selection]: Ctrl+F3 
 Find [find]: Ctrl+F Find 
-Go to Declaration [goto-declaration]: Alt+G 
 Go to First Non-whitespace Char [first-non-white]: 
 Go to Last Non-whitespace Char [last-non-white]: 
 Go to Line [goto]: Ctrl+G 

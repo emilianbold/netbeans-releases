@@ -13,6 +13,7 @@
 
 package org.netbeans.test.editor.suites.focus;
 
+import java.awt.*;
 import java.awt.Robot;
 import java.awt.event.KeyEvent;
 import java.io.*;
@@ -219,8 +220,8 @@ public class FocusTestPerformer extends JellyTestCase {
             }
             log("testGoToLine flush results:");
             flushResult();
-        } catch (Exception ex) {
-            assertTrue("Exception "+ex.getClass().getName()+": "+ex.getMessage(),false);
+        } catch (AWTException ex) {
+            assertTrue("Robot couldn't be created: AWTException "+ex.getClass().getName()+": "+ex.getMessage(),false);
         } finally {
             log("testGoToLine closing editor:");
             finishEditor();
@@ -253,8 +254,8 @@ public class FocusTestPerformer extends JellyTestCase {
             }
             log("testFind flush results:");
             flushResult();
-        } catch (Exception ex) {
-            assertTrue("Exception "+ex.getClass().getName()+": "+ex.getMessage(),false);
+        } catch (AWTException ex) {
+            assertTrue("Robot couldn't be created: AWTException "+ex.getClass().getName()+": "+ex.getMessage(),false);
         } finally {
             log("testFind closing editor:");
             finishEditor();
@@ -293,8 +294,8 @@ public class FocusTestPerformer extends JellyTestCase {
                 robot.delay(500);
             }
             flushResult();
-        } catch (Exception ex) {
-            assertTrue("Exception "+ex.getClass().getName()+": "+ex.getMessage(),false);
+        } catch (AWTException ex) {
+            assertTrue("Robot couldn't be created: AWTException "+ex.getClass().getName()+": "+ex.getMessage(),false);
         } finally {
             log("TabsSwitching closing editor:");
             finishEditor();
