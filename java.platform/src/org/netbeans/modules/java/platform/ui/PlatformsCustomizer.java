@@ -116,7 +116,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        platforms = new org.openide.explorer.view.BeanTreeView ();
+        platforms = new PlatformsView ();
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
@@ -368,6 +368,16 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     // End of variables declaration//GEN-END:variables
 
     
+    private static class PlatformsView extends BeanTreeView {
+        
+        public PlatformsView () {
+            super ();
+            this.tree.setEditable(false);
+            this.tree.setShowsRootHandles(false);
+        }
+        
+    }
+    
     private static class PlatformCategoriesDescriptor implements Comparable {
         private final String categoryName;
         private final List/*<Node>*/ platforms;
@@ -439,11 +449,12 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     private static class PlatformCategoryNode extends AbstractNode {
         
         private final PlatformCategoriesDescriptor desc;
+        private Node iconDelegate;
         
         public PlatformCategoryNode (PlatformCategoriesDescriptor desc) {
             super (new PlatformsChildren (desc.getPlatform()));
-            this.desc = desc;
-            this.setIconBase("org/netbeans/modules/java/platform/resources/platformList"); //NOI18N
+            this.desc = desc;            
+            this.iconDelegate = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
         }
         
         public String getName () {
@@ -453,6 +464,14 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         public String getDisplayName () {
             return this.getName ();
         }
+        
+        public Image getIcon(int type) {
+            return this.iconDelegate.getIcon(type);
+        }        
+        
+        public Image getOpenedIcon(int type) {
+            return this.iconDelegate.getOpenedIcon (type);
+        }                        
         
     }
     
