@@ -16,7 +16,6 @@ package org.netbeans.modules.debugger.jpda.ui;
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.viewmodel.NoInformationException;
 
 import java.beans.PropertyChangeEvent;
 import java.util.*;
@@ -32,13 +31,14 @@ import java.util.regex.Matcher;
 public class BreakpointOutput extends LazyActionsManagerListener
         implements DebuggerManagerListener, JPDABreakpointListener {
 
+    private static final Pattern dollarEscapePattern = Pattern.compile("\\$");
+    private static final Pattern backslashEscapePattern = Pattern.compile("\\\\");
     private static final Pattern threadNamePattern = Pattern.compile("\\{threadName\\}");
     private static final Pattern classNamePattern = Pattern.compile("\\{className\\}");
     private static final Pattern methodNamePattern = Pattern.compile("\\{methodName\\}");
     private static final Pattern lineNumberPattern = Pattern.compile("\\{lineNumber\\}");
     private static final Pattern expressionPattern = Pattern.compile("\\{=(.*?)\\}");
 
-    private DebuggerEngine          engine;
     private IOManager               ioManager;
     private JPDADebugger            debugger;
     private ContextProvider         contextProvider;
@@ -46,7 +46,6 @@ public class BreakpointOutput extends LazyActionsManagerListener
     
     public BreakpointOutput (ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
-        this.engine = (DebuggerEngine) contextProvider.lookupFirst (null, DebuggerEngine.class);
         this.debugger = (JPDADebugger) contextProvider.lookupFirst (null, JPDADebugger.class);
         hookBreakpoints();
         DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_BREAKPOINTS, this);
@@ -63,7 +62,6 @@ public class BreakpointOutput extends LazyActionsManagerListener
     protected void destroy() {
         DebuggerManager.getDebuggerManager().removeDebuggerListener(DebuggerManager.PROP_BREAKPOINTS, this);
         unhookBreakpoints();
-        engine = null;
         ioManager = null;
         debugger = null;
     }
@@ -87,7 +85,6 @@ public class BreakpointOutput extends LazyActionsManagerListener
         if (printText == null || printText.length() == 0) return;
         try {
             printText = substitute(printText, event);
-        } catch (NoInformationException e) {
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -103,19 +100,20 @@ public class BreakpointOutput extends LazyActionsManagerListener
      * @param printText
      * @return
      */
-    private String substitute(String printText, JPDABreakpointEvent event) 
-    throws NoInformationException {
+    private String substitute(String printText, JPDABreakpointEvent event) {
         JPDAThread t = event.getThread ();
-        if (t != null)
-            printText = threadNamePattern.matcher (printText).replaceAll 
-                (t.getName ());
+        if (t != null) {
+            String name = backslashEscapePattern.matcher(t.getName()).replaceAll("\\\\\\\\");
+            name = dollarEscapePattern.matcher(name).replaceAll("\\\\\\$");
+            printText = threadNamePattern.matcher(printText).replaceAll(name);
+        }
         else
-            printText = threadNamePattern.matcher (printText).replaceAll ("?");
+            printText = threadNamePattern.matcher(printText).replaceAll ("?");
         
-        if (event.getReferenceType () != null)
-            printText = classNamePattern.matcher (printText).replaceAll 
-                (event.getReferenceType ().name ());
-        else
+        if (event.getReferenceType () != null) {
+            String name = dollarEscapePattern.matcher(event.getReferenceType().name()).replaceAll("\\\\\\$");
+            printText = classNamePattern.matcher (printText).replaceAll(name);
+        } else
             printText = classNamePattern.matcher (printText).replaceAll ("?");
 
         String language = DebuggerManager.getDebuggerManager ().
@@ -140,6 +138,8 @@ public class BreakpointOutput extends LazyActionsManagerListener
             String value = "";
             try {
                 value = debugger.evaluate(expression).getValue();
+                value = backslashEscapePattern.matcher(value).replaceAll("\\\\\\\\");
+                value = dollarEscapePattern.matcher(value).replaceAll("\\\\\\$");
             } catch (InvalidExpressionException e) {
                 // expression is invalid or cannot be evaluated
                 String msg = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
