@@ -709,9 +709,14 @@ public final class NbErrorManager extends ErrorManager {
             }            
             
             // ok, print trace of the original exception too
-            //t.printStackTrace(pw);
             // Attempt to show an annotation indicating where the exception
             // was caught. Not 100% reliable but often helpful.
+            if (t instanceof VirtualMachineError) {
+                // Decomposition may not work here, e.g. for StackOverflowError.
+                // Play it safe.
+                t.printStackTrace(pw);
+            } else {
+            // All other kinds of throwables we check for a stack trace.
             String[] tLines = decompose (t);
             String[] hereLines = decompose (new Throwable ());
             int idx = -1;
@@ -733,6 +738,7 @@ public final class NbErrorManager extends ErrorManager {
                 }
                 pw.println (tLines[i]);
             }
+            }
             /*Nested annotations */            
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i] == null) continue;
@@ -749,6 +755,8 @@ public final class NbErrorManager extends ErrorManager {
 
         /** Get a throwable's stack trace, decomposed into individual lines. */
         private  String[] decompose (Throwable t) {
+            // XXX using JDK 1.4's StackTraceElement[] Throwable.getStackTrace()
+            // might be much better...
             StringWriter sw = new StringWriter ();
             t.printStackTrace (new PrintWriter (sw));
             StringTokenizer tok = new StringTokenizer (sw.toString (), "\n\r"); // NOI18N
