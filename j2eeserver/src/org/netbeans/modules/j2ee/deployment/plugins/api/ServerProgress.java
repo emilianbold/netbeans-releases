@@ -75,7 +75,7 @@ public class ServerProgress implements ProgressObject {
     public void setStatusStopCompleted(String message) {
         notify(createCompletedProgressEvent(CommandType.STOP, message)); 
     }
-    protected void notify(ProgressEvent pe) {
+    protected synchronized void notify(ProgressEvent pe) {
         for (Iterator i=listeners.iterator(); i.hasNext();) {
             ProgressListener pol = (ProgressListener) i.next();
             pol.handleProgressEvent(pe);
@@ -112,6 +112,10 @@ public class ServerProgress implements ProgressObject {
         listeners.add(pol);
     }
     public synchronized void removeProgressListener(ProgressListener pol) {
+        /*for (Iterator i=listeners.iterator(); i.hasNext();) {
+            if(i.next().equals(pol))
+                i.remove();
+        }*/
         listeners.remove(pol);
     }
     

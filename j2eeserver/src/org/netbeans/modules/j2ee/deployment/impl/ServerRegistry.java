@@ -58,7 +58,7 @@ public final class ServerRegistry implements java.io.Serializable {
     private synchronized void init() {
         if (servers != null && instances != null)
             return;
-        long t0 = System.currentTimeMillis();
+        //long t0 = System.currentTimeMillis();
         servers = new HashMap();
         instances = new HashMap();
         Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
@@ -80,7 +80,7 @@ public final class ServerRegistry implements java.io.Serializable {
             addInstance(ch[i]);
             //System.out.println("ServerRegistry.addInstance("+ch[i]+")="+(System.currentTimeMillis()-t1));
         }
-        System.out.println("ServerRegistry.init="+(System.currentTimeMillis()-t0));
+        //System.out.println("ServerRegistry.init="+(System.currentTimeMillis()-t0));
     }
     private Map serversMap() {
         init();

@@ -16,6 +16,7 @@ package org.netbeans.modules.j2ee.deployment.impl.projects;
 import org.netbeans.modules.j2ee.deployment.execution.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.*;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.shared.ModuleType;
@@ -198,6 +199,9 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
     
     public DeploymentConfigurationProvider getDeploymentConfigurationProvider() {
         return deployment.getStorage ();
-    }    
+    }
     
+    public J2eeModuleProvider.ConfigSupport getConfigSupport() {
+        return deployment.getConfigSupport();
+    }
 }

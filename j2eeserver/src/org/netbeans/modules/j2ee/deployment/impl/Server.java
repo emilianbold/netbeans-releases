@@ -44,7 +44,7 @@ public class Server implements Node.Cookie {
     Lookup lkp;
     
     public Server(FileObject fo) throws Exception {
-        long t0 = System.currentTimeMillis();
+        //long t0 = System.currentTimeMillis();
         
         name = fo.getName();
         FileObject descriptor = fo.getFileObject("Descriptor");
@@ -83,7 +83,7 @@ public class Server implements Node.Cookie {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
-        System.out.println("Create plugin "+name+" in "+(System.currentTimeMillis() - t0));
+        //System.out.println("Create plugin "+name+" in "+(System.currentTimeMillis() - t0));
     }
     
     

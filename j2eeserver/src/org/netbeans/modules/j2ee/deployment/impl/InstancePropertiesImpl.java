@@ -118,4 +118,11 @@ public class InstancePropertiesImpl extends InstanceProperties implements Server
         ServerString ss = registry.getDefaultInstance();
         return ss.getUrl().equals(url);
     }
+    
+    public void refreshServerInstance() {
+        ServerRegistry registry = ServerRegistry.getInstance();
+        ServerInstance inst = registry.getServerInstance(url);
+        inst.reset();
+        inst.isRunning();
+    }
 }

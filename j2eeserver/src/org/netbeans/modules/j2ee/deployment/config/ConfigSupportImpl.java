@@ -45,8 +45,10 @@ public class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
     private void refresh () {
         server = deployment.getJ2eeProfileSettings().getServerString();
         WebContextRoot webContextRoot = server.getServer().getWebContextRoot();
-        webContextRootXpath = webContextRoot.getXpath();
-        webContextRootPropName = webContextRoot.getPropName();
+        if (webContextRoot != null) {
+            webContextRootXpath = webContextRoot.getXpath();
+            webContextRootPropName = webContextRoot.getPropName();
+        }
     }
     
     private DConfigBean getWebContextDConfigBean() {
@@ -64,7 +66,7 @@ public class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
             return configBeanRoot.getDConfigBean(ddBeans[0]);
             
         } catch (Exception e) {
-            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, e.getMessage());
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         return null;
     }
@@ -85,9 +87,12 @@ public class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
      */
     public String getWebContextRoot() {
         refresh ();
+        if (webContextRootXpath == null || webContextRootPropName == null)
+            return null;
+
         DConfigBean configBean = getWebContextDConfigBean();
         if (configBean == null) {
-            ErrorManager.getDefault ().log ("Configuration not found");
+            ErrorManager.getDefault ().log ("ConfigBean for "+webContextRootXpath+" not found"); //NOI18N
             return null;
         }
         return (String) ConfigUtils.getBeanPropertyValue(configBean, webContextRootPropName);
@@ -98,9 +103,12 @@ public class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
      */
     public void setWebContextRoot(String contextRoot) {
         refresh ();
+        if (webContextRootXpath == null || webContextRootPropName == null)
+            return;
+
         DConfigBean configBean = getWebContextDConfigBean();
         if (configBean == null) {
-            ErrorManager.getDefault ().log ("Configuration not found");
+            ErrorManager.getDefault ().log ("ConfigBean for "+webContextRootXpath+":"+webContextRootPropName+" not found"); //NOI18N
             return;
         }
         ConfigUtils.setBeanPropertyValue(configBean, webContextRootPropName, contextRoot);

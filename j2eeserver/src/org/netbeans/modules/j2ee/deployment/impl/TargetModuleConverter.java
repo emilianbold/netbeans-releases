@@ -37,6 +37,8 @@ public class TargetModuleConverter extends DOMConvertor {
     private static final String A_INSTANCE_URL = "instance-url";
     private static final String A_TARGET_NAME = "target-name";
     private static final String A_TIMESTAMP = "timestamp";
+    private static final String A_CONTENT_DIR = "content-dir";
+    private static final String A_CONTEXT_ROOT = "context-root";
     
     private Saver saver;
     
@@ -58,12 +60,14 @@ public class TargetModuleConverter extends DOMConvertor {
             String url = te.getAttribute(A_INSTANCE_URL);
             String targetName = te.getAttribute(A_TARGET_NAME);
             String timestamp = te.getAttribute(A_TIMESTAMP);
+            String contentDir = te.getAttribute(A_CONTENT_DIR);
+            String contextRoot = te.getAttribute(A_CONTEXT_ROOT);
 
             if (id == null || url == null || targetName == null)
                 throw new IOException(NbBundle.getMessage(TargetModuleConverter.class, "MSG_TargetModuleParseError"));
                 
             try {
-                targetModules[i] = new TargetModule(id, url, targetName, Long.parseLong(timestamp));
+                targetModules[i] = new TargetModule(id, url, targetName, Long.parseLong(timestamp), contentDir, contextRoot);
             } catch (NumberFormatException nfe) {
                 throw (IOException) ErrorManager.getDefault().annotate(new IOException(), nfe);
             }
@@ -88,6 +92,8 @@ public class TargetModuleConverter extends DOMConvertor {
             tmElement.setAttribute(A_INSTANCE_URL, targetModules[i].getInstanceUrl());
             tmElement.setAttribute(A_TARGET_NAME, targetModules[i].getTargetName());
             tmElement.setAttribute(A_TIMESTAMP, String.valueOf(targetModules[i].getTimestamp()));
+            tmElement.setAttribute(A_CONTENT_DIR, targetModules[i].getContentDirectory());
+            tmElement.setAttribute(A_CONTEXT_ROOT, targetModules[i].getContextRoot());
             element.appendChild (tmElement);
         }
     }

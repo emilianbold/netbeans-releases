@@ -95,7 +95,7 @@ public class InitialServerFileDistributor extends ServerProgress {
             
         } catch (Exception e) {
             setStatusDistributeFailed(e.getMessage());
-            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, e.getMessage());
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             if (!inPlace && !cleanup (dir)) {
                 setStatusDistributeFailed ("Failed to cleanup the data after unsucesful distribution");
             }
@@ -180,7 +180,6 @@ public class InitialServerFileDistributor extends ServerProgress {
             DeployableObject deployable = dcp.getDeployableObject(childModuleUri);
             
         } catch (Exception e) {
-            e.printStackTrace();
             String msg = NbBundle.getMessage(InitialServerFileDistributor.class, "MSG_IncrementalDeployFailed", e);
             setStatusDistributeFailed(msg);
             throw new RuntimeException(e);

@@ -46,7 +46,7 @@ public abstract class InstanceProperties {
     public static final String URL_ATTR = "url"; //NOI18N
     public static final String USERNAME_ATTR = "username"; //NOI18N
     public static final String PASSWORD_ATTR = "password"; //NOI18N
-    public static final String NAME_ATTR = "name"; //NOI18N
+    public static final String DISPLAY_NAME_ATTR = "displayName"; //NOI18N
 
     /**
      * Returns instance properties for the server instance

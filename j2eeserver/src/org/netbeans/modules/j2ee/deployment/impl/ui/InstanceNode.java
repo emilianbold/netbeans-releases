@@ -46,11 +46,11 @@ public class InstanceNode extends AbstractNode implements ServerInstance.Refresh
         instance.addRefreshListener(this);
     }
     
-    static javax.swing.Action[] runningActions;
-    static javax.swing.Action[] stoppedActions;
+    //static javax.swing.Action[] runningActions;
+    //static javax.swing.Action[] stoppedActions;
     static javax.swing.Action[] unknownActions;
     
-    private javax.swing.Action[] getRunningActions() {
+    /*private javax.swing.Action[] getRunningActions() {
         if (runningActions == null) {
             runningActions = new SystemAction[] {
                 SystemAction.get(StopServerAction.class),
@@ -67,11 +67,12 @@ public class InstanceNode extends AbstractNode implements ServerInstance.Refresh
             };
         }
         return stoppedActions;
-    }
+    }*/
     private javax.swing.Action[] getUnknownActions() {
         if (unknownActions == null) {
             unknownActions = new SystemAction[] {
                 SystemAction.get(ServerStatusAction.class),
+                SystemAction.get(RefreshAction.class),
                 SystemAction.get(RemoveInstanceAction.class)
             };
         }
@@ -106,8 +107,8 @@ public class InstanceNode extends AbstractNode implements ServerInstance.Refresh
     
     class Refresher implements RefreshAction.RefreshCookie {
         public void refresh() {
-            instance.refresh(false);
-            instance.isRunning();
+            instance.reset();
+            instance.refresh(instance.isRunning());
         }
     }
 

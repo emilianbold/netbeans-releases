@@ -23,9 +23,11 @@ import javax.enterprise.deploy.spi.status.*;
 import javax.enterprise.deploy.spi.exceptions.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressUI;
 import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
+import org.netbeans.modules.j2ee.deployment.execution.DeploymentConfigurationProvider;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 
@@ -40,7 +42,7 @@ import javax.enterprise.deploy.model.DeployableObject;
 /**
  * Encapsulates a set of ServerTarget(s), provides a wrapper for deployment
  * help.  This is a throw away object, that get created and used within
- * scope of a deployment execution only.
+ * scope of one deployment execution.
  *
  * Typical user are ServerExecutor and Debugger code, with the following general sequence:
  *
@@ -53,6 +55,8 @@ public class TargetServer {
     
     private static final long DISTRIBUTE_TIMEOUT = 120000;
     private static final long INCREMENTAL_TIMEOUT = 60000;
+    private static final long TIMEOUT = 60000;
+    private static final TargetModule[] EMPTY_TARGETMODULE_ARRAY = new TargetModule[0];
     
     private Target[] targets;
     private final ServerInstance instance;
@@ -60,10 +64,13 @@ public class TargetServer {
     private IncrementalDeployment incremental; //null value signifies don't do incremental
     private boolean debugMode = false;
     private Set deployedRootTMIDs = new HashSet(); // type TargetModule
-    private Set distributeTargets = new HashSet();
+    private Set undeployTMIDs = new HashSet(); // TMID
+    private Set distributeTargets = new HashSet(); //Target
     private TargetModule[] redeployTargetModules = null;
     private File application = null;
-    private StartEventHandler startEventHandler = null;
+    private File currentContentDir = null;
+    private String contextRoot = null;
+    private ProgressHandler startEventHandler = null;
     
     public TargetServer(DeploymentTarget target) {
         this.dtarget = target;
@@ -89,6 +96,20 @@ public class TargetServer {
             incremental = instance.getIncrementalDeployment();
             if (incremental != null && ! checkServiceImplementations())
                 incremental = null;
+        }
+
+        try {
+            FileObject contentFO = dtarget.getModule().getContentDirectory();
+            if (contentFO != null) {
+                currentContentDir = FileUtil.toFile(contentFO);
+            }
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+        }
+        
+        J2eeModuleProvider.ConfigSupport configSupport = dtarget.getConfigSupport();
+        if (configSupport != null) {
+            contextRoot = configSupport.getWebContextRoot();
         }
         
         processLastTargetModules();
@@ -148,15 +169,80 @@ public class TargetServer {
         return true;
     }
     
+    private boolean checkUndeployForChangedReferences(TargetModule[] targetModules) {
+        // PENDING: what are changed references for ejbmod, j2eeapp???
+        if (dtarget.getModule().getModuleType() != J2eeModule.WAR)
+            return false;
+
+        if (targetModules != null && targetModules.length > 0) {
+            File lastContentDir = new File(targetModules[0].getContentDirectory());
+            
+            if ((currentContentDir != null && ! currentContentDir.equals(lastContentDir)) ||
+                (contextRoot != null && ! contextRoot.equals(targetModules[0].getContextRoot()))) {
+
+                // content dir or context root changes since last deploy
+                undeployTMIDs.addAll(Arrays.asList(TargetModule.toTargetModuleID(targetModules)));
+                return true;
+            }
+        }
+
+        return false;
+    }
+    private TargetModuleID[] checkUndeployForSameReferences(Target[] targs) {
+        return checkUndeployForSameReferences(targs, null);
+    }
+    private TargetModuleID[] checkUndeployForSameReferences(Target[] targs, Map queryInfo) {
+        if (instance.getTargetModuleIDResolver() == null || contextRoot == null || targs.length < 1) 
+            return EMPTY_TARGETMODULE_ARRAY;
+        
+        // PENDING: what are changed references for ejbmod, j2eeapp???
+        if (queryInfo == null) {
+            queryInfo = new HashMap();
+            queryInfo.put(TargetModuleIDResolver.KEY_CONTEXT_ROOT, contextRoot);
+        }
+        TargetModuleID[] toUndeploy = instance.getTargetModuleIDResolver().lookupTargetModuleID(queryInfo, targs);
+        if (toUndeploy != null) {
+            undeployTMIDs.addAll(Arrays.asList(toUndeploy));
+            return toUndeploy;
+        }
+        return EMPTY_TARGETMODULE_ARRAY;
+    }
+
+    private void checkUndeployForSharedReferences() {
+        HashMap map = new HashMap();
+        Target[] targs = TargetModule.toTarget(redeployTargetModules);
+        
+        HashMap queryInfo = new HashMap();
+        queryInfo.put(TargetModuleIDResolver.KEY_CONTEXT_ROOT, contextRoot);
+        queryInfo.put(TargetModuleIDResolver.KEY_CONTENT_DIR, contextRoot);
+        TargetModuleID[] toUndeploy = checkUndeployForSameReferences(targs, queryInfo);
+
+        undeployTMIDs.addAll(Arrays.asList(toUndeploy));
+
+        Set toRedeploy = new HashSet(Arrays.asList(redeployTargetModules));
+        for (int i=0; i<toUndeploy.length; i++) {
+            toRedeploy.remove(new TargetModule(toUndeploy[i]));
+        }
+        
+        for (Iterator j=toRedeploy.iterator(); j.hasNext();) {
+            TargetModule deployed = (TargetModule) j.next();
+            distributeTargets.add(deployed.findTarget());
+        }
+        redeployTargetModules = (TargetModule[]) toRedeploy.toArray(new TargetModule[toRedeploy.size()]);
+    }
+    
     /**
      * Process last deployment TargetModuleID's for eligibility and oldest timestamp
      */
     private void processLastTargetModules() {
         TargetModule[] targetModules = dtarget.getTargetModules();
+
+        // new module
         if (targetModules == null || targetModules.length == 0) {
             for (int i=0; i<targets.length; i++) {
                 distributeTargets.add(targets[i]);
             }
+            checkUndeployForSameReferences(targets);
             return;
         }
         
@@ -217,6 +303,16 @@ public class TargetServer {
         }
         
         redeployTargetModules = (TargetModule[]) toRedeploy.toArray(new TargetModule[toRedeploy.size()]);
+        
+        if (checkUndeployForChangedReferences(redeployTargetModules)) {
+            redeployTargetModules = EMPTY_TARGETMODULE_ARRAY;
+            for (Iterator j=toRedeploy.iterator(); j.hasNext();) {
+                TargetModule deployed = (TargetModule) j.next();
+                distributeTargets.add(deployed.findTarget());
+            }
+        }
+        
+        checkUndeployForSharedReferences();
     }
     
     private File getApplication() {
@@ -297,12 +393,12 @@ public class TargetServer {
         }
     }
     
-    private class StartEventHandler implements ProgressListener {
-        ProgressObject startPO;
+    private class ProgressHandler implements ProgressListener {
+        ProgressObject po;
         
-        public StartEventHandler(ProgressObject startPO) {
-            this.startPO = startPO;
-            startPO.addProgressListener(this);
+        public ProgressHandler(ProgressObject po) {
+            this.po = po;
+            po.addProgressListener(this);
         }
         
         public void handleProgressEvent(ProgressEvent progressEvent) {
@@ -314,9 +410,9 @@ public class TargetServer {
         }
         
         public void unregister() {
-            if (startPO != null) {
-                startPO.removeProgressListener(this);
-                startPO = null;
+            if (po != null) {
+                po.removeProgressListener(this);
+                po = null;
             }
         }
     }
@@ -340,12 +436,13 @@ public class TargetServer {
     //collect root modules into TargetModule with timestamp
     private TargetModuleID[] saveRootTargetModules(TargetModuleID [] modules) {
         long timestamp = System.currentTimeMillis();
+        
         Set originals = new HashSet();
         for (int i=0; i<modules.length; i++) {
             if (modules[i].getParentTargetModuleID() == null) {
-                String id = modules[i].getModuleID();
+                String id = modules[i].toString();
                 String targetName = modules[i].getTarget().getName();
-                TargetModule tm = new TargetModule(id, instance.getUrl(), targetName, timestamp, modules[i]);
+                TargetModule tm = new TargetModule(instance.getUrl(), timestamp, currentContentDir.getAbsolutePath(), contextRoot, modules[i]);
                 deployedRootTMIDs.add(tm);
                 originals.add(modules[i]);
             }
@@ -358,11 +455,16 @@ public class TargetServer {
         init(ui);
         
         // Note: configuration is not DO so will not be saved automatically on execute
-        dtarget.getDeploymentConfigurationProvider().saveOnDemand();
+        DeploymentConfigurationProvider dcp = dtarget.getDeploymentConfigurationProvider();
+        if (dcp != null)
+            dcp.saveOnDemand();
         
         File plan = dtarget.getConfigurationFile();
         DeployableObject deployable = dtarget.getDeploymentConfigurationProvider().getDeployableObject(null);
-        
+
+        // undeploy if necessary
+        handleAutoUndeploy(ui);
+
         // handle initial file deployment or distribute
         if (distributeTargets.size() > 0) {
             Target[] targetz = (Target[]) distributeTargets.toArray(new Target[distributeTargets.size()]);
@@ -411,7 +513,6 @@ public class TargetServer {
     }
     
     public static boolean anyChanged(AppChangeDescriptor acd) {
-        System.out.println(acd);
         return (acd.manifestChanged() || acd.descriptorChanged() || acd.classesChanged()
         || acd.ejbsChanged() || acd.serverDescriptorChanged());
     }
@@ -422,7 +523,8 @@ public class TargetServer {
     private void handleDeployProgress(DeployProgressUI ui, ProgressObject po) {
         handleDeployProgress(ui, po, false);
     }
-    private void handleDeployProgress(DeployProgressUI ui, ProgressObject po, boolean isIncremental) {
+    
+    private void handleDeployProgress(DeployProgressUI ui, ProgressObject po, boolean isIncremental ){
         ProgressListener handler = null;
         try {
             ui.setProgressObject(po);
@@ -462,12 +564,44 @@ public class TargetServer {
         }
         
         ProgressObject startPO = instance.getDeploymentManager().start(modules);
-        startEventHandler = new StartEventHandler(startPO);
+        startEventHandler = new ProgressHandler(startPO);
         ui.setProgressObject(startPO);
         
         StateType startState = startPO.getDeploymentStatus().getState();
         if (startState == StateType.COMPLETED || startState == StateType.FAILED) {
             wakeUp();
+        }
+    }
+    
+    private void handleAutoUndeploy(DeployProgressUI ui) throws IOException {
+        // auto-undeploy if any
+        if (undeployTMIDs.size() < 1)
+            return;
+
+        TargetModuleID[] tmIDs = (TargetModuleID[]) undeployTMIDs.toArray(new TargetModuleID[undeployTMIDs.size()]);
+        ui.addMessage(NbBundle.getMessage(TargetServer.class, "MSG_Undeploying"));
+    
+        ProgressObject po = instance.getDeploymentManager().stop(tmIDs);
+        handleProgressIgnoreFail(ui, po);
+        
+        po = instance.getDeploymentManager().undeploy(tmIDs);
+        handleProgressIgnoreFail(ui, po);
+    }
+
+    private void handleProgressIgnoreFail(DeployProgressUI ui, ProgressObject po) {
+        ProgressListener handler = null;
+        try {
+            ui.setProgressObject(po);
+            
+            StateType state = po.getDeploymentStatus().getState();
+            if (state != StateType.COMPLETED && state != StateType.FAILED) {
+                handler = new ProgressHandler(po);
+                po.addProgressListener(handler);
+                sleep(TIMEOUT);
+            }
+        } finally {
+            if (handler != null)
+                po.removeProgressListener(handler);
         }
     }
 }

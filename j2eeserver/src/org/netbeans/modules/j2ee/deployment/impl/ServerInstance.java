@@ -44,6 +44,7 @@ public class ServerInstance implements Node.Cookie {
     private DeploymentManager manager;
     private Management management;
     private IncrementalDeployment incrementalDeployment;
+    private TargetModuleIDResolver tmidResolver;
     private StartServer startServer;
     private FindJSPServlet findJSPServlet;
     private final Set targetsStartedByIde = new HashSet(); // valued by target name
@@ -57,20 +58,19 @@ public class ServerInstance implements Node.Cookie {
         this.server = server; this.url = url; this.manager = manager;
     }
     
-    /*private InstanceProperties props = null;
-    private String getName() {
-        if (props == null)
-            props = InstanceProperties.getInstanceProperties(getUrl());
+    private String _getDisplayName() {
+        InstanceProperties props = InstanceProperties.getInstanceProperties(getUrl());
         if (props != null)
-            return props.getProperty(InstanceProperties.NAME_ATTR);
+            return props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
         else
             return null;
-    }*/
+    }
     
     public String getDisplayName() {
-        /*if (getName() != null)
-            return getName();*/
-        return server.getDisplayName() + "(" + url + ")";
+        String displayName = _getDisplayName();
+        if (displayName == null)
+            displayName = server.getDisplayName() + "(" + url + ")";
+        return displayName;
     }
     
     public Server getServer() {
@@ -104,18 +104,22 @@ public class ServerInstance implements Node.Cookie {
         if (running) {
             initCoTarget();
         } else {        
-            if (manager != null) {
-                manager.release();
-                manager = null;
-            }
-            incrementalDeployment = null;
-            startServer = null;
-            management = null;
-            findJSPServlet = null;
-            targets = null;
-            coTarget = null;
+            reset();
         }
         fireInstanceRefreshed(running);
+    }
+    
+    public void reset() {
+        if (manager != null) {
+            manager.release();
+            manager = null;
+        }
+        management = null;
+        incrementalDeployment = null;
+        tmidResolver = null;
+        startServer = null;
+        findJSPServlet = null;
+        coTarget = null;
     }
     
     public void remove() {
@@ -184,6 +188,13 @@ public class ServerInstance implements Node.Cookie {
         return incrementalDeployment;
     }
     
+    public TargetModuleIDResolver getTargetModuleIDResolver() {
+        if (tmidResolver == null) {
+            tmidResolver = server.getOptionalFactory ().getTargetModuleIDResolver(getDeploymentManager ());
+        }
+        return tmidResolver;
+    }
+
     private ManagementMapper mgmtMapper = null;
     public ManagementMapper getManagementMapper() {
         if (mgmtMapper == null)

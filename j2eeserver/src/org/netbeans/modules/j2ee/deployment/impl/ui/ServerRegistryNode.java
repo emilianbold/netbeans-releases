@@ -55,8 +55,6 @@ implements ServerRegistry.PluginListener, ServerRegistry.InstanceListener {
         String msg = NbBundle.getBundle(ServerRegistryNode.class).getString("SERVER_REGISTRY_NODE");//NOI18N
         setDisplayName(msg);
         setIconBase(REGISTRY_ICON_BASE);
-        
-        System.out.println("Created registry node in "+ (System.currentTimeMillis() - t0) + " msecs.");
     }
     
     void displayNameWithDefaultServer() {

@@ -134,11 +134,11 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
     }
     
     public void handleRefresh(boolean running) {
-        if (! running) {
+        //if (! running) {
             instanceTarget = null;
             resetDelegateTargetNode();
             setChildren(new InstanceTargetChildren(Node.EMPTY, instance));
-        }
+        //}
         
         ((InstanceTargetChildren)getChildren()).updateKeys();
     }
