@@ -252,6 +252,8 @@ public class MakeNBM extends MatchingTask {
     private long mostRecentInput = 0L;
     private boolean isStandardInclude = true;
     private Vector externalPackages = null;
+    private boolean manOrModReq = true ;
+    private boolean manOrModReqSet = false ;
 
     /** Include netbeans directory - default is true */
     public void setIsStandardInclude(boolean isStandardInclude) {
@@ -336,7 +338,7 @@ public class MakeNBM extends MatchingTask {
     public void execute () throws BuildException {
 	if (file == null)
 	    throw new BuildException ("must set file for makenbm", location);
-        if (manifest == null && module == null)
+        if (manifest == null && module == null && reqManOrMod())
             throw new BuildException ("must set module for makenbm", location);
         if (manifest != null && module != null)
             throw new BuildException("cannot set both manifest and module for makenbm", location);
@@ -429,13 +431,18 @@ public class MakeNBM extends MatchingTask {
 		    // Begin writing XML.
                     ps.println ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
                     ps.println("<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Autoupdate Module Info 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-2_0.dtd\">");
-		    String codenamebase = attr.getValue ("OpenIDE-Module");
-		    if (codenamebase == null)
+		    if( attr != null) {
+		      String codenamebase = attr.getValue ("OpenIDE-Module");
+		      if (codenamebase == null)
 			throw new BuildException ("invalid manifest, does not contain OpenIDE-Module", location);
-		    // Strip major release number if any.
-		    int idx = codenamebase.lastIndexOf ('/');
-		    if (idx != -1) codenamebase = codenamebase.substring (0, idx);
-		    ps.println ("<module codenamebase=\"" + codenamebase + "\"");
+		      // Strip major release number if any.
+		      int idx = codenamebase.lastIndexOf ('/');
+		      if (idx != -1) codenamebase = codenamebase.substring (0, idx);
+		      ps.println ("<module codenamebase=\"" + codenamebase + "\"");
+		    }
+		    else {
+		      ps.println ("<module ");
+		    }
 		    if (homepage != null)
                         ps.println ("        homepage=\"" + xmlEscape(homepage) + "\"");
 		    if (distribution != null)
@@ -456,34 +463,37 @@ public class MakeNBM extends MatchingTask {
 			ps.print (description.getText ());
 			ps.println ("</description>");
                     }
+
 		    // Write manifest attributes.
-		    ps.print ("  <manifest ");
-		    boolean firstline = true;
-                    List attrNames = new ArrayList(attr.size()); // List<String>
-                    Iterator it = attr.keySet().iterator();
-                    while (it.hasNext()) {
-                        attrNames.add(((Attributes.Name)it.next()).toString());
-                    }
-                    Collections.sort(attrNames);
-                    it = attrNames.iterator();
-                    while (it.hasNext()) {
-                        String name = (String)it.next();
-                        // Ignore irrelevant attributes (cf. www/www/dtds/autoupdate-catalog-2_0.dtd
-                        //  and www/www/dtds/autoupdate-info-2_0.dtd):
-                        if (! name.startsWith("OpenIDE-Module")) continue;
-                        if (name.equals("OpenIDE-Module-Localizing-Bundle")) continue;
-                        if (name.equals("OpenIDE-Module-Install")) continue;
-                        if (name.equals("OpenIDE-Module-Layer")) continue;
-                        if (name.equals("OpenIDE-Module-Description")) continue;
-                        if (name.equals("OpenIDE-Module-Package-Dependency-Message")) continue;
-                        if (name.equals("OpenIDE-Module-Public-Packages")) continue;
-			if (firstline)
-			    firstline = false;
-			else
-			    ps.print ("            ");
-                        ps.println(name + "=\"" + xmlEscape(attr.getValue(name)) + "\"");
+		    if( attr != null) {
+		        ps.print ("  <manifest ");
+			boolean firstline = true;
+		        List attrNames = new ArrayList(attr.size()); // List<String>
+			Iterator it = attr.keySet().iterator();
+			while (it.hasNext()) {
+			    attrNames.add(((Attributes.Name)it.next()).toString());
+			}
+			Collections.sort(attrNames);
+			it = attrNames.iterator();
+			while (it.hasNext()) {
+			    String name = (String)it.next();
+			    // Ignore irrelevant attributes (cf. www/www/dtds/autoupdate-catalog-2_0.dtd
+			    //  and www/www/dtds/autoupdate-info-1_0.dtd):
+			    if (! name.startsWith("OpenIDE-Module")) continue;
+			    if (name.equals("OpenIDE-Module-Localizing-Bundle")) continue;
+			    if (name.equals("OpenIDE-Module-Install")) continue;
+			    if (name.equals("OpenIDE-Module-Layer")) continue;
+			    if (name.equals("OpenIDE-Module-Description")) continue;
+			    if (name.equals("OpenIDE-Module-Package-Dependency-Message")) continue;
+			    if (name.equals("OpenIDE-Module-Public-Packages")) continue;
+			    if (firstline)
+			        firstline = false;
+			    else
+			      ps.print ("            ");
+			    ps.println(name + "=\"" + xmlEscape(attr.getValue(name)) + "\"");
+			}
+			ps.println ("  />");
 		    }
-		    ps.println ("  />");
 		    // Maybe write out license text.
 		    if (license != null) {
                         ps.print ("  <license name=\"" + xmlEscape(license.getName ()) + "\">");
@@ -521,6 +531,7 @@ public class MakeNBM extends MatchingTask {
 		throw new BuildException ("exception when creating Info/info.xml", e, location);
 	    }
 	}
+
 	// JAR it all up together.
 	long jarModified = file.lastModified (); // may be 0
 	//log ("Ensuring existence of NBM file " + file);
@@ -615,4 +626,34 @@ public class MakeNBM extends MatchingTask {
             throw new IOException(location + "must give either 'manifest' or 'module' on <makenbm>");
         }
     }
+
+  /** See reqManOrMod() */
+  public void setManOrModReq( boolean b) {
+    manOrModReq = b ;
+    manOrModReqSet = true ;
+  }
+
+  /** Returns true if either a manifest or a module must be specified.
+   * This is true unless either the global property
+   * makenbm.manOrModReq is false, or the manOrModReq attribute of
+   * this task is false.  The attribute, if set, has priority over the
+   * global property.
+
+   */
+  public boolean reqManOrMod() {
+    String s = null ;
+    boolean req = true ;
+
+    if( manOrModReqSet) {
+      req = manOrModReq ;
+    }
+    else {
+      s = project.getProperty( "makenbm.manOrModReq") ;
+      if( s != null && !s.equals( "")) {
+	req = project.toBoolean( s) ;
+      }
+    }
+
+    return( req) ;
+  }
 }
