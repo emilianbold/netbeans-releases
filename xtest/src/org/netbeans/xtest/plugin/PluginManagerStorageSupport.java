@@ -65,7 +65,9 @@ public class PluginManagerStorageSupport {
     public static void storePluginManager(PluginManager pluginManager) throws IOException {
         String filename = System.getProperty("java.io.tmpdir")+File.separator+
                           "xtestPluginManager"+System.currentTimeMillis()+".ser";
-        FileOutputStream out = new FileOutputStream(filename);
+        File file = new File(filename);
+        file.deleteOnExit();
+        FileOutputStream out = new FileOutputStream(file);
         ObjectOutputStream s = new ObjectOutputStream(out);
         s.writeObject(pluginManager);
         s.close();
