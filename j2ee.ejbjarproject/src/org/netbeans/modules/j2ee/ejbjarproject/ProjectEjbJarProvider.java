@@ -29,9 +29,13 @@ public class ProjectEjbJarProvider implements EjbJarProvider {
         Project project = FileOwnerQuery.getOwner (file);
         if (project != null && project instanceof EjbJarProject) {
             EjbJarProject ep = (EjbJarProject) project;
-            FileObject src = ep.getSourceDirectory ();
-            if (src != null && (src.equals (file) || FileUtil.isParentOf (src, file))) {
-                return ep.getAPIEjbJar();
+            // TODO: ma154696: this is changed entry of Pavel Buzek added AFTER branching; have to be checked!!!
+            FileObject[] sourceRoots = ep.getSourceRoots().getRoots();
+            for (int i = 0; i < sourceRoots.length; i++) {
+                FileObject src = sourceRoots[i];
+                if (src != null && (src.equals(file) || FileUtil.isParentOf(src, file))) {
+                    return ep.getAPIEjbJar();
+                }
             }
 
             FileObject build = ep.getEjbModule().getBuildDirectory();

@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.j2ee.ejbjarproject.ui;
 
+import java.io.File;
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 
@@ -25,6 +26,8 @@ public class FoldersListSettings extends SystemOption {
     private static final String NEW_PROJECT_COUNT = "newProjectCount"; //NOI18N
     
     private static final String SHOW_AGAIN_BROKEN_REF_ALERT = "showAgainBrokenRefAlert"; //NOI18N
+
+    private static final String LAST_USED_SOURCE_ROOT_FOLDER = "lastUsedSourceRootFolder";   //NOI18N
 
     public String displayName() {
         return NbBundle.getMessage (FoldersListSettings.class, "TXT_WebProjectFolderList"); //NOI18N
@@ -59,4 +62,19 @@ public class FoldersListSettings extends SystemOption {
     public static FoldersListSettings getDefault () {
         return (FoldersListSettings) SystemOption.findObject (FoldersListSettings.class, true);
     }
+
+    public File getLastUsedSourceRootFolder () {
+        String folder = (String) this.getProperty (LAST_USED_SOURCE_ROOT_FOLDER);
+        if (folder == null) {
+            folder = System.getProperty("user.home");    //NOI18N
+        }
+        return new File (folder);
+    }
+
+    public void setLastUsedSourceRootFolder (File folder) {
+        assert folder != null : "Folder can not be null";
+        String path = folder.getAbsolutePath();
+        this.putProperty (LAST_USED_SOURCE_ROOT_FOLDER, path, true);
+    }
+
 }

@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:project="http://www.netbeans.org/ns/project/1"
-                xmlns:web="http://www.netbeans.org/ns/j2ee-ejbjarproject/1"
+                xmlns:ejbjarproject="http://www.netbeans.org/ns/j2ee-ejbjarproject/2"
                 xmlns:xalan="http://xml.apache.org/xslt"
                 exclude-result-prefixes="xalan project">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
         <xsl:comment> some examples of how to customize the build. </xsl:comment>
         <xsl:comment> (If you delete it and reopen the project it will be recreated.) </xsl:comment>
         
-        <xsl:variable name="name" select="/project:project/project:configuration/web:data/web:name"/>
+        <xsl:variable name="name" select="/project:project/project:configuration/ejbjarproject:data/ejbjarproject:name"/>
         <project name="{$name}">
             <xsl:attribute name="default">default</xsl:attribute>
             <xsl:attribute name="basedir">.</xsl:attribute>

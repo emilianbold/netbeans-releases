@@ -18,6 +18,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.*;
+import java.io.File;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
@@ -28,6 +29,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.queries.CompiledSourceForBinaryQuery;
@@ -35,6 +37,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarCustomizerProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
@@ -51,6 +54,7 @@ import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -67,6 +71,8 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
+import org.w3c.dom.Document;
+import org.w3c.dom.Comment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -78,35 +84,57 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
  * Represents one ejb module project
  * @author Chris Webster
  */
-final class EjbJarProject implements Project, AntProjectListener {
+public class EjbJarProject implements Project, AntProjectListener, FileChangeListener {
     
     private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif")); // NOI18N
     
+    private final AuxiliaryConfiguration aux;
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
+    private FileObject libFolder = null;
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
+    private final UpdateHelper updateHelper;
     private final EjbJarProvider ejbModule;
     private final EjbJar apiEjbJar;
     private WebServicesSupport apiWebServicesSupport;
     private EjbJarWebServicesSupport ejbJarWebServicesSupport;
     //private WebServicesClientSupport apiWebServicesClientSupport;
+    private SourceRoots sourceRoots;
+    private SourceRoots testRoots;
     
     EjbJarProject(final AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
-        AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
+        aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator());
         genFilesHelper = new GeneratedFilesHelper(helper);
         ejbModule = new EjbJarProvider(this, helper);
         apiEjbJar = EjbJarFactory.createEjbJar(ejbModule);
         ejbJarWebServicesSupport = new EjbJarWebServicesSupport(this, helper, refHelper);
         apiWebServicesSupport = WebServicesSupportFactory.createWebServicesSupport(ejbJarWebServicesSupport);
+        this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper,
+            UpdateHelper.createDefaultNotifier());
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
+        ProjectManager.mutex().postWriteRequest(
+             new Runnable () {
+                 public void run() {
+                     try {
+                         updateProjectXML ();
+                     } catch (IOException ioe) {
+                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                     }
+                 }
+             }
+         );    
     }
-    
+
+    /**
+     * Returns the project directory
+     * @return the directory the project is located in
+     */
     public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
     }
@@ -123,62 +151,62 @@ final class EjbJarProject implements Project, AntProjectListener {
     PropertyEvaluator evaluator() {
         return eval;
     }
-    
+
+    ReferenceHelper getReferenceHelper () {
+        return this.refHelper;
+    }
+
     public Lookup getLookup() {
         return lookup;
     }
     
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
-        FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(helper.getStandardPropertyEvaluator(), new String[] {
-            "${src.dir}/*.java" // NOI18N
-        }, new String[] {
-            "${build.classes.dir}/*.class" // NOI18N
-        });
+
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
-        String webModuleLabel = org.openide.util.NbBundle.getMessage(EjbJarCustomizerProvider.class, "LBL_Node_EJBModule"); //NOI18N
-        String srcJavaLabel = org.openide.util.NbBundle.getMessage(EjbJarCustomizerProvider.class, "LBL_Node_Sources"); //NOI18N
+        String ejbModuleLabel = org.openide.util.NbBundle.getMessage(EjbJarCustomizerProvider.class, "LBL_Node_EJBModule"); //NOI18N
+        String configFilesLabel = org.openide.util.NbBundle.getMessage(EjbJarCustomizerProvider.class, "LBL_Node_DocBase"); //NOI18N
         
-        sourcesHelper.addPrincipalSourceRoot("${"+EjbJarProjectProperties.SOURCE_ROOT+"}", webModuleLabel, /*XXX*/null, null);
-        sourcesHelper.addPrincipalSourceRoot("${"+EjbJarProjectProperties.SRC_DIR+"}", srcJavaLabel, /*XXX*/null, null);
+        sourcesHelper.addPrincipalSourceRoot("${"+EjbJarProjectProperties.SOURCE_ROOT+"}", ejbModuleLabel, /*XXX*/null, null);
+        sourcesHelper.addPrincipalSourceRoot("${"+EjbJarProjectProperties.META_INF+"}", configFilesLabel, /*XXX*/null, null);
         
-        sourcesHelper.addTypedSourceRoot("${"+EjbJarProjectProperties.SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/null, null);
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
         return Lookups.fixed(new Object[] {
-            new Info(),
-            aux,
-            helper.createCacheDirectoryProvider(),
-            new ProjectWebServicesSupportProvider(),
-            // XXX the helper should not be exposed
-            helper,
-            spp,
-            new EnterpriseReferenceContainerImpl(this),
-            new ProjectEjbJarProvider(),
-            ejbModule, //implements J2eeModuleProvider
-            new EjbJarActionProvider( this, helper, refHelper ),
-            new EjbJarLogicalViewProvider(this, helper, evaluator(), spp, refHelper),
-            new EjbJarCustomizerProvider( this, helper, refHelper ),
-            new ClassPathProviderImpl(helper),
-            new CompiledSourceForBinaryQuery(helper),
-            new AntArtifactProviderImpl(),
-            new ProjectXmlSavedHookImpl(),
-            new ProjectOpenedHookImpl(),
-            new SourceLevelQueryImpl(helper, evaluator()),
-            fileBuilt,
-            new RecommendedTemplatesImpl(),
-            refHelper,
-            sourcesHelper.createSources(),
-            helper.createSharabilityQuery(evaluator(),
-            new String[] {"${"+EjbJarProjectProperties.SOURCE_ROOT+"}"},
-            new String[] {
-                "${"+EjbJarProjectProperties.BUILD_DIR+"}",
-                "${"+EjbJarProjectProperties.DIST_DIR+"}"}
-            )
-        });
+                new Info(),
+                aux,
+                helper.createCacheDirectoryProvider(),
+                new ProjectWebServicesSupportProvider(),
+                // XXX the helper should not be exposed
+                helper,
+                spp,
+                new EnterpriseReferenceContainerImpl(this),
+                new ProjectEjbJarProvider(),
+                ejbModule, //implements J2eeModuleProvider
+                new EjbJarActionProvider( this, helper, refHelper ),
+                new EjbJarLogicalViewProvider(this, helper, evaluator(), spp, refHelper),
+                new EjbJarCustomizerProvider( this, helper, refHelper ),
+                new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(),getTestSourceRoots()),
+                new CompiledSourceForBinaryQuery(helper,evaluator(),getSourceRoots(),getTestSourceRoots()),
+                new AntArtifactProviderImpl(),
+                new ProjectXmlSavedHookImpl(),
+                new ProjectOpenedHookImpl(),
+                new SourceLevelQueryImpl(helper, evaluator()),
+                new EjbJarSources (helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+                new EjbJarFileBuiltQuery (helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
+                new RecommendedTemplatesImpl(),
+                refHelper,
+                new EjbJarSources (helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+                helper.createSharabilityQuery(evaluator(),
+                    new String[] {"${"+EjbJarProjectProperties.SOURCE_ROOT+"}"},
+                    new String[] {
+                    "${"+EjbJarProjectProperties.BUILD_DIR+"}",
+                    "${"+EjbJarProjectProperties.DIST_DIR+"}"}
+                )
+            });
     }
     
     public void configurationXmlChanged(AntProjectEvent ev) {
@@ -201,10 +229,23 @@ final class EjbJarProject implements Project, AntProjectListener {
     }
     
     // Package private methods -------------------------------------------------
+
+    /**
+     * Returns the source roots of this project
+     * @return project's source roots
+     */
+    public synchronized SourceRoots getSourceRoots() {
+        if (this.sourceRoots == null) { //Local caching, no project metadata access
+            this.sourceRoots = new SourceRoots(this.updateHelper, evaluator(), getReferenceHelper(), "source-roots", "src.dir{0}"); //NOI18N
+        }
+        return this.sourceRoots;
+    }
     
-    FileObject getSourceDirectory() {
-        String srcDir = helper.getStandardPropertyEvaluator().getProperty("src.dir"); // NOI18N
-        return helper.resolveFileObject(srcDir);
+    public synchronized SourceRoots getTestSourceRoots() {
+        if (this.testRoots == null) { //Local caching, no project metadata access
+            this.testRoots = new SourceRoots(this.updateHelper, evaluator(), getReferenceHelper(), "test-roots", "test.src.dir{0}"); //NOI18N
+        }
+        return this.testRoots;
     }
     
     WebServicesSupport getAPIWebServicesSupport() {
@@ -284,7 +325,96 @@ final class EjbJarProject implements Project, AntProjectListener {
             }
         });
     }
+
+    private void updateProjectXML () throws IOException {
+        Element element = aux.getConfigurationFragment("data","http://www.netbeans.org/ns/EjbJar-project/1",true);    //NOI18N
+        if (element != null) {
+            Document doc = element.getOwnerDocument();
+            Element newRoot = doc.createElementNS (EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
+            copyDocument (doc, element, newRoot);
+            Element sourceRoots = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
+            Element root = doc.createElementNS (EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+            root.setAttribute ("id","src.dir");   //NOI18N
+            sourceRoots.appendChild(root);
+            newRoot.appendChild (sourceRoots);
+            Element testRoots = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
+            root = doc.createElementNS (EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+            root.setAttribute ("id","test.src.dir");   //NOI18N
+            testRoots.appendChild (root);
+            newRoot.appendChild (testRoots);
+            helper.putPrimaryConfigurationData (newRoot, true);
+            ProjectManager.getDefault().saveProject(this);
+        }
+    }
+
+    private static void copyDocument (Document doc, Element from, Element to) {
+        NodeList nl = from.getChildNodes();
+        int length = nl.getLength();
+        for (int i=0; i< length; i++) {
+            Node node = nl.item (i);
+            Node newNode = null;
+            switch (node.getNodeType()) {
+                case Node.ELEMENT_NODE:
+                    Element oldElement = (Element) node;
+                    newNode = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,oldElement.getTagName());
+                    copyDocument(doc,oldElement,(Element)newNode);
+                    break;
+                case Node.TEXT_NODE:
+                    Text oldText = (Text) node;
+                    newNode = doc.createTextNode(oldText.getData());
+                    break;
+                case Node.COMMENT_NODE:
+                    Comment oldComment = (Comment) node;
+                    newNode = doc.createComment(oldComment.getData());
+                    break;
+            }
+            if (newNode != null) {
+                to.appendChild (newNode);
+            }
+        }
+    }
+
+    public void fileAttributeChanged (org.openide.filesystems.FileAttributeEvent fe) {
+    }    
     
+    public void fileChanged (org.openide.filesystems.FileEvent fe) {
+    }
+    
+    public void fileDataCreated (org.openide.filesystems.FileEvent fe) {
+        FileObject fo = fe.getFile ();
+        checkLibraryFolder (fo);
+    }
+    
+    public void fileDeleted (org.openide.filesystems.FileEvent fe) {
+    }
+    
+    public void fileFolderCreated (org.openide.filesystems.FileEvent fe) {
+    }
+    
+    public void fileRenamed (org.openide.filesystems.FileRenameEvent fe) {
+        FileObject fo = fe.getFile ();
+        checkLibraryFolder (fo);
+    }
+
+    public EjbJarProjectProperties getEjbJarProjectProperties() {
+        return new EjbJarProjectProperties (this, helper, refHelper);
+    }
+
+    private void checkLibraryFolder (FileObject fo) {
+        if (fo.getParent ().equals (libFolder)) {
+            EjbJarProjectProperties wpp = getEjbJarProjectProperties();
+            List cpItems = (List) wpp.get (EjbJarProjectProperties.JAVAC_CLASSPATH);
+            if (addLibrary (cpItems, fo)) {
+                wpp.put (EjbJarProjectProperties.JAVAC_CLASSPATH, cpItems);
+                wpp.store ();
+                try {
+                    ProjectManager.getDefault ().saveProject (this);
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }
+        }
+    }
     // Private innerclasses ----------------------------------------------------
     
     private final class Info implements ProjectInformation {
@@ -340,12 +470,46 @@ final class EjbJarProject implements Project, AntProjectListener {
         
     }
     
+    private boolean addLibrary (List cpItems, FileObject lib) {
+        boolean needsAdding = true;
+        if (!lib.getExt().equalsIgnoreCase("jar") && !lib.getExt().equalsIgnoreCase("zip")) {
+            return false;
+        }
+        for (Iterator vcpsIter = cpItems.iterator (); vcpsIter.hasNext ();) {
+            VisualClassPathItem vcpi = (VisualClassPathItem) vcpsIter.next ();
+
+            if (vcpi.getType () != VisualClassPathItem.TYPE_JAR) {
+                continue;
+            }
+            FileObject fo = helper.resolveFileObject(helper.getStandardPropertyEvaluator ().evaluate (vcpi.getEvaluated ()));
+            if (lib.equals (fo)) {
+                needsAdding = false;
+                break;
+            }
+        }
+        if (needsAdding) {
+            String file = "${"+EjbJarProjectProperties.LIBRARIES_DIR+"}/"+lib.getNameExt ();
+            String eval = helper.getStandardPropertyEvaluator ().evaluate (file);
+            File f = null;
+            if (eval != null) {
+                f = helper.resolveFile(eval);
+            }
+            VisualClassPathItem cpItem = VisualClassPathItem.create (f);
+            cpItems.add (cpItem);
+        }
+        return needsAdding;
+    }
+
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
         
         ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
             try {
+                //Check libraries and add them to classpath automatically
+                String libFolderName = helper.getStandardPropertyEvaluator ().getProperty (EjbJarProjectProperties.LIBRARIES_DIR);
+                EjbJarProjectProperties ejbpp = getEjbJarProjectProperties();
+
                 //DDDataObject initialization to be ready to listen on changes (#49656)
                 try {
                     FileObject ddFO = ejbModule.getDeploymentDescriptor();
@@ -353,6 +517,22 @@ final class EjbJarProject implements Project, AntProjectListener {
                         DataObject.find(ddFO);
                     }
                 } catch (org.openide.loaders.DataObjectNotFoundException ex) {}
+
+                if (libFolderName != null && helper.resolveFile (libFolderName).isDirectory ()) {
+                    List cpItems = (List) ejbpp.get (EjbJarProjectProperties.JAVAC_CLASSPATH);
+                    FileObject libFolder = helper.resolveFileObject(libFolderName);
+                    FileObject libs [] = libFolder.getChildren ();
+                    boolean anyChanged = false;
+                    for (int i = 0; i < libs.length; i++) {
+                        anyChanged = addLibrary (cpItems, libs [i]) || anyChanged;
+                    }
+                    if (anyChanged) {
+                        ejbpp.put (EjbJarProjectProperties.JAVAC_CLASSPATH, cpItems);
+                        ejbpp.store ();
+                        ProjectManager.getDefault ().saveProject (EjbJarProject.this);
+                    }
+                    libFolder.addFileChangeListener (EjbJarProject.this);
+                }
                 
                 // Check up on build scripts.
                 genFilesHelper.refreshBuildScript(
@@ -388,6 +568,7 @@ final class EjbJarProject implements Project, AntProjectListener {
                 }
             });
             if (EjbJarLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
+//            if (EjbJarPhysicalViewProvider.hasBrokenLinks(updateHelper, refHelper)) {   //XXX Don't konw if it needs to use updateHelper
                 BrokenReferencesSupport.showAlert();
             }
         }

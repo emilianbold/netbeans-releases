@@ -14,6 +14,7 @@
 package org.netbeans.modules.j2ee.ejbjarproject.ui.wizards;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 
 import javax.swing.JFileChooser;
@@ -24,6 +25,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
 
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
@@ -186,6 +188,10 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
     }
         
+    void validate (WizardDescriptor d) throws WizardValidationException {
+        // nothing to validate
+    }
+
     void read (WizardDescriptor settings) {
         File projectLocation = (File) settings.getProperty(WizardProperties.PROJECT_DIR);
         if (projectLocation == null)
@@ -261,6 +267,14 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         folder.append(projectNameTextField.getText().trim());
         
         return folder.toString();
+    }
+    
+    static File getCanonicalFile(File file) {
+        try {
+            return file.getCanonicalFile();
+        } catch (IOException e) {
+            return null;
+        }
     }
     
 }

@@ -23,6 +23,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.netbeans.modules.j2ee.deployment.impl.projects.*;
@@ -175,10 +176,12 @@ class EjbJarActionProvider implements ActionProvider {
             p.setProperty("client.urlPart", project.getEjbModule().getUrl());
         //COMPILATION PART
         } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            FileObject[] files = findJavaSources( context );
+            FileObject[] sourceRoots = project.getSourceRoots().getRoots();
+            FileObject[] files = findSourcesAndPackages( context, sourceRoots);
+            
             p = new Properties();
             if (files != null) {
-                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getSourceDirectory())); // NOI18N
+                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots,files[0]))); // NOI18N
             } else {
             }
         } else {
@@ -220,14 +223,54 @@ class EjbJarActionProvider implements ActionProvider {
     /** Find selected java sources 
      */
     private FileObject[] findJavaSources(Lookup context) {
-        FileObject srcDir = project.getSourceDirectory ();
-        FileObject[] files = null;
-        if (srcDir != null) {
-            files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true);
+        FileObject[] srcPath = project.getSourceRoots().getRoots();
+        for (int i=0; i< srcPath.length; i++) {
+            FileObject[] files = ActionUtils.findSelectedFiles(context, srcPath[i], ".java", true); // NOI18N
+            if (files != null) {
+                return files;
+            }
         }
-        return files;
+        return null;
     }
     
+    private FileObject[] findSourcesAndPackages (Lookup context, FileObject srcDir) {
+        if (srcDir != null) {
+            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, null, true); // NOI18N
+            //Check if files are either packages of java files
+            if (files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    if (!files[i].isFolder() && !"java".equals(files[i].getExt())) {
+                        return null;
+                    }
+                }
+            }
+            return files;
+        } else {
+            return null;
+        }
+    }
+    
+    private FileObject[] findSourcesAndPackages (Lookup context, FileObject[] srcRoots) {
+        for (int i=0; i<srcRoots.length; i++) {
+            FileObject[] result = findSourcesAndPackages(context, srcRoots[i]);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+    
+    private FileObject getRoot (FileObject[] roots, FileObject file) {
+        FileObject srcDir = null;
+        for (int i=0; i< roots.length; i++) {
+            if (FileUtil.isParentOf(roots[i],file)) {
+                srcDir = roots[i];
+                break;
+            }
+        }
+        return srcDir;
+    }
+
     private boolean isDebugged() {
         
         J2eeModuleProvider jmp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);

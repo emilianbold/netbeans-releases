@@ -46,9 +46,13 @@ public class ProjectWebServicesSupportProvider implements WebServicesSupportProv
                 return ejbproject.getAPIWebServicesSupport();
 	    }
 
-            FileObject src = ejbproject.getSourceDirectory ();
-            if (src != null && (src.equals (file) || FileUtil.isParentOf (src, file))) {
-                return ejbproject.getAPIWebServicesSupport();
+            // TODO: ma154696: This is just quick fix for multiple source roots, is it OK?
+            FileObject[] sourceRoots = ejbproject.getSourceRoots().getRoots();
+            for (int i = 0; i < sourceRoots.length; i++) {
+                FileObject src = sourceRoots[i];
+                if (src != null && (src.equals (file) || FileUtil.isParentOf (src, file))) {
+                    return ejbproject.getAPIWebServicesSupport();
+                }
             }
             
             /* FIX-ME: do we need this?

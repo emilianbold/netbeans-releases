@@ -23,5 +23,6 @@ public class WizardProperties {
     
     public static final String CONFIG_FILES_FOLDER = "configFilesFolder"; //NOI18N
     public static final String JAVA_ROOT = "javaRoot"; //NOI18N
+    public static final String TEST_ROOT = "testRoot"; //NOI18N
     public static final String LIB_FOLDER = "libFolder"; //NOI18N
 }

@@ -22,10 +22,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JButton;
@@ -33,8 +36,10 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -60,97 +65,67 @@ import org.openide.WizardValidationException;
  * Wizard to create a new Web project for an existing web module.
  * @author Pavel Buzek
  */
-public class ImportEjbJarProjectWizardIterator implements TemplateWizard.Iterator {
+public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
-    private String buildfileName = GeneratedFilesHelper.BUILD_XML_PATH;
-    private boolean imp = true;
+//    private boolean imp = true;
     
     /** Create a new wizard iterator. */
     public ImportEjbJarProjectWizardIterator() {}
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new ImportEjbJarProjectWizardIterator.ThePanel(),
-            new ImportEjbJarProjectWizardIterator.SecondPanel()
+            new ImportLocation(),
+            new PanelSourceFolders.Panel()
         };
     }
     
     private String[] createSteps() {
         return new String[] {
-            NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_Step1"), //NOI18N
-            NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_Step2") //NOI18N
+            "Configure Project",//NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_Step1"), //NOI18N
+            "Configure Source Roots"//"NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_Step2") //NOI18N
         };
     }
     
-    public Set/*<DataObject>*/ instantiate(TemplateWizard wiz) throws IOException/*, IllegalStateException*/ {
-        //project creation cancelled
-        if (!isImport())
-            return null;
-        
+    public Set/*<DataObject>*/ instantiate() throws IOException/*, IllegalStateException*/ {
+        Set resultSet = new HashSet ();
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
-        File dirSrcF = (File) wiz.getProperty (WizardProperties.SOURCE_ROOT);
+        if (dirF != null) {
+            dirF = FileUtil.normalizeFile(dirF);
+        }
         String name = (String) wiz.getProperty(WizardProperties.NAME);
-//        String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
-        String configFilesFolderName = (String) wiz.getProperty(WizardProperties.CONFIG_FILES_FOLDER);
-        String javaRootName = (String) wiz.getProperty(WizardProperties.JAVA_ROOT);
-        String libName = (String) wiz.getProperty(WizardProperties.LIB_FOLDER);
-        
-        FileObject wmFO = FileUtil.toFileObject (dirSrcF);
-        assert wmFO != null : "No such dir on disk: " + dirSrcF;
-        assert wmFO.isFolder() : "Not really a dir: " + dirSrcF;
-        
-        FileObject javaRoot;
-        FileObject configFilesFolder;
-        if (configFilesFolderName == null || configFilesFolderName.equals("")) //NOI18N
-            configFilesFolder = guessConfigFilesPath(wmFO);
-        else {
-            File f = new File(configFilesFolderName);
-            configFilesFolder = FileUtil.toFileObject(f);
+        File dirSrcF = (File) wiz.getProperty (WizardProperties.SOURCE_ROOT);
+        File[] sourceFolders = (File[]) wiz.getProperty(WizardProperties.JAVA_ROOT);
+        File[] testFolders = (File[]) wiz.getProperty(WizardProperties.TEST_ROOT);
+        File configFilesFolder = (File) wiz.getProperty(WizardProperties.CONFIG_FILES_FOLDER);
+        File libName = (File) wiz.getProperty(WizardProperties.LIB_FOLDER);
+
+        EjbJarProjectGenerator.importProject(dirF, name, sourceFolders, testFolders, configFilesFolder, libName, EjbJarProjectProperties.J2EE_1_4); //PENDING detect spec level
+        for (int i=0; i<sourceFolders.length; i++) {
+            FileObject srcFo = FileUtil.toFileObject(sourceFolders[i]);
+            if (srcFo != null) {
+                resultSet.add (srcFo);
+            }
         }
-        if (javaRootName == null || javaRootName.equals("")) //NOI18N
-            javaRoot = guessJavaRoot(wmFO);
-        else {
-            File f = new File(javaRootName);
-            javaRoot = FileUtil.toFileObject(f);
-        }
-        
-        String buildfile = getBuildfile();
-        
-        EjbJarProjectGenerator.importProject (dirF, name, wmFO, javaRoot, configFilesFolder, EjbJarProjectProperties.J2EE_1_4, buildfile); //PENDING detect spec level
+
         FileObject dir = FileUtil.toFileObject (dirF);
         Project p = ProjectManager.getDefault().findProject(dir);
         
-        EjbJarProvider wm = (EjbJarProvider) p.getLookup ().lookup (EjbJarProvider.class);
-        //if (wm != null) //should not be null
-        //    wm.setContextPath(contextPath);
+        resultSet.add (dir);
 
-        // Returning set of DataObject of project diretory. 
-        // Project will be open and set as main
-        return Collections.singleton(DataObject.find(dir));
-    }
-    
-    private String getBuildfile() {
-        return buildfileName;
-    }
-    
-    private void setBuildfile(String name) {
-        buildfileName = name;
-    }
-    
-    private boolean isImport() {
-        return imp;
-    }
-
-    private void setImport(boolean imp) {
-        this.imp = imp;
+        dirF = (dirF != null) ? dirF.getParentFile() : null;
+        if (dirF != null && dirF.exists()) {
+            ProjectChooser.setProjectsFolder (dirF);    
+        }
+                        
+        return resultSet;
     }
     
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
-    private transient TemplateWizard wiz;
+    private transient WizardDescriptor wiz;
     
-    public void initialize(TemplateWizard wiz) {
+    public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
         panels = createPanels();
@@ -173,13 +148,22 @@ public class ImportEjbJarProjectWizardIterator implements TemplateWizard.Iterato
             }
         }
     }
-    public void uninitialize(TemplateWizard wiz) {
+
+    public void uninitialize(WizardDescriptor wiz) {
+        this.wiz.putProperty(WizardProperties.PROJECT_DIR, null);
+        this.wiz.putProperty(WizardProperties.NAME, null);
+        this.wiz.putProperty (WizardProperties.SOURCE_ROOT, null);
+        this.wiz.putProperty(WizardProperties.JAVA_ROOT, null);
+        this.wiz.putProperty(WizardProperties.TEST_ROOT, null);
+        this.wiz.putProperty(WizardProperties.CONFIG_FILES_FOLDER, null);
+        this.wiz.putProperty(WizardProperties.LIB_FOLDER, null);
         this.wiz = null;
         panels = null;
     }
     
     public String name() {
-        return MessageFormat.format(NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_WizardStepsCount"), new String[] {(new Integer(index + 1)).toString(), (new Integer(panels.length)).toString()}); //NOI18N
+        return MessageFormat.format(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_WizardStepsCount"), 
+            new Object[] {(new Integer(index + 1)), (new Integer(panels.length))}); //NOI18N
     }
     
     public boolean hasNext() {
@@ -203,405 +187,5 @@ public class ImportEjbJarProjectWizardIterator implements TemplateWizard.Iterato
     // If nothing unusual changes in the middle of the wizard, simply:
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
-    // If something changes dynamically (besides moving between panels),
-    // e.g. the number of panels changes in response to user input, then
-    // uncomment the following and call when needed:
-    // fireChangeEvent();
-    /*
-    private transient Set listeners = new HashSet(1); // Set<ChangeListener>
-    public final void addChangeListener(ChangeListener l) {
-        synchronized(listeners) {
-            listeners.add(l);
-        }
-    }
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized(listeners) {
-            listeners.remove(l);
-        }
-    }
-    protected final void fireChangeEvent() {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
-        }
-    }
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        listeners = new HashSet(1);
-    }
-     */
-
-    private FileObject guessConfigFilesPath (FileObject dir) {
-        Enumeration ch = dir.getChildren (true);
-        try {
-            while (ch.hasMoreElements ()) {
-                FileObject f = (FileObject) ch.nextElement ();
-                if (f.getNameExt().equals ("ejb-jar.xml")) { //NOI18N
-                    String rootName = f.getParent ().getPath ();
-                    return f.getFileSystem ().findResource (rootName);
-                }
-            }
-        } catch (FileStateInvalidException fsie) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, fsie);
-        }
-        return null;
-    }
     
-    private FileObject guessLibrariesFolder (FileObject dir) {
-        if (dir != null) {
-            FileObject lib = dir.getFileObject ("lib"); //NOI18N
-            if (lib != null) {
-                return lib;
-            }
-        }
-        Enumeration ch = dir.getChildren (true);
-        while (ch.hasMoreElements ()) {
-            FileObject f = (FileObject) ch.nextElement ();
-            if (f.getExt ().equals ("jar")) { //NOI18N
-                return f.getParent ();
-            }
-        }
-        return null;
-    }
-    
-    private FileObject guessJavaRoot (FileObject dir) {
-        Enumeration ch = dir.getChildren (true);
-        try {
-            while (ch.hasMoreElements ()) {
-                FileObject f = (FileObject) ch.nextElement ();
-                if (f.getExt ().equals ("java")) { //NOI18N
-                    String pckg = guessPackageName (f);
-                    String pkgPath = f.getParent ().getPath (); 
-                    if (pckg != null && pkgPath.endsWith (pckg.replace ('.', '/'))) {
-                        String rootName = pkgPath.substring (0, pkgPath.length () - pckg.length ());
-                        return f.getFileSystem ().findResource (rootName);
-                    }
-                }
-            }
-        } catch (FileStateInvalidException fsie) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, fsie);
-        }
-        return null;
-    }
-
-    private String guessPackageName (FileObject f) {
-        java.io.Reader r = null;
-        try {
-            r = new BufferedReader (new InputStreamReader (f.getInputStream (), "utf-8")); // NOI18N
-            StringBuffer sb = new StringBuffer ();
-            final char[] BUFFER = new char[4096];
-            int len;
-
-            for (;;) {
-                len = r.read (BUFFER);
-                if (len == -1) break;
-                sb.append (BUFFER, 0, len);
-            }
-            int idx = sb.indexOf ("package"); // NOI18N
-            if (idx >= 0) {
-                int idx2 = sb.indexOf (";", idx);  // NOI18N
-                if (idx2 >= 0) {
-                    return sb.substring (idx + "package".length (), idx2).trim ();
-                }
-            }
-        } catch (java.io.IOException ioe) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
-        } finally {
-            try { if (r != null) r.close (); } catch (java.io.IOException ioe) { // ignore this 
-            }
-        }
-        return null;
-    }
-    
-    public final class ThePanel implements WizardDescriptor.FinishablePanel, WizardDescriptor.ValidatingPanel {
-
-        private ImportLocationVisual panel;
-        private WizardDescriptor wizardDescriptor;
-        
-        private ThePanel () {
-        }
-        
-        public boolean isFinishPanel() {
-            return true;
-        }
-        
-        public java.awt.Component getComponent () {
-            if (panel == null) {
-                panel = new ImportLocationVisual (this);
-            }
-            return panel;
-        }
-        
-        public org.openide.util.HelpCtx getHelp () {
-            return null;
-        }
-        
-        public boolean isValid () {
-            File f = new File(panel.moduleLocationTextField.getText().trim());
-            File prjFolder = new File(panel.projectLocationTextField.getText().trim());
-            String prjName = panel.projectNameTextField.getText().trim();
-
-            if (!f.isDirectory()) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class,"MSG_ProvideExistingSourcesLocation")); //NOI18N
-                return false; //Existing sources location not specified
-            }
-
-//Do we need this check?
-//            if (!prjFolder.isDirectory()) {
-//                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class,"MSG_ProjectFolderDoesNotExists")); //NOI18N
-//                return false; //Project folder not specified
-//            }
-
-            if (!isEjbJarModule(FileUtil.toFileObject(f))) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class,"MSG_NoEjbJarModule")); //NOI18N
-                return false; //No ejb jar module location
-            }
-            
-            if (prjName == null || prjName.length() == 0) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class,"MSG_ProvideProjectName")); //NOI18N
-                return false; //Project name not specified
-            }
-            
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
-
-            return true;
-        }
-        
-        private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
-        public final void addChangeListener(ChangeListener l) {
-            synchronized (listeners) {
-                listeners.add(l);
-            }
-        }
-        public final void removeChangeListener(ChangeListener l) {
-            synchronized (listeners) {
-                listeners.remove(l);
-            }
-        }
-        protected final void fireChangeEvent() {
-            Iterator it;
-            synchronized (listeners) {
-                it = new HashSet(listeners).iterator();
-            }
-            ChangeEvent ev = new ChangeEvent(this);
-            while (it.hasNext()) {
-                ((ChangeListener)it.next()).stateChanged(ev);
-            }
-        }
-        public void readSettings (Object settings) {
-            wizardDescriptor = (WizardDescriptor) settings;
-        }
-        
-        public void storeSettings (Object settings) {
-            WizardDescriptor d = (WizardDescriptor)settings;
-            String name = panel.projectNameTextField.getText().trim();
-//            String contextPath = panel.jTextFieldContextPath.getText().trim();
-//            if (!contextPath.startsWith("/")) //NOI18N
-//                contextPath = "/" + contextPath; //NOI18N
-
-            String moduleLoc = panel.moduleLocationTextField.getText().trim();
-
-            d.putProperty(WizardProperties.PROJECT_DIR, new File(panel.createdFolderTextField.getText()));
-            d.putProperty(WizardProperties.SOURCE_ROOT, new File(moduleLoc));
-            d.putProperty(WizardProperties.NAME, name);
-//            d.putProperty(WizardProperties.CONTEXT_PATH, contextPath);
-
-            if (moduleLoc.length() > 0) {
-                File f = new File(moduleLoc);
-                FileObject fo;
-                try {
-                    fo = FileUtil.toFileObject(f);
-                } catch (IllegalArgumentException exc) {
-                    return; //invalid file object
-                }
-                if (fo != null)
-                    presetSecondPanel(fo);
-            }
-        }
-        
-        private boolean isEjbJarModule (FileObject dir) {
-            return guessConfigFilesPath (dir) != null && guessJavaRoot (dir) != null;
-        }
-    
-        //use it as a project root iff it is not sources or document root
-        public boolean isSuitableProjectRoot (FileObject dir) {
-            FileObject srcRoot = guessJavaRoot (dir);
-            FileObject configFilesRoot = guessConfigFilesPath(dir);
-            return (configFilesRoot == null || FileUtil.isParentOf (dir, configFilesRoot))
-                && (srcRoot == null || FileUtil.isParentOf (dir, srcRoot));
-        }
-    
-        private void presetSecondPanel(FileObject fo) {
-            FileObject guessFO;
-            String javaSources = ""; //NOI18N
-            String libraries = ""; //NOI18N
-            String configFiles = ""; //NOI18N
-            
-            guessFO = guessJavaRoot(fo);
-            if (guessFO != null)
-                javaSources = FileUtil.toFile(guessFO).getPath();
-            guessFO = guessConfigFilesPath(fo);
-            if (guessFO != null)
-                configFiles = FileUtil.toFile(guessFO).getPath();
-            guessFO = guessLibrariesFolder(fo);
-            if (guessFO != null)
-                libraries = FileUtil.toFile(guessFO).getPath();
-            
-            ((ImportEjbJarLocationsVisual) panels[1].getComponent()).initValues(configFiles, javaSources, libraries);
-        }
-        
-        //extra finish dialog        
-        private Dialog dialog;
-            
-        public void validate() throws WizardValidationException {
-            File dirF = new File(panel.createdFolderTextField.getText());
-            JButton ok = new JButton(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_Buildfile_OK")); //NOI18N
-            ok.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "ACS_IW_BuildFileDialog_OKButton_LabelMnemonic")); //NOI18N
-            ok.setMnemonic(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_BuildFileDialog_OK_LabelMnemonic").charAt(0)); //NOI18N
-            JButton cancel = new JButton(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_Buildfile_Cancel")); //NOI18N
-            cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "ACS_IW_BuildFileDialog_CancelButton_LabelMnemonic")); //NOI18N
-            cancel.setMnemonic(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_BuildFileDialog_Cancel_LabelMnemonic").charAt(0)); //NOI18N
-            
-            final ImportBuildfile ibf = new ImportBuildfile(dirF.getAbsolutePath(), ok);
-            if ((new File(dirF, GeneratedFilesHelper.BUILD_XML_PATH)).exists()) {
-                ActionListener actionListener = new ActionListener() {
-                    public void actionPerformed(ActionEvent event) {
-                        Object src = event.getSource();
-                        if (src instanceof JButton) {
-                            String name = ((JButton) src).getText();
-                            if (name.equals(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_Buildfile_OK"))) { //NOI18N
-                                setBuildfile(ibf.getBuildName());
-                                setImport(true);
-                                closeDialog();
-                            } else if (name.equals(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_Buildfile_Cancel"))) { //NOI18N
-                                NotifyDescriptor ndesc = new NotifyDescriptor.Confirmation(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_Buildfile_CancelConfirmation"), NotifyDescriptor.YES_NO_OPTION); //NOI18N
-                                Object ret = DialogDisplayer.getDefault().notify(ndesc);
-                                if (ret == NotifyDescriptor.YES_OPTION) {
-                                    setImport(false);
-                                    closeDialog();
-                                }
-                            }
-                        }
-                    }
-                };
-
-                DialogDescriptor descriptor = new DialogDescriptor(
-                    ibf,
-                    NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_BuildfileTitle"), //NOI18N
-                    true,
-                    new Object[] {ok, cancel},
-                    DialogDescriptor.OK_OPTION, 
-                    DialogDescriptor.DEFAULT_ALIGN,
-                    null,
-                    actionListener
-                );
-                
-                dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-                dialog.show();
-            } else
-                return;            
-        }
-        
-        private void closeDialog() {
-            dialog.dispose();
-        }
-    }
-    
-    public final class SecondPanel implements WizardDescriptor.FinishablePanel {
-        private ImportEjbJarLocationsVisual panel;
-        
-        private SecondPanel () {
-        }
-        
-        public boolean isFinishPanel() {
-            return true;
-        }
-        
-        public java.awt.Component getComponent () {
-            if (panel == null)
-                panel = new ImportEjbJarLocationsVisual(this);
-            
-            return panel;
-        }
-        
-        public org.openide.util.HelpCtx getHelp () {
-            return null;
-        }
-        
-        public boolean isValid () {
-            boolean res1 = true;
-            boolean res2 = true;
-            boolean res3 = true;
-            
-            if (!panel.jTextFieldConfigFiles.getText().trim().equals(""))
-                res1 = relativePath(panel.jTextFieldConfigFiles.getText().trim());
-            if (!panel.jTextFieldJavaSources.getText().trim().equals(""))
-                res2 = relativePath(panel.jTextFieldJavaSources.getText().trim());
-            if (!panel.jTextFieldLibraries.getText().trim().equals(""))
-                res3 = relativePath(panel.jTextFieldLibraries.getText().trim());
-                
-            return res1 && res2 && res3;
-        }
-        
-        private boolean relativePath(String path) {
-            String moduleRoot = ((ImportLocationVisual) panels[0].getComponent()).moduleLocationTextField.getText().trim();
-            File fp = new File(moduleRoot);
-            FileObject parent = FileUtil.toFileObject(fp);
-
-            File fch = new File(path);
-            FileObject child;
-            try {
-                child = FileUtil.toFileObject(fch);
-            } catch (Exception exc) {
-                return false;
-            }
-            if (child == null)
-                return false;
-            
-            if (child.equals(parent))
-                return true;
-            if (!FileUtil.isParentOf(parent, child))
-                return false;
-            return true;
-        }
-        
-        private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
-        public final void addChangeListener(ChangeListener l) {
-            synchronized (listeners) {
-                listeners.add(l);
-            }
-        }
-        
-        public final void removeChangeListener(ChangeListener l) {
-            synchronized (listeners) {
-                listeners.remove(l);
-            }
-        }
-        
-        protected final void fireChangeEvent() {
-            Iterator it;
-            synchronized (listeners) {
-                it = new HashSet(listeners).iterator();
-            }
-            ChangeEvent ev = new ChangeEvent(this);
-            while (it.hasNext()) {
-                ((ChangeListener)it.next()).stateChanged(ev);
-            }
-        }
-        
-        public void readSettings (Object settings) {
-        }
-        
-        public void storeSettings (Object settings) {
-            WizardDescriptor d = (WizardDescriptor) settings;
-            
-            d.putProperty(WizardProperties.CONFIG_FILES_FOLDER, panel.jTextFieldConfigFiles.getText().trim());
-            d.putProperty(WizardProperties.JAVA_ROOT, panel.jTextFieldJavaSources.getText().trim());
-            d.putProperty(WizardProperties.LIB_FOLDER, panel.jTextFieldLibraries.getText().trim());
-        }
-    }
 }

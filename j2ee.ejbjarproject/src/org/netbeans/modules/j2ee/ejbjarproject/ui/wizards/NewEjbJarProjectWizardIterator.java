@@ -38,6 +38,8 @@ import org.openide.util.NbBundle;
  */
 public class NewEjbJarProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
+    static final String PROP_NAME_INDEX = "nameIndex";      //NOI18N
+
     private static final long serialVersionUID = 1L;
     
     private WizardDescriptor.Panel[] createPanels() {

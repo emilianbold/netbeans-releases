@@ -15,7 +15,8 @@ Microsystems, Inc. All Rights Reserved.
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:p="http://www.netbeans.org/ns/project/1"
                 xmlns:xalan="http://xml.apache.org/xslt"
-                xmlns:ejb="http://www.netbeans.org/ns/j2ee-ejbjarproject/1"
+                xmlns:ejbjarproject1="http://www.netbeans.org/ns/j2ee-ejbjarproject/1"
+                xmlns:ejbjarproject2="http://www.netbeans.org/ns/j2ee-ejbjarproject/2"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
                 exclude-result-prefixes="xalan p ejb projdeps">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
@@ -38,7 +39,7 @@ is divided into following sections:
 
 ]]></xsl:comment>
 
-        <xsl:variable name="name" select="/p:project/p:configuration/ejb:data/ejb:name"/>
+        <xsl:variable name="name" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:name"/>
         <project name="{$name}-impl">
             <xsl:attribute name="default">build</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
@@ -81,7 +82,7 @@ is divided into following sections:
 
             <target name="do-init">
                 <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project</xsl:attribute>
-                <xsl:if test="/p:project/p:configuration/ejb:data/ejb:explicit-platform">
+                <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:explicit-platform">
                     <!--Setting java and javac default location -->
                     <property name="platforms.${{platform.active}}.javac" value="${{platform.home}}/bin/javac"/>
                     <property name="platforms.${{platform.active}}.java" value="${{platform.home}}/bin/java"/>
@@ -105,9 +106,13 @@ is divided into following sections:
                 <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
                 <property name="default.javac.source" value="1.4"/>
                 <property name="default.javac.target" value="1.4"/>
-                <xsl:if test="/p:project/p:configuration/ejb:data/ejb:use-manifest">
+                <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:use-manifest">
                     <fail unless="manifest.file">Must set manifest.file</fail>
                 </xsl:if>
+                <xsl:call-template name="createRootAvailableTest">
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:test-roots"/>
+                    <xsl:with-param name="propName">have.tests</xsl:with-param>
+                </xsl:call-template>
                 <condition property="no.javadoc.preview">
                     <isfalse value="${{javadoc.preview}}"/>
                 </condition>
@@ -123,7 +128,12 @@ is divided into following sections:
                 <!-- XXX XSLT 2.0 would make it possible to use a for-each here -->
                 <!-- Note that if the properties were defined in project.xml that would be easy -->
                 <!-- But required props should be defined by the AntBasedProjectType, not stored in each project -->
-                <fail unless="src.dir">Must set src.dir</fail>
+                <xsl:call-template name="createSourcePathValidityTest">
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:source-roots"/>
+                </xsl:call-template>
+                <xsl:call-template name="createSourcePathValidityTest">
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:test-roots"/>
+                </xsl:call-template>
                 <fail unless="build.dir">Must set build.dir</fail>
                 <fail unless="build.generated.dir">Must set build.generated.dir</fail>
                 <fail unless="dist.dir">Must set dist.dir</fail>
@@ -136,10 +146,14 @@ is divided into following sections:
             <target name="init-macrodef-javac">
                 <macrodef>
                     <xsl:attribute name="name">javac</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-ejbjarproject/1</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-ejbjarproject/2</xsl:attribute>
                     <attribute>
                         <xsl:attribute name="name">srcdir</xsl:attribute>
-                        <xsl:attribute name="default">${src.dir}</xsl:attribute>
+                        <xsl:attribute name="default">
+                            <xsl:call-template name="createPath">
+                                <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:source-roots"/>
+                            </xsl:call-template>
+                        </xsl:attribute>
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">destdir</xsl:attribute>
@@ -166,7 +180,7 @@ is divided into following sections:
                             <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
                             <xsl:attribute name="source">${javac.source}</xsl:attribute>
                             <xsl:attribute name="target">${javac.target}</xsl:attribute>
-                            <xsl:if test="/p:project/p:configuration/ejb:data/ejb:explicit-platform">
+                            <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:explicit-platform">
                                 <xsl:attribute name="fork">yes</xsl:attribute>
                                 <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
                             </xsl:if>
@@ -180,6 +194,47 @@ is divided into following sections:
                     </sequential>
                  </macrodef>
             </target>
+
+            <target name="-init-macrodef-junit">
+                <macrodef>
+                    <xsl:attribute name="name">junit</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-ejbjarproject/2</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">includes</xsl:attribute>
+                        <xsl:attribute name="default">**/*Test.java</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <junit>
+                            <xsl:attribute name="showoutput">true</xsl:attribute>
+                            <xsl:attribute name="fork">true</xsl:attribute>
+                            <xsl:attribute name="dir">${basedir}</xsl:attribute> <!-- #47474: match <java> --> 
+                            <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
+                            <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
+                            <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:explicit-platform">
+                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                            </xsl:if>
+                            <batchtest todir="${{build.test.results.dir}}">
+                                <xsl:call-template name="createFilesets">
+                                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:test-roots"/>
+                                    <xsl:with-param name="includes">@{includes}</xsl:with-param>
+                                </xsl:call-template>
+                            </batchtest>
+                            <classpath>
+                                <path path="${{run.test.classpath}}"/>
+                            </classpath>
+                            <syspropertyset>
+                                <propertyref prefix="test-sys-prop."/>
+                                <mapper type="glob" from="test-sys-prop.*" to="*"/>
+                            </syspropertyset>
+                            <formatter type="brief" usefile="false"/>
+                            <!-- TBD
+                            <formatter type="xml"/>
+                            -->
+                        </junit>
+                    </sequential>
+                </macrodef>
+            </target>
+
 
             <target name="init-macrodef-nbjpda">
                 <macrodef>
@@ -198,7 +253,7 @@ is divided into following sections:
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
-                            <xsl:if test="/p:project/p:configuration/ejb:data/ejb:explicit-platform">
+                            <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:explicit-platform">
                                 <bootclasspath>
                                     <path path="${{platform.bootcp}}"/>
                                 </bootclasspath>
@@ -239,7 +294,7 @@ is divided into following sections:
                     </attribute>
                     <sequential>
                         <java fork="true" classname="@{{classname}}">
-                            <xsl:if test="/p:project/p:configuration/ejb:data/ejb:explicit-platform">
+                            <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                                 <bootclasspath>
                                     <path path="${{platform.bootcp}}"/>
@@ -276,7 +331,7 @@ is divided into following sections:
                 <xsl:with-param name="type" select="'jar'"/>
             </xsl:call-template>
 
-            <xsl:if test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service|/p:project/p:configuration/ejb:data/ejb:web-service-clients/ejb:web-service-client">
+            <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service|/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-service-clients/ejbjarproject2:web-service-client">
 				<target name="wscompile-init">
 					<taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
 					  <classpath path="${{wscompile.classpath}}"/>
@@ -286,9 +341,9 @@ is divided into following sections:
 				</target>
 			</xsl:if>
 
-            <xsl:for-each select="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
+            <xsl:for-each select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service">
               <xsl:variable name="wsname">
-                <xsl:value-of select="ejb:web-service-name"/>
+                <xsl:value-of select="ejbjarproject2:web-service-name"/>
               </xsl:variable>
 
               <target name="{$wsname}_wscompile" depends="wscompile-init">
@@ -308,9 +363,9 @@ is divided into following sections:
               </target>
             </xsl:for-each>
 
-			<xsl:for-each select="/p:project/p:configuration/ejb:data/ejb:web-service-clients/ejb:web-service-client">
+			<xsl:for-each select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-service-clients/ejbjarproject2:web-service-client">
 				<xsl:variable name="wsclientname">
-					<xsl:value-of select="ejb:web-service-client-name"/>
+					<xsl:value-of select="ejbjarproject2:web-service-client-name"/>
 				</xsl:variable>
 
 				<target name="{$wsclientname}_client_wscompile" depends="wscompile-init">
@@ -345,7 +400,7 @@ is divided into following sections:
             </target>
 
             <target name="library-inclusion-in-archive" depends="compile">
-                <xsl:for-each select="//ejb:included-library">
+                <xsl:for-each select="//ejbjarproject2:included-library">
                     <xsl:variable name="included.prop.name">
                         <xsl:value-of select="."/>
                     </xsl:variable>
@@ -356,7 +411,7 @@ is divided into following sections:
             </target> 
             
             <target name="library-inclusion-in-manifest" depends="compile">
-                <xsl:for-each select="//ejb:included-library">
+                <xsl:for-each select="//ejbjarproject2:included-library">
                     <xsl:variable name="included.prop.name">
                         <xsl:value-of select="."/>
                     </xsl:variable>
@@ -375,7 +430,7 @@ is divided into following sections:
                     <attribute>
                         <xsl:attribute name="name">Class-Path</xsl:attribute>
                         <xsl:attribute name="value">
-                            <xsl:for-each select="//ejb:included-library">
+                            <xsl:for-each select="//ejbjarproject2:included-library">
                                 <xsl:variable name="base.prop.name">
                                     <xsl:value-of select="concat('${included.lib.', ., '}')"/>
                                 </xsl:variable>
@@ -389,21 +444,25 @@ is divided into following sections:
             
             <target name="do-compile">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
-                <xsl:if test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
+                <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service">
                     <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment> 
                     <delete> 
                       <fileset dir="${{build.classes.dir}}" includes="**/*_Tie.* **/*_SerializerRegistry.*"/>
                     </delete>
                 </xsl:if>
-                <ejbproject:javac xmlns:ejbproject="http://www.netbeans.org/ns/j2ee-ejbjarproject/1"/>
+                <ejbjarproject2:javac/>
                 <copy todir="${{build.classes.dir}}">
+                    <xsl:call-template name="createFilesets">
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:source-roots"/>
+                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
+                    </xsl:call-template>
                     <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
                     <fileset dir="${{meta.inf}}" includes="**/*.dbschema"/>
                 </copy>
                 <copy todir="${{build.classes.dir}}/META-INF">
                   <fileset dir="${{meta.inf}}" excludes="**/*.dbschema"/> 
                 </copy>
-                <xsl:if test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
+                <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service">
                     <xsl:comment>For web services, refresh ejb-jar.xml and sun-ejb-jar.xml</xsl:comment>  
                     <copy todir="${{build.dir}}" overwrite="true"> 
                       <fileset includes="META-INF/ejb-jar.xml META-INF/sun-ejb-jar.xml" dir="${{meta.inf}}"/>
@@ -412,14 +471,14 @@ is divided into following sections:
             </target>
 
             <target name="post-compile">
-                <xsl:if test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
+                <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service">
 					<xsl:attribute name="depends">
-						<xsl:for-each select="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
+						<xsl:for-each select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service">
 							<xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
 							<xsl:variable name="wsname2">
-								<xsl:value-of select="ejb:web-service-name"/>
+								<xsl:value-of select="ejbjarproject2:web-service-name"/>
 							</xsl:variable>
-							<xsl:value-of select="ejb:web-service-name"/><xsl:text>_wscompile</xsl:text>
+							<xsl:value-of select="ejbjarproject2:web-service-name"/><xsl:text>_wscompile</xsl:text>
 						</xsl:for-each>
 					</xsl:attribute>
 				</xsl:if>
@@ -440,11 +499,11 @@ is divided into following sections:
             <target name="do-compile-single">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile</xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
-                <ejbproject:javac xmlns:ejbproject="http://www.netbeans.org/ns/j2ee-ejbjarproject/1">
+                <ejbjarproject2:javac>
                     <customize>
                         <include name="${{javac.includes}}"/>
                     </customize>
-                </ejbproject:javac>
+                </ejbjarproject2:javac>
             </target>
 
             <target name="post-compile-single">
@@ -527,12 +586,13 @@ is divided into following sections:
             <sourcepath>
                 <path path="${{web.docbase.dir}}"/>
             </sourcepath>
-            <xsl:if test="/p:project/p:configuration/ejb:data/ejb:explicit-platform">
+            <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:explicit-platform">
             <bootclasspath>
                 <path path="${{platform.bootcp}}"/>
             </bootclasspath>
             </xsl:if>
         </nbjpdaconnect>
+        <nbbrowse url="${{client.url}}"/>
     </target>
 
     <target name="pre-debug-fix">
@@ -562,30 +622,107 @@ is divided into following sections:
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <mkdir dir="${{dist.javadoc.dir}}"/>
                 <!-- XXX do an up-to-date check first -->
-                <javadoc destdir="${{dist.javadoc.dir}}" source="${{javac.source}}"
-                         notree="${{javadoc.notree}}"
-                         use="${{javadoc.use}}"
-                         nonavbar="${{javadoc.nonavbar}}"
-                         noindex="${{javadoc.noindex}}"
-                         splitindex="${{javadoc.splitindex}}"
-                         author="${{javadoc.author}}"
-                         version="${{javadoc.version}}"
-                         windowtitle="${{javadoc.windowtitle}}"
-                         private="${{javadoc.private}}" >
-                         <!-- encoding="${{javadoc.encoding}}" -->
-                    <classpath>
-                        <path path="${{javac.classpath}}"/>
-                    </classpath>
-                    <sourcepath>
-                        <pathelement location="${{src.dir}}"/>
-                    </sourcepath>
-                    <xsl:if test="/p:project/p:configuration/ejb:data/ejb:explicit-platform">
-                        <bootclasspath>
-                            <path path="${{platform.bootcp}}"/>
-                        </bootclasspath>
-                    </xsl:if>
-                    <fileset dir="${{src.dir}}"/>
-                </javadoc>
+                <xsl:choose>
+                    <xsl:when test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:explicit-platform">
+                        <!-- XXX #46901: <javadoc> does not support an explicit executable -->
+                        <ejbjarproject1:property name="platform.javadoc.tmp" value="platforms.${{platform.active}}.javadoc"/>
+                        <condition property="platform.javadoc" value="${{platform.home}}/bin/javadoc">
+                            <equals arg1="${{platform.javadoc.tmp}}" arg2="$${{platforms.${{platform.active}}.javadoc}}"/>
+                        </condition>
+                        <property name="platform.javadoc" value="${{platform.javadoc.tmp}}"/>
+                        <condition property="javadoc.notree.opt" value="-notree">
+                            <istrue value="${{javadoc.notree}}"/>
+                        </condition>
+                        <property name="javadoc.notree.opt" value=""/>
+                        <condition property="javadoc.use.opt" value="-use">
+                            <istrue value="${{javadoc.use}}"/>
+                        </condition>
+                        <property name="javadoc.use.opt" value=""/>
+                        <condition property="javadoc.nonavbar.opt" value="-nonavbar">
+                            <istrue value="${{javadoc.nonavbar}}"/>
+                        </condition>
+                        <property name="javadoc.nonavbar.opt" value=""/>
+                        <condition property="javadoc.noindex.opt" value="-noindex">
+                            <istrue value="${{javadoc.noindex}}"/>
+                        </condition>
+                        <property name="javadoc.noindex.opt" value=""/>
+                        <condition property="javadoc.splitindex.opt" value="-splitindex">
+                            <istrue value="${{javadoc.splitindex}}"/>
+                        </condition>
+                        <property name="javadoc.splitindex.opt" value=""/>
+                        <condition property="javadoc.author.opt" value="-author">
+                            <istrue value="${{javadoc.author}}"/>
+                        </condition>
+                        <property name="javadoc.author.opt" value=""/>
+                        <condition property="javadoc.version.opt" value="-version">
+                            <istrue value="${{javadoc.version}}"/>
+                        </condition>
+                        <property name="javadoc.version.opt" value=""/>
+                        <condition property="javadoc.private.opt" value="-private">
+                            <istrue value="${{javadoc.private}}"/>
+                        </condition>
+                        <property name="javadoc.private.opt" value=""/>
+                        <condition property="javadoc.classpath.opt" value="${{javac.classpath}}">
+                            <!-- -classpath '' cannot be passed safely on Windows; cf. #46901. -->
+                            <not>
+                                <equals arg1="${{javac.classpath}}" arg2=""/>
+                            </not>
+                        </condition>
+                        <property name="javadoc.classpath.opt" value='""'/>
+                        <apply executable="${{platform.javadoc}}" failonerror="true" parallel="true">
+                            <arg value="-d"/>
+                            <arg file="${{dist.javadoc.dir}}"/>
+                            <xsl:if test ="not(/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:explicit-platform/@explicit-source-supported ='false')">
+                                <arg value="-source"/>
+                                <arg value="${{javac.source}}"/>
+                            </xsl:if>
+                            <arg value="-windowtitle"/>
+                            <arg value="${{javadoc.windowtitle}}"/>
+                            <arg line="${{javadoc.notree.opt}} ${{javadoc.use.opt}} ${{javadoc.nonavbar.opt}} ${{javadoc.noindex.opt}} ${{javadoc.splitindex.opt}} ${{javadoc.author.opt}} ${{javadoc.version.opt}} ${{javadoc.private.opt}}"/>
+                            <arg value="-classpath"/>
+                            <arg path="${{javadoc.classpath.opt}}"/>
+                            <arg value="-sourcepath"/>
+                            <xsl:element name="arg">
+                                <xsl:attribute name="path">
+                                    <xsl:call-template name="createPath">
+                                        <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:source-roots"/>
+                                    </xsl:call-template>
+                                </xsl:attribute>
+                            </xsl:element>
+                            <xsl:call-template name="createFilesets">
+                                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:source-roots"/>
+                                    <xsl:with-param name="includes">**/*.java</xsl:with-param>
+                           </xsl:call-template>
+                        </apply>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <javadoc>
+                            <xsl:attribute name="destdir">${dist.javadoc.dir}</xsl:attribute>
+                            <xsl:attribute name="source">${javac.source}</xsl:attribute>
+                            <xsl:attribute name="notree">${javadoc.notree}</xsl:attribute>
+                            <xsl:attribute name="use">${javadoc.use}</xsl:attribute>
+                            <xsl:attribute name="nonavbar">${javadoc.nonavbar}</xsl:attribute>
+                            <xsl:attribute name="noindex">${javadoc.noindex}</xsl:attribute>
+                            <xsl:attribute name="splitindex">${javadoc.splitindex}</xsl:attribute>
+                            <xsl:attribute name="author">${javadoc.author}</xsl:attribute>
+                            <xsl:attribute name="version">${javadoc.version}</xsl:attribute>
+                            <xsl:attribute name="windowtitle">${javadoc.windowtitle}</xsl:attribute>
+                            <xsl:attribute name="private">${javadoc.private}</xsl:attribute>
+                            <xsl:attribute name="failonerror">true</xsl:attribute> <!-- #47325 -->
+                            <classpath>
+                                <path path="${{javac.classpath}}"/>
+                            </classpath>
+                            <sourcepath>
+                                <xsl:call-template name="createPathElements">
+                                    <xsl:with-param name="locations" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:source-roots"/>
+                                </xsl:call-template>
+                            </sourcepath>
+                            <xsl:call-template name="createFilesets">
+                                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:source-roots"/>
+                           </xsl:call-template>
+                        </javadoc>
+                    </xsl:otherwise>
+                </xsl:choose>
             </target>
 
             <target name="javadoc-browse">
@@ -599,8 +736,196 @@ is divided into following sections:
                 <xsl:attribute name="depends">init,javadoc-build,javadoc-browse</xsl:attribute>
                 <xsl:attribute name="description">Build Javadoc.</xsl:attribute>
             </target>
-            
+
             <xsl:comment>
+    =========================
+    JUNIT COMPILATION SECTION
+    =========================
+    </xsl:comment>
+
+            <target name="-pre-pre-compile-test">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile</xsl:attribute>
+                <mkdir dir="${{build.test.classes.dir}}"/>
+            </target>
+
+            <target name="-pre-compile-test">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="-do-compile-test">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test</xsl:attribute>
+                <xsl:element name="ejbjarproject2:javac">
+                    <xsl:attribute name="srcdir">
+                        <xsl:call-template name="createPath">
+                            <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:test-roots"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                    <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
+                    <xsl:attribute name="debug">true</xsl:attribute>
+                    <xsl:attribute name="classpath">${javac.test.classpath}</xsl:attribute>
+                </xsl:element>
+                <copy todir="${{build.test.classes.dir}}">
+                    <xsl:call-template name="createFilesets">
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:test-roots"/>
+                        <xsl:with-param name="excludes">**/*.java</xsl:with-param>
+                    </xsl:call-template>
+                </copy>
+            </target>
+
+            <target name="-post-compile-test">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="compile-test">
+                <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test,-do-compile-test,-post-compile-test</xsl:attribute>
+            </target>
+
+            <target name="-pre-compile-test-single">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="-do-compile-test-single">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test-single</xsl:attribute>
+                <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
+                <xsl:element name="ejbjarproject2:javac">
+                    <xsl:attribute name="srcdir">
+                        <xsl:call-template name="createPath">
+                            <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:test-roots"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                    <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
+                    <xsl:attribute name="debug">true</xsl:attribute>
+                    <xsl:attribute name="classpath">${javac.test.classpath}</xsl:attribute>
+                    <customize>
+                        <patternset includes="${{javac.includes}}"/>
+                    </customize>
+                </xsl:element>
+            </target>
+
+            <target name="-post-compile-test-single">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="compile-test-single">
+                <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test-single,-do-compile-test-single,-post-compile-test-single</xsl:attribute>
+            </target>
+
+            <xsl:comment>
+    =======================
+    JUNIT EXECUTION SECTION
+    =======================
+    </xsl:comment>
+
+            <target name="-pre-test-run">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <mkdir dir="${{build.test.results.dir}}"/>
+            </target>
+
+            <target name="-do-test-run">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test,-pre-test-run</xsl:attribute>
+                <ejbjarproject2:junit/>
+            </target>
+
+            <target name="-post-test-run">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test,-pre-test-run,-do-test-run</xsl:attribute>
+                <fail if="tests.failed">Some tests failed; see details above.</fail>
+            </target>
+
+            <target name="test-report">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <!-- TBD
+                <junitreport todir="${{build.test.results.dir}}">
+                    <fileset dir="${{build.test.results.dir}}">
+                        <include name="TEST-*.xml"/>
+                    </fileset>
+                    <report format="noframes" todir="${{build.test.results.dir}}"/>
+                </junitreport>
+                -->
+            </target>
+
+            <target name="-test-browse">
+                <xsl:attribute name="if">netbeans.home+have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <!-- TBD
+                <nbbrowse file="${{build.test.results.dir}}/junit-noframes.html"/>
+                -->
+            </target>
+
+            <target name="test">
+                <xsl:attribute name="depends">init,compile-test,-pre-test-run,-do-test-run,test-report,-post-test-run,-test-browse</xsl:attribute>
+                <xsl:attribute name="description">Run unit tests.</xsl:attribute>
+            </target>
+
+            <target name="-pre-test-run-single">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <mkdir dir="${{build.test.results.dir}}"/>
+            </target>
+
+            <target name="-do-test-run-single">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single</xsl:attribute>
+                <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
+                <ejbjarproject2:junit includes="${{test.includes}}"/>
+            </target>
+
+            <target name="-post-test-run-single">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single,-do-test-run-single</xsl:attribute>
+                <fail if="tests.failed">Some tests failed; see details above.</fail>
+            </target>
+
+            <target name="test-single">
+                <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single,-do-test-run-single,-post-test-run-single</xsl:attribute>
+                <xsl:attribute name="description">Run single unit test.</xsl:attribute>
+            </target>
+
+            <xsl:comment>
+    =======================
+    JUNIT DEBUGGING SECTION
+    =======================
+    </xsl:comment>
+
+            <target name="-debug-start-debuggee-test">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test</xsl:attribute>
+                <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
+                <ejbjarproject1:debug classname="junit.textui.TestRunner" classpath="${{debug.test.classpath}}" args="${{test.class}}"/>
+            </target>
+
+            <target name="-debug-start-debugger-test">
+                <xsl:attribute name="if">netbeans.home+have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test</xsl:attribute>
+                <ejbjarproject1:nbjpdastart name="${{test.class}}" classpath="${{debug.test.classpath}}"/>
+            </target>
+
+            <target name="debug-test">
+                <xsl:attribute name="depends">init,compile-test,-debug-start-debugger-test,-debug-start-debuggee-test</xsl:attribute>
+            </target>
+
+            <target name="-do-debug-fix-test">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,pre-debug-fix,compile-test-single</xsl:attribute>
+                <ejbjarproject1:nbjpdareload dir="${{build.test.classes.dir}}"/>
+            </target>
+
+            <target name="debug-fix-test">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,pre-debug-fix,-do-debug-fix-test</xsl:attribute>
+            </target>
+            
+    <xsl:comment>
     ===============
     CLEANUP SECTION
     ===============
@@ -707,5 +1032,71 @@ to simulate
             </xsl:for-each>
         </target>
     </xsl:template>
+
+    <!-- Multiple src roots -->
+    
+    <xsl:template name="createRootAvailableTest">
+        <xsl:param name="roots"/>
+        <xsl:param name="propName"/>
+        <xsl:element name="condition">
+            <xsl:attribute name="property"><xsl:value-of select="$propName"/></xsl:attribute>
+            <or>
+                <xsl:for-each select="$roots/ejbjarproject2:root">
+                    <xsl:element name="available">
+			        <xsl:attribute name="file"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
+		            </xsl:element>
+                </xsl:for-each>
+            </or>
+        </xsl:element>
+    </xsl:template>
+
+    <xsl:template name="createSourcePathValidityTest">
+        <xsl:param name="roots"/>
+        <xsl:for-each select="$roots/ejbjarproject2:root">
+            <xsl:element name="fail">
+			    <xsl:attribute name="unless"><xsl:value-of select="@id"/></xsl:attribute>
+                <xsl:text>Must set </xsl:text><xsl:value-of select="@id"/>
+		    </xsl:element>
+        </xsl:for-each>
+    </xsl:template>
+
+    <xsl:template name="createFilesets">
+		<xsl:param name="roots"/>
+        <xsl:param name="includes"/>
+        <xsl:param name="excludes"/>
+        <xsl:for-each select="$roots/ejbjarproject2:root">
+            <xsl:element name="fileset">
+			    <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
+                <xsl:if test="$includes">
+                    <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
+                </xsl:if>
+                <xsl:if test="$excludes">
+			        <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/></xsl:attribute>
+                </xsl:if>
+		    </xsl:element>
+        </xsl:for-each>
+	</xsl:template>
+
+    <xsl:template name="createPathElements">
+        <xsl:param name="locations"/>
+        <xsl:for-each select="$locations/ejbjarproject2:root">
+            <xsl:element name="pathelement">
+			    <xsl:attribute name="location"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
+		    </xsl:element>
+        </xsl:for-each>
+    </xsl:template>
+
+    <xsl:template name="createPath">
+            <xsl:param name="roots"/>
+            <xsl:for-each select="$roots/ejbjarproject2:root">
+                <xsl:if test="position() != 1">
+                        <xsl:text>:</xsl:text>
+                </xsl:if>
+                <xsl:text>${</xsl:text>
+                <xsl:value-of select="@id"/>
+                <xsl:text>}</xsl:text>
+            </xsl:for-each>						
+    </xsl:template>
+
 
 </xsl:stylesheet>
