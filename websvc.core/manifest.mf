@@ -11,3 +11,4 @@ Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core
 Name: org/netbeans/modules/websvc/wsdl/ConfigDataLoader.class
 OpenIDE-Module-Class: Loader
 Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
+
