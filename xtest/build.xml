@@ -64,8 +64,6 @@ Microsystems, Inc. All Rights Reserved.
           <include name="xerces*.jar"/>
           <include name="xalan*.jar"/>
           <include name="ant-1.*.jar"/>
-        </fileset>
-        <fileset dir="../junit/external">
           <include name="junit*.jar"/>
         </fileset>
 	<pathelement location="lib/nbjunit.jar"/>
