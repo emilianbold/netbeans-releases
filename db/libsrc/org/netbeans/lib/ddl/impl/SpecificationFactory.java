@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.text.ParseException;
 import com.netbeans.ddl.*;
+import com.netbeans.ddl.impl.*;
 
 /** 
 * The factory used for creating instances of Specification class. 
@@ -262,13 +263,12 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
 	/** Creates instance of DriverSpecification class; a driver-specification
 	* class. This object knows about used driver.
   */
-	public DriverSpecification createDriverSpecification(String driverName) throws DriverProductNotFoundException {
+	public DriverSpecification createDriverSpecification(String driverName) {
 		HashMap product = (HashMap) drvSpecs.get(driverName);
 		if (product == null)
       product = (HashMap) drvSpecs.get("DefaultDriver");
-//    throw new DriverProductNotFoundException(driverName);
 		HashMap specmap = deepUnion(product, (HashMap) drvSpecs.get("DefaultDriver"), true);
-		DriverSpecification spec = (DriverSpecification) new DrvSpecification(specmap);
+		DriverSpecification spec = new DriverSpecification(specmap);
 		spec.setDriverSpecificationFactory(this);
     
 		return spec;
@@ -333,6 +333,7 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
 
 /*
 * <<Log>>
+*  13   Gandalf   1.12        1/25/00  Radko Najman    
 *  12   Gandalf   1.11        1/12/00  Radko Najman    deepUnion() method is not
 *       called for TypeMap key
 *  11   Gandalf   1.10        12/15/99 Radko Najman    driverspec.plist

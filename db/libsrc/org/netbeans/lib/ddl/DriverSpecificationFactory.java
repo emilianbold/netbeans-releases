@@ -16,6 +16,7 @@ package com.netbeans.ddl;
 import java.sql.*;
 import java.util.Set;
 import com.netbeans.ddl.*;
+import com.netbeans.ddl.impl.*;
 
 /** 
 * The factory interface used for creating instances of DriverSpecification class. 
@@ -45,7 +46,7 @@ public interface DriverSpecificationFactory {
 	* @param driverName Driver name
 	* @return DriverSpecification object.
 	*/
-	public DriverSpecification createDriverSpecification(String driverName) throws DriverProductNotFoundException;
+	public DriverSpecification createDriverSpecification(String driverName);
 
 }
 
