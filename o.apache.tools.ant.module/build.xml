@@ -73,6 +73,8 @@ Microsystems, Inc. All Rights Reserved.
         <!-- #47708: temporarily patch Ant to accept console input from forked Java processes: -->
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/ant/patches"/>
         <copy file="external/24918.jar" tofile="${netbeans.dest.dir}/${cluster.dir}/ant/patches/ant162-24918.jar"/>
+        <!-- #52045: patch Ant to stop forked processes when build is stopped: -->
+        <copy file="external/31928.jar" tofile="${netbeans.dest.dir}/${cluster.dir}/ant/patches/ant162-31928.jar"/>
     </target>
 
     <target name="netbeans-extra" depends="jar-bridge,release"/>

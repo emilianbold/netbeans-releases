@@ -21,8 +21,9 @@ Microsystems, Inc. All Rights Reserved.
             <binary clear="ant-docs-1.6.2.zip" scrambled="ant-docs-1.6.2.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
             <binary clear="ant-libs-1.6.2.zip" scrambled="ant-libs-1.6.2.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
             <binary clear="ant-misc-1.6.2.zip" scrambled="ant-misc-1.6.2.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
-            <!-- No LFI; simple patch against Apache Ant sources; cf. http://issues.apache.org/bugzilla/show_bug.cgi?id=24918 -->
+            <!-- No LFIs; simple patches against Apache Ant sources; cf. http://issues.apache.org/bugzilla/show_bug.cgi?id=<number> -->
             <binary clear="24918.jar" scrambled="24918.jar.scrambled" license="${extnl}/apache-license-2.0.txt"/>
+            <binary clear="31928.jar" scrambled="31928.jar.scrambled" license="${extnl}/apache-license-2.0.txt"/>
         </unscramble>
         <mkdir dir="lib"/>
         <unzip src="ant-libs-1.6.2.zip" dest="lib"/>
@@ -35,6 +36,7 @@ Microsystems, Inc. All Rights Reserved.
             <binary clear="ant-libs-1.6.2.zip.master" scrambled="ant-libs-1.6.2.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/> 
             <binary clear="ant-misc-1.6.2.zip.master" scrambled="ant-misc-1.6.2.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
             <binary clear="24918.jar.master" scrambled="24918.jar.scrambled" license="${extnl}/apache-license-2.0.txt"/>
+            <binary clear="31928.jar.master" scrambled="31928.jar.scrambled" license="${extnl}/apache-license-2.0.txt"/>
        </scramble>
     </target>
     <target name="clean">
@@ -43,6 +45,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="ant-libs-1.6.2.zip"/>
         <delete file="ant-misc-1.6.2.zip"/>
         <delete file="24918.jar"/>
+        <delete file="31928.jar"/>
         <delete dir="lib"/>
     </target>
 </project>
