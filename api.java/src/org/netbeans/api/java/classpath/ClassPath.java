@@ -439,4 +439,30 @@ public abstract class ClassPath {
         rootIndex[0] = ridx;
         return f;
     }
+
+    private static final java.lang.ref.Reference EMPTY_REF = new java.lang.ref.SoftReference(null);
+
+    private java.lang.ref.Reference refClassLoader = EMPTY_REF;
+
+    /* package private */synchronized void resetClassLoader(ClassLoader cl) {
+        if (refClassLoader.get() == cl)
+            refClassLoader = EMPTY_REF;
+    }
+
+    /**
+     * Returns a ClassLoader for loading classes from this ClassPath. If `cache' is false, then
+     * the method will always return a new initialized instance of ClassLoader. If that parameter is true,
+     * the method may return a ClassLoader which survived from a previous call.
+     *
+     * @param cache True, if a new ClassLoader is requested
+     * @return ClassLoader that loads classes
+     */
+    public final synchronized ClassLoader getClassLoader(boolean cache) {
+        Object o = refClassLoader.get();
+        if (!cache || o == null) {
+            o = new ClassLoaderSupport(this);
+            refClassLoader = new java.lang.ref.SoftReference(o);
+        }
+        return (ClassLoader)o;
+    }
 }

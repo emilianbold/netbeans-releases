@@ -35,6 +35,8 @@ Microsystems, Inc. All Rights Reserved.
     <fileset dir="${nb_all}/openide/netbeans/lib">
         <include name="openide*.jar" />
     </fileset>
+    <pathelement location="${nb_all}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
+    <pathelement location="${nb_all}/openide/io/netbeans/modules/autoload/openide-io.jar"/>
   </path>
 
   <target name="compile">
