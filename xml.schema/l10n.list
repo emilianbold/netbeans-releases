@@ -1,0 +1,5 @@
+xml/core/src/org/netbeans/modules/xml/schema/Bundle.properties
+xml/core/src/org/netbeans/modules/xml/schema/actions/Bundle.properties
+xml/core/src/org/netbeans/modules/xml/schema/resources/Bundle.properties
+xml/core/src/org/netbeans/modules/xml/schema/resources/templates/XMLSchema.html
+xml/core/src/org/netbeans/modules/xml/schema/resources/templates/XMLSchema.xml
