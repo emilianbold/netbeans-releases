@@ -92,7 +92,8 @@ final class CatalogEntryNode extends BeanNode {
 
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(CatalogEntryNode.class);
+        //return new HelpCtx(CatalogEntryNode.class);
+        return HelpCtx.DEFAULT_HELP;
     }
 
     private String getPublicID() {

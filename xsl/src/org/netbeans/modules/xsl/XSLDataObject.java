@@ -92,7 +92,8 @@ public final class XSLDataObject extends MultiDataObject implements XMLDataObjec
     /**
      */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx (XSLDataObject.class);
+        //return new HelpCtx (XSLDataObject.class);
+        return HelpCtx.DEFAULT_HELP;
     }
     
     // XMLDataObjectLook to be deprecated ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -123,7 +124,8 @@ public final class XSLDataObject extends MultiDataObject implements XMLDataObjec
         /**
          */
         public HelpCtx getHelpCtx() {
-            return new HelpCtx (XSLDataObject.class);
+            //return new HelpCtx (XSLDataObject.class);
+            return HelpCtx.DEFAULT_HELP;
         }
         
     }

@@ -108,7 +108,8 @@ public abstract class SAXGeneratorAbstractPanel extends JPanel implements Custom
          * Cunstruct help ctx from WizardPanel_helpURL property.
          */
         public HelpCtx getHelp() {
-            return new HelpCtx(getPeer().getClass());
+            //return new HelpCtx(getPeer().getClass());
+            return null;
         }
 
         public void addChangeListener(javax.swing.event.ChangeListener l) {

@@ -151,7 +151,8 @@ public final class CatalogRootNode extends AbstractNode implements Node.Cookie {
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(CatalogRootNode.class);
+        //return new HelpCtx(CatalogRootNode.class);
+        return HelpCtx.DEFAULT_HELP;
     }
     
     // ~~~~~~~~~~~~~~~~~~~~~~ NODE KIDS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -85,7 +85,8 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(CatalogNode.class);
+        //return new HelpCtx(CatalogNode.class);
+        return HelpCtx.DEFAULT_HELP;
     }
     
     /**
