@@ -346,6 +346,12 @@ Microsystems, Inc. All Rights Reserved.
                 <fileset dir="../../core/windows/netbeans/modules">
             		<include name="core-windows.jar"/>
                 </fileset>             
+                
+                <!-- Cf. #36294: XMLUtilTest.testNamespaces requires Xerces to pass -->
+                <fileset dir="../../libs/external">
+                    <include name="xerces-*.jar"/>
+                    <include name="xml-commons-dom-ranges-*.jar"/>
+                </fileset>
     	</path>
     </target>
         
@@ -377,6 +383,10 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="../netbeans/lib/openide.jar"/> <!-- for the manifest -->
                 <pathelement location="../loaders/netbeans/lib/openide-loaders.jar"/> <!-- for the manifest -->
 
+                <fileset dir="../../libs/external">
+                    <include name="xerces-*.jar"/>
+                    <include name="xml-commons-dom-ranges-*.jar"/>
+                </fileset>
        	</path>
     </target>
 
@@ -405,6 +415,11 @@ Microsystems, Inc. All Rights Reserved.
                      <include name="core-*.jar"/>
              </fileset>
 
+                
+             <fileset dir="${netbeans.home}/modules/autoload/ext">
+                  <include name="xerces-*.jar"/>
+                  <include name="xml-commons-dom-ranges-*.jar"/>
+            </fileset>
         </path>
     </target>
     
