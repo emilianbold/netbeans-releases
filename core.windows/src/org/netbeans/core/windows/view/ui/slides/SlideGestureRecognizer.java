@@ -89,7 +89,7 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
             curMouseLocY = e.getY();
         }
         // #54764 - start
-        if (pressingButton && e.getButton() == MouseEvent.NOBUTTON) {
+        if (pressingButton && (e.getModifiersEx() & MouseEvent.BUTTON1_DOWN_MASK) == 0) {
             pressingButton = false;
             autoSlideTrigger.activateAutoSlideInGesture(); 
         }
@@ -107,7 +107,7 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
         curMouseLocY = e.getY();
         pressingButton =false;
         // #54764 - start
-        if (e.getButton() != MouseEvent.NOBUTTON) {
+        if ((e.getModifiersEx() & MouseEvent.BUTTON1_DOWN_MASK) == MouseEvent.BUTTON1_DOWN_MASK) {
             pressingButton = true;
             return;
         }
