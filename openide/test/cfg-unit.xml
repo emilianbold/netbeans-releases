@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<mconfig name="openide unit test config">
+
+    <testbag testattribs="code,stable" executor="code" name="testbag_1" resultsprocessor="unit">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/openide/filesystems/*.class"/>
+                <exclude name="org/openide/filesystems/LocalFileSystemTest.class/testFireFileDataCreatedEvent"/>
+                <exclude name="org/openide/filesystems/LocalFileSystemTest.class/testFireFileFolderCreatedEvent"/>
+                <exclude name="org/openide/filesystems/LocalFileSystemTest.class/testGetOutputStream"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem1Test.class/testFireFileAttributeChangedEvent"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem1Test.class/testDelete"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem1Test.class/testAddFileChangeListener"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem1Test.class/testRemoveFileChangeListener"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem2Test.class/testDelete"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem2Test.class/testGetInputStream"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem2Test.class/testGetOutputStream"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem2Test.class/testRename"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testFireFileDeletedEvent"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testFireFileAttributeChangedEvent"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testFireFileRenamedEvent"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testDelete"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testGetInputStream"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testGetOutputStream"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testAddFileChangeListener"/>
+                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testRemoveFileChangeListener"/>
+            </patternset>
+        </testset>      
+    </testbag>
+  
+    <testbag testattribs="ide,stable" executor="ide" name="testbag_2" resultsprocessor="unit">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/openide/util/*.class"/>
+                <include name="org/openide/loaders/*.class"/>
+                <include name="org/openide/xml/*.class"/>
+                <include name="org/openide/explorer/*.class"/>
+                <include name="org/openide/nodes/*.class"/>
+                <include name="org/openide/modules/*.class"/>
+            </patternset>
+        </testset>        
+    </testbag>
+    
+    <testbag testattribs="code,failing" executor="code" name="testbag_3" resultsprocessor="unit">
+        <testset dir="unit/src">
+            <patternset>                
+                <include name="org/openide/filesystems/LocalFileSystemTest.class/testFireFileDataCreatedEvent"/>
+                <include name="org/openide/filesystems/LocalFileSystemTest.class/testFireFileFolderCreatedEvent"/>
+                <include name="org/openide/filesystems/LocalFileSystemTest.class/testGetOutputStream"/>
+                <include name="org/openide/filesystems/MultiFileSystem1Test.class/testFireFileAttributeChangedEvent"/>
+                <include name="org/openide/filesystems/MultiFileSystem1Test.class/testDelete"/>
+                <include name="org/openide/filesystems/MultiFileSystem1Test.class/testAddFileChangeListener"/>
+                <include name="org/openide/filesystems/MultiFileSystem1Test.class/testRemoveFileChangeListener"/>
+                <include name="org/openide/filesystems/MultiFileSystem2Test.class/testDelete"/>
+                <include name="org/openide/filesystems/MultiFileSystem2Test.class/testGetInputStream"/>
+                <include name="org/openide/filesystems/MultiFileSystem2Test.class/testGetOutputStream"/>
+                <include name="org/openide/filesystems/MultiFileSystem2Test.class/testRename"/>
+                <include name="org/openide/filesystems/MultiFileSystem3Test.class/testFireFileDeletedEvent"/>
+                <include name="org/openide/filesystems/MultiFileSystem3Test.class/testFireFileAttributeChangedEvent"/>
+                <include name="org/openide/filesystems/MultiFileSystem3Test.class/testFireFileRenamedEvent"/>
+                <include name="org/openide/filesystems/MultiFileSystem3Test.class/testDelete"/>
+                <include name="org/openide/filesystems/MultiFileSystem3Test.class/testGetInputStream"/>
+                <include name="org/openide/filesystems/MultiFileSystem3Test.class/testGetOutputStream"/>
+                <include name="org/openide/filesystems/MultiFileSystem3Test.class/testAddFileChangeListener"/>
+                <include name="org/openide/filesystems/MultiFileSystem3Test.class/testRemoveFileChangeListener"/>
+            </patternset>
+        </testset>      
+    </testbag>
+    
+    <executor name="ide" antfile="build.xml" target="runidetest"/>
+    <executor name="code" antfile="build.xml" target="runcodetest"/>
+    
+    <resultsprocessor name="unit" antfile="build.xml" target="test_report"/>
+
+</mconfig>
