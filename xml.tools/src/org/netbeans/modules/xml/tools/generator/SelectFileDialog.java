@@ -54,6 +54,8 @@ public class SelectFileDialog extends JPanel {
         initComponents ();
         fileLabel.setDisplayedMnemonic(Util.getChar("PROP_fileName_mne")); // NOI18N
         ownInitComponents ();
+        
+        initAccessibility();
     }
 
     private void ownInitComponents () {
@@ -71,16 +73,15 @@ public class SelectFileDialog extends JPanel {
 
         fileLabel = new javax.swing.JLabel();
         fileField = new javax.swing.JTextField();
+        fillPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        fileLabel.setText(Util.getString ("PROP_fileName"));
+        fileLabel.setText(java.util.ResourceBundle.getBundle("tools/src/org/netbeans/modules/xml/tools/generator/Bundle").getString("PROP_fileName"));
         fileLabel.setLabelFor(fileField);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(fileLabel, gridBagConstraints);
 
         fileField.setColumns(20);
@@ -98,13 +99,20 @@ public class SelectFileDialog extends JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.weightx = 1.0;
+        add(fileField, gridBagConstraints);
+
+        fillPanel.setPreferredSize(new java.awt.Dimension(0, 0));
+        fillPanel.setMinimumSize(new java.awt.Dimension(0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
-        add(fileField, gridBagConstraints);
+        add(fillPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -164,10 +172,22 @@ public class SelectFileDialog extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel fileLabel;
     private javax.swing.JTextField fileField;
+    private javax.swing.JPanel fillPanel;
     // End of variables declaration//GEN-END:variables
 
     DialogDescriptor selectDD;
     FileObject folder;
     String name;
     String ext;    
+    
+    
+    /** Initialize accesibility
+     */
+    public void initAccessibility(){
+
+        java.util.ResourceBundle b = org.openide.util.NbBundle.getBundle(this.getClass());
+ 
+        fileField.getAccessibleContext().setAccessibleDescription(b.getString("ACSD_fileField"));        
+    }
+    
 }
