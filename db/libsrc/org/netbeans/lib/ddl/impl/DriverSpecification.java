@@ -230,12 +230,17 @@ public class DriverSpecification {
                 }  catch (SQLException exc) {
                     if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                         exc.printStackTrace();
+                    
+                    rset = null;
+                    break;
                 }
                 rset.put(new Integer(i), value);
             }
         } catch (SQLException exc) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                 exc.printStackTrace();
+            
+            rset = null;
         }
         
         return rset;

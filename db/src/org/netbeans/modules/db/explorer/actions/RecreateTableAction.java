@@ -83,15 +83,32 @@ public class RecreateTableAction extends DatabaseAction {
                             newtab = dlg.getStringValue();
                             cmd.setObjectName(newtab);
                             cmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
-                            cmd.execute();
+                            try {
+                                cmd.execute();
+                                nfo.addTable(newtab);
+                            } catch (org.netbeans.lib.ddl.DDLException exc) {
+                                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                                    exc.printStackTrace();
+                                
+                                TopManager.getDefault().notify(new NotifyDescriptor.Message(exc.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                                
+                                continue;
+                            } catch (org.netbeans.modules.db.DatabaseException exc) {
+                                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                                    exc.printStackTrace();
+                                
+                                continue;
+                            }
                             noResult = false;
-                            nfo.addTable(newtab);
                         } else { // from editable text area
                             DataViewWindow win = new DataViewWindow(info, dlg.getEditedCommand());
                             if(win.executeCommand())
                                 noResult = false;
                         }
                     } catch(Exception exc) {
+                        if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                            exc.printStackTrace();
+                        
                         String message = MessageFormat.format(bundle.getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); // NOI18N
                         TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                     }
@@ -100,6 +117,9 @@ public class RecreateTableAction extends DatabaseAction {
                 }
             }
         } catch(Exception exc) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                exc.printStackTrace();
+            
             String message = MessageFormat.format(bundle.getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); // NOI18N
             TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }

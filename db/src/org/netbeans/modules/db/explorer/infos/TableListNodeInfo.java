@@ -73,6 +73,8 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
                 HashMap rset = new HashMap();
                 rs.next();
                 rset = drvSpec.getRow();
+                if (rset == null)
+                    throw new NullPointerException();
                 DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, rset);
                 rset.clear();
                 rs.close();

@@ -445,6 +445,7 @@ public class Specification implements DatabaseSpecification {
     public String getType(int type)
     {
         String typestr = "";
+        String ret;
         Map typemap = getTypeMap();
 
         switch(type) {
@@ -475,7 +476,11 @@ public class Specification implements DatabaseSpecification {
         case java.sql.Types.VARCHAR: typestr = "VARCHAR"; break; // NOI18N
         }
 
-        return (String)typemap.get("java.sql.Types."+typestr); // NOI18N
+        ret = (String) typemap.get("java.sql.Types." + typestr); // NOI18N
+        if (ret == null)
+            ret = typestr;
+        
+        return ret;
     }
 
     /** Returns DBType where maps specified java type */
