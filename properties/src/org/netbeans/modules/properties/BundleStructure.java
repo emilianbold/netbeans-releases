@@ -189,7 +189,9 @@ public class BundleStructure extends Object {
     }
 
     /** Gets index accoring which is bundle key list sorted.
-     * @return index, 0 means accrding keys */
+     * @return index, 0 means accrding keys, -1 means sorting as in default
+     * properties file
+     */
     public int getSortIndex() {
         return comparator.getIndex();
     }
@@ -334,10 +336,17 @@ public class BundleStructure extends Object {
         /** Setter for <code>index</code> property. */
         public void setIndex(int index) {
             // if same column toggle order
-            if(this.index == index)
-                ascending = !ascending;
-            else
+            if(this.index == index) {
+                if (ascending) {
+                    ascending = false;
+                } else {
+                    // sort as in properties file
+                    index = -1;
+                    ascending = true;
+                }
+            } else {
                 ascending = true;
+            }
             this.index = index;
         }
 
@@ -356,6 +365,30 @@ public class BundleStructure extends Object {
             String str1;
             String str2;
             
+            // sort as in default properties file
+            if (index < 0) {
+                Element.ItemElem item1 = getItem(0, getKeyIndexByName((String)o1));
+                Element.ItemElem item2 = getItem(0, getKeyIndexByName((String)o2));
+                if (item1 != null && item2 != null) {
+                    int item1Pos = item1.getBounds ().getBegin ().getOffset ();
+                    int item2Pos = item2.getBounds ().getBegin ().getOffset ();
+                    if (item1Pos < item2Pos)
+                        return -1;
+                    else if (item1Pos == item2Pos)
+                        return 0;
+                    else
+                        return 1;
+                } else if (item1 != null) {
+                    return -1;
+                } else if (item2 != null) {
+                    return 1;
+                } else {
+                    // both keys are not in the default properties file
+                    // order keys by name
+                    str1 = (String)o1;
+                    str2 = (String)o2;
+                }
+            }
             // key column
             if (index==0) {
                 str1 = (String)o1;
