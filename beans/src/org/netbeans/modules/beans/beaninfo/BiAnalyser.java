@@ -286,7 +286,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
     sb.append( TAB + "private static PropertyDescriptor[] properties = new PropertyDescriptor[" +
                propertyCount + "];\n\n" );
     
-    if ( allProperties.size() > 0) 
+    if ( propertyCount > 0) 
       sb.append( TAB + "static {\n" + TABx2 + "try {\n" );
 
     it = allProperties.iterator();
@@ -306,11 +306,11 @@ public class BiAnalyser extends Object implements Node.Cookie {
       }
     }
     
-    if ( allProperties.size() > 0 )
+    if ( propertyCount > 0 )
       sb.append( TABx2 + "}\n" +  TABx2 + "catch( IntrospectionException e) {}" );
 
 
-    bis.setPropertiesSection( sb.toString(), allProperties.size() > 0 ? "}\n" : "  \n" );
+    bis.setPropertiesSection( sb.toString(), propertyCount > 0 ? "}\n" : "  \n" );
   }
 
   /** Regenerates the event set section of BeanInfo */
@@ -344,7 +344,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
     sb.append( TAB + "private static EventSetDescriptor[] eventSets = new EventSetDescriptor[" 
       + eventCount + "];\n\n" );
 
-    if ( eventSets.size() > 0 )
+    if ( eventCount > 0 )
       sb.append( TAB + "static {\n" + TABx2 + "try {\n" );
 
     it = eventSets.iterator();
@@ -363,10 +363,10 @@ public class BiAnalyser extends Object implements Node.Cookie {
       }
     } 
     
-    if ( eventSets.size() > 0 )
+    if ( eventCount > 0 )
     sb.append( TABx2 + "}\n" +  TABx2 + "catch( IntrospectionException e) {}" );
   
-    bis.setEventSetsSection( sb.toString(), eventSets.size() > 0 ? "}\n" : "  \n");
+    bis.setEventSetsSection( sb.toString(), eventCount > 0 ? "}\n" : "  \n");
   }
   
   /** Generate image icon section */
@@ -615,6 +615,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
 }
 /* 
  * Log
+ *  6    Gandalf   1.5         8/9/99   Petr Hrebejk    BeanInfo for no 
+ *       propertes & no events selected
  *  5    Gandalf   1.4         8/5/99   Petr Hrebejk    BeanInfo for Beans with 
  *       no Properties or no EventSets fixed
  *  4    Gandalf   1.3         7/29/99  Petr Hrebejk    Patterns in BeanInfo 
