@@ -318,6 +318,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             chooser.setApproveButtonMnemonic (approveButtonNameMne.charAt(0));
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             chooser.setFileFilter (new SimpleFileFilter(message,new String[] {"ZIP","JAR"}));   //NOI18N
+            chooser.setAcceptAllFileFilterUsed(false);
             if (chooser.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
                 File[] fs = chooser.getSelectedFiles();
                 PathModel model = (PathModel) this.resources.getModel();

@@ -284,6 +284,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         // TODO add your handling code here:
         JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        chooser.setAcceptAllFileFilterUsed(false);
         if (this.volumeType.equalsIgnoreCase("classpath")) {        //NOI18N
             chooser.setMultiSelectionEnabled (true);
             chooser.setDialogTitle(NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_OpenClasses"));
