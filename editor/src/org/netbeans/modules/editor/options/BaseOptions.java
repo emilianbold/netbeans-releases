@@ -1137,12 +1137,18 @@ public class BaseOptions extends OptionSupport {
         if (val != null) {
             return val.booleanValue();
         } else {
-            // fix of #31758
-            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                // On OSX, default to true
+            // #56234: Check -Djavax.aatext=true
+            if (Boolean.getBoolean("javax.aatext")) {
                 return true;
+
             } else {
-                return false;
+                // fix of #31758
+                if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                    // On OSX, default to true
+                    return true;
+                } else {
+                    return false;
+                }
             }
         }
     }
