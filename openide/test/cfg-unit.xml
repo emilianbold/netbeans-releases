@@ -43,6 +43,9 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- Why? Looks OK to me. -jglick
                 <exclude name="org/openide/loaders/MultiDataObjectTest.class"/>
                 -->
+                <include name="org/openide/nodes/*.class"/>
+                <include name="org/openide/util/*.class"/>
+                <include name="org/openide/xml/*.class"/>
             </patternset>
         </testset>      
     </testbag>
@@ -50,10 +53,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="ide,stable" executor="ide" name="testbag_2" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/openide/util/*.class"/>
-                <include name="org/openide/xml/*.class"/>
                 <include name="org/openide/explorer/propertysheet/*.class"/>
-                <include name="org/openide/nodes/*.class"/>
             </patternset>
         </testset>        
     </testbag>
