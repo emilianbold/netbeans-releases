@@ -82,6 +82,10 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     }
     
     public void showCustomizer( String preselectedCategory ) {
+        showCustomizer( preselectedCategory, null );
+    }
+    
+    public void showCustomizer( String preselectedCategory, String preselectedSubCategory ) {
         
         Dialog dialog = (Dialog)project2Dialog.get (project);
         if ( dialog != null ) {            
@@ -94,6 +98,16 @@ public class CustomizerProviderImpl implements CustomizerProvider {
 
             OptionListener listener = new OptionListener( project, uiProperties );
             HelpCtx helpCtx = new HelpCtx( "org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarCustomizer" );
+            if (preselectedCategory != null && preselectedSubCategory != null) {
+                for (int i = 0; i < categories.length; i++) {
+                    if (preselectedCategory.equals(categories[i].getName())) {
+                        JComponent component = panelProvider.create(categories[i]);
+                        if (component instanceof SubCategoryProvider) {
+                            ((SubCategoryProvider)component).showSubCategory(preselectedSubCategory);
+                        }
+                    }
+                }
+            }
             dialog = ProjectCustomizer.createCustomizerDialog( categories, panelProvider, preselectedCategory, listener, helpCtx );
             dialog.addWindowListener( listener );
             dialog.setTitle( MessageFormat.format(                 
@@ -262,7 +276,21 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         public void windowClosed( WindowEvent e) {
             project2Dialog.remove( project );
         }    
+        
+        public void windowClosing( WindowEvent e ) {
+            //Dispose the dialog otherwsie the {@link WindowAdapter#windowClosed}
+            //may not be called
+            Dialog dialog = (Dialog)project2Dialog.get( project );
+            if ( dialog != null ) {
+                dialog.hide ();
+                dialog.dispose();
+            }
+        }
     }    
+    
+    static interface SubCategoryProvider {
+        public void showSubCategory(String name);
+    }
     
     private class LabelPanel extends JPanel {
         private JLabel label;

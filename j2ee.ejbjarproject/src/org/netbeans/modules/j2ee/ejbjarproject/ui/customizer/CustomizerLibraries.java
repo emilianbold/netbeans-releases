@@ -39,7 +39,11 @@ import org.openide.util.NbBundle;
  *
  * @author  phrebejk
  */
-public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, ListDataListener {
+public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, ListDataListener, CustomizerProviderImpl.SubCategoryProvider {
+    
+    public static final String COMPILE = "COMPILE";
+    public static final String COMPILE_TESTS = "COMPILE_TESTS";
+    public static final String RUN_TESTS = "RUN_TESTS";
     
     EjbJarProjectProperties uiProperties;
     
@@ -171,6 +175,18 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
 
     public void contentsChanged( ListDataEvent e ) {
         // NOP
+    }
+    
+    public void showSubCategory( String name ) {
+        if (name.equals(COMPILE)) {
+            jTabbedPane1.setSelectedIndex(0);
+        } 
+        else if (name.equals(COMPILE_TESTS)) {
+            jTabbedPane1.setSelectedIndex(1);
+        }
+        else if (name.equals(RUN_TESTS)) {
+            jTabbedPane1.setSelectedIndex(2);
+        }
     }
     
     
