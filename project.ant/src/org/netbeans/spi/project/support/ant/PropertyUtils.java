@@ -415,14 +415,22 @@ public class PropertyUtils {
     
     /**
      * Find an absolute file path from a possibly relative path.
-     * @param basedir base file for relative filename resolving
+     * @param basedir base file for relative filename resolving; must be an absolute path
      * @param filename a pathname which may be relative or absolute and may
      *                 use / or \ as the path separator
      * @return an absolute file corresponding to it
+     * @throws IllegalArgumentException if basedir is not absolute
      */
-    public static File resolveFile(File basedir, String filename) {
-        assert basedir != null;
-        assert filename != null;
+    public static File resolveFile(File basedir, String filename) throws IllegalArgumentException {
+        if (basedir == null) {
+            throw new NullPointerException("null basedir passed to resolveFile"); // NOI18N
+        }
+        if (filename == null) {
+            throw new NullPointerException("null filename passed to resolveFile"); // NOI18N
+        }
+        if (!basedir.isAbsolute()) {
+            throw new IllegalArgumentException("nonabsolute basedir passed to resolveFile: " + basedir); // NOI18N
+        }
         if (RELATIVE_SLASH_SEPARATED_PATH.matcher(filename).matches()) {
             // Shortcut - simple relative path. Potentially faster.
             return new File(basedir, filename.replace('/', File.separatorChar));
