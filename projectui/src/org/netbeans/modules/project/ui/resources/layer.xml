@@ -30,10 +30,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.OpenProject"/>
             </file>
             
-            <file name="org-netbeans-modules-project-ui-ImportProject.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.importProject"/>
-            </file>
-            
             <file name="org-netbeans-modules-project-ui-CloseProject.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.CloseProject"/>
             </file>
@@ -188,13 +184,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile.instance"/>
             </file>
                  
-            <attr name="org-netbeans-modules-project-ui-NewFile.shadow/org-netbeans-modules-project-ui-ImportProject.shadow" boolvalue="true" />
-            
-            <file name="org-netbeans-modules-project-ui-ImportProject.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-ImportProject.instance"/>
-            </file>
-            
-            <attr name="org-netbeans-modules-project-ui-ImportProject.shadow/SeparatorNew.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-project-ui-NewFile.shadow/SeparatorNew.instance" boolvalue="true" />
             
             <file name="SeparatorNew.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                 

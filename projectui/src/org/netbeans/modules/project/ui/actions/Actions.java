@@ -207,13 +207,6 @@ public class Actions implements ActionsFactory {
             new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/stopBuild.gif" ) ) ); // NOI18N
     }
     
-    public static Action importProject() {
-        
-        return new UnimplementedAction (
-            NbBundle.getMessage(Actions.class, "LBL_ImportProjectAction_Name"), // NOI18N
-            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/openProject.gif" ) ) ); // NOI18N
-    }
-    
     
     // Private extra actions
     
