@@ -765,7 +765,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     /** compute filename in the same manner as InstanceDataObject.create
      * [PENDING] in next version this should be replaced by public support
      * likely from FileUtil
-     * @see issue #17186
+     * @see issue #17142
      */
     private static String escape(String name) {
         try {
@@ -785,7 +785,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     /** compute filename in the same manner as InstanceDataObject.create
      * [PENDING] in next version this should be replaced by public support
      * likely from FileUtil
-     * @see issue #17186
+     * @see issue #17142
      */
     private static String unescape(String name) {
         try {
