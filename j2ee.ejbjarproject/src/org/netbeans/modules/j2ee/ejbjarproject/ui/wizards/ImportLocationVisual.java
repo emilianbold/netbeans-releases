@@ -28,9 +28,12 @@ import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModuleContainer;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -62,12 +65,14 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     private boolean projectFolderTouched = false;
     /** Was projectName property edited by user? */
     private boolean projectNameTouched = false;
+    private List earProjects;
         
     /** Creates new form TestPanel */
     public ImportLocationVisual (/*ImportEjbJarProjectWizardIterator.ThePanel*/ImportLocation panel) {
         this.panel = panel;
         initComponents ();
         initServerInstances();
+        initEnterpriseApplications();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_NWP1_NamePanel_A11YDesc"));  // NOI18N
         setName(NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_ImportTitle")); //NOI18N
         this.listener = panel;
@@ -528,6 +533,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         d.putProperty(WizardProperties.JAVA_ROOT, guessJavaRootsAsFiles(FileUtil.toFileObject(moduleLocFile)));
         d.putProperty(WizardProperties.SERVER_INSTANCE_ID, getSelectedServerInstanceID());
         d.putProperty(WizardProperties.J2EE_LEVEL, getSelectedJ2eeSpec());
+        d.putProperty(WizardProperties.EAR_APPLICATION, getSelectedEarApplication());
         // TODO: ma154696: add also search for test roots
     }
     
@@ -740,4 +746,24 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         return projectName.getText();
     }
 
+    private Project getSelectedEarApplication() {
+        int idx = addToAppComboBox.getSelectedIndex();
+        return (idx == -1 || !addToAppCheckBox.isSelected()) ? null : (Project) earProjects.get(idx);
+    }
+    
+    private void initEnterpriseApplications() {
+        Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
+        earProjects = new ArrayList();
+        for (int i = 0; i < allProjects.length; i++) {
+            J2eeModuleContainer container = (J2eeModuleContainer) allProjects[i].getLookup().lookup(J2eeModuleContainer.class);
+            ProjectInformation projectInfo = (ProjectInformation) allProjects[i].getLookup().lookup(ProjectInformation.class);
+            if (container != null && projectInfo != null) {
+                earProjects.add(projectInfo.getProject());
+                addToAppComboBox.addItem(projectInfo.getDisplayName());
+            }
+        }
+        if (earProjects.size() > 0) {
+            addToAppComboBox.setSelectedIndex(0);
+        }
+    }
 }

@@ -14,52 +14,29 @@
 package org.netbeans.modules.j2ee.ejbjarproject.ui.wizards;
 
 import java.awt.Component;
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import javax.swing.JButton;
 
 import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 import org.openide.WizardDescriptor;
-import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.TemplateWizard;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProvider;
-
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileStateInvalidException;
+import org.netbeans.modules.j2ee.api.ejbjar.Ear;
+import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectGenerator;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.WizardValidationException;
+
 
 /**
  * Wizard to create a new Web project for an existing web module.
@@ -111,7 +88,15 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Insta
         }
 
         FileObject dir = FileUtil.toFileObject (dirF);
-        Project p = ProjectManager.getDefault().findProject(dir);
+
+        Project earProject = (Project) wiz.getProperty(WizardProperties.EAR_APPLICATION);
+        EjbJarProject createdEjbJarProject = (EjbJarProject) ProjectManager.getDefault().findProject(dir);
+        if (earProject != null && createdEjbJarProject != null) {
+            Ear ear = Ear.getEar(earProject.getProjectDirectory());
+            if (ear != null) {
+                ear.addEjbJarModule(createdEjbJarProject.getAPIEjbJar());
+            }
+        }
         
         resultSet.add (dir);
 
