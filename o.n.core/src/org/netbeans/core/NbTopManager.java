@@ -188,6 +188,11 @@ public class NbTopManager extends TopManager {
   /** Prints the stack.
   */
   public void notifyException (Throwable t) {
+    /** If netbeans.debug.exceptions is set, print the exception to console */
+    if (System.getProperty ("netbeans.debug.exceptions") != null) {
+      t.printStackTrace ();
+    }
+    
     if (t instanceof NotImplementedException) {
       NotifyDescriptor nd = new NotifyDescriptor.Message("This feature is not yet implemented.");
       nd.setTitle("Information");
