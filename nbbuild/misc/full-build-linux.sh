@@ -230,7 +230,8 @@ then
     fi
     echo "----------RUNNING TESTS----------" 1>&2
     # Always run validation suite.
-    $testantcmd -f $sources/xtest/instance/build.xml -Dxtest.config=commit-validation-nb runtests
+    $testantcmd -f $sources/xtest/instance/build.xml -Dxtest.config=commit-validation-nb -Dxtest.fail.on.failure=true runtests
+    validation_status=$?
     if [ $testedmodule = validate ]
     then
         browse $sources/xtest/instance/results/index.html
@@ -241,15 +242,23 @@ then
         cp -r $sources/xtest/instance/results $dir
         browse $dir/index.html
     fi
+    other_status=0
     if [ $testedmodule = full ]
     then
         # Run full developer test suite.
-        $testantcmd -f $sources/xtest/instance/build.xml runtests
+        $testantcmd -f $sources/xtest/instance/build.xml -Dxtest.fail.on.failure=true runtests
+        other_status=$?
         browse $sources/xtest/instance/results/index.html
     elif [ $testedmodule != validate ]
     then
         # Run full suite for one module.
-        $testantcmd -f $sources/$testedmodule/test/build.xml runtests
+        $testantcmd -f $sources/$testedmodule/test/build.xml -Dxtest.fail.on.failure=true runtests
+        other_status=$?
         browse $sources/$testedmodule/test/results/index.html
+    fi
+    if [ $validation_status != 0 -o $other_status != 0 ]
+    then
+        echo "Some NetBeans tests failed!" 1>&2
+        exit 1
     fi
 fi
