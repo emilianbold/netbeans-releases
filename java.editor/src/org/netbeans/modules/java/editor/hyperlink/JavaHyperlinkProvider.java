@@ -74,7 +74,7 @@ public final class JavaHyperlinkProvider implements HyperlinkProvider {
                 } else {
                     if (token == JavaTokenContext.DOT) {
                         offset--;
-                        name = "." + name;
+                        name = "." + name; // NOI18N
                     } else {
                         if (    token == JavaTokenContext.WHITESPACE 
                              || token == JavaTokenContext.BLOCK_COMMENT
@@ -88,7 +88,7 @@ public final class JavaHyperlinkProvider implements HyperlinkProvider {
             }
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            return "<unknown>";
+            return "<unknown>"; // NOI18N
         }
         
         return name;
