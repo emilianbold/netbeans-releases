@@ -103,6 +103,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     actions.add (null);
     if (component instanceof RADVisualContainer) {
       actions.add (SystemAction.get(SelectLayoutAction.class));
+      actions.add (SystemAction.get(CustomizeLayoutAction.class));
       actions.add (null);
     }
     
@@ -507,6 +508,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  20   Gandalf   1.19        7/5/99   Ian Formanek    CustomizeLayout action
  *  19   Gandalf   1.18        7/2/99   Ian Formanek    GotoInspectorAction 
  *       employed in popup menu
  *  18   Gandalf   1.17        6/27/99  Ian Formanek    Many form actions 
