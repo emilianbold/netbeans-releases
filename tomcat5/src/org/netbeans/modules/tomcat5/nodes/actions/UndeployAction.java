@@ -14,7 +14,6 @@
 package org.netbeans.modules.tomcat5.nodes.actions;
 
 import org.netbeans.modules.tomcat5.nodes.TomcatWebModuleNode;
-import org.netbeans.modules.tomcat5.nodes.actions.UndeployAction;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
