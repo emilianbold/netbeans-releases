@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>About Editing XML Documents</title> 
+<link rel="StyleSheet" href="../ide.css" type="text/css">
+</head>
+<body>
+
+<h2>IDE XML Task Quick Reference </h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
+<p>The Simple API for XML (SAX) is a serial access protocol for XML. SAX is an 
+  event-driven API that you can use in your Java programs by registering a document 
+  handler with a SAX parser. After registration, the parser invokes your callback 
+  methods whenever it encounters a new XML tag, error, or other special condition.</p>
+<p>&nbsp;</p>
+<p>You can either generate a cascading style sheet (CSS) from an existing document
+type definition (DTD) or create a new one from a template.</p>
+<h3>sdfkjh</h3>
+  
+<p> poopy pants:</p>
+<ul>
+  <li><b>CSS.&nbsp;</b>The interface containing the methods that 
+    the generated parser calls when parsing the XML document. You can specify
+     the elements for which the IDE generates handler methods. The IDE generates
+     a <tt>handle_</tt><i>elementName</i> method for content elements and a pair
+      of <tt>start_</tt><i>elementName</i> and <tt>end_</tt><i>elementName</i> methods
+       for csontainer elements. </li>
+  <li><b>DTD.&nbsp;</b>A document type definition (DTD) describes the grammar
+    that can be used in an XML file and indicates the valid arrangement of the
+    file's tags. It can exist as a prologue to an XML file (internal DTD) or
+  as a separate file (external DTD). </li>
+  <li> <b>XSL.&nbsp;</b>The parser used to parse the XML files. If 
+    you generate the document handler using SAX version 1.0, the generated parser
+     implements <tt>org.xml.sax.DocumentHandler</tt>. If you use SAX version
+     2.0,  the parser implements <tt>org.xml.sax.ContentHandler</tt>. The parser
+     translates  and normalizes the output from the SAX parser and calls the
+     appropriate handler  implementation methods or data convertor implementation
+     methods.</li>
+  <li><strong>SAX</strong>. The Simple API for XML (SAX) is a serial access protocol for XML. SAX
+      is an event-driven API that you can use in your Java programs by registering
+      a document handler with a SAX parser. After registration, the parser invokes
+      your callback methods whenever it encounters a new XML tag, error, or other
+      special condition.</p>
+    You typically use the SAX protocol with servlets and network-oriented programs.
+    SAX is the fastest and least memory-intensive mechanism currently available
+    for dealing with XML documents. If you are writing an application that displays
+  and possibly modifies an XML document, you might prefer to use the DOM mechanism. </li>
+  <li><strong>XML Catalogs </strong><b>.</b> XML catalogs provide mapping information
+    that maps an external entity in an XML document to the actual location of
+    the document being referenced. You can use a catalog to redirect mappings
+  for an external entity, such as a DTD or XML file, to a different location. </li>
+</ul>
+
+<table>
+  <tr> 
+    <th colspan=2 align=left><a name="seealso">See Also</a></th>
+  </tr>
+  <tr> 
+    <td width="23"></td>
+    <td> <a href="sax/sax_generate.html">Generating a SAX Document Handler</a><br>
+      <a href="dtd/dtd_generatedom.html">Generating a DOM Tree Scanner</a> <br>
+      <a href="dtd/dtd_create.html">Creating a DTD</a>
+	</td>
+  </tr>
+</table>
+<hr>
+<font size=-2><a href="credits.html">Legal Notices</a></font> 
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

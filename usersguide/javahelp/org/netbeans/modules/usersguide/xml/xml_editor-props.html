@@ -1,0 +1,212 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+
+<html>
+<head>
+<title>XML and DTD Editor Properties</title>
+<link rel="StyleSheet" href="../ide.css" type="text/css">
+</head>
+<body> 
+<!--TODO maybe put notes in usersguide topics linked to from here-->
+<h2>XML and DTD Editor Properties</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+
+<p> The IDE enables you to  configure Source Editor behaviour
+  when editing XML and DTD files. </p>
+<p> To access DTD Editor or XML Editor  properties: 
+<ol>
+  <li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Options.
+  <li>In the Options window, expand
+  Editing <img src="../images/expand.gif" width="12" height="12" alt="and expanding">  Editor
+  Settings.
+  <li>Select the DTD Editor
+        or XML Editor node.
+</ol>
+   
+<h3>Properties</h3>
+<ul>
+  <li><b>Abbreviations.</b>&nbsp; Specifies abbreviations for terms that you want 
+    the editor to expand automatically. Click the ellipsis (...) button to edit 
+    abbreviations. </li>
+  <li><b>Auto Popup Completion Window.</b>&nbsp; If True, enables the editor to 
+    display a code completion box with options for how to complete an expression. 
+    <p> This property applies only to editor types that support code completion, 
+      such as Java, HTML, and JSP. See <a href="../editing/codecompletion/intro.html">Using 
+      Code Completion</a> for details. </p>
+  </li>
+  <li><b>Delay of Completion Window Auto Popup.</b>&nbsp; If the Auto Popup Completion 
+    Window property is True, sets the number of milliseconds between the time 
+    when typing stops and the time when the code completion box is displayed. 
+  </li>
+  <li><b>Font Size.</b>&nbsp; Sets the font to the specified size for all tokens 
+    that are not given distinct values in the Fonts and Colors property. </li>
+  <li><b>Fonts and Colors.</b>&nbsp; Sets background and foreground colors and 
+    fonts for various syntax tokens and other elements displayed in the Source 
+    Editor, such as bookmarked lines, comments, guarded blocks. Click the ellipsis 
+    (...) button to edit the properties. 
+    <p> For details, see <a href="../editing/configuring/fontsandcolors.html">Setting 
+      Fonts and Colors in the Source Editor</a>. </p>
+  </li>
+  <li><b>Indentation Engine.</b>&nbsp; Specifies how you want to handle text formatting, 
+    including settings for tabs, spaces, and new lines. Click the ellipsis (...) 
+    button to edit the possible indentation engine choices. 
+    <p> For details, see <a href="../editing/configuring/indentation.html">Indentation 
+      Properties</a>. </p>
+  </li>
+  <li><b>Key Bindings.</b>&nbsp; Edits, adds, and removes keystroke shortcuts. 
+    Click the ellipsis (...) button to modify shortcuts. </li>
+  <li><b>Line Numbers.</b>&nbsp; If True, adds line numbers in the left margin. 
+    You can also toggle line numbers by choosing Margin <img src="../images/arrow.gif" alt="and choosing">&nbsp;Show 
+    Line Numbers from the contextual menu in the Source Editor. </li>
+  <li><b>Macros.</b>&nbsp; Edits, adds, and removes Source Editor macros. Click 
+    the ellipsis (...) button to modify existing macros. 
+    <p> It is generally easier to add a new macro by recording it than by manually 
+      adding one in the Macros property editor. See <a href="../editing/macros/recording.html">Recording 
+      a Macro</a> for details. </p>
+  </li>
+  <li><b>Shadow Table Cell.</b>&nbsp; Specifies the background color for a value 
+    cell in the Properties Editor when the key is missing from that value's locale. 
+    If you type a value into a shaded table cell, the missing key is automatically 
+    generated. </li>
+  <li><b>Tab Size.</b>&nbsp; Sets the number of spaces inserted per tab character 
+    (\t) when a file is imported. This is set as 8 by default for compliance with 
+    many other applications. 
+    <p> You can also specify tab settings for text that is typed, generated, or 
+      formatted in the Source Editor using the Indentation Engine property described 
+      above. </p>
+  </li>
+</ul>
+
+<h3>Expert </h3>
+<ul>
+<li><b>Display Text Limit Line.</b>&nbsp;
+If True, shows a vertical line to mark suggested maximum line width (for 
+example, for printing). 
+</li>
+
+<li><b>Highlight Caret Row.</b>&nbsp;
+If True, highlights the row where the insertion point (caret) is. 
+</li>
+
+<li><b>Highlight Matching Bracket.</b>&nbsp;
+If True, the matching brace, bracket, or parenthesis highlights 
+whenever the insertion point is immediately after a brace, bracket, 
+or parenthesis. 
+</li>
+
+<li><b>Insertion Point.</b>&nbsp;
+Determines the type of caret that appears at the insertion point when in 
+insert mode. From the list you can select Vertical bar, Thin vertical bar, 
+or Solid block. 
+</li>
+
+<li><b>Insertion Point Blink Rate.</b>&nbsp;
+Sets blink rate (in milliseconds) for the text pointer that 
+marks the insertion point. 
+</li>
+
+<li><b>Insertion Point Color.</b>&nbsp;
+Specifies the color of the caret when in insert mode.  Select a 
+color from the list or display the custom property editor 
+for colors by clicking the ellipsis (...) button.
+</li>
+
+<li><b>Italic Insertion Point.</b>&nbsp;
+If True, displays italic insertion point (caret) when in insert mode. 
+</li>
+
+<li><b>Italic Overwrite Caret.</b>&nbsp;
+If True, displays italic insertion point (caret) when in overwrite mode. 
+</li>
+
+<li><b>Line Height Correction.</b>&nbsp;
+Adjusts height of lines by specified multiplier. 
+</li>
+
+<li><b>Line Number Margin.</b>&nbsp;
+Determines placement of line numbers within the glyph margin.  
+<p>
+Line numbers are aligned to the right. 
+The left margin determines the distance from the left edge of the window 
+based on the highest line number.  Therefore, the left margin will look 
+larger at the top of the page, where line numbers have fewer digits. 
+</p>
+</li>
+
+<li><b>Margin.</b>&nbsp;
+Sets top, bottom, left, and right margins of text within the Source Editor page. The
+left margin determines how far text starts to the left of the glyph margin.  Click the 
+ellipsis (...) button to edit the settings. 
+</li>
+
+<li><b>Overwrite Caret.</b>&nbsp;
+Determines the type of caret that appears when in overwrite mode. From 
+the list you can select line, thin line, or block. 
+</li>
+
+<li><b>Overwrite Caret Color.</b>&nbsp;
+Specifies the caret color when in overwrite mode. 
+</li>
+
+<li><b>Scroll Find Insets.</b>&nbsp;
+Specifies how much space should be reserved on each side of text 
+located with the Find command. 
+</li>
+
+<li><b>Scroll Jump Insets.</b>&nbsp;
+For each of four directions, specifies how much the view should 
+jump when the scrolling goes off the screen. 
+</li>
+
+<li><b>Status Bar Caret Delay.</b>&nbsp;
+Sets the delay (in milliseconds) between the time when the caret 
+stops moving and the update of its position in the status bar. 
+</li>
+
+<li><b>Status Bar Visible.</b>&nbsp;
+If True, displays the status bar (which shows information such as 
+current line number and whether the editor is in insert or overwrite 
+mode) at the bottom of the window. 
+</li>
+
+<li><b>Text Limit Character Count.</b>&nbsp;
+Sets the number of characters to the right of the left margin where 
+the text limit line is displayed. 
+</li>
+
+<li><b>Text Limit Line Color.</b>&nbsp;
+Specifies the color of the text limit line. 
+</li>
+</ul>
+
+
+<table>
+<tr>
+<th colspan=2 align=left><a name="seealso">See Also</a></th>
+</tr>
+<td width="23"></td>
+<td>
+<a href="../editing/configuring/configuring.html">Configuring the Source Editor</a>
+<br>
+<a href="../editing/tabs.html">Working With Tabs</a>
+<a href="../editing/xmlsettings.html">Sharing Source Editor Settings</a><br>
+<a href="../configure/configure_options.html">Using the Options Window</a>
+</td>
+</tr>
+</table>
+
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>
+

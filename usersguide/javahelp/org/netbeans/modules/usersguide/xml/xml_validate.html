@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+ 
+<html>
+<head>
+<meta name="lastupdated" content="19apr2001">
+<title>Validating an XML Document</title> 
+<link rel="StyleSheet" href="../ide.css" type="text/css">
+</head>
+<body>
+<h2>Validating an XML Document</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>If you have an XML document that is constrained by an XML schema or DTD, you 
+  can validate the XML document to check its contents for syntax errors.</p>
+<p>If your XML document's DTD is located on a remote machine,  ensure that
+the IDE's proxy is correctly configured  and you have access to the DTD. </p>
+<table>
+  <tr> 
+    <td valign=top><img src="../images/tip.gif" alt="tip"></td>
+    <td valign=top align=left>If the IDE cannot access the DTD, it returns a
+      single error message listing the DOCTYPE declaration. If the IDE cannot
+      access the XML schema, it displays <tt>Failed to read schema document</tt>.</td>
+  </tr>
+</table>
+  
+<h4>To validate an XML document:</h4>
+<ol>
+  <li>Right-click the document's node in the Files window.</li>
+  <li>Choose Validate XML.<p>The Output window lists any errors along with the line number where the error
+  was detected. </li>
+</ol>
+<table>
+  <tr>
+    <td valign="top"><img src="../images/tip.gif" alt="Note"></td>
+    <td valign=top align=left>This location is not necessarily the line where
+      the error occurred. You can double-click any error message to go to the
+    line in the XML file where the error was detected.</td>
+  </tr>
+</table>
+
+<h3>Common Error Messages</h3>
+<p>Some common error messages generated during DTD validation include: </p>
+<ul>
+  <li><tt>End of entity not allowed; an end tag is missing.</tt><br>
+    There is no final end tag for the document.</li>
+  <li><tt>Expected &quot;&lt;/</tt><i>tagname</i><tt>&gt;&quot; to terminate element 
+    started on line </tt><i>line#</i>.<br>
+    There is no end tag for the specific element. </li>
+  <li><tt>Element type "</tt><i>element name</i><tt>" must be declared.</tt> <br>
+    The XML document contains an element type that was not declared in the DTD.</li>
+</ul>
+<table> <tr> <th colspan=2 nowrap>
+      <div align="LEFT"><b>See Also<a name="seealso"></a></b></div>
+    </th></tr> <tr> <td width="30"></td>
+    <td> 
+	  <a href="../webbrowser/proxy.html">Setting a Proxy</a> <br>
+	  <a href="schema/schemas.html">Working With XML Schemas</a> <br>
+      <a href="xml_check.html">Checking an XML Document for Well-Formedness </a>
+      </td>
+  </tr> </table>
+<hr>
+<font size=-2><a href="credits.html">Legal Notices</a></font> 
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>
