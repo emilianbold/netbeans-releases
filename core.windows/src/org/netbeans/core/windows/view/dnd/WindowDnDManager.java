@@ -398,6 +398,17 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     private static boolean isInFloatingFrameDroppable(Set floatingFrames, Point location, int kind, TopComponent transfer) {
         return findFloatingFrameDroppable(floatingFrames, location, kind, transfer) != null;
     }
+    
+    private static boolean isInFreeArea(Point location) {
+        Frame[] frames = Frame.getFrames();
+        for(int i = 0; i < frames.length; i++) {
+            if(frames[i].getBounds().contains(location.x, location.y)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
 
     /** Finds <code>TopComponentDroppable</code> from specified screen location. */
     private static TopComponentDroppable findDroppableFromScreen(
@@ -415,9 +426,13 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         // PENDING center panel area. Maybe editor empty area -> revise later.
         if(isAroundCenterPanel(location)) {
             return getCenterPanelDroppable();
-        } else {
-            return null;
         }
+        
+        if(isInFreeArea(location)) {
+            return getFreeAreaDroppable(location);
+        }
+        
+        return null;
     }
 
     /** Gets droppable from main window, specified by screen location.
@@ -538,6 +553,10 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         return droppable;
     }
     
+    private static TopComponentDroppable getFreeAreaDroppable(Point location) {
+        return new FreeAreaDroppable(location);
+    }
+    
     /** 
      * Tries to perform actual drop.
      * @param location screen location */
@@ -561,8 +580,10 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             return false;
         }
         
-        SwingUtilities.convertPointFromScreen(
-                location, droppable.getDropComponent());
+        Component dropComponent = droppable.getDropComponent();
+        if(dropComponent != null) {
+            SwingUtilities.convertPointFromScreen(location, dropComponent);
+        }
         return performDrop(controller, droppable, dropAction, tcArray, location);
     }
     
@@ -682,12 +703,14 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         } else if(viewElement instanceof SplitView) {
             SplitView splitView = (SplitView)viewElement;
             controller.userDroppedTopComponentsIntoSplit(splitView, tcArray);
-        } else if(viewElement == null) { // XXX arourn area
+        } else if(viewElement == null) { // XXX around area or free area
             if(constr == Constants.TOP
             || constr == Constants.LEFT
             || constr == Constants.RIGHT
-            || constr == Constants.BOTTOM) {
+            || constr == Constants.BOTTOM) { // XXX around area
                 controller.userDroppedTopComponentsAround(tcArray, (String)constr);
+            } else if(constr instanceof Rectangle) { // XXX free area
+                controller.userDroppedTopComponentsIntoFreeArea(tcArray, (Rectangle)constr);
             }
         }
 
@@ -755,6 +778,9 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             } else if(!isInMainWindow(location)
             && windowDnDManager.isInFloatingFrame(location)) {
                 // Simulates success drop in free area.
+                topComponentDragSupport.setSuccessCursor();
+            } else if(isInFreeArea(location) && WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_SEPARATED
+            && getFreeAreaDroppable(location).canDrop(windowDnDManager.startingTransfer, location)) {
                 topComponentDragSupport.setSuccessCursor();
             } else {
                 topComponentDragSupport.setUnsuccessCursor();
@@ -883,6 +909,52 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         }
 
     } // End of class CenterPanelDroppable.
+    
+    
+    /** Fake helper droppable used when dropping is done into free area.  */
+    private static class FreeAreaDroppable implements TopComponentDroppable {
+        
+        private Point location;
+        
+        public FreeAreaDroppable(Point location) {
+            this.location = location;
+        }
+        
+        /** Implements <code>TopComponentDroppable</code>. */
+        public java.awt.Shape getIndicationForLocation(Point p) {
+            return null;
+        }
+        
+        /** Implements <code>TopComponentDroppable</code>. */
+        public Object getConstraintForLocation(Point p) {
+            return new Rectangle(location.x, location.y,
+                Constants.DROP_NEW_MODE_SIZE.width, Constants.DROP_NEW_MODE_SIZE.height);
+        }
+        
+        /** Implements <code>TopComponentDroppable</code>. */
+        public Component getDropComponent() {
+            return null;
+        }
+        
+        /** Implements <code>TopComponentDroppable</code>. */
+        public ViewElement getDropViewElement() {
+            return null;
+        }
+        
+        public boolean canDrop(TopComponent transfer, Point location) {
+            ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(transfer);
+            return mode != null && mode.getKind() == Constants.MODE_KIND_VIEW;
+        }
+        
+        public boolean supportsKind(int kind, TopComponent transfer) {
+            if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
+            || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(transfer)) {
+                return true;
+            }
+            
+            return kind == Constants.MODE_KIND_VIEW;
+        }
+    } // End of class FreeAreaDroppable.
 
 }
 

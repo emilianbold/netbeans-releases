@@ -15,7 +15,9 @@
 package org.netbeans.core.windows;
 
 
+import java.awt.Dimension;
 import javax.swing.JSplitPane;
+
 
 /**
  * Constants in window system.
@@ -62,6 +64,10 @@ public abstract class Constants {
     public static final double DROP_BETWEEN_RATIO = 1.0D/3;
     /** How big portion of entire area should take the dropped mode (range from 0.0 to 1.0). */
     public static final double DROP_AROUND_RATIO = 0.25D;
+    
+    // XXX
+    /** Size of new separated mode when creting during DnD (separeted mode). */
+    public static final Dimension DROP_NEW_MODE_SIZE = new Dimension(300, 200);
 
     
     /** Name of client property (of Boolean type) which says whether the TopComponent is allowed

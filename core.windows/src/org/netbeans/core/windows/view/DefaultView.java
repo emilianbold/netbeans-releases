@@ -649,6 +649,16 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userDroppedTopComponentsAroundEditor(tcs, side);
     }
     
+    public void userDroppedTopComponentsIntoFreeArea(TopComponent[] tcs, Rectangle bounds) {
+        if(tcs.length == 0) {
+            return;
+        }
+        
+        debugLog("User dropped TopComponent's into free area, bounds=" + bounds); // NOI18N
+        
+        controllerHandler.userDroppedTopComponentsIntoFreeArea(tcs, bounds);
+    }
+    
     
     private static ModeImpl getModeForModeAccessor(ModeAccessor accessor) {
         return accessor == null ? null : accessor.getMode();

@@ -65,5 +65,7 @@ public interface Controller {
     public void userDroppedTopComponentsIntoSplit(SplitView splitView, TopComponent[] tcs);
     
     public void userDroppedTopComponentsAroundEditor(TopComponent[] tcs, String side);
+    
+    public void userDroppedTopComponentsIntoFreeArea(TopComponent[] tcs, Rectangle bounds);
 }
 

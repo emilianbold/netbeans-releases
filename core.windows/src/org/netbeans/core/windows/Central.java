@@ -1185,6 +1185,27 @@ final class Central implements ControllerHandler {
         
         attachTopComponentsHelper(tcs, newMode, fireEvents);
     }
+    
+    private void attachTopComponentsIntoNewMode(TopComponent[] tcs, Rectangle bounds) {
+        if(tcs == null || tcs.length == 0) {
+            return;
+        }
+        
+        // New mode
+        // New mode. It is necessary to add it yet.
+        ModeImpl newMode = WindowManagerImpl.getInstance().createModeImpl(
+            ModeImpl.getUnusedModeName(), Constants.MODE_KIND_VIEW, false);
+        newMode.setBounds(bounds);
+        
+        // XXX All others should have the same restriction.
+        if(!newMode.canContain(tcs[0])) {
+            return;
+        }
+        
+        model.addMode(newMode, new SplitConstraint[] {new SplitConstraint(Constants.HORIZONTAL, 100, 0.5f)});
+        
+        attachTopComponentsHelper(tcs, newMode, true);
+    }
 
     /** Helper method. */
     private void attachTopComponentsHelper(TopComponent[] tcs, ModeImpl newMode, boolean fireEvents) {
@@ -1417,6 +1438,16 @@ final class Central implements ControllerHandler {
     public void userDroppedTopComponentsAroundEditor(TopComponent[] tcs, String side) {
         attachTopComponentsAroundEditor(tcs, side, false);
 
+        updateViewAfterDnD(true);
+    }
+    
+    public void userDroppedTopComponentsIntoFreeArea(TopComponent[] tcs, Rectangle bounds) {
+        if(getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
+            return; // There is not possible to drop outside when in compact mode.
+        }
+        
+        attachTopComponentsIntoNewMode(tcs, bounds);
+        
         updateViewAfterDnD(true);
     }
     

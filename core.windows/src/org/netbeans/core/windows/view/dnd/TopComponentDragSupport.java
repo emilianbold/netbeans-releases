@@ -560,9 +560,10 @@ implements AWTEventListener, DragSourceListener {
         || windowDnDManager.isInFloatingFrame(location)
         || WindowDnDManager.isAroundCenterPanel(location)) {
             return false;
-        } else if(evt.getDropSuccess()) {
-            return true;
         }
+//        else if(evt.getDropSuccess()) {
+//            return true;
+//        } // PENDING it seem it is not working correctly (at least on linux).
         return false;
     }
     
@@ -586,49 +587,17 @@ implements AWTEventListener, DragSourceListener {
                 
                 // Provide actual drop into "free" desktop area.
                 if(tcArray != null) {
-                    if(WindowDnDManager.isInMainWindow(location)
-                    || windowDnDManager.isInFloatingFrame(location)
-                    || WindowDnDManager.isAroundCenterPanel(location)) {
-                        // XXX there is a problem if jdk dnd framework sets as drop action
-                        // ACTION_NONE, there is not called drop event on DropTargetListener,
-                        // even it is there.
-                        // Performs hacked drop action, simulates ACTION_MOVE when
-                        // system set ACTION_NONE (which we do not use).
-                        WindowDnDManager.tryPerformDrop(
-                            windowDnDManager.getController(),
-                            windowDnDManager.getFloatingFrames(),
-                            location,
-                            DnDConstants.ACTION_MOVE, // MOVE only
-                            evt.getDragSourceContext().getTransferable());
-                    } else {
-                        Rectangle newBounds = getBoundsForNewMode(
-                                tcArray[0], location);
-
-                        if(hackUserDropAction == DnDConstants.ACTION_COPY
-                        && tcArray[0] instanceof TopComponent.Cloneable) {
-//                            // TODO perform the drop operation.
-//                                WindowUtils.dockIntoNewMode(tcArray, true, newBounds,
-//                                        WindowTypesManager.TOP_FRAME);
-//                            } else if(hackUserDropAction == DnDConstants.ACTION_MOVE) {
-//                                ModeImpl originalMode = (ModeImpl)WindowManagerImpl.getInstance().findMode(tcArray[0]);
-//
-//                                if(originalMode != null
-//                                && (!WindowTypesManager.DESKTOP_FRAME.equals(originalMode.getFrameType())) ) {
-//                                    TopComponent[] tcs = originalMode.getTopComponents();
-//                                    if(tcs.length == 1 && tcs[0] == tc) {
-//                                        // #22715 Move entire original mode in case
-//                                        // there was only the dragged TopComponent inside.
-//                                        // PENDING it seems the moved component should
-//                                        // be released in dockIntoNewMode method.
-//                                        originalMode.release(tc);
-//                                    }
-//                                }
-//
-//                                // TODO perform the drop operation.
-//                                WindowUtils.dockIntoNewMode(tcArray, false, newBounds,
-//                                        WindowTypesManager.TOP_FRAME);
-                        }
-                    }
+                    // XXX there is a problem if jdk dnd framework sets as drop action
+                    // ACTION_NONE, there is not called drop event on DropTargetListener,
+                    // even it is there.
+                    // Performs hacked drop action, simulates ACTION_MOVE when
+                    // system set ACTION_NONE (which we do not use).
+                    WindowDnDManager.tryPerformDrop(
+                        windowDnDManager.getController(),
+                        windowDnDManager.getFloatingFrames(),
+                        location,
+                        DnDConstants.ACTION_MOVE, // MOVE only
+                        evt.getDragSourceContext().getTransferable());
                 }
             }
         };

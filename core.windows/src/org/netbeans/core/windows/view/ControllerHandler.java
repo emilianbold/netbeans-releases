@@ -76,6 +76,8 @@ public interface ControllerHandler {
     ModelElement firstElementr, ModelElement secondElement, TopComponent[] tcs);
     
     public void userDroppedTopComponentsAroundEditor(TopComponent[] tcs, String side);
+    
+    public void userDroppedTopComponentsIntoFreeArea(TopComponent[] tcs, Rectangle bounds);
     // DnD<<
 }
 
