@@ -34,7 +34,7 @@ public class FileSystemBeanInfo extends SimpleBeanInfo {
         new PropertyDescriptor ("valid", FileSystem.class, "isValid", null), // 1
         new PropertyDescriptor ("hidden", FileSystem.class, "isHidden", "setHidden") // 2
       };
-      ResourceBundle bundle = NbBundle.getBundle();
+      ResourceBundle bundle = NbBundle.getBundle(FileSystemBeanInfo);
       desc[0].setDisplayName (bundle.getString("PROP_readOnly"));
       desc[0].setShortDescription (bundle.getString("HINT_readOnly"));
       desc[1].setDisplayName (bundle.getString("PROP_valid"));
@@ -60,6 +60,7 @@ public class FileSystemBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  5    Gandalf   1.4         3/4/99   Petr Hamernik   
  *  4    Gandalf   1.3         3/4/99   Petr Hamernik   
  *  3    Gandalf   1.2         3/1/99   Jesse Glick     Typo.
  *  2    Gandalf   1.1         3/1/99   Jesse Glick     [JavaDoc]
