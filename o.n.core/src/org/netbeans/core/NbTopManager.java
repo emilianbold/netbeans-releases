@@ -117,7 +117,7 @@ public abstract class NbTopManager /*extends TopManager*/ {
         Object ignoreme = FileSystem.class;
         Package p = Package.getPackage ("org.openide.filesystems"); // NOI18N
         
-        putSystemProperty ("org.openide.specification.version", p.getSpecificationVersion (), "3.17"); // NOI18N
+        putSystemProperty ("org.openide.specification.version", p.getSpecificationVersion (), "3.21"); // NOI18N
         putSystemProperty ("org.openide.version", p.getImplementationVersion (), "OwnBuild"); // NOI18N
         putSystemProperty ("org.openide.major.version", p.getSpecificationTitle (), "IDE/1"); // NOI18N
         putSystemProperty ("netbeans.buildnumber", p.getImplementationVersion (), "OwnBuild"); // NOI18N
