@@ -143,7 +143,7 @@ public class DefaultDiff extends Diff {
     }
     
     private synchronized void showDiff() throws IOException {
-        System.out.println("showDiff("+defaultProviderName+", "+defaultVisualizerName+")");
+        //System.out.println("showDiff("+defaultProviderName+", "+defaultVisualizerName+")");
         Lookup.Item pItem = (Lookup.Item) providersMap.get(defaultProviderName);
         Lookup.Item vItem = (Lookup.Item) visualizersMap.get(defaultVisualizerName);
         DiffProvider p = (DiffProvider) pItem.getInstance();
@@ -152,7 +152,6 @@ public class DefaultDiff extends Diff {
                                            new StringReader(buffer2));
         Component c = v.createView(diffs, name1, title1, new StringReader(buffer1),
                                    name2, title2, new StringReader(buffer2), MIMEType);
-        System.out.println("visualizer component = "+c);
         diffPanel.setVisualizer(c);
         diffPanel.setDefaultProvider(defaultProviderName);
         diffPanel.setDefaultVisualizer(defaultVisualizerName);
