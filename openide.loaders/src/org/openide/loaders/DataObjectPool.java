@@ -32,7 +32,7 @@ import org.openide.util.Lookup;
 * @author Jaroslav Tulach
 */
 final class DataObjectPool extends Object
-implements ChangeListener, RepositoryListener, PropertyChangeListener {
+implements ChangeListener {
     /** set to null if the constructor is called from somewhere else than DataObject.find 
      * Otherwise contains Collection<Item> that have just been created in this thread and
      * shall be notified.
@@ -74,7 +74,6 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
         }
         
         lp.addChangeListener(POOL);
-        Repository.getDefault().addRepositoryListener (POOL);
 
         return POOL;
     }
@@ -725,59 +724,6 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
         return set;
     }
     
-    /** Remove DataObjects which became invalid thanks
-     * to unmounting a FileSystem
-     */
-    private void removeInvalidObjects() {
-        Set files;
-        synchronized (this) {
-            files = new HashSet (map.values ());
-        }
-        files = createSetOfAllFiles (files);
-        
-        VALIDATOR.removeInvalidObject(files);
-    }
-
-    //
-    // Repository listener changes
-    //
-    
-    /** All filesystems removed from repository, until GCed */
-    private static WeakSet fsRemovedFromRepository = new WeakSet ();
-    
-    /** Called when new file system is added to the pool.
-     * @param ev event describing the action
-     */
-    public void fileSystemAdded(RepositoryEvent ev) {
-        ev.getFileSystem().addPropertyChangeListener( getPOOL() );
-        fsRemovedFromRepository.remove (ev.getFileSystem ());
-    }
-    /** Called when a file system is removed from the pool.
-     * @param ev event describing the action
-     */
-    public void fileSystemRemoved(RepositoryEvent ev) {
-        ev.getFileSystem().removePropertyChangeListener( getPOOL() );
-        fsRemovedFromRepository.add (ev.getFileSystem ());
-        removeInvalidObjects();
-    }
-
-    /** Called when a file system pool is reordered. */
-    public void fileSystemPoolReordered(RepositoryReorderedEvent ev) {
-    }
-    
-    /** Called when a file system property changed.
-     * If it's property root, check validity.
-     * @param ev event describing the action     
-    */
-    public void propertyChange (final PropertyChangeEvent ev) {
-        if (FileSystem.PROP_SYSTEM_NAME.equals (ev.getPropertyName ())) {
-            removeInvalidObjects();
-        }        
-        if (FileSystem.PROP_ROOT.equals (ev.getPropertyName ())) {
-            removeInvalidObjects();
-        }        
-    }
-
     /** Returns all currently existing data
     * objects.
     *
@@ -1078,13 +1024,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
                         FileObject fo = (FileObject)it.next ();
                         if (!recognizedFiles.contains (fo)) {
                             // first of all test if the file is on a valid filesystem
-                            boolean invalidate;
-                            try {
-                                FileSystem fs = fo.getFileSystem ();
-                                invalidate = fsRemovedFromRepository.contains (fs);
-                            } catch (FileStateInvalidException ex) {
-                                invalidate = true;
-                            }
+                            boolean invalidate = false;
 
                             // the previous data object should be canceled
                             DataObject orig = getPOOL().find (fo);
@@ -1093,15 +1033,13 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
                                 continue;
                             }
 
-                            if (!invalidate) {
-                                // findDataObject
-                                // is not using method DataObjectPool.find to locate data object
-                                // directly for primary file, that is good
-                                DataObject obj = pool.findDataObject (fo, this);
-                                createObjects.add (obj);
+                            // findDataObject
+                            // is not using method DataObjectPool.find to locate data object
+                            // directly for primary file, that is good
+                            DataObject obj = pool.findDataObject (fo, this);
+                            createObjects.add (obj);
 
-                                invalidate = obj != orig;
-                            }
+                            invalidate = obj != orig;
 
                             if (invalidate) {
                                 it.remove();                                
@@ -1143,49 +1081,5 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
             }
         }
         
-        /** Remove DataObjects which became invalid thanks
-         * to unmounting a FileSystem
-         */
-        void removeInvalidObject(Set files) {
-            try {
-                files = enter(files);
-                
-                Iterator it = files.iterator();
-                while (it.hasNext() && goOn()) {
-                    FileObject fo = (FileObject) it.next();
-                    
-                    boolean invalidate = !fo.isValid();
-                    if ( !invalidate ) {
-                        try {
-                            FileSystem fs = fo.getFileSystem ();
-                            invalidate = fsRemovedFromRepository.contains (fs);
-                        } catch (FileStateInvalidException ex) {
-                            invalidate = true;
-                        }
-                    }
-
-                    DataObject orig = null;
-                    synchronized (getPOOL()) {
-                        Item itm = (Item)getPOOL().map.get (fo);
-                        if (itm == null) {
-                            continue;
-                        }
-                        orig = itm.getDataObjectOrNull ();
-                    }
-
-                    if (invalidate && orig != null) {
-                        it.remove();
-                        try {                            
-                            orig.setValid (false);
-                        } catch (java.beans.PropertyVetoException ex) {
-                            // silently ignore?
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                        }
-                    }
-                }
-            } finally {
-                exit();
-            }
-        }
     } // end of Validator
 }
