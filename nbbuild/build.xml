@@ -424,7 +424,7 @@ ToDo:
     <echo message="Building module tomcatint/bundledtomcat..."/>
     <ant dir="../tomcatint/bundledtomcat" target="netbeans"/>
   </target>
-  <target name="all-translatedfiles">
+  <target name="all-translatedfiles" depends="init">
     <echo message="Building module translatedfiles..."/>
     <ant dir="../translatedfiles" target="netbeans"/>
   </target>
