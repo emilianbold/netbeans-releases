@@ -235,14 +235,20 @@ final class PackageViewChildren extends Children.Keys implements FileChangeListe
         
         if ( FileUtil.isParentOf( root, fo ) ) {
             
-            if ( fo.isFolder() ) {
+            // System.out.println("IS FOLDER? " + fo + " : " + fo.isFolder() );
+                                  /* Hack for MasterFS see #42464 */
+            if ( fo.isFolder() || get( fo ) != null ) {
                 // System.out.println("REMOVING FODER " + fo );                
                 remove( fo );
                 // Now add the parent if necessary 
                 FileObject parent = fo.getParent();
                 if ( FileUtil.isParentOf( root, parent ) && get( parent ) == null && parent.isValid() ) {
-                    // System.out.println("ADDING PARENT " + parent );
-                    add( parent );
+                    // Candidate for adding
+                    FileObject kids[] = parent.getChildren();
+                    if ( kids.length == 0 /* || onlyFolders( kids ) */ ) {
+                        // System.out.println("ADDING PARENT " + parent );
+                        add( parent );
+                    }
                 }
                 refreshKeys();
             }
@@ -252,24 +258,30 @@ final class PackageViewChildren extends Children.Keys implements FileChangeListe
                 if ( n != null ) {
                     n.updateChildren();
                 }
-                // If the parent folder only contains folders remove it                
+                // If the parent folder only contains folders remove it
                 FileObject kids[] = parent.getChildren();
-                boolean onlyFolders = true;
-                for ( int i = 0; i < kids.length; i++ ) {
-                    if ( !kids[i].isFolder() ) {
-                        onlyFolders = false;
-                        break;
-                    }
-                }
-                if ( kids.length != 0 && onlyFolders ) {
+                if ( kids.length != 0 && onlyFolders( kids ) ) {
                     remove( parent );
                     refreshKeys();
                 }
                  
             }
-        } 
+        }
+        // else {
+        //    System.out.println("NOT A PARENT " + fo );
+        // }
     }
     
+    private boolean onlyFolders( FileObject[] kids ) {
+        boolean onlyFolders = true;
+        for ( int i = 0; i < kids.length; i++ ) {
+            if ( !kids[i].isFolder() ) {
+                onlyFolders = false;
+                break;
+            }
+        }
+        return onlyFolders;
+    }
     
     public void fileRenamed( FileRenameEvent fe ) {
         FileObject fo = fe.getFile();        

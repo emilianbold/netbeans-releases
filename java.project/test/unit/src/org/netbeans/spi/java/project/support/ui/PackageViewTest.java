@@ -41,8 +41,9 @@ public class PackageViewTest extends NbTestCase {
     public void testFolders() throws Exception {
         
         // Prepare test data
-        FileSystem fs = createFS();
         FileObject root = TestUtil.makeScratchDir( this );
+        // System.out.println("root " + root.getFileSystem().getClass() );
+        
         
 	// Create children
         FileUtil.createFolder( root, "src" );
@@ -163,12 +164,6 @@ public class PackageViewTest extends NbTestCase {
     }
     
         
-    public static FileSystem createFS() {
-        FileSystem fs = new LocalFileSystem();
-        return fs;        
-    }
-    
-    
     public static void assertNodes( Children children, String[] nodeNames ) {
         assertNodes( children, nodeNames, null );
     }
