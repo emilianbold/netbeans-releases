@@ -33,7 +33,7 @@ import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
-public class J2SESources implements Sources, PropertyChangeListener  {
+public class J2SESources implements Sources, PropertyChangeListener, ChangeListener  {
 
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
@@ -57,8 +57,11 @@ public class J2SESources implements Sources, PropertyChangeListener  {
     public SourceGroup[] getSourceGroups(final String type) {
         return (SourceGroup[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
-                if (delegate == null) {
-                    delegate = initSources();
+                synchronized (J2SESources.this) {
+                    if (delegate == null) {                    
+                        delegate = initSources();
+                        delegate.addChangeListener(J2SESources.this);
+                    }
                 }
                 return delegate.getSourceGroups(type);
             }
@@ -155,8 +158,13 @@ public class J2SESources implements Sources, PropertyChangeListener  {
 
     private void fireChange() {
         ChangeListener[] _listeners;
+        synchronized (this) {
+            if (delegate != null) {
+                delegate.removeChangeListener(this);
+                delegate = null;
+            }
+        }
         synchronized (listeners) {
-            delegate = null;
             if (listeners.isEmpty()) {
                 return;
             }
@@ -172,6 +180,10 @@ public class J2SESources implements Sources, PropertyChangeListener  {
         if (SourceRoots.PROP_ROOT_PROPERTIES.equals(evt.getPropertyName())) {
             this.fireChange();
         }
+    }
+    
+    public void stateChanged (ChangeEvent event) {
+        this.fireChange();
     }
 
 }
