@@ -103,9 +103,9 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
 	     homepage="http://ant.${homepage.base}/"
 	     distribution="http://${dist.base}/ant.nbm">
       <license name="ant-license.txt">
-        For the Ant module itself:
+        <text>For the Ant module itself:</text>
         <file location="${license.file}"/>
-	For the Ant runtime and manual:
+	<text>For the Ant runtime and manual:</text>
 	<file location="Ant_License"/>
       </license>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>

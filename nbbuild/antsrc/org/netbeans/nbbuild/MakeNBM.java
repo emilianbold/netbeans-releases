@@ -43,10 +43,12 @@ public class MakeNBM extends MatchingTask {
         /** You may embed a <samp>&lt;file&gt;</samp> element inside the blurb.
          * If there is text on either side of it, that will be separated
          * with a line of dashes automatically.
+         * But use nested <samp>&lt;text&gt;</samp> for this purpose.
          */
 	public class FileInsert {
             /** File location. */
 	    public void setLocation (File file) throws BuildException {
+                log("Including contents of " + file, Project.MSG_VERBOSE);
 		long lmod = file.lastModified ();
 		if (lmod > mostRecentInput) mostRecentInput = lmod;
 		addSeparator ();
@@ -68,7 +70,7 @@ public class MakeNBM extends MatchingTask {
 	}
 	private StringBuffer text = new StringBuffer ();
 	private String name = null;
-        /** There may be freeform text inside the element. */
+        /** There may be freeform text inside the element. Prefer to use nested elements. */
 	public void addText (String t) {
 	    addSeparator ();
 	    // Strips indentation. Needed because of common style:
@@ -111,9 +113,22 @@ public class MakeNBM extends MatchingTask {
 		}
 	    }
 	}
+        /** Contents of a file to include. */
 	public FileInsert createFile () {
 	    return new FileInsert ();
 	}
+        /** Text to include literally. */
+        public class Text {
+            public void addText(String t) {
+                Blurb.this.addText(t);
+            }
+        }
+        // At least on Ant 1.3, mixed content does not work: all the text is added
+        // first, then all the file inserts. Need to use subelements to be sure.
+        /** Include nested literal text. */
+        public Text createText() {
+            return new Text();
+        }
 	private void addSeparator () {
 	    if (text.length () > 0) {
 		// some sort of separator

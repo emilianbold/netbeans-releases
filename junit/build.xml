@@ -123,9 +123,9 @@ Microsystems, Inc. All Rights Reserved.
 	     homepage="http://junit.netbeans.org/"
 	     distribution="http://www.netbeans.org/download/nbms/40/junit.nbm">
       <license name="junit-license.txt">
-        For the JUnit module itself:
+        <text>For the JUnit module itself:</text>
         <file location="${module.license.file}"/>
-	For the JUnit framework:
+	<text>For the JUnit framework:</text>
 	<file location="${junit.license.file}"/>
       </license>
       <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
