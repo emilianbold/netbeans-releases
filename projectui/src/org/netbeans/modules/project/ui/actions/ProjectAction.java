@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,7 +26,6 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
-
 
 /** Action sensitive to current project
  * 
@@ -69,7 +68,7 @@ public class ProjectAction extends LookupSensitiveAction implements Presenter.Me
         super.putValue( key, value );
         
         if ( key == Action.ACCELERATOR_KEY ) {
-            ActionsUtil.SHORCUTS_MANAGER.registerShorcut( command, value );
+            ActionsUtil.SHORCUTS_MANAGER.registerShortcut( command, value );
         }
         
     }
