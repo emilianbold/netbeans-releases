@@ -25,7 +25,7 @@ import org.netbeans.modules.debugger.*;
  * @author Jan Jancura
  */
 public class JPDADebuggerImpl extends DebuggerImpl 
-implements EventsProducer {
+implements EventsProducer, ConnectSupport {
     
     private static CoreBreakpoint.Event[]      breakpointEvents;
     private static CoreBreakpoint.Action[]     breakpointActions;
