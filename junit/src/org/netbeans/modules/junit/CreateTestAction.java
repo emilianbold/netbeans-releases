@@ -92,7 +92,6 @@ public class CreateTestAction extends CookieAction {
         
         // get the target file system
         temp = JUnitSettings.getDefault().getFileSystem();
-        System.out.println("~~~" + temp);
         if (null == (fsTest = TopManager.getDefault().getRepository().findFileSystem(temp))) {
             String msg = NbBundle.getMessage(CreateTestAction.class, "MSG_file_system_not_found");
             NotifyDescriptor descr = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
@@ -120,7 +119,7 @@ public class CreateTestAction extends CookieAction {
         }
 
         TestCreator.initialize();
-        progress.showMe();
+        progress.showMe(true);
 
         try {
             // go through all nodes
@@ -149,6 +148,7 @@ public class CreateTestAction extends CookieAction {
     private final int NODETYPE_PACKAGE  = 2;
     private static final String msgCreating = NbBundle.getMessage(CreateTestAction.class, "LBL_generator_status_creating");
     private static final String msgScanning = NbBundle.getMessage(CreateTestAction.class, "LBL_generator_status_scanning");
+    private static final String msgIgnoring = NbBundle.getMessage(CreateTestAction.class, "LBL_generator_status_ignoring");
 
     private JUnitProgress progress = new JUnitProgress();
     private class CreateTestCanceledException extends Exception {}
@@ -176,7 +176,6 @@ public class CreateTestAction extends CookieAction {
                 parentSuite.add(classTarget.getName().getFullName());
         } 
         catch (Exception e) {
-            e.printStackTrace();
             // @@ log - the suite file creation failure
             System.out.println("@@ log - the suite file creation failure");
         }
@@ -216,30 +215,33 @@ public class CreateTestAction extends CookieAction {
             try {
                 classSource = getClassElementFromDO(DataObject.find(foSource));
                 if (null != classSource) {
-                    // find the test class, if it exists or create one from active template
-                    doTarget = getTestClass(fsTest, TestUtil.getTestClassFullName(foSource), doTestT);
+                    if (TestCreator.isClassTestable(classSource)) {
+                        // find the test class, if it exists or create one from active template
+                        doTarget = getTestClass(fsTest, TestUtil.getTestClassFullName(foSource), doTestT);
 
-                    // generate the test of current node
-                    classTarget = getClassElementFromDO(doTarget);
+                        // generate the test of current node
+                        classTarget = getClassElementFromDO(doTarget);
 
-                    progress.setMessage(msgCreating + classTarget.getName().getFullName() + " ...");
+                        progress.setMessage(msgCreating + classTarget.getName().getFullName() + " ...");
 
-                    TestCreator.createTestClass(classSource, classTarget);
-                    save(doTarget);
+                        TestCreator.createTestClass(classSource, classTarget);
+                        save(doTarget);
 
-                    name = classTarget.getName().getFullName();
-                    // add the test class to the parent's suite
-                    if (null != parentSuite) {
-                        parentSuite.add(name);
+                        name = classTarget.getName().getFullName();
+                        // add the test class to the parent's suite
+                        if (null != parentSuite) {
+                            parentSuite.add(name);
+                        }
                     }
+                    else
+                         progress.setMessage(msgIgnoring + classSource.getName().getFullName() + " ...");
                 }
                 else {
-                    // @@ log - the tested class file can't be parsed or contains only abstract or non-public classes
-                    System.out.println("@@ log - the tested class file can't be parsed or contains only abstract or non-public classes");
+                     // @@ log - the tested class file can't be parsed
+                     System.out.println("@@ log - the tested class file can't be parsed.");
                 }
             } 
             catch (Exception e) {
-                e.printStackTrace();
                 // @@ log - the test file creation failure
                 System.out.println("@@ log - the test file creation failure");
             }
@@ -252,22 +254,10 @@ public class CreateTestAction extends CookieAction {
     private ClassElement getClassElementFromDO(DataObject dO) {
         SourceCookie    sc;
         SourceElement   se;
-        ClassElement    ce;
-        ClassElement[]  allClasses;
 
         sc = (SourceCookie) dO.getCookie(SourceCookie.class);
         se = sc.getSource();
-        allClasses = se.getClasses();
-
-        for (int j = 0; j < allClasses.length; j++) {
-            ce = allClasses[j];
-            if (null != ce && ce.isClass() && 
-                (0 != (ce.getModifiers() & Modifier.PUBLIC)) &&
-                (0 == (ce.getModifiers() & Modifier.ABSTRACT))) {
-                    return ce;
-            }
-        }
-        return null;
+        return se.getClass(Identifier.create(dO.getPrimaryFile().getName()));
     }
     
     private ClassElement getClassElementCookie(DataObject doTarget, String name) {
