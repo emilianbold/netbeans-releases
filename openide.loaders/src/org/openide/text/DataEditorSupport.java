@@ -57,6 +57,29 @@ public class DataEditorSupport extends CloneableEditorSupport {
         this.obj = obj;
     }
     
+    /** Factory method to create simple CloneableEditorSupport for a given
+     * entry of a given DataObject. The common use inside DataObject looks like
+     * this:
+     * <pre>
+     *  Node.Cookie cookie = (Node.Cookie)DataEditorSupport.create(this, getPrimaryEntry(), getCookieSet ());
+     *  getCookieSet ().add (cookie);
+     * </pre>
+     *
+     * @param obj the data object
+     * @param entry the entry to read and write from
+     * @param set cookie set to add remove additional cookies (currently only {@link org.openide.cookies.SaveCookie})
+     * @return a subclass of DataEditorSupport that implements at least
+     *   {@link org.openide.cookies.OpenCookie}, 
+     *   {@link org.openide.cookies.EditCookie}, 
+     *   {@link org.openide.cookies.EditorCookie.Observable}, 
+     *   {@link org.openide.cookies.PrintCookie}, 
+     *   {@link org.openide.cookies.CloseCookie}
+     * @since 5.2
+     */
+    public static CloneableEditorSupport create (DataObject obj, MultiDataObject.Entry entry, org.openide.nodes.CookieSet set) {
+        return new SimpleES (obj, entry, set);
+    }
+    
     /** Getter of the data object that this support is associated with.
     * @return data object passed in constructor
     */
