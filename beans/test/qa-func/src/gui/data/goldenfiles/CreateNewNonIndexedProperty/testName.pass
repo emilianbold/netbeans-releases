@@ -4,16 +4,16 @@ public class TestFile {
     public TestFile() {
     }
     
-    /** Getter for property nonIndexProperty.
+    /**
+     * Getter for property nonIndexProperty.
      * @return Value of property nonIndexProperty.
-     *
      */
     public String getNonIndexProperty() {
     }
     
-    /** Setter for property nonIndexProperty.
+    /**
+     * Setter for property nonIndexProperty.
      * @param nonIndexProperty New value of property nonIndexProperty.
-     *
      */
     public void setNonIndexProperty(String nonIndexProperty) {
     }

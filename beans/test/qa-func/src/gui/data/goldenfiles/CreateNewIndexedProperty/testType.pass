@@ -4,18 +4,18 @@ public class TestFile {
     public TestFile() {
     }
     
-    /** Indexed getter for property indexProperty.
+    /**
+     * Indexed getter for property indexProperty.
      * @param index Index of the property.
      * @return Value of the property at <CODE>index</CODE>.
-     *
      */
     public Double getIndexProperty(int index) {
     }
     
-    /** Indexed setter for property indexProperty.
+    /**
+     * Indexed setter for property indexProperty.
      * @param index Index of the property.
      * @param indexProperty New value of the property at <CODE>index</CODE>.
-     *
      */
     public void setIndexProperty(int index, Double indexProperty) {
     }

@@ -1,15 +1,17 @@
 public class TestFile {
     
-    /** Utility field holding list of ActionListeners. */
+    /**
+     * Utility field holding list of ActionListeners.
+     */
     private transient java.util.ArrayList actionListenerList;
     
     /** Creates a new instance of TestFile */
     public TestFile() {
     }
     
-    /** Registers ActionListener to receive events.
+    /**
+     * Registers ActionListener to receive events.
      * @param listener The listener to register.
-     *
      */
     public synchronized void addActionListener(java.awt.event.ActionListener listener) {
         if (actionListenerList == null ) {
@@ -18,9 +20,9 @@ public class TestFile {
         actionListenerList.add(listener);
     }
     
-    /** Removes ActionListener from the list of listeners.
+    /**
+     * Removes ActionListener from the list of listeners.
      * @param listener The listener to remove.
-     *
      */
     public synchronized void removeActionListener(java.awt.event.ActionListener listener) {
         if (actionListenerList != null ) {

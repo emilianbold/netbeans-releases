@@ -4,20 +4,20 @@ public class TestFile {
     public TestFile() {
     }
     
-    /** Indexed getter for property indexProperty.
+    /**
+     * Indexed getter for property indexProperty.
      * @param index Index of the property.
      * @return Value of the property at <CODE>index</CODE>.
-     *
      */
     public MyType getIndexProperty(int index) {
     }
     
-    /** Indexed setter for property indexProperty.
+    /**
+     * Indexed setter for property indexProperty.
      * @param index Index of the property.
      * @param indexProperty New value of the property at <CODE>index</CODE>.
      *
-     * @throws PropertyVetoException
-     *
+     * @throws PropertyVetoException if some vetoable listeners reject the new value
      */
     public void setIndexProperty(int index, MyType indexProperty) throws java.beans.PropertyVetoException {
     }

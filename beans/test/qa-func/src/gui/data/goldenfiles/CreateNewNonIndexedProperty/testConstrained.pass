@@ -4,18 +4,18 @@ public class TestFile {
     public TestFile() {
     }
     
-    /** Getter for property nonIndexProperty.
+    /**
+     * Getter for property nonIndexProperty.
      * @return Value of property nonIndexProperty.
-     *
      */
     public MyType getNonIndexProperty() {
     }
     
-    /** Setter for property nonIndexProperty.
+    /**
+     * Setter for property nonIndexProperty.
      * @param nonIndexProperty New value of property nonIndexProperty.
      *
-     * @throws PropertyVetoException
-     *
+     * @throws PropertyVetoException if some vetoable listeners reject the new value
      */
     public void setNonIndexProperty(MyType nonIndexProperty) throws java.beans.PropertyVetoException {
     }
