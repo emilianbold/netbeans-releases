@@ -442,7 +442,7 @@ public class AllOptionsFolder{
     /** Updates MIME option initializer. Loads user's settings stored in XML
      *  files and updates Setting's initializers via reset method */
     private void processInitializers(BaseOptions bo, boolean remove) {
-        synchronized (BaseKit.class){
+        //synchronized (BaseKit.class){
             synchronized (Settings.class){
                 Settings.Initializer si = bo.getSettingsInitializer();
                 // Remove the old one
@@ -461,7 +461,7 @@ public class AllOptionsFolder{
                  * or the old are removed. */
                 Settings.reset();
             }
-        }
+        //}
     }
     
 }
