@@ -973,6 +973,8 @@ public class Controller { //XXX public only for debug access to logging code
             case IOEvent.CMD_CLOSE :
                 if (tab != null) {
                     close(win, tab, true);
+                    win.revalidate();
+                    win.repaint();
                 } else {
                     io.dispose();
                 }
