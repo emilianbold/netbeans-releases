@@ -163,16 +163,16 @@ public class PropertiesStructure extends Element {
   * @return true if the item has been deleted successfully, false if it didn't exist.
   */                         
   public synchronized boolean deleteItem(String key) {
-System.out.println("PropertiesStructore: deleteItem(" + key + ")");
+/*System.out.println("PropertiesStructore: deleteItem(" + key + ")");
 System.out.println("------------------STRUCTURE------------------");
 System.out.println(toString());
-System.out.println("------------------END STRUCTURE------------------");
+System.out.println("------------------END STRUCTURE------------------");*/
     if (key == null)
       key = "";
     if (key.length() == 0)
       return false; 
     Element.ItemElem item = getItem(key);
-System.out.println("-------------item --------------------\n" + item);
+//System.out.println("-------------item --------------------\n" + item);
     if (item == null)
       return false;
     try {  
@@ -180,11 +180,11 @@ System.out.println("-------------item --------------------\n" + item);
       items.remove(key);
       ArrayMapList deleted = new ArrayMapList();
       deleted.add(key, item);
-System.out.println("-------------changing structure--------------------");
+//System.out.println("-------------changing structure--------------------");
       structureChanged(new ArrayMapList(), new ArrayMapList(), deleted);
-System.out.println("------------------STRUCTURE AFTER------------------");
+/*System.out.println("------------------STRUCTURE AFTER------------------");
 System.out.println(toString());
-System.out.println("------------------END STRUCTURE AFTER------------------");
+System.out.println("------------------END STRUCTURE AFTER------------------");*/
       return true;
     }
     catch (IOException e) {

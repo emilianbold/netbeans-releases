@@ -85,7 +85,6 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
   * @return the cloneable top component for this support
   */
   protected CloneableTopComponent createCloneableTopComponent () {
-System.out.println("creating new open for " + obj.getPrimaryFile().getPackageNameExt('/','.'));
     return new PropertiesCloneableTopComponent(obj);
   }
   

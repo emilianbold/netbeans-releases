@@ -194,14 +194,14 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
   }  
   
   private synchronized boolean hasOpenTableComponent() {
-System.out.println("hasOpenComponent (table) " + myEntry.getFile().getPackageNameExt('/','.') + " " + ((PropertiesDataObject)myEntry.getDataObject()).getOpenSupport().hasOpenComponent());
+// System.out.println("hasOpenComponent (table) " + myEntry.getFile().getPackageNameExt('/','.') + " " + ((PropertiesDataObject)myEntry.getDataObject()).getOpenSupport().hasOpenComponent());
     return ((PropertiesDataObject)myEntry.getDataObject()).getOpenSupport().hasOpenComponent();
   }
 
   /** Returns whether there is an open editor component. */
   public synchronized boolean hasOpenEditorComponent() {
     java.util.Enumeration en = allEditors.getComponents ();
-System.out.println("hasOpenComponent (editor) " + myEntry.getFile().getPackageNameExt('/','.') + " " + en.hasMoreElements ());
+// System.out.println("hasOpenComponent (editor) " + myEntry.getFile().getPackageNameExt('/','.') + " " + en.hasMoreElements ());
     return en.hasMoreElements ();
   }  
 
@@ -369,20 +369,15 @@ System.out.println("hasOpenComponent (editor) " + myEntry.getFile().getPackageNa
     if (listen) {
       if ((getDocument() == null) || (listenDocument == getDocument()))
         return;
-//System.out.println("this is " + this);
-//System.out.println("listendocument " + listenDocument);
-//System.out.println("document" + getDocument());
       if (listenDocument != null) // also holds that listenDocument != getDocument()
         listenDocument.removeDocumentListener(getEntryModifL());
       listenDocument = getDocument();
-//System.out.println("adding listener");      
       listenDocument.addDocumentListener(getEntryModifL());
     }
     else {
       if (listenDocument != null) {
         listenDocument.removeDocumentListener(getEntryModifL());
         listenDocument = null;
-//System.out.println("removing listener");      
       }
     }
   }
@@ -526,7 +521,10 @@ System.out.println("hasOpenComponent (editor) " + myEntry.getFile().getPackageNa
         if (lastSel.get(propSupport) == this)
           lastSel.set(propSupport, null);
       } 
-      catch (Exception e) { e.printStackTrace(); }  
+      catch (Exception e) { 
+        if (Boolean.getBoolean("netbeans.debug.exceptions"))
+          e.printStackTrace(); 
+      }  
       
       // end super
       /*boolean canClose = super.closeLast();

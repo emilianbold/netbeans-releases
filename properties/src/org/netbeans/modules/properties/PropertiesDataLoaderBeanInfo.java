@@ -71,7 +71,8 @@ public final class PropertiesDataLoaderBeanInfo extends SimpleBeanInfo {
       descriptors[0].setDisplayName(bundle.getString("PROP_Name"));
       descriptors[0].setShortDescription(bundle.getString("HINT_Name"));
     } catch (IntrospectionException e) {
-      e.printStackTrace ();
+      if (Boolean.getBoolean("netbeans.debug.exceptions"))
+        e.printStackTrace ();
     }
   }
 
@@ -79,6 +80,7 @@ public final class PropertiesDataLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
 * <<Log>>
+*  5    Gandalf   1.4         10/13/99 Petr Jiricka    Debug messages removed
 *  4    Gandalf   1.3         8/31/99  Petr Jiricka    Added extensions property
 *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
 *       org.openide ----

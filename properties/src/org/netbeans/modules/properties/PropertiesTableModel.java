@@ -320,7 +320,7 @@ public class PropertiesTableModel extends AbstractTableModel {
           TableCellEditor ed = jt.getCellEditor();
           if (ed != null) {
             ed.cancelCellEditing();
-System.out.println("canceling edit in " + jt);          
+//System.out.println("canceling edit in " + jt);          
           }  
         }
       }
