@@ -17,34 +17,38 @@
   the XML Entity Catalogs node (<img src="../images/catalog-root.gif" alt="XML entity catalogs node">).</p>
 
 <h4>To mount an XML catalog:</h4>
-<ol><li>In the Runtime window, right-click XML Entity Catalogs and choose Mount
-    Catalog.</li>
-  <li>Select the type of catalog from the installed format recognizers:</li>
+<ol>
+	<li>In the Runtime window, right-click the XML Entity Catalogs node and choose
+		Add Catalog.</li>
+   <li>Select the type of catalog you want to add in the Catalog Type combo box.
+   	You can choose from the following types:</li>
   <ul>
-    <li><b>NetBeans Catalog.</b>&nbsp;Select this option to mount the Netbeans 
-      IDE catalog in read-only form.</li>
-    <li><b>OASIS Catalog Resolver.</b>&nbsp;Select this option to mount an OASIS 
-      XML catalog. 
-      <p> The OASIS Catalog Resolver contains a Prefer public checkbox. Select 
-        this checkbox if you want to use the public identifier specified in the 
-        catalog rather than the system identifier located in the XML document. 
-        In most cases, your catalog maps the public identifier to a local copy 
-        of the entity it represents. In this case, you need to select the Prefer 
-        public checkbox for entity resolution to function properly. 
+  	<li><b>OASIS Catalog Resolver.</b>&nbsp;Select this option to add an OASIS
+  		 XML catalog. 
+      <p> Select
+      	 the Prefer Public ID checkbox if you want to use
+      	the public identifier specified in the catalog rather than the system
+      	identifier located in the XML document. In most cases,  catalogs
+      	map the public identifier to a local copy of the entity they represent.
+      	In this case, you need to select the Prefer Public ID checkbox for entity
+      	resolution to function properly. 
     </li>
-    <li><b>XML Catalog.</b>&nbsp;Select this option to mount XML Catalog v0.4 
-      catalogs.</li>
+    <li><b>XML Catalog.</b>&nbsp;Select this option to add X Catalog v0.2 or
+    	 XML Catalog v0.4 deprecated catalog formats.</li>
+    <li><b>NetBeans Catalog.</b>&nbsp;Select this option to add the Netbeans
+    	IDE catalog in read-only form.</li>
   </ul>
-  <li>Type the location of the file, or click File to browse to the file's location. 
-    Then click OK. 
+  <li>Type the location of the catalog in the Catalog URL field, or click Browse
+  	to specify the file's location. Then click OK. 
     <p>The appropriate  XML catalog node (<img src="../images/sysCatalog.gif" alt="catalog node icon">)
        appears under the XML Entity Catalogs node. 
   </li>
 </ol>
-<h4>To unmount an XML catalog:</h4>
+<h4>To remove an XML catalog:</h4>
 <ol>
   <li> Expand the XML Entity Catalogs node in the Runtime window.</li>
-  <li>Right-click the XML catalog node and choose Unmount Catalog.<p>The 
+  <li>Right-click the XML catalog node you want to remove and choose Remove.
+  	<p>The 
   designated  XML catalog node (<img src="../images/sysCatalog.gif" alt="catalog node icon">)
        is removed from the XML Entity Catalogs node. 
   </li>
