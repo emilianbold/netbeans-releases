@@ -14,6 +14,7 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
+import java.io.IOException;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
 
@@ -38,12 +39,17 @@ public class GetModuleName extends Task {
             throw new BuildException("You must set the property name, where to store the module name", this.getLocation());
         if (root == null)
             throw new BuildException("You must set the root dir", this.getLocation());
-        String basedir = this.getProject().getBaseDir().getAbsolutePath();
-        String rootdir = root.getAbsolutePath();
-        if (!basedir.startsWith(rootdir)) throw new BuildException( "This module in on different path than the root dir",this.getLocation());
-        System.out.println("Basedir: " + basedir + " rootdir: " + rootdir);
-        String modulename = basedir.substring(rootdir.length() + 1).replace(File.separatorChar,'/');
-        this.getProject().setProperty( name, modulename);
+        try {
+            String basedir = this.getProject().getBaseDir().getCanonicalPath();
+            String rootdir = root.getCanonicalPath();
+            log("Basedir: " + basedir + " rootdir: " + rootdir);
+            if (!basedir.startsWith(rootdir)) throw new BuildException( "This module in on different path than the root dir",this.getLocation());
+            String modulename = basedir.substring(rootdir.length() + 1).replace(File.separatorChar,'/');
+            this.getProject().setProperty( name, modulename);
+        }
+        catch (IOException ex) {
+            throw new BuildException("You must set the root dir", ex, this.getLocation());
+        }
     }
     
 }
