@@ -40,120 +40,93 @@ import org.openide.src.Type;
 
 public class PatternAnalyser extends Object implements Node.Cookie {
 
-    private static final int PROPERTIES_RESERVE = 11;
-   
-    private HashMap propertyPatterns; 
-    private HashMap idxPropertyPatterns; 
-    private HashMap eventSetPatterns; 
+  private static final int    PROPERTIES_RESERVE = 11;
+  private static final String GET_PREFIX = "get";
+  private static final String SET_PREFIX = "set";
+  private static final String IS_PREFIX = "is";
 
-    private ClassElement classElement;
-    
-    private PatternChildren pc = null;
-    private MethodElementListener metL;
-    private FieldElementListener fieldL;
+  private HashMap propertyPatterns; 
+  private HashMap idxPropertyPatterns; 
+  private HashMap eventSetPatterns; 
 
-    /** Nasty temporary procedure */
+  private ClassElement classElement;
 
-    void setPatternChildren( PatternChildren pc ) {
-      this.pc = pc;
+  /** Creates new analyser for ClassElement 
+   */
+  public PatternAnalyser( ClassElement classElement ) {      
+    this.classElement = classElement;
+  }
+
+  public void analyzeAll() {
+
+    System.out.println ( "PATTERN ANALYZING" ); 
+
+    int methodCount = classElement.getMethods().length;
+    propertyPatterns = new HashMap( methodCount / 2 + PROPERTIES_RESERVE );
+    idxPropertyPatterns = new HashMap();        // Initial size 11
+    eventSetPatterns = new HashMap();           // Initial size 11
+
+    findPropertyPatterns();
+    findEventSetPatterns();
+  }
+
+  public Collection getPropertyPatterns() {
+    return propertyPatterns.values();
+  }
+
+  public Collection getIdxPropertyPatterns() {
+    return idxPropertyPatterns.values();
+  }
+
+  public Collection getEventSetPatterns() {
+    return eventSetPatterns.values();
+  }
+
+  /** Gets the classelemnt of this pattern analyser */
+  public ClassElement getClassElement() {
+    return classElement;
+  }
+
+  /** This method analyses the ClassElement for "property patterns". 
+  * The method is analogous to JavaBean Introspector methods for classes
+  * without a BeanInfo.
+  */
+  public void findPropertyPatterns() {
+
+    // First get all methods in classElement
+    MethodElement[] methods = classElement.getMethods();
+
+    // Analyze each method
+    for ( int i = 0; i < methods.length ; i++ ) {
+      MethodElement method = methods[i];
+
+      PropertyPattern pp = analyseMethod( method );
+      if ( pp != null )
+        addProperty( pp );
     }
 
-    /** Creates new analyser for ClassElement 
-     */
-    public PatternAnalyser( ClassElement classElement ) {
-      
-      this.classElement = classElement;
-
-      metL = new MethodElementListener();
-      fieldL = new FieldElementListener();
-
-      int methodCount = classElement.getMethods().length;
-      propertyPatterns = new HashMap( methodCount / 2 + PROPERTIES_RESERVE );
-      idxPropertyPatterns = new HashMap();          // Initial size 11
-      eventSetPatterns = new HashMap();             // Initial size 11
-
-      findPropertyPatterns();
-      findEventSetPatterns();
-    }
-
-    public Collection getPropertyPatterns() {
-      return propertyPatterns.values();
-    }
-
-    public Collection getIdxPropertyPatterns() {
-      return idxPropertyPatterns.values();
-    }
-
-    public Collection getEventSetPatterns() {
-      return eventSetPatterns.values();
-    }
-
-    /** Gets the classelemnt of this pattern analyser */
-    public ClassElement getClassElement() {
-      return classElement;
-    }
-
-    /** This method analyses the ClassElement for "property patterns". 
-    * The method is analogous to JavaBean Introspector methods for classes
-    * without a BeanInfo.
-    */
-    public void findPropertyPatterns() {
-
-    //System.out.println ("Looking for property patterns");
-
-      // First get all methods in classElement
-
-      MethodElement[] methods = classElement.getMethods();
-
-      // Analyze each method
-
-      for ( int i = 0; i < methods.length ; i++ ) {
-
-        MethodElement method = methods[i];
-
-        // Start to listen to changes of this methods
-        method.addPropertyChangeListener( metL );
-    
-
-        PropertyPattern pp = analyseMethod( method );
-
-        if ( pp != null )
-          addProperty( pp );
-    
-      }
-
-      // Analyze fields
-
-      resolveFields( );
-
-    }
+    // Analyze fields
+    resolveFields( );
+  }
 
 
-  private void resolveFields() {      
+  void resolveFields() {      
     // Analyze fields
     FieldElement fields[] = classElement.getFields();
 
     for ( int i = 0; i < fields.length; i++ ) {
       FieldElement field=fields[i];
-      field.addPropertyChangeListener( fieldL );
-
 
       if ( ( field.getModifiers() & Modifier.STATIC ) != 0 )
         continue;
-
-      PropertyPattern pp = (PropertyPattern)propertyPatterns.get( field.getName().getName() );
-      
+      PropertyPattern pp = (PropertyPattern)propertyPatterns.get( field.getName().getName() );      
       if ( pp == null )
         pp = (PropertyPattern)idxPropertyPatterns.get( field.getName().getName() );
-
       if ( pp == null )
         continue;
-  
       Type ppType = pp.getType();
-
       if ( ppType != null && pp.getType().compareTo( field.getType(), false ) )
         pp.setEstimatedField( field );
-
     }
   }    
 
@@ -175,26 +148,26 @@ public class PatternAnalyser extends Object implements Node.Cookie {
 
     try {      
       if ( paramCount == 0 ) {
-        if (name.startsWith( "get" )) {
+        if (name.startsWith( GET_PREFIX )) {
           // SimpleGetter
           pp = new PropertyPattern( this, method, null);
         }
-        else if ( returnType.compareTo( Type.BOOLEAN, false ) && name.startsWith("is")) {
+        else if ( returnType.compareTo( Type.BOOLEAN, false ) && name.startsWith( IS_PREFIX )) {
           // Boolean getter
           pp = new PropertyPattern( this, method, null );
         }
       }
       else if ( paramCount == 1 ) {
-        if ( params[0].getType().compareTo( Type.INT, false ) && name.startsWith( "get" )) {
+        if ( params[0].getType().compareTo( Type.INT, false ) && name.startsWith( GET_PREFIX )) {
           pp = new IdxPropertyPattern( this, null, null, method, null );
         }
-        else if ( returnType.compareTo( Type.VOID, false ) && name.startsWith( "set" )) {
+        else if ( returnType.compareTo( Type.VOID, false ) && name.startsWith( SET_PREFIX )) {
           pp = new PropertyPattern( this, null, method );
           // PENDING vetoable => constrained
         }
       }
       else if ( paramCount == 2 ) {
-        if ( params[0].getType().compareTo( Type.INT, false ) && name.startsWith( "set" )) {
+        if ( params[0].getType().compareTo( Type.INT, false ) && name.startsWith( SET_PREFIX )) {
           pp = new IdxPropertyPattern( this, null, null, null, method ); 
           // PENDING vetoable => constrained
         }
@@ -212,9 +185,7 @@ public class PatternAnalyser extends Object implements Node.Cookie {
   /** Method analyses cass methods for EventSetPatterns 
    */
 
-
   void findEventSetPatterns() {
-    //System.out.println ("Looking for EventSet patterns");
 
     // First get all methods in classElement
 
@@ -252,6 +223,7 @@ public class PatternAnalyser extends Object implements Node.Cookie {
         removes.put( compound, method );
       }
     }
+
     // Now look for matching addFooListener+removeFooListener pairs.
     Enumeration keys = adds.keys();
     
@@ -300,54 +272,7 @@ public class PatternAnalyser extends Object implements Node.Cookie {
     }
 
   }
-
-  /** This method is called when any method is added or removed in ClassElement 
-   * // PENDING : NASTY, UGLY & INEFFECTIVE IMPLEMENTATION 
-   */
-  
-  void methodChanged( PropertyChangeEvent e) {
-    classMethodsChanged();  
-    pc.refreshKeys( PatternFilter.ALL );
-  }
-
-  /** This method is called when any method is added or removed in ClassElement 
-   * // PENDING : NASTY, UGLY & INEFFECTIVE IMPLEMENTATION 
-   */
-
-  int classMethodsChanged() {
-    removeMethodListeners();
-    removeFieldListeners();
-
-    int methodCount = classElement.getMethods().length;
-    propertyPatterns = new HashMap( methodCount / 2 + PROPERTIES_RESERVE );
-    idxPropertyPatterns = new HashMap();        // Initial size 11
-    eventSetPatterns = new HashMap();           // Initial size 11
-
-    findPropertyPatterns();
-    findEventSetPatterns();
-    return PatternFilter.ALL;
-  }
-
   // Utility methods --------------------------------------------------------------------
-
-  /** Temporay method to remove all method listeners */
-  private void removeMethodListeners() {
-    MethodElement[] methods = classElement.getMethods();
-
-    for ( int i = 0; i < methods.length ; i++ ) {
-      methods[i].removePropertyChangeListener( metL );
-    }
-  }
-
-
-  /** Temporay method to remove all method listeners */
-  private void removeFieldListeners() {
-    FieldElement[] fields = classElement.getFields();
-
-    for ( int i = 0; i < fields.length ; i++ ) {
-      fields[i].removePropertyChangeListener( fieldL );
-    }
-  }
 
   /** Adds the new property. Or generates composite property if property
    *  of that name already exists. It puts the property in the right HashMep
@@ -410,7 +335,6 @@ public class PatternAnalyser extends Object implements Node.Cookie {
 
   }
 
-
   /** adds an eventSetPattern */
 
   void addEventSet( EventSetPattern esp ) {
@@ -425,34 +349,11 @@ public class PatternAnalyser extends Object implements Node.Cookie {
     eventSetPatterns.put( key, composite );
   }
 
-
-  // Inner classes ----------------------------------------------------------------------
-
-  /** The listener of method changes temporary used in PatternAnalyser to
-   * track changes in 
-   */
-
-  final class MethodElementListener implements PropertyChangeListener {
-    public void propertyChange ( PropertyChangeEvent e ) {
-      methodChanged(e);
-    }
-  }  
-  
-  /** The listener of method changes temporary used in PatternAnalyser to
-   * track changes in 
-   */
-
-  final class FieldElementListener implements PropertyChangeListener {
-    public void propertyChange ( PropertyChangeEvent e ) {
-      removeFieldListeners();
-      resolveFields();
-    }
-
-  }
 }
 
 /* 
  * Log
+ *  3    Gandalf   1.2         7/20/99  Ian Formanek    compilable version
  *  2    Gandalf   1.1         7/9/99   Petr Hrebejk    Factory chaining fix
  *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
  * $ 
