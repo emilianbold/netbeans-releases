@@ -1007,7 +1007,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             PropertyDescriptor desc = prop.getPropertyDescriptor();
 
             if (!props[i].isChanged()) {
-                if ((props[i].getPreCode() != null) ||(props[i].getPreCode() != null)) {
+                if (props[i].getPreCode() != null || props[i].getPostCode() != null) {
                     buf.append(indent);
                     // in this case save only the pre/post code
                     addLeafElementOpenAttr(
