@@ -1,0 +1,394 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+
+    <folder name="Actions">
+        <folder name="Form">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
+
+            <file name="Add To Component Palette[org-netbeans-modules-form-actions-InstallToPaletteAction].instance" />
+            <file name="Component Inspector[org-netbeans-modules-form-actions-ComponentInspectorAction].instance" />
+            <file name="Component Palette[org-netbeans-modules-form-palette-PaletteAction].instance" />
+            <file name="Customize Layout[org-netbeans-modules-form-actions-CustomizeLayoutAction].instance" />
+            <file name="Design Mode[org-netbeans-modules-form-actions-DesignModeAction].instance" />
+            <file name="Events[org-netbeans-modules-form-actions-EventsAction].instance" />
+            <file name="Goto Form[org-netbeans-modules-form-actions-GotoFormAction].instance" />
+            <file name="Goto Inspector[org-netbeans-modules-form-actions-GotoInspectorAction].instance" />
+            <file name="Goto Source[org-netbeans-modules-form-actions-GotoEditorAction].instance" />
+            <file name="Install New JavaBean[org-netbeans-modules-form-actions-InstallBeanAction].instance" />
+            <file name="Set Layout[org-netbeans-modules-form-actions-SelectLayoutAction].instance" />
+            <file name="Show Grid[org-netbeans-modules-form-actions-ShowGridAction].instance" />
+            <file name="Test Mode[org-netbeans-modules-form-actions-TestModeAction].instance" />
+        </folder>
+    </folder>
+
+    <folder name="Toolbars">
+        <folder name="Form">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
+
+            <file name="Component Inspector[org-netbeans-modules-form-actions-ComponentInspectorAction].instance" />
+            <file name="Show Grid[org-netbeans-modules-form-actions-ShowGridAction].instance" />
+            <file name="Design Mode[org-netbeans-modules-form-actions-DesignModeAction].instance" />
+            <file name="Test Mode[org-netbeans-modules-form-actions-TestModeAction].instance" />
+
+            <attr name="Component Inspector[org-netbeans-modules-form-actions-ComponentInspectorAction].instance/Test Mode[org-netbeans-modules-form-actions-TestModeAction].instance" boolvalue="true" />
+            <attr name="Test Mode[org-netbeans-modules-form-actions-TestModeAction].instance/Design Mode[org-netbeans-modules-form-actions-DesignModeAction].instance" boolvalue="true" />
+            <attr name="Design Mode[org-netbeans-modules-form-actions-DesignModeAction].instance/Show Grid[org-netbeans-modules-form-actions-ShowGridAction].instance" boolvalue="true" />
+        </folder>
+
+        <folder name="Palette">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
+            <file name="Component Palette[org-netbeans-modules-form-palette-PaletteAction].instance" />
+        </folder>
+    </folder>
+
+    <folder name="Menu">
+        <folder name="View">
+            <file name="Component Inspector[org-netbeans-modules-form-actions-ComponentInspectorAction].instance" />
+            <attr name="Separator1[javax-swing-JSeparator].instance/Component Inspector[org-netbeans-modules-form-actions-ComponentInspectorAction].instance" boolvalue="true" />
+        </folder>
+        <folder name="Tools">
+            <file name="Install New JavaBean[org-netbeans-modules-form-actions-InstallBeanAction].instance" />
+            <attr name="Separator1[javax-swing-JSeparator].instance/Install New JavaBean[org-netbeans-modules-form-actions-InstallBeanAction].instance" boolvalue="true" />
+        </folder>
+    </folder>
+
+    <folder name="Palette">
+        <folder name="Swing">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
+
+            <file name="JLabel[javax-swing-JLabel].instance">
+                icon=/javax/swing/beaninfo/images/JLabelColor16.gif
+            </file>
+            <file name="JButton[javax-swing-JButton].instance">
+                icon=/javax/swing/beaninfo/images/JButtonColor16.gif
+            </file>
+            <file name="JCheckBox[javax-swing-JCheckBox].instance">
+                icon=/javax/swing/beaninfo/images/JCheckBoxColor16.gif
+            </file>
+            <file name="JRadioButton[javax-swing-JRadioButton].instance">
+                icon=/javax/swing/beaninfo/images/JRadioButtonColor16.gif
+            </file>
+            <file name="JComboBox[javax-swing-JComboBox].instance">
+                icon=/javax/swing/beaninfo/images/JComboBoxColor16.gif
+            </file>
+            <file name="JList[javax-swing-JList].instance">
+                icon=/javax/swing/beaninfo/images/JListColor16.gif
+            </file>
+            <file name="JTextField[javax-swing-JTextField].instance">
+                icon=/javax/swing/beaninfo/images/JTextFieldColor16.gif
+            </file>
+            <file name="JTextArea[javax-swing-JTextArea].instance">
+                icon=/javax/swing/beaninfo/images/JTextAreaColor16.gif
+            </file>
+            <file name="JToggleButton[javax-swing-JToggleButton].instance">
+                icon=/javax/swing/beaninfo/images/JToggleButtonColor16.gif
+            </file>
+            <file name="JPanel[javax-swing-JPanel].instance">
+                icon=/javax/swing/beaninfo/images/JPanelColor16.gif
+            </file>
+            <file name="JTabbedPane[javax-swing-JTabbedPane].instance">
+                icon=/javax/swing/beaninfo/images/JTabbedPaneColor16.gif
+            </file>
+            <file name="JScrollBar[javax-swing-JScrollBar].instance">
+                icon=/javax/swing/beaninfo/images/JScrollBarColor16.gif
+            </file>
+            <file name="JScrollPane[javax-swing-JScrollPane].instance">
+                icon=/javax/swing/beaninfo/images/JScrollPaneColor16.gif
+            </file>
+            <file name="JMenuBar[javax-swing-JMenuBar].instance">
+                icon=/javax/swing/beaninfo/images/JMenuBarColor16.gif
+            </file>
+            <file name="JPopupMenu[javax-swing-JPopupMenu].instance">
+                icon=/javax/swing/beaninfo/images/JPopupMenuColor16.gif
+            </file>
+        </folder>
+        <folder name="Swing2">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
+        
+            <file name="JSlider[javax-swing-JSlider].instance">
+                icon=/javax/swing/beaninfo/images/JSliderColor16.gif
+            </file>
+            <file name="JProgressBar[javax-swing-JProgressBar].instance">
+                icon=/javax/swing/beaninfo/images/JProgressBarColor16.gif
+            </file>
+            <file name="JSplitPane[javax-swing-JSplitPane].instance">
+                icon=/javax/swing/beaninfo/images/JSplitPaneColor16.gif
+            </file>
+            <file name="JPasswordField[javax-swing-JPasswordField].instance">
+                icon=/javax/swing/beaninfo/images/JPasswordFieldColor16.gif
+            </file>
+            <file name="JSeparator[javax-swing-JSeparator].instance">
+                icon=/javax/swing/beaninfo/images/JSeparatorColor16.gif
+            </file>
+            <file name="JTextPane[javax-swing-JTextPane].instance">
+                icon=/javax/swing/beaninfo/images/JTextPaneColor16.gif
+            </file>
+            <file name="JEditorPane[javax-swing-JEditorPane].instance">
+                icon=/javax/swing/beaninfo/images/JEditorPaneColor16.gif
+            </file>
+            <file name="JTree[javax-swing-JTree].instance">
+                icon=/javax/swing/beaninfo/images/JTreeColor16.gif
+            </file>
+            <file name="JTable[javax-swing-JTable].instance">
+                icon=/javax/swing/beaninfo/images/JTableColor16.gif
+            </file>
+            <file name="JToolBar[javax-swing-JToolBar].instance">
+                icon=/javax/swing/beaninfo/images/JToolBarColor16.gif
+            </file>
+            <file name="JInternalFrame[javax-swing-JInternalFrame].instance">
+                icon=/javax/swing/beaninfo/images/JInternalFrameColor16.gif
+            </file>
+            <file name="JLayeredPane[javax-swing-JLayeredPane].instance">
+                icon=/javax/swing/beaninfo/images/JLayeredPaneColor16.gif
+            </file>
+            <file name="JDesktopPane[javax-swing-JDesktopPane].instance">
+                icon=/javax/swing/beaninfo/images/JDesktopPaneColor16.gif
+            </file>
+            <file name="JOptionPane[javax-swing-JOptionPane].instance">
+                icon=/javax/swing/beaninfo/images/JOptionPaneColor16.gif
+            </file>
+        </folder>
+        
+        <folder name="AWT">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
+        
+            <file name="Label[java-awt-Label].instance">
+                icon=/org/netbeans/beaninfo/awt/label.gif
+            </file>
+            <file name="Button[java-awt-Button].instance">
+                icon=/org/netbeans/beaninfo/awt/button.gif
+            </file>
+            <file name="TextField[java-awt-TextField].instance">
+                icon=/org/netbeans/beaninfo/awt/textfield.gif
+            </file>
+            <file name="TextArea[java-awt-TextArea].instance">
+                icon=/org/netbeans/beaninfo/awt/textarea.gif
+            </file>
+            <file name="Checkbox[java-awt-Checkbox].instance">
+                icon=/org/netbeans/beaninfo/awt/checkbox.gif
+            </file>
+            <file name="Choice[java-awt-Choice].instance">
+                 icon=/org/netbeans/beaninfo/awt/choice.gif
+            </file>
+            <file name="List[java-awt-List].instance">
+                 icon=/org/netbeans/beaninfo/awt/list.gif
+            </file>
+            <file name="Scrollbar[java-awt-Scrollbar].instance">
+                 icon=/org/netbeans/beaninfo/awt/scrollbar.gif
+            </file>
+            <file name="ScrollPane[java-awt-ScrollPane].instance">
+                 icon=/org/netbeans/beaninfo/awt/scrollpane.gif
+            </file>
+            <file name="Panel[java-awt-Panel].instance">
+                 icon=/org/netbeans/beaninfo/awt/panel.gif
+            </file>
+            <file name="Canvas[java-awt-Canvas].instance">
+                 icon=/org/netbeans/beaninfo/awt/canvas.gif
+            </file>
+            <file name="MenuBar[java-awt-MenuBar].instance">
+                 icon=/org/netbeans/beaninfo/awt/menubar.gif
+            </file>
+            <file name="PopupMenu[java-awt-PopupMenu].instance">
+                 icon=/org/netbeans/beaninfo/awt/popupmenu.gif
+            </file>
+        </folder>
+        
+        <folder name="Beans">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
+        
+            <file name="Timer[org-netbeans-examples-lib-timerbean-Timer].instance" />
+        </folder>
+        
+        <folder name="Layouts">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
+        
+            <file name="DesignFlowLayout[org-netbeans-modules-form-compat2-layouts-DesignFlowLayout].instance">
+                icon=/org/netbeans/modules/form/resources/palette/flowLayout.gif
+            </file>
+            <file name="DesignBorderLayout[org-netbeans-modules-form-compat2-layouts-DesignBorderLayout].instance">
+                icon=/org/netbeans/modules/form/resources/palette/borderLayout.gif
+            </file>
+            <file name="DesignGridLayout[org-netbeans-modules-form-compat2-layouts-DesignGridLayout].instance">
+                icon=/org/netbeans/modules/form/resources/palette/gridLayout.gif
+            </file>
+            <file name="DesignCardLayout[org-netbeans-modules-form-compat2-layouts-DesignCardLayout].instance">
+                icon=/org/netbeans/modules/form/resources/palette/cardLayout.gif
+            </file>
+            <file name="DesignGridBagLayout[org-netbeans-modules-form-compat2-layouts-DesignGridBagLayout].instance">
+                icon=/org/netbeans/modules/form/resources/palette/gridBagLayout.gif
+            </file>
+            <file name="DesignAbsoluteLayout[org-netbeans-modules-form-compat2-layouts-DesignAbsoluteLayout].instance">
+                icon=/org/netbeans/modules/form/resources/palette/absoluteLayout.gif
+            </file>
+            <file name="DesignBoxLayout[org-netbeans-modules-form-compat2-layouts-DesignBoxLayout].instance">
+                icon=/org/netbeans/modules/form/resources/palette/boxLayout.gif
+            </file>
+        </folder>
+        
+        <folder name="Borders">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
+        
+            <file name="EmptyBorderInfo[org-netbeans-modules-form-compat2-border-EmptyBorderInfo].instance">
+                icon=/org/netbeans/modules/form/resources/palette/border.gif
+            </file>
+            <file name="LineBorderInfo[org-netbeans-modules-form-compat2-border-LineBorderInfo].instance">
+                icon=/org/netbeans/modules/form/resources/palette/lineBorder.gif
+            </file>
+            <file name="MatteIconBorderInfo[org-netbeans-modules-form-compat2-border-MatteIconBorderInfo].instance">
+                icon=/org/netbeans/modules/form/resources/palette/matteIconBorder.gif
+            </file>
+            <file name="MatteColorBorderInfo[org-netbeans-modules-form-compat2-border-MatteColorBorderInfo].instance">
+                icon=/org/netbeans/modules/form/resources/palette/matteColorBorder.gif
+            </file>
+            <file name="TitledBorderInfo[org-netbeans-modules-form-compat2-border-TitledBorderInfo].instance">
+                icon=/org/netbeans/modules/form/resources/palette/titledBorder.gif
+            </file>
+            <file name="EtchedBorderInfo[org-netbeans-modules-form-compat2-border-EtchedBorderInfo].instance">
+                icon=/org/netbeans/modules/form/resources/palette/etchedBorder.gif
+            </file>
+            <file name="BevelBorderInfo[org-netbeans-modules-form-compat2-border-BevelBorderInfo].instance">
+                icon=/org/netbeans/modules/form/resources/palette/bevelBorder.gif
+            </file>
+            <file name="SoftBevelBorderInfo[org-netbeans-modules-form-compat2-border-SoftBevelBorderInfo].instance">
+                icon=/org/netbeans/modules/form/resources/palette/softBevelBorder.gif
+            </file>
+            <file name="CompoundBorderInfo[org-netbeans-modules-form-compat2-border-CompoundBorderInfo].instance">
+                icon=/org/netbeans/modules/form/resources/palette/compoundBorder.gif
+            </file>
+        </folder>
+
+        <attr name="Swing/Swing2" boolvalue="true" />
+        <attr name="Swing2/AWT" boolvalue="true" />
+        <attr name="AWT/Beans" boolvalue="true" />
+        <attr name="Beans/Layouts" boolvalue="true" />
+        <attr name="Layouts/Borders" boolvalue="true" />
+    </folder>
+
+    <folder name="Templates">
+        <folder name="AWTForms">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
+            <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/AWTForms.html"/>
+        
+            <file name="Applet.java" url="templates/AWTForms/Applet_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/Applet.html"/>
+            </file>
+            <file name="Applet.form" url="templates/AWTForms/Applet_form">
+                <attr name="template" boolvalue="true" />
+            </file>
+
+            <file name="Dialog.java" url="templates/AWTForms/Dialog_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/Dialog.html"/>
+            </file>
+            <file name="Dialog.form" url="templates/AWTForms/Dialog_form">
+                <attr name="template" boolvalue="true" />
+            </file>
+            
+            <file name="Frame.java" url="templates/AWTForms/Frame_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/Frame.html"/>
+            </file>
+            <file name="Frame.form" url="templates/AWTForms/Frame_form">
+                <attr name="template" boolvalue="true" />
+            </file>
+            
+            <file name="Panel.java" url="templates/AWTForms/Panel_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/Panel.html"/>
+            </file>
+            <file name="Panel.form" url="templates/AWTForms/Panel_form">
+                <attr name="template" boolvalue="true" />
+            </file>
+        </folder>
+
+        <folder name="SwingForms">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
+            <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/SwingForms.html"/>
+        
+            <file name="JApplet.java" url="templates/SwingForms/JApplet_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/JApplet.html"/>
+            </file>
+            <file name="JApplet.form" url="templates/SwingForms/JApplet_form">
+                <attr name="template" boolvalue="true" />
+            </file>
+
+            <file name="JDialog.java" url="templates/SwingForms/JDialog_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/JDialog.html"/>
+            </file>
+            <file name="JDialog.form" url="templates/SwingForms/JDialog_form">
+                <attr name="template" boolvalue="true" />
+            </file>
+            
+            <file name="JFrame.java" url="templates/SwingForms/JFrame_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/JFrame.html"/>
+            </file>
+            <file name="JFrame.form" url="templates/SwingForms/JFrame_form">
+                <attr name="template" boolvalue="true" />
+            </file>
+            
+            <file name="JInternalFrame.java" url="templates/SwingForms/JInternalFrame_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/JInternalFrame.html"/>
+            </file>
+            <file name="JInternalFrame.form" url="templates/SwingForms/JInternalFrame_form">
+                <attr name="template" boolvalue="true" />
+            </file>
+
+            <file name="JPanel.java" url="templates/SwingForms/JPanel_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/JPanel.html"/>
+            </file>
+            <file name="JPanel.form" url="templates/SwingForms/JPanel_form">
+                <attr name="template" boolvalue="true" />
+            </file>
+        </folder>
+
+        <folder name="Dialogs">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
+            <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/Dialogs.html"/>
+        
+            <file name="Application.java" url="templates/Dialogs/Application_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/Application.html"/>
+            </file>
+            <file name="Application.form" url="templates/Dialogs/Application_form">
+                <attr name="template" boolvalue="true" />
+            </file>
+
+            <file name="MDIApplication.java" url="templates/Dialogs/MDIApplication_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/MDIApplication.html"/>
+            </file>
+            <file name="MDIApplication.form" url="templates/Dialogs/MDIApplication_form">
+                <attr name="template" boolvalue="true" />
+            </file>
+            
+            <file name="OkCancelDialog.java" url="templates/Dialogs/OkCancelDialog_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/form/resources/OKCancelDialog.html"/>
+            </file>
+            <file name="OkCancelDialog.form" url="templates/Dialogs/OkCancelDialog_form">
+                <attr name="template" boolvalue="true" />
+            </file>
+        </folder>
+    </folder>
+
+</filesystem>

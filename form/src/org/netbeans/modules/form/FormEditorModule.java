@@ -45,18 +45,6 @@ public class FormEditorModule extends ModuleInstall {
     
     /** Module installed for the first time. */
     public void installed() {
-        // ---------------------------------------------------------------------------
-        // 1. create FormEditor actions
-        installActions();
-
-        // ---------------------------------------------------------------------------
-        // 2. copy FormEditor templates
-        copyTemplates();
-
-        // ---------------------------------------------------------------------------
-        // 3. create Component Palette under system
-        createComponentPalette();
-
         restored();
     }
 
