@@ -120,5 +120,6 @@ public class SharabilityQueryImplTest extends NbTestCase {
     }
     
     // XXX testChangedProperties
+    // XXX testExternalSourceDirs
     
 }

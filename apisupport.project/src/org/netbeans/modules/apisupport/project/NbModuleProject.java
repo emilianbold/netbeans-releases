@@ -34,11 +34,13 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ProjectInformation;
+import org.netbeans.spi.project.Sources;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
@@ -88,6 +90,21 @@ final class NbModuleProject implements Project {
                 "${build.classes.dir}/*.class", // NOI18N
             });
         }
+        SourcesHelper sourcesHelper = new SourcesHelper(helper, eval);
+        // External source roots are not supported, so don't bother.
+        // Temp build dir is also internal; NBM build products go elsewhere, but
+        // difficult to predict statically exactly what they are!
+        // XXX would be good to mark at least the module JAR as owned by this project
+        // (currently FOQ/SH do not support that)
+        sourcesHelper.addTypedSourceRoot("${src.dir}", Sources.TYPE_JAVA, "Source Packages");
+        sourcesHelper.addTypedSourceRoot("${test.unit.src.dir}", Sources.TYPE_JAVA, "Unit Test Packages");
+        sourcesHelper.addTypedSourceRoot("${test.qa-functional.src.dir}", Sources.TYPE_JAVA, "Functional Test Packages");
+        /* In case there are any JH-specific templates:
+        if (helper.resolveFileObject("javahelp/manifest.mf") == null) { // NOI18N
+            // Special hack for core - ignore core/javahelp
+            sourcesHelper.addTypedSourceRoot("javahelp", "javahelp", "JavaHelp Packages");
+        }
+         */
         lookup = Lookups.fixed(new Object[] {
             new Info(),
             helper.createAuxiliaryConfiguration(),
@@ -108,6 +125,7 @@ final class NbModuleProject implements Project {
                 "build", // NOI18N
                 "javadoc", // NOI18N
             }),
+            sourcesHelper.createSources(),
             // XXX need, in rough descending order of importance:
             // AntArtifactProvider - should it run netbeans target, or all-foo/bar?
             // CustomizerProvider - ???
@@ -161,6 +179,7 @@ final class NbModuleProject implements Project {
         stock.put("nb_all", getNbrootRel()); // NOI18N
         Iterator it = getModuleList().getAllEntries().iterator();
         while (it.hasNext()) {
+            // XXX this is no longer correct; need to read cluster.properties!
             stock.put(((ModuleList.Entry)it.next()).getPath() + ".dir", "${nb_all}/nbbuild/netbeans"); // NOI18N
         }
         String[] dirs = {

@@ -18,6 +18,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
@@ -64,9 +67,35 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
             if (p != null) {
                 return p;
             }
+            FileObject externalOwner = (FileObject)externalOwners.get(f);
+            if (externalOwner != null) {
+                try {
+                    // Note: will be null if there is no such project.
+                    return ProjectManager.getDefault().findProject(externalOwner);
+                } catch (IOException e) {
+                    // There is a project there, but we cannot load it...
+                    return null;
+                }
+            }
             f = f.getParent();
         }
         return null;
+    }
+    
+    /**
+     * Map from external source roots to the owning project directories.
+     */
+    private static final Map/*<FileObject,FileObject>*/ externalOwners =
+        Collections.synchronizedMap(new WeakHashMap());
+    
+    /** @see FileOwnerQuery#reset */
+    public static void reset() {
+        externalOwners.clear();
+    }
+    
+    /** @see FileOwnerQuery#markExternalOwner */
+    public static void markExternalOwnerTransient(FileObject root, Project owner) {
+        externalOwners.put(root, owner.getProjectDirectory());
     }
     
     private static FileObject uri2FileObject(URI u) {

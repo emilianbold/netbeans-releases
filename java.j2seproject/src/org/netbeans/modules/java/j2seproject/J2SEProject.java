@@ -26,6 +26,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -40,6 +41,7 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectInformation;
+import org.netbeans.spi.project.Sources;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.SourceContainers;
@@ -51,6 +53,7 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
@@ -117,6 +120,17 @@ final class J2SEProject implements Project, AntProjectListener {
             "${build.classes.dir}/*.class", // NOI18N
             "${build.test.classes.dir}/*.class", // NOI18N
         });
+        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
+        sourcesHelper.addPrincipalSourceRoot("${src.dir}", /*XXX I18N*/ "Source Packages");
+        sourcesHelper.addPrincipalSourceRoot("${test.src.dir}", /*XXX I18N*/ "Test Packages");
+        // XXX add build dir too?
+        sourcesHelper.addTypedSourceRoot("${src.dir}", Sources.TYPE_JAVA, /*XXX I18N*/ "Source Packages");
+        sourcesHelper.addTypedSourceRoot("${test.src.dir}", Sources.TYPE_JAVA, /*XXX I18N*/ "Test Packages");
+        ProjectManager.mutex().postWriteRequest(new Runnable() {
+            public void run() {
+                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+            }
+        });
         return Lookups.fixed(new Object[] {
             new Info(),
             aux,
@@ -132,7 +146,7 @@ final class J2SEProject implements Project, AntProjectListener {
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
             new UnitTestForSourceQueryImpl(helper, evaluator()),
-            new J2SESourceGroup(this, helper),
+            sourcesHelper.createSources(),
             helper.createSharabilityQuery(evaluator(), new String[] {
                 "${src.dir}", // NOI18N
                 "${test.src.dir}", // NOI18N

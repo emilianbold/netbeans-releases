@@ -12,14 +12,15 @@
         <taskdef resource="org/netbeans/modules/project/ant/task/antlib.xml">
             <classpath>
                 <pathelement location="${nbroot}/ant/project/build/tasks.jar"/>
-                <pathelement location="${nbroot}/nbbuild/netbeans/modules/autoload/org-netbeans-modules-project-ant.jar"/>
-                <pathelement location="${nbroot}/nbbuild/netbeans/lib/openide.jar"/>
-                <pathelement location="${nbroot}/nbbuild/netbeans/modules/autoload/org-netbeans-modules-projectapi.jar"/>
-                <pathelement location="${nbroot}/nbbuild/netbeans/modules/autoload/org-netbeans-modules-queries.jar"/>
+                <pathelement location="${nbroot}/nbbuild/netbeans/ide4/modules/org-netbeans-modules-project-ant.jar"/>
+                <pathelement location="${nbroot}/nbbuild/netbeans/platform4/core/openide.jar"/>
+                <pathelement location="${nbroot}/nbbuild/netbeans/ide4/modules/org-netbeans-modules-projectapi.jar"/>
+                <pathelement location="${nbroot}/nbbuild/netbeans/platform4/modules/org-netbeans-modules-queries.jar"/>
             </classpath>
         </taskdef>
         <regenerate-files project="myapp" buildxsl="${build.xsl}" buildimplxsl="${build-impl.xsl}"/>
         <regenerate-files project="mylib" buildxsl="${build.xsl}" buildimplxsl="${build-impl.xsl}"/>
+        <regenerate-files project="extapp" buildxsl="${build.xsl}" buildimplxsl="${build-impl.xsl}"/>
     </target>
     <target name="validate">
         <pathconvert property="xmls" pathsep=",">
@@ -59,10 +60,13 @@
                 <include name="*.class"/>
                 <include name="myapp/nbproject/build-impl.xml"/>
                 <include name="mylib/nbproject/build-impl.xml"/>
+                <include name="extapp/nbproject/build-impl.xml"/>
                 <include name="myapp/nbproject/genfiles.properties"/>
                 <include name="mylib/nbproject/genfiles.properties"/>
+                <include name="extapp/nbproject/genfiles.properties"/>
                 <include name="myapp/build.xml"/>
                 <include name="mylib/build.xml"/>
+                <include name="extapp/build.xml"/>
             </fileset>
         </delete>
     </target>

@@ -1,0 +1,191 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.spi.project.support.ant;
+
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.TestUtil;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.project.SourceGroup;
+import org.netbeans.spi.project.Sources;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
+/**
+ * Test functionality of SourcesHelper.
+ * @author Jesse Glick
+ */
+public final class SourcesHelperTest extends NbTestCase {
+    
+    public SourcesHelperTest(String name) {
+        super(name);
+    }
+    
+    private FileObject scratch;
+    private FileObject maindir;
+    private FileObject projdir;
+    private FileObject src1dir;
+    private FileObject src2dir;
+    private FileObject src3dir;
+    private FileObject builddir;
+    private AntProjectHelper h;
+    private Project project;
+    private SourcesHelper sh;
+    private FileObject proj2dir;
+    private FileObject proj2src1dir;
+    private FileObject proj2src2dir;
+    private AntProjectHelper h2;
+    private Project project2;
+    private SourcesHelper sh2;
+    
+    protected void setUp() throws Exception {
+        super.setUp();
+        TestUtil.setLookup(new Object[] {
+            AntBasedTestUtil.testAntBasedProjectType(),
+        }, SourcesHelperTest.class.getClassLoader());
+        scratch = TestUtil.makeScratchDir(this);
+        scratch.createData("otherfile");
+        maindir = scratch.createFolder("dir");
+        maindir.createData("readme");
+        projdir = maindir.createFolder("projdir");
+        projdir.createData("projfile");
+        src1dir = projdir.createFolder("src1");
+        src1dir.createData("src1file");
+        src2dir = scratch.createFolder("src2");
+        src2dir.createData("src2file");
+        src3dir = scratch.createFolder("src3");
+        src3dir.createData("src3file");
+        builddir = scratch.createFolder("build");
+        builddir.createData("buildfile");
+        h = ProjectGenerator.createProject(projdir, "test", "proj");
+        project = ProjectManager.getDefault().findProject(projdir);
+        assertNotNull("have a project", project);
+        EditableProperties p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        p.setProperty("src1.dir", "src1");
+        p.setProperty("src2.dir", "../../src2");
+        p.setProperty("src2a.dir", "../../src2"); // same path as src2.dir
+        p.setProperty("src3.dir", FileUtil.toFile(src3dir).getAbsolutePath());
+        p.setProperty("src4.dir", "..");
+        p.setProperty("src5.dir", "../../nonesuch");
+        p.setProperty("build.dir", "../../build");
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+        ProjectManager.getDefault().saveProject(project);
+        sh = new SourcesHelper(h, h.getStandardPropertyEvaluator());
+        sh.addPrincipalSourceRoot("${src1.dir}", "Sources #1"); // inside proj dir
+        sh.addPrincipalSourceRoot("${src2.dir}", "Sources #2"); // outside (rel path)
+        sh.addPrincipalSourceRoot("${src2a.dir}", "Sources #2a"); // redundant
+        sh.addPrincipalSourceRoot("${src3.dir}", "Sources #3"); // outside (abs path)
+        sh.addPrincipalSourceRoot("${src4.dir}", "The Whole Shebang"); // above proj dir
+        sh.addPrincipalSourceRoot("${src5.dir}", "None such"); // does not exist on disk
+        sh.addNonSourceRoot("${build.dir}");
+        sh.addTypedSourceRoot("${src1.dir}", Sources.TYPE_JAVA, "Packages #1");
+        sh.addTypedSourceRoot("${src3.dir}", Sources.TYPE_JAVA, "Packages #3");
+        sh.addTypedSourceRoot("${src5.dir}", Sources.TYPE_JAVA, "No Packages");
+        sh.addTypedSourceRoot("${src2.dir}", "docroot", "Documents #2");
+        sh.addTypedSourceRoot("${src2a.dir}", "docroot", "Documents #2a"); // redundant
+        // Separate project that has includes its project directory implicitly only.
+        // Also hardcodes paths rather than using properties.
+        proj2dir = scratch.createFolder("proj2dir");
+        proj2dir.createData("proj2file");
+        proj2src1dir = proj2dir.createFolder("src1");
+        proj2src1dir.createData("proj2src1file");
+        proj2src2dir = proj2dir.createFolder("src2");
+        proj2src2dir.createData("proj2src2file");
+        h2 = ProjectGenerator.createProject(proj2dir, "test", "proj2");
+        project2 = ProjectManager.getDefault().findProject(proj2dir);
+        assertNotNull("have a project2", project2);
+        sh2 = new SourcesHelper(h2, h2.getStandardPropertyEvaluator());
+        sh2.addPrincipalSourceRoot("src1", "Sources #1");
+        sh2.addPrincipalSourceRoot("src2", "Sources #2");
+        sh2.addNonSourceRoot("build");
+        sh2.addTypedSourceRoot("src1", Sources.TYPE_JAVA, "Packages #1");
+        sh2.addTypedSourceRoot("src2", Sources.TYPE_JAVA, "Packages #2");
+    }
+    
+    public void testSourcesBasic() throws Exception {
+        Sources s = sh.createSources();
+        // XXX test that ISE is thrown if we try to add more dirs now
+        SourceGroup[] groups = s.getSourceGroups(Sources.TYPE_GENERIC);
+        assertEquals("should have maindir plus src2dir plus src3dir", 3, groups.length);
+        assertEquals("group #1 is src2dir", src2dir, groups[0].getRootFolder());
+        assertEquals("right display name for src2dir", "Sources #2", groups[0].getDisplayName());
+        assertEquals("group #2 is src3dir", src3dir, groups[1].getRootFolder());
+        assertEquals("right display name for src3dir", "Sources #3", groups[1].getDisplayName());
+        assertEquals("group #3 is maindir", maindir, groups[2].getRootFolder());
+        assertEquals("right display name for maindir", "The Whole Shebang", groups[2].getDisplayName());
+        // Now the typed source roots.
+        groups = s.getSourceGroups(Sources.TYPE_JAVA);
+        assertEquals("should have src1dir plus src3dir", 2, groups.length);
+        assertEquals("group #1 is src1dir", src1dir, groups[0].getRootFolder());
+        assertEquals("right display name for src1dir", "Packages #1", groups[0].getDisplayName());
+        assertEquals("group #2 is src3dir", src3dir, groups[1].getRootFolder());
+        assertEquals("right display name for src3dir", "Packages #3", groups[1].getDisplayName());
+        groups = s.getSourceGroups("docroot");
+        assertEquals("should have just src2dir", 1, groups.length);
+        assertEquals("group #1 is src2dir", src2dir, groups[0].getRootFolder());
+        assertEquals("right display name for src2dir", "Documents #2", groups[0].getDisplayName());
+        groups = s.getSourceGroups("unknown");
+        assertEquals("should not have any unknown dirs", 0, groups.length);
+        // Test the simpler project type.
+        s = sh2.createSources();
+        groups = s.getSourceGroups(Sources.TYPE_GENERIC);
+        assertEquals("should have just proj2dir", 1, groups.length);
+        assertEquals("group #1 is proj2dir", proj2dir, groups[0].getRootFolder());
+        assertEquals("right display name for proj2dir", ProjectUtils.getInformation(project2).getDisplayName(), groups[0].getDisplayName());
+        groups = s.getSourceGroups(Sources.TYPE_JAVA);
+        assertEquals("should have proj2src1dir plus proj2src2dir", 2, groups.length);
+        assertEquals("group #1 is proj2src1dir group", proj2src1dir, groups[0].getRootFolder());
+        assertEquals("right display name for src1dir", "Packages #1", groups[0].getDisplayName());
+        assertEquals("group #2 is proj2src2dir group", proj2src2dir, groups[1].getRootFolder());
+        assertEquals("right display name for proj2src2dir", "Packages #2", groups[1].getDisplayName());
+    }
+    
+    public void testExternalRootRegistration() throws Exception {
+        FileObject f = maindir.getFileObject("readme");
+        assertEquals("readme not yet registered", null, FileOwnerQuery.getOwner(f));
+        f = projdir.getFileObject("projfile");
+        assertEquals("projfile initially OK", project, FileOwnerQuery.getOwner(f));
+        sh.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        f = maindir.getFileObject("readme");
+        assertEquals("readme now registered", project, FileOwnerQuery.getOwner(f));
+        f = projdir.getFileObject("projfile");
+        assertEquals("projfile still OK", project, FileOwnerQuery.getOwner(f));
+        f = src1dir.getFileObject("src1file");
+        assertEquals("src1file registered", project, FileOwnerQuery.getOwner(f));
+        f = src2dir.getFileObject("src2file");
+        assertEquals("src2file registered", project, FileOwnerQuery.getOwner(f));
+        f = src3dir.getFileObject("src3file");
+        assertEquals("src3file registered", project, FileOwnerQuery.getOwner(f));
+        f = builddir.getFileObject("buildfile");
+        assertEquals("buildfile registered", project, FileOwnerQuery.getOwner(f));
+        f = scratch.getFileObject("otherfile");
+        assertEquals("otherfile not registered", null, FileOwnerQuery.getOwner(f));
+        // Test the simpler project type.
+        sh2.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        f = proj2dir.getFileObject("proj2file");
+        assertEquals("proj2file of course OK", project2, FileOwnerQuery.getOwner(f));
+        f = proj2src1dir.getFileObject("proj2src1file");
+        assertEquals("proj2src1file registered", project2, FileOwnerQuery.getOwner(f));
+        f = proj2src2dir.getFileObject("proj2src2file");
+        assertEquals("proj2src2file registered", project2, FileOwnerQuery.getOwner(f));
+    }
+    
+    // XXX testSourceLocationChanges
+    // XXX testExternalRootLocationChanges
+    
+}

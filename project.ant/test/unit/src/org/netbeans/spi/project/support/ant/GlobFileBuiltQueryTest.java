@@ -31,6 +31,7 @@ import org.openide.loaders.DataObject;
 
 // XXX testChangesFromAntPropertyChanges
 // XXX testFileRenames
+// XXX testExternalSourceRoots
 
 /**
  * Test functionality of GlobFileBuiltQuery.
