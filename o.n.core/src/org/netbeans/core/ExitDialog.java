@@ -171,55 +171,47 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
     * @param all true- all files, false - just selected
     */
     private void save(boolean all) {
-        if (all) {
-            SaveCookie sc = null;
-            for (int i = listModel.size() - 1; i >= 0; i--) {
-                try {
-                    DataObject obj = (DataObject) listModel.getElementAt(i);
-                    sc = (SaveCookie)obj.getCookie(SaveCookie.class);
-                    if (sc != null) sc.save();
-                    listModel.removeElement(obj);
-                }
-                catch (java.io.IOException e) {
-                    saveExc(e);
-                }
-            }
+        Object array[] = ((all) ? listModel.toArray() : list.getSelectedValues());
+        int i, count = ((array == null) ? 0 : array.length);
+        int index = 0;	// index of last removed item
+
+        for (i = 0; i < count; i++) {
+            DataObject nextObject = (DataObject)array[i];
+            index = listModel.indexOf(nextObject);
+            save(nextObject);
         }
-        else {
-            Object[] array = list.getSelectedValues();
-            SaveCookie sc = null;
-            int index = 0; // Index of last removed item.
-            
-            for (int i = 0; i < array.length; i++) {
-                try {
-                    sc = (SaveCookie)
-                         (((DataObject)array[i]).getCookie(SaveCookie.class));
-                    if (sc != null) sc.save();
-                    
-                    index = listModel.indexOf(array[i]);
-                    listModel.removeElement(array[i]);
-                }
-                catch (java.io.IOException e) {
-                    saveExc(e);
-                }
-            }
-            
-            // Reset selection to new item to the same index if available.
-            if(!listModel.isEmpty()) {
-                if(index < 0) {
-                    index = 0;
-                } else if(index > listModel.size() - 1) {
-                    index = listModel.size() - 1;
-                }
-                
-                list.setSelectedIndex(index);
-            }
-        }
-        if (listModel.isEmpty()) {
+
+        if (listModel.isEmpty())
             theEnd();
+        else {	// reset selection to new item at the same index if available
+            if (index < 0)
+                index = 0;
+            else if (index > listModel.size() - 1) {
+                index = listModel.size() - 1;
+            }
+            list.setSelectedIndex(index);
         }
     }
 
+    /** Tries to save given data object using its save cookie.
+     * Notifies user if excetions appear.
+     */
+    private void save (DataObject dataObject) {
+        try {
+            SaveCookie sc = (SaveCookie)dataObject.getCookie(SaveCookie.class);
+            if (sc != null) {
+                sc.save();
+            }
+            listModel.removeElement(dataObject);
+        } catch (java.io.IOException exc) {
+            ErrorManager em = ErrorManager.getDefault();
+            Throwable t = em.annotate(
+                exc, NbBundle.getBundle(ExitDialog.class).getString("EXC_Save")
+            );
+            em.notify(ErrorManager.EXCEPTION, t);
+        }
+    }
+ 
     /** Exit the IDE
     */
     private void theEnd() {
@@ -235,19 +227,6 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         exitDialog.setVisible (false);
         exitDialog.dispose();
     }
-
-    /** Notification about the save exception
-    */
-    private void saveExc(Exception exception) {
-        ErrorManager em = ErrorManager.getDefault();
-        
-        Throwable t = em.annotate(
-            exception,
-            NbBundle.getBundle(ExitDialog.class).getString("EXC_Save")
-        );
-        em.notify(ErrorManager.EXCEPTION, t);
-    }
-
 
     /** Opens the ExitDialog for unsaved files in filesystems marked 
      * for unmount and blocks until it's closed. If dialog doesm't
