@@ -992,14 +992,8 @@ public final class NbMainExplorer extends CloneableTopComponent {
         * @param obj the object to look for
         */
         private static Node findDataObject (Node node, DataObject obj) {
-            
-            // bugfix #32781, check if the data object is valid before call getNodeDelegate()
-            if (obj.isValid ()) {
-                Node n = node.getChildren ().findChild (obj.getNodeDelegate ().getName ());
-                if (n != null) return n;
-            }
 
-            Node[] arr = node.getChildren ().getNodes ();
+            Node[] arr = node.getChildren ().getNodes (true);
             for (int i = 0; i < arr.length; i++) {
                 DataShadow ds = (DataShadow)arr[i].getCookie (DataShadow.class);
                 if (ds != null && obj == ds.getOriginal ()) {
@@ -1012,6 +1006,13 @@ public final class NbMainExplorer extends CloneableTopComponent {
                     return arr[i];
                 }
             }
+            
+            // bugfix #32781, check if the data object is valid before call getNodeDelegate()
+            if (obj.isValid ()) {
+                Node n = node.getChildren ().findChild (obj.getNodeDelegate ().getName ());
+                if (n != null) return n;
+            }
+            
             return null;
         }
     }
