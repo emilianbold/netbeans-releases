@@ -2532,4 +2532,8 @@ public abstract class BaseBean implements Cloneable, Bean {
     public void changeDocType(String publicId, String systemId) {
         graphManager().setDoctype(publicId, systemId);
     }
+
+    public void _setChanged(boolean changed) {
+        throw new UnsupportedOperationException();
+    }
 }
