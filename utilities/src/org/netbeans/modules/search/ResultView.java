@@ -162,8 +162,13 @@ final class ResultView extends TopComponent
         setName("Search Results");                                      //NOI18N
         setDisplayName(NbBundle.getMessage(ResultView.class,
                                            "TITLE_SEARCH_RESULTS"));    //NOI18N
+        setToolTipText(NbBundle.getMessage(ResultView.class,
+                                           "TOOLTIP_SEARCH_RESULTS"));    //NOI18N
         setIcon(Utilities.loadImage(
                 "org/netbeans/modules/search/res/find.gif"));           //NOI18N
+        
+        // Issue 46261
+        mainPanel.setOpaque(true);
         
         buttonsPanel.add(Box.createHorizontalGlue(), 2);
         buttonsPanel.add(Box.createHorizontalStrut(5), 4);
@@ -763,6 +768,10 @@ final class ResultView extends TopComponent
                 new SearchTask(nodesToSearch,
                                searchTypesClone,
                                searchPanel.getCustomizedSearchTypes()));
+    }
+    
+    protected String preferredID() {
+        return getClass().getName();
     }
     
     /**
