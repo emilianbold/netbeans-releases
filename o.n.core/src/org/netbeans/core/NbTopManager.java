@@ -61,6 +61,7 @@ import org.netbeans.core.actions.*;
 import org.netbeans.core.output.OutputTabTerm;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.compiler.CompilationEngineImpl;
+import org.netbeans.core.execution.TopSecurityManager;
 import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.modules.ModuleManager;
 import org.netbeans.core.modules.ModuleSystem;
@@ -178,7 +179,7 @@ public abstract class NbTopManager extends TopManager {
         // Enforce JDK 1.3+ since we would not work without it.
         if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.3")) < 0) { // NOI18N
             System.err.println("The IDE requires JDK 1.3 or higher to run."); // XXX I18N?
-            System.exit(1);
+            TopSecurityManager.exit(1);
         }
 
         // System property jdk.home points to the JDK root directory. 
@@ -740,7 +741,7 @@ public abstract class NbTopManager extends TopManager {
                         // system is down; the IDE cannot be used further.
                         ErrorManager.getDefault().notify(t);
                     }
-                    Runtime.getRuntime().exit ( 0 );
+                    TopSecurityManager.exit(0);
                 }
             }
         } finally {

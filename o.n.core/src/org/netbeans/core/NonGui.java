@@ -54,6 +54,7 @@ import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.modules.ModuleSystem;
 import org.netbeans.core.xml.XML;
 import org.netbeans.core.execution.ExecutionSettings;
+import org.netbeans.core.execution.TopSecurityManager;
 
 /** This class is a TopManager for Corona environment.
 *
@@ -460,7 +461,7 @@ public class NonGui extends NbTopManager implements Runnable {
                     }
                 });
                 if (Boolean.getBoolean("import.canceled"))
-                    System.exit(0);
+                    TopSecurityManager.exit(0);
             }
         } catch (Exception e) {
             ErrorManager.getDefault().notify(e);
@@ -633,7 +634,7 @@ public class NonGui extends NbTopManager implements Runnable {
     /** Exits from the VM.
     */
     static void doExit (int code) {
-        Runtime.getRuntime ().exit (code);
+        TopSecurityManager.exit(code);
     }
 
 
