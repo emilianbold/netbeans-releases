@@ -412,11 +412,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../javaembeddedserver" target="netbeans"/>
   </target>
   -->
-  <target name="all-jellytools" depends="all-openide,all-openide/loaders,all-core,all-core/term,all-jemmy,all-xtest,all-classfile,all-java,all-java/api,all-editor,all-java/srcmodel,all-openide/deprecated,all-core/deprecated,all-core/windows,all-core/execution,all-core/compiler">
+  <target name="all-jellytools" depends="all-openide,all-openide/loaders,all-core,all-core/term,all-core/windows,all-jemmy,all-xtest">
     <echo message="Building module jellytools..."/>
     <ant dir="../jellytools" target="netbeans"/>
   </target>
-  <target name="all-jemmy" depends="all-openide,all-core,all-classfile,all-java,all-java/api,all-editor,all-java/srcmodel,all-openide/deprecated,all-core/deprecated,all-core/windows,all-core/execution,all-core/compiler,makeparserdb-modules">
+  <target name="all-jemmy" depends="makeparserdb-modules">
     <echo message="Building module jemmy..."/>
     <ant dir="../jemmy" target="netbeans"/>
   </target>
