@@ -51,6 +51,8 @@ Microsystems, Inc. All Rights Reserved.
             manifest="src/org/netbeans/core/resources/mf-initializer.txt"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
 	    compress="false">
+      <!-- XXX later (after platform_feb_2002 merge), just move this file to manifest.mf: -->
+      <exclude name="org/netbeans/core/resources/mf-initializer.txt"/>
       <locale name="ja"/>
     </locjar>
     <locjar jarfile="netbeans/lib/ext/terminalemulator.jar"
