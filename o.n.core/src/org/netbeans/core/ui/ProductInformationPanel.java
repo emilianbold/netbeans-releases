@@ -488,11 +488,11 @@ public class ProductInformationPanel extends JPanel {
         if (nbdirs != null) {
             more = new java.util.StringTokenizer (nbdirs, File.pathSeparator);
         } else {
-            more = org.openide.util.enum.EmptyEnumeration.EMPTY;
+            more = org.openide.util.Enumerations.EMPTY;
         }
             
-        java.util.Enumeration all = new org.openide.util.enum.SequenceEnumeration (
-            new org.openide.util.enum.SingletonEnumeration (nbhome), more
+        java.util.Enumeration all = org.openide.util.Enumerations.concat (
+            org.openide.util.Enumerations.singleton (nbhome), more
         );
         
         java.util.HashSet files = new java.util.HashSet ();

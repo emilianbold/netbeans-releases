@@ -5,7 +5,7 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/core/Bundle.propertie
 OpenIDE-Module-Layer: org/netbeans/modules/web/core/resources/layer.xml
 OpenIDE-Module-Specification-Version: 1.18
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.0
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.37
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1,
   org.netbeans.modules.j2eeserver/3,
   org.netbeans.modules.schema2beans/1,

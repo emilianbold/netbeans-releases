@@ -18,7 +18,6 @@ import javax.swing.Icon;
 
 import org.w3c.dom.*;
 
-import org.openide.util.enum.*;
 import org.openide.ErrorManager;
 
 import org.netbeans.modules.xml.api.model.*;
@@ -64,26 +63,26 @@ public class DTDGrammar implements GrammarQuery {
      * @return list of <code>CompletionResult</code>s (ENTITY_REFERENCE_NODEs)
      */
     public Enumeration queryEntities(String prefix) {
-        if (entities == null) return EmptyEnumeration.EMPTY;
+        if (entities == null) return org.openide.util.Enumerations.EMPTY;
         
-        QueueEnumeration list = new QueueEnumeration();
+        LinkedList list = new LinkedList();
         Iterator it = entities.iterator();
         while ( it.hasNext()) {
             String next = (String) it.next();
             if (next.startsWith(prefix)) {
-                list.put(new MyEntityReference(next));
+                list.add (new MyEntityReference(next));
             }
         }
 
         // add well-know build-in entity names
         
-        if ("lt".startsWith(prefix)) list.put(new MyEntityReference("lt"));
-        if ("gt".startsWith(prefix)) list.put(new MyEntityReference("gt"));
-        if ("apos".startsWith(prefix)) list.put(new MyEntityReference("apos"));
-        if ("quot".startsWith(prefix)) list.put(new MyEntityReference("quot"));
-        if ("amp".startsWith(prefix)) list.put(new MyEntityReference("amp"));
+        if ("lt".startsWith(prefix)) list.add(new MyEntityReference("lt"));
+        if ("gt".startsWith(prefix)) list.add(new MyEntityReference("gt"));
+        if ("apos".startsWith(prefix)) list.add(new MyEntityReference("apos"));
+        if ("quot".startsWith(prefix)) list.add(new MyEntityReference("quot"));
+        if ("amp".startsWith(prefix)) list.add(new MyEntityReference("amp"));
         
-        return list;
+        return java.util.Collections.enumeration (list);
     }
     
     /**
@@ -95,7 +94,7 @@ public class DTDGrammar implements GrammarQuery {
      *        Every list member represents one possibility.
      */
     public Enumeration queryAttributes(HintContext ctx) {
-        if (attrDecls == null) return EmptyEnumeration.EMPTY;
+        if (attrDecls == null) return org.openide.util.Enumerations.EMPTY;
         
         Element el = null;
         // Support two versions of GrammarQuery contract
@@ -104,27 +103,27 @@ public class DTDGrammar implements GrammarQuery {
         } else if (ctx.getNodeType() == Node.ELEMENT_NODE) {
             el = (Element) ctx;
         }
-        if (el == null) return EmptyEnumeration.EMPTY;
+        if (el == null) return org.openide.util.Enumerations.EMPTY;
         
         NamedNodeMap existingAttributes = el.getAttributes();        
         
         Set possibleAttributes = (Set) attrDecls.get(el.getTagName());
-        if (possibleAttributes == null) return EmptyEnumeration.EMPTY;
+        if (possibleAttributes == null) return org.openide.util.Enumerations.EMPTY;
         
         String prefix = ctx.getCurrentPrefix();
         
-        QueueEnumeration list = new QueueEnumeration();
+        LinkedList list = new LinkedList ();
         Iterator it = possibleAttributes.iterator();
         while ( it.hasNext()) {
             String next = (String) it.next();
             if (next.startsWith(prefix)) {
                 if (existingAttributes.getNamedItem(next) == null) {
-                    list.put(new MyAttr(next));
+                    list.add (new MyAttr(next));
                 }
             }
         }
         
-        return list;
+        return Collections.enumeration (list);
     }
     
     /**
@@ -137,14 +136,14 @@ public class DTDGrammar implements GrammarQuery {
      *        Every list member represents one possibility.
      */
     public Enumeration queryElements(HintContext ctx) {
-        if (elementDecls == null) return EmptyEnumeration.EMPTY;;
+        if (elementDecls == null) return org.openide.util.Enumerations.EMPTY;;
         
         Node node = ((Node)ctx).getParentNode();        
         Set elements = null;
         
         if (node instanceof Element) {
             Element el = (Element) node;
-            if (el == null) return EmptyEnumeration.EMPTY;;
+            if (el == null) return org.openide.util.Enumerations.EMPTY;;
 
             // lazilly parse content model
             Object model = null;
@@ -162,7 +161,7 @@ public class DTDGrammar implements GrammarQuery {
             }
             if (model instanceof ContentModel) {
                 Enumeration en = ((ContentModel)model).whatCanFollow(new PreviousEnumeration(el, ctx));
-                if (en == null) return EmptyEnumeration.EMPTY;
+                if (en == null) return org.openide.util.Enumerations.EMPTY;
                 String prefix = ctx.getCurrentPrefix();
                 elements = new TreeSet();
                 while (en.hasMoreElements()) {
@@ -179,22 +178,22 @@ public class DTDGrammar implements GrammarQuery {
         } else if (node instanceof Document) {
             elements = elementDecls.keySet();  //??? should be one from DOCTYPE if exist
         } else {
-            return EmptyEnumeration.EMPTY;
+            return org.openide.util.Enumerations.EMPTY;
         }
                 
-        if (elements == null) return EmptyEnumeration.EMPTY;;
+        if (elements == null) return org.openide.util.Enumerations.EMPTY;;
         String prefix = ctx.getCurrentPrefix();
         
-        QueueEnumeration list = new QueueEnumeration();
+        LinkedList list = new LinkedList ();
         Iterator it = elements.iterator();
         while ( it.hasNext()) {
             String next = (String) it.next();
             if (next.startsWith(prefix)) {
-                list.put(new MyElement(next));
+                list.add(new MyElement(next));
             }
         }
         
-        return list;                        
+        return Collections.enumeration (list);
     }
     
     /**
@@ -202,18 +201,18 @@ public class DTDGrammar implements GrammarQuery {
      * @return list of <code>CompletionResult</code>s (NOTATION_NODEs)
      */
     public Enumeration queryNotations(String prefix) {
-        if (notations == null) return EmptyEnumeration.EMPTY;;
+        if (notations == null) return org.openide.util.Enumerations.EMPTY;;
         
-        QueueEnumeration list = new QueueEnumeration();
+        LinkedList list = new LinkedList ();
         Iterator it = notations.iterator();
         while ( it.hasNext()) {
             String next = (String) it.next();
             if (next.startsWith(prefix)) {
-                list.put(new MyNotation(next));
+                list.add (new MyNotation(next));
             }
         }
         
-        return list;
+        return Collections.enumeration (list);
     }
        
     /**
@@ -226,30 +225,30 @@ public class DTDGrammar implements GrammarQuery {
      *        Every list member represents one possibility.
      */
     public Enumeration queryValues(HintContext ctx) {
-        if (attrEnumerations.isEmpty()) return EmptyEnumeration.EMPTY;
+        if (attrEnumerations.isEmpty()) return org.openide.util.Enumerations.EMPTY;
         
         if (ctx.getNodeType() == Node.ATTRIBUTE_NODE) {
             String attributeName = ctx.getNodeName();
             Element element = ((Attr)ctx).getOwnerElement();
-            if (element == null) return EmptyEnumeration.EMPTY;
+            if (element == null) return org.openide.util.Enumerations.EMPTY;
             
             String elementName = element.getNodeName();
             String key = elementName + " " + attributeName;
             List values = (List) attrEnumerations.get(key);
-            if (values == null) return EmptyEnumeration.EMPTY;
+            if (values == null) return org.openide.util.Enumerations.EMPTY;
             
             String prefix = ctx.getCurrentPrefix();
-            QueueEnumeration en = new QueueEnumeration();
+            LinkedList en = new LinkedList ();
             Iterator it = values.iterator();
             while (it.hasNext()) {
                 String next = (String) it.next();
                 if (next.startsWith(prefix)) {
-                    en.put(new MyText(next));
+                    en.add(new MyText(next));
                 }
             }
-            return en;
+            return Collections.enumeration (en);
         }
-        return EmptyEnumeration.EMPTY;
+        return org.openide.util.Enumerations.EMPTY;
     }
 
     // return defaults for attribute values (DTD does not declare content defaults)

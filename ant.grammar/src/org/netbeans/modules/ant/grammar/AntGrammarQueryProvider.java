@@ -16,7 +16,6 @@ package org.netbeans.modules.ant.grammar;
 import java.beans.FeatureDescriptor;
 import java.util.Enumeration;
 import org.netbeans.modules.xml.api.model.*;
-import org.openide.util.enum.SingletonEnumeration;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
@@ -37,7 +36,7 @@ public final class AntGrammarQueryProvider extends GrammarQueryManager {
                 // XXX should also check for any root <project> in NS "antlib:org.apache.tools.ant"
                 // (but no NS support in HintContext impl anyway: #38340)
                 if ("project".equals(root.getNodeName()) && root.getAttributeNode("default") != null) { // NOI18N
-                    return new SingletonEnumeration(next);
+                    return org.openide.util.Enumerations.singleton (next);
                 }
             }
         }

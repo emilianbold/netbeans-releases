@@ -18,16 +18,12 @@ import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.netbeans.modules.xml.api.model.GrammarQueryManager;
 import org.openide.filesystems.FileObject;
-import org.openide.util.enum.EmptyEnumeration;
-import org.openide.util.enum.SingletonEnumeration;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
 import org.openide.filesystems.FileObject;
-import org.openide.util.enum.EmptyEnumeration;
-import org.openide.util.enum.SingletonEnumeration;
 
 import org.netbeans.modules.xsl.XSLDataObject;
 import org.openide.loaders.DataObject;
@@ -66,7 +62,7 @@ public class XSLGrammarQueryProvider extends GrammarQueryManager {
                     if ("transformation".equals(tag) || "stylesheet".equals(tag)) { // NOI18N
                         String ns = element.getAttribute("xmlns"); // NOI18N
                         if (NAMESPACE.equals(ns)) {
-                            return new SingletonEnumeration(next);
+                            return org.openide.util.Enumerations.singleton (next);
                         }
                     }
                 } else {
@@ -75,7 +71,7 @@ public class XSLGrammarQueryProvider extends GrammarQueryManager {
                     if ("transformation".equals(local) || "stylesheet".equals(local)) { // NOI18N
                         String ns = element.getAttribute("xmlns:" + prefix); // NOI18N
                         if (NAMESPACE.equals(ns)) {
-                            return new SingletonEnumeration(next);
+                            return org.openide.util.Enumerations.singleton (next);
                         }
                     }
                 }
@@ -89,7 +85,7 @@ public class XSLGrammarQueryProvider extends GrammarQueryManager {
                 // almost forever, until client uses its own invalidation
                 // rules based e.g. on new node detection at root level
                 // or MIME type listening
-                return EmptyEnumeration.EMPTY;
+                return org.openide.util.Enumerations.EMPTY;
             }
         }
         

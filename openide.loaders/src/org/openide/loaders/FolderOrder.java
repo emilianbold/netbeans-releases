@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.*;
 
 import org.openide.filesystems.*;
-import org.openide.util.enum.*;
 import org.openide.loaders.DataFolder.SortMode;
 
 
@@ -94,7 +93,9 @@ final class FolderOrder extends Object implements Comparator {
             order = new HashMap (arr.length * 4 / 3 + 1);
 
             // each object only once
-            Enumeration en = new RemoveDuplicatesEnumeration (new ArrayEnumeration (arr));
+            Enumeration en = org.openide.util.Enumerations.removeDuplicates (
+                org.openide.util.Enumerations.array (arr)
+            );
 
             int i = 0;
             while (en.hasMoreElements ()) {

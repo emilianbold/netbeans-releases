@@ -1602,7 +1602,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         }
 
         public java.util.Enumeration getAttributes() {
-            return fo == null? org.openide.util.enum.EmptyEnumeration.EMPTY: fo.getAttributes();
+            return fo == null? org.openide.util.Enumerations.EMPTY: fo.getAttributes();
         }
 
         public FileObject[] getChildren() {

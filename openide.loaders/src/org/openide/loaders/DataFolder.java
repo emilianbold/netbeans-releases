@@ -35,7 +35,6 @@ import org.openide.filesystems.*;
 import org.openide.util.HelpCtx;
 import org.openide.nodes.*;
 import org.openide.util.Lookup;
-import org.openide.util.enum.QueueEnumeration;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -277,27 +276,22 @@ implements Serializable, DataObject.Container {
         if (!rec) {
             return children();
         }
-        QueueEnumeration en = new QueueEnumeration () {
-                                  /** @param o processes object by adding its children to the queue */
-                                  public void process (Object o) {
-                                      DataObject dataObj = (DataObject)o;
-                                      if (rec && dataObj instanceof DataFolder) {
-                                          addChildrenToEnum(this, ((DataFolder)dataObj).getChildren());
-                                      }
-                                  }
-                              };
-        addChildrenToEnum(en, getChildren());
-        return en;
-    }
-
-    /** Puts children into QueueEnumeration.
-    * @param en the queue enumeration to add children to
-    * @param list array of data objects
-    */
-    static void addChildrenToEnum (QueueEnumeration en, DataObject[] list) {
-        for (int i = 0; i < list.length; i++) {
-            en.put(list[i]);
+        
+        class Processor implements org.openide.util.Enumerations.Processor {
+            /** @param o processes object by adding its children to the queue */
+            public Object process (Object o, Collection toAdd) {
+                DataObject dataObj = (DataObject)o;
+                if (rec && dataObj instanceof DataFolder) {
+                    toAdd.addAll (Arrays.asList (((DataFolder)dataObj).getChildren()));
+                }
+                return o;
+            }
         }
+        Enumeration en = org.openide.util.Enumerations.queue (
+            org.openide.util.Enumerations.array (getChildren ()),
+            new Processor ()
+        );
+        return en;
     }
 
     /** Create node representative for this folder.

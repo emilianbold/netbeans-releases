@@ -29,7 +29,6 @@ import org.openide.ErrorManager;
 import org.openide.actions.*;
 import org.openide.nodes.*;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.enum.ArrayEnumeration;
 import org.openide.util.*;
 import org.openide.util.io.*;
 import org.openide.modules.ModuleInfo;
@@ -803,7 +802,7 @@ public final class LoaderPoolNode extends AbstractNode {
                     arr = loadersArray = loaders.toArray ();
                 }
             }
-            return new ArrayEnumeration (arr);
+            return org.openide.util.Enumerations.array (arr);
         }
 
         /** Listener to property changes.

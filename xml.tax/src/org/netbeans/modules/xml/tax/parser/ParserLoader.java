@@ -176,7 +176,7 @@ public final class ParserLoader extends URLClassLoader {
         Enumeration en1 = super.findResources(name);
         Enumeration en2 = parentLoader.getResources(name);
 
-        return new org.openide.util.enum.SequenceEnumeration(en1, en2);
+        return org.openide.util.Enumerations.concat (en1, en2);
     }
 
     /**

@@ -14,7 +14,6 @@
 package org.netbeans.modules.xml.dtd.grammar;
 
 import java.util.*;
-import org.openide.util.enum.*;
 
 /**
  * Implementation of queriable DTD content models. It is a hungry
@@ -209,9 +208,9 @@ abstract class ContentModel {
 
         protected Enumeration possibilities() {
             if (terminated() == false) {
-                return new SingletonEnumeration(name);
+                return org.openide.util.Enumerations.singleton (name);
             } else {
-                return EmptyEnumeration.EMPTY;
+                return org.openide.util.Enumerations.EMPTY;
             }
         }
 
@@ -311,15 +310,15 @@ abstract class ContentModel {
         
         protected Enumeration possibilities() {
             if (terminated() == false) {
-                Enumeration en = EmptyEnumeration.EMPTY;
+                Enumeration en = org.openide.util.Enumerations.EMPTY;
                 for ( int i = current; i<models.length; i++) {
                     ContentModel next = models[i];                    
-                    en = new SequenceEnumeration(en, next.possibilities());
+                    en = org.openide.util.Enumerations.concat (en, next.possibilities());
                     if (next.isOptional() == false) break;
                 }
                 return en;
             } else {
-                return EmptyEnumeration.EMPTY;
+                return org.openide.util.Enumerations.EMPTY;
             }
         }
 
@@ -390,7 +389,7 @@ abstract class ContentModel {
                 if (peer.terminated()) peer.reset();
                 return peer.possibilities();
             } else {
-                return EmptyEnumeration.EMPTY;
+                return org.openide.util.Enumerations.EMPTY;
             }
         }
 
@@ -496,15 +495,15 @@ abstract class ContentModel {
         
         protected Enumeration possibilities() {
             if (terminated() == false) {
-                Enumeration en = EmptyEnumeration.EMPTY;
+                Enumeration en = org.openide.util.Enumerations.EMPTY;
                 for ( int i = 0; i<models.length; i++) {
                     if (modelsThatNotAcceptedAtLeastOne[i]) continue;
                     ContentModel next = models[i];                    
-                    en = new SequenceEnumeration(en, next.possibilities());
+                    en = org.openide.util.Enumerations.concat (en, next.possibilities());
                 }
                 return en;
             } else {
-                return EmptyEnumeration.EMPTY;
+                return org.openide.util.Enumerations.EMPTY;
             }
         }
 

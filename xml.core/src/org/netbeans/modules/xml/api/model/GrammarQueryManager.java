@@ -30,7 +30,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
-import org.openide.util.enum.ArrayEnumeration;
 import org.xml.sax.InputSource;
 
 /**
@@ -150,15 +149,17 @@ public abstract class GrammarQueryManager {
             Iterator it = getRegistrations();
             transaction.set(null);
             ArrayList list = new ArrayList(5);
-            Enumeration enum = ctx.getDocumentChildren();
-            while (enum.hasMoreElements()) {
-                list.add(enum.nextElement());
+            {
+                Enumeration en = ctx.getDocumentChildren();
+                while (en.hasMoreElements()) {
+                    list.add(en.nextElement());
+                }
             }
             Object[] array = list.toArray();
             while (it.hasNext()) {
                 GrammarQueryManager next = (GrammarQueryManager) it.next();
                 GrammarEnvironment env = new GrammarEnvironment(
-                    new ArrayEnumeration(array), 
+                    org.openide.util.Enumerations.array (array), 
                     ctx.getInputSource(),
                     ctx.getFileObject()
                 );

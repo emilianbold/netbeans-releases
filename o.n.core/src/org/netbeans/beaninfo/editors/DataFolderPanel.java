@@ -36,7 +36,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.filesystems.*;
 import org.openide.util.HelpCtx;
-import org.openide.util.enum.*;
 import org.openide.windows.TopComponent;
 
 /**
@@ -493,10 +492,10 @@ class DataFolderPanel extends TopComponent implements
 
                 system = new WeakReference (fs);
 
-                Enumeration en = new SequenceEnumeration (
-                                     new SingletonEnumeration (fs.getSystemName()),
-                                     st
-                                 );
+                Enumeration en = org.openide.util.Enumerations.concat (
+                    org.openide.util.Enumerations.singleton (fs.getSystemName()),
+                    st
+                );
 
                 n = NodeOp.findPath (rootNode, en);
                 exact = true;

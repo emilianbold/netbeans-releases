@@ -31,7 +31,6 @@ import org.openide.util.datatransfer.*;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem; // override java.io.FileSystem
 import org.openide.util.*;
-import org.openide.util.enum.*;
 import org.openide.nodes.*;
 
 /** Object that represents one or more file objects, with added behavior.

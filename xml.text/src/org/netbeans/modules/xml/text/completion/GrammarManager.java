@@ -17,6 +17,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.LinkedList;
+import java.util.Collections;
+
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -36,7 +39,6 @@ import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
-import org.openide.util.enum.QueueEnumeration;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.openide.awt.StatusDisplayer;
@@ -189,13 +191,13 @@ class GrammarManager implements DocumentListener {
 
             try {
 
-                QueueEnumeration ctx = new QueueEnumeration();
+                LinkedList ctx = new LinkedList ();
                 SyntaxElement first = syntax.getElementChain(1);
                 while (true) {
                     if (first == null) break;
                     if (first instanceof SyntaxNode) {
                         SyntaxNode node = (SyntaxNode) first;
-                        ctx.put(node);
+                        ctx.add (node);
                         if (node.ELEMENT_NODE == node.getNodeType()) {
                             break;
                         }
@@ -210,7 +212,7 @@ class GrammarManager implements DocumentListener {
                     DataObject dobj = (DataObject) obj;
                     fileObject = dobj.getPrimaryFile();
                 }
-                GrammarEnvironment env = new GrammarEnvironment(ctx, inputSource, fileObject);
+                GrammarEnvironment env = new GrammarEnvironment(Collections.enumeration (ctx), inputSource, fileObject);
 
                 // lookup for grammar
 

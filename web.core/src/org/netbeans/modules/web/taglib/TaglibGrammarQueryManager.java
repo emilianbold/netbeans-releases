@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.web.taglib;
 import java.util.Enumeration;
-import org.openide.util.enum.SingletonEnumeration;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.*;
@@ -42,7 +41,7 @@ public class TaglibGrammarQueryManager extends org.netbeans.modules.xml.api.mode
                 if (TAGLIB_TAG.equals(tag)) {  // NOI18N
                     String xmlns = element.getAttribute(XMLNS_ATTR);
                     if (xmlns!=null && TaglibCatalog.J2EE_NS.equals(xmlns)) //NOI18N
-                            return new SingletonEnumeration(next);
+                            return org.openide.util.Enumerations.singleton (next);
                     }
                 }
         }

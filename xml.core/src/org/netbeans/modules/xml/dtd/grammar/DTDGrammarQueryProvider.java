@@ -16,7 +16,6 @@ package org.netbeans.modules.xml.dtd.grammar;
 import java.beans.FeatureDescriptor;
 import java.util.Enumeration;
 import org.netbeans.modules.xml.api.model.*;
-import org.openide.util.enum.SingletonEnumeration;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
@@ -32,7 +31,7 @@ public class DTDGrammarQueryProvider extends GrammarQueryManager {
         while (en.hasMoreElements()) {
             Node next = (Node) en.nextElement();
             if (next.getNodeType() == next.DOCUMENT_TYPE_NODE) {
-                return new SingletonEnumeration(next);
+                return org.openide.util.Enumerations.singleton (next);
             }
         }
         return null;

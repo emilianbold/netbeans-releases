@@ -17,7 +17,6 @@ import junit.framework.*;
 import org.netbeans.junit.*;
 import java.util.*;
 import java.util.StringTokenizer;
-import org.openide.util.enum.*;
 
 /**
  *

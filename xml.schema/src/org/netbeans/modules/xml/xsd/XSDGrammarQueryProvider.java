@@ -22,7 +22,6 @@ import org.xml.sax.EntityResolver;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.util.enum.SingletonEnumeration;
 import org.netbeans.modules.xml.api.model.*;
 import org.netbeans.api.xml.services.UserCatalog;
 
@@ -48,7 +47,7 @@ public class XSDGrammarQueryProvider extends GrammarQueryManager {
         if (ret != null) {
             // remember this schema
             schemas.put(ctx.getFileObject(), ret);
-            return new SingletonEnumeration(ret.getTarget());
+            return org.openide.util.Enumerations.singleton (ret.getTarget());
         }
         
 	return null;

@@ -30,10 +30,7 @@ import org.openide.filesystems.FileSystem; // override java.io.FileSystem
 import org.openide.nodes.Node;
 import org.openide.nodes.FilterNode;
 import org.openide.modules.ModuleInfo;
-import org.openide.util.enum.ArrayEnumeration;
-import org.openide.util.enum.FilterEnumeration;
-import org.openide.util.enum.SingletonEnumeration;
-import org.openide.util.enum.SequenceEnumeration;
+import org.openide.util.Enumerations;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
@@ -230,21 +227,21 @@ implements java.io.Serializable {
     public final Enumeration allLoaders () {
 	if (preferredLoader == null) {
             // enumeration of systemloaders followed by normal loaders
-	    return new SequenceEnumeration (
-		new ArrayEnumeration ( new Enumeration[] {
-    		    new ArrayEnumeration (getSystemLoaders ()),
+	    return Enumerations.concat (
+		Enumerations.array ( new Enumeration[] {
+    		    Enumerations.array (getSystemLoaders ()),
     		    loaders (),
-    		    new ArrayEnumeration (getDefaultLoaders ())
+    		    Enumerations.array (getDefaultLoaders ())
 		} )
 	    );
 	} else {
             // enumeration of preferred loader folowed by systemloaders and normal loaders
-	    return new SequenceEnumeration (
-		new ArrayEnumeration ( new Enumeration[] {
-        	    new SingletonEnumeration (preferredLoader),
-    		    new ArrayEnumeration (getSystemLoaders ()),
+	    return Enumerations.concat (
+		Enumerations.array ( new Enumeration[] {
+        	    Enumerations.singleton (preferredLoader),
+    		    Enumerations.array (getSystemLoaders ()),
     		    loaders (),
-    		    new ArrayEnumeration (getDefaultLoaders ())
+    		    Enumerations.array (getDefaultLoaders ())
 		} )
 	    );
 	}
@@ -297,14 +294,15 @@ implements java.io.Serializable {
      * @return enumeration of {@link DataLoader}s
      */
     public final Enumeration producersOf (final Class clazz) {
-        return new FilterEnumeration (allLoaders ()) {
-                   /** Accepts only those loaders that produces superclass of clazz
-                    */
-            public boolean accept (Object o) {
+        class ProducerOf implements Enumerations.Processor {
+            public Object process (Object o, java.util.Collection ignore) {
                 DataLoader dl = (DataLoader)o;
-                return clazz.isAssignableFrom( dl.getRepresentationClass() );
+                return clazz.isAssignableFrom( dl.getRepresentationClass() ) ? o : null;
             }
-        };
+        }
+        
+        // Accepts only those loaders that produces superclass of clazz
+        return Enumerations.filter (allLoaders (), new ProducerOf ());
     }
     
     

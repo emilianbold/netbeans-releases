@@ -21,7 +21,6 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
 import org.openide.loaders.ExtensionList;
-import org.openide.util.enum.ArrayEnumeration;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 
@@ -247,7 +246,7 @@ public class ExtensionListEditor extends Object implements PropertyEditor,
      * @param value the new value of the property
      */
     public void setStringArray(String[] nue) {
-        setAs (new ArrayEnumeration (nue));
+        setAs (org.openide.util.Enumerations.array (nue));
     }
 
     

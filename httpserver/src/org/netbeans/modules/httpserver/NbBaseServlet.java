@@ -28,9 +28,6 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 
 import org.openide.util.NbBundle;
-import org.openide.util.enum.AlterEnumeration;
-import org.openide.util.enum.EmptyEnumeration;
-import org.openide.util.enum.SequenceEnumeration;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

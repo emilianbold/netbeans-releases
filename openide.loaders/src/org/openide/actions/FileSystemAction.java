@@ -33,7 +33,6 @@ import org.openide.util.actions.Presenter;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.enum.*;
 
 
 /** Action that presents standard file system-related actions.
@@ -94,10 +93,10 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
             /* At present not allowed to construct actions for selected nodes on more filesystems - its safe behaviour
              * If this restriction will be considered as right solution, then code of this method can be simplified
              */
-            if (fsSet.size () == 0 || fsSet.size() > 1) return createMenu (EmptyEnumeration.EMPTY, popUp, lookup);
+            if (fsSet.size () == 0 || fsSet.size() > 1) return createMenu (org.openide.util.Enumerations.EMPTY, popUp, lookup);
             
             Iterator entrySetIt = fsSet.entrySet ().iterator();
-            QueueEnumeration result = new QueueEnumeration();
+            LinkedList result = new LinkedList ();
 
             while (entrySetIt.hasNext()) {
                 Map.Entry entry = (Map.Entry)entrySetIt.next();
@@ -121,11 +120,11 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
                 }
                 Set backSet = new OrderedSet();
                 backSet.addAll(backupList);
-                result.put( fs.getActions (backSet) );
+                result.addAll (java.util.Arrays.asList (fs.getActions (backSet)));
             }
             
             
-            return createMenu ( result, popUp, lookup);
+            return createMenu (Collections.enumeration (result), popUp, lookup);
         }
         return NONE;
     }
@@ -136,7 +135,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
     *   into the menu if enabled and if not duplicated
     */
     static JMenuItem[] createMenu (Enumeration en, boolean popUp, Lookup lookup) {
-        en = new RemoveDuplicatesEnumeration (en);
+        en = org.openide.util.Enumerations.removeDuplicates (en);
 
         ArrayList items = new ArrayList ();
         while (en.hasMoreElements ()) {
@@ -306,7 +305,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
     private static final class OrderedSet extends AbstractSet {
         
         /** Queue of collections of elements. */
-        private QueueEnumeration queue = new QueueEnumeration();
+        private LinkedList queue = new LinkedList ();
         /** Objects stored in this set. */
         Object[] objects = null;
         
@@ -318,20 +317,24 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
          * Adds all of the elements in the specified collection to this collection.
          */
         public boolean addAll(Collection coll) {
-            queue.put(coll);
+            queue.add (coll);
             return true;
         }
         
         
         private Object[] getObjects() {
             if (objects == null) {
-                AlterEnumeration altered = new AlterEnumeration(queue) {
-                    public Object alter(Object obj) {
+                class Coll2Enum implements org.openide.util.Enumerations.Processor {
+                    public Object process (Object obj, java.util.Collection ignore) {
                         return Collections.enumeration((Collection) obj);
                     }
-                };
-                SequenceEnumeration sequenced = new SequenceEnumeration(altered);
-                Enumeration result = new RemoveDuplicatesEnumeration(sequenced);
+                }
+                Enumeration sequenced = org.openide.util.Enumerations.concat (
+                    org.openide.util.Enumerations.convert (
+                        Collections.enumeration (queue), new Coll2Enum ()
+                    )
+                );
+                Enumeration result = org.openide.util.Enumerations.removeDuplicates (sequenced);
                 ArrayList objectList = new ArrayList();
                 for (int i = 0; result.hasMoreElements(); i++) {
                     objectList.add(result.nextElement());

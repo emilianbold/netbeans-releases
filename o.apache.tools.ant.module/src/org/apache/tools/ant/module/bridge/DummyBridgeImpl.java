@@ -19,7 +19,7 @@ import org.apache.tools.ant.module.AntModule;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import org.openide.util.enum.EmptyEnumeration;
+import org.openide.util.Enumerations;
 
 /**
  * Used when the real Ant class loader cannot be initialized for some reason.
@@ -51,7 +51,7 @@ final class DummyBridgeImpl implements BridgeInterface, IntrospectionHelperProxy
     }
     
     public Enumeration getAttributes() {
-        return EmptyEnumeration.EMPTY;
+        return Enumerations.EMPTY;
     }
     
     public Class getElementType(String name) {
@@ -59,7 +59,7 @@ final class DummyBridgeImpl implements BridgeInterface, IntrospectionHelperProxy
     }
     
     public Enumeration getNestedElements() {
-        return EmptyEnumeration.EMPTY;
+        return Enumerations.EMPTY;
     }
     
     public boolean supportsCharacters() {

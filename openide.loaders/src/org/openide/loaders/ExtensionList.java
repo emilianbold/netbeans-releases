@@ -197,7 +197,7 @@ public class ExtensionList extends Object
      */
     private static Enumeration en (Collection c) {
         if (c == null) {
-            return org.openide.util.enum.EmptyEnumeration.EMPTY;
+            return org.openide.util.Enumerations.EMPTY;
         } else {
             return Collections.enumeration(c);
         }

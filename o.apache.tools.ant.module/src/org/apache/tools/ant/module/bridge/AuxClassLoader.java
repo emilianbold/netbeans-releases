@@ -16,7 +16,7 @@ package org.apache.tools.ant.module.bridge;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
-import org.openide.util.enum.*;
+import org.openide.util.Enumerations;
 
 /**
  * Loads classes in the following order:
@@ -54,7 +54,12 @@ final class AuxClassLoader extends AntBridge.AllPermissionURLClassLoader {
     }
     
     public Enumeration findResources(String name) throws IOException {
-        return new RemoveDuplicatesEnumeration(new SequenceEnumeration(nbLoader.getResources(name), super.findResources(name)));
+        return Enumerations.removeDuplicates (
+            Enumerations.concat (
+                nbLoader.getResources(name), 
+                super.findResources(name)
+            )
+        );
     }
     
     // XXX should maybe do something with packages... but oh well, it is rather hard.

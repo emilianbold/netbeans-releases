@@ -47,7 +47,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.*;
-import org.openide.util.enum.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.Presenter;
 import org.openide.nodes.*;

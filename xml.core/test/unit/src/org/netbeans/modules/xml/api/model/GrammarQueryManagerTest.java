@@ -37,8 +37,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
-import org.openide.util.enum.ArrayEnumeration;
-import org.openide.util.enum.EmptyEnumeration;
 import org.xml.sax.InputSource;
 
 /**
@@ -98,7 +96,7 @@ public class GrammarQueryManagerTest extends NbTestCase {
             // test
             
             GrammarQueryManager manager = GrammarQueryManager.getDefault();
-            GrammarEnvironment env = new GrammarEnvironment(EmptyEnumeration.EMPTY, new InputSource(), null);
+            GrammarEnvironment env = new GrammarEnvironment(org.openide.util.Enumerations.EMPTY, new InputSource(), null);
             Enumeration trigger = manager.enabled(env);
             assertTrue("No grammar found!", trigger!=null);
         } finally {

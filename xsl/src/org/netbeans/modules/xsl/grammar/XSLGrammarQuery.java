@@ -20,7 +20,6 @@ import org.apache.xpath.XPathAPI;
 
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.xml.api.model.*;
-import org.openide.util.enum.*;
 import org.netbeans.modules.xml.dtd.grammar.*;
 import org.netbeans.modules.xml.spi.dom.*;
 import org.netbeans.modules.xml.api.cookies.ScenarioCookie;
@@ -432,7 +431,7 @@ public final class XSLGrammarQuery implements GrammarQuery{
         if (node instanceof Element) {
             Element el = (Element) node;
             updateProperties(el);
-            if (prefixList.size() == 0) return EmptyEnumeration.EMPTY;
+            if (prefixList.size() == 0) return org.openide.util.Enumerations.EMPTY;
 
             String firstXslPrefixWithColon = prefixList.get(0) + ":"; // NOI18N
             Set elements;
@@ -477,10 +476,10 @@ public final class XSLGrammarQuery implements GrammarQuery{
 
         } else if (node instanceof Document) {
             //??? it should be probably only root element name
-            if (prefixList.size() == 0) return EmptyEnumeration.EMPTY;
+            if (prefixList.size() == 0) return org.openide.util.Enumerations.EMPTY;
             addXslElementsToEnum(list, getElementDecls().keySet(), prefixList.get(0) + ":", prefix); // NOI18N
         } else {
-            return EmptyEnumeration.EMPTY;
+            return org.openide.util.Enumerations.EMPTY;
         }
 
         return list;
@@ -494,7 +493,7 @@ public final class XSLGrammarQuery implements GrammarQuery{
         } else if (ctx.getNodeType() == Node.ELEMENT_NODE) {
             el = (Element) ctx;
         }
-        if (el == null) return EmptyEnumeration.EMPTY;
+        if (el == null) return org.openide.util.Enumerations.EMPTY;
 
         String elTagName = el.getTagName();
         NamedNodeMap existingAttributes = el.getAttributes();
@@ -524,7 +523,7 @@ public final class XSLGrammarQuery implements GrammarQuery{
                 }
             }
         }
-        if (possibleAttributes == null) return EmptyEnumeration.EMPTY;
+        if (possibleAttributes == null) return org.openide.util.Enumerations.EMPTY;
 
         String prefix = ctx.getCurrentPrefix();
 
@@ -556,7 +555,7 @@ public final class XSLGrammarQuery implements GrammarQuery{
     public Enumeration queryValues(HintContext ctx) {
        if (ctx.getNodeType() == Node.ATTRIBUTE_NODE) {
             updateProperties(((Attr)ctx).getOwnerElement());
-            if (prefixList.size() == 0) return EmptyEnumeration.EMPTY;
+            if (prefixList.size() == 0) return org.openide.util.Enumerations.EMPTY;
             String xslNamespacePrefix = prefixList.get(0) + ":"; // NOI18N
 
             String prefix = ctx.getCurrentPrefix();
@@ -577,7 +576,7 @@ public final class XSLGrammarQuery implements GrammarQuery{
                 if ("output".equals(key)) {                             // NOI18N
                     if ("doctype-public".equals(attr.getName())) {      // NOI18N
                         UserCatalog catalog = UserCatalog.getDefault();
-                        if (catalog == null) return EmptyEnumeration.EMPTY;
+                        if (catalog == null) return org.openide.util.Enumerations.EMPTY;
                         QueueEnumeration en = new QueueEnumeration();
                         Iterator it = catalog.getPublicIDs();
                         while (it.hasNext()) {
@@ -712,7 +711,7 @@ public final class XSLGrammarQuery implements GrammarQuery{
             }
         }
 
-        return EmptyEnumeration.EMPTY;
+        return org.openide.util.Enumerations.EMPTY;
     }
 
     public GrammarResult queryDefault(HintContext ctx) {
@@ -740,7 +739,7 @@ public final class XSLGrammarQuery implements GrammarQuery{
     }
 
     public Enumeration queryNotations(String prefix) {
-        return EmptyEnumeration.EMPTY;
+        return org.openide.util.Enumerations.EMPTY;
     }
 
     public java.awt.Component getCustomizer(HintContext ctx) {
@@ -1124,4 +1123,23 @@ public final class XSLGrammarQuery implements GrammarQuery{
         }
     }
 
+    private static class QueueEnumeration implements Enumeration {
+        private java.util.LinkedList list = new LinkedList ();
+        
+        public boolean hasMoreElements () {
+            return !list.isEmpty ();
+        }        
+        
+        public Object nextElement () {
+            return list.removeFirst ();
+        }        
+
+        public void put (Object[] arr) {
+            list.addAll (Arrays.asList (arr));
+        }
+        public void put (Object o) {
+            list.add (o);
+        }
+        
+    } // end of QueueEnumeration
 }
