@@ -139,4 +139,32 @@ Microsystems, Inc. All Rights Reserved.
     </checkhelpsets>
   </target>
 
+  <target name="javadoc" description="Build usersguide module API documentation.">
+    <tstamp/>
+    <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2002 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
+    <echo message="Build usersguide module API documentation..."/>
+    <mkdir dir="javadoc"/>
+    <javadoc destdir="javadoc"
+             packagenames="org.netbeans.modules.*"
+             doctitle="NetBeans usersguide module APIs"
+             windowtitle="NetBeans usersguide module APIs"
+             bottom="${apis-footer}"
+             use="true"
+             splitindex="true"
+             author="false"
+             version="false"
+             maxmemory="384m"
+    >
+      <sourcepath>
+        <pathelement location="src"/>
+      </sourcepath>
+      <classpath>
+	<pathelement location="../openide/openide-13javac-workaround.jar"/>
+        <fileset dir="../openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
+      </classpath>
+    </javadoc>    
+  </target>
+
 </project>

@@ -64,11 +64,34 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="classfile.jar"/>
     <delete file="classfile.nbm"/>
     <delete dir="netbeans"/>
+    <delete dir="javadoc"/>
     <delete dir="Info"/>
   </target>
 
   <target name="real-clean" depends="clean">
     <delete dir="test"/>
+  </target>
+
+  <target name="javadoc" description="Build classfile module API documentation.">
+    <tstamp/>
+    <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2002 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
+    <echo message="Build classfile module API documentation..."/>
+    <mkdir dir="javadoc"/>
+    <javadoc destdir="javadoc"
+             packagenames="org.netbeans.modules.classfile"
+             doctitle="NetBeans classfile module APIs"
+             windowtitle="NetBeans classfile module APIs"
+             bottom="${apis-footer}"
+             use="true"
+             splitindex="true"
+             author="false"
+             version="false"
+             maxmemory="384m"
+    >
+      <sourcepath>
+        <pathelement location="src"/>
+      </sourcepath>
+    </javadoc>    
   </target>
 
 </project>

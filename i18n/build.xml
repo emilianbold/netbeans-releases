@@ -104,7 +104,49 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="manifest-form-subst.mf"/>
     <delete file="i18n.nbm"/>
     <delete dir="netbeans"/>
+    <delete dir="javadoc"/>
     <delete dir="Info"/>
+  </target>
+
+  <target name="javadoc" description="Build i18n module API documentation.">
+    <tstamp/>
+    <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2002 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
+    <echo message="Build i18n module API documentation..."/>
+    <mkdir dir="javadoc"/>
+    <!-- org.netbeans.modules.i18n.form package is not compiled into product
+         add it to packagenames attribut if you need it
+     -->
+    <javadoc destdir="javadoc"
+             packagenames="org.netbeans.modules.i18n,org.netbeans.modules.i18n.java,org.netbeans.modules.i18n.jsp,org.netbeans.modules.i18n.wizard"
+             doctitle="NetBeans i18n module APIs"
+             windowtitle="NetBeans i18n applet module APIs"
+             bottom="${apis-footer}"
+             use="true"
+             splitindex="true"
+             author="false"
+             version="false"
+             maxmemory="384m"
+    >
+      <sourcepath>
+	<pathelement location="src"/>
+      </sourcepath>
+      <classpath>
+	<pathelement location="../openide/openide-13javac-workaround.jar"/>
+        <fileset dir="../openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
+        <pathelement location="../core/netbeans/lib/core.jar"/>
+        <pathelement location="../properties/netbeans/modules/properties.jar"/>
+<!-- uncomment this if you want to build javadoc for i18n support in form module -->
+<!--
+        <pathelement location="../form/netbeans/modules/form.jar"/>
+        <pathelement location="../form/netbeans/modules/ext/AbsoluteLayout.jar"/>
+        <pathelement location="../java/netbeans/modules/java.jar"/>
+-->
+        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
+      </classpath>
+    </javadoc>    
   </target>
 
 </project>
