@@ -173,14 +173,16 @@ public class DataObjectPanel extends JPanel {
                 (ExplorerManager.PROP_SELECTED_NODES)) {
                     Node [] nodes = (Node []) evt.getNewValue();
                     DataObject d = getDataObject();
-                    myEditor.setValue( d );
+                    boolean enableOK = false;
                     if ((nodes != null) && (nodes.length > 0) && 
                     (dataFilter != null) && (d != null)) {
-                        myEditor.setOkButtonEnabled(
-                            dataFilter.acceptDataObject( d )); 
+                        enableOK = dataFilter.acceptDataObject( d );
                     } else {
-                        myEditor.setOkButtonEnabled( d != null );
+                        enableOK = ( d != null );
                     }
+                    if ( enableOK )
+                        myEditor.setValue( d );
+                    myEditor.setOkButtonEnabled( enableOK );
                 }
             }
         });
