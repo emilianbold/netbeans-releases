@@ -146,6 +146,7 @@ public class IndexSearch extends TopComponent {
       
         // Workaround for bug in FileSystems
         String strUrl = url.toString();
+        //System.out.println ( url.toString() );
         if ( strUrl.startsWith( "nbfs:" ) && strUrl.charAt( 5 ) != '/' ){
           url = new URL( "nbfs:/" + strUrl.substring( 5 ) );
         }

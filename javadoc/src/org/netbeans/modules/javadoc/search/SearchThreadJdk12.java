@@ -63,6 +63,14 @@ class SearchThreadJdk12 extends IndexSearchThread {
         throw new InternalError( "Can't create documentation folder URL - file state invalid" );
       }
     }
+    else {
+     try {
+        contextURL = this.fo.getParent().getURL();
+      }
+      catch ( com.netbeans.ide.filesystems.FileStateInvalidException e ) {
+        throw new InternalError( "Can't create documentation folder URL - file state invalid" );
+      }
+    } 
   }
 
   public void stopSearch() {
