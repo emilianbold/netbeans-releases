@@ -70,7 +70,8 @@ public class DatabaseModule extends ModuleInstall {
 
         // closing all open connection
         try {
-            Node n[] = TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild(bundle.getString("Databases")).getChildren().getNodes(); //NOI18N
+//            Node n[] = TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild(bundle.getString("Databases")).getChildren().getNodes(); //NOI18N
+            Node n[] = TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild("Databases").getChildren().getNodes(); //NOI18N
             for (int i = 0; i < n.length; i++)
                 if (n[i] instanceof ConnectionNode)
                     ((ConnectionNodeInfo)((ConnectionNode)n[i]).getInfo()).disconnect();
