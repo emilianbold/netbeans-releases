@@ -70,6 +70,10 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${tax_lib_root}/src/"/>
                 <pathelement location="${jaxp-transform}"/> <!-- JAXP/transform API -->
                 <pathelement location="../api/src/"/>
+                <!--Servlet API-->
+                <pathelement location="${binroot}/httpserver/servletapi/release/modules/ext/servlet-2.2.jar" />
+                <!--TransformServlet: HttpServerSettings-->
+                <pathelement location="${nbroot}/httpserver/netbeans/modules/httpserver.jar" />
             </classpath>
         </javac>
     </target>

@@ -5,5 +5,5 @@ OpenIDE-Module-Layer: org/netbeans/modules/xml/tools/resources/mf-layer.xml
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
 OpenIDE-Module-Specification-Version: @TOOLS_SPEC_VERS_SUBST@
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.xml.core/1 > @CORE_SPEC_VERS_SUBST@, org.netbeans.modules.jaxp/1 > @JAXP_SPEC_VERS_SUBST@
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.xml.core/1 > @CORE_SPEC_VERS_SUBST@, org.netbeans.modules.jaxp/1 > @JAXP_SPEC_VERS_SUBST@, org.netbeans.modules.servletapi/1, org.netbeans.modules.httpserver/1 > 1.2
 Class-Path: docs/xml-tools.jar
