@@ -8,8 +8,9 @@ OpenIDE-Module-Install: org/netbeans/modules/i18n/I18nModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/i18n/Layer.xml
 OpenIDE-Module-Package-Dependencies: org.apache.regexp[RE]
 OpenIDE-Module-Short-Description: Simplifies internationalization of applications.
-OpenIDE-Module-Long-Description: The Internationalization module, combined with the Properties
-  module, simplifies internationalization of applications.
+OpenIDE-Module-Long-Description: The Internationalization module, combined with the Properties module, simplifies internationalization of Java applications. It includes a wizard, which
+    enables you to internationalize all of your Java at once, a test tool, which reports any missing key-value pairs, and an execution service, which enables you to
+    set the locale in which the application is to run.
 
 Name: org/netbeans/modules/i18n/LocaleExecutor.class
 OpenIDE-Module-Class: Service
