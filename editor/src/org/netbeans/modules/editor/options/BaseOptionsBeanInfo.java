@@ -114,6 +114,8 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
         setPropertyEditor(BaseOptions.CARET_TYPE_OVERWRITE_MODE_PROP, CaretTypeEditor.class);
         setPropertyEditor(BaseOptions.KEY_BINDING_LIST_PROP, KeyBindingsEditor.class);
         setPropertyEditor(BaseOptions.COLORING_MAP_PROP, ColoringArrayEditor.class);
+        setPropertyEditor(BaseOptions.SCROLL_JUMP_INSETS_PROP, ScrollInsetsEditor.class);
+        setPropertyEditor(BaseOptions.SCROLL_FIND_INSETS_PROP, ScrollInsetsEditor.class);
 
         setExpert(EXPERT_PROP_NAMES);
 
@@ -244,6 +246,8 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  14   Gandalf-post-FCS1.11.1.1    3/10/00  Petr Nejedly    Added support for 
+*       percentual scroll-jump insets
 *  13   Gandalf-post-FCS1.11.1.0    2/28/00  Petr Nejedly    Redesign of 
 *       ColoringEditor
 *  12   Gandalf   1.11        1/13/00  Miloslav Metelka Localization
