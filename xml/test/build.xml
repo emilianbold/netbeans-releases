@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="nbext.root" location="../../nbbuild"/>
     <taskdef  name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext.root}/nbantext.jar"/>
     <!--property name="submodules" value="api, tax, core, catalog, tools, text-edit, tree-edit, css"/-->
-    <property name="submodules" value="../core/test"/>
+    <property name="submodules" value="../core/test, ../catalog/test"/>
  
     <!-- ============ -->
     <!-- Main targets -->
