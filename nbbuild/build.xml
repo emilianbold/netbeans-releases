@@ -371,7 +371,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module jemmy..."/>
     <ant dir="../jemmy" target="netbeans"/>
   </target>
-  <target name="all-jemmysupport" depends="all-openide,all-jemmy,all-diff">
+  <target name="all-jemmysupport" depends="all-openide,all-openide/execution,all-jemmy,all-diff">
     <echo message="Building module jemmysupport..."/>
     <ant dir="../jemmysupport" target="netbeans"/>
   </target>
