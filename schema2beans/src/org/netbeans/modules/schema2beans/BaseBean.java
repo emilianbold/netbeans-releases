@@ -162,36 +162,23 @@ public abstract class BaseBean implements Cloneable, Bean {
     private int				propertyOrder;
 
     private String			defaultNamespace;
-    
-    public BaseBean() {
-	this(null, new Version(Version.MAJVER, Version.MINVER,
-					Version.PTCVER));
-    }
-    
-    /**
-     * super deprecated
-     * Use the Version class.
-     */
+
     /*
-    public BaseBean(Vector comps, GenBeans.Version version) {
-        init(comps, version.getNewVersionObject());
+    public BaseBean() {
+        this(null, new Version(Version.MAJVER, Version.MINVER,
+                               Version.PTCVER));
+        System.out.println("warning: schema2beans.BaseBean: unknown version of generated beans being used.");
     }
     */
-
+    
+    /**
+     * @param comps the comparators to use.  Can be null
+     * @param version which runtime version to be compatible with.  This should be the version of the generated beans.
+     */
     public BaseBean(Vector comps, Version version) {
         init(comps, version);
     }
 
-    /**
-     * super deprecated
-     * Use the Version class.
-     */
-    /*
-    protected void init(Vector comps, GenBeans.Version version) {
-        init(comps, version.getNewVersionObject());
-    }
-    */
-    
     protected void init(Vector comps, Version version) {
         if (version.getMajor() < 4) {
             initPropertyTables(13);
