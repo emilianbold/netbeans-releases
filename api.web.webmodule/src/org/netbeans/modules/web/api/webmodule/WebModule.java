@@ -74,7 +74,7 @@ public final class WebModule {
      */
     public static WebModule getWebModule (FileObject f) {
         if (f == null) {
-            throw new IllegalArgumentException ();
+            throw new NullPointerException("Passed null to WebModule.getWebModule(FileObject)"); // NOI18N
         }
         Iterator it = implementations.allInstances().iterator();
         while (it.hasNext()) {
