@@ -166,8 +166,10 @@ class CopySupport {
                                                targetComponent))
                     return transferable; // ignore paste
 
-                // remove source component from its parent
-                sourceForm.removeComponentFromContainer(sourceComponent);
+                if (sourceComponent.getCodeExpression() == null)
+                    sourceComponent.createCodeExpression(); // might be removed
+                else // remove source component from its parent
+                    sourceForm.removeComponentFromContainer(sourceComponent);
 
                 if (sourceComponent instanceof RADVisualComponent
                     && targetComponent instanceof RADVisualContainer)
