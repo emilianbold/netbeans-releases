@@ -55,7 +55,7 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
     initialize();
     setIconBase ("/com/netbeans/developer/impl/resources/repository");
     setName (NbBundle.getBundle (DataSystem.class).getString ("dataSystemName"));
-    setShortDescription (NbBundle.getBundle (DataSystem.this).getString ("CTL_Repository_Hint"));
+    setShortDescription (NbBundle.getBundle (DataSystem.class).getString ("CTL_Repository_Hint"));
   }
 
   /** Constructor. Uses default file system pool.
@@ -253,6 +253,7 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
 
 /*
  * Log
+ *  12   Gandalf   1.11        3/26/99  Jaroslav Tulach 
  *  11   Gandalf   1.10        3/26/99  Ian Formanek    Fixed use of obsoleted 
  *       NbBundle.getBundle (this)
  *  10   Gandalf   1.9         3/22/99  Jaroslav Tulach Added new section.

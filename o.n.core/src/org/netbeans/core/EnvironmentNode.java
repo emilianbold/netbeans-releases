@@ -119,7 +119,7 @@ final class EnvironmentNode extends AbstractNode {
   /** Method that prepares properties. Called from initialize.
   */
   protected void createProperties () {
-    final ResourceBundle bundle = NbBundle.getBundle(this);
+    final ResourceBundle bundle = NbBundle.getBundle(EnvironmentNode.class);
     // default sheet with "properties" property set
     Sheet sheet = Sheet.createDefault();
     sheet.get(Sheet.PROPERTIES).put(
@@ -187,6 +187,7 @@ final class EnvironmentNode extends AbstractNode {
 
 /*
  * Log
+ *  12   Gandalf   1.11        3/26/99  Jaroslav Tulach 
  *  11   Gandalf   1.10        3/26/99  Ian Formanek    Fixed use of obsoleted 
  *       NbBundle.getBundle (this)
  *  10   Gandalf   1.9         3/18/99  Jaroslav Tulach 
