@@ -719,24 +719,28 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         }
         menu.add (new JPopupMenu.Separator());
         // generate list of available toolbar configurations
-        it = Arrays.asList (ToolbarPool.getDefault ().getConfigurations ()).iterator ();
-        ButtonGroup bg = new ButtonGroup ();
-        String current = ToolbarPool.getDefault ().getConfiguration ();
-        while (it.hasNext()) {
-            final String name = (String)it.next ();
-            JRadioButtonMenuItem mi = new JRadioButtonMenuItem (
-                findConfiguration(name).getDisplayName(), (name != null && name.equals(current))
-            );
-            mi.addActionListener (new ActionListener () {
-                                      public void actionPerformed (ActionEvent e) {
-                                          ErrorManager.getDefault().getInstance(getClass().getName()).log("triggered a change in toolbar config.");
-                                          WindowManagerImpl.getInstance().setToolbarConfigName (name);
-                                      }
-                                  });
-            bg.add (mi);
-            menu.add (mi);
+        List configList = Arrays.asList (ToolbarPool.getDefault ().getConfigurations ());
+        // ignore when there is only one toolbar config #39906
+        if (configList.size() > 1) {
+            it = configList.iterator ();
+            ButtonGroup bg = new ButtonGroup ();
+            String current = ToolbarPool.getDefault ().getConfiguration ();
+            while (it.hasNext()) {
+                final String name = (String)it.next ();
+                JRadioButtonMenuItem mi = new JRadioButtonMenuItem (
+                    findConfiguration(name).getDisplayName(), (name != null && name.equals(current))
+                );
+                mi.addActionListener (new ActionListener () {
+                                          public void actionPerformed (ActionEvent e) {
+                                              ErrorManager.getDefault().getInstance(getClass().getName()).log("triggered a change in toolbar config.");
+                                              WindowManagerImpl.getInstance().setToolbarConfigName (name);
+                                          }
+                                      });
+                bg.add (mi);
+                menu.add (mi);
+            }
+            menu.add (new JPopupMenu.Separator());
         }
-        menu.add (new JPopupMenu.Separator());
         JMenuItem menuItem = new JMenuItem(NbBundle.getMessage(ToolbarConfiguration.class, "CTL_DisplayToolbars"));
         menuItem.addActionListener(new ActionListener() {
             public void actionPerformed (ActionEvent event) {
