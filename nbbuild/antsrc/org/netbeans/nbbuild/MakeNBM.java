@@ -20,6 +20,7 @@ import java.util.jar.*;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Jar;
+import org.apache.tools.ant.taskdefs.Java;
 
 /** Makes a <code>.nbm</code> (<b>N</b>et<b>B</b>eans <b>M</b>odule) file.
  *
@@ -42,6 +43,20 @@ public class MakeNBM extends Task {
 	}
     }
 
+    public static class Signature {
+	public File keystore;
+	public String storepass, alias;
+	public void setKeystore (File f) {
+	    keystore = f;
+	}
+	public void setStorepass (String s) {
+	    storepass = s;
+	}
+	public void setAlias (String s) {
+	    alias = s;
+	}
+    }
+
     private String file = null;
     private String topdir = ".";
     private File manifest = null;
@@ -49,6 +64,7 @@ public class MakeNBM extends Task {
     private String distribution = null;
     private File license = null;
     private Description description = new Description ("(no description)");
+    private Signature signature = null;
 
     public void setFile (String file) {
 	this.file = file;
@@ -70,6 +86,9 @@ public class MakeNBM extends Task {
     }
     public Description createDescription () {
 	return (description = new Description ());
+    }
+    public Signature createSignature () {
+	return (signature = new Signature ());
     }
     
     public void execute () throws BuildException {
@@ -121,7 +140,7 @@ public class MakeNBM extends Task {
 		licenseSimple = license.getName ();
 	    if (licenseSimple != null)
 		ps.println ("        license=\"" + licenseSimple + "\"");
-	    ps.println ("        downloadsize=\"123456789\"");
+	    ps.println ("        downloadsize=\"0\"");
 	    ps.println (">");
 	    ps.print ("  <description>");
 	    ps.print (description.getText ().trim ());
@@ -170,6 +189,22 @@ public class MakeNBM extends Task {
 	jar.setLocation (location);
 	jar.init ();
 	jar.execute ();
+	// Maybe sign it.
+	if (signature != null) {
+	    if (signature.keystore == null)
+		throw new BuildException ("must define keystore attribute on <signature/>");
+	    if (signature.storepass == null)
+		throw new BuildException ("must define storepass attribute on <signature/>");
+	    if (signature.alias == null)
+		throw new BuildException ("must define alias attribute on <signature/>");
+	    Java java = (Java) project.createTask ("java");
+	    java.setClassname ("sun.security.tools.JarSigner");
+	    java.setArgs ("-keystore " + signature.keystore + " -storepass " + signature.storepass +
+			  " " + file + " " + signature.alias);
+	    java.setLocation (location);
+	    java.init ();
+	    java.execute ();
+	}
     }
 
 }
