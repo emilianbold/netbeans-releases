@@ -23,11 +23,14 @@
 
 package org.netbeans.modules.web.monitor.client;
 
-import javax.swing.table.*;     // widgets
-import javax.swing.JLabel;
-import org.netbeans.modules.web.monitor.data.*;
-import org.openide.util.NbBundle;
 import java.util.ResourceBundle;
+import javax.accessibility.AccessibleContext; 
+import javax.accessibility.AccessibleRelation; 
+import javax.swing.JLabel;
+
+import org.openide.util.NbBundle;
+
+import org.netbeans.modules.web.monitor.data.*;
 
 // PENDING: can be more helpful with what the cookie data means. Like
 // I had the expires at the end of this session before, that was kind
@@ -37,8 +40,6 @@ import java.util.ResourceBundle;
 public class CookieDisplay extends DataDisplay {
     
     private final static boolean debug = false;
-
-    private DisplayTable dt = null; 
         
     public CookieDisplay() {
 	super();
@@ -83,10 +84,13 @@ public class CookieDisplay extends DataDisplay {
 			    java.awt.GridBagConstraints.HORIZONTAL,
 			    labelInsets,
 			    0, 0);
-	
+
+	AccessibleContext aCtx;
+	AccessibleRelation aRel; 
+	DisplayTable dt; 
 
 	if(in != null && in.length > 0) {
-
+ 
 	    for(int i=0; i<in.length; ++i) {
 		String[] data = {
 		    in[i].getAttributeValue("name"), //NOI18N
@@ -98,10 +102,20 @@ public class CookieDisplay extends DataDisplay {
 		    NbBundle.getBundle(CookieDisplay.class).getString("MON_Value"),
 		};
 
-		DisplayTable dt = new DisplayTable(categoriesIn, data);
-                dt.getAccessibleContext().setAccessibleName(NbBundle.getBundle(CookieDisplay.class).getString("ACS_MON_Incoming_cookieTableA11yName"));
-                dt.setToolTipText(NbBundle.getBundle(CookieDisplay.class).getString("ACS_MON_Incoming_cookieTableA11yDesc"));
-                incomingLabel.setLabelFor(dt);
+		dt = new DisplayTable(categoriesIn, data);
+		aCtx = dt.getAccessibleContext(); 
+                aCtx.setAccessibleName
+		    (NbBundle.getMessage(CookieDisplay.class, 
+					 "ACS_MON_Incoming_cookieTableA11yName"));//NOI18N
+                aCtx.setAccessibleDescription
+		    (NbBundle.getMessage(CookieDisplay.class, 
+					 "ACS_MON_Incoming_cookieTableA11yDesc"));//NOI18N
+                dt.setToolTipText
+		    (NbBundle.getMessage(CookieDisplay.class,
+					 "ACS_MON_Incoming_cookieTableA11yDesc")); //NOI18N
+		aRel = new AccessibleRelation(AccessibleRelation.LABELED_BY, 
+					      incomingLabel); 
+		aCtx.getAccessibleRelationSet().add(aRel); 
 		addGridBagComponent(this, dt, 0, ++gridy,
 			    fullGridWidth, 1, tableWeightX, tableWeightY, 
 			    java.awt.GridBagConstraints.WEST,
@@ -157,10 +171,20 @@ public class CookieDisplay extends DataDisplay {
 		    NbBundle.getBundle(CookieDisplay.class).getString("MON_Comment"),
 		};
 
-		DisplayTable dt = new DisplayTable(categoriesOut, data);
-                dt.getAccessibleContext().setAccessibleName(NbBundle.getBundle(CookieDisplay.class).getString("ACS_MON_Outgoing_cookieTableA11yName"));
-                dt.setToolTipText(NbBundle.getBundle(CookieDisplay.class).getString("ACS_MON_Outgoing_cookieTableA11yDesc"));
-                outgoingLabel.setLabelFor(dt);
+		dt = new DisplayTable(categoriesOut, data);
+		aCtx = dt.getAccessibleContext(); 
+                aCtx.setAccessibleName
+		    (NbBundle.getMessage(CookieDisplay.class, 
+					 "ACS_MON_Outgoing_cookieTableA11yName"));//NOI18N
+                aCtx.setAccessibleDescription
+		    (NbBundle.getMessage(CookieDisplay.class, 
+					 "ACS_MON_Outgoing_cookieTableA11yDesc"));//NOI18N
+                dt.setToolTipText
+		    (NbBundle.getMessage(CookieDisplay.class,
+					 "ACS_MON_Outgoing_cookieTableA11yDesc")); //NOI18N
+		aRel = new AccessibleRelation(AccessibleRelation.LABELED_BY, 
+					      outgoingLabel); 
+		aCtx.getAccessibleRelationSet().add(aRel); 
 		addGridBagComponent(this, dt, 0, ++gridy,
 			    fullGridWidth, 1, tableWeightX, tableWeightY, 
 			    java.awt.GridBagConstraints.WEST,
