@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.java.j2seproject;
 
+import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -46,6 +47,8 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.java.j2seproject.ui.BrokenReferencesAlertPanel;
+import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.GenericSources;
@@ -62,6 +65,7 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -226,18 +230,28 @@ final class J2SEProject implements Project, AntProjectListener {
     
     private static synchronized void showBrokenReferencesAlert() {
         // Do not show alert if it is already shown or if it was shown
-        // in last BROKEN_ALERT_TIMEOUT milliseconds.
-        if (brokenAlertShown || brokenAlertLastTime+BROKEN_ALERT_TIMEOUT > System.currentTimeMillis()) {
-            return;
+        // in last BROKEN_ALERT_TIMEOUT milliseconds or if user do not wish it.
+        if (brokenAlertShown || 
+            brokenAlertLastTime+BROKEN_ALERT_TIMEOUT > System.currentTimeMillis() ||
+            !FoldersListSettings.getDefault().isShowAgainBrokenRefAlert()) {
+                return;
         }
         brokenAlertShown = true;
         SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     try {
-                        DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(
-                                NbBundle.getMessage(J2SEProject.class, "MSG_Broken_References"), 
-                                NotifyDescriptor.WARNING_MESSAGE));
+                        Object ok = NbBundle.getMessage(BrokenReferencesAlertPanel.class,"MSG_Broken_References_OK");
+                        DialogDescriptor dd = new DialogDescriptor(new BrokenReferencesAlertPanel(), 
+                            NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Title"),
+                            true, new Object[] {ok}, ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                        Dialog dlg = null;
+                        try {
+                            dlg = DialogDisplayer.getDefault().createDialog(dd);
+                            dlg.setVisible(true);
+                        } finally {
+                            if (dlg != null)
+                                dlg.dispose();
+                        }
                     } finally {
                         synchronized (J2SEProject.class) {
                             brokenAlertLastTime = System.currentTimeMillis();
