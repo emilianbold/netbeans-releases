@@ -356,10 +356,14 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                                                  Lookups.singleton(new SimpleSearchInfo(dataFolder, false))}));
             this.root = root;
             this.dataFolder = dataFolder;
-            disableDelegation(DELEGATE_GET_DISPLAY_NAME | DELEGATE_SET_DISPLAY_NAME);
+            disableDelegation(DELEGATE_GET_DISPLAY_NAME | DELEGATE_SET_DISPLAY_NAME);            
             setDisplayName( computeDisplayName() );
         }
                        
+        public String getName() {
+            return computeDisplayName();
+        }
+        
         public String getShortDescription() {
             DataFolder df = getDataFolder();
             Boolean b = AccessibilityQuery.isPubliclyAccessible(df.getPrimaryFile());
@@ -391,6 +395,10 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                     return PACKAGE;
                 } 
             }
+        }
+        
+        public boolean canRename() {
+            return false;
         }
         
         public Image getOpenedIcon(int type) {

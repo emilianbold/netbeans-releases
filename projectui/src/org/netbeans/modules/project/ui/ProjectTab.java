@@ -17,10 +17,12 @@ import java.awt.BorderLayout;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,6 +32,7 @@ import javax.swing.ActionMap;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import org.netbeans.spi.project.ui.NodePathResolver;
 import org.openide.ErrorManager;
 import org.openide.actions.PopupAction;
 
@@ -249,6 +252,51 @@ public class ProjectTab extends TopComponent
         ExplorerUtils.activateActions(manager, false);
     }
     
+    // SEARCHING NODES
+    
+    public void selectNode( Object object ) {
+        // System.out.println("Selecting node " + id + " : " + object );
+        
+        Node root = manager.getRootContext();
+        
+        Collection pathResolvers  = root.getLookup().lookup( new Lookup.Template( NodePathResolver.class ) ).allInstances();
+        
+        String path[] = null;
+        for( Iterator it = pathResolvers.iterator(); it.hasNext(); ) {
+            NodePathResolver npr = (NodePathResolver)it.next();
+            path = npr.getNodePath( object );
+            if ( path != null ) {
+                try {
+                    Node selectedNode = NodeOp.findPath( root, path );
+                    if ( selectedNode != null ) {
+                        open();
+                        requestActive();
+                        manager.setSelectedNodes( new Node[] { selectedNode } );
+                        return;
+                    }
+                }
+                catch ( NodeNotFoundException e ) {
+                    // The nNode does not exist keep searching     
+                    // System.out.println("NOT FOUND " );
+                    // print( path );
+                }
+                catch ( PropertyVetoException e ) {
+                    // Bad day node found but can't be selected
+                    return;
+                }
+            }            
+        }
+        
+    }
+    
+    /*
+    private static  void print( String[] path ) {
+        for( int i = 0; i < path.length; i++ ) {
+            System.out.print( path[i] + "/" );
+        }
+        System.out.println("");
+    }
+    */
     
     // Private innerclasses ----------------------------------------------------
     
@@ -267,6 +315,9 @@ public class ProjectTab extends TopComponent
                 TreePath ep = (TreePath)exPaths.nextElement();
                 Node en = Visualizer.findNode( ep.getLastPathComponent() );                
                 String[] path = NodeOp.createPath( en, rootNode );
+                
+                // System.out.print("EXP "); ProjectTab.print( path );
+                
                 result.add( path );
             }
             
@@ -287,6 +338,8 @@ public class ProjectTab extends TopComponent
                 }
             }
         }
+        
+                
         
         /** Converts path of strings to TreePath if exists null otherwise
          */

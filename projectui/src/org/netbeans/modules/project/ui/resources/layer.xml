@@ -115,6 +115,16 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-project-ui-physical-tab-action.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.ProjectTabAction.projectsPhysical"/>
             </file>
+            
+            <!-- Searching nodes in projects/files tab -->
+            <file name="org-netbeans-modules-project-ui-SelectInProjects.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.SelectNodeAction.inProjects"/>
+            </file>
+            
+            <file name="org-netbeans-modules-project-ui-SelectInFiles.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.SelectNodeAction.inFiles"/>
+            </file>
+            
         </folder>
     </folder>
 
@@ -479,6 +489,21 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         
             <attr name="org-netbeans-modules-project-ui-physical-tab-action.shadow/ViewFilesystemsTabAction.shadow" boolvalue="true"/>
+            
+            <folder name="SelectDocumentNode">
+                <file name="org-netbeans-modules-project-ui-SelectInProjects.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SelectInProjects.instance"/>
+                </file>
+
+                <attr name="org-netbeans-modules-project-ui-SelectInProjects.shadow/org-netbeans-modules-project-ui-SelectInFiles.shadow" boolvalue="true" />
+                                
+                <file name="org-netbeans-modules-project-ui-SelectInFiles.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SelectInFiles.instance"/>
+                </file>
+                
+                <attr name="org-netbeans-modules-project-ui-SelectInFiles.shadow/SelectInFSTabAction.shadow" boolvalue="true" />
+                
+            </folder>
             
         </folder>
         

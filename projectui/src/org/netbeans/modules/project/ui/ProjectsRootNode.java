@@ -33,6 +33,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.NodePathResolver;
 import org.netbeans.spi.project.ui.support.LogicalViews;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -72,8 +73,10 @@ public class ProjectsRootNode extends AbstractNode {
     private Node.Handle handle;
     
     public ProjectsRootNode( int type ) {
-        super( new ProjectChildren( type ) );
+        super( new ProjectChildren( type ), Lookups.singleton( new ChildrenPathFinder() ) );
         setIconBase( ICON_BASE );
+        ChildrenPathFinder pf = (ChildrenPathFinder)getLookup().lookup( ChildrenPathFinder.class );
+        pf.setNode( this );
         handle = new Handle( type );
     }
         
@@ -132,8 +135,43 @@ public class ProjectsRootNode extends AbstractNode {
         }
         
     }
+    
+    private static class ChildrenPathFinder implements NodePathResolver {
+        
+        private Node node;
+        
+        public void setNode( Node node ) {
+            this.node = node;            
+        }
+        
+        public String[] getNodePath( Object object ) {
+            if ( node == null ) {
+                return null;
+            }
+            
+            Node chNodes[] = node.getChildren().getNodes( true );
+            
+            for( int i = 0; i < chNodes.length; i++ ) {
+                NodePathResolver npr = (NodePathResolver)chNodes[i].getLookup().lookup( NodePathResolver.class );
+                if ( npr != null ) {
+                    String[] path = npr.getNodePath( object );
+                    if ( path != null ) {
+                        String result[] = new String[ path.length + 1 ];
+                        result[0] = chNodes[i].getName();
+                        System.arraycopy( path, 0, result, 1, path.length );
+                        return result;
+                    }
+                }
+            }
+            return null;
+        }
+        
+        
+        
+    }
 
     // XXX Needs to listen to project rename
+    // However project rename is currently disabled so it is not a big deal
     private static class ProjectChildren extends Children.Keys implements PropertyChangeListener {
         
         int type;
