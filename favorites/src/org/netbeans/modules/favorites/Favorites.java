@@ -15,17 +15,15 @@ package org.netbeans.modules.favorites;
 
 import java.awt.Image;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
-import org.openide.cookies.InstanceCookie;
+import org.openide.actions.DeleteAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataShadow;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
@@ -310,7 +308,10 @@ final class Favorites extends FilterNode {
                     newArr.add(Actions.remove());
                     newArr.add(null);
                 }
-                newArr.add(arr[i]);
+                //Do not add Delete action
+                if (!(arr[i] instanceof DeleteAction)) {
+                    newArr.add(arr[i]);
+                }
             }
             if (!added) {
                 added = true;
@@ -332,7 +333,10 @@ final class Favorites extends FilterNode {
                     newArr.add(Actions.remove());
                     newArr.add(null);
                 }
-                newArr.add(arr[i]);
+                //Do not add Delete action
+                if (!(arr[i] instanceof DeleteAction)) {
+                    newArr.add(arr[i]);
+                }
             }
             if (!added) {
                 added = true;
