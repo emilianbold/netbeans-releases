@@ -376,13 +376,6 @@ public final class StartTomcat extends StartServer implements ProgressObject
                    (command == CommandType.STOP && URLWait.waitForStartup (tm, 1000))) {    //still getting feedback when stopping
                 pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, NbBundle.getMessage (StartTomcat.class, "MSG_waiting"), StateType.RUNNING));
             }
-            if (command == CommandType.START) {
-                try {
-                    TargetModuleID modules [] = tm.getAvailableModules (ModuleType.WAR, tm.getTargets ());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
 /*            running = command.equals (CommandType.START);
             if (debug) {
                 if (running) {

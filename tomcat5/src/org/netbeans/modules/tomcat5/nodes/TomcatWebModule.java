@@ -288,7 +288,7 @@ public class TomcatWebModule implements TomcatWebModuleCookie{
             } else if (deployStatus.getState() == StateType.FAILED) {
                 NotifyDescriptor notDesc = new NotifyDescriptor.Message(
                         deployStatus.getMessage(), 
-                        NotifyDescriptor.WARNING_MESSAGE);
+                        NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(notDesc);
                 StatusDisplayer.getDefault().setStatusText(deployStatus.getMessage());                
             }

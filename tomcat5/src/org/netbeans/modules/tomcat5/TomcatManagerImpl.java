@@ -84,9 +84,12 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
     
     private TomcatManager tm;
     
+    /** Has been the last access to tomcat manager web app authorized? */
+    private boolean authorized;
+    
     /** TargetModuleID of module that is managed. */
     private TomcatModule tmId;
-
+    
     public TomcatManagerImpl (TomcatManager tm) {
         this.tm = tm;
         pes = new ProgressEventSupport (this);
@@ -288,11 +291,20 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
      * This method runs synchronously.
      * @param target server target
      * @param state one of ENUM_ constants.
+     *
+     * @throws IllegalStateException when access to tomcat manager has not been
+     * authorized and therefore list of target modules could not been retrieved
      */
-    TargetModuleID[] list (Target t, int state) {
+    TargetModuleID[] list (Target t, int state) throws IllegalStateException {
         this.tmId = tmId;
         command = "list"; // NOI18N
         run ();
+        if (!authorized) {
+            // connection to tomcat manager has not been authorized
+            String errMsg = NbBundle.getMessage(TomcatManagerImpl.class, "EX_AuthorizationFailed");
+            IllegalStateException ise = new IllegalStateException(errMsg);
+            throw (IllegalStateException)ise.initCause(new AuthorizationException());
+        }
         // PENDING : error check
         java.util.List modules = new java.util.ArrayList ();
         boolean first = true;
@@ -390,7 +402,8 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
         TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, command);
         pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, command /* message */, StateType.RUNNING));
         
-        output = ""; 
+        output = "";
+        authorized = true;
         
         int retries = 4;
         
@@ -444,6 +457,13 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
 
                 // Establish the connection with the server
                 hconn.connect();
+                if (hconn.getResponseCode() == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    // connection to tomcat manager has not been allowed
+                    authorized = false;
+                    String errMsg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_AuthorizationFailed");
+                    pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, errMsg, StateType.FAILED));
+                    return;
+                }
                 if (Boolean.getBoolean("org.netbeans.modules.tomcat5.LogManagerCommands")) { // NOI18N
                     int code = hconn.getResponseCode();
                     String message = "Tomcat 5 receiving response, code: " + code;
@@ -545,5 +565,4 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, msg, StateType.COMPLETED));
         }
     }
-
 }
