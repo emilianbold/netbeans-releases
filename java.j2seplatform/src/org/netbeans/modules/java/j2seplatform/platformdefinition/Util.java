@@ -52,9 +52,7 @@ public class Util {
                 url = FileUtil.getArchiveRoot(f.toURI().toURL());
             }
             else {
-                //Hotfix issue 42961
-                return null;
-                //url = f.toURI().toURL();
+                url = f.toURI().toURL();
             }
         } catch (MalformedURLException e) {
             throw new AssertionError(e);            
@@ -138,6 +136,11 @@ public class Util {
         return null;
     }
 
+    /**
+     * Get JRE extension JARs/ZIPs.
+     * @param extPath a native-format path for e.g. jre/lib/ext
+     * @return a native-format classpath for extension JARs and ZIPs found in it
+     */
     public static String getExtensions (String extPath) {
         if (extPath == null) {
             return null;
@@ -145,10 +148,14 @@ public class Util {
         StringBuffer sb = new StringBuffer();
         StringTokenizer tk = new StringTokenizer (extPath, File.pathSeparator);
         while (tk.hasMoreTokens()) {
-            File extFolder = new File(tk.nextToken());
+            File extFolder = FileUtil.normalizeFile(new File(tk.nextToken()));
             File[] files = extFolder.listFiles();
             if (files != null) {
                 for (int i = 0; i < files.length; i++) {
+                    if (!FileUtil.isArchiveFile(FileUtil.toFileObject(files[i]))) {
+                        // #42961: Mac OS X has e.g. libmlib_jai.jnilib.
+                        continue;
+                    }
                     sb.append(File.pathSeparator);
                     sb.append(files[i].getAbsolutePath());
                 }
