@@ -211,6 +211,7 @@ public final class NbMainExplorer extends CloneableTopComponent
                 ModeImpl mode = (ModeImpl)workspace.findMode(toBeActivated);
                 if (mode != null) {
                     mode.requestFocus(toBeActivated);
+                    toBeActivated.focusView();
                 }
             }
         } else {
@@ -222,6 +223,7 @@ public final class NbMainExplorer extends CloneableTopComponent
                         ModeImpl mode = (ModeImpl)localWorkspace.findMode(localActivated);
                         if (mode != null) {
                             mode.requestFocus(localActivated);
+                            localActivated.focusView();
                         }
                     }
                 });
@@ -532,6 +534,10 @@ public final class NbMainExplorer extends CloneableTopComponent
             setLayout(new BorderLayout());
             add(view);
             return view;
+        }
+
+        void focusView() {
+            view.requestFocus();
         }
 
         /** Ensures that component is valid before opening */
