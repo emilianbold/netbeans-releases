@@ -400,6 +400,7 @@
     <tocitem text="Setting a Relative Mount Point for a CVS Fileystem" target="cvs.mountpoint" />
     <tocitem text="Reconfiguring a CVS Filesystem" target="cvs.settings" />
     <tocitem text="CVS Commands" target="cvs.commands" />
+    <tocitem text="Managing Connections to Remote Repositories" target="cvs.password" />
   </tocitem>
   <tocitem text="Integrating a Version Control System" target="vcs.vcsgeneric">
     <tocitem text="Mounting a Directory With Version Control" target="vcsgeneric.mounting" />
