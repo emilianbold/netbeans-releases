@@ -565,6 +565,9 @@ class DefaultContext implements HintContext, Attr {
     
     //??? or could we throw class casts
     private class NOA extends DOMException {
+        
+        private static final long serialVersionUID = 4600894053037825159L;
+        
         NOA() {
             super(DOMException.NOT_SUPPORTED_ERR, "Peer " + peer + " is not instance of Attr!");
         }
