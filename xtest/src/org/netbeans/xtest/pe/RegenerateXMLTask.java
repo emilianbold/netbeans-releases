@@ -226,6 +226,7 @@ public class RegenerateXMLTask extends Task{
 
         // adding workdir into crashed suites
         if (!produceBigReportOnly) { 
+            boolean failure = false;
             File[] suiteFiles = suitesDir.listFiles();
             for (int i=0; i< suiteFiles.length; i++) {
                 boolean modified = false;
@@ -233,6 +234,7 @@ public class RegenerateXMLTask extends Task{
                 debugInfo("regenerateTestBag(): adding workdir;  suite " + testSuite.getName());
                 // only suites with unexpected failure
                 if (testSuite.xmlat_unexpectedFailure != null) {
+                    failure = true;
                     if (testSuite.xmlel_UnitTestCase != null) {
                        for (int u=0; u<testSuite.xmlel_UnitTestCase.length; u++) {
                           UnitTestCase testCase = testSuite.xmlel_UnitTestCase[u];
@@ -258,6 +260,9 @@ public class RegenerateXMLTask extends Task{
                     SerializeDOM.serializeToFile(testSuite.toDocument(),suiteFiles[i]);
                 }
             }
+            if (failure && testBag.xmlat_unexpectedFailure == null) 
+                testBag.xmlat_unexpectedFailure = "some suites did not finish correctly";
+                
         }
 
         // assign id to this testbag

@@ -46,7 +46,19 @@
 	<!-- end of hack -->
 	
 	<xsl:if test="@unexpectedFailure">
-		<LI><B><FONT color="#FF0000">!!!<xsl:value-of select="@unexpectedFailure"/>!!!</FONT></B></LI>
+                <FONT color="#FF0000">
+                <LI><B>Following suites did not finish correctly:</B></LI>
+                <UL>                    
+                        <xsl:for-each select="//UnitTestSuite[@unexpectedFailure]">
+                            <xsl:sort select="@name"/>
+                            <LI>
+                                <A HREF="suites/TEST-{@name}.html">
+                                    <xsl:value-of select="@name"/>
+                                </A>
+                            </LI>
+                        </xsl:for-each>                    
+                </UL>
+                </FONT>
 	</xsl:if>
 	</UL>
 	<HR/>
