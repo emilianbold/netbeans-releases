@@ -302,10 +302,17 @@ final public class GridBagCustomizer extends JPanel implements Customizer
     }
 
     private void setProperty(GBComponentProxy p, String name, Object value) {
-
-//        Node.Property nps[] = designLayout.getComponentProperties(p.getComponent()) ;
-
-        Node.Property nps[] = p.getComponent().getConstraintsProperties(); //constr.getProperties();
+        FormProperty prop = p.getComponent().getPropertyByName(
+                                             "GridBagLayoutConstraints "+name); // NOI18N
+        if (prop != null) {
+            try {
+                prop.setValue(value);
+            }
+            catch (Exception ex) { // ignore
+                ex.printStackTrace();
+            }
+        }
+/*        Node.Property nps[] = p.getComponent().getConstraintsProperties(); //constr.getProperties();
 
         for (int i = 0; i < nps.length; i++) {
             if (nps[i].getName().equals(name))
@@ -320,8 +327,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                 catch (java.lang.reflect.InvocationTargetException e) {
                     org.openide.TopManager.getDefault().notifyException(e);
                 }
-        }
-
+        } */
     }
 
     // -----------------------------------------------------------------------------
