@@ -642,6 +642,7 @@ public final class DebuggerManager {
     }
 
     private void initBreakpoints () {
+        breakpointsInitialized = true; 
         initDebuggerManagerListeners ();
         Vector l = (Vector) listener.clone ();
         Vector l1 = (Vector) listeners.get (PROP_BREAKPOINTS_INIT);
@@ -666,6 +667,9 @@ public final class DebuggerManager {
                 ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
             }
         }
+        k = breakpoints.size ();
+        for (i = 0; i < k; i++) 
+            fireBreakpointCreated ((Breakpoint) breakpoints.get (i));
     }
 
     /**

@@ -2,6 +2,7 @@ OpenIDE-Module: org.netbeans.modules.debugger.jpda.ui/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/debugger/jpda/ui/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/debugger/jpda/resources/mf-layer.xml
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.23
+OpenIDE-Module-Install: org/netbeans/modules/debugger/jpda/ui/PropertiesLoader.class
 OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger/1,
   org.netbeans.api.debugger.jpda/1,
   org.netbeans.modules.debugger.ui/1,

@@ -18,6 +18,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.Session;
 
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 
 import org.openide.awt.StatusDisplayer;
@@ -33,8 +34,7 @@ import org.openide.windows.Workspace;
  *
  * @author Jan Jancura
  */
-public class DebuggerManagerListener extends LazyDebuggerManagerListener 
-implements PropertyChangeListener {
+public class DebuggerManagerListener extends DebuggerManagerAdapter {
     
     public void propertyChange (PropertyChangeEvent evt) {
         if (evt.getPropertyName ().equals (DebuggerManager.PROP_SESSIONS)) {

@@ -36,8 +36,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Jancura
  */
-public class CurrentThreadAnnotationListener extends LazyDebuggerManagerListener
-implements PropertyChangeListener {
+public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
 
     // annotation for current line
     private transient Object                currentPC;

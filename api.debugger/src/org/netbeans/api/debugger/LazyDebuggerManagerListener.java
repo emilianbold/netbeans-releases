@@ -20,12 +20,12 @@ package org.netbeans.api.debugger;
  *
  * @author   Jan Jancura
  */
-public abstract class LazyDebuggerManagerListener extends DebuggerManagerAdapter {
+public interface LazyDebuggerManagerListener extends DebuggerManagerListener {
 
     /**
      * Returns list of properties this listener is listening on.
      *
      * @return list of properties this listener is listening on
      */
-    public abstract String[] getProperties ();
+    public String[] getProperties ();
 }

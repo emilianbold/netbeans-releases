@@ -21,7 +21,7 @@ import java.beans.PropertyChangeEvent;
  *
  * @author   Jan Jancura
  */
-public class DebuggerManagerAdapter implements DebuggerManagerListener {
+public class DebuggerManagerAdapter implements LazyDebuggerManagerListener {
 
     /**
      * Called when set of breakpoints is initialized.
@@ -90,5 +90,9 @@ public class DebuggerManagerAdapter implements DebuggerManagerListener {
     }
     
     public void propertyChange (PropertyChangeEvent evt) {
+    }
+    
+    public String[] getProperties () {
+        return new String [0];
     }
 }
