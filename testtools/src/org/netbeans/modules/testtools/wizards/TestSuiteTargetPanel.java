@@ -47,12 +47,12 @@ public class TestSuiteTargetPanel extends JPanel implements WizardDescriptor.Pan
 
     static final long serialVersionUID = 7320115283955775732L;
     private ChangeListener listener=null;
-    private static final String DEFAULT_NAME="<default name>";
+    private static final String DEFAULT_NAME=org.openide.util.NbBundle.getMessage(TestSuiteTargetPanel.class, "CTL_DefaultName");
     private boolean modified=true;
 
     /** Creates new form TestSuiteTargetPanel */
     public TestSuiteTargetPanel() {
-        setName("Test Suite Template and Target Location");
+        setName(org.openide.util.NbBundle.getMessage(TestSuiteTargetPanel.class, "LBL_TestSuitePanelDescription"));
         initComponents();
         templateCombo.setRenderer(new WizardIterator.MyCellRenderer());
         templateCombo.setModel(new DefaultComboBoxModel(WizardIterator.getSuiteTemplates()));
@@ -92,17 +92,19 @@ public class TestSuiteTargetPanel extends JPanel implements WizardDescriptor.Pan
         setPreferredSize(new java.awt.Dimension(408, 334));
         nameLabel.setDisplayedMnemonic('n');
         nameLabel.setLabelFor(nameField);
-        nameLabel.setText("Name: ");
+        nameLabel.setText(org.openide.util.NbBundle.getMessage(TestSuiteTargetPanel.class, "LBL_TestSuiteName"));
+        nameLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestSuiteTargetPanel.class, "TTT_TestSuiteName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(12, 11, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 11, 0, 11);
         add(nameLabel, gridBagConstraints);
 
+        nameField.setToolTipText(org.openide.util.NbBundle.getMessage(TestSuiteTargetPanel.class, "TTT_TestSuiteName"));
         nameField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 nameFieldFocusGained(evt);
@@ -114,25 +116,27 @@ public class TestSuiteTargetPanel extends JPanel implements WizardDescriptor.Pan
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 11);
         add(nameField, gridBagConstraints);
 
         packageLabel.setDisplayedMnemonic('p');
         packageLabel.setLabelFor(packageField);
-        packageLabel.setText("Package: ");
+        packageLabel.setText(org.openide.util.NbBundle.getMessage(TestSuiteTargetPanel.class, "LBL_TestSuitePackage"));
+        packageLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestSuiteTargetPanel.class, "TTT_TestSuitePackage"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         add(packageLabel, gridBagConstraints);
 
+        packageField.setToolTipText(org.openide.util.NbBundle.getMessage(TestSuiteTargetPanel.class, "TTT_TestSuitePackage"));
         packageField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 packageFieldFocusGained(evt);
@@ -144,25 +148,27 @@ public class TestSuiteTargetPanel extends JPanel implements WizardDescriptor.Pan
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 11);
         add(packageField, gridBagConstraints);
 
         templateLabel.setDisplayedMnemonic('T');
         templateLabel.setLabelFor(templateCombo);
-        templateLabel.setText("Select a Template: ");
+        templateLabel.setText(org.openide.util.NbBundle.getMessage(TestSuiteTargetPanel.class, "LBL_TestSuiteTemplate"));
+        templateLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestSuiteTargetPanel.class, "TTT_TestSuiteTemplate"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         add(templateLabel, gridBagConstraints);
 
+        templateCombo.setToolTipText(org.openide.util.NbBundle.getMessage(TestSuiteTargetPanel.class, "TTT_TestSuiteTemplate"));
         templateCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 templateComboActionPerformed(evt);
@@ -174,30 +180,30 @@ public class TestSuiteTargetPanel extends JPanel implements WizardDescriptor.Pan
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 11);
         add(templateCombo, gridBagConstraints);
 
         descriptionLabel.setDisplayedMnemonic('D');
         descriptionLabel.setLabelFor(htmlBrowser);
-        descriptionLabel.setText("Template Description: ");
+        descriptionLabel.setText(org.openide.util.NbBundle.getMessage(TestSuiteTargetPanel.class, "LBL_TestSuiteDescription"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(17, 11, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(17, 11, 0, 11);
         add(descriptionLabel, gridBagConstraints);
 
         descriptionPanel.setLayout(new java.awt.CardLayout());
 
         descriptionPanel.setPreferredSize(new java.awt.Dimension(400, 200));
         noDescription.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        noDescription.setText("No description");
+        noDescription.setText(org.openide.util.NbBundle.getMessage(TestSuiteTargetPanel.class, "LBL_TestSuiteNoDescription"));
         descriptionPanel.add(noDescription, "no");
 
         htmlBrowser.setEnableHome(false);
@@ -214,10 +220,10 @@ public class TestSuiteTargetPanel extends JPanel implements WizardDescriptor.Pan
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(5, 11, 11, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 100.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 11, 11, 11);
         add(descriptionPanel, gridBagConstraints);
 
     }//GEN-END:initComponents

@@ -34,11 +34,11 @@ import org.openide.WizardDescriptor;
 public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.FinishPanel {
 
     static final long serialVersionUID = 6692306744377282694L;
-    private static final String DEFAULT_NAME="<default name>";
+    private static final String DEFAULT_NAME=org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "CTL_DefaultName");
     
     /** Creates new form TestBagPanel */
     public TestBagSettingsPanel() {
-        setName("Test Bag Settings");
+        setName(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "LBL_TestBagSettings"));
         initComponents();
         DocumentListener list=new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {fireStateChanged();}
@@ -74,7 +74,7 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
 
         nameLabel.setDisplayedMnemonic('n');
         nameLabel.setLabelFor(nameField);
-        nameLabel.setText("Test Bag Name: ");
+        nameLabel.setText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "LBL_TestBagName"));
         nameLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_BagName", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -103,7 +103,7 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         add(nameField, gridBagConstraints);
 
         executorLabel.setDisplayedMnemonic('X');
-        executorLabel.setText("Executor:");
+        executorLabel.setText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "LBL_TestBagExecutor"));
         executorLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagExecutor", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -116,7 +116,7 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
 
         ideRadio.setMnemonic('D');
         ideRadio.setSelected(true);
-        ideRadio.setText("IDE");
+        ideRadio.setText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "LBL_TestBagExecutorIDE"));
         ideRadio.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagExecutor", new Object[] {}));
         buttonGroup.add(ideRadio);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -129,7 +129,7 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         add(ideRadio, gridBagConstraints);
 
         codeRadio.setMnemonic('C');
-        codeRadio.setText("Code");
+        codeRadio.setText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "LBL_TestBagExecutorCode"));
         codeRadio.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagExecutor", new Object[] {}));
         buttonGroup.add(codeRadio);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -143,7 +143,7 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
 
         attrLabel.setDisplayedMnemonic('A');
         attrLabel.setLabelFor(attrField);
-        attrLabel.setText("Attributes: ");
+        attrLabel.setText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "LBL_TestBagAttributes"));
         attrLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagAttributes", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -175,7 +175,7 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
 
         includeLabel.setDisplayedMnemonic('I');
         includeLabel.setLabelFor(includeField);
-        includeLabel.setText("Execution Include Pattern: ");
+        includeLabel.setText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "LBL_TestBagExecInclude"));
         includeLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagInclude", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -205,7 +205,7 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
 
         excludeLabel.setDisplayedMnemonic('E');
         excludeLabel.setLabelFor(excludeField);
-        excludeLabel.setText("Execution Exclude Pattern: ");
+        excludeLabel.setText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "LBL_TestBagExecExclude"));
         excludeLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagExclude", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

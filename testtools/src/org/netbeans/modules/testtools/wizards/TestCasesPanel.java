@@ -46,7 +46,7 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
     
     /** Creates new form TestCasesPanel */
     public TestCasesPanel() {
-        setName("Create Test Cases");
+        setName(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "LBL_TestCasesCreate"));
         initComponents();
         caseName.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {refreshAdd();}
@@ -97,7 +97,7 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         add(testCaseTypes, gridBagConstraints);
 
-        caseName.setText("testMyTestCase");
+        caseName.setText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "LBL_TestCasesSampleMethodName"));
         caseName.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseName", new Object[] {}));
         caseName.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -123,7 +123,7 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         add(caseName, gridBagConstraints);
 
         add.setMnemonic('a');
-        add.setText("Add");
+        add.setText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "LBL_TestCasesAdd"));
         add.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseAdd", new Object[] {}));
         add.setMinimumSize(new java.awt.Dimension(80, 27));
         add.setPreferredSize(new java.awt.Dimension(80, 27));
@@ -145,7 +145,7 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         add(add, gridBagConstraints);
 
         remove.setMnemonic('r');
-        remove.setText("Remove");
+        remove.setText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "LBL_TestCasesRemove"));
         remove.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseRemove", new Object[] {}));
         remove.setMinimumSize(new java.awt.Dimension(80, 27));
         remove.setPreferredSize(new java.awt.Dimension(80, 27));
@@ -167,7 +167,7 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         add(remove, gridBagConstraints);
 
         up.setMnemonic('u');
-        up.setText("Up");
+        up.setText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "LBL_TestCasesUp"));
         up.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseUp", new Object[] {}));
         up.setMinimumSize(new java.awt.Dimension(80, 27));
         up.setPreferredSize(new java.awt.Dimension(80, 27));
@@ -189,7 +189,7 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         add(up, gridBagConstraints);
 
         down.setMnemonic('d');
-        down.setText("Down");
+        down.setText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "LBL_TestCasesDown"));
         down.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseDown", new Object[] {}));
         down.setMinimumSize(new java.awt.Dimension(80, 27));
         down.setPreferredSize(new java.awt.Dimension(80, 27));
@@ -229,7 +229,7 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
 
         nameLabel.setDisplayedMnemonic('n');
         nameLabel.setLabelFor(caseName);
-        nameLabel.setText("Test Case Name:");
+        nameLabel.setText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "LBL_TestCasesName"));
         nameLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseName", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -242,7 +242,7 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
 
         templateLabel.setDisplayedMnemonic('t');
         templateLabel.setLabelFor(testCaseTypes);
-        templateLabel.setText("Template:");
+        templateLabel.setText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "LBL_TestCasesTemplate"));
         templateLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "TTT_TestCaseTemplate", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

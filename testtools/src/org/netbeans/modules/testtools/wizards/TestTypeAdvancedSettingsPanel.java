@@ -44,7 +44,7 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
     
     /** Creates new form TestTypeAdvancedSettingsPanel */
     public TestTypeAdvancedSettingsPanel() {
-        setName("Test Type Advanced Settings");
+        setName(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeAdvancedPanelName"));
         initComponents();
     }
     
@@ -78,18 +78,20 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
 
         excludesLabel.setDisplayedMnemonic('X');
         excludesLabel.setLabelFor(excludesField);
-        excludesLabel.setText("Compilation Exclude Pattern: ");
+        excludesLabel.setText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeCompExclPattern"));
+        excludesLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_TestTypeCompExc"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         add(excludesLabel, gridBagConstraints);
 
         excludesField.setText("**/data/**");
+        excludesField.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_TestTypeCompExc"));
         excludesField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 excludesFieldFocusGained(evt);
@@ -101,25 +103,27 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         add(excludesField, gridBagConstraints);
 
         compileLabel.setDisplayedMnemonic('C');
         compileLabel.setLabelFor(compileField);
-        compileLabel.setText("Compliation Class Path: ");
+        compileLabel.setText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeCompClassPath"));
+        compileLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_CompileClassPath"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         add(compileLabel, gridBagConstraints);
 
+        compileField.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_CompileClassPath"));
         compileField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 compileFieldFocusGained(evt);
@@ -130,13 +134,14 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(compileField, gridBagConstraints);
 
         compileButton.setText("...");
+        compileButton.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_CompileClassPath"));
         compileButton.setMinimumSize(new java.awt.Dimension(30, 20));
         compileButton.setPreferredSize(new java.awt.Dimension(30, 20));
         compileButton.addActionListener(new java.awt.event.ActionListener() {
@@ -149,25 +154,28 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         add(compileButton, gridBagConstraints);
+        compileButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "CTL_CompClassPathCust"));
 
         executeLabel.setDisplayedMnemonic('E');
         executeLabel.setLabelFor(executeField);
-        executeLabel.setText("Execution Extra Jars: ");
+        executeLabel.setText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeExtraJARs"));
+        executeLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_ExecExtraJARs"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         add(executeLabel, gridBagConstraints);
 
+        executeField.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_ExecExtraJARs"));
         executeField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 executeFieldFocusGained(evt);
@@ -178,13 +186,14 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(executeField, gridBagConstraints);
 
         executeButton.setText("...");
+        executeButton.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_ExecExtraJARs"));
         executeButton.setMinimumSize(new java.awt.Dimension(30, 20));
         executeButton.setPreferredSize(new java.awt.Dimension(30, 20));
         executeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -197,25 +206,28 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         add(executeButton, gridBagConstraints);
+        executeButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "CTL_ExecutionExtraJarsCust"));
 
         jvmLabel.setDisplayedMnemonic('S');
         jvmLabel.setLabelFor(jvmField);
-        jvmLabel.setText("Command Line Suffix: ");
+        jvmLabel.setText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeCommandLineSuffix"));
+        jvmLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_TestTypeSuffix"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(jvmLabel, gridBagConstraints);
 
+        jvmField.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_TestTypeSuffix"));
         jvmField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 jvmFieldFocusGained(evt);
@@ -227,25 +239,28 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         add(jvmField, gridBagConstraints);
 
         jemmyLabel.setDisplayedMnemonic('M');
         jemmyLabel.setLabelFor(jemmyField);
-        jemmyLabel.setText("Jemmy Jar Home: ");
+        jemmyLabel.setText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeJemmyJARHome"));
+        jemmyLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_JemmyJARHome"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         add(jemmyLabel, gridBagConstraints);
+        jemmyLabel.getAccessibleContext().setAccessibleName("Jemmy JAR Home: ");
 
+        jemmyField.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_JemmyJARHome"));
         jemmyField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 jemmyFieldFocusGained(evt);
@@ -256,13 +271,14 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jemmyField, gridBagConstraints);
 
         jemmyButton.setText("...");
+        jemmyButton.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_JemmyJARHome"));
         jemmyButton.setMinimumSize(new java.awt.Dimension(30, 20));
         jemmyButton.setPreferredSize(new java.awt.Dimension(30, 20));
         jemmyButton.addActionListener(new java.awt.event.ActionListener() {
@@ -275,25 +291,29 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         add(jemmyButton, gridBagConstraints);
+        jemmyButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "CTL_JemmyJARHomeCust"));
 
         jellyLabel.setDisplayedMnemonic('L');
         jellyLabel.setLabelFor(jellyField);
-        jellyLabel.setText("Jelly Jar Home: ");
+        jellyLabel.setText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeJellyJARHome"));
+        jellyLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_JellyJarHome"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         add(jellyLabel, gridBagConstraints);
+        jellyLabel.getAccessibleContext().setAccessibleName("Jelly JAR Home: ");
 
+        jellyField.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_JellyJarHome"));
         jellyField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 jellyFieldFocusGained(evt);
@@ -304,13 +324,14 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 11;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 11, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 11, 0);
         add(jellyField, gridBagConstraints);
 
         jellyButton.setText("...");
+        jellyButton.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "TTT_JellyJarHome"));
         jellyButton.setMinimumSize(new java.awt.Dimension(30, 20));
         jellyButton.setPreferredSize(new java.awt.Dimension(30, 20));
         jellyButton.addActionListener(new java.awt.event.ActionListener() {
@@ -323,11 +344,12 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 11;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 11, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 11, 11);
         add(jellyButton, gridBagConstraints);
+        jellyButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "CTL_JellyJARHomeCust"));
 
     }//GEN-END:initComponents
 
@@ -364,27 +386,27 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
     }    
     
     private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeButtonActionPerformed
-        File elem=WizardIterator.showFileChooser(this, "Select Extra Jar", false, true);
+        File elem=WizardIterator.showFileChooser(this, org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectJAR"), false, true);
         if (elem!=null) {
             executeField.setText(add(executeField.getText(), elem));
         }
     }//GEN-LAST:event_executeButtonActionPerformed
 
     private void compileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compileButtonActionPerformed
-        File jar=WizardIterator.showFileChooser(this, "Select Class Path Element", true, true);
+        File jar=WizardIterator.showFileChooser(this, org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectClassPathElement"), true, true);
         if (jar!=null) {
             compileField.setText(add(compileField.getText(), jar));
         }
     }//GEN-LAST:event_compileButtonActionPerformed
 
     private void jellyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jellyButtonActionPerformed
-        File home=WizardIterator.showFileChooser(this, "Select Jelly Home Directory", true, false);
+        File home=WizardIterator.showFileChooser(this, org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectJellyHome"), true, false);
         if (home!=null) 
             jellyField.setText(home.getAbsolutePath());
     }//GEN-LAST:event_jellyButtonActionPerformed
 
     private void jemmyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jemmyButtonActionPerformed
-        File home=WizardIterator.showFileChooser(this, "Select Jemmy Home Directory", true, false);
+        File home=WizardIterator.showFileChooser(this, org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectJemmyHome"), true, false);
         if (home!=null) 
             jemmyField.setText(home.getAbsolutePath());
     }//GEN-LAST:event_jemmyButtonActionPerformed

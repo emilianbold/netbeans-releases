@@ -100,17 +100,19 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         levelLabel.setDisplayedMnemonic('W');
         levelLabel.setLabelFor(levelCombo);
         levelLabel.setText("Test Workspace possition in CVS: ");
+        levelLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_TestWorkspaceLevel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         panel.add(levelLabel, gridBagConstraints);
 
         levelCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "On top of the module (repository / module)", "One level lower (repository / module / package)", "Two levels lower (repository / module / package / package)", "Out of CVS structute (for local use only)" }));
+        levelCombo.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_TestWorkspaceLevel"));
         levelCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 levelComboActionPerformed(evt);
@@ -122,26 +124,28 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         panel.add(levelCombo, gridBagConstraints);
 
         typeLabel.setDisplayedMnemonic('T');
         typeLabel.setLabelFor(typeField);
         typeLabel.setText("Default Test Type: ");
+        typeLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_TestWorkspaceDefaultTT"));
         typeLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         panel.add(typeLabel, gridBagConstraints);
 
+        typeField.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_TestWorkspaceDefaultTT"));
         typeField.setEnabled(false);
         typeField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -154,26 +158,28 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         panel.add(typeField, gridBagConstraints);
 
         attrLabel.setDisplayedMnemonic('A');
         attrLabel.setLabelFor(attrField);
         attrLabel.setText("Default Attributes: ");
+        attrLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_TestWorkspaceAttrs"));
         attrLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         panel.add(attrLabel, gridBagConstraints);
 
+        attrField.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_TestWorkspaceAttrs"));
         attrField.setEnabled(false);
         attrField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -186,10 +192,10 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         panel.add(attrField, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -197,12 +203,13 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(17, 0, 0, 11);
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 0.01;
+        gridBagConstraints.insets = new java.awt.Insets(17, 0, 0, 11);
         panel.add(separator1, gridBagConstraints);
 
         advancedCheck.setText("Advanced Settings");
+        advancedCheck.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_AdvancedSettings"));
         advancedCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 advancedCheckActionPerformed(evt);
@@ -212,25 +219,27 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(17, 12, 0, 0);
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(17, 12, 0, 0);
         panel.add(advancedCheck, gridBagConstraints);
 
         netbeansLabel.setDisplayedMnemonic('N');
         netbeansLabel.setLabelFor(netbeansField);
         netbeansLabel.setText("Netbeans Home: ");
+        netbeansLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_NetbeansHome"));
         netbeansLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         panel.add(netbeansLabel, gridBagConstraints);
 
+        netbeansField.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_NetbeansHome"));
         netbeansField.setEnabled(false);
         netbeansField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -243,26 +252,28 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         panel.add(netbeansField, gridBagConstraints);
 
         xtestLabel.setDisplayedMnemonic('X');
         xtestLabel.setLabelFor(xtestField);
         xtestLabel.setText("XTest Home: ");
+        xtestLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_NetbeansHome"));
         xtestLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         panel.add(xtestLabel, gridBagConstraints);
 
+        xtestField.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_NetbeansHome"));
         xtestField.setEnabled(false);
         xtestField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -275,13 +286,14 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 11, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 11, 0);
         panel.add(xtestField, gridBagConstraints);
 
         netbeansButton.setText("...");
+        netbeansButton.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_NetbeansHome"));
         netbeansButton.setMinimumSize(new java.awt.Dimension(30, 20));
         netbeansButton.setPreferredSize(new java.awt.Dimension(30, 20));
         netbeansButton.setEnabled(false);
@@ -295,13 +307,15 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         panel.add(netbeansButton, gridBagConstraints);
+        netbeansButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "CTL_NetbeansHomeCust"));
 
         xtestButton.setText("...");
+        xtestButton.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_XTestHome"));
         xtestButton.setMinimumSize(new java.awt.Dimension(30, 20));
         xtestButton.setPreferredSize(new java.awt.Dimension(30, 20));
         xtestButton.setEnabled(false);
@@ -315,19 +329,20 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         panel.add(xtestButton, gridBagConstraints);
+        xtestButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_XTestHomeCust"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(17, 5, 0, 0);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.01;
+        gridBagConstraints.insets = new java.awt.Insets(17, 5, 0, 0);
         panel.add(separator2, gridBagConstraints);
 
         add(panel, "ok");

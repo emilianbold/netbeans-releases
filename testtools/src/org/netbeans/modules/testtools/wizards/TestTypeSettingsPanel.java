@@ -41,7 +41,7 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
     
     /** Creates new form TestTypeSettingsPanel */
     public TestTypeSettingsPanel() {
-        setName("Test Type Settings");
+        setName(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "LBL_TestTypeSettingsPanelName"));
         initComponents();
     }
     
@@ -68,68 +68,73 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
 
         defaultCheck.setMnemonic('d');
         defaultCheck.setSelected(true);
-        defaultCheck.setText("Set Test Type as default in Test Workspace");
+        defaultCheck.setText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "LBL_TestTypeSetTestAsDefault"));
+        defaultCheck.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "TTT_TestTypeSetDefault"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         panel.add(defaultCheck, gridBagConstraints);
 
         systemLabel.setDisplayedMnemonic('W');
-        systemLabel.setText("Windows System: ");
+        systemLabel.setText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "LBL_TestTypeWindowsSystem"));
+        systemLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "TTT_TestTypeWindowSystem"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         panel.add(systemLabel, gridBagConstraints);
 
         sdiRadio.setMnemonic('s');
         sdiRadio.setSelected(true);
-        sdiRadio.setText("SDI (Multiple Smaller Windows Mode)");
+        sdiRadio.setText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "LBL_TestTypeSDI"));
+        sdiRadio.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "TTT_TestTypeWindowSystem"));
         buttonGroup.add(sdiRadio);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         panel.add(sdiRadio, gridBagConstraints);
 
         mdiRadio.setMnemonic('m');
-        mdiRadio.setText("MDI (Full Screen Mode)");
+        mdiRadio.setText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "LBL_TestTypeMDI"));
+        mdiRadio.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "TTT_TestTypeWindowSystem"));
         buttonGroup.add(mdiRadio);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.insets = new java.awt.Insets(5, 11, 11, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 10.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 11, 11, 11);
         panel.add(mdiRadio, gridBagConstraints);
 
         jemmyCheck.setMnemonic('j');
         jemmyCheck.setSelected(true);
-        jemmyCheck.setText("Use Jemmy and Jelly libraries");
+        jemmyCheck.setText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "LBL_TestTypeUseJemmy"));
+        jemmyCheck.setToolTipText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "TTT_TestTypeUseJemmy"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         panel.add(jemmyCheck, gridBagConstraints);
 
         add(panel, "ok");
 
         stopLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        stopLabel.setText("Test Type with this name already exists or has invalid name.");
+        stopLabel.setText(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "MSG_TestTypeTestExists"));
         add(stopLabel, "stop");
 
     }//GEN-END:initComponents
