@@ -65,24 +65,38 @@ public class TopComponentGetLookupOverridenTest extends TopComponentGetLookupTes
         public ListingYourComponent () {
             addPropertyChangeListener (this);
             getExplorerManager ().setRootContext (new AbstractNode (new Children.Array ()));
+            java.lang.ref.SoftReference ref = new java.lang.ref.SoftReference (new Object ());
+            assertGC ("Trying to simulate issue 40842, to GC TopComponent$SynchronizeNodes", ref);
         }
         
+        private ThreadLocal callbacks = new ThreadLocal ();
         public void propertyChange (java.beans.PropertyChangeEvent ev) {
             ExplorerManager manager = getExplorerManager ();
             
             if ("activatedNodes".equals (ev.getPropertyName())) {
+                if (Boolean.TRUE.equals (callbacks.get ())) {
+                    return;
+                }
                 try {
+                    callbacks.set (Boolean.TRUE);
                     Node[] arr = getActivatedNodes ();
+                    
+                    // first of all clear the previous values otherwise
+                    // we will not test SynchronizeNodes (associateLookup (..., true))
+                    setActivatedNodes (new Node[0]);
+                    
                     Children.Array ch = (Children.Array)manager.getRootContext ().getChildren ();
                     for (int i = 0; i < arr.length; i++) {
                         if (arr[i].getParentNode() != manager.getRootContext()) {
                             assertTrue ("If this fails we are in troubles", ch.add (new Node[] { arr[i] }));
                         }
                     }
-                    manager.setSelectedNodes (getActivatedNodes ());
+                    manager.setSelectedNodes (arr);
                 } catch (java.beans.PropertyVetoException ex) {
                     ex.printStackTrace();
                     fail (ex.getMessage());
+                } finally {
+                    callbacks.set (null);
                 }
             }
         }
