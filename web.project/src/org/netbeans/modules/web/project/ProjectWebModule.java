@@ -256,7 +256,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
 
     public void uncacheDescriptors() {
-        this.getConfigSupport().resetStorage();
+        // this.getConfigSupport().resetStorage();
         // reset timeout when closing the project
         notificationTimeout = 0;
     }
