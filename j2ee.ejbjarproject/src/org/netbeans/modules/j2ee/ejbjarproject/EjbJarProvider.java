@@ -67,12 +67,17 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
         return metaInfFo.getFileObject(FILE_DD);
     }
     
-    public ClassPath getJavaSources() {
+    /** @deprecated use getJavaSources */
+    public ClassPath getClassPath() {
         ClassPathProvider cpp = (ClassPathProvider) project.getLookup().lookup(ClassPathProvider.class);
         if (cpp != null) {
             return cpp.findClassPath(getFileObject(EjbJarProjectProperties.SRC_DIR), ClassPath.SOURCE);
         }
         return null;
+    }
+
+    public FileObject[] getJavaSources() {
+        return project.getSourceRoots().getRoots();
     }
     
     public FileObject getMetaInf() {

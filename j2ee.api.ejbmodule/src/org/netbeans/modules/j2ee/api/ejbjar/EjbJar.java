@@ -87,6 +87,16 @@ public final class EjbJar {
     public FileObject getDeploymentDescriptor () {
         return impl.getDeploymentDescriptor();
     }
+
+    /** Source roots associated with the EJB module.
+     * <div class="nonnormative">
+     * Note that not all the java source roots in the project (e.g. in a freeform project)
+     * belong to the EJB module.
+     * </div>
+     */
+    public FileObject[] getJavaSources() {
+        return impl.getJavaSources();
+    }
     
     /** Meta-inf
      */

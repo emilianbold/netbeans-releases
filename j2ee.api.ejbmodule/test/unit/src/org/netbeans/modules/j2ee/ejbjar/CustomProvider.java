@@ -62,5 +62,9 @@ public class CustomProvider implements EjbJarProvider {
         public FileObject getMetaInf () {
             return null;
         }
+
+        public FileObject[] getJavaSources() {
+            return null;
+        }
     }
 }
