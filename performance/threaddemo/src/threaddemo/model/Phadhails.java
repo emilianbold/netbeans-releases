@@ -24,23 +24,23 @@ public class Phadhails {
     private Phadhails() {}
     
     public static Phadhail synchronous(File f) {
-        return BufferedPhadhail.forPhadhail(DefaultPhadhail.forFile(f));
+        return SynchPhadhail.create(f);
     }
     
     public static Phadhail locked(File f) {
-        return LockedPhadhail.forPhadhail(DefaultPhadhail.forFile(f));
+        return LockedPhadhail.create(f);
     }
     
     public static Phadhail eventHybridLocked(File f) {
-        return EventHybridLockedPhadhail.forPhadhail(DefaultPhadhail.forFile(f));
+        return EventHybridLockedPhadhail.create(f);
     }
     
     public static Phadhail spun(File f) {
-        return SpunPhadhail.forPhadhail(DefaultPhadhail.forFile(f));
+        return SpunPhadhail.forPhadhail(locked(f));
     }
     
     public static Phadhail swung(File f) {
-        return SwungPhadhail.forPhadhail(DefaultPhadhail.forFile(f));
+        return SwungPhadhail.forPhadhail(locked(f));
     }
     
 }

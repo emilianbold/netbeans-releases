@@ -17,12 +17,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import org.openide.util.Mutex;
 
 /**
  * Really, a file.
  * Mutator methods (rename, delete, create*Phadhail) cannot be called
- * from within a listener callback.
- * You *can* add/remove listeners from within a listener callback however.
+ * from within a listener callback, or generally without read access.
+ * You *can* add/remove listeners from within a listener callback however,
+ * or in fact at any other time (without even a lock).
  * @author Jesse Glick
  */
 public interface Phadhail {
@@ -45,6 +47,7 @@ public interface Phadhail {
      * caller cannot mutate list
      * implementor cannot change list after creation (i.e. size & identity of elements)
      * it is expected that once the list is obtained, asking for elements is fast and nonblocking
+     * (and then the read mutex is not required)
      */
     List getChildren();
     
@@ -68,5 +71,13 @@ public interface Phadhail {
     
     /** remove a listener */
     void removePhadhailListener(PhadhailListener l);
+    
+    /**
+     * Get a mutex appropriate for locking operations from another thread.
+     * Should be a single mutex for a whole tree of phadhails.
+     * Model methods should automatically acquire the relevant lock for you;
+     * the view need not bother, unless it needs to do an atomic operation.
+     */
+    Mutex mutex();
     
 }

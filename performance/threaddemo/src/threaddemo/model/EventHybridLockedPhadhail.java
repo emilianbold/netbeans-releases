@@ -23,66 +23,38 @@ import org.openide.util.MutexException;
  * Similar to LockedPhadhail but using the "event hybrid" mutex.
  * @author Jesse Glick
  */
-final class EventHybridLockedPhadhail implements Phadhail, PhadhailListener {
+final class EventHybridLockedPhadhail extends AbstractPhadhail {
     
-    /**
-     * add/removePhadhailListener must be called serially
-     * though they may be called with only a read lock
-     */
-    private static final Object LISTENER_LOCK = new String("LP.LL");
-    
-    private static final Map instances = new WeakHashMap(); // Map<Phadhail,Reference<Phadhail>>
-    
-    /** factory */
-    public static Phadhail forPhadhail(Phadhail _ph) {
-        Reference r = (Reference)instances.get(_ph);
-        Phadhail ph = (r != null) ? (Phadhail)r.get() : null;
-        if (ph == null) {
-            ph = BufferedPhadhail.forPhadhail(new EventHybridLockedPhadhail(_ph));
-            instances.put(_ph, new WeakReference(ph));
+    private static final Factory FACTORY = new Factory() {
+        public AbstractPhadhail create(File f) {
+            return new EventHybridLockedPhadhail(f);
         }
-        return ph;
+    };
+    
+    public static Phadhail create(File f) {
+        return forFile(f, FACTORY);
     }
     
-    private final Phadhail ph;
-    private List listeners = null; // List<PhadhailListener>
+    private EventHybridLockedPhadhail(File f) {
+        super(f);
+    }
     
-    private EventHybridLockedPhadhail(Phadhail ph) {
-        this.ph = ph;
+    protected Factory factory() {
+        return FACTORY;
     }
     
     public List getChildren() {
-        List phs; // List<Phadhail>
-        phs = (List)Mutex.EVENT_HYBRID.readAccess(new Mutex.Action() {
+        return (List)Mutex.EVENT_HYBRID.readAccess(new Mutex.Action() {
             public Object run() {
-                return ph.getChildren();
+                return EventHybridLockedPhadhail.super.getChildren();
             }
         });
-        return new LockedChildrenList(phs);
-    }
-    
-    private static final class LockedChildrenList extends AbstractList {
-        private final List orig; // List<Phadhail>
-        private final Phadhail[] kids;
-        public LockedChildrenList(List orig) {
-            this.orig = orig;
-            kids = new Phadhail[orig.size()];
-        }
-        public Object get(int i) {
-            if (kids[i] == null) {
-                kids[i] = forPhadhail((Phadhail)orig.get(i));
-            }
-             return kids[i];
-        }
-        public int size() {
-            return kids.length;
-        }
     }
     
     public String getName() {
         return (String)Mutex.EVENT_HYBRID.readAccess(new Mutex.Action() {
             public Object run() {
-                return ph.getName();
+                return EventHybridLockedPhadhail.super.getName();
             }
         });
     }
@@ -90,7 +62,7 @@ final class EventHybridLockedPhadhail implements Phadhail, PhadhailListener {
     public String getPath() {
         return (String)Mutex.EVENT_HYBRID.readAccess(new Mutex.Action() {
             public Object run() {
-                return ph.getPath();
+                return EventHybridLockedPhadhail.super.getPath();
             }
         });
     }
@@ -98,46 +70,16 @@ final class EventHybridLockedPhadhail implements Phadhail, PhadhailListener {
     public boolean hasChildren() {
         return ((Boolean)Mutex.EVENT_HYBRID.readAccess(new Mutex.Action() {
             public Object run() {
-                return ph.hasChildren() ? Boolean.TRUE : Boolean.FALSE;
+                return EventHybridLockedPhadhail.super.hasChildren() ? Boolean.TRUE : Boolean.FALSE;
             }
         })).booleanValue();
-    }
-    
-    public void addPhadhailListener(final PhadhailListener l) {
-        Mutex.EVENT_HYBRID.readAccess(new Runnable() {
-            public void run() {
-                synchronized (LISTENER_LOCK) {
-                    if (listeners == null) {
-                        ph.addPhadhailListener(EventHybridLockedPhadhail.this);
-                        listeners = new ArrayList();
-                    }
-                    listeners.add(l);
-                }
-            }
-        });
-    }
-    
-    public void removePhadhailListener(final PhadhailListener l) {
-        Mutex.EVENT_HYBRID.readAccess(new Runnable() {
-            public void run() {
-                synchronized (LISTENER_LOCK) {
-                    if (listeners != null) {
-                        listeners.remove(l);
-                        if (listeners.isEmpty()) {
-                            listeners = null;
-                            ph.removePhadhailListener(EventHybridLockedPhadhail.this);
-                        }
-                    }
-                }
-            }
-        });
     }
     
     public void rename(final String nue) throws IOException {
         try {
             Mutex.EVENT_HYBRID.writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
-                    ph.rename(nue);
+                    EventHybridLockedPhadhail.super.rename(nue);
                     return null;
                 }
             });
@@ -150,7 +92,7 @@ final class EventHybridLockedPhadhail implements Phadhail, PhadhailListener {
         try {
             return (Phadhail)Mutex.EVENT_HYBRID.writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
-                    return forPhadhail(ph.createContainerPhadhail(name));
+                    return EventHybridLockedPhadhail.super.createContainerPhadhail(name);
                 }
             });
         } catch (MutexException e) {
@@ -162,7 +104,7 @@ final class EventHybridLockedPhadhail implements Phadhail, PhadhailListener {
         try {
             return (Phadhail)Mutex.EVENT_HYBRID.writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
-                    return forPhadhail(ph.createLeafPhadhail(name));
+                    return EventHybridLockedPhadhail.super.createLeafPhadhail(name);
                 }
             });
         } catch (MutexException e) {
@@ -174,7 +116,7 @@ final class EventHybridLockedPhadhail implements Phadhail, PhadhailListener {
         try {
             Mutex.EVENT_HYBRID.writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
-                    ph.delete();
+                    EventHybridLockedPhadhail.super.delete();
                     return null;
                 }
             });
@@ -187,7 +129,7 @@ final class EventHybridLockedPhadhail implements Phadhail, PhadhailListener {
         try {
             return (InputStream)Mutex.EVENT_HYBRID.readAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
-                    return ph.getInputStream();
+                    return EventHybridLockedPhadhail.super.getInputStream();
                 }
             });
         } catch (MutexException e) {
@@ -196,11 +138,11 @@ final class EventHybridLockedPhadhail implements Phadhail, PhadhailListener {
     }
     
     public OutputStream getOutputStream() throws IOException {
-        // See comments in LockedPhadhail.getOutputStream.
+        // See comments in AbstractPhadhail.getOutputStream.
         try {
             return (OutputStream)Mutex.EVENT_HYBRID.readAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
-                    return ph.getOutputStream();
+                    return EventHybridLockedPhadhail.super.getOutputStream();
                 }
             });
         } catch (MutexException e) {
@@ -208,36 +150,8 @@ final class EventHybridLockedPhadhail implements Phadhail, PhadhailListener {
         }
     }
     
-    public String toString() {
-        return "EventHybridLockedPhadhail<" + ph + ">";
-    }
-    
-    public void childrenChanged(PhadhailEvent _ev) {
-        Mutex.EVENT_HYBRID.readAccess(new Runnable() {
-            public void run() {
-                if (listeners != null) {
-                    PhadhailEvent ev = PhadhailEvent.create(EventHybridLockedPhadhail.this);
-                    Iterator it = listeners.iterator();
-                    while (it.hasNext()) {
-                        ((PhadhailListener)it.next()).childrenChanged(ev);
-                    }
-                }
-            }
-        });
-    }
-    
-    public void nameChanged(final PhadhailNameEvent _ev) {
-        Mutex.EVENT_HYBRID.readAccess(new Runnable() {
-            public void run() {
-                if (listeners != null) {
-                    PhadhailNameEvent ev = PhadhailNameEvent.create(EventHybridLockedPhadhail.this, _ev.getOldName(), _ev.getNewName());
-                    Iterator it = listeners.iterator();
-                    while (it.hasNext()) {
-                        ((PhadhailListener)it.next()).nameChanged(ev);
-                    }
-                }
-            }
-        });
+    public Mutex mutex() {
+        return Mutex.EVENT_HYBRID;
     }
     
 }

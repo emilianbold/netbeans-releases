@@ -19,78 +19,49 @@ import java.util.*;
 import org.openide.util.Mutex;
 
 /**
- * Similar to DefaultPhadhail but all model methods are locked with a mutex.
- * This is not exactly realistic; a real API would expose the mutex
- * from the Phadhail interface, and the impl would not do the locking,
- * the caller would. But this is a rough approximation.
+ * A phadhail in which all model methods are locked with a plain mutex.
+ * In this variant, the impl acquires locks automatically, though another
+ * style would be to require the client to do this.
  * @author Jesse Glick
  */
-final class LockedPhadhail implements Phadhail, PhadhailListener {
+final class LockedPhadhail extends AbstractPhadhail {
     
     private static final Mutex.Privileged PMUTEX = new Mutex.Privileged();
     static {
         new Mutex("LP", PMUTEX, 0);
     }
     
-    /**
-     * add/removePhadhailListener must be called serially
-     * though they may be called with only a read lock
-     */
-    private static final Object LISTENER_LOCK = new String("LP.LL");
-    
-    private static final Map instances = new WeakHashMap(); // Map<Phadhail,Reference<Phadhail>>
-    
-    /** factory */
-    public static Phadhail forPhadhail(Phadhail _ph) {
-        Reference r = (Reference)instances.get(_ph);
-        Phadhail ph = (r != null) ? (Phadhail)r.get() : null;
-        if (ph == null) {
-            ph = BufferedPhadhail.forPhadhail(new LockedPhadhail(_ph));
-            instances.put(_ph, new WeakReference(ph));
+    private static final Factory FACTORY = new Factory() {
+        public AbstractPhadhail create(File f) {
+            return new LockedPhadhail(f);
         }
-        return ph;
+    };
+    
+    public static Phadhail create(File f) {
+        return forFile(f, FACTORY);
     }
     
-    private final Phadhail ph;
-    private List listeners = null; // List<PhadhailListener>
+    private LockedPhadhail(File f) {
+        super(f);
+    }
     
-    private LockedPhadhail(Phadhail ph) {
-        this.ph = ph;
+    protected Factory factory() {
+        return FACTORY;
     }
     
     public List getChildren() {
-        List phs; // List<Phadhail>
         PMUTEX.enterReadAccess();
         try {
-            phs = ph.getChildren();
+            return super.getChildren();
         } finally {
             PMUTEX.exitReadAccess();
-        }
-        return new LockedChildrenList(phs);
-    }
-    
-    private static final class LockedChildrenList extends AbstractList {
-        private final List orig; // List<Phadhail>
-        private final Phadhail[] kids;
-        public LockedChildrenList(List orig) {
-            this.orig = orig;
-            kids = new Phadhail[orig.size()];
-        }
-        public Object get(int i) {
-            if (kids[i] == null) {
-                kids[i] = forPhadhail((Phadhail)orig.get(i));
-            }
-             return kids[i];
-        }
-        public int size() {
-            return kids.length;
         }
     }
     
     public String getName() {
         PMUTEX.enterReadAccess();
         try {
-            return ph.getName();
+            return super.getName();
         } finally {
             PMUTEX.exitReadAccess();
         }
@@ -99,7 +70,7 @@ final class LockedPhadhail implements Phadhail, PhadhailListener {
     public String getPath() {
         PMUTEX.enterReadAccess();
         try {
-            return ph.getPath();
+            return super.getPath();
         } finally {
             PMUTEX.exitReadAccess();
         }
@@ -108,39 +79,7 @@ final class LockedPhadhail implements Phadhail, PhadhailListener {
     public boolean hasChildren() {
         PMUTEX.enterReadAccess();
         try {
-            return ph.hasChildren();
-        } finally {
-            PMUTEX.exitReadAccess();
-        }
-    }
-    
-    public void addPhadhailListener(PhadhailListener l) {
-        PMUTEX.enterReadAccess();
-        try {
-            synchronized (LISTENER_LOCK) {
-                if (listeners == null) {
-                    ph.addPhadhailListener(this);
-                    listeners = new ArrayList();
-                }
-                listeners.add(l);
-            }
-        } finally {
-            PMUTEX.exitReadAccess();
-        }
-    }
-    
-    public void removePhadhailListener(PhadhailListener l) {
-        PMUTEX.enterReadAccess();
-        try {
-            synchronized (LISTENER_LOCK) {
-                if (listeners != null) {
-                    listeners.remove(l);
-                    if (listeners.isEmpty()) {
-                        listeners = null;
-                        ph.removePhadhailListener(this);
-                    }
-                }
-            }
+            return super.hasChildren();
         } finally {
             PMUTEX.exitReadAccess();
         }
@@ -149,7 +88,7 @@ final class LockedPhadhail implements Phadhail, PhadhailListener {
     public void rename(String nue) throws IOException {
         PMUTEX.enterWriteAccess();
         try {
-            ph.rename(nue);
+            super.rename(nue);
         } finally {
             PMUTEX.exitWriteAccess();
         }
@@ -158,7 +97,7 @@ final class LockedPhadhail implements Phadhail, PhadhailListener {
     public Phadhail createContainerPhadhail(String name) throws IOException {
         PMUTEX.enterWriteAccess();
         try {
-            return forPhadhail(ph.createContainerPhadhail(name));
+            return super.createContainerPhadhail(name);
         } finally {
             PMUTEX.exitWriteAccess();
         }
@@ -167,7 +106,7 @@ final class LockedPhadhail implements Phadhail, PhadhailListener {
     public Phadhail createLeafPhadhail(String name) throws IOException {
         PMUTEX.enterWriteAccess();
         try {
-            return forPhadhail(ph.createLeafPhadhail(name));
+            return super.createLeafPhadhail(name);
         } finally {
             PMUTEX.exitWriteAccess();
         }
@@ -176,7 +115,7 @@ final class LockedPhadhail implements Phadhail, PhadhailListener {
     public void delete() throws IOException {
         PMUTEX.enterWriteAccess();
         try {
-            ph.delete();
+            super.delete();
         } finally {
             PMUTEX.exitWriteAccess();
         }
@@ -185,59 +124,24 @@ final class LockedPhadhail implements Phadhail, PhadhailListener {
     public InputStream getInputStream() throws IOException {
         PMUTEX.enterReadAccess();
         try {
-            return ph.getInputStream();
+            return super.getInputStream();
         } finally {
             PMUTEX.exitReadAccess();
         }
     }
     
     public OutputStream getOutputStream() throws IOException {
-        // Yes, read access - for the sake of the demo, currently Phadhail.getOutputStream
-        // is not considered a mutator method (fires no changes); this would be different
-        // if PhadhailListener included a content change event.
-        // That would be trickier because then you would need to acquire the write mutex
-        // when opening the stream but release it when closing the stream (*not* when
-        // returning it to the caller).
+        // See comment in AbstractPhadhail re. use of read access.
         PMUTEX.enterReadAccess();
         try {
-            return ph.getOutputStream();
+            return super.getOutputStream();
         } finally {
             PMUTEX.exitReadAccess();
         }
     }
     
-    public String toString() {
-        return "LockedPhadhail<" + ph + ">";
-    }
-    
-    public void childrenChanged(PhadhailEvent ev) {
-        PMUTEX.enterReadAccess();
-        try {
-            if (listeners != null) {
-                ev = PhadhailEvent.create(this);
-                Iterator it = listeners.iterator();
-                while (it.hasNext()) {
-                    ((PhadhailListener)it.next()).childrenChanged(ev);
-                }
-            }
-        } finally {
-            PMUTEX.exitReadAccess();
-        }
-    }
-    
-    public void nameChanged(PhadhailNameEvent ev) {
-        PMUTEX.enterReadAccess();
-        try {
-            if (listeners != null) {
-                ev = PhadhailNameEvent.create(this, ev.getOldName(), ev.getNewName());
-                Iterator it = listeners.iterator();
-                while (it.hasNext()) {
-                    ((PhadhailListener)it.next()).nameChanged(ev);
-                }
-            }
-        } finally {
-            PMUTEX.exitReadAccess();
-        }
+    public Mutex mutex() {
+        return PMUTEX.getMutex();
     }
     
 }

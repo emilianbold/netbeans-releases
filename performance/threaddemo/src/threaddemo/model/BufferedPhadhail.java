@@ -16,6 +16,7 @@ package threaddemo.model;
 import java.io.*;
 import java.lang.ref.*;
 import java.util.*;
+import org.openide.util.Mutex;
 
 /**
  * Wraps a plain Phadhail and buffers its list of children.
@@ -156,6 +157,10 @@ final class BufferedPhadhail implements Phadhail, PhadhailListener {
     
     public String toString() {
         return "BufferedPhadhail<" + ph + ">@" + Integer.toHexString(System.identityHashCode(this));
+    }
+    
+    public Mutex mutex() {
+        return ph.mutex();
     }
     
 }

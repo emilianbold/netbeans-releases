@@ -13,6 +13,7 @@
 
 package threaddemo.model;
 
+import java.awt.EventQueue;
 import java.io.*;
 import java.lang.ref.*;
 import java.util.*;
@@ -38,6 +39,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     
     /** factory */
     public static Phadhail forPhadhail(Phadhail _ph) {
+        assert EventQueue.isDispatchThread();
         Reference r = (Reference)instances.get(_ph);
         Phadhail ph = (r != null) ? (Phadhail)r.get() : null;
         if (ph == null) {
@@ -61,6 +63,8 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     }
     
     private void fireNameChanged() {
+        assert EventQueue.isDispatchThread();
+        // XXX synch on listeners to get them, then release
         if (listeners != null) {
             PhadhailNameEvent ev = PhadhailNameEvent.create(this, null, null);
             Iterator it = listeners.iterator();
@@ -73,6 +77,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     }
     
     private String getNameOrPath(boolean p) {
+        assert EventQueue.isDispatchThread();
         if ((p ? path : name) != null) {
             //System.err.println("cached name for " + this);
             return (p ? path : name);
@@ -110,6 +115,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     }
     
     private Phadhail createPhadhail(final String name, final boolean container) throws IOException {
+        assert EventQueue.isDispatchThread();
         Phadhail orig;
         try {
             orig = (Phadhail)Worker.block(new Mutex.ExceptionAction() {
@@ -124,7 +130,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {
-            throw new IllegalStateException(e.toString());
+            throw new Error(e);
         }
         return forPhadhail(orig);
     }
@@ -138,6 +144,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     }
     
     public void rename(final String nue) throws IOException {
+        assert EventQueue.isDispatchThread();
         try {
             Worker.block(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
@@ -148,11 +155,12 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {
-            throw new IllegalStateException(e.toString());
+            assert false : e;
         }
     }
     
     public void delete() throws IOException {
+        assert EventQueue.isDispatchThread();
         try {
             Worker.block(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
@@ -163,11 +171,13 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {
-            throw new IllegalStateException(e.toString());
+            assert false : e;
         }
     }
     
     private void fireChildrenChanged() {
+        assert EventQueue.isDispatchThread();
+        // XXX synch on listeners to get them, then release
         if (listeners != null) {
             //System.err.println("fireChildrenChanged");
             PhadhailEvent ev = PhadhailEvent.create(this);
@@ -179,21 +189,17 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     }
     
     public List getChildren() {
+        assert EventQueue.isDispatchThread();
         if (children != null) {
-            //System.err.println("cached children");
             return children;
         } else {
-            //System.err.println("no cached children");
             if (!computingChildren) {
-                //System.err.println("computing children");
                 computingChildren = true;
                 Worker.start(new Runnable() {
                     public void run() {
-                        //System.err.println("getting children");
                         final List ch = ph.getChildren();
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
-                                //System.err.println("posting children");
                                 children = new SwungChildrenList(ch);
                                 computingChildren = false;
                                 fireChildrenChanged();
@@ -214,17 +220,20 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
             kids = new Phadhail[orig.size()];
         }
         public Object get(int i) {
+            assert EventQueue.isDispatchThread();
             if (kids[i] == null) {
                 kids[i] = forPhadhail((Phadhail)orig.get(i));
             }
              return kids[i];
         }
         public int size() {
+            assert EventQueue.isDispatchThread();
             return kids.length;
         }
     }
     
     public InputStream getInputStream() throws IOException {
+        assert EventQueue.isDispatchThread();
         try {
             return (InputStream)Worker.block(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
@@ -234,11 +243,12 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {
-            throw new IllegalStateException(e.toString());
+            throw new Error(e);
         }
     }
     
     public OutputStream getOutputStream() throws IOException {
+        assert EventQueue.isDispatchThread();
         try {
             return (OutputStream)Worker.block(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
@@ -248,11 +258,12 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {
-            throw new IllegalStateException(e.toString());
+            throw new Error(e);
         }
     }
     
     public boolean hasChildren() {
+        assert EventQueue.isDispatchThread();
         //System.err.println("hasChildren on " + this);
         if (leaf == null) {
             //System.err.println("not cached");
@@ -267,7 +278,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
         return !leaf.booleanValue();
     }
     
-    public void addPhadhailListener(PhadhailListener l) {
+    public synchronized void addPhadhailListener(PhadhailListener l) {
         if (listeners == null) {
             listeners = new ArrayList();
             Worker.start(new Runnable() {
@@ -279,7 +290,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
         listeners.add(l);
     }
     
-    public void removePhadhailListener(PhadhailListener l) {
+    public synchronized void removePhadhailListener(PhadhailListener l) {
         if (listeners != null && listeners.remove(l) && listeners.isEmpty()) {
             listeners = null;
             Worker.start(new Runnable() {
@@ -314,6 +325,10 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
                 fireNameChanged();
             }
         });
+    }
+    
+    public Mutex mutex() {
+        return Mutex.EVENT;
     }
     
 }

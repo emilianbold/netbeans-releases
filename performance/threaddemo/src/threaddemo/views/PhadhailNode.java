@@ -49,10 +49,12 @@ final class PhadhailNode extends AbstractNode implements PhadhailListener, Phadh
     }
     
     public void childrenChanged(PhadhailEvent ev) {
+        assert ev.getPhadhail().mutex().canRead();
         ((PhadhailChildren)getChildren()).update();
     }
     
     public void nameChanged(PhadhailNameEvent ev) {
+        assert ev.getPhadhail().mutex().canRead();
         fireNameChange(ev.getOldName(), ev.getNewName());
         fireDisplayNameChange(null, ev.getPhadhail().getPath());
     }

@@ -20,6 +20,7 @@ import org.netbeans.spi.looks.*;
 import org.openide.actions.*;
 import org.openide.cookies.*;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import threaddemo.model.*;
@@ -204,12 +205,12 @@ final class PhadhailLook extends Look implements PhadhailListener, PhadhailEdito
     }
     
     public void childrenChanged(PhadhailEvent ev) {
-        if (!java.awt.EventQueue.isDispatchThread()) throw new IllegalStateException();
+        assert ev.getPhadhail().mutex().canRead();
         refreshChildren(ev.getPhadhail());
     }
     
     public void nameChanged(PhadhailNameEvent ev) {
-        if (!java.awt.EventQueue.isDispatchThread()) throw new IllegalStateException();
+        assert ev.getPhadhail().mutex().canRead();
         fireNameChange(ev.getPhadhail(), ev.getOldName(), ev.getNewName());
         fireDisplayNameChange(ev.getPhadhail(), ev.getOldName(), ev.getNewName());
     }
