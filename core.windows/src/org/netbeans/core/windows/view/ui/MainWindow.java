@@ -19,13 +19,11 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.text.Format;
 import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.Locale;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -208,17 +206,10 @@ public final class MainWindow extends JFrame {
         }
     }
     
+    private static final String ICON_SMALL = "org/netbeans/core/resources/frames/ide.gif"; // NOI18N
+    private static final String ICON_BIG = "org/netbeans/core/resources/frames/ide32.gif"; // NOI18N
     static Image createIDEImage() {
-        return Toolkit.getDefaultToolkit ().getImage (
-                NbBundle.getLocalizedFile(
-                        "org.netbeans.core.resources.frames.ide" // NOI18N
-                            + (org.openide.util.Utilities.isLargeFrameIcons()
-                                ? "32" : ""), // NOI18N
-                        "gif", // NOI18N
-                        Locale.getDefault(),
-                        MainWindow.class.getClassLoader()
-            )
-        );
+        return Utilities.loadImage(Utilities.isLargeFrameIcons() ? ICON_BIG : ICON_SMALL, true);
     }
     
     private void initListeners() {
