@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.editor.options;
 
+import org.openide.util.Task;
 import org.openide.loaders.FolderInstance;
 import org.openide.cookies.InstanceCookie;
 import java.lang.ClassNotFoundException;
@@ -26,6 +27,11 @@ import java.lang.String;
 import org.openide.filesystems.FileObject;
 import org.netbeans.editor.AnnotationType;
 import java.util.Iterator;
+import org.netbeans.editor.AnnotationTypes;
+import org.w3c.dom.*;
+import org.openide.xml.XMLUtil;
+import org.openide.filesystems.FileLock;
+import java.lang.Exception;
 
 /** Representation of the "Editors/AnnotationTypes" folder. All
  * instances created through the createInstance() method are
@@ -40,7 +46,7 @@ import java.util.Iterator;
  */
 public class AnnotationTypesFolder extends FolderInstance{
     
-    /** folder for itutor options XML files */
+    /** folder for annotation type XML files */
     private static final String FOLDER = "Editors/AnnotationTypes";
     
     /** instance of this class */
@@ -93,9 +99,75 @@ public class AnnotationTypesFolder extends FolderInstance{
         }
         
         // set all these types to AnnotationType static member
-        AnnotationType.setTypes(annotationTypes);
+        AnnotationTypes.getTypes().setTypes(annotationTypes);
         
         return null;
     }
 
+    /** Save changed AnnotationType */
+    public void saveAnnotationType(AnnotationType type) {
+
+        FileObject fo = (FileObject)type.getProp(AnnotationType.PROP_FILE);
+
+        Document doc = XMLUtil.createDocument(AnnotationTypeProcessor.TAG_TYPE, null, AnnotationTypeProcessor.DTD_PUBLIC_ID, AnnotationTypeProcessor.DTD_SYSTEM_ID);
+        Element typeElem = doc.getDocumentElement();
+
+        typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_NAME, type.getName());
+        if (type.getProp(AnnotationType.PROP_LOCALIZING_BUNDLE) != null)
+            typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_LOCALIZING_BUNDLE, (String)type.getProp(AnnotationType.PROP_LOCALIZING_BUNDLE));
+        if (type.getProp(AnnotationType.PROP_DESCRIPTION_KEY) != null)
+            typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_DESCRIPTION_KEY, (String)type.getProp(AnnotationType.PROP_DESCRIPTION_KEY));
+        typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_VISIBLE, type.isVisible() ? "true" : "false"); // NOI18N
+        typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_TYPE, type.isWholeLine() ? "line" : "linepart"); // NOI18N
+        if (type.getProp(AnnotationType.PROP_GLYPH_URL) != null)
+            typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_GLYPH, type.getGlyph().toExternalForm());
+        if (type.getProp(AnnotationType.PROP_HIGHLIGHT_COLOR) != null)
+            typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_HIGHLIGHT, "0x"+Integer.toHexString(type.getHighlight().getRGB() & 0x00FFFFFF));
+        if (type.getProp(AnnotationType.PROP_FOREGROUND_COLOR) != null)
+            typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_FOREGROUND, "0x"+Integer.toHexString(type.getForegroundColor().getRGB() & 0x00FFFFFF));
+        if (type.getProp(AnnotationType.PROP_ACTIONS_FOLDER) != null)
+            typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_ACTIONS, (String)type.getProp(AnnotationType.PROP_ACTIONS_FOLDER));
+        
+        if (type.getCombinations() != null) {
+            
+            Element combsElem = doc.createElement(AnnotationTypeProcessor.TAG_COMBINATION);
+            combsElem.setAttribute(AnnotationTypeProcessor.ATTR_COMBINATION_TIPTEXT_KEY, (String)type.getProp(AnnotationType.PROP_COMBINATION_TOOLTIP_TEXT_KEY));
+            if (type.getProp(AnnotationType.PROP_COMBINATION_ORDER) != null)
+                combsElem.setAttribute(AnnotationTypeProcessor.ATTR_COMBINATION_ORDER, ""+type.getCombinationOrder());
+            if (type.getProp(AnnotationType.PROP_COMBINATION_MINIMUM_OPTIONALS) != null)
+                combsElem.setAttribute(AnnotationTypeProcessor.ATTR_COMBINATION_MIN_OPTIONALS, ""+type.getMinimumOptionals());
+
+            typeElem.appendChild(combsElem);
+
+            AnnotationType.CombinationMember[] combs = type.getCombinations();
+            for (int i=0; i < combs.length; i++) {
+                Element combElem = doc.createElement(AnnotationTypeProcessor.TAG_COMBINE);
+                combElem.setAttribute(AnnotationTypeProcessor.ATTR_COMBINE_ANNOTATIONTYPE, combs[i].getName());
+                combElem.setAttribute(AnnotationTypeProcessor.ATTR_COMBINE_ABSORBALL, combs[i].isAbsorbAll() ? "true" : "false"); // NOI18N
+                combElem.setAttribute(AnnotationTypeProcessor.ATTR_COMBINE_OPTIONAL, combs[i].isOptional() ? "true" : "false"); // NOI18N
+                if (combs[i].getMinimumCount() > 0)
+                    combElem.setAttribute(AnnotationTypeProcessor.ATTR_COMBINE_MIN, ""+combs[i].getMinimumCount()); 
+                combsElem.appendChild(combElem);
+            }
+        }
+        
+        doc.getDocumentElement().normalize();
+        
+        try{
+            FileLock lock = fo.lock();
+            try {
+                XMLUtil.write(doc, fo.getOutputStream(lock), null);
+            } catch (Exception ex){
+                if( Boolean.getBoolean( "netbeans.debug.exceptions" ) )
+                    ex.printStackTrace();
+            } finally {
+                lock.releaseLock();
+            }
+        }catch (IOException ex){
+            if( Boolean.getBoolean( "netbeans.debug.exceptions" ) )
+                ex.printStackTrace();
+        }
+        
+    }
+    
 }

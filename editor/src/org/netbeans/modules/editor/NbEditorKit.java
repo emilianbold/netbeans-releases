@@ -287,6 +287,10 @@ public class NbEditorKit extends ExtKit {
 
         static final long serialVersionUID =-6305740718286540539L;
 
+        public NbGotoNextBookmarkAction() {
+            super(null, false);
+        }
+        
         public NbGotoNextBookmarkAction(String nm, boolean select) {
             super(nm, select);
         }

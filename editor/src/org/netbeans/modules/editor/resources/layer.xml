@@ -63,7 +63,11 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="AnnotationTypes">
             <file name="bookmark.xml" url="AnnotationTypes/bookmark.xml"/>
-      </folder>
+            <folder name="BookmarkActions">
+              <file name="org-netbeans-modules-editor-NbEditorKit$NbToggleBookmarkAction.instance" />
+              <file name="org-netbeans-modules-editor-NbEditorKit$NbGotoNextBookmarkAction.instance" />
+            </folder>
+        </folder>
     </folder>
 
 <!--

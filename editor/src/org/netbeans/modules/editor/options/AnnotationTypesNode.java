@@ -26,6 +26,10 @@ import java.util.Iterator;
 import java.beans.IntrospectionException;
 import org.openide.util.NbBundle;
 import java.util.ResourceBundle;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
+import org.netbeans.editor.AnnotationTypes;
+import java.lang.Boolean;
 
 /** Node representing the Annotation Types in Options window.
  *
@@ -37,11 +41,13 @@ public class AnnotationTypesNode extends AbstractNode {
     private static final String HELP_ID = "editing.annotationtypes"; // !!! NOI18N
     private static final String ICON_BASE = "/org/netbeans/modules/editor/resources/annotationtypes"; // NOI18N
     
+    private ResourceBundle bundle;
+    
     /** Creates new AnnotationTypesNode */
     public AnnotationTypesNode() {
         super(new AnnotationTypesSubnodes ());
         setName("annotationtypes"); // NOI18N
-        ResourceBundle bundle = NbBundle.getBundle(AnnotationTypesNode.class);
+        bundle = NbBundle.getBundle(AnnotationTypesNode.class);
         setDisplayName(bundle.getString("ATN_AnnotationTypesNode_Name"));
         setShortDescription (bundle.getString ("ATN_AnnotationTypesNode_Description"));
         setIconBase (ICON_BASE);
@@ -56,6 +62,65 @@ public class AnnotationTypesNode extends AbstractNode {
                    SystemAction.get (PropertiesAction.class),
                };
     }
+
+    /** Create properties sheet */
+    protected Sheet createSheet() {
+        Sheet sheet = super.createSheet();
+        
+        Sheet.Set ps = new Sheet.Set();
+        ps.setName(Sheet.PROPERTIES);
+        
+        ps.put(createProperty(AnnotationTypes.PROP_BACKGROUND_DRAWING, boolean.class)); //NOI18N
+        ps.put(createProperty(AnnotationTypes.PROP_BACKGROUND_GLYPH_ALPHA, int.class)); //NOI18N
+        ps.put(createProperty(AnnotationTypes.PROP_COMBINE_GLYPHS, boolean.class));    //NOI18N
+        ps.put(createProperty(AnnotationTypes.PROP_GLYPHS_OVER_LINE_NUMBERS, boolean.class));    //NOI18N
+        sheet.put(ps);
+        
+        return sheet;
+    }
+    
+    /** Create PropertySupport for given property name and class */
+    private PropertySupport createProperty(final String name, final Class clazz) {
+        return new PropertySupport.ReadWrite(name, clazz,
+            bundle.getString("PROP_" + name),    //NOI18N
+            bundle.getString("HINT_" + name)) {  //NOI18N
+            public Object getValue() {
+                return getProperty(name);
+            }
+            public void setValue(Object value) {
+                setProperty(name, value);
+            }
+            public boolean supportsDefaultValue() {
+                return false;
+            }
+        };
+    }
+
+    /** General setter */
+    private void setProperty(String property, Object value) {
+        if (property.equals(AnnotationTypes.PROP_BACKGROUND_DRAWING))
+            AnnotationTypes.getTypes().setBackgroundDrawing((Boolean)value);
+        if (property.equals(AnnotationTypes.PROP_BACKGROUND_GLYPH_ALPHA))
+            AnnotationTypes.getTypes().setBackgroundGlyphAlpha(((Integer)value).intValue());
+        if (property.equals(AnnotationTypes.PROP_COMBINE_GLYPHS))
+            AnnotationTypes.getTypes().setCombineGlyphs((Boolean)value);
+        if (property.equals(AnnotationTypes.PROP_GLYPHS_OVER_LINE_NUMBERS))
+            AnnotationTypes.getTypes().setGlyphsOverLineNumbers((Boolean)value);
+    }
+
+    /** General getter*/
+    private Object getProperty(String property) {
+        if (property.equals(AnnotationTypes.PROP_BACKGROUND_DRAWING))
+            return AnnotationTypes.getTypes().isBackgroundDrawing();
+        if (property.equals(AnnotationTypes.PROP_BACKGROUND_GLYPH_ALPHA))
+            return AnnotationTypes.getTypes().getBackgroundGlyphAlpha();
+        if (property.equals(AnnotationTypes.PROP_COMBINE_GLYPHS))
+            return AnnotationTypes.getTypes().isCombineGlyphs();
+        if (property.equals(AnnotationTypes.PROP_GLYPHS_OVER_LINE_NUMBERS))
+            return AnnotationTypes.getTypes().isGlyphsOverLineNumbers();
+        
+        return null;
+    }
     
     /** Class representing subnodes of AnnotationType node.*/
     private static class AnnotationTypesSubnodes extends Children.Array {
@@ -65,7 +130,7 @@ public class AnnotationTypesNode extends AbstractNode {
             
             AnnotationTypesFolder folder = AnnotationTypesFolder.getAnnotationTypesFolder();
 
-            Iterator types = AnnotationType.getAnnotationTypeNames();
+            Iterator types = AnnotationTypes.getTypes().getAnnotationTypeNames();
 
             java.util.List list = new java.util.LinkedList();
 
@@ -74,7 +139,7 @@ public class AnnotationTypesNode extends AbstractNode {
 
             for( ; types.hasNext(); ) {
                 String name = (String)types.next();
-                AnnotationType type = AnnotationType.getType(name);
+                AnnotationType type = AnnotationTypes.getTypes().getType(name);
                 if (!type.isVisible())
                     continue;
                 try {

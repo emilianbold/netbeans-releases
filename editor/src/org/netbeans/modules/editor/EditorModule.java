@@ -60,6 +60,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.SharedClassObject;
 import org.openide.util.WeakListener;
 import org.openide.windows.TopComponent;
+import org.netbeans.editor.AnnotationTypes;
 
 
 /**
@@ -94,9 +95,12 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
         DialogSupport.setDialogFactory( new NbDialogSupport() );
         
         // register loader for annotation types
-        AnnotationType.registerLoader( new AnnotationType.Loader() {
+        AnnotationTypes.getTypes().registerLoader( new AnnotationTypes.Loader() {
                 public void load() {
                     AnnotationTypesFolder.getAnnotationTypesFolder();
+                }
+                public void saveType(AnnotationType type) {
+                    AnnotationTypesFolder.getAnnotationTypesFolder().saveAnnotationType(type);
                 }
             } );
 
