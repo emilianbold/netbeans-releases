@@ -7,15 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
-import java.awt.Dialog;
 import java.awt.Dimension;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -26,25 +24,22 @@ import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
-
-
-/** Accessory component used in the ProjectChooser for choosing project
+/**
+ * Accessory component used in the ProjectChooser for choosing project
  * artifacts.
- *
- * @author  phrebejk
+ * @author Petr Hrebejk
  */
-public class AntArtifactChooser extends javax.swing.JPanel implements PropertyChangeListener {
+public class AntArtifactChooser extends JPanel implements PropertyChangeListener {
     
     // XXX to become an array later
     private String artifactType;
@@ -111,39 +106,40 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
     }//GEN-END:initComponents
     
     
-    public void propertyChange( PropertyChangeEvent e ) {
-        
-        if ( JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals( e.getPropertyName() ) ) {             
+    public void propertyChange(PropertyChangeEvent e) {
+        if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(e.getPropertyName())) {
             // We have to update the Accessory
-            JFileChooser chooser = (JFileChooser)e.getSource();
-            File dir = chooser.getSelectedFile();
-            dir = FileUtil.normalizeFile (dir);
-            DefaultListModel spListModel = (DefaultListModel)jListArtifacts.getModel();
-            
-            Project project = getProject( dir );
-            populateAccessory( project );                                    
+            JFileChooser chooser = (JFileChooser) e.getSource();
+            File dir = chooser.getSelectedFile(); // may be null (#46744)
+            Project project = getProject(dir); // may be null
+            populateAccessory(project);
         }
     }
     
     private Project getProject( File projectDir ) {
         
-        try {            
-            projectDir = FileUtil.normalizeFile (projectDir);
-            FileObject fo = FileUtil.toFileObject(projectDir);
-            
-            if (fo != null) {
-                Project project = ProjectManager.getDefault().findProject(fo);
-                return project;
-            }
+        if (projectDir == null) { // #46744
+            return null;
         }
-        catch ( IOException e ) {
+        
+        try {            
+            File normProjectDir = FileUtil.normalizeFile(projectDir);
+            FileObject fo = FileUtil.toFileObject(normProjectDir);
+            if (fo != null) {
+                return ProjectManager.getDefault().findProject(fo);
+            }
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             // Return null
         }
         
         return null;
     }    
     
-    
+    /**
+     * Set up GUI fields according to the requested project.
+     * @param project a subproject, or null
+     */
     private void populateAccessory( Project project ) {
         
         DefaultListModel model = (DefaultListModel)jListArtifacts.getModel();
