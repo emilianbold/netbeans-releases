@@ -109,13 +109,13 @@ public class TestTypeSettingsStepOperator extends NewWizardOperator {
 
     /** clicks on "SDI (Multiple Smaller Windows Mode)" JRadioButton
      */
-    public void sDI() {
+    public void setSDI() {
         rbSDI().push();
     }
 
     /** clicks on "MDI (Full Screen Mode)" JRadioButton
      */
-    public void mDI() {
+    public void setMDI() {
         rbMDI().push();
     }
 

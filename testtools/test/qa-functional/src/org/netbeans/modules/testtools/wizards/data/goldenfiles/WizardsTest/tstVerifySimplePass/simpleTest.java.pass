@@ -1,0 +1,52 @@
+/*
+ * simpleTest.java
+ *
+ */
+
+package mypackage1.mypackage2.mypackage3;
+
+import java.io.IOException;
+import java.io.PrintStream;
+
+import junit.framework.*;
+import org.netbeans.junit.*;
+
+/** JUnit test suite with Jemmy support
+ *
+ * @version 1.0
+ */
+public class simpleTest extends NbTestCase {
+    
+    /** constructor required by JUnit
+     * @param testName method name to be used as testcase
+     */
+    public simpleTest(String testName) {
+        super(testName);
+    }
+    
+    /** method used for explicit testsuite definition
+     */
+    public static junit.framework.Test suite() {
+        TestSuite suite = new NbTestSuite();
+        return suite;
+    }
+    
+    
+    /** method called before each testcase
+     */
+    protected void setUp() throws IOException {
+    }
+    
+    /** method called after each testcase<br>
+     * resets Jemmy WaitComponentTimeout
+     */
+    protected void tearDown() {
+    }
+    
+    /** Use for internal test execution inside IDE
+     * @param args command line arguments
+     */
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }
+}

@@ -1,0 +1,76 @@
+/*
+ * myTestSuite.java
+ *
+ */
+
+package test;
+
+import java.io.PrintStream;
+
+import junit.framework.TestSuite;
+import org.netbeans.junit.NbTestSuite;
+
+import org.netbeans.jemmy.operators.*;
+import org.netbeans.jellytools.*;
+
+/** JUnit test suite with Jemmy support
+ *
+ * @version 1.0
+ */
+public class myTestSuite extends JellyTestCase {
+    
+    /** constructor required by JUnit
+     * @param testName method name to be used as testcase
+     */
+    public myTestSuite(String testName) {
+        super(testName);
+    }
+    
+    /** method used for explicit testsuite definition
+     */
+    public static junit.framework.Test suite() {
+        TestSuite suite = new NbTestSuite();
+        suite.addTest(new myTestSuite("myMethod1"));
+        suite.addTest(new myTestSuite("myMethod2"));
+        return suite;
+    }
+    
+    
+    /** method called before each testcase
+     */
+    protected void setUp() {
+    }
+    
+    /** method called after each testcase
+     */
+    protected void tearDown() {
+    }
+    
+    /** Use for internal test execution inside IDE
+     * @param args command line arguments
+     */
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }
+    
+    /** simple test case
+     *
+     */
+    public void myMethod1() {
+        
+        // place test case body here
+        
+    }
+    
+    /** test case with golden file
+     *
+     */
+    public void myMethod2() {
+        PrintStream ref = getRef();
+        
+        // place test case body here
+        
+        compareReferenceFiles();
+    }
+    
+}

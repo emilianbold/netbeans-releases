@@ -187,13 +187,13 @@ public class TestBagSettingsStepOperator extends NewWizardOperator {
 
     /** clicks on "IDE" JRadioButton
      */
-    public void iDE() {
+    public void setIDE() {
         rbIDE().push();
     }
 
     /** clicks on "Code" JRadioButton
      */
-    public void code() {
+    public void setCode() {
         rbCode().push();
     }
 

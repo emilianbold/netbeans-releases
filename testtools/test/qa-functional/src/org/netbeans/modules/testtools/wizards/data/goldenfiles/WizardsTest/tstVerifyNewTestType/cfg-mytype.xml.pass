@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mconfig name="mytype Test Type Config">
+
+    <!-- testbag with all tests running in code mode (i.e. in standard JVM)
+         use ant runtests -Dxtest.attribs=stable,code to run this testbag  -->
+	<testbag compiler="default-compiler" executor="ide" name="myname" testattribs="myattributes">
+ 		<testset dir="mytype/src">
+			<patternset>
+				<include name="myexecinclude"/>
+				<exclude name="myexecexclude"/>
+ 			</patternset>
+ 		</testset>
+	</testbag>
+
+    <!-- code excecutor - use this one if you plan to run your tests in standard 
+                          JVM. You can also write your own executor, which will 
+                          then call this one. It is handy when some servers (e.g. rmi registry)
+                          have to be started before tests are run and stopped after
+                          the run. -->
+	<executor antfile="build-mytype.xml" name="code" target="runcodetest"/> 
+    
+    <!-- ide executor - use this one if you plan to run your tests inside IDE (internally).
+                        Similarly as with code executor, you can create your own to 
+                        prepare some neccessary stuff before running tests. -->
+	<executor antfile="build-mytype.xml" name="ide" target="runidetest"/> 
+
+	<compiler antfile="build-mytype.xml" default="true" name="default-compiler" target="default-compiler"/>
+
+    <!-- standard results processor - currently there is only one results processor in XTest -->    
+	<resultsprocessor antfile="build.xml" default="true" name="default-results-processor" target="test_report"/> 
+
+</mconfig>
