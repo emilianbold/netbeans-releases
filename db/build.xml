@@ -90,10 +90,12 @@ Microsystems, Inc. All Rights Reserved.
       <exclude name="JavaHelpSearch2/"/>
       <exclude name="credits.html"/>
     </jhindexer>
+    <mkdir dir="javahelp/org/netbeans/modules/usersguide"/>
+    <copy file="../usersguide/javahelp/org/netbeans/modules/usersguide/ide.css" tofile="javahelp/org/netbeans/modules/usersguide/ide.css"/>
     <mkdir dir="netbeans/modules/docs"/>
     <locjar jarfile="netbeans/modules/docs/db.jar"
             compress="true">
-      <fileset dir="javahelp" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="javahelp" excludesfile="../nbbuild/standard-jar-excludes.txt" excludes="org/netbeans/modules/usersguide/"/>
       <locale name="ja"/>
     </locjar>
   </target>
@@ -129,6 +131,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="Info"/>
     <delete dir="javahelp/org/netbeans/modules/db/docs/JavaHelpSearch"/>
     <delete dir="javahelp/org/netbeans/modules/db/docs/ja/JavaHelpSearch"/>
+    <delete dir="javahelp/org/netbeans/modules/usersguide"/>
   </target>
 
 </project>
