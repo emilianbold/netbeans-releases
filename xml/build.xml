@@ -21,6 +21,8 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef  name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext_root}/nbantext.jar"/>
     <property name="submodules" value="tax, core, catalog, tools, text-edit, tree-edit, css"/>
 
+    <property name="build.compiler.debug" value="on"/>
+
 
     <target name="init">
         <tstamp/>

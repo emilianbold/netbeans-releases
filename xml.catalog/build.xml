@@ -32,6 +32,8 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="genjavadoc" classname="org.netbeans.nbbuild.GenerateJavadoc" classpath="${nbext_root}/nbantext.jar"/>
 
+    <property name="build.compiler.debug" value="on"/>
+
 
     <target name="init">
         <tstamp/>
