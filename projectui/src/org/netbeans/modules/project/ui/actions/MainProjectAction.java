@@ -163,6 +163,7 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
                     NbBundle.getMessage(NoMainProjectWarning.class, "CTL_NoMainProjectWarning_Title") :
                     Actions.cutAmpersand(action),
             true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
+        desc.setMessageType (DialogDescriptor.INFORMATION_MESSAGE);
         Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
         dlg.setVisible (true);
         if (desc.getValue() != options[0]) {

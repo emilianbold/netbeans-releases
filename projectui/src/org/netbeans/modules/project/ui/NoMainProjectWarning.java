@@ -37,9 +37,12 @@ public class NoMainProjectWarning extends JPanel {
     public NoMainProjectWarning (Project[] projects) {
         initComponents();
         // add MainClassChooser
-        //jList1.setPrototypeCellValue("01234567890123456789012340123456789");      //NOI18N
-        jList1.setModel(new ProjectsListModel (projects));
+        ProjectsListModel model = new ProjectsListModel (projects);
+        jList1.setModel (model);
         jList1.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
+        if (model.getSize () > 0) {
+            jList1.setSelectedIndex (0);
+        }
         jList1.setCellRenderer(new ProjectsRenderer ());
         jList1.addListSelectionListener (new ListSelectionListener () {
             public void valueChanged (ListSelectionEvent evt) {
@@ -113,7 +116,7 @@ public class NoMainProjectWarning extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 2, 12);
         add(jLabel2, gridBagConstraints);
 
         jScrollPane2.setMinimumSize(new java.awt.Dimension(100, 200));
