@@ -35,6 +35,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         
         sourceRoots.setModel( uiProperties.SOURCE_ROOTS_MODEL );
         testRoots.setModel( uiProperties.TEST_ROOTS_MODEL );
+        sourceRoots.getTableHeader().setReorderingAllowed(false);
+        testRoots.getTableHeader().setReorderingAllowed(false);
         
         FileObject projectFolder = uiProperties.getProject().getProjectDirectory();
         File pf = FileUtil.toFile( projectFolder );
