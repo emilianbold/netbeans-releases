@@ -72,15 +72,23 @@ public class ThreadsNodeModel implements NodeModel {
         } else
         if (o instanceof JPDAThread) {
             if (debugger.getCurrentThread () == o)
-                return "<html><b>" + ((JPDAThread) o).getName () + 
-                    "</b></html>";
+                return BoldVariablesTableModelFilterFirst.toHTML (
+                    ((JPDAThread) o).getName (),
+                    true,
+                    false,
+                    null
+                );
             else
                 return ((JPDAThread) o).getName ();
         } else
         if (o instanceof JPDAThreadGroup) {
             if (isCurrent ((JPDAThreadGroup) o))
-                return "<html><b>" + ((JPDAThreadGroup) o).getName () + 
-                    "</b></html>";
+                return BoldVariablesTableModelFilterFirst.toHTML (
+                    ((JPDAThreadGroup) o).getName (),
+                    true,
+                    false,
+                    null
+                );
             else
                 return ((JPDAThreadGroup) o).getName ();
         } else 

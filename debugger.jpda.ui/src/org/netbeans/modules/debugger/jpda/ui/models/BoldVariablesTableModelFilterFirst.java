@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.awt.Color;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -100,10 +101,36 @@ Constants {
                  oldValue.equals (value)
             )   return value;
             map.put (variable, value);
-            return "<html><b><font color=ff0000>" + value + "</font></b></html>";
+            return toHTML (value, true, false, Color.red);
         } else {
             map.put (variable, value);
             return value;
         }
+    }
+    
+    public static String toHTML (
+        String text,
+        boolean bold,
+        boolean italics,
+        Color color
+    ) {
+        StringBuffer sb = new StringBuffer ();
+        sb.append ("<html>");
+        if (bold) sb.append ("<b>");
+        if (italics) sb.append ("<i>");
+        if (color != null) {
+            sb.append ("<font color=");
+            sb.append (Integer.toHexString ((color.getRGB () & 0xffffff)));
+            sb.append (">");
+        }
+        text = text.replace ("&", "&amp;");
+        text = text.replace ("<", "&lt;");
+        text = text.replace (">", "&gt;");
+        sb.append (text);
+        if (color != null) sb.append ("</font>");
+        if (italics) sb.append ("</i>");
+        if (bold) sb.append ("</b>");
+        sb.append ("</html>");
+        return sb.toString ();
     }
 }

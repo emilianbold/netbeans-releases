@@ -65,8 +65,13 @@ public class CallStackNodeModel implements NodeModel {
             CallStackFrame ccsf = debugger.getCurrentCallStackFrame ();
             if ( (ccsf != null) && 
                  (ccsf.equals (sf)) 
-            ) return "<html><b>" + getCSFName (session, sf, false) + 
-                "</b></html>";
+            ) 
+                return BoldVariablesTableModelFilterFirst.toHTML (
+                    getCSFName (session, sf, false),
+                    true,
+                    false,
+                    null
+                );
             return getCSFName (session, sf, false);
         } else
         throw new UnknownTypeException (o);
@@ -125,17 +130,7 @@ public class CallStackNodeModel implements NodeModel {
         for (i = 0; i < k; i++)
             ((TreeModelListener) v.get (i)).treeNodeChanged (parent);
     }
-
-//    public static String getLanguage (Session s, CallStackFrame sf) {
-//        String language = s.getCurrentLanguage ();
-//        List l = sf.getAvailableStrata ();
-//        int i, k = l.size ();
-//        for (i = 0; i < k; i++)
-//            if (language.equals (l.get (i)))
-//                return language;
-//        return sf.getDefaultStratum ();
-//    }
-
+    
     public static String getCSFName (
         Session s, 
         CallStackFrame sf,

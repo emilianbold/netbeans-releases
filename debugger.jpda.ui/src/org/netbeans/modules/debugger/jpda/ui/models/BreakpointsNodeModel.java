@@ -408,7 +408,12 @@ public class BreakpointsNodeModel implements NodeModel {
     private JPDABreakpoint currentBreakpoint;
     private String bold (JPDABreakpoint b, String name) {
         return b == currentBreakpoint ?
-            "<html><b>" + name + "</b></html>" :
+            BoldVariablesTableModelFilterFirst.toHTML (
+                name,
+                true,
+                false,
+                null
+            ) :
             name;
     }
     
