@@ -7,22 +7,16 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.core.syntax;
 
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.util.Vector;
 import java.beans.*;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.text.*;
-import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.ext.Completion;
@@ -30,11 +24,8 @@ import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.cookies.*;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 import org.openide.filesystems.FileObject;
-import org.openide.text.Line;
-import org.openide.text.NbDocument;
-import org.openide.util.NbBundle;
 import org.openide.loaders.DataObject;
 
 import org.netbeans.editor.SyntaxSupport;
@@ -43,15 +34,9 @@ import org.netbeans.editor.Formatter;
 import org.netbeans.editor.ext.CompletionJavaDoc;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.html.HTMLDrawLayerFactory;
-import org.netbeans.editor.ext.java.JavaCompletion;
-import org.netbeans.editor.ext.java.JavaSyntax;
 import org.netbeans.editor.ext.java.JavaDrawLayerFactory;
 import org.netbeans.editor.ext.html.HTMLSyntax;
-import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
-import org.netbeans.editor.ext.plain.PlainSyntax;
-import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.editor.java.JavaKit;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 
@@ -96,9 +81,9 @@ public class JSPKit extends NbEditorKit {
         PropertyChangeListener pList = new ColoringListener(doc, data, newSyntax);
         // attach the listener
         // PENDING - listen on the language
-        //jspdo.addPropertyChangeListener(WeakListener.propertyChange(pList, jspdo));
+        //jspdo.addPropertyChangeListener(WeakListeners.propertyChange(pList, jspdo));
         if (data != null) {
-            data.addPropertyChangeListener(WeakListener.propertyChange(pList, data));
+            data.addPropertyChangeListener(WeakListeners.propertyChange(pList, data));
         }
         return newSyntax;
     }
