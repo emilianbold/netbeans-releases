@@ -15,9 +15,14 @@ package org.netbeans.modules.form.actions;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
+import org.openide.windows.WindowManager;
+import org.openide.windows.TopComponent;
 import org.netbeans.modules.form.FormEditorSupport;
 
 /**
+ * Action that invokes reloading of the currently active form. Presented only
+ * in contextual menus within the Form Editor.
+ *
  * @author Tomas Pavek
  */
 
@@ -25,14 +30,8 @@ public class ReloadAction extends CallableSystemAction {
 
     private static String name;
 
-    private FormEditorSupport formEditorSupport;
-
     public ReloadAction() {
-        setEnabled(false);
-    }
-
-    protected boolean asynchronous() {
-        return false;
+        setEnabled(true);
     }
 
     public String getName() {
@@ -46,13 +45,15 @@ public class ReloadAction extends CallableSystemAction {
         return new HelpCtx("gui.modes"); // NOI18N
     }
 
-    public void performAction() {
-        if (formEditorSupport != null)
-            formEditorSupport.reloadForm();
+    protected boolean asynchronous() {
+        return false;
     }
 
-    public void setForm(FormEditorSupport fes) {
-        formEditorSupport = fes;
-        setEnabled(fes != null);
+    public void performAction() {
+        WindowManager wm = WindowManager.getDefault();
+        TopComponent activeTC = wm.getRegistry().getActivated();
+        FormEditorSupport fes = FormEditorSupport.getFormEditor(activeTC);
+        if (fes != null)
+            fes.reloadForm();
     }
 }
