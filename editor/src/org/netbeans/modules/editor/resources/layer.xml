@@ -86,6 +86,10 @@ Microsystems, Inc. All Rights Reserved.
 
     </folder>
 
+    <folder name="WarmUp">
+      <file name="org-netbeans-modules-editor-EditorWarmUpTask.instance"/>
+    </folder>
+
     <folder name="UI">
       <folder name="Services">
         <folder name="Editing">
