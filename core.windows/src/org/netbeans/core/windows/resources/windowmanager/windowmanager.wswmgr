@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!DOCTYPE windowmanager PUBLIC
-          "-//NetBeans//DTD Window Manager Properties 2.0//EN"
-          "http://www.netbeans.org/dtds/windowmanager-properties2_0.dtd">
+          "-//NetBeans//DTD Window Manager Properties 2.1//EN"
+          "http://www.netbeans.org/dtds/windowmanager-properties2_1.dtd">
 
-<windowmanager version="2.0">
+<windowmanager version="2.1">
     <main-window> 
         <joined-properties centered-horizontally="true" centered-vertically="true"
                            relative-width="0.9" relative-height="0.9" />
@@ -21,5 +21,5 @@
     <screen width="1280" height="1024" />
     <active-mode name="explorer" />
     <maximized-mode name="" />
-    <toolbar configuration="Standard" />
+    <toolbar configuration="Standard" preferred-icon-size="24" />
 </windowmanager>

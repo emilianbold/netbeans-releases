@@ -48,6 +48,8 @@ public class WindowManagerParser {
         = "-//NetBeans//DTD Window Manager Properties 1.1//EN"; // NOI18N
     private static final String INSTANCE_DTD_ID_2_0
         = "-//NetBeans//DTD Window Manager Properties 2.0//EN"; // NOI18N
+    private static final String INSTANCE_DTD_ID_2_1
+        = "-//NetBeans//DTD Window Manager Properties 2.1//EN"; // NOI18N
     
     private static final boolean DEBUG = Debug.isLoggable(WindowManagerParser.class);
     
@@ -849,8 +851,8 @@ public class WindowManagerParser {
         public void startElement (String nameSpace, String name, String qname, Attributes attrs) throws SAXException {
             if ("windowmanager".equals(qname)) { // NOI18N
                 handleWindowManager(attrs);
-            } else if (internalConfig.specVersion.compareTo(new SpecificationVersion("2.0")) == 0) {
-                //Parse version 2.0
+            } else if (internalConfig.specVersion.compareTo(new SpecificationVersion("2.0")) >= 0) { //NOI18N
+                //Parse version 2.0 and 2.1
                 if ("main-window".equals(qname)) { // NOI18N
                     handleMainWindow(attrs);
                 } else if ("joined-properties".equals(qname)) { // NOI18N
@@ -1610,6 +1612,22 @@ public class WindowManagerParser {
             } else {
                 winMgrConfig.toolbarConfiguration = "";  // NOI18N
             }
+            String prefIconSize = attrs.getValue("preferred-icon-size"); // NOI18N
+            if (prefIconSize != null) {
+                try {
+                    winMgrConfig.preferredToolbarIconSize = Integer.parseInt(prefIconSize);
+                } catch (NumberFormatException exc) {
+                    ErrorManager em = ErrorManager.getDefault();
+                    em.log(ErrorManager.WARNING,
+                    "[WinSys.WindowManagerParser.handleToolbar]" // NOI18N
+                    + " Warning: Cannot read attribute \"preferred-icon-size\"" //NOI18N
+                    + " of element \"relative-bounds\"."); // NOI18N
+                    em.notify(ErrorManager.INFORMATIONAL,exc);
+                    winMgrConfig.preferredToolbarIconSize = 24;
+                }
+            } else {
+                winMgrConfig.preferredToolbarIconSize = 24;
+            }
         }
         
         /** Reads element "tc-id" and updates window manager config content */
@@ -1753,7 +1771,7 @@ public class WindowManagerParser {
             /*buff.append("<!DOCTYPE windowmanager PUBLIC\n"); // NOI18N
             buff.append("          \"-//NetBeans//DTD Window Manager Properties 2.0//EN\"\n"); // NOI18N
             buff.append("          \"http://www.netbeans.org/dtds/windowmanager-properties2_0.dtd\">\n\n"); // NOI18N*/
-                append("<windowmanager version=\"2.0\">\n"); // NOI18N
+                append("<windowmanager version=\"2.1\">\n"); // NOI18N
             
             appendMainWindow(wmc, buff);
             appendEditorArea(wmc, buff);
@@ -1858,9 +1876,11 @@ public class WindowManagerParser {
         }
         
         private void appendToolbar (WindowManagerConfig wmc, StringBuffer buff) {
-            if ((wmc.toolbarConfiguration != null) && !"".equals(wmc.toolbarConfiguration)) {
-                buff.append("    <toolbar configuration=\"").append(wmc.toolbarConfiguration).append("\"/>\n"); // NOI18N
+            buff.append("    <toolbar"); //NOI18N
+            if ((wmc.toolbarConfiguration != null) && !"".equals(wmc.toolbarConfiguration)) { //NOI18N
+                buff.append(" configuration=\"").append(wmc.toolbarConfiguration).append("\""); // NOI18N
             }
+            buff.append(" preferred-icon-size=\"").append(wmc.preferredToolbarIconSize).append("\"/>\n"); //NOI18N
         }
         
         private void appendRecentViewList (WindowManagerConfig wmc, StringBuffer buff) {
@@ -1908,7 +1928,8 @@ public class WindowManagerParser {
         throws SAXException {
             if (INSTANCE_DTD_ID_1_0.equals(publicId)
              || INSTANCE_DTD_ID_1_1.equals(publicId)
-             || INSTANCE_DTD_ID_2_0.equals(publicId)) {
+             || INSTANCE_DTD_ID_2_0.equals(publicId)
+             || INSTANCE_DTD_ID_2_1.equals(publicId)) {
                 InputStream is = new ByteArrayInputStream(new byte[0]);
                 //getClass().getResourceAsStream(INSTANCE_DTD_LOCAL);
 //                if (is == null) {

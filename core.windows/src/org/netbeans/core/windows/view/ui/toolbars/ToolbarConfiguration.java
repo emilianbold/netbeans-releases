@@ -568,10 +568,10 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
             tb = tbs[i];
             name = tb.getName();
             tc = (ToolbarConstraints)allToolbars.get (name);
-            if (tc == null) {                          /* If there is no toolbar constraints description defined yet ... */
+            if (tc == null) { /* If there is no toolbar constraints description defined yet ... */
                 if (newRow == null)
                     newRow = createLastRow();
-                tc = new ToolbarConstraints (this, name, null, Boolean.TRUE);  /* ... there is created a new constraints. */
+                tc = new ToolbarConstraints (this, name, null, Boolean.TRUE); /* ... there is created a new constraints. */
                 addToolbar (newRow, tc);
                 someBarAdded = true;
             }
@@ -581,7 +581,48 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         revalidateWindow();
 
     }
+    
+    /** Rebuild toolbar panel when size of icons is changed.
+     * All components are removed and again added using ToolbarPool's list of correct toolbars.
+     */
+    private void rebuildPanel () {
+        toolbarPanel().removeAll();
+        prefWidth = 0;
 
+        Toolbar tbs[] = toolbarPool ().getToolbars();
+        Toolbar tb;
+        ToolbarConstraints tc;
+        String name;
+        ToolbarRow newRow = null;
+        boolean someBarAdded = false;
+        boolean smallToolbarIcons = (ToolbarPool.getDefault().getPreferredIconSize() == 16);
+        for (int i = 0; i < tbs.length; i++) {
+            tb = tbs[i];
+            name = tb.getName();
+            Component [] comps = tb.getComponents();
+            for (int j = 0; j < comps.length; j++) {
+                if (comps[j] instanceof JComponent) {
+                    if (smallToolbarIcons) {
+                        ((JComponent) comps[j]).putClientProperty("PreferredIconSize",null); //NOI18N
+                    } else {
+                        ((JComponent) comps[j]).putClientProperty("PreferredIconSize",new Integer(24)); //NOI18N
+                    }
+                }
+            }
+            tc = (ToolbarConstraints)allToolbars.get (name);
+            if (tc == null) { /* If there is no toolbar constraints description defined yet ... */
+                if (newRow == null) {
+                    newRow = createLastRow();
+                }
+                tc = new ToolbarConstraints (this, name, null, Boolean.TRUE);  /* ... there is created a new constraints. */
+                addToolbar (newRow, tc);
+                someBarAdded = true;
+            }
+            toolbarPanel().add (tb, tc);
+        }
+        revalidateWindow();
+    }
+    
     /**
      * @return true if if important reactivate component.
      */
@@ -715,6 +756,31 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                 menu.add (mi);
             }
         }
+        menu.add (new JPopupMenu.Separator());
+        
+        //Bigger toolbar icons
+        boolean smallToolbarIcons = (ToolbarPool.getDefault().getPreferredIconSize() == 16);
+        
+        JCheckBoxMenuItem cbmi = new JCheckBoxMenuItem (
+            getBundleString("PROP_smallToolbarIcons"), smallToolbarIcons
+        );
+        cbmi.addActionListener (new ActionListener () {
+              public void actionPerformed (ActionEvent ev) {
+                  if (ev.getSource() instanceof JCheckBoxMenuItem) {
+                      JCheckBoxMenuItem cb = (JCheckBoxMenuItem) ev.getSource();
+                      boolean state = cb.getState();
+                      if (state) {
+                          ToolbarPool.getDefault().setPreferredIconSize(16);
+                      } else {
+                          ToolbarPool.getDefault().setPreferredIconSize(24);
+                      }
+                      //Rebuild toolbars
+                      rebuildPanel();
+                  }
+              }
+        });
+        menu.add (cbmi);
+        
         menu.add (new JPopupMenu.Separator());
         // generate list of available toolbar configurations
         List configList = Arrays.asList (ToolbarPool.getDefault ().getConfigurations ());

@@ -164,6 +164,8 @@ public class WindowManagerConfig {
     public String maximizedModeName;
     /** Name of toolbar configuration. */
     public String toolbarConfiguration;
+    /** Preferred size of toolbar icons. */
+    public int preferredToolbarIconSize;
     /** List of <code>ModeConfig</code>S. */
     public ModeConfig[] modes;
     /** List of <code>GroupConfig</code>S. */
@@ -283,6 +285,9 @@ public class WindowManagerConfig {
         if (!toolbarConfiguration.equals(wmCfg.toolbarConfiguration)) {
             return false;
         }
+        if (preferredToolbarIconSize != wmCfg.preferredToolbarIconSize) {
+            return false;
+        }
         //Order of modes array is NOT defined
         if (modes.length != wmCfg.modes.length) {
             return false;
@@ -379,6 +384,7 @@ public class WindowManagerConfig {
         hash = 37 * hash + activeModeName.hashCode();
         hash = 37 * hash + maximizedModeName.hashCode();
         hash = 37 * hash + toolbarConfiguration.hashCode();
+        hash = 37 * hash + preferredToolbarIconSize;
         for (int i = 0; i < modes.length; i++) {
             hash = 37 * hash + modes[i].hashCode();
         }

@@ -38,15 +38,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>  
     
-    <folder name="Toolbars">
-        <folder name="Window">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <attr name="org-netbeans-core-output-OutputWindowAction.instance/org-netbeans-core-execution-ExecutionViewAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-execution-ExecutionViewAction.instance"/>
-            <attr name="org-netbeans-core-execution-ExecutionViewAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true" />
-        </folder>
-    </folder>
-
     <folder name="Shortcuts">
         <file name="CS-6.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.core.execution.ExecutionViewAction"/>

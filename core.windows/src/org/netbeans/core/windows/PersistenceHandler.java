@@ -17,6 +17,7 @@ package org.netbeans.core.windows;
 
 import org.netbeans.core.windows.persistence.*;
 import org.openide.ErrorManager;
+import org.openide.awt.ToolbarPool;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -94,6 +95,8 @@ final class PersistenceHandler implements PersistenceObserver {
             wmc = ConfigFactory.createDefaultConfig();
         }
 
+        ToolbarPool.getDefault().setPreferredIconSize(wmc.preferredToolbarIconSize);
+        
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         if (wmc.tcIdViewList.length > 0) {
             List tcList = new ArrayList(wmc.tcIdViewList.length);
@@ -370,6 +373,8 @@ final class PersistenceHandler implements PersistenceObserver {
     
     private WindowManagerConfig getConfig() {
         WindowManagerConfig wmc = new WindowManagerConfig();
+        
+        wmc.preferredToolbarIconSize = ToolbarPool.getDefault().getPreferredIconSize();
         
         WindowManagerImpl wmi = WindowManagerImpl.getInstance();
         

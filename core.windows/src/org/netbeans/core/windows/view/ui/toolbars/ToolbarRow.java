@@ -320,7 +320,7 @@ public class ToolbarRow {
                 }
             }
         }
-        prefHeight = prefHeight <= 0 ? Toolbar.BASIC_HEIGHT : Math.min(Toolbar.BASIC_HEIGHT, prefHeight);
+        prefHeight = prefHeight <= 0 ? Toolbar.getBasicHeight() : Math.min(Toolbar.getBasicHeight(), prefHeight);
         return prefHeight;
     }
 

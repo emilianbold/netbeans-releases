@@ -36,9 +36,10 @@ import org.openide.util.Task;
  * @author  David Peroutka, Libor Kramolis
  */
 public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInputListener*/ {
-    /** Basic toolbar height. */
+    /** Basic toolbar height.
+     @deprecated Use getBasicHeight instead. */
     public static final int BASIC_HEIGHT = 34;
-
+    
     /** 5 pixels is tolerance of toolbar height so toolbar can be high (BASIC_HEIGHT + HEIGHT_TOLERANCE)
         but it will be set to BASIC_HEIGHT high. */
     static int HEIGHT_TOLERANCE = 5;
@@ -148,6 +149,19 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         initAll(name, f);
     }
     
+    /** Returns basic toolbar height according to preferred icons size. Used by
+     * toolbar layout manager.
+     * @return basic toolbar height
+     * @since 4.15
+     */
+    public static int getBasicHeight () {
+        if (ToolbarPool.getDefault().getPreferredIconSize() == 24) {
+            return 44;
+        } else {
+            return 34;
+        }
+    }
+    
     private void initAll(String name, boolean f) {
         floatable = f;
         mouseListener = null;
@@ -195,14 +209,26 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         String lf = UIManager.getLookAndFeel().getName();
         String lfid = UIManager.getLookAndFeel().getID();
         int minheight;
-        if ("Aqua".equals(lfid)) {
-            minheight = 29;
-        } else if ("Metal".equals(lf)) {
-            minheight = 36;
-        } else if ("Windows".equals(lf)) {
-            minheight = isXPTheme() ? 23 : 27;
+        if (ToolbarPool.getDefault().getPreferredIconSize() == 24) {
+            if ("Aqua".equals(lfid)) {
+                minheight = 29 + 8;
+            } else if ("Metal".equals(lf)) {
+                minheight = 36 + 8;
+            } else if ("Windows".equals(lf)) {
+                minheight = isXPTheme() ? (23 + 8) : (27 + 8);
+            } else {
+                minheight = 28 + 8;
+            }
         } else {
-            minheight = 28;
+            if ("Aqua".equals(lfid)) {
+                minheight = 29;
+            } else if ("Metal".equals(lf)) {
+                minheight = 36;
+            } else if ("Windows".equals(lf)) {
+                minheight = isXPTheme() ? 23 : 27;
+            } else {
+                minheight = 28;
+            }
         }
         Dimension result = super.getPreferredSize();
         result.height = Math.max (result.height, minheight);
@@ -246,7 +272,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
      * @return number of rows
      */
     static public int rowCount (int height) {
-        return 1 + height / (BASIC_HEIGHT + HEIGHT_TOLERANCE);
+        return 1 + height / (getBasicHeight() + HEIGHT_TOLERANCE);
     }
 
     /** Set DnDListener to Toolbar.
@@ -465,12 +491,20 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                             Toolbar.this.removeAll();
                             setBorder(null);
                         }
+                        if (obj instanceof JComponent) {
+                            if (ToolbarPool.getDefault().getPreferredIconSize() == 24) {
+                                ((JComponent) obj).putClientProperty("PreferredIconSize",new Integer(24)); //NOI18N
+                            }
+                        }
                         Toolbar.this.add ((Component)obj);
                         continue;
                     }
                     if (obj instanceof Action) {
                         Action a = (Action)obj;
                         JButton b = new JButton();
+                        if (ToolbarPool.getDefault().getPreferredIconSize() == 24) {
+                            b.putClientProperty("PreferredIconSize",new Integer(24)); //NOI18N
+                        }
                         Actions.connect (b, a);
                         Toolbar.this.add (b);
                         continue;

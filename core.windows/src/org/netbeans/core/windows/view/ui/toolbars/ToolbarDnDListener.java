@@ -25,9 +25,6 @@ import org.openide.awt.Toolbar;
  * @author Libor Kramolis
  */
 public class ToolbarDnDListener extends Object implements Toolbar.DnDListener {
-    protected static final int    BASIC_HEIGHT_2            = (Toolbar.BASIC_HEIGHT/2) + 2;
-    protected static final int    BASIC_HEIGHT_4            = (Toolbar.BASIC_HEIGHT/4) + 1;
-
     /** now dragged toolbar */
     private ToolbarConstraints draggedToolbar;
     private ToolbarConfiguration configuration;
@@ -86,7 +83,7 @@ public class ToolbarDnDListener extends Object implements Toolbar.DnDListener {
      * @param dy vertical distance
      */
     protected void moveUp (ToolbarConstraints tc, int dy) {
-        if (dy < BASIC_HEIGHT_2)
+        if (dy < ((Toolbar.getBasicHeight() / 2) + 2))
             return;
 
         int rI = tc.rowIndex();
@@ -117,12 +114,12 @@ public class ToolbarDnDListener extends Object implements Toolbar.DnDListener {
     public void moveDown (ToolbarConstraints tc, int dy) {
         int rI = tc.rowIndex();
 
-        int step = BASIC_HEIGHT_2;
+        int step = ((Toolbar.getBasicHeight() / 2) + 2);
 
         if (draggedToolbar.isAlone()) { // is alone on row(s) -> no new rows
             if (rI == (configuration.getRowCount() - tc.getRowCount())) // in last rows
                 return;
-            step = BASIC_HEIGHT_4;
+            step = ((Toolbar.getBasicHeight() / 4) + 2);
         }
 
         if (dy < step)

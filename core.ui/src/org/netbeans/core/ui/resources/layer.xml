@@ -218,12 +218,6 @@ Microsystems, Inc. All Rights Reserved.
             Adding actions into subfolders of this folder in the XML layer
             of your module will customize the main window toolbars.
         -->
-        <folder name="Data">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-openide-actions-FindAction.instance"/>
-            <attr name="org-openide-actions-FindAction.instance/org-netbeans-core-actions-GlobalPropertiesAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
-        </folder>
         <folder name="Edit">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-openide-actions-CutAction.instance"/>
@@ -231,24 +225,16 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-CopyAction.instance"/>
             <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true" />
             <file name="org-openide-actions-PasteAction.instance"/>
-            <attr name="org-openide-actions-PasteAction.instance/org-openide-actions-DeleteAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-DeleteAction.instance"/>
-            <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-UndoAction.instance" boolvalue="true" />
+            <attr name="org-openide-actions-PasteAction.instance/org-openide-actions-UndoAction.instance" boolvalue="true" />
             <file name="org-openide-actions-UndoAction.instance"/>
             <attr name="org-openide-actions-UndoAction.instance/org-openide-actions-RedoAction.instance" boolvalue="true" />
             <file name="org-openide-actions-RedoAction.instance"/>
+            <attr name="org-openide-actions-RedoAction.instance/org-openide-actions-FindAction.instance" boolvalue="true" />
+            <file name="org-openide-actions-FindAction.instance"/>
         </folder>
-        <folder name="View">
+        <folder name="File">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
-        </folder>
-        <folder name="System">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-openide-actions-SaveAction.instance"/>
-            <attr name="org-openide-actions-SaveAction.instance/org-openide-actions-SaveAllAction.instance" boolvalue="true" />
             <file name="org-openide-actions-SaveAllAction.instance"/>
-            <attr name="org-openide-actions-SaveAllAction.instance/org-openide-actions-PrintAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-PrintAction.instance"/>
         </folder>
         <folder name="Memory">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />

@@ -71,6 +71,9 @@ public final class ToolbarPool extends JComponent implements Accessible {
     
     private TPTaskListener taskListener;
     
+    /** Preferred icon size. 2 sizes are supported now: 16 and 24. */
+    private int preferredIconSize = 24;
+    
     /**
      * Returns default toolbar pool.
      * @return default system pool
@@ -137,7 +140,27 @@ public final class ToolbarPool extends JComponent implements Accessible {
             super.removeNotify();
         }
     }
-    
+
+    /** Returns preferred size of icons used by toolbar buttons. Default icons size
+     * is 16x16. Icon size 24x24 is also supported.
+     * @return preferred size of toolbar icons in pixels
+     * @since 4.15
+     */
+    public int getPreferredIconSize () {
+        return preferredIconSize;
+    }
+
+    /** Sets preferred size of icons used by toolbar buttons.
+     * @param preferred size of toolbar icons in pixels. 2 values are now
+     * supported: 16 and 24
+     * @since 4.15
+     */
+    public void setPreferredIconSize (int preferredIconSize) {
+        if ((preferredIconSize != 16) && (preferredIconSize != 24)) {
+            throw new IllegalArgumentException("Unsupported argument value:" + preferredIconSize);  //NOI18N
+        }
+        this.preferredIconSize = preferredIconSize;
+    }
 
     public Border getBorder() {
         //Issue 36867, hide border if there are no toolbars.  Not the most
