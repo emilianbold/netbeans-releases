@@ -410,6 +410,11 @@ public final class TabDisplayer extends JComponent implements Accessible {
             }
             int index = getUI().tabForCoordinate(p);
             if (index != -1) {
+                // #55101 - have special tooltips for buttons.
+                String button = getUI().getTooltipForButtons(p);
+                if (button != null) {
+                    return button;
+                }
                 return getModel().getTab(index).tip;
             }
         }

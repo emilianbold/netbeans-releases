@@ -41,6 +41,7 @@ import org.netbeans.swing.tabcontrol.LocationInformer;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
+import org.openide.util.NbBundle;
 
 /**
  * Basic UI class for view tabs - non scrollable tabbed displayer, which shows all
@@ -589,6 +590,16 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     protected void cancelRequestAttention (int tab) {
         tabState.removeAlarmTab(tab);
     }
+    
+    public String getTooltipForButtons(Point point) {
+        if (getController().inPinButtonRect(point)) {
+            return NbBundle.getMessage(AbstractViewTabDisplayerUI.class, "AutoHideButton.tooltip");
+        }
+        if (getController().inCloseIconRect(point) != -1) {
+            return NbBundle.getMessage(AbstractViewTabDisplayerUI.class, "CloseButton.tooltip");
+        }
+        return null;
+    }    
 
     /**
      * Listen to mouse events and handles selection behaviour and close icon
@@ -625,6 +636,8 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
          */
         protected abstract int inCloseIconRect(Point point);
 
+        protected abstract boolean inPinButtonRect(Point point);
+        
         protected boolean shouldReact(MouseEvent e) {
             boolean isLeft = SwingUtilities.isLeftMouseButton(e);
             return isLeft;
@@ -748,6 +761,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         public int isMouseInCloseButton() {
             return mouseInCloseButton;
         }
+        
 
         /**
          * Sets state of close button to pressed or released. Updates visual
@@ -876,6 +890,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             setContentAreaFilled(false);
             setRolloverEnabled(rolloverIcons != null);
             setOrientation(TabDisplayer.ORIENTATION_CENTER);
+            setToolTipText(NbBundle.getMessage(AbstractViewTabDisplayerUI.class, "AutoHideButton.tooltip"));
         }
         
         public void updateUI() {

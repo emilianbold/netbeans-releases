@@ -400,7 +400,12 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             return getCloseIconRect(tempRect, index).contains(point) ?
                     index : -1;
         }
-
+        
+        protected boolean inPinButtonRect(Point p) {
+            Point p2 = SwingUtilities.convertPoint(displayer, p, pinButton);
+            return pinButton.contains(p2);
+        }
+        
         /**
          * Triggers visual tab header change when mouse enters/leaves tab in
          * advance to superclass functionality.

@@ -188,5 +188,10 @@ public abstract class TabDisplayerUI extends ComponentUI {
     
     protected abstract void requestAttention (int tab);
     
-    protected abstract void cancelRequestAttention (int tab);    
+    protected abstract void cancelRequestAttention (int tab);   
+    
+    
+    public String getTooltipForButtons(Point point) {
+        return null;
+    }
 }

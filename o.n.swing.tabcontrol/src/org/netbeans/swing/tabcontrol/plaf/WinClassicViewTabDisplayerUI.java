@@ -372,6 +372,12 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
             return getCloseIconRect(tempRect, index).contains(point) ?
                     index : -1;
         }
+        
+        protected boolean inPinButtonRect(Point p) {
+            Point p2 = SwingUtilities.convertPoint(displayer, p, pinButton);
+            return pinButton.contains(p2);
+        }
+        
 
     } // end of OwnController
 

@@ -314,7 +314,7 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             return result;
         }
         
-        private boolean inPinButtonRect(Point p) {
+        protected boolean inPinButtonRect(Point p) {
             return pinButtonRect.contains(p);
         }
 
