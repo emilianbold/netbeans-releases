@@ -189,6 +189,14 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
      * no such tab can be found.
      */
     public Object getConstraintForLocation(Point location, boolean attachingPossible) {
+        //#47909
+        // first process the tabs when mouse is inside the tabs area..
+        int tab = tabForCoordinate(location);
+        if (tab != -1) {
+            int index = dropIndexOfPoint(location);
+            return index < 0 ? null : new Integer(index);
+        }
+        // ----
         if(attachingPossible) {
             String s = getSideForLocation(location);
             if(s != null) {
@@ -210,6 +218,17 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         Rectangle rect = getBounds();
         rect.setLocation(0, 0);
         
+        //#47909
+        int tab = tabForCoordinate(location);
+        // first process the tabs when mouse is inside the tabs area..
+        // need to process before the side resolution.
+        if (tab != -1) {
+            Shape s = getDropIndication(startingTransfer, location);
+            if(s != null) {
+                return s;
+            }
+        }
+        
         String side;
         if(attachingPossible) {
             side = getSideForLocation(location);
@@ -228,6 +247,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
             return new Rectangle(0, rect.height - (int)(rect.height * ratio), rect.width, (int)(rect.height * ratio));
         }
 
+        // #47909 now check shape again.. when no sides were checked, assume changing tabs when in component center.
         Shape s = getDropIndication(startingTransfer, location);
         if(s != null) {
             return s;
