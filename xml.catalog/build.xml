@@ -88,7 +88,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="release">
-        <copy todir="netbeans">
+        <copy todir="netbeans" includeEmptyDirs="false">
             <fileset dir="${binroot}/xml/catalog/release"/>
         </copy>
     </target>

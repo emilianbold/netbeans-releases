@@ -85,7 +85,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="release">
         <for-each locations="lib"/>
 
-        <copy todir="netbeans">
+        <copy todir="netbeans" includeEmptyDirs="false">
             <fileset dir="${binroot}/xml/tax/release"/>
         </copy>
     </target>

@@ -9,4 +9,3 @@ OpenIDE-Module-Module-Dependencies:
  org.netbeans.api.xml/1 > @API_SPEC_VERS_SUBST@,
  org.netbeans.modules.xml.core/1 > @CORE_SPEC_VERS_SUBST@,
  org.netbeans.modules.editor/1 > 1.7
-Class-Path: docs/xml-text-edit.jar

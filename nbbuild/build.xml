@@ -485,57 +485,64 @@ ToDo:
     <ant dir="../corba" target="netbeans"/>
   </target>
 
-  <target name="all-xml/api" depends="all-openide">
+
+  <!-- Libs modules -->
+  <target name="all-libs/xalan">
+      <echo message="Building module libs/xalan..."/>
+      <ant dir="../libs/xalan" target="netbeans"/>
+  </target>
+
+  <target name="all-libs/jaxp">
+      <echo message="Building module libs/jaxp..."/>
+      <ant dir="../libs/jaxp" target="netbeans"/>
+  </target>
+
+  <target name="all-libs" depends="all-libs/xalan, all-libs/jaxp"/>
+
+
+  <!-- XML modules -->
+  <target name="all-xml/api" depends="all-openide, all-libs/jaxp">
       <echo message="Building module xml/api..."/>
       <ant dir="../xml/api" target="netbeans"/>
   </target>
 
-  <target name="all-xml/tax" depends="all-openide">
+  <target name="all-xml/tax" depends="all-openide, all-xml/api">
       <echo message="Building module xml/tax..."/>
       <ant dir="../xml/tax" target="netbeans"/>
   </target>
 
-  <target name="all-xml/core" depends="all-openide,all-openidex,all-xml/tax">
+  <target name="all-xml/core" depends="all-openide, all-openidex, all-xml/api, all-xml/tax">
       <echo message="Building module xml/core..."/>
       <ant dir="../xml/core" target="netbeans"/>
   </target>
 
-  <target name="all-xml/libs/xalan">
-      <echo message="Building module xml/libs/xalan..."/>
-      <ant dir="../xml/libs/xalan" target="netbeans"/>
-  </target>
-
-  <target name="all-xml/libs/jaxp">
-      <echo message="Building module xml/libs/jaxp..."/>
-      <ant dir="../xml/libs/jaxp" target="netbeans"/>
-  </target>
-
-  <target name="all-xml/catalog" depends="all-openide,all-xml/core">
+  <target name="all-xml/catalog" depends="all-openide, all-xml/api, all-xml/core">
       <echo message="Building module xml/catalog..."/>
       <ant dir="../xml/catalog" target="netbeans"/>
   </target>
 
-  <target name="all-xml/tools" depends="all-openide,all-xml/tax,all-xml/core">
+  <target name="all-xml/tools" depends="all-openide, all-httpserver/servletapi, all-libs/jaxp, all-xml/api, all-xml/tax, all-xml/core">
       <echo message="Building module xml/tools..."/>
       <ant dir="../xml/tools" target="netbeans"/>
   </target>
 
-  <target name="all-xml/text-edit" depends="all-openide,all-editor,all-xml/tax,all-xml/core">
+  <target name="all-xml/text-edit" depends="all-openide, all-editor, all-xml/tax, all-xml/core">
       <echo message="Building module xml/text-edit..."/>
       <ant dir="../xml/text-edit" target="netbeans"/>
   </target>
 
-  <target name="all-xml/tree-edit" depends="all-openide,all-openidex,all-xml/tax,all-xml/core">
+  <target name="all-xml/tree-edit" depends="all-openide, all-openidex, all-xml/api, all-xml/tax, all-xml/core">
       <echo message="Building module xml/tree-edit..."/>
       <ant dir="../xml/tree-edit" target="netbeans"/>
   </target>
 
-  <target name="all-xml/css" depends="all-openide,all-editor">
+  <target name="all-xml/css" depends="all-openide, all-editor, all-xml/api">
       <echo message="Building module xml/css..."/>
       <ant dir="../xml/css" target="netbeans"/>
   </target>
 
-  <target name="all-xml" depends="all-xml/api,all-xml/tax,all-xml/libs/xalan,all-xml/libs/jaxp,all-xml/core,all-xml/catalog,all-xml/tools,all-xml/text-edit,all-xml/tree-edit,all-xml/css"/>
+  <target name="all-xml" depends="all-xml/api, all-xml/tax, all-xml/core, all-xml/catalog, all-xml/tools, all-xml/text-edit, all-xml/tree-edit, all-xml/css"/>
+
 
   <target name="all-treefs" depends="all-openide">
     <echo message="Building module treefs..."/>

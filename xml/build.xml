@@ -21,7 +21,6 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="genjavadoc" classname="org.netbeans.nbbuild.GenerateJavadoc" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="validatexml" classname="org.netbeans.nbbuild.XMLValidate" classpath="${nbext_root}/nbantext.jar;${binroot}/xml/catalog/release/modules/ext/resolver-1_1_nb.jar"/>
     <taskdef  name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext_root}/nbantext.jar"/>
-    <property name="sub-libs" value="libs/xalan, libs/jaxp"/>
     <property name="submodules" value="api, tax, core, catalog, tools, text-edit, tree-edit, css"/>
 
     <property name="release" value="dev"/>
@@ -30,17 +29,14 @@ Microsystems, Inc. All Rights Reserved.
 
 
     <target name="compile">
-        <for-each locations="${sub-libs}"/>
         <for-each locations="${submodules}"/>
     </target>
 
     <target name="jars" depends="compile">
-        <for-each locations="${sub-libs}"/>
         <for-each locations="${submodules}"/>
     </target>
 
     <target name="release">
-        <for-each locations="${sub-libs}"/>
         <for-each locations="${submodules}"/>
     </target>
 
@@ -50,12 +46,11 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="netbeans" depends="jars,release,javahelp">
         <mkdir dir="netbeans"/>
-        <for-each locations="${sub-libs}"/>
+
         <for-each locations="${submodules}"/>
     </target>
 
     <target name="nbm" depends="netbeans">
-        <for-each locations="${sub-libs}"/>
         <for-each locations="${submodules}"/>
     </target>
 
@@ -63,7 +58,6 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="netbeans"/>
         <delete file="xml-${release}-nbms.zip"/>
 
-        <for-each locations="${sub-libs}"/>
         <for-each locations="${submodules}"/>
     </target>
 
@@ -74,7 +68,6 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="all" depends="clean,nbm">
-        <for-each locations="${sub-libs}"/>
         <for-each locations="${submodules}"/>
     </target>
 
