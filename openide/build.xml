@@ -775,6 +775,7 @@ Comments or questions? Post to the dev@openide.netbeans.org mailing list.
             </batchtest>
             <classpath >
                 <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/openide.jar" />
+                <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/openide-loaders.jar" />
                 <pathelement location="build/test/unit/classes" />
                 <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
                 <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
@@ -789,6 +790,7 @@ Comments or questions? Post to the dev@openide.netbeans.org mailing list.
         <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${test.class}">
             <classpath> 
                 <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/openide.jar"/>
+                <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/openide-loaders.jar" />
                 <pathelement location="build/test/unit/classes" />
                 <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
                 <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
@@ -805,6 +807,7 @@ Comments or questions? Post to the dev@openide.netbeans.org mailing list.
             <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
             <classpath >
                 <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/openide.jar" />
+                <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/openide-loaders.jar" />
                 <pathelement location="build/test/unit/classes" />
                 <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
                 <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
