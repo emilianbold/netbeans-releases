@@ -23,6 +23,7 @@ import java.util.ResourceBundle;
 import org.openide.TopManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.options.SystemOption;
+import org.openide.util.SharedClassObject;
 import org.netbeans.modules.httpserver.*;
 
 /**
@@ -59,7 +60,7 @@ public class NbDdeBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
     private HtmlBrowser.Impl   browserComp;
 
     /** setting for this module */
-    private static ExtBrowserSettings settings = new ExtBrowserSettings ();
+    private static ExtBrowserSettings settings = (ExtBrowserSettings) SharedClassObject.findObject (ExtBrowserSettings.class, true);
     
     /** requested URL */
     private URL url;
