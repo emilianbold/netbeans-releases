@@ -212,14 +212,14 @@ class EditPanel extends javax.swing.JPanel implements
 	};
 	
 	editDialog = new DialogDescriptor(this, 
-					  NbBundle.getBundle(EditPanel.class).getString("MON_EditReplay"),
+					  NbBundle.getBundle(EditPanel.class).getString("MON_EditReplay_panel"),
 					  false, 
 					  options,
 					  options[1],
 					  DialogDescriptor.BOTTOM_ALIGN,
 					  new HelpCtx("monitor_resend"), //NOI18N
 					  this);
-	
+        
 	dialog = DialogDisplayer.getDefault().createDialog(editDialog);
 	dialog.pack();
 	dialog.show();
