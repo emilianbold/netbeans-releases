@@ -41,7 +41,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="jar-cli" depends="init,compile-cli">
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}" />
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/org-netbeans-modules-utilities-cli.jar">
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/org-netbeans-modules-utilities-cli.jar"
+             compress="false">
             <fileset dir="build/cliclasses"/>
         </jar>
     </target>
