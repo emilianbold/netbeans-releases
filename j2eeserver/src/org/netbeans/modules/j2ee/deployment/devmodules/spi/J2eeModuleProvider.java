@@ -21,6 +21,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.openide.filesystems.FileObject;
+import org.openide.util.WeakListeners;
 
 /** This object must be implemented by J2EE module support and an instance 
  * added into project lookup.
@@ -34,7 +35,9 @@ public abstract class J2eeModuleProvider {
     
     public J2eeModuleProvider () {
         il = new IL ();
-        ServerRegistry.getInstance ().addInstanceListener (il);
+        ServerRegistry.getInstance ().addInstanceListener (
+            (ServerRegistry.InstanceListener) WeakListeners.create(
+            ServerRegistry.InstanceListener.class, il, ServerRegistry.getInstance ()));
     }
     
     public abstract J2eeModule getJ2eeModule ();
