@@ -1,23 +1,23 @@
 /*
- *                         Sun Public License Notice
- *
- * The contents of this file are subject to the Sun Public License Version
- * 1.0 (the "License"). You may not use this file except in compliance with 
- * the License. A copy of the License is available at http://www.sun.com/
- *
- * The Original Code is the Ant module
- * The Initial Developer of the Original Code is Jayme C. Edwards.
- * Portions created by Jayme C. Edwards are Copyright (c) 2000.
- * All Rights Reserved.
- *
- * Contributor(s): Jayme C. Edwards, Jesse Glick.
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.loader;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
+import org.apache.tools.ant.module.api.AntProjectCookie;
+import org.apache.tools.ant.module.nodes.AntProjectNode;
+import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
@@ -25,12 +25,6 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 
-import org.apache.tools.ant.module.api.AntProjectCookie;
-import org.apache.tools.ant.module.nodes.AntProjectNode;
-import org.apache.tools.ant.module.xml.AntProjectSupport;
-
-/** Represents a Ant Project object in the Repository.
- */
 public class AntProjectDataObject extends MultiDataObject implements PropertyChangeListener {
 
     public AntProjectDataObject(FileObject pf, AntProjectDataLoader loader) throws DataObjectExistsException {

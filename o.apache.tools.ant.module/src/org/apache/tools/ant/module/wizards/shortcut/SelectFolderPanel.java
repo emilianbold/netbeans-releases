@@ -1,48 +1,45 @@
 /*
- *                         Sun Public License Notice
- *
- * The contents of this file are subject to the Sun Public License Version
- * 1.0 (the "License"). You may not use this file except in compliance with 
- * the License. A copy of the License is available at http://www.sun.com/
- *
- * The Original Code is the Ant module
- * The Initial Developer of the Original Code is Jayme C. Edwards.
- * Portions created by Jayme C. Edwards are Copyright (c) 2000.
- * All Rights Reserved.
- *
- * Contributor(s): Jesse Glick.
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.wizards.shortcut;
 
 import java.awt.Component;
-import java.net.URL;
-import java.net.MalformedURLException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.nodes.Node;
-import org.openide.loaders.DataFolder;
-import org.apache.tools.ant.module.AntModule;
 import java.beans.PropertyVetoException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.apache.tools.ant.module.AntModule;
+import org.openide.WizardDescriptor;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * Wizard panel that lets you select a menu or toolbar folder and a display name

@@ -1,16 +1,14 @@
 /*
- *                         Sun Public License Notice
- *
- * The contents of this file are subject to the Sun Public License Version
- * 1.0 (the "License"). You may not use this file except in compliance with
- * the License. A copy of the License is available at http://www.sun.com/
- *
- * The Original Code is the Ant module
- * The Initial Developer of the Original Code is Jayme C. Edwards.
- * Portions created by Jayme C. Edwards are Copyright (c) 2000.
- * All Rights Reserved.
- *
- * Contributor(s): Jesse Glick
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.bridge.impl;
@@ -18,11 +16,9 @@ package org.apache.tools.ant.module.bridge.impl;
 import java.io.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import org.apache.tools.ant.*;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
-
-import org.apache.tools.ant.*;
 
 /** NetBeans-sensitive build logger.
  */

@@ -1,16 +1,14 @@
 /*
- *                         Sun Public License Notice
- *
- * The contents of this file are subject to the Sun Public License Version
- * 1.0 (the "License"). You may not use this file except in compliance with 
- * the License. A copy of the License is available at http://www.sun.com/
- *
- * The Original Code is the Ant module
- * The Initial Developer of the Original Code is Jayme C. Edwards.
- * Portions created by Jayme C. Edwards are Copyright (c) 2000.
- * All Rights Reserved.
- *
- * Contributor(s): Jayme C. Edwards, Jesse Glick.
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.nodes;
@@ -24,9 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List; // override java.awt.List
 import javax.swing.event.*;
-
 import org.w3c.dom.*;
-
 import org.openide.*;
 import org.openide.util.datatransfer.*;
 import org.openide.filesystems.*;
@@ -36,14 +32,11 @@ import org.openide.nodes.Node; // override org.w3c.dom.Node
 import org.openide.loaders.*;
 import org.openide.util.*;
 import org.openide.util.actions.*;
-
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.*;
 import org.openide.util.Utilities;
 
-/** A node that represents an Ant project.
- */
 public final class AntProjectNode extends DataNode implements ChangeListener {
     
     public AntProjectNode (DataObject obj) {
@@ -67,7 +60,7 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
         return i;
     }
     private Image getBasicIcon() {
-        AntProjectCookie.ParseStatus cookie = (AntProjectCookie.ParseStatus)getDataObject().getCookie(AntProjectCookie.ParseStatus.class);
+        AntProjectCookie.ParseStatus cookie = (AntProjectCookie.ParseStatus) getCookie(AntProjectCookie.ParseStatus.class);
         if (cookie.getFile() == null && cookie.getFileObject() == null) {
             // Script has been invalidated perhaps? Don't continue, we would
             // just get an NPE from the getParseException.
@@ -89,7 +82,7 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
     }
     
     public String getShortDescription() {
-        AntProjectCookie cookie = (AntProjectCookie)getDataObject().getCookie(AntProjectCookie.class);
+        AntProjectCookie cookie = (AntProjectCookie) getCookie(AntProjectCookie.class);
         if (cookie.getFile() == null && cookie.getFileObject() == null) {
             // Script has been invalidated perhaps? Don't continue, we would
             // just get an NPE from the getParseException.
