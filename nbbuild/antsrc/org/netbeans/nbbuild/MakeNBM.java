@@ -372,12 +372,7 @@ public class MakeNBM extends MatchingTask {
         }
 	//jar.createInclude ().setName ("netbeans/");
 	//jar.createInclude ().setName ("Info/info.xml");
-        FileSet fs = fileset;		//makes in apperance to excludes and includes files defined in XML
-//        fs.setRefid(fileset.ref);
-        fs.setDir (topdir);
-        fs.createInclude ().setName ("netbeans/");
-	fs.createInclude ().setName ("Info/info.xml");
-        jar.addFileset (fs);
+        jar.addFileset (getFileSet());
 	jar.setLocation (location);
 	jar.init ();
 	jar.execute ();
@@ -404,5 +399,16 @@ public class MakeNBM extends MatchingTask {
             }
 	}
     }
+   
+    public FileSet getFileSet() {
+        FileSet fs = fileset;		//makes in apperance to excludes and includes files defined in XML
+        fs.setDir (topdir);
+        fs.createInclude ().setName ("netbeans/");
+	fs.createInclude ().setName ("Info/info.xml");
+        return fs;
+    }
 
+    public File getManifest() {
+	return manifest;
+    }
 }
