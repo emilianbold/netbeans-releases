@@ -90,8 +90,8 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
             Integer port = ((TomcatManager)m).getServerPort();
             if (port != null && port.intValue() != iPort){
                 iPort = port.intValue();
-//                setDisplayName(NbBundle.getMessage(TomcatInstanceNode.class, "LBL_TomcatInstanceNode",  // NOI18N
-  //                  new Object []{"" + iPort}));
+                setDisplayName(NbBundle.getMessage(TomcatInstanceNode.class, "LBL_TomcatInstanceNode",  // NOI18N
+                    new Object []{"" + iPort}));
             }
             return port;
         };
@@ -123,6 +123,14 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         return null;
     }
 
+    private String getSharedMemory() {
+        DeploymentManager m = getDeploymentManager();
+        if (m instanceof TomcatManager){
+            return  ((TomcatManager)m).getSharedMemory();
+        };
+        return null;
+    }
+
     private Integer getDebugPort () {
         DeploymentManager m = getDeploymentManager();
         if (m instanceof TomcatManager){
@@ -139,8 +147,22 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         return null;
     }
 
+    private void setClassic (Boolean classic) {
+        DeploymentManager m = getDeploymentManager();
+        if (m instanceof TomcatManager){
+            ((TomcatManager)m).setClassic(classic);
+        };
+    }
+
+    private void setSharedMemory (String str) {
+        DeploymentManager m = getDeploymentManager();
+        if (m instanceof TomcatManager){
+            ((TomcatManager)m).setSharedMemory(str);
+        };
+    }
+
     private void setDebugPort (Integer port) {
-        DeploymentManager m = (DeploymentManager)lkp.lookup(DeploymentManager.class);
+        DeploymentManager m = getDeploymentManager();
         if (m instanceof TomcatManager){
             ((TomcatManager)m).setDebugPort(port);
         };
@@ -302,7 +324,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                    }
                    
                    public void setValue (Object val){
-                       //TODO we need store this value somewhere
+                       setClassic((Boolean)val);
                        
                    }                   
                };      
@@ -336,11 +358,11 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                        NbBundle.getMessage (TomcatInstanceNode.class, "HINT_nameForSharedMemoryAccess")  // NOI18N
                    ) {
                        public Object getValue () {
-                           return null;//getSharedMemory();
+                           return getSharedMemory();
                        }
 
                        public void setValue (Object val){
-                           //TODO we need store
+                           setSharedMemory((String)val);
                        }
                    };
             ssDebug.put(p);  

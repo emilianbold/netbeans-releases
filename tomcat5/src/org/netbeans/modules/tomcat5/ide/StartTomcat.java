@@ -232,15 +232,23 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
     }
 
     public DebuggerInfo getDebugInfo(Target target) { 
-        Integer dbgPort = tm.getDebugPort();
         RemoteDebuggerInfo rdi;
-        
-        if (dbgPort != null) {
-            rdi = new RemoteDebuggerInfo("localhost", dbgPort.intValue()); // NOI18N
+        String dbgType = tm.getDebugType();
+        if ((dbgType == null) || (dbgType.toLowerCase().indexOf("socket") > -1)) {
+            Integer dbgPort = tm.getDebugPort();
+            if (dbgPort != null) {
+                rdi = new RemoteDebuggerInfo("localhost", dbgPort.intValue());  // NOI18N
+            } else {
+                rdi = new RemoteDebuggerInfo("localhost", TomcatManager.DEFAULT_DEBUG_PORT.intValue());  // NOI18N
+            }
         } else {
-            rdi = new RemoteDebuggerInfo("localhost", tm.DEFAULT_DEBUG_PORT.intValue());  // NOI18N
+            String shmem = tm.getSharedMemory();
+            if (shmem != null) {
+                rdi = new RemoteDebuggerInfo("localhost", shmem);
+            } else {
+                rdi = new RemoteDebuggerInfo("localhost", TomcatManager.DEFAULT_SHARED_MEMORY);
+            }
         }
-       
         return rdi;
     }
     
@@ -329,7 +337,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
                         addressStr = "JPDA_ADDRESS=" + tm.getDebugPort().toString(); // NOI18N
                     } else {
                         transportStr = "JPDA_TRANSPORT=dt_shmem";                // NOI18N
-                        addressStr = "JPDA_ADDRESS=" + "shmem";  /* TODO-*/                    // NOI18N
+                        addressStr = "JPDA_ADDRESS=" + tm.getSharedMemory();     // NOI18N
                     }
                 } else {
                     addressStr = "JPDA_ADDRESS=" + tm.getDebugPort().toString();         // NOI18N

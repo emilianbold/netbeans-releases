@@ -82,7 +82,6 @@ public class TomcatInstallUtil {
     }    
 
     public static String getAdminPort(Server server) {
-        
         String port;
         
         port = server.getAttributeValue("port");
@@ -93,8 +92,10 @@ public class TomcatInstallUtil {
         return port;
     }
     
-    public static String getPort(Service service) {
-        
+    public static String getPort(Server server) {
+
+        Service service = server.getService(0);
+
         int defCon = -1;
         boolean[] connectors = service.getConnector();
         String port;
@@ -118,8 +119,9 @@ public class TomcatInstallUtil {
         return port;
     }
     
-    public static String getHost(Service service) {
+    public static String getHost(Server server) {
         String host = null;
+        Service service = server.getService(0);
         if (service != null) {
             host = service.getAttributeValue("Engine",0,"defaultHost");
         }

@@ -84,8 +84,8 @@ public class TomcatManager implements DeploymentManager {
     /** http server port property */
     public static final String DEBUG_TYPE = "debug_type";
 
-    /** http server port property */
-    public static final String DEBUG_SHARED = "debug_shared";
+    /** shared memory property */
+    public static final String SHARED_MEMORY = "shared_memory";
 
     /** default value for property classic */
     public static final Boolean DEFAULT_CLASSIC = Boolean.FALSE;
@@ -101,6 +101,9 @@ public class TomcatManager implements DeploymentManager {
 
     /** default value for property debugging type*/
     public static final String DEFAULT_DEBUG_TYPE = NbBundle.getMessage (DebuggingTypeEditor.class, "SEL_debuggingType_socket");
+
+    /** default value for property shared memory*/
+    public static final String DEFAULT_SHARED_MEMORY = NbBundle.getMessage (TomcatManager.class, "LBL_Tomcat_shared_memory_id");
 
     /** path to server xml */
     public static final String SERVERXML_PATH = File.separator + "conf" + File.separator + "server.xml";  // NOI18N
@@ -128,14 +131,8 @@ public class TomcatManager implements DeploymentManager {
     
     private StartTomcat sTomcat;
     
-    /** storage for HTTP connector port */
-//    private Integer serverPort;
-    
-    /** storage debug port */
-//    private Integer debugPort;
-
     private Server root = null;
-    
+
     /** Creates an instance of connected TomcatManager
      * @param conn <CODE>true</CODE> to create connected manager
      * @param uri URI for DeploymentManager
@@ -148,6 +145,7 @@ public class TomcatManager implements DeploymentManager {
         }
         this.connected = conn;
         sTomcat = null;
+        
         int uriOffset = uri.indexOf ("http:");  // NOI18N
         if (uriOffset > 0) {
             // parse home and base attrs
@@ -173,8 +171,6 @@ public class TomcatManager implements DeploymentManager {
     public InstanceProperties getInstanceProperties() {
         return InstanceProperties.getInstanceProperties(TomcatFactory.tomcatUriPrefix + getUri());
     }
-    
-    
     
     /** Creates an instance of disconnected TomcatManager * /
     public TomcatManager (String catHome, String catBase) {
@@ -550,6 +546,17 @@ public class TomcatManager implements DeploymentManager {
         return DEFAULT_DEBUG_TYPE;
     }
 
+    public String getSharedMemory() {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            String prop = ip.getProperty(SHARED_MEMORY);
+            if (prop != null) {
+                return prop;
+            }
+        }
+        return DEFAULT_SHARED_MEMORY;
+    }
+
     /**
      * Getter for property debugPort.
      * @return Value of property debugPort.
@@ -565,6 +572,20 @@ public class TomcatManager implements DeploymentManager {
         return DEFAULT_CLASSIC;
     }
 
+    public void setClassic(Boolean classic) {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            ip.setProperty(CLASSIC, classic.toString());
+        }
+    }
+
+    public void setSharedMemory(String str) {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            ip.setProperty(SHARED_MEMORY, str);
+        }
+    }
+    
     /**
      * Setter for property debugPort.
      * @param port New value of property debugPort.
@@ -617,7 +638,6 @@ public class TomcatManager implements DeploymentManager {
     }
     
     public Integer getAdminPort() {
-
         boolean upToDate = false;
         InstanceProperties ip = getInstanceProperties();
         if (ip == null) {
@@ -643,7 +663,7 @@ public class TomcatManager implements DeploymentManager {
         return null;
     }
     
-    private void updatePortsFromFile() {
+    private synchronized void updatePortsFromFile() {
         try {
             InstanceProperties ip = getInstanceProperties();
             FileInputStream inputStream;
@@ -666,22 +686,27 @@ public class TomcatManager implements DeploymentManager {
             }
             
             inputStream = new FileInputStream(f);
+            Long t = null;
             
-            Long t;
             if (f.exists()) {
                 t = new Long(f.lastModified());
-                if (isPortUpToDate(t)) {
-                    return;
-                }
             } else {
                 return;
             }
-            
+
+            if (ip != null) {
+                String stamp = ip.getProperty(TomcatManager.TIMESTAMP);
+                if (stamp != null) {
+                    if (isPortUpToDate(Long.valueOf(stamp))) {
+                        return;
+                    }
+                }                
+            }
+                        
             Document doc = XMLUtil.parse(new InputSource(inputStream), false, false, null,org.openide.xml.EntityCatalog.getDefault());
             Server server = Server.createGraph(doc);
-            Service service = server.getService(0);
             Integer adminPort = new Integer(TomcatInstallUtil.getAdminPort(server));
-            Integer serverPort = new Integer(TomcatInstallUtil.getPort(service));
+            Integer serverPort = new Integer(TomcatInstallUtil.getPort(server));
             inputStream.close();
             
             if (ip != null) {
@@ -715,56 +740,8 @@ public class TomcatManager implements DeploymentManager {
         }
         return null;
     }
-
-    /*private Integer readPortFromFile() {
-        try {
-            FileInputStream inputStream;
-            File f;
-            if (catalinaBase != null) {
-                f = new File(catalinaBase + SERVERXML_PATH);
-            } else {
-                f = new File(catalinaHome + SERVERXML_PATH);
-            }
-            if (!f.isAbsolute ()) {
-                InstalledFileLocator ifl = InstalledFileLocator.getDefault ();
-                f = ifl.locate (f.getPath(), null, false);
-                if (f == null) { 
-                    return DEFAULT_SERVER_PORT;
-                }
-            }
-            
-            inputStream = new FileInputStream(f);
-            
-            Long t;
-            if (f.exists()) {
-                t = new Long(f.lastModified());
-            } else {
-                return null;
-            }
-            
-            Document doc = XMLUtil.parse(new InputSource(inputStream), false, false, null,org.openide.xml.EntityCatalog.getDefault());
-            Server server = Server.createGraph(doc);
-            Service service = server.getService(0);
-
-            Integer serverPort = new Integer(TomcatInstallUtil.getPort(service));
-            inputStream.close();
-
-            InstanceProperties ip = getInstanceProperties();
-            if (ip != null) {
-                ip.setProperty(TIMESTAMP, t.toString());
-                ip.setProperty(SERVER_PORT, serverPort.toString());
-                return serverPort;
-            }
-
-        } catch (Exception e) {
-            if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-                TomcatFactory.getEM ().log (e.toString());
-            }
-        }
-        return null;
-    }*/
     
-    private boolean isPortUpToDate(Long timestamp) {
+    private synchronized boolean isPortUpToDate(Long timestamp) {
         String serverXml;
         if (catalinaBase == null) {
             serverXml = catalinaHome + SERVERXML_PATH;
