@@ -80,5 +80,9 @@ final class DummyBridgeImpl implements BridgeInterface, IntrospectionHelperProxy
         problem.printStackTrace(err);
         return false;
     }
+
+    public void stop(Thread process) {
+        // do nothing
+    }
     
 }

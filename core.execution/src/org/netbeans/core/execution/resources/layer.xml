@@ -20,7 +20,6 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
         <folder name="Window">
-            <file name="org-netbeans-core-execution-ExecutionViewAction.instance"/>
             <file name="org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
         </folder>
         
@@ -28,20 +27,15 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Menu">
         <folder name="Window">
-            <attr name="oldRootsEnd.txt/org-netbeans-core-execution-ExecutionViewAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-execution-ExecutionViewAction.instance"/>
             <attr name="ViewFilesystemsTabAction.shadow/ViewRuntimeTabAction.shadow" boolvalue="true" />
+            <attr name="org-netbeans-core-output2-OutputWindowAction.instance/ViewRuntimeTabAction.shadow" boolvalue="true"/>
             <file name="ViewRuntimeTabAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
             </file>
-            <attr name="ViewRuntimeTabAction.shadow/org-netbeans-core-actions-GlobalPropertiesAction.instance" boolvalue="true" />
         </folder>
     </folder>  
     
     <folder name="Shortcuts">
-        <file name="DS-6.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.core.execution.ExecutionViewAction"/>
-	</file>
         <file name="D-5.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
         </file>
@@ -96,23 +90,10 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="runtime.wstcref" url="windowmanager/explorer/runtime.wstcref" />
             </folder>
 
-            <folder name="debugger">
-                <attr name="threads.wstcref/execution.wstcref" boolvalue="true"/>
-                <file name="execution.wstcref" url="windowmanager/debugger/execution.wstcref" />
-            </folder> 
-
-        </folder>
-        
-        <folder name="Groups">
-            <file name="execution.wsgrp" url="groups/execution.wsgrp" />
-            <folder name="execution">
-                <file name="execution.wstcgrp" url="groups/execution/execution.wstcgrp" />
-            </folder>
         </folder>
         
         <folder name="Components">            
             <file name="runtime.settings" url="components/runtime.settings" />
-            <file name="execution.settings" url="components/execution.settings" />
         </folder>
         
     </folder>

@@ -7,40 +7,53 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.execution;
 
-import java.awt.*;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
 import java.awt.image.BufferedImage;
 import java.beans.Introspector;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorManager;
-import java.util.*;
-import javax.swing.*;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import org.netbeans.TopSecurityManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.execution.ExecutorTask;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.view.ListView;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInstall;
-import org.openide.nodes.*;
-import org.openide.util.*;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-
-import org.netbeans.TopSecurityManager;
-
-import org.openide.ErrorManager;
 
 /**
  * Registers security manager for execution.
@@ -77,15 +90,9 @@ public class Install extends ModuleInstall {
             PropertyEditorManager.setEditorSearchPath(
                 (String[])paths.toArray(new String[0]));
         }
-        
-        // XXX #37534
-        ExecutionViewAction.installExecutionListener();
     }
     
     public void uninstalled() {
-        // XXX #37534
-        ExecutionViewAction.uninstallExecutionListener();
-
         showPendingTasks();
 
         TopSecurityManager.unregister(SecMan.DEFAULT);

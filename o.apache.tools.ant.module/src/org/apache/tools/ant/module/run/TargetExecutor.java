@@ -190,6 +190,7 @@ public final class TargetExecutor implements Runnable {
     /** Call execute(), not this method directly!
      */
     synchronized public void run () {
+        Thread thisProcess = null;
         try {
         
         if (outputStream == null) {
@@ -233,6 +234,8 @@ public final class TargetExecutor implements Runnable {
             }
         }
         
+        thisProcess = Thread.currentThread();
+        StopBuildingAction.registerProcess(thisProcess, displayName);
         ok = AntBridge.getInterface().run(buildFile, targetNames, in, out, err, properties, verbosity, displayName);
         
         } finally {
@@ -241,7 +244,15 @@ public final class TargetExecutor implements Runnable {
                     freeTabs.put(io, displayName);
                 }
             }
+            if (thisProcess != null) {
+                StopBuildingAction.unregisterProcess(thisProcess);
+            }
         }
+    }
+    
+    /** Try to stop a build. */
+    static void stopProcess(Thread t) {
+        AntBridge.getInterface().stop(t);
     }
 
 }

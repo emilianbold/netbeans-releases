@@ -40,6 +40,14 @@ public interface BridgeInterface {
     boolean run(File buildFile, List targets, InputStream in, OutputWriter out, OutputWriter err, Properties properties, int verbosity, String displayName);
     
     /**
+     * Try to stop a running build.
+     * The implementation may wait for a while to stop at a safe point,
+     * and/or stop forcibly.
+     * @param process the thread which is currently running the build (in which {@link #run} was invoked)
+     */
+    void stop(Thread process);
+    
+    /**
      * Get some informational value of the Ant version.
      * @return the version
      */

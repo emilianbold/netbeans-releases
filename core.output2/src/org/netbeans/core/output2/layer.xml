@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
@@ -32,7 +32,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-output2-PreviousOutJumpAction.instance"/>
         </folder>
         <folder name="Window">
-            <attr name="org-netbeans-core-execution-ExecutionViewAction.instance/org-netbeans-core-output2-OutputWindowAction.instance" boolvalue="true"/>
+            <attr name="ViewFavoritesTabAction.shadow/org-netbeans-core-output2-OutputWindowAction.instance" boolvalue="true"/>
+            <attr name="org-netbeans-core-output2-OutputWindowAction.instance/ViewRuntimeTabAction.shadow" boolvalue="true"/>
             <file name="org-netbeans-core-output2-OutputWindowAction.instance"/>
             <attr name="org-netbeans-core-output2-OutputWindowAction.instance/Form" boolvalue="true"/>
         </folder>

@@ -48,7 +48,9 @@ import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.apache.tools.ant.module.spi.TaskStructure;
 import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
@@ -91,6 +93,9 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     
     private final Set/*<Throwable>*/ consumedExceptions = new WeakSet();
     
+    /** whether this process should be halted at the next safe point */
+    private boolean stop = false;
+    
     /**
      * Map from master build scripts to maps from imported target names to imported locations.
      * Hack for lack of Target.getLocation() in Ant 1.6.2 and earlier.
@@ -121,6 +126,19 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         this.displayName = displayName;
         if (LOGGABLE) {
             ERR.log(EM_LEVEL, "---- Initializing build of " + origScript + " \"" + displayName + "\" at verbosity " + verbosity + " ----");
+        }
+    }
+    
+    /** Try to stop running at the next safe point. */
+    public void stop() {
+        stop = true;
+    }
+    
+    /** Stop the build now if requested. */
+    private void checkForStop() {
+        if (stop) {
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbBuildLogger.class, "MSG_stopped", displayName));
+            throw new ThreadDeath();
         }
     }
     
@@ -302,6 +320,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     public synchronized void buildStarted(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
+            checkForStop();
             initInterestedLoggers();
             AntEvent e = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(new Event(ev, false));
             if (LOGGABLE) {
@@ -324,6 +343,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     public synchronized void buildFinished(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
+            checkForStop();
             lastTask = null;
             initInterestedLoggers(); // just in case
             AntEvent e = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(new Event(ev, false));
@@ -350,6 +370,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     public synchronized void targetStarted(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
+            checkForStop();
             lastTask = null;
             AntEvent e = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(new Event(ev, false));
             if (LOGGABLE) {
@@ -372,6 +393,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     public synchronized void targetFinished(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
+            checkForStop();
             lastTask = null;
             AntEvent e = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(new Event(ev, false));
             if (LOGGABLE) {
@@ -394,6 +416,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     public synchronized void taskStarted(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
+            checkForStop();
             lastTask = ev.getTask();
             AntEvent e = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(new Event(ev, false));
             if (LOGGABLE) {
@@ -416,6 +439,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     public synchronized void taskFinished(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
+            checkForStop();
             lastTask = null;
             AntEvent e = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(new Event(ev, false));
             if (LOGGABLE) {
@@ -471,6 +495,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     public synchronized void messageLogged(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
+            checkForStop();
             AntEvent e = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(new Event(ev, true));
             if (LOGGABLE) {
                 ERR.log(EM_LEVEL, "messageLogged: " + e);
@@ -625,6 +650,10 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     public int getVerbosity() {
         assert Thread.holdsLock(this);
         return verbosity;
+    }
+    
+    String getDisplayNameNoLock() {
+        return displayName;
     }
     
     public String getDisplayName() {

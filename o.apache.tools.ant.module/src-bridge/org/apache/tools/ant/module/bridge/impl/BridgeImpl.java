@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
+import java.util.WeakHashMap;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DemuxOutputStream;
 import org.apache.tools.ant.IntrospectionHelper;
@@ -48,6 +49,7 @@ import org.apache.tools.ant.module.bridge.IntrospectionHelperProxy;
 import org.apache.tools.ant.types.EnumeratedAttribute;
 import org.apache.tools.ant.types.Path;
 import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -62,7 +64,16 @@ import org.openide.windows.OutputWriter;
  */
 public class BridgeImpl implements BridgeInterface {
     
+    /** Number of milliseconds to wait before forcibly halting a runaway process. */
+    private static final int STOP_TIMEOUT = 3000;
+    
     private static boolean classpathInitialized = false;
+    
+    /**
+     * Index of loggers by active thread.
+     * @see #stop
+     */
+    private static final Map/*<Thread,NbBuildLogger>*/ loggersByThread = new WeakHashMap();
     
     public BridgeImpl() {
     }
@@ -212,6 +223,11 @@ public class BridgeImpl implements BridgeInterface {
                                      new PrintStream(new DemuxOutputStream(project, false)),
                                      new PrintStream(new DemuxOutputStream(project, true)));
 
+        Thread currentThread = Thread.currentThread();
+        synchronized (loggersByThread) {
+            assert !loggersByThread.containsKey(currentThread);
+            loggersByThread.put(currentThread, logger);
+        }
         try {
             // Execute the configured project
             //writer.println("#4"); // NOI18N
@@ -233,6 +249,9 @@ public class BridgeImpl implements BridgeInterface {
                 } catch (IOException e) {
                     AntModule.err.notify(e);
                 }
+            }
+            synchronized (loggersByThread) {
+                loggersByThread.remove(currentThread);
             }
         }
         
@@ -275,6 +294,35 @@ public class BridgeImpl implements BridgeInterface {
         return ok;
     }
 
+    public void stop(final Thread process) {
+        NbBuildLogger logger;
+        synchronized (loggersByThread) {
+            logger = (NbBuildLogger) loggersByThread.get(process);
+        }
+        if (logger != null) {
+            // Try stopping at a safe point.
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(BridgeImpl.class, "MSG_stopping", logger.getDisplayNameNoLock()));
+            logger.stop();
+            // But if that doesn't do it, double-check later...
+            // Yes Thread.stop() is deprecated; that is why we try to avoid using it.
+            RequestProcessor.getDefault().create(new Runnable() {
+                public void run () {
+                    forciblyStop(process);
+                }
+            }).schedule(STOP_TIMEOUT);
+        } else {
+            // Try killing it now!
+            forciblyStop(process);
+        }
+    }
+    
+    private void forciblyStop(Thread process) {
+        if (process.isAlive()) {
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(BridgeImpl.class, "MSG_halting"));
+            process.stop();
+        }
+    }
+    
     //copy - paste programming
     //http://ant.netbeans.org/source/browse/ant/src-bridge/org/apache/tools/ant/module/bridge/impl/BridgeImpl.java.diff?r1=1.15&r2=1.16
     //http:/java.netbeans.org/source/browse/java/javacore/src/org/netbeans/modules/javacore/Util.java    
