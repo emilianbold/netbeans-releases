@@ -111,18 +111,20 @@ public final class NbMainExplorer extends CloneableTopComponent
     * backward serialization compatibility.
     * Performed with delay, when WS is in consistent state. */
     public void open (Workspace workspace) {
-        WindowManagerImpl.deferredPerformer().putRequest(this, workspace);
+        WindowManagerImpl.deferredPerformer().putRequest(
+            this, new DeferredPerformer.DeferredContext(workspace, true)
+        );
     }
 
     /** Implementation of DeferredPerformer.DeferredCommand.
     * Serves both for refresh roots and old explorer open requests */
-    public void performCommand (Object context) {
-        if (context == null) {
+    public void performCommand (DeferredPerformer.DeferredContext context) {
+        Workspace workspace = (Workspace)context.getData(); 
+        if (workspace == null) {
             // refresh roots request
             refreshRoots ();
         } else {
             // old explorer open request
-            Workspace workspace = (Workspace)context;
             super.open(workspace);
             close(workspace);
             // now open new main explorer top components
@@ -459,7 +461,7 @@ public final class NbMainExplorer extends CloneableTopComponent
         * Performs initialization of component's attributes
         * after deserialization (component's name, icon etc, 
         * according to the root context) */
-        public void performCommand (Object context) {
+        public void performCommand (DeferredPerformer.DeferredContext context) {
             if (!valid) {
                 valid = true;
                 validateRootContext();
@@ -794,8 +796,10 @@ public final class NbMainExplorer extends CloneableTopComponent
             if (TopManager.PROP_PLACES.equals(evt.getPropertyName())) {
                 // possible change in list of roots
                 // defer refresh request if window system is in inconsistent state
-                WindowManagerImpl.deferredPerformer().
-                putRequest(NbMainExplorer.getExplorer(), null);
+                WindowManagerImpl.deferredPerformer().putRequest(
+                    NbMainExplorer.getExplorer(), 
+                    new DeferredPerformer.DeferredContext(null, true)
+                );
             }
         }
     } // end of RootsListener inner class
