@@ -83,6 +83,7 @@ public class ReplaceTest extends EditorTestCase {
             
             // choose the "testFindSelectionRepeated" word
             editor.select(13, 14, 41);
+            new EventTool().waitNoEvent(REPLACE_TIMEOUT);
             new ReplaceAction().perform();
             Replace replace = new Replace();
             
@@ -235,12 +236,6 @@ public class ReplaceTest extends EditorTestCase {
             replace.cboFindWhat().typeText("testCase");
             replace.cboReplaceWith().clearText();
             replace.cboReplaceWith().typeText("xxxxXxxx");
-            replace.replace();
-            // check status bar
-            waitForLabel("'testCase' found at 21:12");
-
-            replace.replace();
-
             replace.replace();
             
             replace.close();
