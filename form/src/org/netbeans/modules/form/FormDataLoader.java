@@ -35,7 +35,7 @@ public class FormDataLoader extends MultiFileLoader {
   /** Constructs a new FormDataLoader */
   public FormDataLoader () {
     super (FormDataObject.class);
-    setDisplayName(NbBundle.getBundle(this).getString("PROP_FormLoader_Name"));
+    setName(NbBundle.getBundle(this).getString("PROP_FormLoader_Name"));
 
     setActions(new SystemAction[] {
       SystemAction.get (OpenAction.class),
@@ -127,7 +127,6 @@ public class FormDataLoader extends MultiFileLoader {
 
 /*
  * Log
- *  8    Gandalf   1.7         3/16/99  Ian Formanek    
  *  7    Gandalf   1.6         3/16/99  Ian Formanek    
  *  6    Gandalf   1.5         3/14/99  Jaroslav Tulach Change of 
  *       MultiDataObject.Entry.
