@@ -206,6 +206,10 @@ public abstract class I18nSupport {
         
         /** Actually creates i18n support instance. */
         protected abstract I18nSupport createI18nSupport(DataObject dataObject);
+        
+        /** Gets class type of <code>DataObject</code> which can to internationalize. */
+        public abstract Class getDataObjectClass();
+        
     } // End of nested Factory class.
     
 }

@@ -87,7 +87,7 @@ public class I18nAction extends CookieAction {
         if(dataObject == null)
             return false;
         
-        return FactoryRegistry.hasFactory(dataObject.getClass().getName());
+        return FactoryRegistry.hasFactory(dataObject.getClass());
     }
     
     /** Gets localized name of action. Overrides superclass method. */

@@ -26,6 +26,7 @@ import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.java.JavaI18nSupport;
 
 import org.openide.loaders.DataObject;
+import org.openide.TopManager;
 
 
 /** 
@@ -226,5 +227,23 @@ public class JspI18nSupport extends JavaI18nSupport {
         public I18nSupport createI18nSupport(DataObject dataObject) {
             return new JspI18nSupport(dataObject);
         }
-    }
+        
+        /** Gets class of supported <code>DataObject</code>.
+         * @return <code>JspDataObject</code> class or <code>null</code> 
+         * if jsp module is not available */
+        public Class getDataObjectClass() {
+            // XXX Cleaner should be this code dependend on java module
+            // -> I18n API needed.
+            try {
+                return Class.forName(
+                    "org.netbeans.modules.web.core.jsploader.JspDataObject", // NOI18N
+                    false,
+                    TopManager.getDefault().systemClassLoader()
+                );
+            } catch(ClassNotFoundException cnfe) {
+                return null;
+            }
+        }
+
+    } // End of class Factory.
 }

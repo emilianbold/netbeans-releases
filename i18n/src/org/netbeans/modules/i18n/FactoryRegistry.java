@@ -15,12 +15,17 @@
 package org.netbeans.modules.i18n;
 
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.openide.util.Lookup;
 
 
 /**
- * Registry which maps i18n support factories to data object names.
- * E.g. for <code>FormDataObject</code> i18n-form module registers <code>FormI18nSupportFactory</code>.
+ * Registry which gets i18n support factories for specified data objects.
+ * It gets the factories which are registered in SFS/Services/i18n directory
+ * via lookup.
  *
  * @author  Peter Zavadsky
  * @see I18nSupport.Factory
@@ -29,31 +34,70 @@ import java.util.HashMap;
  */
 public abstract class FactoryRegistry extends Object {
 
-    /** Maps data object class names to i18n support factory objects. */
-    private static HashMap registry = new HashMap(3);
-
     
-    /** Registers factory to data object class.
-     * @param dataObjectClassName class name of data object for which factory to register
-     * @param factpry i18n factory for specified data object */
-    public static synchronized void registerSupport(String dataObjectClassName, I18nSupport.Factory factory) {
-        registry.put(dataObjectClassName, factory);
+    /** All i18n supports kept as <code>Lookup.Result</code>. */
+    private static Lookup.Result result;
+    
+    
+    /** Gets lookup result holding script type instances. */
+    private static Lookup.Result getSupports() {
+        if(result == null) {
+            result = Lookup.getDefault().lookup(new Lookup.Template(I18nSupport.Factory.class));
+        }
+        
+        return result;
     }
     
-    /** Unregisters factory for the spcified data object. 
-     * @param dataObjectClassName class name of data object which factory to unregister */
-    public static synchronized void unregisterSupport(String dataObjectClassName) {
-        registry.remove(dataObjectClassName);
-    }
-
     /** Gets <code>I18nSupportFactory</code> for specified data object class.
-     * @return registered factory for specified data object class name or null if no was registered */
-    public static I18nSupport.Factory getFactory(String dataObjectClassName) {
-        return (I18nSupport.Factory)registry.get(dataObjectClassName);
+     * @return factory for specified data object class or <code>null</code> */
+    public static I18nSupport.Factory getFactory(Class dataObjectClass) {
+        List candidates = new ArrayList(3);
+        
+        for(Iterator it = getSupports().allInstances().iterator(); it.hasNext(); ) {
+            I18nSupport.Factory factory = (I18nSupport.Factory)it.next();
+
+            if(factory.getDataObjectClass().isAssignableFrom(dataObjectClass)) {
+                candidates.add(factory);
+            }
+        }
+        
+        if(candidates.size() == 0) {
+            return null;
+        } else if(candidates.size() == 1) {
+            return (I18nSupport.Factory)candidates.get(0);
+        } else {
+            I18nSupport.Factory chosen = null;
+            
+            // Find factory which supported class data object 
+            // is the lowest one in the class hierarchy.
+            for(Iterator it = candidates.iterator(); it.hasNext(); ) {
+                I18nSupport.Factory fct = (I18nSupport.Factory)it.next();
+                
+                if(chosen == null) {
+                    chosen = fct;
+                    continue;
+                }
+                
+                if(chosen.getDataObjectClass().isAssignableFrom(fct.getDataObjectClass()) ) {
+                    chosen = fct;
+                }
+            }
+            
+            return chosen;
+        }
     }
 
-    /** Indicates if there is registered factory for that data object class name. */
-    public static boolean hasFactory(String dataObjectClassName) {
-        return registry.containsKey(dataObjectClassName);
+    /** Indicates if there is a factory for that data object class. */
+    public static boolean hasFactory(Class dataObjectClass) {
+        for(Iterator it = getSupports().allInstances().iterator(); it.hasNext(); ) {
+            I18nSupport.Factory factory = (I18nSupport.Factory)it.next();
+            
+            if(factory.getDataObjectClass().isAssignableFrom(dataObjectClass)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
+    
 }

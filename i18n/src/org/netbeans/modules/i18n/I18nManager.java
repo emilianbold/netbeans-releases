@@ -26,6 +26,7 @@ import java.io.ObjectStreamException;
 import java.lang.ref.WeakReference;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Caret;
 
 import org.openide.cookies.EditorCookie;
@@ -40,7 +41,7 @@ import org.openide.windows.Workspace;
 
 
 /**
- * Manages perfroming of i18n action -> i18n-zation of one source.
+ * Manages performing of i18n action -> i18n-zation of one source.
  *
  * @author   Peter Zavadsky
  */
@@ -87,13 +88,13 @@ public class I18nManager {
     
     /** Get i18n support. */
     private void initSupport(DataObject sourceDataObject) throws IOException {
-        I18nSupport.Factory factory = FactoryRegistry.getFactory(sourceDataObject.getClass().getName());
+        I18nSupport.Factory factory = FactoryRegistry.getFactory(sourceDataObject.getClass());
         
         support = factory.create(sourceDataObject);
     }
     
     /** The 'heart' method called by <code>I18nAction</code>. */
-    public void internationalize(DataObject sourceDataObject) {
+    public void internationalize(final DataObject sourceDataObject) {
         // If there is insert i18n action working on the same document -> cancel it.
         ((InsertI18nStringAction)SystemAction.get(InsertI18nStringAction.class)).cancel();
 
@@ -105,38 +106,68 @@ public class I18nManager {
             initSupport(sourceDataObject);
         } catch(IOException ioe) {
             if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                System.err.println("I18N: Document could noy be loaded for "+sourceDataObject.getName()); // NOI18N
+                System.err.println("I18N: Document could not be loaded for "+sourceDataObject.getName()); // NOI18N
             
             return;
         }
 
         // initialize the component
-        EditorCookie ec = (EditorCookie)sourceDataObject.getCookie(EditorCookie.class);
+        final EditorCookie ec = (EditorCookie)sourceDataObject.getCookie(EditorCookie.class);
         if(ec == null)
             return;
 
+        // do the search
+        if(find()) {
+            // XXX It's necessary to send it to AWT Thread thus assure the 
+            // editor cookie succed to open the panes via open() method ->
+            // subclasses usually sends opening to AWT thread.
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    initCaret(ec);
+                    highlightHCString();
+
+                    // Add i18n panel to top component.
+                    getDialog(sourceDataObject.getName());
+
+                    fillDialogValues();
+                }
+            });
+        } else {
+            NotifyDescriptor.Message message = new NotifyDescriptor.Message(
+                I18nUtil.getBundle().getString("MSG_NoInternationalizableString"), NotifyDescriptor.INFORMATION_MESSAGE); // to info message
+            TopManager.getDefault().notify(message);
+        }
+    }
+
+    /** Initializes caret. */
+    private void initCaret(EditorCookie ec) {
         JEditorPane[] panes = ec.getOpenedPanes();
         if(panes == null) {
             NotifyDescriptor.Message message = new NotifyDescriptor.Message(
                 I18nUtil.getBundle().getString("MSG_CouldNotOpen"), NotifyDescriptor.ERROR_MESSAGE);
             TopManager.getDefault().notify(message);
-            
+
+            return;
+        }
+
+        // Keep only weak ref to caret, the strong one maintains editor pane itself.
+        caretWRef = new WeakReference(panes[0].getCaret());
+    }
+    
+    /** Highlights found hasrdcoded string. */
+    private void highlightHCString() {
+        HardCodedString hStr = hcString;
+        
+        if(hStr == null) {
             return;
         }
         
-        // Keep only weak ref to caret, the strong one maintains editor pane itself.
-        caretWRef = new WeakReference(panes[0].getCaret());
-
-        // do the search
-        if(find()) {
-            // Add i18n panel to top component.
-            getDialog(sourceDataObject.getName());
-            
-            fillDialogValues();
-        } else {
-            NotifyDescriptor.Message message = new NotifyDescriptor.Message(
-                I18nUtil.getBundle().getString("MSG_NoInternationalizableString"), NotifyDescriptor.INFORMATION_MESSAGE); // to info message
-            TopManager.getDefault().notify(message);
+        // Highlight found hard coded string.
+        Caret caret = (Caret)caretWRef.get();
+        
+        if(caret != null) {
+            caret.setDot(hStr.getStartPosition().getOffset());
+            caret.moveDot(hStr.getEndPosition().getOffset());
         }
     }
 
@@ -146,13 +177,6 @@ public class I18nManager {
         hcString = support.getFinder().findNextHardCodedString();
 
         if(hcString != null) {
-            // Highlight found hard coded string.
-            Caret caret = (Caret)caretWRef.get();
-            if(caret != null) {
-                caret.setDot(hcString.getStartPosition().getOffset());
-                caret.moveDot(hcString.getEndPosition().getOffset());
-            }
-
             return true;
         } 
         
@@ -199,10 +223,13 @@ public class I18nManager {
     
     /** Skips foudn hard coded string and conitnue to search for next one. */
     private void skip() {
-        if(find())
+        if(find()) {
+            highlightHCString();
+            
             fillDialogValues();
-        else
+        } else {
             cancel();
+        }
     }
     
     /** Shows info about found hard coded string. */

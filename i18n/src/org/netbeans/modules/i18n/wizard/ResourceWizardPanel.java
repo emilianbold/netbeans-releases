@@ -449,10 +449,10 @@ public class ResourceWizardPanel extends JPanel {
                 if(support == null) {
                     // Invalid sourceData.                    
                     try {
-                        support = FactoryRegistry.getFactory(source.getClass().getName()).create(source);
+                        support = FactoryRegistry.getFactory(source.getClass()).create(source);
                     } catch(IOException ioe) {
                         if(I18nUtil.isDebug())
-                            System.err.println("I18N: Document could noy be loaded for " + source.getName()); // NOI18N
+                            System.err.println("I18N: Document could not be loaded for " + source.getName()); // NOI18N
 
                         // Remove source from settings.
                         sourceMap.remove(source);

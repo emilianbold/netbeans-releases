@@ -189,7 +189,7 @@ public abstract class I18nUtil {
                 if(containsAcceptedDataObject((DataFolder)children[i]))
                     return true;
             } else {
-                if(FactoryRegistry.hasFactory(children[i].getClass().getName()))
+                if(FactoryRegistry.hasFactory(children[i].getClass()))
                     return true;
             }
         }
@@ -207,7 +207,7 @@ public abstract class I18nUtil {
             if(children[i] instanceof DataFolder) {  
                 accepted.addAll(getAcceptedDataObjects((DataFolder)children[i]));
             } else {
-                if(FactoryRegistry.hasFactory(children[i].getClass().getName()))
+                if(FactoryRegistry.hasFactory(children[i].getClass()))
                     accepted.add(children[i]);
             }
         }
@@ -238,7 +238,7 @@ public abstract class I18nUtil {
                     
                     while(it.hasNext())
                         addSource(settings, (DataObject)it.next());
-                } else if(FactoryRegistry.hasFactory(dataObject.getClass().getName()))                    
+                } else if(FactoryRegistry.hasFactory(dataObject.getClass()))
                     addSource(settings, dataObject);
             }
         }

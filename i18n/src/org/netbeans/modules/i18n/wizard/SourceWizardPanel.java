@@ -196,7 +196,7 @@ public class SourceWizardPanel extends JPanel {
         DataFilter dataFilter = new DataFilter() {
             public boolean acceptDataObject (DataObject dataObject) {
                 return (dataObject instanceof DataFolder
-                 || FactoryRegistry.hasFactory(dataObject.getClass().getName()));
+                 || FactoryRegistry.hasFactory(dataObject.getClass()));
             }
         };
       
@@ -225,7 +225,7 @@ public class SourceWizardPanel extends JPanel {
                                 return true;
                             
                             // Has to have registered i18n factory for that data object class name.
-                            if(FactoryRegistry.hasFactory(dataObject.getClass().getName()))
+                            if(FactoryRegistry.hasFactory(dataObject.getClass()))
                                 return true;
                         }
                         

@@ -28,6 +28,14 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
   
     <folder name="Services">
+        <!-- I18N supports -->
+        <folder name="i18n">
+            <attr name="hidden" boolvalue="true"/>
+            
+            <file name="org-netbeans-modules-i18n-java-JavaI18nSupportFactory.settings" url="java/JavaI18nSupportFactory.settings"/>
+            <file name="org-netbeans-modules-i18n-jsp-JspI18nSupportFactory.settings" url="jsp/JspI18nSupportFactory.settings"/>
+        </folder>
+    
         <!-- I18N Settings -->
         <file name="org-netbeans-modules-i18n-I18nOptions.settings" url="I18nOptions.settings"/>
         

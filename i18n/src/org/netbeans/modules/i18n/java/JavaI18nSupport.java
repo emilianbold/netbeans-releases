@@ -850,5 +850,21 @@ public class JavaI18nSupport extends I18nSupport {
         public I18nSupport createI18nSupport(DataObject dataObject) {
             return new JavaI18nSupport(dataObject);
         }
-    }
+
+        /** Gets class of supported <code>DataObject</code>.
+         * @return <code>JavaDataObject</code> class or <code>null</code> 
+         * if java module is not available */
+        public Class getDataObjectClass() {
+            // XXX Cleaner should be this code dependend on java module
+            // -> I18n API needed.
+            try {
+                return Class.forName(
+                    "org.netbeans.modules.java.JavaDataObject", // NOI18N
+                    false,
+                    TopManager.getDefault().systemClassLoader());
+            } catch(ClassNotFoundException cnfe) {
+                return null;
+            }
+        }
+    } // End of class Factory.
 }

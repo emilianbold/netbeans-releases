@@ -100,8 +100,8 @@ public class InsertI18nStringAction extends CookieAction {
     }
 
     /** Create panel used for specifying i18n string. */
-    private JPanel createPanel(final DataObject dataObject) throws IOException { //  TEMP
-        I18nSupport.Factory factory = FactoryRegistry.getFactory(dataObject.getClass().getName());
+    private JPanel createPanel(final DataObject dataObject) throws IOException {
+        I18nSupport.Factory factory = FactoryRegistry.getFactory(dataObject.getClass());
         
         if(factory == null)
             throw new IllegalStateException("I18N: No factory registered for data object type="+dataObject.getClass().getName()); // NOI18N
@@ -284,7 +284,7 @@ public class InsertI18nStringAction extends CookieAction {
         if(dataObject == null)
             return false;
         
-        return FactoryRegistry.hasFactory(dataObject.getClass().getName());
+        return FactoryRegistry.hasFactory(dataObject.getClass());
     }
 
     /** Implements superclass abstract method.
