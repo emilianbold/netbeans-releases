@@ -17,6 +17,7 @@ import java.io.IOException;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.web.dd.EjbLocalRef;
 import org.netbeans.api.web.dd.EjbRef;
+import org.netbeans.api.web.dd.MessageDestinationRef;
 import org.netbeans.api.web.dd.ResourceRef;
 
 /**
@@ -59,7 +60,15 @@ public abstract class EnterpriseReferenceContainer {
      */
     public abstract String getServiceLocatorName();
     
-    // JMS
+    /**
+     * Add given message destination reference into the deployment descriptor
+     * @param ref to destination
+     * @param referencingClass class using the destination
+     * @return unique jndi name used in the deployment descriptor
+     */
+    public abstract String addDestinationRef(MessageDestinationRef ref, String referencingClass) throws IOException;
+
+    public abstract MessageDestinationRef createDestinationRef(String className) throws IOException;
     
     /**
      * Add given resource reference into the deployment descriptor.

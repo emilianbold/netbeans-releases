@@ -17,13 +17,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.web.dd.DDProvider;
 import org.netbeans.api.web.dd.EjbLocalRef;
 import org.netbeans.api.web.dd.EjbRef;
+import org.netbeans.api.web.dd.MessageDestinationRef;
 import org.netbeans.api.web.dd.ResourceRef;
 import org.netbeans.api.web.dd.WebApp;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
@@ -34,6 +34,7 @@ import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -116,7 +117,9 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
     
     private WebApp getWebApp() throws IOException {
         WebModuleImplementation jp = (WebModuleImplementation) webProject.getLookup().lookup(WebModuleImplementation.class);
-        return DDProvider.getDefault().getDDRootCopy(jp.getDeploymentDescriptor());
+        FileObject fo = jp.getDeploymentDescriptor();
+        fo.refresh();
+        return DDProvider.getDefault().getDDRootCopy(fo);
     }
     
     private void writeDD(BaseBean bb) throws IOException {
@@ -158,5 +161,30 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
             proposedValue = originalValue+Integer.toString(index++);
         }
         return proposedValue;
+    }
+
+    public String addDestinationRef(MessageDestinationRef ref, String referencingClass) throws IOException {
+        BaseBean bb = findDD();
+        // Using basebean here as the web dd implementation classes
+        // perform downcasting. Pavel / Milan can this be resolved
+        // this idiom will be used for many other enterprise resources
+        String refName = getUniqueName(getWebApp(), "MessageDestinationRef", "MessageDestinationRefName", //NOI18N
+                                ref.getMessageDestinationRefName());
+        ref.setMessageDestinationRefName(refName);
+        bb.addValue("MessageDestinationRef", ref);
+        writeDD(bb);
+        return refName;
+    }
+
+    public MessageDestinationRef createDestinationRef(String className) throws IOException {
+        MessageDestinationRef ref = null;
+        try {
+         ref = (MessageDestinationRef) getWebApp().createBean("MessageDestinationRef");
+        } catch (ClassNotFoundException cnfe) {
+            IOException ioe = new IOException();
+            ioe.initCause(cnfe);
+            throw ioe;
+        }
+        return ref;
     }
 }
