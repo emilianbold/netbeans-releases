@@ -100,7 +100,6 @@ final class EjbJarProject implements Project, AntProjectListener {
         ejbModule = new EjbJarProvider(this, helper);
         ejbJarWebServicesSupport = new EjbJarWebServicesSupport(this, helper); 
         apiWebServicesSupport = WebServicesSupportFactory.createWebServicesSupport (ejbJarWebServicesSupport);
-	//  apiWebServicesClientSupport = WebServicesSupportFactory.createWebServicesClientSupport (ejbModule);
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
     }
@@ -169,7 +168,13 @@ final class EjbJarProject implements Project, AntProjectListener {
             fileBuilt,
             new RecommendedTemplatesImpl(),
             refHelper,
-            sourcesHelper.createSources()
+            sourcesHelper.createSources(),
+            helper.createSharabilityQuery(evaluator(), 
+                new String[] {"${"+EjbJarProjectProperties.SOURCE_ROOT+"}"},
+                new String[] {
+                    "${"+EjbJarProjectProperties.BUILD_DIR+"}",
+                    "${"+EjbJarProjectProperties.DIST_DIR+"}"}
+            )
         });
     }
 
@@ -272,32 +277,6 @@ final class EjbJarProject implements Project, AntProjectListener {
             }
         });
     }
-    
-    /** Store configured project name. * /
-    public void setName(final String name) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
-                Element data = helper.getPrimaryConfigurationData(true);
-                // XXX replace by XMLUtil when that has findElement, findText, etc.
-                NodeList nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
-                Element nameEl;
-                if (nl.getLength() == 1) {
-                    nameEl = (Element) nl.item(0);
-                    NodeList deadKids = nameEl.getChildNodes();
-                    while (deadKids.getLength() > 0) {
-                        nameEl.removeChild(deadKids.item(0));
-                    }
-                } else {
-                    nameEl = data.getOwnerDocument().createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
-                    data.insertBefore(nameEl, / * OK if null * /data.getChildNodes().item(0));
-                }
-                nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
-                helper.putPrimaryConfigurationData(data, true);
-                return null;
-            }
-        });
-    }
-     */
     
     // Private innerclasses ----------------------------------------------------
     
