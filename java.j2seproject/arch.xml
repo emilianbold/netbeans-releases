@@ -259,7 +259,7 @@ Microsystems, Inc. All Rights Reserved.
    <li>
     <api group="java" name="AntModuleAPI" type="import" category="devel">
      <p>
-      Used for running actions.
+      Used for running actions and for the <code>AntLogger</code> SPI.
      </p>
     </api>
    </li>
@@ -788,7 +788,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-register">
   <p>
-   Project type and various query implementations are registered.
+   Project type and various query implementations are registered. An
+   <code>AntLogger</code> is registered which currently just tweaks the
+   appearance of compiler errors.
   </p>
  </answer>
 
