@@ -16,4 +16,4 @@ OpenIDE-Module-Class: Loader
 
 Name: org/netbeans/modules/web/core/jsploader/JspServletDataLoader.class
 OpenIDE-Module-Class: Loader
-Install-Before: org.netbeans.modules.java.JavaDataObject
+Install-After: org.netbeans.modules.java.JavaDataObject

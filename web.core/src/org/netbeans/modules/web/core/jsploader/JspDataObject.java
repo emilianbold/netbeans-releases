@@ -221,6 +221,11 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
                 
                 // set the origin JSP page
                 JspServletDataObject.setSourceJspPage(servletFileObject, this);
+                
+                //set the preferred DataLoader
+                DataLoaderPool.setPreferredLoader(servletFileObject, DataLoader.getLoader(JspServletDataLoader.class));
+                
+                
                 // now the loader should recognize that this servlet was generated from a JSP
                 DataObject dObj= DataObject.find(servletFileObject);
                 if (debug) {
@@ -228,10 +233,10 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
                         ((dObj == null) ? "null" : dObj.getClass().getName()) + // NOI18N
                         "/" + dObj); // NOI18N
                 }
-                if (!(dObj instanceof JspServletDataObject)) {
+                /*if (!(dObj instanceof JspServletDataObject)) {
                     // need to re-recognize
                     dObj = rerecognize(dObj);
-                }
+                }*/
                 if (dObj instanceof JspServletDataObject) {
                     servletDataObject = (JspServletDataObject)dObj;
                     servletDataObjectDate = dObj.getPrimaryFile().lastModified();
@@ -288,7 +293,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
     *  This is a poor practice and should not be normally used, as it uses reflection 
     *  to call a protected method DataObject.dispose().
     */
-    private DataObject rerecognize(DataObject dObj) {
+   /* private DataObject rerecognize(DataObject dObj) {
         // invalidate the object so it can be rerecognized
         FileObject prim = dObj.getPrimaryFile();
         try {
@@ -302,7 +307,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         return dObj;
-    }
+    }*/
     
     /** JDK 1.2 compiler hack. */
     public void firePropertyChange0(String propertyName, Object oldValue, Object newValue) {
