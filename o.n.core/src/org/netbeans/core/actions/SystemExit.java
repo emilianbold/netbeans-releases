@@ -13,7 +13,6 @@
 
 package com.netbeans.developer.impl.actions;
 
-import java.net.URL;
 import java.awt.Dimension;
 import java.util.Iterator;
 import java.beans.BeanInfo;
@@ -29,7 +28,6 @@ import com.netbeans.ide.TopManager;
 import com.netbeans.ide.NotifyDescriptor;
 import com.netbeans.ide.DialogDescriptor;
 import com.netbeans.ide.util.HelpCtx;
-import com.netbeans.ide.util.actions.ActionPerformer;
 import com.netbeans.ide.util.actions.CallableSystemAction;
 import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.nodes.Node;
@@ -62,8 +60,8 @@ public class SystemExit extends CallableSystemAction {
     return new HelpCtx("com.netbeans.developer.docs.Users_Guide.usergd-action", "USERGD-ACTION-TABLE-3");
   }
 
-  /** URL to this action's icon.
-  * @return URL to the action's icon
+  /** Name of this action's icon.
+  * @return name of the action's icon
   */
   protected String iconResource () {
     return "/com/netbeans/developer/impl/resources/actions/exit.gif";
@@ -257,6 +255,7 @@ public class SystemExit extends CallableSystemAction {
 
 /*
  * Log
+ *  10   Gandalf   1.9         5/26/99  Ian Formanek    Actions cleanup
  *  9    Gandalf   1.8         3/29/99  Ian Formanek    CoronaDialog -> 
  *       DialogDescriptor
  *  8    Gandalf   1.7         3/9/99   Jaroslav Tulach ButtonBar  
