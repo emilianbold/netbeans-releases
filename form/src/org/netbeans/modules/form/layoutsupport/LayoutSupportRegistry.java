@@ -193,7 +193,10 @@ public class LayoutSupportRegistry {
             // fill in default containers
             containerToLayoutSupport.put(
                 "javax.swing.JScrollPane",
-                "org.netbeans.modules.form.layoutsupport.dedicated.JScrollPaneSupport");
+                "org.netbeans.modules.form.layoutsupport.dedicated.ScrollPaneSupport");
+            containerToLayoutSupport.put(
+                "java.awt.ScrollPane",
+                "org.netbeans.modules.form.layoutsupport.dedicated.ScrollPaneSupport");
             containerToLayoutSupport.put(
                 "javax.swing.JSplitPane",
                 "org.netbeans.modules.form.layoutsupport.dedicated.JSplitPaneSupport");

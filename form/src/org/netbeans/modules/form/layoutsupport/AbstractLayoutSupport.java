@@ -181,13 +181,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupport
 
             // hack for AWT components
             // we must attach the fake peer to the AWT component again
-            if (!comp.isDisplayable()
-                    && !(comp instanceof javax.swing.JComponent)
-                    && !(comp instanceof javax.swing.RootPaneContainer)) {
-                FakePeerSupport.attachFakePeer(comp);
-                if (comp instanceof Container)
-                    FakePeerSupport.attachFakePeerRecursively((Container)comp);
-            }
+            ensureFakePeerAttached(comp);
         }
     }
 
@@ -288,6 +282,18 @@ public abstract class AbstractLayoutSupport implements LayoutSupport
                 return getConstraints(metacomps[i]);
 
         return null;
+    }
+
+    protected void ensureFakePeerAttached(Component comp) {
+        if (comp != null
+            && !comp.isDisplayable()
+            && !(comp instanceof javax.swing.JComponent)
+            && !(comp instanceof javax.swing.RootPaneContainer))
+        {
+            FakePeerSupport.attachFakePeer(comp);
+            if (comp instanceof Container)
+                FakePeerSupport.attachFakePeerRecursively((Container)comp);
+        }
     }
 
     static protected ResourceBundle getBundle() {

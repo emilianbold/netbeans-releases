@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -61,10 +61,10 @@ public class FormDesigner extends TopComponent
 
     private JMenuBar formJMenuBar;
     private MenuBar formMenuBar;
-    
+
     private FormModel formModel;
     private FormModelListener formModelListener;
-    
+
     private final Map metaCompToComp = new HashMap();
     private final Map compToMetaComp = new HashMap();
     private final ArrayList selectedComponents = new ArrayList();
@@ -78,7 +78,7 @@ public class FormDesigner extends TopComponent
 
     void initialize() {
         repopulateComponentLayer();
-        
+
         // set menu bar
         Object menuVal = topDesignContainer.getAuxValue(
             RADVisualFormContainer.AUX_MENU_COMPONENT);
@@ -87,9 +87,9 @@ public class FormDesigner extends TopComponent
                 .setFormMenu((String)menuVal);
         }
     }
-    
+
     //////
-    
+
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.formeditor"); // NOI18N
     }
@@ -101,7 +101,7 @@ public class FormDesigner extends TopComponent
     //
     //
     //
-    
+
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
         out.writeObject(formModel.getFormDataObject());
@@ -127,7 +127,7 @@ public class FormDesigner extends TopComponent
             return;
         if (isOpened())
             return;
-        
+
         if (workspace == null)
             workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
 
@@ -203,7 +203,7 @@ public class FormDesigner extends TopComponent
         catch (PropertyVetoException ex) {
             ex.printStackTrace();
         }
-            
+
         setActivatedNodes(selectedNodes);
     }
 
@@ -217,17 +217,17 @@ public class FormDesigner extends TopComponent
     }
 
     ////////////////
-    
+
     FormDesigner(FormModel formModel) {
         formModelListener = new FormListener();
-        
+
         componentLayer = new ComponentLayer();
         FakePeerContainer fakeContainer = new FakePeerContainer();
         fakeContainer.setLayout(new BorderLayout());
         fakeContainer.add(componentLayer, BorderLayout.CENTER);
 
         handleLayer = new HandleLayer(this);
-        
+
         layeredPane = new JLayeredPane();
         layeredPane.setLayout(new OverlayLayout(layeredPane));
         layeredPane.add(fakeContainer, new Integer(1000));
@@ -243,7 +243,7 @@ public class FormDesigner extends TopComponent
         if (formModel != null)
             formModel.removeFormModelListener(formModelListener);
         formModel = m;
-        
+
         if (formModel != null) {
             formModel.addFormModelListener(formModelListener);
             topDesignContainer = (RADVisualContainer) formModel.getTopRADComponent();
@@ -299,7 +299,7 @@ public class FormDesigner extends TopComponent
         removeComponentFromSelectionImpl(metacomp);
         updateActivatedNodes();
     }
-    
+
     void clearSelectionImpl() {
         selectedComponents.clear();
         handleLayer.repaint();
@@ -354,11 +354,11 @@ public class FormDesigner extends TopComponent
     }
 
     /** Finds out what component follows after currently selected component
-     * when TAB (forward true) or Shift+TAB (forward false) is pressed. 
+     * when TAB (forward true) or Shift+TAB (forward false) is pressed.
      * @returns the next or previous component for selection
      */
     RADVisualComponent getNextVisualComponent(boolean forward) {
-        if (selectedComponents.size() != 1 
+        if (selectedComponents.size() != 1
             || (!(selectedComponents.get(0) instanceof RADVisualComponent)))
             return null;
 
@@ -465,7 +465,7 @@ public class FormDesigner extends TopComponent
         connectionTarget = null;
         handleLayer.repaint();
     }
-    
+
     class FormListener extends FormModelAdapter
     {
         public void formChanged(FormModelEvent e) {
@@ -763,7 +763,7 @@ public class FormDesigner extends TopComponent
                                                 RADVisualComponent radcomp,
                                                 Component comp) {
         comp.setName(radcomp.getName());
-    
+
         if (container instanceof JScrollPane) {
             ((JScrollPane)container).setViewportView(comp);
         }
@@ -824,7 +824,7 @@ public class FormDesigner extends TopComponent
                                             layoutSupp.getConstraints(radcomp);
             if (constrDesc != null)
                 constr = constrDesc.getConstraintsObject();
-      
+
             if (root.getLayout() != null) {
                 if (null == constr)
                     root.add(comp);
@@ -848,6 +848,7 @@ public class FormDesigner extends TopComponent
                 }
                 comp.setBounds(bounds);
             }
+            else root.add(comp);
         }
     }
 
