@@ -40,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
     <instanceof class="java.lang.Object"/>
     <instanceof class="org.openide.awt.HtmlBrowser$Factory"/>
     <instanceof class="java.io.Serializable"/>
-    <instance class="org.netbeans.modules.extbrowser.ExtWebBrowser"/>
+    <instanceof class="org.netbeans.modules.extbrowser.ExtWebBrowser"/>
     <instance class="org.netbeans.modules.extbrowser.UnixWebBrowser"/>
 </settings>
             ]]>
@@ -56,8 +56,8 @@ Microsystems, Inc. All Rights Reserved.
     <instanceof class="java.lang.Object"/>
     <instanceof class="org.openide.awt.HtmlBrowser$Factory"/>
     <instanceof class="java.io.Serializable"/>
-    <instance class="org.netbeans.modules.extbrowser.ExtWebBrowser"/>
-    <instance class="org.netbeans.modules.extbrowser.UnixWebBrowser"/>
+    <instanceof class="org.netbeans.modules.extbrowser.ExtWebBrowser"/>
+    <instance class="org.netbeans.modules.extbrowser.WinWebBrowser"/>
 </settings>
             ]]>
         <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.WinWebBrowser.isHidden"/>
