@@ -30,14 +30,16 @@ implements ObjectVariable {
         ObjectReference value, 
         String className,
         Field field,
-        String parentID
+        String parentID,
+        String genericSignature
     ) {
         super (
-            model, 
-            value, 
+            model,
+            value,
             className,
-            field, 
-            parentID
+            field,
+            parentID,
+            genericSignature
         );
     }
 

@@ -303,7 +303,7 @@ public class LocalsTreeModel implements TreeModel {
         Value v = sf.getValue (lv);
         if (v instanceof ObjectReference)
             return new ObjectLocalVariable 
-                (this, (ObjectReference) v, className, lv);
+                (this, (ObjectReference) v, className, lv, debugger.getGenericSignature(lv));
         else
             return new Local (this, v, className, lv);
     }
@@ -340,15 +340,16 @@ public class LocalsTreeModel implements TreeModel {
         Value v = or.getValue (f);
         if (v instanceof ObjectReference)
             return new ObjectFieldVariable (
-                this, 
-                (ObjectReference) v, 
+                this,
+                (ObjectReference) v,
                 className,
                 f,
-                parentID
+                parentID,
+                debugger.getGenericSignature(f)
             );
         else
             return new FieldVariable (this, v, className, f, parentID);
-    }    
+    }
     
     private boolean isLeafChanged (Value v1, Value v2) {
         return (v1 instanceof ObjectReference) != 

@@ -26,6 +26,10 @@ import com.sun.jdi.Type;
 import com.sun.jdi.Value;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.PushbackReader;
+import java.io.StringReader;
+import java.io.IOException;
+
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.Super;
@@ -40,7 +44,8 @@ public class AbstractVariable implements Variable {
     private Value value;
     private LocalsTreeModel model;
     private String id;
-    
+    private String genericType;
+
 
     AbstractVariable (
         LocalsTreeModel model,
@@ -53,8 +58,91 @@ public class AbstractVariable implements Variable {
         if (this.id == null)
             this.id = "" + super.hashCode ();
     }
-    
-    
+
+    AbstractVariable (LocalsTreeModel model, Value value, String genericSignature, String id) {
+        this.model = model;
+        this.value = value;
+        try {
+            this.genericType = getTypeDescription(new PushbackReader(new StringReader(genericSignature), 1));
+        } catch (IOException e) {
+            /// invalid signature
+        }
+        this.id = id;
+        if (this.id == null)
+            this.id = "" + super.hashCode ();
+    }
+
+    private static String getTypeDescription(PushbackReader signature) throws IOException {
+        int c = signature.read();
+        switch (c) {
+        case 'Z':
+            return "boolean";
+        case 'B':
+            return "byte";
+        case 'C':
+            return "char";
+        case 'S':
+            return "short";
+        case 'I':
+            return "int";
+        case 'J':
+            return "long";
+        case 'F':
+            return "float";
+        case 'D':
+            return "double";
+        case '[':
+        {
+            int arrayCount = 1;
+            for (; ;arrayCount++) {
+                if ((c = signature.read()) != '[') {
+                    signature.unread(c);
+                    break;
+                }
+            }
+            return getTypeDescription(signature) + " " + brackets(arrayCount);
+        }
+        case 'L':
+        {
+            StringBuffer typeName = new StringBuffer(50);
+            for (;;) {
+                c = signature.read();
+                if (c == ';') {
+                    int idx = typeName.lastIndexOf("/");
+                    return idx == -1 ? typeName.toString() : typeName.substring(idx + 1);
+                }
+                else if (c == '<') {
+                    int idx = typeName.lastIndexOf("/");
+                    if (idx != -1) typeName.delete(0, idx + 1);
+                    typeName.append("<");
+                    for (;;) {
+                        String td = getTypeDescription(signature);
+                        typeName.append(td);
+                        c = signature.read();
+                        if (c == '>') break;
+                        signature.unread(c);
+                        typeName.append(',');
+                    }
+                    signature.read();   // should be a semicolon
+                    typeName.append(">");
+                    return typeName.toString();
+                }
+                typeName.append((char)c);
+            }
+        }
+        }
+        throw new IOException();
+    }
+
+    private static String brackets(int arrayCount) {
+        StringBuffer sb = new StringBuffer(arrayCount * 2);
+        do {
+            sb.append("[]");
+        } while (--arrayCount > 0);
+        return sb.toString();
+    }
+
+
     // public interface ........................................................
     
     /**
@@ -80,9 +168,9 @@ public class AbstractVariable implements Variable {
     }
 
     /**
-    * Returns string representation of type of this variable.
+    * Sets string representation of value of this variable.
     *
-    * @return string representation of type of this variable.
+    * @param value string representation of value of this variable.
     */
     public void setValue (String value) throws InvalidExpressionException {
         setInnerValue (
@@ -252,6 +340,7 @@ public class AbstractVariable implements Variable {
      * @return declared type of this local
      */
     public String getType () {
+        if (genericType != null) return genericType;
         if (getInnerValue () == null) return null;
         return getInnerValue ().type ().name ();
     }

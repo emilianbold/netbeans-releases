@@ -44,6 +44,19 @@ org.netbeans.api.debugger.jpda.Field {
         this.className = className;
     }
 
+    FieldVariable (
+        LocalsTreeModel model,
+        Value value,
+        String className,
+        Field field,
+        String parentID,
+        String genericSignature
+    ) {
+        super(model, value, genericSignature, parentID + '.' + field.name () +
+                (value instanceof ObjectReference ? "^" : ""));
+        this.field = field;
+        this.className = className;
+    }
     
     // LocalVariable impl.......................................................
     

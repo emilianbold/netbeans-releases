@@ -24,16 +24,9 @@ import com.sun.jdi.Value;
 public class ObjectLocalVariable extends Local implements 
 org.netbeans.api.debugger.jpda.ObjectVariable {
         
-    ObjectLocalVariable (
-        LocalsTreeModel model, 
-        ObjectReference value,
-        String className,
-        LocalVariable local
-    ) {
-        super (model, value, className, local);
+    ObjectLocalVariable(LocalsTreeModel model, Value value, String className, LocalVariable local, String genericSignature) {
+        super(model, value, className, local, genericSignature);
     }
-
-    
     // LocalVariable impl.......................................................
     
     // other methods ...........................................................

@@ -43,7 +43,12 @@ org.netbeans.api.debugger.jpda.LocalVariable {
         this.className = className;
     }
 
-    
+    Local(LocalsTreeModel model, Value value, String className, LocalVariable local, String genericSignature) {
+        super(model, value, genericSignature, local.name () + (value instanceof ObjectReference ? "^" : ""));
+        this.local = local;
+        this.className = className;
+    }
+
     // LocalVariable impl.......................................................
     
 

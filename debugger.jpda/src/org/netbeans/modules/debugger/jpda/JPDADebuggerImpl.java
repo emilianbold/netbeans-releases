@@ -14,6 +14,7 @@
 package org.netbeans.modules.debugger.jpda;
 
 import com.sun.jdi.*;
+import com.sun.jdi.Method;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -23,6 +24,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.lang.reflect.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
@@ -226,7 +228,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * Implements fix & continue (HotSwap). Map should contain class names
      * as a keys, and byte[] arrays as a values.
      *
-     * @param map a map from class names to be fixed to byte[] 
+     * @param classes a map from class names to be fixed to byte[] 
      */
     public void fixClasses (Map classes) {
         synchronized (LOCK2) {
@@ -392,6 +394,32 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
+    public String getGenericSignature(TypeComponent component) {
+        if (tcGenericSignatureMethod == null) return null;
+        try {
+            return (String) tcGenericSignatureMethod.invoke(component, new Object[0]);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            return null;    // should not happen
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+            return null;    // should not happen
+        }
+    }
+
+    public String getGenericSignature(LocalVariable component) {
+        if (lvGenericSignatureMethod == null) return null;
+        try {
+            return (String) lvGenericSignatureMethod.invoke(component, new Object[0]);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            return null;    // should not happen
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+            return null;    // should not happen
+        }
+    }
+
     public VirtualMachine getVirtualMachine () {
         return virtualMachine;
     }
@@ -405,8 +433,28 @@ public class JPDADebuggerImpl extends JPDADebugger {
         setState (STATE_STARTING);
     }
 
+    private static final java.util.regex.Pattern jvmVersionPattern =
+            java.util.regex.Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(_\\d+)?(-\\w+)?");
+    private java.lang.reflect.Method  tcGenericSignatureMethod;
+    private java.lang.reflect.Method  lvGenericSignatureMethod;
+
     public void setRunning (VirtualMachine vm, Operator o) {
         this.virtualMachine = vm;
+        tcGenericSignatureMethod = null;
+        if (Bootstrap.virtualMachineManager().minorInterfaceVersion() >= 5) {
+            java.util.regex.Matcher m = jvmVersionPattern.matcher(virtualMachine.version());
+            if (m.matches()) {
+                int minor = Integer.parseInt(m.group(2));
+                if (minor >= 5) {
+                    try {
+                        tcGenericSignatureMethod = TypeComponent.class.getMethod("genericSignature", new Class[0]);
+                        lvGenericSignatureMethod = LocalVariable.class.getMethod("genericSignature", new Class[0]);
+                    } catch (NoSuchMethodException e) {
+                        // the method is not available, ignore generics
+                    }
+                }
+            }
+        }
         operator = o;
         Iterator i = vm.allThreads ().iterator ();
         int s = 0;
