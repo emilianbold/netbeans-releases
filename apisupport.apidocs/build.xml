@@ -21,12 +21,25 @@ Microsystems, Inc. All Rights Reserved.
     <property name="license.file" location="../../nbbuild/standard-nbm-license.txt"/>
 
     <property name="nbm_alias" value="nb_ide"/>
+    <property name="build" location="../nbbuild/netbeans"/>
+
+    <patternset id="apisupport/apidocs.files">
+        <include name="modules/apisupport-apidocs.jar"/>
+	<include name="system/ParserDB/OpenAPIs.jc*"/>
+	<include name="system/ParserDB/CompilerAPI.jc*"/>
+	<include name="system/ParserDB/ExecutionAPI.jc*"/>
+	<include name="system/ParserDB/InputOutputAPI.jc*"/>
+	<include name="docs/OpenAPIs.zip"/>
+	<include name="docs/ExecutionAPI.zip"/>
+	<include name="docs/CompilerAPI.zip"/>
+	<include name="docs/InputOutputAPI.zip"/>
+    </patternset>
 
     <target name="jars">
-        <mkdir dir="netbeans/modules"/>
+        <mkdir dir="${build}/modules"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <jar jarfile="netbeans/modules/apisupport-apidocs.jar"
+        <jar jarfile="${build}/modules/apisupport-apidocs.jar"
              manifest="manifest-subst.mf"
              excludesfile="../../nbbuild/standard-jar-excludes.txt"
              compress="false">
@@ -36,33 +49,37 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="parser-db">
         <taskdef name="makeparserdb" classname="org.netbeans.nbbuild.MakeParserDB" classpath="../../nbbuild/nbantext.jar"/>
-        <mkdir dir="netbeans/system/ParserDB"/>
-        <makeparserdb db="netbeans/system/ParserDB/OpenAPIs" sources="../../openide/src" nbroot="../.."/>
-        <makeparserdb db="netbeans/system/ParserDB/CompilerAPI" sources="../../openide/compiler/src" nbroot="../.."/>
-        <makeparserdb db="netbeans/system/ParserDB/ExecutionAPI" sources="../../openide/execution/src" nbroot="../.."/>
-        <makeparserdb db="netbeans/system/ParserDB/InputOutputAPI" sources="../../openide/io/src" nbroot="../.."/>
+        <mkdir dir="${build}/system/ParserDB"/>
+        <makeparserdb db="${build}/system/ParserDB/OpenAPIs" sources="../../openide/src" nbroot="${build}"/>
+        <makeparserdb db="${build}/system/ParserDB/CompilerAPI" sources="../../openide/compiler/src" nbroot="${build}"/>
+        <makeparserdb db="${build}/system/ParserDB/ExecutionAPI" sources="../../openide/execution/src" nbroot="${build}"/>
+        <makeparserdb db="${build}/system/ParserDB/InputOutputAPI" sources="../../openide/io/src" nbroot="${build}"/>
     </target>
 
     <target name="open-apis">
+        <mkdir dir="${build}/docs"/>
         <ant dir="../../openide" target="javadoc"/>
-        <mkdir dir="netbeans/docs"/>
-        <copy file="../../openide/javadoc/OpenAPIs.zip" tofile="netbeans/docs/OpenAPIs.zip"/>
+        <copy file="../../openide/javadoc/OpenAPIs.zip" tofile="${build}/docs/OpenAPIs.zip"/>
         <ant dir="../../openide/io" target="javadoc"/>
-        <copy file="../../openide/io/javadoc/InputOutputAPI.zip" tofile="netbeans/docs/InputOutputAPI.zip"/>
+        <copy file="../../openide/io/javadoc/InputOutputAPI.zip" tofile="${build}/docs/InputOutputAPI.zip"/>
         <ant dir="../../openide/execution" target="javadoc"/>
-        <copy file="../../openide/execution/javadoc/ExecutionAPI.zip" tofile="netbeans/docs/ExecutionAPI.zip"/>
+        <copy file="../../openide/execution/javadoc/ExecutionAPI.zip" tofile="${build}/docs/ExecutionAPI.zip"/>
         <ant dir="../../openide/compiler" target="javadoc"/>
-        <copy file="../../openide/compiler/javadoc/CompilerAPI.zip" tofile="netbeans/docs/CompilerAPI.zip"/>
+        <copy file="../../openide/compiler/javadoc/CompilerAPI.zip" tofile="${build}/docs/CompilerAPI.zip"/>
     </target>
 
     <target name="netbeans" depends="jars,parser-db,open-apis" description="Build complete module.">
-        <genlist targetname="nbm" outputfiledir="netbeans"/>
+      <genlist outputfiledir="${build}" module="modules/apisupport-apidocs.jar">
+          <fileset dir="${build}">
+	      <patternset refID="apisupport/apidocs.files"/>
+          </fileset>
+      </genlist>
     </target>
 
     <target name="nbm" depends="netbeans" description="Build standalone NBM.">
         <makenbm file="apisupport-apidocs.nbm"
-                 topdir="."
-                 module="netbeans/modules/apisupport-apidocs.jar"
+                 productDir="${build}"
+                 module="modules/apisupport-apidocs.jar"
 	         homepage="http://apisupport.${homepage.base}/"
 	         distribution="http://${dist.base}/apisupport-apidocs.nbm">
             <license file="${license.file}"/>
@@ -73,8 +90,11 @@ Microsystems, Inc. All Rights Reserved.
     <target name="clean" description="Clean out build products.">
         <delete file="manifest-subst.mf"/>
         <delete file="apisupport-apidocs.nbm"/>
-        <delete dir="netbeans"/>
-        <delete dir="Info"/>
+	<delete>
+          <fileset dir="${build}">
+	      <patternset refID="apisupport/apidocs.files"/>
+          </fileset>
+	</delete>	
     </target>
 
 </project>

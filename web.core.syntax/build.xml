@@ -24,6 +24,12 @@ Microsystems, Inc. All Rights Reserved.
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="../../nbbuild/standard-nbm-license.txt"/>
   <property name="nbm_alias" value="nb_ide"/>
+  <property name="build" location="../nbbuild/netbeans"/>
+
+  <patternset id="web/jspsyntax.files">
+    <include name="modules/eager/jsp-syntax.jar"/>
+    <include name="system/ParserDB/servlet*.jc*"/>
+  </patternset>
 
   <target name="init">
     <ant dir="../external" target="unscramble"/>
@@ -33,22 +39,22 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
-        <pathelement location="${nb_root}/editor/netbeans/modules/ext/nb-editor.jar"/>
-        <pathelement location="${nb_root}/editor/netbeans/modules/editor.jar"/>
-        <pathelement location="${nb_root}/xml/text-edit/netbeans/modules/xml-text-edit.jar"/>
+        <pathelement location="${build}/modules/ext/nb-editor.jar"/>
+        <pathelement location="${build}/modules/editor.jar"/>
+        <pathelement location="${build}/modules/xml-text-edit.jar"/>
         <pathelement location="${core_root}/src/"/>
         <pathelement location="../external/servlet-2.3.jar"/>
-        <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
+        <pathelement location="${build}/lib/openide.jar"/>
       </classpath>
     </javac>
 
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules/eager"/>
+    <mkdir dir="${build}/modules/eager"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/eager/jsp-syntax.jar"
+    <locjar jarfile="${build}/modules/eager/jsp-syntax.jar"
             manifest="manifest-subst.mf"
             basedir="src"
 	    excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"
@@ -58,20 +64,24 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="release">
-    <copy todir="netbeans">
+    <copy todir="${build}">
       <fileset dir="release" excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"/>
     </copy>
   </target>
 
   <target name="netbeans" depends="jars,release">
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+      <genlist outputfiledir="${build}" module="modules/eager/jsp-syntax.jar">
+          <fileset dir="${build}">
+	      <patternset refID="web/jspsyntax.files"/>
+          </fileset>
+      </genlist>
   </target>
 
   <target name="nbm" depends="netbeans">
     <delete dir="Info"/>
     <makenbm file="web-jspsyntax.nbm"
-             topdir="."
-             module="netbeans/modules/eager/jsp-syntax.jar"
+             productDir="${build}"
+             module="modules/eager/jsp-syntax.jar"
 	     homepage="http://web.${homepage.base}/"
 	     distribution="http://${dist.base}/web-jspsyntax.nbm">
       <license file="${license.file}"/>
@@ -84,11 +94,12 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir="${build}">
+        <patternset refID="web/jspsyntax.files"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="web-jspsyntax.nbm"/>
-    <delete dir="Info"/>
-    <delete dir="netbeans"/>
   </target>
 
   <target name="real-clean" depends="clean">

@@ -18,29 +18,39 @@ Microsystems, Inc. All Rights Reserved.
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
+  <property name="build" location="../nbbuild/netbeans"/>
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
+
+  <patternset id="properties.files">
+    <include name="modules/properties.jar"/>
+  </patternset>
+
+  <patternset id="properties-syntax.files">
+    <include name="modules/eager/properties-syntax.jar"/>
+  </patternset>
+
 
   <target name="compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <exclude name="org/netbeans/modules/properties/syntax/"/>
       <classpath>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-        <pathelement location="../openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
+        <pathelement location="${build}/lib/openide.jar"/>
+        <pathelement location="${build}/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
       </classpath>
     </javac>
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <include name="org/netbeans/modules/properties/syntax/"/>
       <classpath>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <fileset dir="../openide/netbeans/lib">
+        <fileset dir="${build}/lib">
           <include name="openide*.jar" />
         </fileset>
-        <pathelement location="../editor/netbeans/modules/ext/nb-editor.jar"/>
-        <pathelement location="../editor/netbeans/modules/editor.jar"/>
+        <pathelement location="${build}/modules/ext/nb-editor.jar"/>
+        <pathelement location="${build}/modules/editor.jar"/>
         <!-- src must be on classpath, otherwise AspectJ compiler (ajc) wouldn't compile -->
         <pathelement location="src" />
       </classpath>
@@ -48,10 +58,10 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules/eager"/>
+    <mkdir dir="${build}/modules/eager"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/properties.jar"
+    <locjar jarfile="${build}/modules/properties.jar"
             manifest="manifest-subst.mf"
             basedir="src"
 	    excludesfile="../nbbuild/standard-jar-excludes.txt"
@@ -60,7 +70,7 @@ Microsystems, Inc. All Rights Reserved.
       <locale name="ja"/>
     </locjar>
     <copy file="manifest-syntax.mf" tofile="manifest-syntax-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/eager/properties-syntax.jar"
+    <locjar jarfile="${build}/modules/eager/properties-syntax.jar"
             manifest="manifest-syntax-subst.mf"
             basedir="src"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
@@ -71,17 +81,32 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="netbeans" depends="jars">
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+      <genlist outputfiledir="${build}" module="modules/properties.jar">
+          <fileset dir="${build}">
+	      <patternset refID="properties.files"/>
+          </fileset>
+      </genlist>
+      <genlist outputfiledir="${build}" module="modules/eager/properties-syntax.jar">
+          <fileset dir="${build}">
+	      <patternset refID="properties-syntax.files"/>
+          </fileset>
+      </genlist>
   </target>
 
   <target name="nbm" depends="netbeans">
-    <!-- Make one NBM with both module JARs. -->
-    <!-- XXX now preferred to make separate NBMs. -->
     <makenbm file="properties.nbm"
-             topdir="."
-             module="netbeans/modules/properties.jar"
+             productDir="${build}"
+             module="modules/properties.jar"
 	     homepage="http://properties.${homepage.base}/"
 	     distribution="http://${dist.base}/properties.nbm">
+      <license file="${license.file}"/>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+    </makenbm>
+    <makenbm file="properties-syntax.nbm"
+             productDir="${build}"
+             module="modules/eager/properties-syntax.jar"
+	     homepage="http://properties.${homepage.base}/"
+	     distribution="http://${dist.base}/properties-syntax.nbm">
       <license file="${license.file}"/>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
@@ -92,13 +117,18 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir="${build}">
+        <patternset refID="properties.files"/>
+      </fileset>
+      <fileset dir="${build}">
+        <patternset refID="properties-syntax.files"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="manifest-syntax-subst.mf"/>
     <delete file="properties.nbm"/>
-    <delete dir="netbeans"/>
+    <delete file="properties-syntax.nbm"/>
     <delete dir="javadoc"/>
-    <delete dir="Info"/>
   </target>
 
   <target name="javadoc" description="Build properties module API documentation.">

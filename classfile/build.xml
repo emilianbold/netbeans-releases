@@ -17,21 +17,26 @@ Microsystems, Inc. All Rights Reserved.
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" location="../nbbuild/standard-nbm-license.txt"/>
   <property name="nbm_alias" value="nb_ide"/>
+  <property name="build" location="../nbbuild/netbeans"/>
 
   <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
 
+  <patternset id="classfile.files">
+      <include name="modules/autoload/classfile.jar"/>
+  </patternset>
+  
   <target name="compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
     </javac>
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules/autoload" />
+    <mkdir dir="${build}/modules/autoload" />
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="netbeans/modules/autoload/classfile.jar" 
+    <jar jarfile="${build}/modules/autoload/classfile.jar" 
      manifest="manifest-subst.mf" 
      basedir="src" 
      excludesfile="../nbbuild/standard-jar-excludes.txt" 
@@ -39,13 +44,17 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="netbeans" depends="jars">
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+    <genlist outputfiledir="${build}" module="modules/autoload/classfile.jar">
+        <fileset dir="${build}">
+            <patternset refID="classfile.files"/>
+        </fileset>
+    </genlist>
   </target>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="classfile.nbm"
-             topdir="."
-             module="netbeans/modules/autoload/classfile.jar"
+             productDir="${build}"
+             module="modules/autoload/classfile.jar"
 	     homepage="http://classfile.${homepage.base}/"
 	     distribution="http://${dist.base}/classfile.nbm">
       <license file="${license.file}"/>
@@ -58,13 +67,14 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir="${build}">
+        <patternset refID="classfile.files"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="classfile.jar"/>
     <delete file="classfile.nbm"/>
-    <delete dir="netbeans"/>
     <delete dir="javadoc"/>
-    <delete dir="Info"/>
   </target>
 
   <target name="real-clean" depends="clean">

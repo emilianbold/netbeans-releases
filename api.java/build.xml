@@ -24,17 +24,22 @@ Microsystems, Inc. All Rights Reserved.
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="${nb_all}/nbbuild/standard-nbm-license.txt"/>
+  <property name="build" location="../nbbuild/netbeans"/>
   
   <!-- External documentation referenced from the API -->
   <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4/docs/api"/>
   <property name="openide-docs-location" value="http://www.netbeans.org/download/apis"/>
   <property name="openide.package-list.loc" location="doc/external/openide"/>
 
+  <patternset id="java/api.files">
+    <include name="modules/autoload/java-api.jar"/>
+  </patternset>
+
   <target name="compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
-        <fileset dir="${nb_all}/openide/netbeans/lib">
+        <fileset dir="${build}/lib">
           <include name="openide*.jar" />
         </fileset>
       </classpath>
@@ -42,10 +47,10 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules/autoload"/>
+    <mkdir dir="${build}/modules/autoload"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/autoload/java-api.jar"
+    <locjar jarfile="${build}/modules/autoload/java-api.jar"
             manifest="manifest-subst.mf"
             basedir="src"
 	    excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"
@@ -55,13 +60,17 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="netbeans" depends="jars">
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+      <genlist outputfiledir="${build}" module="modules/autoload/java-api.jar">
+          <fileset dir="${build}">
+	      <patternset refID="java/api.files"/>
+          </fileset>
+      </genlist>
   </target>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="java-api.nbm"
-             topdir="."
-             module="netbeans/modules/autoload/java-api.jar"
+             productDir="${build}"
+             module="modules/autoload/java-api.jar"
 	     homepage="http://java.${homepage.base}/"
 	     distribution="http://${dist.base}/java-api.nbm">
       <license file="${license.file}"/>
@@ -159,11 +168,12 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir="${build}">
+        <patternset refID="java/api.files"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="java-api.nbm"/>
-    <delete dir="netbeans"/>
-    <delete dir="Info"/>
   </target>
   
   <target name="apichanges-check">

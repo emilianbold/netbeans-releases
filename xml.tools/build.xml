@@ -27,6 +27,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="homepage.base" value="netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40/xml"/>
     <property name="nbm_alias" value="nb_ide"/>
+    <property name="build" location="../nbbuild/netbeans"/>
 
     <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
@@ -34,6 +35,12 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext_root}/nbantext.jar"/>
 
     <property name="build.compiler.debug" value="on"/>
+
+    <patternset id="xml/tools.files">
+        <include name="modules/xml-tools.jar"/>
+	<include name="docs/xml-apis.zip"/>
+	<include name="system/ParserDB/xml-apis.jc*"/>
+    </patternset>
 
 
     <target name="init">
@@ -48,9 +55,9 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Compiling XML tools module classes..."/>
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>        
-                <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
-                <pathelement location="${nbroot}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
-                <pathelement location="${nbroot}/java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
+                <pathelement location="${build}/lib/openide.jar"/>
+                <pathelement location="${build}/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
+                <pathelement location="${build}/modules/autoload/java-src-model.jar"/>
                 <fileset dir="${nbroot}/core/external">
                     <include name="xml-apis*.jar"/>
                 </fileset>
@@ -62,10 +69,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="jars" depends="init,compile">
-        <mkdir dir="netbeans/modules"/>
+        <mkdir dir="${build}/modules"/>
 
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="netbeans/modules/xml-tools.jar"
+        <locjar jarfile="${build}/modules/xml-tools.jar"
                 manifest="manifest-subst.mf"
                 compress="false">
             <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
@@ -75,7 +82,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="release">
-        <copy todir="netbeans" includeEmptyDirs="false">
+        <copy todir="${build}" includeEmptyDirs="false">
             <fileset dir="release" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
         </copy>
     </target>
@@ -85,7 +92,11 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="netbeans" depends="jars,release,javahelp">
-        <genlist targetname="nbm" outputfiledir="netbeans"/>
+      <genlist outputfiledir="${build}" module="modules/xml-tools.jar">
+          <fileset dir="${build}">
+	      <patternset refID="xml/tools.files"/>
+          </fileset>
+      </genlist>
     </target>
 
     <target name="reload" depends="init,compile" description="Test module inside running IDE (API Support with Ant required).">
@@ -102,9 +113,9 @@ Microsystems, Inc. All Rights Reserved.
     <target name="nbm" depends="netbeans">
         <delete dir="Info"/>
         <makenbm file="../xml-tools.nbm"
-                 topdir="."
+                 productDir="${build}"
                  needsrestart="false"
-                 module="netbeans/modules/xml-tools.jar"
+                 module="modules/xml-tools.jar"
                  homepage="http://xml.${homepage.base}/tools/"
                  distribution="http://${dist.base}/xml-tools.nbm">
             <license file="${license.file}"/>
@@ -117,11 +128,12 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="src">
                 <include name="**/*.class"/>
             </fileset>
+            <fileset dir="${build}">
+	      <patternset refID="xml/tools.files"/>
+            </fileset>
         </delete>
         <delete file="manifest-subst.mf"/>
         <delete file="../xml-tools.nbm"/>
-        <delete dir="netbeans"/>
-        <delete dir="Info"/>
     </target>
 
     <target name="real-clean" depends="clean">

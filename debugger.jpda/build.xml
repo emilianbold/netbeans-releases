@@ -23,9 +23,14 @@ ToDo:
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
+  <property name="build" location="../nbbuild/netbeans"/>
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
+
+  <patternset id="debuggerjpda.files">
+    <include name="modules/jpdaDebugger.jar"/>
+  </patternset>
 
   <target name="check">
     <available property="jpda" classname="com.sun.jdi.ObjectReference">
@@ -60,24 +65,25 @@ ToDo:
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <!-- Hopefully set up bu nbbuild/build.xml: -->
+        <!-- Hopefully set up by nbbuild/build.xml: -->
         <pathelement location="${jdkhome}/lib/tools.jar"/>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-        <pathelement location="../openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
-        <pathelement location="../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
-        <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
-        <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/>
-        <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
-	<pathelement location="../debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>
+        <pathelement location="${build}/lib/openide.jar"/>
+        <pathelement location="${build}/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
+        <pathelement location="${build}/modules/autoload/java-src-model.jar"/>
+	<pathelement location="${build}/modules/autoload/debuggerCore.jar"/>
+        <pathelement location="${build}/modules/autoload/openide-compiler.jar"/>
+        <pathelement location="${build}/modules/autoload/openide-execution.jar"/>
+        <pathelement location="${build}/modules/autoload/openide-io.jar"/>
       </classpath>
     </javac>
   </target>
+
   <target name="jars" depends="check,compile" if="jpda">
-    <mkdir dir="netbeans/modules"/>
+    <mkdir dir="${build}/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
-    <locjar jarfile="netbeans/modules/jpdaDebugger.jar"
+    <locjar jarfile="${build}/modules/jpdaDebugger.jar"
             manifest="manifest-subst.mf"
             basedir="src"
 	    excludesfile="../nbbuild/standard-jar-excludes.txt"
@@ -85,32 +91,39 @@ ToDo:
       <locale name="ja"/>
     </locjar>
   </target>
+
   <!-- Build only if JPDA is available now. -->
   <target name="netbeans" depends="check,jars" if="jpda">
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+      <genlist outputfiledir="${build}" module="modules/jpdaDebugger.jar">
+          <fileset dir="${build}">
+	      <patternset refID="debuggerjpda.files"/>
+          </fileset>
+      </genlist>
   </target>
 
   <target name="nbm" depends="check,netbeans" if="jpda">
     <makenbm file="debuggerjpda.nbm"
-             topdir="."
-             module="netbeans/modules/jpdaDebugger.jar"
+             productDir="${build}"
+             module="modules/jpdaDebugger.jar"
 	     homepage="http://debuggerjpda.${homepage.base}/"
 	     distribution="http://${dist.base}/debuggerjpda.nbm">
       <license file="${license.file}"/>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>
+
   <target name="clean">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir="${build}">
+        <patternset refID="debuggerjpda.files"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="debuggerjpda.nbm"/>
-    <delete dir="netbeans"/>
     <delete dir="javadoc"/>
-    <delete dir="Info"/>
   </target>
 
   <target name="javadoc" depends="check,no-such-luck,setup-jdkhome" description="Build debuggerjpda module API documentation.">

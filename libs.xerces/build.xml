@@ -23,11 +23,17 @@ Microsystems, Inc. All Rights Reserved.
     <property name="apache-license.file" location="${nbroot}/nbbuild/external/apache-license.txt"/>
     <property name="homepage.base" value="libs.netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+    <property name="build" location="../nbbuild/netbeans"/>
     <property name="nbm_alias" value="nb_ide"/>
 
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext_root}/nbantext.jar"/>
+
+    <patternset id="libs/xerces.files">
+        <include name="modules/autoload/xerces.jar"/>
+	<include name="modules/autoload/ext/xerces*.jar"/>
+    </patternset>
 
     <target name="init">
         <property file="${libs_root}/public.properties"/>
@@ -38,10 +44,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="jars" depends="init">
-        <mkdir dir="netbeans/modules"/>
+        <mkdir dir="${build}/modules"/>
 
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="netbeans/modules/autoload/xerces.jar"
+        <locjar jarfile="${build}/modules/autoload/xerces.jar"
                 manifest="manifest-subst.mf"
                 compress="false">
             <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
@@ -50,8 +56,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="release" depends="init">
-        <mkdir dir="netbeans/modules/autoload/ext"/>
-        <copy todir="netbeans/modules/autoload/ext">
+        <mkdir dir="${build}/modules/autoload/ext"/>
+        <copy todir="${build}/modules/autoload/ext">
             <fileset dir="../external">
                 <include name="xerces*.jar"/>
             </fileset>
@@ -59,14 +65,18 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="netbeans" depends="jars, release">
-        <genlist targetname="nbm" outputfiledir="netbeans"/>
+      <genlist outputfiledir="${build}" module="modules/autoload/xerces.jar">
+          <fileset dir="${build}">
+	      <patternset refID="libs/xerces.files"/>
+          </fileset>
+      </genlist>
     </target>
 
     <target name="nbm" depends="netbeans">
         <delete dir="Info"/>
         <makenbm file="${libs_root}/xerces.nbm"
-                 topdir="."
-                 module="netbeans/modules/autoload/xerces.jar"
+	         productDir="${build}"
+                 module="modules/autoload/xerces.jar"
                  homepage="http://${homepage.base}/#xerces"
                  distribution="http://${dist.base}/xerces.nbm">
             <license name="xerces-license.txt">
@@ -84,6 +94,11 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="${libs_root}/xerces.nbm"/>
         <delete dir="netbeans"/>
         <delete dir="Info"/>
+	<delete>
+          <fileset dir="${build}">
+	      <patternset refID="libs/xerces.files"/>
+          </fileset>
+	</delete>
     </target>
 
     <target name="all" depends="clean, nbm"/>

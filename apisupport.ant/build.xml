@@ -21,26 +21,31 @@ Microsystems, Inc. All Rights Reserved.
     <property name="license.file" location="../../nbbuild/standard-nbm-license.txt"/>
 
     <property name="nbm_alias" value="nb_ide"/>
+    <property name="build" location="../nbbuild/netbeans"/>
+
+    <patternset id="apisupport/ant.files">
+        <include name="modules/eager/apisupport-ant.jar"/>
+    </patternset>
 
     <target name="compile" description="Compile source files.">
         <javac srcdir="../src" destdir="../src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>
-                <pathelement location="../../ant/netbeans/modules/ant.jar"/>
+                <pathelement location="${build}/modules/ant.jar"/>
                 <fileset dir="../../ant/external">
                     <include name="ant-1.*.jar"/>
                 </fileset>
-                <pathelement location="../../openide/netbeans/lib/openide.jar"/>
-                <pathelement location="../../core/netbeans/lib/core.jar"/>
+                <pathelement location="${build}/lib/openide.jar"/>
+                <pathelement location="${build}/lib/core.jar"/>
             </classpath>
             <include name="org/netbeans/modules/apisupport/ant/"/>
         </javac>
     </target>
 
     <target name="jars" depends="compile">
-        <mkdir dir="netbeans/modules/eager"/>
+        <mkdir dir="${build}/modules/eager"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <jar jarfile="netbeans/modules/eager/apisupport-ant.jar" manifest="manifest-subst.mf" compress="false">
+        <jar jarfile="${build}/modules/eager/apisupport-ant.jar" manifest="manifest-subst.mf" compress="false">
             <fileset dir="../src" excludesfile="../../nbbuild/standard-jar-excludes.txt">
                 <include name="org/netbeans/modules/apisupport/ant/"/>
             </fileset>
@@ -48,13 +53,17 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="netbeans" depends="jars" description="Build complete module.">
-        <genlist targetname="nbm" outputfiledir="netbeans"/>
+      <genlist outputfiledir="${build}" module="modules/eager/apisupport-ant.jar">
+          <fileset dir="${build}">
+	      <patternset refID="apisupport/ant.files"/>
+          </fileset>
+      </genlist>
     </target>
 
     <target name="nbm" depends="netbeans" description="Build standalone NBM.">
         <makenbm file="apisupport-ant.nbm"
-                 topdir="."
-                 module="netbeans/modules/eager/apisupport-ant.jar"
+                 productDir="${build}"
+                 module="modules/eager/apisupport-ant.jar"
                  homepage="http://apisupport.${homepage.base}/"
                  distribution="http://${dist.base}/apisupport-ant.nbm">
             <license file="${license.file}"/>
@@ -67,11 +76,12 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="../src">
                 <include name="org/netbeans/modules/apisupport/ant/**/*.class"/>
             </fileset>
-        </delete>
+            <fileset dir="${build}">
+	        <patternset refID="apisupport/ant.files"/>
+           </fileset>
+         </delete>
         <delete file="manifest-subst.mf"/>
         <delete file="apisupport-ant.nbm"/>
-        <delete dir="netbeans"/>
-        <delete dir="Info"/>
     </target>
 
 </project>

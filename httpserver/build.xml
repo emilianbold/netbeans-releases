@@ -18,16 +18,22 @@ Microsystems, Inc. All Rights Reserved.
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
+  <property name="build" location="../nbbuild/netbeans"/>
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
 
+  <patternset id="httpserver.files">
+    <include name="modules/httpserver.jar"/>
+    <include name="modules/ext/webserver*.jar"/>
+  </patternset>
+
   <target name="init">
     <ant dir="external" target="unscramble"/>
     <path id="httpserver-cp">
       <pathelement location="../openide/openide-13javac-workaround.jar"/>
-      <pathelement location="../openide/netbeans/lib/openide.jar"/>
+      <pathelement location="${build}/lib/openide.jar"/>
       <fileset dir="external">
         <include name="webserver*.jar"/>
         <include name="servlet-2.2.jar"/>
@@ -42,10 +48,10 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules"/>
+    <mkdir dir="${build}/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/httpserver.jar"
+    <locjar jarfile="${build}/modules/httpserver.jar"
             manifest="manifest-subst.mf"
             basedir="src"
 	    excludesfile="../nbbuild/standard-jar-excludes.txt"
@@ -55,16 +61,16 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="netbeans" depends="jars,release">
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+      <genlist outputfiledir="${build}" module="modules/httpserver.jar">
+          <fileset dir="${build}">
+	      <patternset refID="httpserver.files"/>
+          </fileset>
+      </genlist>
   </target>
 
   <target name="release" depends="init">
-    <mkdir dir="release"/>
-    <copy todir="netbeans" includeEmptyDirs="false">
-      <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-    </copy>
-    <mkdir dir="netbeans/modules/ext"/>
-    <copy todir="netbeans/modules/ext">
+    <mkdir dir="${build}/modules/ext"/>
+    <copy todir="${build}/modules/ext">
       <fileset dir="external">
         <include name="webserver*.jar"/>
       </fileset>
@@ -73,8 +79,8 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="nbm" depends="netbeans">
     <makenbm file="httpserver.nbm"
-             topdir="."
-             module="netbeans/modules/httpserver.jar"
+             productDir="${build}"
+             module="modules/httpserver.jar"
 	     homepage="http://httpserver.${homepage.base}/"
 	     distribution="http://${dist.base}/httpserver.nbm">
       <license name="httpserver-module-license.txt">
@@ -92,17 +98,18 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir="${build}">
+        <patternset refID="httpserver.files"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="httpserver.nbm"/>
-    <delete dir="netbeans"/>
     <delete dir="javadoc"/>
-    <delete dir="Info"/>
   </target>
 
   <!-- This target will only work *inside* the IDE! -->
   <target name= "test" depends="netbeans" description="Test the module inside the running IDE." >
-    <nbinstaller action="reinstall" module="netbeans/modules/httpserver.jar"/>
+    <nbinstaller action="reinstall" module="${build}/modules/httpserver.jar"/>
   </target>
 
   <target name="javadoc" description="Build httpserver module API documentation.">

@@ -61,20 +61,9 @@ Microsystems, Inc. All Rights Reserved.
     of the ide, so we can compile against them -->
     <target name="generate" depends="init">
         <echo>Generating compatibility APIs from ${netbeans.home}/lib/openide.jar</echo>
-        <path id="boot.cp">
-            <pathelement location="${netbeans.home}/lib/ext/boot.jar"/>
-            <!-- See xtest/instance/build-clover.xml for explanation: -->
-            <pathelement location="${netbeans.home}/lib/ext/clover.jar"/>
-        </path>
-        <patchclass source="${netbeans.home}/lib/openide.jar" targetdir="gensrc">
-            <classpath refid="boot.cp"/>
-        </patchclass>
-        <patchclass source="${netbeans.home}/modules/autoload/openide-compiler.jar" targetdir="gensrc">
-            <classpath refid="boot.cp"/>
-        </patchclass>
-        <patchclass source="${netbeans.home}/modules/autoload/openide-io.jar" targetdir="gensrc">
-            <classpath refid="boot.cp"/>
-        </patchclass>
+        <patchclass library="${netbeans.home}/lib/ext/boot.jar" source="${netbeans.home}/lib/openide.jar" targetdir="gensrc" />
+        <patchclass library="${netbeans.home}/lib/ext/boot.jar" source="${netbeans.home}/modules/autoload/openide-compiler.jar" targetdir="gensrc" />
+        <patchclass library="${netbeans.home}/lib/ext/boot.jar" source="${netbeans.home}/modules/autoload/openide-io.jar" targetdir="gensrc" />
     </target>
     
     <!-- This calls common clean process. -->

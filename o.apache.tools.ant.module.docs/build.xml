@@ -18,21 +18,29 @@ Microsystems, Inc. All Rights Reserved.
     <property name="license.file" location="../../nbbuild/standard-nbm-license.txt"/>
 
     <property name="nbm_alias" value="nb_ide"/>
+    <property name="build" location="../nbbuild/netbeans"/>
 
     <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="../../nbbuild/nbantext.jar"/>
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../nbbuild/nbantext.jar"/>
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../../nbbuild/nbantext.jar"/>
 
+    <patternset id="ant/docs.files">
+        <include name="modules/ant-docs.jar"/>
+	<include name="modules/docs/ant-manual.zip"/>
+	<include name="system/ParserDB/ant151.jc*"/>
+	<include name="docs/ant-api.zip"/>
+    </patternset>
+
     <target name="init">
         <ant dir="../external" target="unscramble"/>
     </target>
 
     <target name="jars">
-        <mkdir dir="netbeans/modules"/>
+        <mkdir dir="${build}/modules"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="netbeans/modules/ant-docs.jar"
+        <locjar jarfile="${build}/modules/ant-docs.jar"
                 manifest="manifest-subst.mf"
                 basedir="src"
                 excludesfile="../../nbbuild/standard-jar-excludes.txt"
@@ -42,7 +50,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="release">
-        <copy todir="netbeans" includeEmptyDirs="false">
+        <copy todir="${build}" includeEmptyDirs="false">
             <fileset dir="release" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
         </copy>
     </target>
@@ -59,8 +67,8 @@ Microsystems, Inc. All Rights Reserved.
             <exclude name="credits.html"/>
             <exclude name="ant-docs/LICENSE"/>
         </jhindexer>
-        <mkdir dir="netbeans/modules/docs"/>
-        <zip zipfile="netbeans/modules/docs/ant-manual.zip"
+        <mkdir dir="${build}/modules/docs"/>
+        <zip zipfile="${build}/modules/docs/ant-manual.zip"
              basedir="javahelp"
              excludesfile="../../nbbuild/standard-jar-excludes.txt"
              compress="true"/>
@@ -86,13 +94,17 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="netbeans" depends="jars,release,javahelp" description="Build module.">
-        <genlist targetname="nbm" outputfiledir="netbeans"/>
+      <genlist outputfiledir="${build}" module="modules/ant-docs.jar">
+          <fileset dir="${build}">
+	      <patternset refID="ant/docs.files"/>
+          </fileset>
+      </genlist>
     </target>
 
     <target name="nbm" depends="netbeans" description="Build module NBM file.">
         <makenbm file="ant-docs.nbm"
-                 topdir="."
-                 module="netbeans/modules/ant-docs.jar"
+                 productDir="${build}"
+                 module="modules/ant-docs.jar"
                  homepage="http://ant.${homepage.base}/"
                  needsrestart="false"
                  distribution="http://${dist.base}/ant-docs.nbm">
@@ -109,8 +121,11 @@ Microsystems, Inc. All Rights Reserved.
     <target name="clean" description="Clean out build products.">
         <delete file="manifest-subst.mf"/>
         <delete file="ant-docs.nbm"/>
-        <delete dir="netbeans"/>
-        <delete dir="Info"/>
+	<delete>
+          <fileset dir="${build}">
+	      <patternset refID="ant/docs.files"/>
+          </fileset>
+	</delete>
         <delete dir="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch"/>
         <delete dir="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
     </target>

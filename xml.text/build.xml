@@ -27,6 +27,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="homepage.base" value="netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40/xml"/>
     <property name="nbm_alias" value="nb_ide"/>
+    <property name="build" location="../nbbuild/netbeans"/>
 
     <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
@@ -35,6 +36,10 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext_root}/nbantext.jar"/>
 
     <property name="build.compiler.debug" value="on"/>
+
+    <patternset id="xml/text-edit.files">
+        <include name="modules/xml-text-edit.jar"/>
+    </patternset>
 
 
     <target name="init">
@@ -50,11 +55,11 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>        
                 <pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
-                <fileset dir="${nbroot}/openide/netbeans/lib">
+                <fileset dir="${build}/lib">
                     <include name="openide*.jar"/>
                 </fileset>
-                <pathelement location="${nbroot}/editor/netbeans/modules/ext/nb-editor.jar"/>
-                <pathelement location="${nbroot}/editor/netbeans/modules/editor.jar"/>
+                <pathelement location="${build}/modules/ext/nb-editor.jar"/>
+                <pathelement location="${build}/modules/editor.jar"/>
                 <fileset dir="${nbroot}/core/external">
                     <include name="xml-apis*.jar"/>
                 </fileset>
@@ -68,10 +73,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="jars" depends="init,compile">
-        <mkdir dir="netbeans/modules"/>
+        <mkdir dir="${build}/modules"/>
 
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="netbeans/modules/xml-text-edit.jar"
+        <locjar jarfile="${build}/modules/xml-text-edit.jar"
                 manifest="manifest-subst.mf"
                 compress="false">
             <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
@@ -88,7 +93,11 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="netbeans" depends="jars,release,javahelp">
-        <genlist targetname="nbm" outputfiledir="netbeans"/>
+      <genlist outputfiledir="${build}" module="modules/xml-text-edit.jar">
+          <fileset dir="${build}">
+	      <patternset refID="xml/text-edit.files"/>
+          </fileset>
+      </genlist>
     </target>
 
     <target name="reload" depends="init,compile" description="Test module inside running IDE (API Support with Ant required).">
@@ -105,9 +114,9 @@ Microsystems, Inc. All Rights Reserved.
     <target name="nbm" depends="netbeans">
         <delete dir="Info"/>
         <makenbm file="../xml-text-edit.nbm"
-                 topdir="."
+                 productDir="${build}"
                  needsrestart="false"
-                 module="netbeans/modules/xml-text-edit.jar"
+                 module="modules/xml-text-edit.jar"
                  homepage="http://xml.${homepage.base}/text-edit/"
                  distribution="http://${dist.base}/xml-text-edit.nbm">
             <license file="${license.file}"/>
@@ -120,11 +129,12 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="src">
                 <include name="**/*.class"/>
             </fileset>
+            <fileset dir="${build}">
+	      <patternset refID="xml/text-edit.files"/>
+            </fileset>
         </delete>
         <delete file="manifest-subst.mf"/>
         <delete file="../xml-text-edit.nbm"/>
-        <delete dir="netbeans"/>
-        <delete dir="Info"/>
 
         <for-each locations="compat"/>
     </target>

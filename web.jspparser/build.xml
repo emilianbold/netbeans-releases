@@ -24,6 +24,12 @@ Microsystems, Inc. All Rights Reserved.
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="../../nbbuild/standard-nbm-license.txt"/>
   <property name="nbm_alias" value="nb_ide"/>
+  <property name="build" location="../nbbuild/netbeans"/>
+
+  <patternset id="web/jspparser.files">
+    <include name="modules/eager/jsp-parser.jar"/>
+    <include name="modules/eager/ext/jasper-*.jar"/>
+  </patternset>
 
   <target name="init">
     <ant dir="../external" target="unscramble"/>
@@ -41,20 +47,20 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="../external">
           <include name="*.jar"/>
         </fileset>
-        <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
-        <pathelement location="${nb_root}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
-        <pathelement location="${nb_root}/openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
-        <pathelement location="${nb_root}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
-        <pathelement location="${nb_root}/openide/io/netbeans/modules/autoload/openide-io.jar"/> <!-- used only indirectly -->
+        <pathelement location="${build}/lib/openide.jar"/>
+        <pathelement location="${build}/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
+        <pathelement location="${build}/modules/autoload/openide-compiler.jar"/>
+        <pathelement location="${build}/modules/autoload/openide-execution.jar"/>
+        <pathelement location="${build}/modules/autoload/openide-io.jar"/> <!-- used only indirectly -->
       </classpath>
     </javac>
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules/eager"/>
+    <mkdir dir="${build}/modules/eager"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/eager/jsp-parser.jar"
+    <locjar jarfile="${build}/modules/eager/jsp-parser.jar"
             manifest="manifest-subst.mf"
             basedir="src"
 	    excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"
@@ -65,8 +71,8 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="release">
-    <mkdir dir="netbeans/modules/eager/ext"/>
-    <copy todir="netbeans/modules/eager/ext">
+    <mkdir dir="${build}/modules/eager/ext"/>
+    <copy todir="${build}/modules/eager/ext">
       <fileset dir="../external">
         <include name="jasper-*.jar"/>
       </fileset>
@@ -74,14 +80,18 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="netbeans" depends="jars,release">
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+      <genlist outputfiledir="${build}" module="modules/eager/jsp-parser.jar">
+          <fileset dir="${build}">
+	      <patternset refID="web/jspparser.files"/>
+          </fileset>
+      </genlist>
   </target>
 
   <target name="nbm" depends="netbeans">
     <delete dir="Info"/>
     <makenbm file="web-jspparser.nbm"
-             topdir="."
-             module="netbeans/modules/eager/jsp-parser.jar"
+             productDir="${build}"
+             module="modules/eager/jsp-parser.jar"
 	     homepage="http://web.${homepage.base}/"
 	     distribution="http://${dist.base}/web-jspparser.nbm">
       <license name="jspparser-license.txt">
@@ -99,11 +109,12 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir="${build}">
+        <patternset refID="web/jspparser.files"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="web-jspparser.nbm"/>
-    <delete dir="Info"/>
-    <delete dir="netbeans"/>
   </target>
 
   <target name="test-build" depends="compile">

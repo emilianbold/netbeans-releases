@@ -25,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="homepage.base" value="netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40/xml"/>
     <property name="nbm_alias" value="nb_ide"/>
+    <property name="build" location="../nbbuild/netbeans"/>
 
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext_root}/nbantext.jar"/>
@@ -32,7 +33,12 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext_root}/nbantext.jar"/>
 
     <property name="build.compiler.debug" value="on"/>
-
+ 
+    <patternset id="xml/tax.files">
+         <include name="modules/autoload/xml-tax.jar"/>
+	 <include name="modules/autoload/ext/xerces2.jar"/>
+	 <include name="modules/autoload/ext/tax.jar"/>
+    </patternset>
 
     <target name="init">
         <property file="${xml_root}/spec-vers.properties"/>
@@ -42,27 +48,27 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="compile">
-        <for-each locations="lib"/>
+        <ant dir="lib" target="compile"/>
 
         <echo message="Compiling TAX module classes..."/>
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>        
-                <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
-                <pathelement location="${nbroot}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
+                <pathelement location="${build}/lib/openide.jar"/>
+                <pathelement location="${build}/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
                 <pathelement location="${lib_root}/src"/>
                 <pathelement location="${api_root}/src/"/>
             </classpath>
         </javac>
 
-        <for-each locations="compat"/>
+        <ant dir="compat" target="compile"/>
     </target>
 
     <target name="jars" depends="init,compile">
-        <for-each locations="lib"/>
+        <ant dir="lib" target="jars"/>
 
-        <mkdir dir="netbeans/modules/autoload"/>   
+        <mkdir dir="${build}/modules/autoload"/>   
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="netbeans/modules/autoload/xml-tax.jar"
+        <locjar jarfile="${build}/modules/autoload/xml-tax.jar"
                 manifest="manifest-subst.mf"
                 compress="false">
             <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
@@ -72,7 +78,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="release">
-        <for-each locations="lib"/>
+        <ant dir="lib" target="release"/>
     </target>
 
     <target name="javahelp">
@@ -82,7 +88,11 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans" depends="jars,release,javahelp">
         <for-each locations="lib"/>
 
-        <genlist targetname="nbm" outputfiledir="netbeans"/>
+      <genlist outputfiledir="${build}" module="modules/autoload/xml-tax.jar">
+          <fileset dir="${build}">
+	      <patternset refID="xml/tax.files"/>
+          </fileset>
+      </genlist>
     </target>
 
     <target name="reload" depends="init,compile" description="Test module inside running IDE (API Support with Ant required).">
@@ -100,9 +110,9 @@ Microsystems, Inc. All Rights Reserved.
     <target name="nbm" depends="netbeans">
         <delete dir="Info"/>
         <makenbm file="../xml-tax.nbm"
-                 topdir="."
+                 productDir="${build}"
                  needsrestart="false"
-                 module="netbeans/modules/autoload/xml-tax.jar"
+                 module="modules/autoload/xml-tax.jar"
                  homepage="http://xml.${homepage.base}/tax/"
                  distribution="http://${dist.base}/xml-tax.nbm">
              <license name="xml-tax-license.txt">
@@ -122,11 +132,15 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="src">
                 <include name="**/*.class"/>
             </fileset>
+            <fileset dir="${build}">
+	      <patternset refID="xml/tax.files"/>
+            </fileset>
+            <fileset dir="${build}">
+  	      <patternset refID="xml/tax.files"/>
+            </fileset>
         </delete>
         <delete file="manifest-subst.mf"/>
         <delete file="../xml-tax.nbm"/>
-        <delete dir="netbeans"/>
-        <delete dir="Info"/>
 
         <for-each locations="compat"/>
     </target>

@@ -26,6 +26,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="homepage.base" value="netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40/xml"/>
     <property name="nbm_alias" value="nb_ide"/>
+    <property name="build" location="../nbbuild/netbeans"/>
 
     <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
@@ -35,6 +36,9 @@ Microsystems, Inc. All Rights Reserved.
 
     <property name="build.compiler.debug" value="on"/>
 
+    <patternset id="xml/schema.files">
+        <include name="modules/xml-schema.jar"/>
+    </patternset>
 
     <target name="init">
         <property file="${xml_root}/spec-vers.properties"/>
@@ -50,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>        
                 <pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
-                <fileset dir="${nbroot}/openide/netbeans/lib">
+                <fileset dir="${build}/lib">
                     <include name="openide*.jar"/>
                 </fileset>
                 <pathelement location="${tax_lib_root}/src/"/>
@@ -64,10 +68,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="jars" depends="init,compile">
-        <mkdir dir="netbeans/modules"/>
+        <mkdir dir="${build}/modules"/>
 
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="netbeans/modules/xml-schema.jar"
+        <locjar jarfile="${build}/modules/xml-schema.jar"
                 manifest="manifest-subst.mf"
                 compress="false">
             <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
@@ -80,7 +84,11 @@ Microsystems, Inc. All Rights Reserved.
 
 
     <target name="netbeans" depends="jars,release">
-        <genlist targetname="nbm" outputfiledir="netbeans"/>
+      <genlist outputfiledir="${build}" module="modules/xml-schema.jar">
+          <fileset dir="${build}">
+	      <patternset refID="xml/schema.files"/>
+          </fileset>
+      </genlist>
     </target>
    
     <target name="javahelp" description="Please use xml/core javahelp target instead." />
@@ -99,9 +107,9 @@ Microsystems, Inc. All Rights Reserved.
     <target name="nbm" depends="netbeans">
         <delete dir="Info"/>
         <makenbm file="../xml-schema.nbm"
-                 topdir="."
+                 productDir="${build}"
                  needsrestart="false"
-                 module="netbeans/modules/xml-schema.jar"
+                 module="modules/xml-schema.jar"
                  homepage="http://xml.${homepage.base}/schema/"
                  distribution="http://${dist.base}/xml-schema.nbm">
             <license file="${license.file}"/>
@@ -114,11 +122,12 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="src">
                 <include name="**/*.class"/>
             </fileset>
+            <fileset dir="${build}">
+	        <patternset refID="xml/schema.files"/>
+            </fileset>
         </delete>
         <delete file="manifest-subst.mf"/>
         <delete file="../xml-schema.nbm"/>
-        <delete dir="netbeans"/>
-        <delete dir="Info"/>
         <delete dir="javahelp/org/netbeans/modules/xml/core/docs/JavaHelpSearch"/>
 
     </target>
