@@ -66,58 +66,63 @@ public class CreateXMLTest extends XTest {
         = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"
         + "<root/>\n";
         
-        // delete document if exists
-        DataObject dao = TestUtil.THIS.findData(DOCUMENT_NAME + '.' + XML_EXT);
-        if (dao != null) dao.delete();
-        // create new Data Object
-        DataFolder dataFolder = DataFolder.findFolder(TestUtil.THIS.findData("").getPrimaryFile());
-        XMLDataObject xmlDataObject = (XMLDataObject) TestUtil.createDataObject(dataFolder, DOCUMENT_NAME, XML_EXT, content);
-        TreeDocument document = xmlDataObject.getTreeDocument();
-        
-        // Create Document Type
-        DTDDataObject dtdDataObject = (DTDDataObject) TestUtil.THIS.findData(INTERNAL_DTD);
-        TreeDTD treeDTD = dtdDataObject.getTreeDTD();
-        //TreeDocumentType docType = document.getDocumentType();
-        TreeDocumentType docType = new TreeDocumentType(DOCUMENT_NAME);
-        docType.setSystemId(DTD_SYS_ID);
-        TreeChild child = treeDTD.getFirstChild();
-        while (child != null) {
-            docType.appendChild((TreeChild) child.clone());
-            child = child.getNextSibling();
+        try {
+            // delete document if exists
+            DataObject dao = TestUtil.THIS.findData(DOCUMENT_NAME + '.' + XML_EXT);
+            if (dao != null) dao.delete();
+            // create new Data Object
+            DataFolder dataFolder = DataFolder.findFolder(TestUtil.THIS.findData("").getPrimaryFile());
+            XMLDataObject xmlDataObject = (XMLDataObject) TestUtil.createDataObject(dataFolder, DOCUMENT_NAME, XML_EXT, content);
+            TreeDocument document = xmlDataObject.getTreeDocument();
+            
+            // Create Document Type
+            DTDDataObject dtdDataObject = (DTDDataObject) TestUtil.THIS.findData(INTERNAL_DTD);
+            TreeDTD treeDTD = dtdDataObject.getTreeDTD();
+            //TreeDocumentType docType = document.getDocumentType();
+            TreeDocumentType docType = new TreeDocumentType(DOCUMENT_NAME);
+            docType.setSystemId(DTD_SYS_ID);
+            TreeChild child = treeDTD.getFirstChild();
+            while (child != null) {
+                docType.appendChild((TreeChild) child.clone());
+                child = child.getNextSibling();
+            }
+            document.setDocumentType(docType);
+            
+            // Create document
+            TreeElement root = document.getDocumentElement();
+            // Create root node
+            root.addAttribute(new TreeAttribute("manager", "Tom Jerry"));
+            root.addAttribute("id", "a");
+            // Create node Product
+            TreeElement product = new TreeElement("Product");
+            root.appendChild(product);
+            root.appendChild(new TreeText("\n"));
+            product.addAttribute("isbn", "123456");
+            product.addAttribute(new TreeAttribute("id", "b"));
+            product.appendChild(new TreeText("\nXML Book\n"));
+            // Create node Descript
+            TreeElement descript = new TreeElement("Descript");
+            product.appendChild(descript);
+            product.appendChild(new TreeText("\n"));
+            descript.addAttribute("lang", "Eng");
+            descript.appendChild(new TreeText("\n"));
+            descript.appendChild(new TreeText("The book describe how is using XML in"));
+            descript.appendChild(new TreeText("\n"));
+            descript.appendChild(new TreeGeneralEntityReference("company"));
+            descript.appendChild(new TreeText("from "));
+            descript.appendChild(new TreeGeneralEntityReference("cz"));
+            descript.appendChild(new TreeText("\n"));
+            descript.appendChild(new TreeText("Very important is author\n"));
+            descript.appendChild(new TreeGeneralEntityReference("notice"));
+            descript.appendChild(new TreeText("\n"));
+            
+            TestUtil.saveDataObject(xmlDataObject);
+            ref(TestUtil.nodeToString(document));
+            compareReferenceFiles();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail("\nCreating XML fails due:\n" + ex);
         }
-        document.setDocumentType(docType);
-        
-        // Create document
-        TreeElement root = document.getDocumentElement();
-        // Create root node
-        root.addAttribute(new TreeAttribute("manager", "Tom Jerry"));
-        root.addAttribute("id", "a");
-        // Create node Product
-        TreeElement product = new TreeElement("Product");
-        root.appendChild(product);
-        root.appendChild(new TreeText("\n"));
-        product.addAttribute("isbn", "123456");
-        product.addAttribute(new TreeAttribute("id", "b"));
-        product.appendChild(new TreeText("\nXML Book\n"));
-        // Create node Descript
-        TreeElement descript = new TreeElement("Descript");
-        product.appendChild(descript);
-        product.appendChild(new TreeText("\n"));
-        descript.addAttribute("lang", "Eng");
-        descript.appendChild(new TreeText("\n"));
-        descript.appendChild(new TreeText("The book describe how is using XML in"));
-        descript.appendChild(new TreeText("\n"));
-        descript.appendChild(new TreeGeneralEntityReference("company"));
-        descript.appendChild(new TreeText("from "));
-        descript.appendChild(new TreeGeneralEntityReference("cz"));
-        descript.appendChild(new TreeText("\n"));
-        descript.appendChild(new TreeText("Very important is author\n"));
-        descript.appendChild(new TreeGeneralEntityReference("notice"));
-        descript.appendChild(new TreeText("\n"));
-        
-        TestUtil.saveDataObject(xmlDataObject);
-        ref(TestUtil.nodeToString(document));
-        compareReferenceFiles();
     }
     
     /**
