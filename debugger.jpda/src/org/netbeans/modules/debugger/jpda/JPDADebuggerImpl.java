@@ -113,7 +113,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private String                      lastStratumn;
     private ContextProvider             lookupProvider;
 
-
+    private StackFrame      altCSF = null;  //PATCH 48174
 
     // init ....................................................................
 
@@ -432,22 +432,34 @@ public class JPDADebuggerImpl extends JPDADebugger {
             throw iee;
         }
     }
-
+    
+    //PATCH 48174
+    public void setAltCSF(StackFrame sf) {
+        altCSF = sf;
+    }
+    
+    public StackFrame getAltCSF() {
+        return altCSF;
+    }
+    
     /**
      * Used by WatchesModel & BreakpointImpl.
      */
     public Value evaluateIn (Expression expression) 
     throws InvalidExpressionException {
         synchronized (LOCK) {
+            
             CallStackFrameImpl csf = (CallStackFrameImpl) 
                 getCurrentCallStackFrame ();
-            if (csf == null) 
-                throw new InvalidExpressionException
+            if (csf != null)
+                return evaluateIn (expression, csf.getStackFrame ());
+            //PATCH 48174
+            if (altCSF != null)
+                return evaluateIn (expression, altCSF);
+            
+            throw new InvalidExpressionException
                     ("No current context (stack frame)");
-            return evaluateIn (
-                expression, 
-                csf.getStackFrame ()
-            );
+            
         }
     }
 

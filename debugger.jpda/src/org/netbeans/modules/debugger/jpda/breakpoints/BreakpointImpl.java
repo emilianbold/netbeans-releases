@@ -123,7 +123,14 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
             System.out.println ("B   addEventRequest: " + r);
         requests.add (r);
         getDebugger ().getOperator ().register (r, this);
-        r.setSuspendPolicy (getBreakpoint ().getSuspend ());
+       
+        // PATCH #48174
+        if (r instanceof com.sun.jdi.request.ClassPrepareRequest)
+            r.setSuspendPolicy (JPDABreakpoint.SUSPEND_EVENT_THREAD);
+        else // if this is breakpoint with SUSPEND_NONE we stop EVENT_THREAD to print output line
+            if (getBreakpoint().getSuspend() == JPDABreakpoint.SUSPEND_ALL)
+                r.setSuspendPolicy (JPDABreakpoint.SUSPEND_ALL);
+            else r.setSuspendPolicy (JPDABreakpoint.SUSPEND_EVENT_THREAD);
         r.enable ();
     }
 
@@ -154,6 +161,14 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         Value value
     ) {
         boolean resume;
+        
+        //PATCH 48174
+        try {
+            getDebugger().setAltCSF(thread.frame(0));
+        } catch (com.sun.jdi.IncompatibleThreadStateException e) {
+            e.printStackTrace();
+        }
+        
         if ((condition == null) || condition.equals ("")) {
             JPDABreakpointEvent e = new JPDABreakpointEvent (
                 getBreakpoint (),
@@ -177,6 +192,8 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                 referenceType,
                 value
             );
+            //PATCH 48174
+            resume = getBreakpoint().getSuspend() == JPDABreakpoint.SUSPEND_NONE || resume;
         }
         if (!resume) {
             DebuggerManager.getDebuggerManager().setCurrentSession(session);
