@@ -33,6 +33,9 @@ public class HtmlBrowser extends Object {
 
     public static class FactoryEditor extends PropertyEditorSupport {
         
+        /** extended attribute that signals that this object should not be visible to the user */
+        private static final String EA_HIDDEN = "hidden"; // NOI18N
+
         private static final String BROWSER_FOLDER = "Services/Browsers"; // NOI18N
         
         /** Creates new FactoryEditor */
@@ -97,7 +100,8 @@ public class HtmlBrowser extends Object {
             DataFolder folder = DataFolder.findFolder (fo);
             DataObject [] dobjs = folder.getChildren ();
             for (int i = 0; i<dobjs.length; i++) {
-                list.add (dobjs[i].getNodeDelegate ().getDisplayName ());
+                if (!Boolean.TRUE.equals (dobjs[i].getPrimaryFile ().getAttribute (EA_HIDDEN)))
+                    list.add (dobjs[i].getNodeDelegate ().getDisplayName ());
             }
             String[] retValue = new String[list.size ()];
             
