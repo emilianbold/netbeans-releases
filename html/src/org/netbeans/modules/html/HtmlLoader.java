@@ -15,25 +15,17 @@ package org.netbeans.modules.html;
 
 import java.util.*;
 import java.io.IOException;
-import java.net.URL;
-import java.awt.BorderLayout;
 
-import org.openide.TopManager;
 import org.openide.actions.*;
-import org.openide.awt.HtmlBrowser;
 import org.openide.loaders.UniFileLoader;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.OpenSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.nodes.Children;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-import org.openide.windows.CloneableTopComponent;
 
 
 /**
@@ -72,16 +64,7 @@ public class HtmlLoader extends UniFileLoader {
                        getString("PROP_HtmlLoader_Name");
     }
     
-    /** Get default actions.
-     * @return array of default system actions or <CODE>null</CODE> if this loader
-     * does not have any actions.
-     * Typical example of usage:
-     * <pre>
-     * return new SystemAction[] {
-     *                   SystemAction.get (OpenAction.class), ...
-     *                   SystemAction.get (PropertiesAction.class)
-     *               };
-     * </pre>
+    /** Get default actions for HTML documents.
      */
     protected SystemAction[] defaultActions () {
         return new SystemAction[] {
