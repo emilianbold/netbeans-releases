@@ -67,6 +67,7 @@ import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.options.OptionUtilities;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.MacrosEditorPanel;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ContextAwareAction;
@@ -160,9 +161,8 @@ public class NbEditorKit extends ExtKit {
     }
 
     public String getContentType() {
-        if( Boolean.getBoolean( "netbeans.debug.exceptions" ) ){ //NOI18N
-            System.out.println("Warning: KitClass "+this.getClass().getName()+" doesn't override the method getContentType.");
-        }
+        ErrorManager.getDefault().log(ErrorManager.WARNING, 
+            "Warning: KitClass "+this.getClass().getName()+" doesn't override the method getContentType."); //NOI18N
         return (contentTypeTable.containsKey(this.getClass().getName())) ? 
             (String)contentTypeTable.get(this.getClass().getName()) : "text/"+this.getClass().getName().replace('.','_'); //NOI18N
     }
