@@ -152,7 +152,7 @@ Microsystems, Inc. All Rights Reserved.
          <zip zipfile="${archive.file2}">
             <fileset dir="${xtest.results}" includes="**/xmlresults/*.xml,**/suites/*.xml"/>
          </zip>
-         <mkdir dir="xtest.driver.backup"/>
+         <mkdir dir="${xtest.driver.backup}"/>
          <copy file="${archive.file}" toDir="${xtest.driver.backup}"/>
          <copy file="${archive.file2}" toDir="${xtest.driver.backup}"/>
          <antcall target="ship-results"/>
