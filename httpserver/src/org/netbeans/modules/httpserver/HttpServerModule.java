@@ -35,6 +35,7 @@ public class HttpServerModule implements ModuleInstall {
   private static HttpServer server;
   private static NbServer config;
   private static Thread serverThread;
+  private static boolean inSetRunning = false;
 
   /** Module installed for the first time. */
   public void installed() {
@@ -63,55 +64,78 @@ public class HttpServerModule implements ModuleInstall {
 
   /** initiates HTTPServer so it runs */
   static synchronized void initHTTPServer() {
-    if ((serverThread != null) && (!HttpServerSettings.OPTIONS.running)) {
-      // another thread is trying to start the server, wait for a while and then stop it if it's still bad
-      try {
-        Thread.currentThread().sleep(2000);
-      }
-      catch (InterruptedException e) {}
+    if (inSetRunning)
+      return;
+    inSetRunning = true;
+    try {
       if ((serverThread != null) && (!HttpServerSettings.OPTIONS.running)) {
-        serverThread.stop();
-        serverThread = null;
-      }
-    }
-    if (serverThread == null) {
-      serverThread = new Thread("HTTPServer") {
-        public void run() {
-          try {                
-            config = new NbServer(HttpServerSettings.OPTIONS);
-            server = new NbHttpServer(config);
-            HttpServerSettings.OPTIONS.runSuccess();
-            System.out.println(java.text.MessageFormat.format(NbBundle.getBundle(HttpServerModule.class).
-              getString("CTL_ServerStarted"), new Object[] {new Integer(HttpServerSettings.OPTIONS.getPort())}));
-          } catch (Exception ex) {
-            // couldn't start
-            //ex.printStackTrace();
-            serverThread = null;
-            HttpServerSettings.OPTIONS.runFailure();
-            if (!HttpServerSettings.OPTIONS.running)
-              TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                NbBundle.getBundle(HttpServerModule.class).getString("MSG_HTTP_SERVER_START_FAIL"), 
-                NotifyDescriptor.Message.WARNING_MESSAGE));
-          }
+        // another thread is trying to start the server, wait for a while and then stop it if it's still bad
+        try {
+          Thread.currentThread().sleep(2000);
         }
-      };
-      serverThread.start();
+        catch (InterruptedException e) {}
+        if ((serverThread != null) && (!HttpServerSettings.OPTIONS.running)) {
+          serverThread.stop();
+          serverThread = null;
+        }
+      }
+      if (serverThread == null) {
+        serverThread = new Thread("HTTPServer") {
+          public void run() {
+            try {                
+              config = new NbServer(HttpServerSettings.OPTIONS);
+              server = new HttpServer(config);
+              HttpServerSettings.OPTIONS.runSuccess();
+              System.out.println(java.text.MessageFormat.format(NbBundle.getBundle(HttpServerModule.class).
+                getString("CTL_ServerStarted"), new Object[] {new Integer(HttpServerSettings.OPTIONS.getPort())}));
+            } catch (Exception ex) {
+              // couldn't start
+              //ex.printStackTrace();
+              serverThread = null;
+              HttpServerSettings.OPTIONS.runFailure();
+              if (!HttpServerSettings.OPTIONS.running)
+                TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                  NbBundle.getBundle(HttpServerModule.class).getString("MSG_HTTP_SERVER_START_FAIL"), 
+                  NotifyDescriptor.Message.WARNING_MESSAGE));
+            }
+          }
+        };
+        serverThread.start();
+      }  
+      // wait for the other thread to start the server
+      try {
+        HttpServerSettings.OPTIONS.wait(HttpServerSettings.SERVER_STARTUP_TIMEOUT);
+      }
+      catch (Exception e) {
+        // e.printStackTrace();
+      }
+    }  
+    finally {  
+      inSetRunning = false;
     }  
   }
 
   /** stops the HTTP server */
   static synchronized void stopHTTPServer() {
-    if ((serverThread != null) && (server != null)) {
-      server.close();                                
-      try {
-        serverThread.join();
-      }
-      catch (InterruptedException e) {
-        serverThread.stop();
-      }
-      serverThread = null;
-      System.out.println(NbBundle.getBundle(HttpServerModule.class).
-        getString("CTL_ServerStopped"));
+    if (inSetRunning)
+      return;
+    inSetRunning = true;
+    try {
+      if ((serverThread != null) && (server != null)) {
+        server.close();                                
+        try {
+          serverThread.join();
+        }
+        catch (InterruptedException e) {
+          serverThread.stop();
+        } 
+        serverThread = null;
+        System.out.println(NbBundle.getBundle(HttpServerModule.class).
+          getString("CTL_ServerStopped"));
+      }  
+    }
+    finally {  
+      inSetRunning = false;
     }  
   }
 
@@ -120,6 +144,7 @@ public class HttpServerModule implements ModuleInstall {
 
 /*
  * Log
+ *  16   Gandalf   1.15        7/3/99   Petr Jiricka    
  *  15   Gandalf   1.14        6/23/99  Petr Jiricka    
  *  14   Gandalf   1.13        6/22/99  Petr Jiricka    
  *  13   Gandalf   1.12        6/11/99  Jaroslav Tulach System.out commented

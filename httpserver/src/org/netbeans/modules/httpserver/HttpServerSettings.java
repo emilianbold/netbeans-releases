@@ -18,7 +18,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ResourceBundle;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.StringTokenizer;
+import java.util.Properties;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.InetAddress;
@@ -27,6 +29,7 @@ import java.text.MessageFormat;
 
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
 import org.openide.util.HttpServer;
 import org.openide.filesystems.FileObject;
 import org.openide.NotifyDescriptor;
@@ -78,10 +81,16 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
                                         
   /** Reflects whether the server is actually running, not the running property */
   static boolean running = false;
+  
+  private static Properties mappedServlets = new Properties();
 
   /** http settings */
   public final static HttpServerSettings OPTIONS = new HttpServerSettings();
-
+                                      
+  /** last used servlet name */                                    
+  private static int lastUsedName = 0;
+  /** map names of servlets to paths */
+  private static HashMap nameMap = new HashMap();
 
   public HttpServerSettings() {
   }
@@ -158,13 +167,6 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
       if (running) {
         // running status is set by another thread
         HttpServerModule.initHTTPServer();
-        // wait for the other thread to start the server
-        try {
-          HttpServerSettings.OPTIONS.wait(SERVER_STARTUP_TIMEOUT);
-        }
-        catch (Exception e) {
-          // e.printStackTrace();
-        }
       }  
       else {
         this.running = false;
@@ -255,6 +257,9 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     return host;
   }
 
+  public HelpCtx getHelpCtx () {
+    return new HelpCtx (HttpServerSettings.class);
+  }
 
   /* Access the firePropertyChange from HTTPServer (which holds the enabled prop). */
   void firePropertyChange0 (String name, Object oldVal, Object newVal) {
@@ -306,8 +311,42 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   public URL getResourceRoot() throws MalformedURLException, UnknownHostException {
     setRunning(true);                                                           
     return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL());
-  }           
+  }                                   
+  
+  public void mapServlet(String urlPath, String className) {
+    lastUsedName++;
+    String name = "NONAME" + lastUsedName;
+    nameMap.put(urlPath, name);
+    mapServlet(className, name, urlPath);
+  }                                       
+  
+  public void unmapServlet(String urlPath) {
+    unmapServlet0((String)nameMap.get(urlPath));
+    nameMap.remove(urlPath);
+  }
+  
+  private void mapServlet(String className, String name, String urlPath) {
+    if (name.indexOf('.') != -1)
+      throw new IllegalArgumentException("Servlet name may not contain a dot");
+    synchronized (HttpServerSettings.OPTIONS) {
+      mappedServlets.put("SERVLET." + name + ".CLASS", className); 
+      mappedServlets.put("SERVLET." + name + ".PATHS", urlPath); 
+      mappedServlets.put("SERVLET." + name + ".Loader", NbLoader.class.getName()); 
+      restartIfNecessary();
+    }  
+  }
     
+  private void unmapServlet0(String name) {
+    if (name.indexOf('.') != -1)
+      throw new IllegalArgumentException("Servlet name may not contain a dot");
+    synchronized (HttpServerSettings.OPTIONS) {
+      mappedServlets.remove("SERVLET." + name + ".CLASS"); 
+      mappedServlets.remove("SERVLET." + name + ".PATHS"); 
+      mappedServlets.remove("SERVLET." + name + ".Loader"); 
+      restartIfNecessary();
+    }  
+  }
+
   /** Requests access for address addr. If necessary asks the user. Returns true it the access 
   * has been granted. */  
   public boolean allowAccess(InetAddress addr) {
@@ -366,10 +405,15 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     return addr;
   }
   
+  Properties getMappedServlets() {
+    return mappedServlets;
+  }
+  
 }
 
 /*
  * Log
+ *  13   Gandalf   1.12        7/3/99   Petr Jiricka    
  *  12   Gandalf   1.11        6/25/99  Petr Jiricka    Removed debug prints
  *  11   Gandalf   1.10        6/24/99  Petr Jiricka    Implements recent 
  *       changes in org.openide.util.HttpServer - allowAccess(...)
