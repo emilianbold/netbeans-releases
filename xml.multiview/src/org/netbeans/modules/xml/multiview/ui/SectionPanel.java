@@ -108,7 +108,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         fillerLine.setVisible(true);
         fillerEnd.setVisible(true);
         innerPanel.addFocusListener(sectionFocusListener);
