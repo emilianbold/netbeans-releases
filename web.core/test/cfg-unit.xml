@@ -1,26 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
-<mconfig name="unit Test Type Config">
+<!--
+                Sun Public License Notice
 
-    <!-- testbag with all tests running in code mode (i.e. in standard JVM)
-         use ant runtests -Dxtest.attribs=stable,code to run this testbag  -->
-	<testbag compiler="default-compiler" executor="ide" name="all unit tests" testattribs="all and ide">
- 		<testset dir="unit/src">
-			<patternset>
-				<include name="**/*.class"/>
-				<exclude name="**/data/**"/>
- 			</patternset>
- 		</testset>
-	</testbag>
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<mconfig name="Configuration of Web Core unit tests">
+
+    <testbag testattribs="stable" executor="ide" name=" Web Core unit tests">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/modules/web/dd/test/DDEditorTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+ 
+    <testbag testattribs="dev" executor="ide" name="Web Core unit tests - under development">
+        <testset dir="unit/src">
+            <patternset>
+            </patternset>
+        </testset>
+    </testbag>    
 
     <!-- ide executor - use this one if you plan to run your tests inside IDE (internally).
                         Similarly as with code executor, you can create your own to 
                         prepare some neccessary stuff before running tests. -->
-	<executor antfile="build-unit.xml" name="ide" target="runidetest"/> 
+    <executor name="ide" antfile="build-unit.xml" target="runidetest"/>    
 
-	<compiler antfile="build-unit.xml" default="true" name="default-compiler" target="default-compiler"/>
-
-    <!-- standard results processor - currently there is only one results processor in XTest -->    
-	<resultsprocessor antfile="build.xml" default="true" name="default-results-processor" target="test_report"/> 
-
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
 </mconfig>
+

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <!--
                 Sun Public License Notice
 
@@ -8,84 +8,17 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
---><project basedir="." default="all" name="MyTestWorkspace XTest Workspace Script">
+-->
 
-    <!-- Points to directory with IDE to test-->
-    <property location="../../../nbbuild/netbeans" name="netbeans.home"/>
-    
+<project name="Web Core test build script" basedir="." default="all">
     <!-- Name of tested module -->
-    <property name="xtest.module" value="MyTestWorkspace"/>
-    
-    <!-- Home of XTest -->
-    <property location="../../../xtest" name="xtest.home"/>
+    <property name="xtest.module" value="web/core"/>    
 
+    <import file="../../../nbbuild/templates/xtest.xml"/>
+    
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="unit"/>
-    <property name="xtest.attribs" value="all,ide"/>
-    
-    <!-- Points to antfile with module's harness. 
-         Targets from that antfile is called from this build.xml -->
-    <property location="${xtest.home}/lib/module_harness.xml" name="xtest.module_harness.antfile"/>
-    
-    
-  
-  
-  
-  	<!--
-	******************************************************
-	** You should not change anything after this comment,
-	**    unless you really know what you do
-	******************************************************
-	-->
-    
-    <!-- Ant property. Value 'ignore' means that system classpath is ignored
-         and only classpath specified in build file is used. -->
-    <property name="build.sysclasspath" value="ignore"/>
-
-    
-    <!-- ============ -->
-    <!-- Main targets -->
-    <!-- ============ -->
-    
-    <target depends="runtests" name="all"/>
-    
-    <!-- This calls target which will call compilers according to cfg file.
-         You should not change this target unless you realy know what you are doing -->
-    <target name="buildtests">
-       <ant antfile="${xtest.module_harness.antfile}" dir="." target="compiler-launcher"/>
-    </target>
-    
-    <!-- This calls common clean process. -->
-    <!-- You can write your own if you need something special -->
-    <target name="cleantests">
-       <ant antfile="${xtest.module_harness.antfile}" dir="." target="cleantests"/>
-    </target> 
-
-    <!-- This target runs tests. You should not change this --> 
-    <!-- target unless you realy know what you are doing -->
-    <target depends="buildtests" name="runtests">
-        <echo message="Module: Running tests for ${xtest.module}, testtype ${xtest.testtype}, attribs=${xtest.attribs}"/>
-        <ant antfile="${xtest.module_harness.antfile}" dir="." target="runtests"/>
-    </target>
-    
-    <!-- This target is executed from test-executor in newly created Project -->
-    <!-- Name of this task is defined in cfg-xxx.xml -->
-    <target name="test_report">
-        <ant antfile="${xtest.module_harness.antfile}" dir="." target="test_report"/>
-    </target>
-    
-    <target name="cleanresults">
-        <ant antfile="${xtest.module_harness.antfile}" dir="." target="cleanresults"/>
-    </target>
-    
-    <target depends="cleantests,cleanresults" name="realclean">
-        <ant antfile="${xtest.module_harness.antfile}" dir="." target="realclean"/>
-    </target>
-    
-    <target name="printconfig">
-        <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
-    </target>
-    
+    <property name="xtest.attribs" value="stable"/>    
 </project>
