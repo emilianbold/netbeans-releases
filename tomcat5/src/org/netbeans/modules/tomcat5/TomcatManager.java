@@ -1060,6 +1060,8 @@ public class TomcatManager implements DeploymentManager {
                 "docBase=\"../server/webapps/manager\"",
                 "docBase=\"balancer\""
             };
+            String passwd = TomcatInstallUtil.generatePassword(8);
+            this.setPassword(passwd);
             String [] patternTo = new String [] { 
                 null, 
                 null, 
@@ -1067,7 +1069,7 @@ public class TomcatManager implements DeploymentManager {
                 "<Context path=\"/jsp-examples\" docBase=\""+new File (homeDir, "webapps/jsp-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
                 "<Context path=\"/servlets-examples\" docBase=\""+new File (homeDir, "webapps/servlets-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
                 "</Host>",   // NOI18N
-                "<user username=\"ide\" password=\"ide_manager\" roles=\"manager\"/>\n</tomcat-users>",   // NOI18N
+                "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager\"/>\n</tomcat-users>",   // NOI18N
                 null, 
                 "docBase=\""+new File (homeDir, "server/webapps/admin").getAbsolutePath ()+"\"",   // NOI18N
                 "docBase=\""+new File (homeDir, "server/webapps/manager").getAbsolutePath ()+"\"",   // NOI18N

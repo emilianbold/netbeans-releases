@@ -285,4 +285,25 @@ public class TomcatInstallUtil {
         SaveCookie savec = (SaveCookie) dobj.getCookie(SaveCookie.class);
         if (savec!=null) savec.save();
     }
+    
+    public static String generatePassword(int length) {
+	int ran2 = 0;
+	String pwd = "";
+	for (int i = 0; i < length; i++) {
+            ran2 = (int)(Math.random()*61);
+            if (ran2 < 10) {
+                ran2 += 48;
+            } else {
+                if (ran2 < 35) {
+                    ran2 += 55;
+                } else {
+                    ran2 += 62;
+                }
+            }
+            char c = (char) ran2;
+            pwd += c;
+	}
+        return pwd;
+    }
+    
 }
