@@ -165,9 +165,9 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
     void store( WizardDescriptor d ) {        
         String name = projectNameTextField.getText().trim();
         
-        d.putProperty( /*XXX Define somewhere */ "projdir", new File(createdFolderTextField.getText())); //NOI18N
-        d.putProperty( /*XXX Define somewhere */ "displayName", name); //NOI18N      
-        d.putProperty( /*XXX Define somewhere */ "codename", name.replace(' ', '-')); //NOI18N
+        d.putProperty(WizardProperties.PROJECT_DIR, new File(createdFolderTextField.getText()));
+        d.putProperty(WizardProperties.DISPLAY_NAME, name);
+        d.putProperty(WizardProperties.CODE_NAME, name.replace(' ', '-')); //NOI18N
     }
         
     
@@ -222,3 +222,5 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
     }
     
 }
+
+//TODO implement check for project folder name and location

@@ -18,9 +18,10 @@ import org.openide.util.NbBundle;
 
 public class PanelOptionsVisual extends javax.swing.JPanel {
     
-    private static boolean lastMainClassCheck = false; // XXX Store somewhere
+//    private static boolean lastMainClassCheck = false; // XXX Store somewhere
     
     private PanelConfigureProject panel;
+    private String j2eeLevel;
     
     /** Creates new form PanelOptionsVisual */
     public PanelOptionsVisual(PanelConfigureProject panel) {
@@ -28,7 +29,6 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         this.panel = panel;
         initJ2EESpecLevels();
     }
-    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -110,6 +110,11 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         StringBuffer str = new StringBuffer("J2EESpecLevel_Desc_"); //NOI18N
         str.append(j2eeSpecComboBox.getSelectedIndex());
         j2eeSpecDescTextPane.setText(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString(str.toString())); //NOI18N
+        switch (j2eeSpecComboBox.getSelectedIndex()) {
+            case 0: j2eeLevel = WizardProperties.J2EE_14_LEVEL;
+                    break;
+            case 1: j2eeLevel = WizardProperties.J2EE_13_LEVEL;
+        }            
     }//GEN-LAST:event_j2eeSpecComboBoxActionPerformed
     
     boolean valid() {
@@ -117,8 +122,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     }
 
     void store(WizardDescriptor d) {
-        d.putProperty( /*XXX Define somewhere */ "setAsMain", setAsMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
-        d.putProperty( /*XXX Define somewhere */ "j2eeLevel", setAsMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
+        d.putProperty(WizardProperties.SET_AS_MAIN, setAsMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE );
+        d.putProperty(WizardProperties.J2EE_LEVEL, j2eeLevel);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -11,6 +11,7 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
+
 <?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
@@ -20,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
             <!-- Add template for the J2SE project -->
             <file name="emptyWeb.xml">
                 <attr name="template" boolvalue="true"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.project.ui.wizards.NewJ2SEProjectWizardIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.project.ui.wizards.NewWebProjectWizardIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.project.ui.wizards.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/emptyProject.html"/>
