@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -69,7 +69,6 @@ public class JUnitSettings extends SystemOption {
     public static final String PROP_BODY_COMMENTS       = "bodyComments";
     public static final String PROP_BODY_CONTENT        = "bodyContent";
     public static final String PROP_JAVADOC             = "javaDoc";
-    public static final String PROP_CFGCREATE_ENABLED   = "cfgCreateEnabled";
     public static final String PROP_GENERATE_EXCEPTION_CLASSES = "generateExceptionClasses";
     public static final String PROP_GENERATE_ABSTRACT_IMPL = "generateAbstractImpl";
     public static final String PROP_GENERATE_SUITE_CLASSES   = "generateSuiteClasses";
@@ -85,7 +84,7 @@ public class JUnitSettings extends SystemOption {
     
     public static final String PROP_VERSION = "version";    
     
-    public static final Integer CURRENT_VERSION = new Integer(40);
+    public static final Integer CURRENT_VERSION = new Integer(41);
     
     // No constructor please!
 
@@ -106,7 +105,6 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_BODY_COMMENTS, Boolean.TRUE, true);
         putProperty(PROP_BODY_CONTENT, Boolean.TRUE, true);
         putProperty(PROP_JAVADOC, Boolean.TRUE, true);
-        putProperty(PROP_CFGCREATE_ENABLED, Boolean.TRUE, true);
         putProperty(PROP_GENERATE_ABSTRACT_IMPL, Boolean.TRUE, true);
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, Boolean.FALSE, true);
         putProperty(PROP_GENERATE_SUITE_CLASSES, Boolean.TRUE, true);
@@ -127,7 +125,6 @@ public class JUnitSettings extends SystemOption {
         out.writeObject(getProperty(PROP_BODY_COMMENTS));
         out.writeObject(getProperty(PROP_BODY_CONTENT));
         out.writeObject(getProperty(PROP_JAVADOC));
-        out.writeObject(getProperty(PROP_CFGCREATE_ENABLED));
         out.writeObject(getProperty(PROP_GENERATE_ABSTRACT_IMPL));
         out.writeObject(getProperty(PROP_GENERATE_EXCEPTION_CLASSES));
         out.writeObject(getProperty(PROP_GENERATE_SUITE_CLASSES));
@@ -157,6 +154,9 @@ public class JUnitSettings extends SystemOption {
     
     private void readVersionedOptions(ObjectInput in, int version) throws IOException, ClassNotFoundException {
         switch (version) {
+            case 41:
+                readVersion41Options(in);
+                break;
             case 40:
                 readVersion40Options(in);
                 break;
@@ -173,6 +173,25 @@ public class JUnitSettings extends SystemOption {
         }
     }
     
+    private void readVersion41Options(ObjectInput in) throws IOException, ClassNotFoundException {
+        putProperty(PROP_FILE_SYSTEM, in.readObject(), true);
+        putProperty(PROP_MEMBERS_PUBLIC, in.readObject(), true);
+        putProperty(PROP_MEMBERS_PROTECTED, in.readObject(), true);
+        putProperty(PROP_MEMBERS_PACKAGE, in.readObject(), true);
+        putProperty(PROP_BODY_COMMENTS, in.readObject(), true);
+        putProperty(PROP_BODY_CONTENT, in.readObject(), true);
+        putProperty(PROP_JAVADOC, in.readObject(), true);
+        putProperty(PROP_GENERATE_ABSTRACT_IMPL, in.readObject(), true);
+        putProperty(PROP_GENERATE_EXCEPTION_CLASSES, in.readObject(), true);
+        putProperty(PROP_GENERATE_SUITE_CLASSES,in.readObject(), true);
+        putProperty(PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES,in.readObject(), true);
+        putProperty(PROP_GENERATE_MAIN_METHOD,in.readObject(), true);
+        putProperty(PROP_GENERATE_MAIN_METHOD_BODY,in.readObject(), true);
+        putProperty(PROP_ROOT_SUITE_CLASSNAME,in.readObject(), true);
+        putProperty(PROP_GENERATE_SETUP, in.readObject(), true);
+        putProperty(PROP_GENERATE_TEARDOWN, in.readObject(), true);
+    }
+    
     private void readVersion40Options(ObjectInput in) throws IOException, ClassNotFoundException {
         putProperty(PROP_FILE_SYSTEM, in.readObject(), true);
         putProperty(PROP_MEMBERS_PUBLIC, in.readObject(), true);
@@ -181,7 +200,7 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_BODY_COMMENTS, in.readObject(), true);
         putProperty(PROP_BODY_CONTENT, in.readObject(), true);
         putProperty(PROP_JAVADOC, in.readObject(), true);
-        putProperty(PROP_CFGCREATE_ENABLED, in.readObject(), true);
+        in.readObject();    //was PROP_CFGCREATE_ENABLED
         putProperty(PROP_GENERATE_ABSTRACT_IMPL, in.readObject(), true);
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, in.readObject(), true);
         putProperty(PROP_GENERATE_SUITE_CLASSES,in.readObject(), true);
@@ -203,7 +222,7 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_BODY_COMMENTS, in.readObject(), true);
         putProperty(PROP_BODY_CONTENT, in.readObject(), true);
         putProperty(PROP_JAVADOC, in.readObject(), true);
-        putProperty(PROP_CFGCREATE_ENABLED, in.readObject(), true);
+        in.readObject();    //was PROP_CFGCREATE_ENABLED
         putProperty(PROP_GENERATE_ABSTRACT_IMPL, in.readObject(), true);
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, in.readObject(), true);
         putProperty(PROP_GENERATE_SUITE_CLASSES,in.readObject(), true);
@@ -228,7 +247,7 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_BODY_COMMENTS, in.readObject(), true);
         putProperty(PROP_BODY_CONTENT, in.readObject(), true);
         putProperty(PROP_JAVADOC, in.readObject(), true);
-        putProperty(PROP_CFGCREATE_ENABLED, in.readObject(), true);
+        in.readObject(); // was PROP_CFGCREATE_ENABLED
         in.readObject(); // was PROP_CFGEXEC_ENABLED
         in.readObject(); // was PROP_EXECUTOR_TYPE
         putProperty(PROP_GENERATE_ABSTRACT_IMPL, in.readObject(), true);
@@ -258,7 +277,7 @@ public class JUnitSettings extends SystemOption {
             putProperty(PROP_BODY_COMMENTS, in.readObject(), true);
             putProperty(PROP_BODY_CONTENT, in.readObject(), true);
             putProperty(PROP_JAVADOC, in.readObject(), true);
-            putProperty(PROP_CFGCREATE_ENABLED, in.readObject(), true);
+            in.readObject(); // was PROP_CFGCREATE_ENABLED
             in.readObject(); // was PROP_CFGEXEC_ENABLED
             in.readObject(); // was PROP_EXECUTOR_TYPE
             putProperty(PROP_GENERATE_ABSTRACT_IMPL, in.readObject(), true);
@@ -336,14 +355,6 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_JAVADOC, newVal ? Boolean.TRUE : Boolean.FALSE, true);
     }
    
-    public boolean isCfgCreateEnabled() {
-        return ((Boolean) getProperty(PROP_CFGCREATE_ENABLED)).booleanValue();
-    }
-    
-    public void setCfgCreateEnabled(boolean newVal) {
-        putProperty(PROP_CFGCREATE_ENABLED, newVal ? Boolean.TRUE : Boolean.FALSE, true);
-    }
-
     public boolean isGenerateExceptionClasses() {
         return ((Boolean) getProperty(PROP_GENERATE_EXCEPTION_CLASSES)).booleanValue();
     }

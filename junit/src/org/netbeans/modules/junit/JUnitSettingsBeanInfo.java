@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -57,11 +57,6 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
             PropertyDescriptor propJavaDoc = new PropertyDescriptor (JUnitSettings.PROP_JAVADOC, JUnitSettings.class);
             propJavaDoc.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_javadoc"));
             propJavaDoc.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_javadoc"));
-            
-            PropertyDescriptor propCfgConfigEnabled = new PropertyDescriptor (JUnitSettings.PROP_CFGCREATE_ENABLED, JUnitSettings.class);
-            propCfgConfigEnabled.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_cfgcreate_enabled"));
-            propCfgConfigEnabled.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_cfgcreate_enabled"));            
-            
             
             PropertyDescriptor propGenerateExceptionClasses = new PropertyDescriptor (JUnitSettings.PROP_GENERATE_EXCEPTION_CLASSES, JUnitSettings.class);
             propGenerateExceptionClasses.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_generate_exception_classes"));
@@ -130,7 +125,7 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
 
             return new PropertyDescriptor[] {
               propMembersPublic, propMembersProtected, propMembersPackage, propBodyComments, propBodyContent, 
-              propJavaDoc, propCfgConfigEnabled,
+              propJavaDoc,
               propGenerateExceptionClasses, propGenerateAbstractImpl, propIncludePackagePrivateClasses, 
               propGenerateSuiteClasses,
               propGenerateSetUp, propGenerateTearDown,

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -210,9 +210,6 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
             this.chkGenerateSuites.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkGenerateSuites.AD"));
         }
         
-        this.chkEnabled.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkEnabled.toolTip"));
-        this.chkEnabled.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkEnabled.AD"));
-        
     }
     
     /**
@@ -248,12 +245,6 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
      * @param  nodes  nodes selected when the Create Test action was invoked
      */
     boolean configure() {
-        
-        // check if the dialog should be displayed:
-        //PENDING:
-        //if (!JUnitSettings.getDefault().isCfgCreateEnabled()) {
-        //    return true;
-        //}
         
         // create and display the dialog:
         String title = NbBundle.getMessage(JUnitCfgOfCreate.class,
@@ -312,7 +303,6 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
             chkAbstractImpl.setSelected(settings.isGenerateAbstractImpl());
             chkExceptions.setSelected(settings.isGenerateExceptionClasses());
         }
-        chkEnabled.setSelected(settings.isCfgCreateEnabled());
         chkSetUp.setSelected(settings.isGenerateSetUp());
         chkTearDown.setSelected(settings.isGenerateTearDown());
         
@@ -333,7 +323,6 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
         settings.setBodyComments(chkComments.isSelected());
         settings.setBodyContent(chkContent.isSelected());
         settings.setJavaDoc(chkJavaDoc.isSelected());
-        settings.setCfgCreateEnabled(chkEnabled.isSelected());
         if (multipleClasses) {
             settings.setGenerateSuiteClasses(chkGenerateSuites.isSelected());
             settings.setIncludePackagePrivateClasses(
@@ -372,20 +361,11 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
         JComponent settingsPanel = createSettingsPanel();
         settingsPanel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 5));
         
-        /* create the "Show this configuration dialog again" checkbox: */
-        chkEnabled = new JCheckBox();
-        Mnemonics.setLocalizedText(
-                chkEnabled,
-                bundle.getString("JUnitCfgOfCreate.chkEnabled.text"));  //NOI18N
-        
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(settingsPanel);
-        add(Box.createVerticalStrut(11));
-        add(chkEnabled);
         
         /* tune the layout: */
         settingsPanel.setAlignmentX(0.0f);
-        //chkEnabled.setAlignmentX(0.0f);   //not necessary - it is the default
     }
     
     /**
@@ -393,7 +373,6 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
     private void setupUserInteraction() {
         final ItemListener listener = new CheckBoxListener();
 
-        chkEnabled.addItemListener(listener);
         chkPublic.addItemListener(listener);
         chkProtected.addItemListener(listener);
         chkPackage.addItemListener(listener);
@@ -426,15 +405,11 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
         public void itemStateChanged(ItemEvent e) {
             final Object source = e.getSource();
             
-            if (source == chkEnabled) {
-                showCfgDialogStateChanged();
-            } else {
-                assert source == chkPublic
-                       || source == chkProtected
-                       || source == chkPackage;
-                checkChkBoxesStates();
-                checkAcceptability();
-            }
+            assert source == chkPublic
+                   || source == chkProtected
+                   || source == chkPackage;
+            checkChkBoxesStates();
+            checkAcceptability();
         }
         
     }
@@ -533,32 +508,6 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
         panel.add(cboxLocation,     gbcRight);
         
         return panel;
-    }
-    
-    /**
-     */
-    private void showCfgDialogStateChanged() {
-        if (!chkEnabled.isSelected()) {
-            String settingsCat = NbBundle.getMessage(
-                    getClass(),
-                    "UI/Services/Testing");                             //NOI18N
-            String settingName = NbBundle.getMessage(
-                   getClass(),
-                   "org-netbeans-modules-junit-JUnitSettings.settings");//NOI18N
-            String optionName = removeMnemonicAmpersand(
-                    NbBundle.getMessage(
-                            getClass(),
-                            "JUnitCfgOfCreate.chkEnabled.text").trim());//NOI18N
-            String msg = NbBundle.getMessage(
-                    getClass(),
-                    "MSG_HowToDisplayTheDialogAgain",                   //NOI18N
-                    settingsCat,
-                    settingName,
-                    optionName);
-            setMessage(msg, MSG_TYPE_TEMPORARY);
-        } else {
-            setMessage(null, MSG_TYPE_TEMPORARY);
-        }
     }
     
     /**
@@ -1105,7 +1054,6 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
     private JCheckBox chkAbstractImpl;
     private JCheckBox chkComments;
     private JCheckBox chkContent;
-    private JCheckBox chkEnabled;
     private JCheckBox chkExceptions;
     private JCheckBox chkGenerateSuites;
     private JCheckBox chkJavaDoc;
