@@ -55,9 +55,9 @@ edits in the text of a question, you need not change the version number.
         
         <question id="arch-usecases" when="init">
             Describe the main <a href="http://openide.netbeans.org/tutorial/api-design.html#usecase">
-            use cases</a> of the new API. Who will use it at
-            what circumstances and what will be the typical code to write
-            to use the module.
+            use cases</a> of the new API. Who will use it under
+            what circumstances? What kind of code would typically need to be written
+            to use the module?
         </question>
         
         <question id="arch-time" when="init">
@@ -65,18 +65,18 @@ edits in the text of a question, you need not change the version number.
             <hint>
             Please express your estimates of how long the design, implementation,
             stabilization are likely to last. How many people will be needed to
-            implement this and what is the expected milestone the work should be 
-            ready.
+            implement this and what is the expected milestone by which the work should be 
+            ready?
             </hint>
         </question>
         
         <question id="arch-quality" when="init">
-            How the <a href="http://www.netbeans.org/community/guidelines/q-evangelism.html">quality</a>
-            of your code will be tested and 
-            how future regressions are going to be prevented?
+            How will the <a href="http://www.netbeans.org/community/guidelines/q-evangelism.html">quality</a>
+            of your code be tested and 
+            how are future regressions going to be prevented?
             <hint>
-            What kind of testing
-            you want to use? What/how much area of functionality
+            What kind of testing do
+            you want to use? How much functionality, in which areas,
             should be covered by the tests? 
             </hint>
         </question>
@@ -85,7 +85,7 @@ edits in the text of a question, you need not change the version number.
         <question id="dep-nb" when="init" >
             What other NetBeans projects and modules does this one depend on?
             <hint>
-            If you want, describe such projects as imported API using
+            If you want, describe such projects as imported APIs using
             the <code>&lt;api name="identification" type="import or export" category="stable" url="where is the description" /&gt;</code>
             </hint>
         </question>
@@ -484,7 +484,7 @@ edits in the text of a question, you need not change the version number.
             How the performance of the plugged in code will be enforced?
             <hint>
             If you allow foreign code to be plugged into your own module, how
-            do you enforce, that it will behave correctly and fast and will not
+            do you enforce that it will behave correctly and quickly and will not
             negatively influence the performance of your own module?
             </hint>
         </question>
