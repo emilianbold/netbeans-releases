@@ -603,8 +603,14 @@ public class TestStringWizardPanel extends JPanel {
                         // Don't proceed.
                         continue;
                     
-                    // Actually put missing property into bundle.
-                    support.getResourceHolder().addProperty(i18nString.getKey(), i18nString.getValue(), i18nString.getComment());
+                    // Actually put missing property into bundle with origin comment.
+                    String comment = i18nString.getComment();
+                    if (source instanceof DataObject && (comment == null || "".equals(comment) ) ) {
+                        DataObject dobj = (DataObject) source;
+                        comment = dobj.getPrimaryFile().getPackageName('.');
+                    }
+                                        
+                    support.getResourceHolder().addProperty(i18nString.getKey(), i18nString.getValue(), comment);
 
                     progressPanel.setSubProgress((int)((j+1)/(float)stringMap.size() * 100));
                 } // End of inner for.
