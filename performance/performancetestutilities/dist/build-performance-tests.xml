@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- Imports jemmy.and.jelly.path and default qa-functional-compiler and
          runidetest executor -->
-    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
+    <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
     
     <!-- Root folders -->
     <property name="nball.dir" location="../../../../nb_all"/>
