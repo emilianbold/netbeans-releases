@@ -50,6 +50,7 @@ public class CreateViewAction extends DatabaseAction {
             if (dlg.run()) {
                 CreateView cmd = spec.createCommandCreateView(dlg.getViewName());
                 cmd.setQuery(dlg.getViewCode());
+                cmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
                 cmd.execute();
                 nfo.addView(dlg.getViewName());
             }

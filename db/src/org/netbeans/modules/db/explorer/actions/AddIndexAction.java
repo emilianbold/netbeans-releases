@@ -68,6 +68,7 @@ public class AddIndexAction extends DatabaseAction {
             dlg.setIndexName(tablename + "_idx"); // NOI18N
             if (dlg.run()) {
                 CreateIndex icmd = spec.createCommandCreateIndex(tablename);
+                icmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
                 icmd.setIndexName(dlg.getIndexName());
                 icmd.setIndexType(dlg.getIndexType());
                 Iterator enu = dlg.getSelectedColumns().iterator();

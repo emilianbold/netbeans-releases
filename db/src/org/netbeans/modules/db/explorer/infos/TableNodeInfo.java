@@ -138,6 +138,7 @@ public class TableNodeInfo extends DatabaseNodeInfo {
         Specification spec = (Specification)getSpecification();
         try {
             AbstractCommand cmd = spec.createCommandCommentTable(tablename, rem);
+            cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
@@ -198,6 +199,7 @@ public class TableNodeInfo extends DatabaseNodeInfo {
         try {
             Specification spec = (Specification)getSpecification();
             AbstractCommand cmd = spec.createCommandDropTable(getTable());
+            cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
         } catch (Exception e) {
             throw new IOException(e.getMessage());

@@ -93,8 +93,9 @@ public class AddToIndexAction extends DatabaseAction {
                     icmd.specifyColumn((String)enu.next());
 
                 icmd.specifyColumn((String)dlg.getSelectedItem());
-                spec.createCommandDropIndex(index).execute();
-                icmd.execute();
+                DropIndex dicmd = spec.createCommandDropIndex(index);
+                dicmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
+                dicmd.execute();
                 nfo.refreshChildren();
 //				((DatabaseNodeChildren)nfo.getNode().getChildren()).createSubnode(info,true);
             }

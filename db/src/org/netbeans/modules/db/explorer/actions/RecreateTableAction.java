@@ -82,6 +82,7 @@ public class RecreateTableAction extends DatabaseAction {
                         if(!dlg.isEditable()) { // from file
                             newtab = dlg.getStringValue();
                             cmd.setObjectName(newtab);
+                            cmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
                             cmd.execute();
                             noResult = false;
                             nfo.addTable(newtab);

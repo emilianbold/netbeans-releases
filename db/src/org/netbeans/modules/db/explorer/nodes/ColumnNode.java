@@ -47,6 +47,7 @@ public class ColumnNode extends LeafNode {
             Specification spec = (Specification)info.getSpecification();
             RenameColumn cmd = spec.createCommandRenameColumn(table);
             cmd.renameColumn(info.getName(), newname);
+            cmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
             super.setName(newname);
         } catch (CommandNotSupportedException ex) {

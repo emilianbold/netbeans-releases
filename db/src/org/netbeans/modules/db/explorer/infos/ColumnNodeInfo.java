@@ -59,6 +59,7 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
             Specification spec = (Specification)getSpecification();
             RemoveColumn cmd = (RemoveColumn)spec.createCommandRemoveColumn(table);
             cmd.removeColumn((String)get(code));
+            cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
             // refresh list of columns after column drop
             getParent().refreshChildren();
@@ -147,6 +148,7 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
         Specification spec = (Specification)getSpecification();
         try {
             AbstractCommand cmd = spec.createCommandCommentTable(tablename, rem);
+            cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
@@ -162,6 +164,7 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
             TableColumn col = getColumnSpecification();
             col.setColumnSize(size.intValue());
             cmd.setColumn(col);
+            cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
@@ -177,6 +180,7 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
             TableColumn col = getColumnSpecification();
             col.setDecimalSize(size.intValue());
             cmd.setColumn(col);
+            cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
@@ -192,6 +196,7 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
             TableColumn col = getColumnSpecification();
             col.setDefaultValue(val);
             cmd.setColumn(col);
+            cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
@@ -207,6 +212,7 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
             TableColumn col = getColumnSpecification();
             col.setNullAllowed(flag);
             cmd.setColumn(col);
+            cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
@@ -222,6 +228,7 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
             TableColumn col = getColumnSpecification();
             col.setColumnType(type.intValue());
             cmd.setColumn(col);
+            cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());

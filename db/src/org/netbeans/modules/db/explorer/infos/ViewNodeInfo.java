@@ -65,6 +65,7 @@ public class ViewNodeInfo extends DatabaseNodeInfo {
         Specification spec = (Specification)getSpecification();
         try {
             AbstractCommand cmd = spec.createCommandCommentView(viewname, rem);
+            cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
@@ -77,6 +78,7 @@ public class ViewNodeInfo extends DatabaseNodeInfo {
             String table = (String)get(DatabaseNode.TABLE);
             Specification spec = (Specification)getSpecification();
             AbstractCommand cmd = spec.createCommandDropView(getName());
+            cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
         } catch (Exception e) {
             throw new IOException(e.getMessage());

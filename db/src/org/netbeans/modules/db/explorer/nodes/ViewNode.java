@@ -34,6 +34,7 @@ public class ViewNode extends DatabaseNode {
             DatabaseNodeInfo info = getInfo();
             Specification spec = (Specification)info.getSpecification();
             AbstractCommand cmd = spec.createCommandRenameView(info.getName(), newname);
+            cmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
             super.setName(newname);
             info.put(DatabaseNode.TABLE, newname);

@@ -118,6 +118,7 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo {
         try {
             Specification spec = (Specification)getSpecification();
             AbstractCommand cmd = spec.createCommandDropProcedure((String)get(DatabaseNode.PROCEDURE));
+            cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
         } catch (Exception e) {
             throw new IOException(e.getMessage());

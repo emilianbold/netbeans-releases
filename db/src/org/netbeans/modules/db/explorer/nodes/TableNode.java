@@ -86,6 +86,7 @@ public class TableNode extends DatabaseNode implements InstanceCookie {
             DatabaseNodeInfo info = getInfo();
             Specification spec = (Specification)info.getSpecification();
             AbstractCommand cmd = spec.createCommandRenameTable(info.getName(), newname);
+            cmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
             super.setName(newname);
             info.put(DatabaseNode.TABLE, newname);
@@ -236,6 +237,7 @@ public class TableNode extends DatabaseNode implements InstanceCookie {
                     Specification spec = (Specification)ownerinfo.getSpecification();
                     AddColumn cmd = (AddColumn)spec.createCommandAddColumn(ownerinfo.getTable());
                     cmd.getColumns().add(col);
+                    cmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
                     cmd.execute();
                     ownerinfo.addColumn(name);
                     if (node != null) node.destroy();

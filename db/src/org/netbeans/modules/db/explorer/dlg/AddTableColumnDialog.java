@@ -373,6 +373,7 @@ public class AddTableColumnDialog {
                                       colname = colnamefield.getText();
                                       ColumnItem citem = (ColumnItem)dmodel.getData().elementAt(0);
                                       AddColumn cmd = spec.createCommandAddColumn(tablename);
+                                      cmd.setObjectOwner((String)nfo.get(DatabaseNodeInfo.SCHEMA));
                                       org.netbeans.lib.ddl.impl.TableColumn col = null;
                                       if (citem.isPrimaryKey()) {
                                           col = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createPrimaryKeyColumn(colname);

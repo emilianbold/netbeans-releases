@@ -123,7 +123,10 @@ public class IndexNode extends DatabaseNode {
                         }
 
                         icmd.specifyColumn(info.getName());
-                        spec.createCommandDropIndex(index).execute();
+                        DropIndex dicmd = spec.createCommandDropIndex(index);
+                        dicmd.setObjectOwner((String)destinfo.get(DatabaseNodeInfo.SCHEMA));
+                        dicmd.execute();
+                        icmd.setObjectOwner((String)destinfo.get(DatabaseNodeInfo.SCHEMA));
                         icmd.execute();
 
                         drvSpec.getIndexInfo(destinfo.getTable(), false, false);
