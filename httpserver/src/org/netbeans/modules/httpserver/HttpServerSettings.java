@@ -354,13 +354,13 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     public URL getRepositoryURL(FileObject fo) throws MalformedURLException, UnknownHostException {
         setRunning(true);
         return new URL("http", getLocalHost(), getPort(), // NOI18N
-                       getRepositoryBaseURL() + "/" + fo.getPackageNameExt('/','.')); // NOI18N
+                       getRepositoryBaseURL() + fo.getPackageNameExt('/','.')); // NOI18N
     }
 
     /** Maps the repository root to a URL. This URL should serve a page from which repository objects are accessible. */
     public URL getRepositoryRoot() throws MalformedURLException, UnknownHostException {
         setRunning(true);
-        return new URL("http", getLocalHost(), getPort(), getRepositoryBaseURL() + "/"); // NOI18N
+        return new URL("http", getLocalHost(), getPort(), getRepositoryBaseURL()); // NOI18N
     }
 
     /** Maps a resource path to a URL. Should ensure that the resource is accessible on the given URL.
@@ -371,7 +371,9 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     public URL getResourceURL(String resourcePath) throws MalformedURLException, UnknownHostException {
         setRunning(true);
         return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL() + // NOI18N
-                       (resourcePath.startsWith("/") ? resourcePath : ("/" + resourcePath))); // NOI18N
+                       (resourcePath.startsWith("/") ? 
+                        resourcePath.substring(1) : 
+                        resourcePath)); // NOI18N
     }
 
     /** Maps a resource root to a URL. Should ensure that all resources under the root are accessible under an URL
@@ -382,7 +384,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     */
     public URL getResourceRoot() throws MalformedURLException, UnknownHostException {
         setRunning(true);
-        return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL() + "/"); // NOI18N
+        return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL()); // NOI18N
     }
 
     public void addGrantAccessListener(GrantAccessListener l) {
