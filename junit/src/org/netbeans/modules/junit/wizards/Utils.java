@@ -176,7 +176,7 @@ public final class Utils {
         }
 
         if (size != testTargetsUnion.length) {
-            testTargetsUnion = TestUtil.skipNulls(testTargetsUnion);
+            testTargetsUnion = TestUtil.skipNulls(testTargetsUnion, new Object [0]);
         }
 
         return Collections.unmodifiableCollection(
@@ -442,7 +442,7 @@ public final class Utils {
                                      ? srcGroup
                                      : sourceGroupsOnly ? null : sourceRoot;
         }
-        return TestUtil.skipNulls(targets);
+        return TestUtil.skipNulls(targets, new Object [0]);
     }
 
     /**

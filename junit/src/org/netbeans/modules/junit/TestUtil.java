@@ -539,7 +539,7 @@ public class TestUtil {
         }
         
         if (someSkipped) {
-            Object roots[] = skipNulls(sourceRoots);
+            Object roots[] = skipNulls(sourceRoots, new FileObject[0]);
             if (roots.length == 0) {
                 return new Object[0];
             }
@@ -649,11 +649,12 @@ public class TestUtil {
      * array does not contain any <code>null</code> elements.
      *
      * @param  objs  array to copy
+     * @param  type  the type of the array to return
      * @return  array containing the same objects as the passed array, in the
      *          same order, just with <code>null</code> elements missing
      * @author  Marian Petras
      */
-    public static Object[] skipNulls(final Object[] objs) {
+    public static Object[] skipNulls(final Object[] objs, Object [] type) {
         List resultList = new ArrayList(objs.length);
         
         for (int i = 0; i < objs.length; i++) {
@@ -662,7 +663,7 @@ public class TestUtil {
             }
         }
         
-        return resultList.isEmpty() ? new Object[0] : resultList.toArray();
+        return resultList.isEmpty() ? type : resultList.toArray(type);
     }
     
     /**
