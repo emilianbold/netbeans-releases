@@ -8,110 +8,27 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="extbrowser" default="netbeans" basedir=".">
-  <import file="../nbbuild/default.xml"/> 
+  <import file="../nbbuild/templates/projectized.xml"/> 
 
-  <target name="init" depends="default.init">
-    <patternset id="extbrowser.files">
-      <include name="${nb.modules.dir}/extbrowser.jar"/>
+  <target name="init" depends="projectized.init">
+    <patternset id="module.files">
+      <patternset refid="module.files"/>
       <include name="${nb.modules/bin.dir}/extbrowser.dll"/>
     </patternset>
-    <path id="cp">
-      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-      <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
-    </path>
-  </target>
-
-  <target name="compile" depends="init">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <include name="org/netbeans/modules/extbrowser/"/>
-      <classpath refID="cp"/>
-    </javac>
-  </target>
-
-  <target name="jars" depends="compile">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/extbrowser.jar"
-         manifest="manifest-subst.mf"
-         basedir="src"
-	 excludesfile="../nbbuild/standard-jar-excludes.txt"
-	 compress="false"/>
   </target>
 
   <target name="release" depends="init">
     <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/bin.dir}" />
     <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/bin.dir}" >
-      <fileset dir="release/modules/bin" excludesfile="../nbbuild/standard-jar-excludes.txt">
-        <exclude name="**/sources/*"/>
-      </fileset>
+      <fileset file="release/modules/bin/extbrowser.dll"/>
     </copy>
   </target>
 
-  <target name="netbeans" depends="jars,release">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/extbrowser.jar">
-       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-         <patternset refID="extbrowser.files"/>
-       </fileset>
-    </genlist>
+  <target name="netbeans" depends="release,projectized.netbeans">
   </target>
-
-  <target name="nbm" depends="netbeans">
-    <makenbm file="extbrowser.nbm"
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${nb.modules.dir}/extbrowser.jar"
-	     homepage="http://extbrowser.${homepage.base}/"
-	     distribution="http://${dist.base}/extbrowser.nbm">
-      <license file="${license.file}"/>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
-  </target>
-
-  <target name="clean" depends="init">
-    <delete>
-      <fileset dir="src">
-        <include name="org/netbeans/modules/extbrowser/*.class"/>
-      </fileset>
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="extbrowser.files"/>
-      </fileset>
-    </delete>
-    <delete file="manifest-subst.mf"/>
-    <delete file="extbrowser.nbm"/>
-    <delete dir="javadoc"/>
-  </target>
-
-  <!-- This target will only work *inside* the IDE! -->
-  <target name= "test" depends="jars" description="Test the module inside the running IDE." >
-    <nbinstaller action="reinstall" module="netbeans/modules/extbrowser.jar"/>
-  </target>
-
-  <target name="javadoc" depends="init" description="Build extbrowser module API documentation.">
-    <tstamp/>
-    <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
-    <echo message="Build extbrowser module API documentation..."/>
-    <mkdir dir="javadoc"/>
-    <javadoc destdir="javadoc"
-             packagenames="org.netbeans.modules.extbrowser,org.netbeans.modules.webclient"
-             doctitle="NetBeans extbrowser module APIs"
-             windowtitle="NetBeans extbrowser module APIs"
-             bottom="${apis-footer}"
-             use="true"
-             splitindex="true"
-             author="false"
-             version="false"
-             maxmemory="384m"
-    >
-      <sourcepath>
-        <pathelement location="src"/>
-      </sourcepath>
-      <classpath refID="cp"/>
-    </javadoc>    
-  </target>
-
 </project>
