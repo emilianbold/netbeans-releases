@@ -504,9 +504,18 @@ public abstract class NbTopManager /*extends TopManager*/ {
         // save all open files
         try {
             if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog(null) ) {
-                if (getModuleSystem().shutDown()) {
-                    // hide windows explicitly, they are of no use during exit process
-                    WindowUtils.hideAllFrames();
+                // #29831: hide frames between closing() and close()
+                Runnable hideFrames = new Runnable() {
+                    public void run() {
+                        if (Boolean.getBoolean("netbeans.close.when.invisible")) {
+                            // hook to permit perf testing of time to *apparently* shut down
+                            TopSecurityManager.exit(0);
+                        }
+                        // hide windows explicitly, they are of no use during exit process
+                        WindowUtils.hideAllFrames();
+                    }
+                };
+                if (getModuleSystem().shutDown(hideFrames)) {
                     try {
                         try {
                             LoaderPoolNode.store();
