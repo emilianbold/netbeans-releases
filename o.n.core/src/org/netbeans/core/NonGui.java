@@ -66,8 +66,9 @@ public class NonGui extends NbTopManager implements Runnable {
     /* The class of the UIManager to be used for netbeans - can be set by command-line argument -ui <class name> */
     protected static Class uiClass;
 
-    /* The size of the fonts in the UI - 11pt by default, can be set by command-line argument -fontsize <size> */
-    protected static int uiFontSize = 11;
+    /* The size of the fonts in the UI - 0 pt, the default value is set in NbTheme (for Metal L&F), for other L&Fs is set
+       in the class Main. The value can be changed in Themes.xml in system directory or by command-line argument -fontsize <size> */
+    protected static int uiFontSize = 0;
 
     /** The netbeans home dir - acquired from property netbeans.home */
     private static String homeDir;
