@@ -93,19 +93,19 @@
 		properties = (
 			{
 				code = name;
-				writable = YES;
+				writable = NO;
 			},
 			{
 				code = url;
 				name = "DriverURL";
 				class = java.lang.String;
-				writable = YES;
+				writable = NO;
 			},
 			{
 				code = prefix;
-				name = "DatabasePrefix";
+				name = "DriverFiles";
 				class = java.lang.String;
-				writable = YES;
+				writable = NO;
 			}
 		);
 		actions = (
