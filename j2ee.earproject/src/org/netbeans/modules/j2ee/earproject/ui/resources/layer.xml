@@ -23,10 +23,8 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="J2EE">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/ear.html"/>
-<!--            <attr name="emptyEjbJar.xml/importEjbJar.xml" boolvalue="true"/>            -->
                 <attr name="emptyEar.xml/completeEar.xml/importBlueprintEar.xml" boolvalue="true"/>
 
-                <!-- Add template for the J2SE project -->
                 <file name="emptyEar.xml">
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardIterator" newvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIterator"/>
@@ -41,9 +39,9 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/completeProject.html"/>
                 </file>
-                <file name="importBlueprintEar.xml"> -->
+                <file name="importBlueprintEar.xml">
                    <attr name="template" boolvalue="true"/>
-                   <attr name="templateWizardIterator" newvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.ImportBlueprintEarWizardIterator"/> -->
+                   <attr name="templateWizardIterator" newvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.ImportBlueprintEarWizardIterator"/>
                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.Bundle"/> 
                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif"/>
                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/importProject.html"/> 
