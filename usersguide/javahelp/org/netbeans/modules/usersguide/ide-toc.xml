@@ -309,34 +309,31 @@
     <tocitem text="About Designing Java GUIs" target="gui.about"/>
     <tocitem text="Working with the Form Editor" target="gui.overview"/>
     <tocitem text="Form Editor Tasks: Quick Reference" target="gui.quickref"/>
-    
-    <tocitem text="Designing Java GUIs with the Form Editor" target="gui.designing" />
-    <tocitem text="Creating a New Form" target="gui.creatingforms" />
-    <tocitem text="Working with Containers" target="gui.containers.designing" />
-    <tocitem text="Adding a Component to a Form" target="gui.components.adding" />
-    <tocitem text="Selecting Components in a Form" target="gui.components.selecting" />
-    <tocitem text="Editing Component Properties" target="gui.components.editing" />      
-    
-    <tocitem text="About Layout Managers" target="gui.layouts.about" />
-    <tocitem text="Setting the Layout Manager" target="gui.layouts.setting" />
-    <tocitem text="Using the GridBag Customizer" target="gui.layouts.gbcustomizer" />
-    <tocitem text="Using a Custom Layout Manager" target="gui.layouts.custom_mgr" />
-    <tocitem text="Setting Layout Properties" target="gui.layouts.props" />
-    
+    <tocitem text="Using the Form Editor">      
+      <tocitem text="Designing Java GUIs with the Form Editor" target="gui.designing" />
+      <tocitem text="Creating a New Form" target="gui.creatingforms" />
+      <tocitem text="Working with Containers" target="gui.containers.designing" />
+      <tocitem text="Adding a Component to a Form" target="gui.components.adding" />
+      <tocitem text="Selecting Components in a Form" target="gui.components.selecting" />
+      <tocitem text="Editing Component Properties" target="gui.components.editing" />      
+      <tocitem text="Creating a Multiple Document Interface (MDI) Application" target="gui.mdi" />
+    </tocitem>    
+    <tocitem text="Working with Layout Managers">    
+      <tocitem text="About Layout Managers" target="gui.layouts.about" />
+      <tocitem text="Setting the Layout Manager" target="gui.layouts.setting" />
+      <tocitem text="Using the GridBag Customizer" target="gui.layouts.gbcustomizer" />
+      <tocitem text="Using a Custom Layout Manager" target="gui.layouts.custom_mgr" />
+      <tocitem text="Setting Layout Properties" target="gui.layouts.props" />
+    </tocitem>    
     <tocitem text="Managing Component Events" target="gui.events.managing" />
     <tocitem text="Setting Events With the Connection Wizard" target="gui.connectionwizard" />
-    
-    <!--<tocitem text="Creating a Multiple Document Interface (MDI) Application" target="gui.mdi" />-->
-    <tocitem text="Configuring the Form Editor" target="gui.configuring" />
     <tocitem text="Modifying GUI Source Code" target="gui.source.modifying"/>
+    <tocitem text="Testing a Form" target="gui.testing" />    
     <tocitem text="Creating Accessible Forms" target="gui.accessibleform" />
-    <tocitem text="Testing a Form" target="gui.testing" />
+    <tocitem text="Configuring the Form Editor" target="gui.configuring" />
   </tocitem>
-  
-  
-  
-  
-  
+
+<!--begin Ant section-->
   <tocitem text="Working with Ant">
     <tocitem text="About Working with Ant" target="ant_intro" />
     <tocitem text="Editing an Ant Script" target="ant_editing" />
