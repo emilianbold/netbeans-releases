@@ -61,7 +61,10 @@ import com.netbeans.developer.impl.compiler.CompilationEngineImpl;
 *
 * @author Ales Novak, Jaroslav Tulach, Ian Formanek, Petr Hamernik, Jan Jancura
 */
-public class NbTopManager extends TopManager {
+public abstract class NbTopManager extends TopManager {
+  /** property for status text */
+  public static final String PROP_STATUS_TEXT = "statusText";
+  
   /** stores main shortcut context*/
   private Keymap shortcutContext;
 
@@ -97,6 +100,9 @@ public class NbTopManager extends TopManager {
   
   /** loader pool */
   private DataLoaderPool loaderPool;
+  
+  /** status text */
+  private String statusText;
 
   /** the error level code for restarting windows */
   private static final int RESTART_EXIT_CODE = 66;
@@ -116,13 +122,7 @@ public class NbTopManager extends TopManager {
   // Protected methods that are provided for subclasses (Main) 
   // to plug-in better implementation
   //
-  protected FileSystem createDefaultFileSystem () {
-    return new LocalFileSystem ();
-  }
-
-  
-  
-  
+  protected abstract FileSystem createDefaultFileSystem ();
   
   //
   // Implementation of methods from TopManager
@@ -274,12 +274,6 @@ public class NbTopManager extends TopManager {
     return NbControlPanel.getDefault ();
   }
 
-  /** Prints the stack.
-  */
-  public void notifyException (Throwable t) {
-    NotifyException.notify (t);
-  }
-
   /** Notifies user by a dialog.
   * @param descriptor description that contains needed informations
   * @return the option that has been choosen in the notification
@@ -317,7 +311,18 @@ public class NbTopManager extends TopManager {
   * @param text the text to be shown
   */
   public void setStatusText(String text) {
-    StatusLine.setStatusText (text);
+    if (text == null || text.length () == 0) {
+      text = " ";
+    }
+    
+    statusText = text;
+    firePropertyChange (PROP_STATUS_TEXT, null, text);
+  }
+  
+  /** Getter for status text.
+  */
+  public String getStatusText () {
+    return statusText;
   }
 
   /** Returns currently installed debugger or throws
