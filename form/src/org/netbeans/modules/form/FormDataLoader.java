@@ -35,7 +35,7 @@ public class FormDataLoader extends MultiFileLoader {
   /** Constructs a new FormDataLoader */
   public FormDataLoader () {
     super (FormDataObject.class);
-    setName(NbBundle.getBundle(this).getString("PROP_FormLoader_Name"));
+    setDisplayName(NbBundle.getBundle(this).getString("PROP_FormLoader_Name"));
 
     setActions(new SystemAction[] {
       SystemAction.get (OpenAction.class),
@@ -118,15 +118,58 @@ public class FormDataLoader extends MultiFileLoader {
   */
   protected MultiDataObject.Entry createSecondaryEntry (MultiDataObject obj, FileObject secondaryFile) {
     String ext = secondaryFile.getExt();
-    if (ext.equals(FORM_EXTENSION))
-      return new FileEntry (obj, secondaryFile);
-    else
-      return new FileEntry.Numb (obj, secondaryFile);
+    if (ext.equals(CLASS_EXTENSION)) {
+      return new FileEntry.Numb (obj, secondaryFile); // entries for .class file
+    } else {
+      return new FileEntry (obj, secondaryFile) { // .form file entry
+        /** saves the DesignForm into the .form file */
+        public void save (boolean modified) {
+/*          if (modified & !isModified())
+            return;
+          if (!isLoaded ()) // cannot save to the .form file if there is nothing to save
+            return;
+          designForm.getFormManager ().cancelSelection ();
+          FileLock lock = null;
+          java.io.OutputStream os = null;
+          try {
+            lock = takeLock();
+            // we first save into memory to prevent corrupting the form file
+            // if something goes wrong
+            java.io.ByteArrayOutputStream barros = new java.io.ByteArrayOutputStream (10000);
+            NbObjectOutputStream oos = new NbObjectOutputStream(barros);
+            oos.writeObject(designForm);
+            oos.close ();
+
+            // now it is safely written in memory, so we can save it to the file
+            os = getFile().getOutputStream(lock);
+            barros.writeTo(os);
+          }
+          catch (Exception e) {
+            String message = MessageFormat.format(FormLoaderSettings.formBundle.getString("FMT_ERR_SavingForm"),
+                                                  new Object[] {getName(), e.getClass().getName()});
+            TopManager.getDefault().notify(new NotifyDescriptor.Exception(e, message));
+          }
+          finally {
+            if (lock != null)
+              lock.releaseLock();
+            if (os != null) {
+              try {
+                os.close();
+              }
+              catch (IOException e) {
+              }
+            } 
+          } */
+        }
+      };
+    }
   }
 }
 
 /*
  * Log
+ *  9    Gandalf   1.8         3/17/99  Ian Formanek    
+ *  8    Gandalf   1.7         3/16/99  Ian Formanek    
  *  7    Gandalf   1.6         3/16/99  Ian Formanek    
  *  6    Gandalf   1.5         3/14/99  Jaroslav Tulach Change of 
  *       MultiDataObject.Entry.

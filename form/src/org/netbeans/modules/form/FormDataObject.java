@@ -21,78 +21,29 @@ import com.netbeans.ide.actions.OpenAction;
 import com.netbeans.ide.loaders.*;
 import com.netbeans.ide.filesystems.*;
 import com.netbeans.ide.util.actions.SystemAction;
-//import com.netbeans.ide.windows.ComponentRefEvent;
-//import com.netbeans.ide.windows.ComponentRefListener;
 import com.netbeans.ide.nodes.Node;
+import com.netbeans.ide.nodes.CookieSet;
 import com.netbeans.developer.modules.loaders.java.JavaDataObject;
-import com.netbeans.developer.modules.loaders.form.cookies.*;
-//import com.netbeans.developer.modules.loaders.form.formeditor.*;
-//import com.netbeans.developer.modules.loaders.java.DocumentRef;
-//import com.netbeans.developer.modules.loaders.java.JavaEditor;
-//import com.netbeans.developer.modules.loaders.java.src.*;
+import com.netbeans.developer.modules.loaders.form.*;
 
 /** The DataObject for forms.
 *
 * @author Ian Formanek, Petr Hamernik
 */
-public class FormDataObject extends JavaDataObject implements FormCookie {
+public class FormDataObject extends JavaDataObject {
   /** generated Serialized Version UID */
 //  static final long serialVersionUID = 7952143476761137063L;
 
-  private static final String URL_ICON_BASE =
-    "com/netbeans/developer/modules/resources/formObject";
+  private static java.util.ResourceBundle formBundle = com.netbeans.ide.util.NbBundle.getBundle (FormLoaderSettingsBeanInfo.class);
+
+  /** The icon base for FormDataObject */
+  private static final String URL_ICON_BASE = "com/netbeans/developer/modules/resources/formObject";
 
   /** lock for closing window */
   private static final Object OPEN_FORM_LOCK = new Object ();
 
-  /** The resource bundle for Java Objects */
-//  private static java.util.ResourceBundle javaBundle =
-//    com.netbeans.ide.util.NbBundle.getBundle("com.netbeans.developer.modules.locales.LoadersJavaBundle");
-
   public FormDataObject (FileObject ffo, FileObject jfo, FormDataLoader loader) throws DataObjectExistsException {
     super(jfo, loader);
-    addSecondaryEntry (formEntry = new FileEntry (this, ffo) {
-        /** saves the DesignForm into the .form file */
-        public void save (boolean modified) {
-/*          if (modified & !isModified())
-            return;
-          if (!isLoaded ()) // cannot save to the .form file if there is nothing to save
-            return;
-          designForm.getFormManager ().cancelSelection ();
-          FileLock lock = null;
-          java.io.OutputStream os = null;
-          try {
-            lock = takeLock();
-            // we first save into memory to prevent corrupting the form file
-            // if something goes wrong
-            java.io.ByteArrayOutputStream barros = new java.io.ByteArrayOutputStream (10000);
-            NbObjectOutputStream oos = new NbObjectOutputStream(barros);
-            oos.writeObject(designForm);
-            oos.close ();
-
-            // now it is safely written in memory, so we can save it to the file
-            os = getFile().getOutputStream(lock);
-            barros.writeTo(os);
-          }
-          catch (Exception e) {
-            String message = MessageFormat.format(FormLoaderSettings.formBundle.getString("FMT_ERR_SavingForm"),
-                                                  new Object[] {getName(), e.getClass().getName()});
-            TopManager.getDefault().notify(new NotifyDescriptor.Exception(e, message));
-          }
-          finally {
-            if (lock != null)
-              lock.releaseLock();
-            if (os != null) {
-              try {
-                os.close();
-              }
-              catch (IOException e) {
-              }
-            } 
-          } */
-        }
-      }
-    ); 
     init ();
   }
 
@@ -102,6 +53,13 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
     templateInit = false;
     modifiedInit = false;
     componentRefRegistered = false;
+    
+    MultiDataObject.Entry javaEntry = getPrimaryEntry();
+    CookieSet cookies = getCookieSet();
+
+    FormEditor editorSupport = new FormEditor (javaEntry, formEntry);
+    cookies.add(editorSupport);
+
   }
 
   boolean isLoaded () {
@@ -110,9 +68,6 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
 
   /** Loads the DesignForm from the .form file */
   protected boolean loadForm () {
-//    System.out.println("Loading form");
-//    Thread.dumpStack();
-
 /*    java.io.InputStream is = null;
     try {
       is = formEntry.getFile().getInputStream();
@@ -195,28 +150,6 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
     return formLoaded;
   }
 
-  /** Method from OpenCookie */
-  public void open() {
-/*    TopManager.getDefault ().setStatusText (
-      java.text.MessageFormat.format (
-        FormLoaderSettings.formBundle.getString ("FMT_OpeningForm"),
-        new Object[] { getName () }
-      )
-    );
-
-    synchronized (OPEN_FORM_LOCK) {
-      if (!formLoaded)
-        if (!loadForm ()) return;
-    }
-
-    // show the ComponentInspector
-    FormEditor.getComponentInspector().setVisible(true);
-
-    designForm.getRADWindow().show();
-    super.open();
-    TopManager.getDefault ().setStatusText (""); */
-  }
-
   /** returns an editor with the document */
 /*  public JavaEditor prepareEditor (boolean visibility) {
     final JavaEditor je = super.prepareEditor(visibility);
@@ -257,44 +190,6 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
     templateInit = false;
   }
 */
-  /** Method from FormCookie */
-  public void gotoEditor() {
-/*    synchronized (OPEN_FORM_LOCK) {
-      if (!formLoaded)
-        if (!loadForm ()) return;
-    }
-    super.open(); */
-  }
-
-  /** Method from FormCookie */
-  public void gotoForm() {
-/*    synchronized (OPEN_FORM_LOCK) {
-      if (!formLoaded)
-        if (!loadForm ()) return;
-    }
-    designForm.getRADWindow().show(); */
-  }
-
-  /** Method from FormCookie */
-  public void gotoInspector() {
-    // show the ComponentInspector
-//    FormEditor.getComponentInspector().setVisible(true);
-  }
-
-  /** @returns the DesignForm of this Form */
-/*  public DesignForm getDesignForm() {
-    if (!formLoaded)
-      loadForm ();
-    return designForm;
-  } */
-
-  /** @returns the root Node of the nodes representing the AWT hierarchy */
-/*  public RADFormNode getComponentsRoot() {
-    if (!formLoaded)
-      if (!loadForm ()) return null;
-    return designForm.getFormManager().getComponentsRoot();
-  } */
-
   /** Handles copy of the data object.
   * @param f target folder
   * @return the new data object
@@ -410,16 +305,6 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
 
   } */
 
-  /** Allows subclasses to create its own data object for provided
-  * primary file. This implementation returns JavaDataObject.
-  *
-  * @param fo file object to create data object for
-  * @exception IOException if something falls
-  */
-/*  protected DataObject createDataObject (FileObject fo) throws IOException {
-    throw new InternalError ("Error creating FormDataObject");
-  } */
-
   /** Provides node that should represent this data object. When a node for representation
   * in a parent is requested by a call to getNode (parent) it is the exact copy of this node
   * with only parent changed. This implementation creates instance
@@ -435,14 +320,6 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
     node.setDefaultAction (SystemAction.get (OpenAction.class));
     return node;
   }
-
-  /** @see com.netbeans.developer.modules.loaders.java.JavaDataObject#fileEntryAdded
-  * This method only makes it public to this package.
-  */
-/*  protected void fileEntryAdded(FileEntry fe) {
-    super.fileEntryAdded(fe);
-  } */
-
 
 //--------------------------------------------------------------------
 // serialization
@@ -474,6 +351,7 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
 
 /*
  * Log
+ *  7    Gandalf   1.6         3/17/99  Ian Formanek    
  *  6    Gandalf   1.5         3/16/99  Ian Formanek    
  *  5    Gandalf   1.4         3/14/99  Jaroslav Tulach Change of 
  *       MultiDataObject.Entry.
