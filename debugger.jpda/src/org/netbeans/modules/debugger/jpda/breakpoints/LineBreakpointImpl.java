@@ -113,35 +113,6 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             breakpoint.getSourceName (),
             lineNumber
         );
-        if (location == null)
-            location = getLocation (
-                referenceType,
-                breakpoint.getStratum (),
-                breakpoint.getSourceName (),
-                lineNumber + 1
-            );
-        if (location == null)
-            location = getLocation (
-                referenceType,
-                breakpoint.getStratum (),
-                breakpoint.getSourceName (),
-                lineNumber - 1
-            );
-        if (location == null)
-            location = getLocation (
-                referenceType,
-                breakpoint.getStratum (),
-                breakpoint.getSourceName (),
-                lineNumber + 2
-            );
-        if (location == null)
-            location = getLocation (
-                referenceType,
-                breakpoint.getStratum (),
-                breakpoint.getSourceName (),
-                lineNumber - 2
-            );
-            
         if (location == null) return; 
         try {
             BreakpointRequest br = getEventRequestManager ().
