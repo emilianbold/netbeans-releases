@@ -36,7 +36,7 @@ import org.netbeans.modules.projectimport.eclipse.WorkspaceFactory;
 import org.openide.util.HelpCtx;
 
 /**
- * [DOCDO]
+ * Represent "Project to import" step(panel) in the Eclipse importer wizard.
  *
  * @author  mkrauskopf
  */
@@ -49,6 +49,9 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
     
     /** Projects selected by user. */
     private Set selectedProjects;
+    
+    /** Error message displayed by wizard. */
+    private String errorMessage;
     
     /**
      * All projects we need to import (involving projects which selected
@@ -104,10 +107,11 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         }
     }
     
+    /** Updates panel validity. */
     public void updateValidity() {
         if (selectedProjects == null || selectedProjects.isEmpty()) {
-            warning.setText("At least one project has to be chosen");
-            setValid(false);
+            // user has to select at least one project
+            setErrorMessage("At least one project has to be chosen");
             return;
         }
         String parent = destination.getText();
@@ -115,13 +119,11 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
             EclipseProject prj = (EclipseProject) it.next();
             String destDir = parent + "/" + prj.getName();
             if (new File(destDir).exists()) {
-                warning.setText(destDir + " directory already exists.");
-                setValid(false);
+                setErrorMessage(destDir + " directory already exists.");
                 return;
             }
         }
-        warning.setText("");
-        setValid(true);
+        setErrorMessage(null);
     }
     
     private class ProjectCellRenderer extends DefaultTableCellRenderer {
@@ -157,6 +159,7 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
     private static final int COL_CHECKBOX_WIDTH = 26;
     private ProjectTableModel model = new ProjectTableModel();
     private String workspaceDir;
+    private boolean valid;
     
     /** Creates new form ProjectSelectionPanel */
     public ProjectSelectionPanel() {
@@ -207,7 +210,8 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         try {
             workspace = WorkspaceFactory.getInstance().load(workspaceDir);
         } catch (ProjectImporterException e) {
-            warning.setText("The workspace in a " + workspaceDir + " is invalid");
+            setErrorMessage("The workspace in a " + workspaceDir + " is invalid");
+            return;
         }
         //        for (Iterator it = workspace.getProjects().iterator(); it.hasNext(); ) {
         //            EclipseProject prj = (EclipseProject) it.next();
@@ -224,26 +228,48 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         }
         selectedProjects = new HashSet();
         neededProjects = new HashSet();
-        setValid(false); // user has to select at least one project
+        updateValidity();
     }
     
-    private void setValid(boolean valid) {
-        if (this.valid != valid) {
-            this.valid = valid;
+    /** Sets error message used by importer wizard. */
+    private void setErrorMessage(String newError) {
+        boolean changed =
+                (errorMessage == null && newError != null) ||
+                (errorMessage != null && !errorMessage.equals(newError));
+        if (changed) errorMessage = newError;
+        setValid(newError == null, changed);
+    }
+
+    /** Sets if the current state of panel is valid or not. */
+    private void setValid(boolean valid, boolean forceFiring) {
+        boolean changed = this.valid != valid;
+        if (changed) this.valid = valid;
+        if (changed || forceFiring) {
             fireChange();
         }
     }
     
-    private boolean valid;
+    /** Returns error message used by importer wizard. */
+    String getErrorMessage() {
+        return errorMessage;
+    }
     
+    /** Returns projects selected by selection panel */
     Set getProjects() {
         return selectedProjects;
     }
     
+    /**
+     * Return number of projects which will be imported (including required
+     * projects.
+     */
     int getNumberOfNeededProjects() {
         return neededProjects.size();
     }
     
+    /**
+     * Return destination directory where new NetBeans projects will be stored.
+     */
     String getDestination() {
         return destination.getText();
     }
@@ -269,7 +295,6 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jLabel1 = new javax.swing.JLabel();
-        warning = new javax.swing.JLabel();
         choosePanel = new javax.swing.JPanel();
         destination = new javax.swing.JTextField();
         chooseDestButton = new javax.swing.JButton();
@@ -283,9 +308,6 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         setLayout(new java.awt.BorderLayout(5, 5));
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)));
-        warning.setForeground(new java.awt.Color(204, 0, 0));
-        add(warning, java.awt.BorderLayout.NORTH);
-
         choosePanel.setLayout(new java.awt.GridBagLayout());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -358,7 +380,6 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
     private javax.swing.JPanel projectPanel;
     private javax.swing.JTable projectTable;
     private javax.swing.JScrollPane projectTableSP;
-    private javax.swing.JLabel warning;
     // End of variables declaration//GEN-END:variables
     
 }

@@ -13,7 +13,11 @@
 
 package org.netbeans.modules.projectimport.eclipse.wizard;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.projectimport.eclipse.EclipseProject;
 import org.openide.WizardDescriptor;
@@ -23,54 +27,96 @@ import org.openide.WizardDescriptor;
  *
  * @author mkrauskopf
  */
-final class EclipseWizardIterator implements WizardDescriptor.Iterator {
+final class EclipseWizardIterator implements
+        WizardDescriptor.Iterator, ChangeListener {
     
-    private ProjectSelectionPanel projectSelector = new ProjectSelectionPanel();
-    private WorkspaceSelectionPanel workspaceSelector = new WorkspaceSelectionPanel();
-    private WizardDescriptor.Panel current = workspaceSelector;
+    private String errorMessage;
+    private WorkspaceSelectionPanel workspacePanel;
+    private ProjectSelectionPanel projectPanel;
+    private ImporterWizardPanel current;
     
     private boolean hasNext = true;
     private boolean hasPrevious;
     
     private EclipseProject eclProject;
     
+    /** Registered ChangeListeners */
+    private List changeListeners;
+    
+    /** Initialize and create an instance. */
+    EclipseWizardIterator() {
+        workspacePanel = new WorkspaceSelectionPanel();
+        projectPanel = new ProjectSelectionPanel();
+        workspacePanel.addChangeListener(this);
+        projectPanel.addChangeListener(this);
+        current = workspacePanel;
+    }
+    
+    /** Returns projects selected by selection panel */
     Set getProjects() {
-        return projectSelector.getProjects();
+        return projectPanel.getProjects();
     }
     
+    /**
+     * Return number of projects which will be imported (including required
+     * projects.
+     */
     int getNumberOfNeededProjects() {
-        return projectSelector.getNumberOfNeededProjects();
+        return projectPanel.getNumberOfNeededProjects();
     }
     
+    /**
+     * Return destination directory where new NetBeans projects will be stored.
+     */
     String getDestination() {
-        return projectSelector.getDestination();
-    }
-    
-    public void removeChangeListener(ChangeListener l) {
+        return projectPanel.getDestination();
     }
     
     public void addChangeListener(ChangeListener l) {
+        if (changeListeners == null) {
+            changeListeners = new ArrayList(2);
+        }
+        changeListeners.add(l);
+    }
+    
+    public void removeChangeListener(ChangeListener l) {
+        if (changeListeners != null) {
+            if (changeListeners.remove(l) && changeListeners.isEmpty()) {
+                changeListeners = null;
+            }
+        }
+    }
+    
+    protected void fireChange() {
+        if (changeListeners != null) {
+            ChangeEvent e = new ChangeEvent(this);
+            for (Iterator i = changeListeners.iterator(); i.hasNext(); ) {
+                ((ChangeListener) i.next()).stateChanged(e);
+            }
+        }
     }
     
     public void previousPanel() {
-        if (current == projectSelector) {
-            current = workspaceSelector;
+        if (current == projectPanel) {
+            current = workspacePanel;
             hasPrevious = false;
             hasNext = true;
+            updateErrorMessage();
         }
     }
     
     public void nextPanel() {
-        if (current == workspaceSelector) {
-            projectSelector.loadProjects(workspaceSelector.getWorkspaceDir());
-            current = projectSelector;
+        if (current == workspacePanel) {
+            projectPanel.loadProjects(workspacePanel.getWorkspaceDir());
+            current = projectPanel;
             hasPrevious = true;
             hasNext = false;
+            updateErrorMessage();
         }
     }
     
     public String name() {
-        return (current == workspaceSelector) ?
+        return (current == workspacePanel) ?
             ImporterWizardPanel.WORKSPACE_LOCATION_STEP :
             ImporterWizardPanel.PROJECT_SELECTION_STEP;
     }
@@ -85,5 +131,18 @@ final class EclipseWizardIterator implements WizardDescriptor.Iterator {
     
     public WizardDescriptor.Panel current() {
         return current;
+    }
+    
+    public void stateChanged(javax.swing.event.ChangeEvent e) {
+        updateErrorMessage();
+    }
+    
+    void updateErrorMessage() {
+        this.errorMessage = current.getErrorMessage();
+        fireChange();
+    }
+    
+    String getErrorMessage() {
+        return errorMessage;
     }
 }

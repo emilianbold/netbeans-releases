@@ -51,6 +51,16 @@ abstract class ImporterWizardPanel extends JPanel
         });
     }
     
+    
+    /**
+     * Return message to be displayed as ErrorMessage by Eclipse importer
+     * wizard. Default implementation returns null (no error message will be
+     * displayed)
+     */
+    String getErrorMessage() {
+        return null;
+    }
+    
     public void addChangeListener(ChangeListener l) {
         if (changeListeners == null) {
             changeListeners = new ArrayList(2);

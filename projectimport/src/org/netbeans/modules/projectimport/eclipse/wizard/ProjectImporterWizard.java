@@ -15,6 +15,8 @@ package org.netbeans.modules.projectimport.eclipse.wizard;
 
 import java.awt.Dialog;
 import java.util.Set;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -32,8 +34,14 @@ public final class ProjectImporterWizard {
     private int numberOfNeededProjects;
     
     public void start() {
-        EclipseWizardIterator iterator = new EclipseWizardIterator();
-        WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
+        final EclipseWizardIterator iterator = new EclipseWizardIterator();
+        final WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
+        iterator.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage",
+                        iterator.getErrorMessage());
+            }
+        });
         wizardDescriptor.setTitleFormat(new java.text.MessageFormat(" {1}"));  // NOI18N
         wizardDescriptor.setTitle(NbBundle.getMessage(
                 ProjectImporterWizard.class, "LBL_WizardTitle")); // NOI18N
