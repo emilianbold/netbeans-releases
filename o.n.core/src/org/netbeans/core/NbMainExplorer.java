@@ -13,9 +13,7 @@
 
 package com.netbeans.developer.impl;
 
-import java.awt.Component;
-import java.awt.Frame;
-import java.awt.BorderLayout;
+import java.awt.*;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 import java.beans.*;
@@ -34,6 +32,9 @@ import com.netbeans.ide.nodes.Node;
 import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.util.actions.SystemAction;
 import com.netbeans.ide.windows.TopComponent;
+import com.netbeans.ide.windows.Workspace;
+
+import com.netbeans.developer.impl.output.OutputTab;
 
 /** Default explorer which contains toolbar with cut/copy/paste,
 * switchable property sheet and menu view actions in the toolbar.
@@ -80,12 +81,16 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   private int sheetWidth = 250;
   /** the default height of the property sheet pane */
   private int sheetHeight = 400;
+  /** Minimal initial height of this top component */
+  public static final int MIN_HEIGHT = 150;
+  /** Default width of main explorer */
+  public static final int DEFAULT_WIDTH = 300;
 
   /** Default constructor
   */
   public NbMainExplorer () {
     split = new SplittedPanel();
-    
+
     final JTabbedPane tabs = new JTabbedPane ();
     tabs.setTabPlacement (SwingConstants.BOTTOM);
 
@@ -148,7 +153,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     }
     currentManager = managers[0]; // [PENDING]
 
-    tabs.addChangeListener (new javax.swing.event.ChangeListener () { 
+    tabs.addChangeListener (new javax.swing.event.ChangeListener () {
         public void stateChanged (javax.swing.event.ChangeEvent evt) {
           int index = tabs.getSelectedIndex ();
           currentManager = managers[index];
@@ -168,11 +173,11 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
         }
       }
     );
-      
+
     split.add(tabs, SplittedPanel.ADD_LEFT);
     split.setSplitType(SplittedPanel.HORIZONTAL);
     split.setSplitAbsolute(true);
-    
+
     setLayout(new BorderLayout ());
     add(split, BorderLayout.CENTER);
     add(toolbar = createToolbar(), BorderLayout.NORTH);
@@ -189,7 +194,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     System.arraycopy (moduleRoots, 0, roots, 2, moduleRoots.length);
     return roots;
   }
-  
+
   /** Utility method, creates the explorer's toolbar */
   JToolBar createToolbar () {
     JToolBar result = SystemAction.createToolbarPresenter(
@@ -238,7 +243,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
           throw new InternalError ("Property Sheet must not not veto selection");
         }
       }
-      
+
       int splitPos;
       if (splitType == SplittedPanel.HORIZONTAL) {
         splitPos = swapped ? sheetWidth : size.width;
@@ -286,7 +291,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
       new Object[] { name }
     ));
   }
-  
+
   /** Adds listener to the explorer panel.
   */
   public void open () {
@@ -327,7 +332,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     activated = false;
     actions.detach ();
   }
-  
+
 
 // -----------------------------------------------------------------------------
 // Static methods
@@ -341,13 +346,15 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     }
     return explorer;
   }
-  
+
   /** Shared instance of NbMainExplorer */
   private static NbMainExplorer explorer;
 }
 
 /*
 * Log
+*  7    Gandalf   1.6         3/25/99  David Simonek   changes in window system,
+*       initial positions, bugfixes
 *  6    Gandalf   1.5         3/18/99  Ian Formanek    The title now updates 
 *       when tab is switched
 *  5    Gandalf   1.4         3/16/99  Ian Formanek    SINGLE mode removed, as 

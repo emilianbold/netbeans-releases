@@ -332,7 +332,9 @@ public class NbTopManager extends TopManager {
   */
   public void exit () {
     NbProjectOperation.exit ();
-    
+    // PENDING - will be in the project
+    //NbWorkspacePool.exit ();
+
     if (ModuleInstaller.exit ()) {
       Runtime.getRuntime().exit (0);
     }
