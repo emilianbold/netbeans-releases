@@ -185,10 +185,10 @@ public class FileEntryNode extends AbstractNode {
                 );
             p.setName (DataObject.PROP_TEMPLATE);
             p.setDisplayName (FileEntryNode.getBundle().getString("PROP_template"));
-        p.setShortDescription (FileEntryNode.getBundle().getString("HINT_template"));
+            p.setShortDescription (FileEntryNode.getBundle().getString("HINT_template"));
             ss.put (p);
-        } catch (Exception ex) {
-            throw new InternalError ();
+        } catch(Exception ex) {
+            throw new IllegalStateException();
         }
         return s;
     }
@@ -220,7 +220,7 @@ public class FileEntryNode extends AbstractNode {
     /** Helper method for lazy initialization of <code>bundle</code> field. */
     private static ResourceBundle getBundle() {
         if(bundle == null) {
-            bundle = NbBundle.getBundle(PropertiesModule.class);
+            bundle = NbBundle.getBundle(FileEntryNode.class);
         }
         
         return bundle;

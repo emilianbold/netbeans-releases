@@ -97,7 +97,8 @@ public final class Util extends Object {
         String baseName = getPrimaryFileObject(fe).getName();
         
         if (!myName.startsWith(baseName))
-            throw new InternalError("Never happens - error in Properties loader"); // NOI18N
+            throw new IllegalStateException("Resource Bundle: Should never happen - error in Properties loader"); // NOI18N
+        
         return myName.substring(baseName.length());
     }
 
@@ -150,10 +151,11 @@ public final class Util extends Object {
     /** Gets first substring enclosed between the leading underscore and the next underscore. */
     private static String getFirstPart(String part) {
         try {
-            if (part.length() == 0)
+            if(part.length() == 0)
                 return null;
-            if (part.charAt(0) != PRB_SEPARATOR_CHAR)
-                throw new InternalError("Never happens - error in Properties loader (" + part + ")"); // NOI18N
+            if(part.charAt(0) != PRB_SEPARATOR_CHAR)
+                throw new IllegalStateException("Resource Bundle: Should never happen - error in Properties loader (" + part + ")"); // NOI18N
+            
             int end = part.indexOf(PRB_SEPARATOR_CHAR, 1);
             String result;
             result = (end == -1) ? part.substring(1) : part.substring(1, end);

@@ -296,16 +296,18 @@ public abstract class Element extends Object implements Serializable {
             parent = ps;
         }
 
-        /** Returns parent if not null. */
+        /** Gets parent.
+         * @exception IllegalStateException if the parent is <code>null</code>. */
         public PropertiesStructure getParent() {
-            if (parent == null)
-                throw new InternalError();
+            if(parent == null)
+                throw new IllegalStateException("Resource Bundle: Parent is missing"); // NOI18N
+            
             return parent;
         }
 
         /** Get a value string of the element.
-        * @return the string
-        */
+         * @return the string
+         */
         public String toString() {
             return comment.toString() + "\n" + // NOI18N
                 ((key   == null) ? "" : key.toString()) + "\n" + // NOI18N

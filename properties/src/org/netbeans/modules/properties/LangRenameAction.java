@@ -11,47 +11,43 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.properties;
 
+
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
-import org.openide.TopManager;
+import org.openide.actions.RenameAction;
+import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
+import org.openide.TopManager;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.*;
-import org.openide.nodes.Node;
-import org.openide.actions.RenameAction;
 
 
-/** Rename a node.
-* @see Node#setName
-*
-* @author   Jiricka
-* @version  0.13, Apr 26, 1999
-*/
+/** 
+ * Renames a <code>PropertiesLocaleNode</code> node,
+ * i.e. one locale (=locale suffix of one properties file)
+ * belonging to certain bundle of properties files.
+ *
+ * @author   Petr Jiricka
+ * @see Node#setName
+ */
 public class LangRenameAction extends RenameAction {
+    
+    /** Generated serial version UID. */
     static final long serialVersionUID =-6548687347804513177L;
-    /** generated Serialized Version UID */
-    //  static final long serialVersionUID = 1261145028106838566L;
+    
 
-    /*  protected boolean enable (Node[] activatedNodes) {
-        boolean en = super.enable(activatedNodes);
-        if (activatedNodes[0] instanceof PropertiesLocaleNode) {
-          if ...
-        }  
-        return en;
-      }*/
-
-
+    /** Performs action. Overrides superclass method. */
     protected void performAction (Node[] activatedNodes) {
         Node n = activatedNodes[0]; // we supposed that one node is activated
         if (!(n instanceof PropertiesLocaleNode))
-            throw new InternalError("Node is not PropertiesLocaleNode (renaming language)");
+            throw new IllegalStateException("Resource Bundle: Node is not PropertiesLocaleNode (renaming language)"); // NOI18N
+        
         PropertiesLocaleNode pln = (PropertiesLocaleNode)n;
-
-        //RenameCookie ren = (RenameCookie) Cookies.getInstanceOf (n.getCookie(), RenameCookie.class);
 
         String lang = Util.getLocalePartOfFileName (pln.getFileEntry());
         if (lang.length() > 0)
@@ -59,8 +55,9 @@ public class LangRenameAction extends RenameAction {
                 lang = lang.substring(1);
 
         NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
-                                             NbBundle.getBundle("org.openide.actions.Bundle").getString("CTL_RenameLabel"),
-                                             NbBundle.getBundle("org.openide.actions.Bundle").getString("CTL_RenameTitle"));
+            NbBundle.getBundle("org.openide.actions.Bundle").getString("CTL_RenameLabel"),
+            NbBundle.getBundle("org.openide.actions.Bundle").getString("CTL_RenameTitle"));
+        
         dlg.setInputText(lang);
         if (NotifyDescriptor.OK_OPTION.equals(TopManager.getDefault().notify(dlg))) {
             try {
@@ -69,25 +66,13 @@ public class LangRenameAction extends RenameAction {
             catch (IllegalArgumentException e) {
                 // catch & report badly formatted names
                 NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                                                   java.text.MessageFormat.format(
-                                                       NbBundle.getBundle("org.openide.actions.Bundle").getString("MSG_BadFormat"),
-                                                       new Object[] {n.getName()}),
-                                                   NotifyDescriptor.ERROR_MESSAGE);
+                    MessageFormat.format(
+                        NbBundle.getBundle("org.openide.actions.Bundle").getString("MSG_BadFormat"),
+                        new Object[] {n.getName()}),
+                    NotifyDescriptor.ERROR_MESSAGE);
+                        
                 TopManager.getDefault().notify(msg);
             }
         }
     }
 }
-
-
-/*
- * <<Log>>
- *  5    Gandalf   1.4         11/27/99 Patrik Knakal   
- *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  3    Gandalf   1.2         6/10/99  Petr Jiricka    
- *  2    Gandalf   1.1         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
- * $
- */
