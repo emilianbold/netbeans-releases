@@ -13,12 +13,17 @@
 
 package org.netbeans.core.xml;
 
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.lang.ref.Reference;
+import java.util.WeakHashMap;
+import java.beans.PropertyChangeListener;
+
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import java.io.IOException;
-
 import org.w3c.dom.DocumentType;
+
 
 import org.openide.TopManager;
 import org.openide.filesystems.FileObject;
@@ -26,7 +31,13 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.*;
 import org.openide.xml.EntityCatalog;
+import org.openide.util.WeakListener;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileAttributeEvent;
 
 
 /** 
@@ -102,52 +113,48 @@ public class FileEntityResolver extends EntityCatalog implements Environment.Pro
             
             id = convertPublicId (id);
             
-            StringBuffer sb = new StringBuffer (200);
-            sb.append (LOOKUP_PREFIX);
-            sb.append (id);
-            int len = sb.length ();
-            // at least for now
-            sb.append (".instance"); // NOI18N 
-            
-            FileObject fo = Repository.getDefault ().getDefaultFileSystem ().findResource (sb.toString ());
-            if (fo == null) {
-                // try to find a file with xml extension
-                sb.setLength (len);
-                sb.append (".xml"); // NOI18N
-                fo = Repository.getDefault ().getDefaultFileSystem ().findResource (sb.toString ());
-            }
-            
-            if (fo != null) {
-                try {
-                    DataObject dataobj = DataObject.find (fo);
-                    InstanceCookie cookie = (InstanceCookie)dataobj.getCookie (InstanceCookie.class);
-                    if (cookie != null) {
-                        Object inst = cookie.instanceCreate ();
-                        if (inst instanceof Environment.Provider) {
-                            return ((Environment.Provider)inst).getEnvironment (obj);
-                        }
-                        
-                        if (inst instanceof XMLDataObject.Processor) {
-                            // convert provider
-                            XMLDataObject.Info info = new XMLDataObject.Info ();
-                            info.addProcessorClass (inst.getClass ());
-                            inst = info;
-                        }
-                        
-                        if (inst instanceof XMLDataObject.Info) {
-                            return createInfoLookup (xml, ((XMLDataObject.Info)inst));
-                        }
-                        
-                    }
-                } catch (IOException ex) {
-                    TopManager.getDefault ().getErrorManager ().notify (ex);
-                } catch (ClassNotFoundException ex) {
-                    TopManager.getDefault ().getErrorManager ().notify (ex);
-                }
-            }
+            return new Lkp (id, xml);
         }
         return null;
     }
+    
+    /** A method that extracts a listener from data object.
+     * 
+     * @param obj the data object that we are looking for environment of
+     * @param source the obj that provides the environment
+     * @return lookup provided by the obj or Lookup.EMPTY if none has been found
+     */
+    private static Lookup findLookup (XMLDataObject obj, DataObject source) {
+        try {
+            InstanceCookie cookie = (InstanceCookie)source.getCookie (InstanceCookie.class);
+            
+            if (cookie != null) {
+                Object inst = cookie.instanceCreate ();
+                if (inst instanceof Environment.Provider) {
+                    return ((Environment.Provider)inst).getEnvironment (obj);
+                }
+
+                if (inst instanceof XMLDataObject.Processor) {
+                    // convert provider
+                    XMLDataObject.Info info = new XMLDataObject.Info ();
+                    info.addProcessorClass (inst.getClass ());
+                    inst = info;
+                }
+
+                if (inst instanceof XMLDataObject.Info) {
+                    return createInfoLookup (obj, ((XMLDataObject.Info)inst));
+                }
+
+            }
+        } catch (IOException ex) {
+            TopManager.getDefault ().getErrorManager ().notify (ex);
+        } catch (ClassNotFoundException ex) {
+            TopManager.getDefault ().getErrorManager ().notify (ex);
+        }
+        
+        return Lookup.EMPTY;
+    }
+        
     
     /** Ugly hack to get to openide hidden functionality.
      */
@@ -234,5 +241,220 @@ public class FileEntityResolver extends EntityCatalog implements Environment.Pro
 
         return new String (arr, 0, write);
     }
+        
     
+    /** Finds a fileobject for given ID.
+     * @param id string id
+     * @param last[0] will be filled with last file object we should listen on
+     * @return file object that should represent it
+     */
+    private static FileObject findObject (String id, FileObject[] last) {
+        StringBuffer sb = new StringBuffer (200);
+        sb.append (LOOKUP_PREFIX);
+        sb.append (id);
+        int len = sb.length ();
+        // at least for now
+        sb.append (".instance"); // NOI18N 
+
+        FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+     
+        String toSearch1 = sb.toString ();
+        int indx = searchFolder (root, toSearch1, last);
+        if (indx == -1) {
+            // not possible to find folders
+            return null;
+        }
+
+        FileObject fo = last[0].getFileObject (toSearch1.substring (indx));
+        
+        if (fo == null) {
+            // try to find a file with xml extension
+            sb.setLength (len);
+            sb.append (".xml"); // NOI18N
+            
+            fo = last[0].getFileObject (sb.toString ().substring (indx));
+        }
+        
+        return fo;
+    }
+    
+    /** Find last folder for resourceName.
+     * @param fo file object to search from
+     * @param resourceName name of file to find
+     * @param last last[0] will be filled with the last found name
+     * @return position of last / if everything has been searched, or -1 if some files are missing
+     */
+    private static int searchFolder (FileObject fo, String resourceName, FileObject[] last) {
+        int pos = 0;
+        
+        for (;;) {
+            int next = resourceName.indexOf('/', pos);
+            if (next == -1) {
+                // end of the search
+                last[0] = fo;
+                return pos;
+            }
+            
+            if (next == pos) {
+                pos++;
+                continue;
+            }
+            
+            FileObject nf = fo.getFileObject(resourceName.substring (pos, next));
+            if (nf == null) {
+                // not found a continuation
+                last[0] = fo;
+                return -1;
+            }
+            
+            // proceed to next one
+            pos = next + 1;
+            fo = nf;
+        }
+    }
+    
+    
+    /** A special lookup associated with id.
+     */
+    private static final class Lkp extends ProxyLookup
+    implements PropertyChangeListener, FileChangeListener {
+        /** converted ID we are associated with */
+        private String id;
+        /** for this data object we initialized this lookup */
+        private XMLDataObject xml;
+        
+        /** last file folder we are listening on. Initialized lazily */
+        private FileObject folder;
+        /** a data object that produces values Initialized lazily */
+        private DataObject obj;
+        
+        /** @param id the id to work on */
+        public Lkp (String id, XMLDataObject xml) {
+            super (new Lookup[0]);
+            this.id = id;
+            this.xml = xml;
+        }
+     
+        /** Check whether all necessary values are updated.
+         */
+        protected void beforeLookup (Template t) {
+            if (folder == null && obj == null) {
+                update ();
+            }
+        }
+        
+        /** Updates current state of the lookup.
+         */
+        private void update () {
+            FileObject[] last = new FileObject[1];
+            FileObject fo = findObject (id, last);
+            
+            DataObject o = null;
+            
+            if (fo != null) {
+                try {
+                    o = DataObject.find (fo);
+                } catch (org.openide.loaders.DataObjectNotFoundException ex) {
+                    TopManager.getDefault ().getErrorManager ().notify (ex);
+                }
+            }
+        
+            if (o == obj) {
+                // the data object is still the same as used to be
+                // 
+                if (o != null) {
+                    // just update the lookups
+                    setLookups (new Lookup[] { findLookup (xml, o) });
+                    // and exit
+                    return;
+                } 
+            } else {
+                // data object changed
+                obj = o;
+                if (o != null) {
+                    // add listener to changes of the data object
+                    o.addPropertyChangeListener (
+                        WeakListener.propertyChange (this, o)
+                    );
+                    // update the lookups
+                    setLookups (new Lookup[] { findLookup (xml, o) });
+                    // and exit
+                    return;
+                }
+            }
+            
+            // object is null => there are no lookups
+            setLookups (new Lookup[0]);
+            
+            // and start listening on latest existing folder 
+            // if we did not do it yet
+            if (folder != last[0]) {
+                folder = last[0];
+                last[0].addFileChangeListener (
+                    WeakListener.fileChange (this, last[0])
+                );
+            }
+        }
+        
+        /** Fired when a file is deleted.
+         * @param fe the event describing context where action has taken place
+         */
+        public void fileDeleted(FileEvent fe) {
+            update ();
+        }
+        
+        /** Fired when a new folder is created. This action can only be
+         * listened to in folders containing the created folder up to the root of
+         * file system.
+         *
+         * @param fe the event describing context where action has taken place
+         */
+        public void fileFolderCreated(FileEvent fe) {
+            update ();
+        }
+        
+        /** Fired when a new file is created. This action can only be
+         * listened in folders containing the created file up to the root of
+         * file system.
+         *
+         * @param fe the event describing context where action has taken place
+         */
+        public void fileDataCreated(FileEvent fe) {
+            update ();
+        }
+        
+        /** Fired when a file attribute is changed.
+         * @param fe the event describing context where action has taken place,
+         *          the name of attribute and the old and new values.
+         */
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+        }
+        
+        public void propertyChange(java.beans.PropertyChangeEvent ev) {
+            String name = ev.getPropertyName();
+            
+            if (DataObject.PROP_COOKIE == name) {
+                update ();
+            }
+            
+            if (DataObject.PROP_VALID == name) {
+                update ();
+            }
+        }
+        
+        /** Fired when a file is renamed.
+         * @param fe the event describing context where action has taken place
+         *          and the original name and extension.
+         */
+        public void fileRenamed(FileRenameEvent fe) {
+            update ();
+        }
+        
+        /** Fired when a file is changed.
+         * @param fe the event describing context where action has taken place
+         */
+        public void fileChanged(FileEvent fe) {
+        }
+        
+    }
 }
