@@ -97,11 +97,13 @@ public class MethodBreakpointImpl extends BreakpointImpl implements Executor {
             perform (
                 breakpoint.getCondition (),
                 ((MethodEntryEvent) event).thread (),
+                null,
                 null
             ) :
             perform (
                 breakpoint.getCondition (),
                 ((MethodExitEvent) event).thread (),
+                null,
                 null
             );
     }

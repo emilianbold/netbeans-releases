@@ -86,6 +86,7 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
         return perform (
             null,
             thread,
+            null,
             null
         );
     }

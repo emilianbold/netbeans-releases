@@ -17,6 +17,7 @@ import com.sun.jdi.Field;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.Event;
+import com.sun.jdi.event.ModificationWatchpointEvent;
 import com.sun.jdi.event.WatchpointEvent;
 import com.sun.jdi.request.AccessWatchpointRequest;
 import com.sun.jdi.request.ModificationWatchpointRequest;
@@ -77,10 +78,18 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
     }
 
     public boolean exec (Event event) {
+        if (event instanceof ModificationWatchpointEvent)
+            return perform (
+                breakpoint.getCondition (),
+                ((WatchpointEvent) event).thread (),
+                null,
+                ((ModificationWatchpointEvent) event).valueToBe ()
+            );
         if (event instanceof WatchpointEvent)
             return perform (
                 breakpoint.getCondition (),
                 ((WatchpointEvent) event).thread (),
+                null,
                 null
             );
         return super.exec (event);

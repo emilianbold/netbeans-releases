@@ -305,7 +305,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     
-    // other methods ...........................................................
+    // internal interface ......................................................
 
     public void setException (Exception e) {
         synchronized (LOCK2) {
@@ -331,18 +331,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             old,
             currentCallStackFrame
         );
-    }
-
-    private void updateCurrentCallStackFrame (JPDAThread thread) {
-        if ( (thread == null) ||
-             (thread.getStackDepth () < 1))
-            currentCallStackFrame = null;
-        else
-        try {
-            currentCallStackFrame = thread.getCallStack () [0];
-        } catch (NoInformationException e) {
-            currentCallStackFrame = null;
-        }
     }
 
     public Value evaluateIn(String expression) throws InvalidExpressionException {
@@ -513,15 +501,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
-    // other methods ....
-
-    private void setState (int state) {
-        if (state == this.state) return;
-        int o = this.state;
-        this.state = state;
-        firePropertyChange (PROP_STATE, new Integer (o), new Integer (state));
-    }
-
     /**
      * Suspends the target virtual machine (if any).
      *
@@ -578,15 +557,35 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
-    /**
-    * Fires property change.
-    */
-    protected void firePropertyChange (String name, Object o, Object n) {
-        pcs.firePropertyChange (name, o, n);
+    public JPDAThread getThread (ThreadReference tr) {
+        try {
+            return (JPDAThread) getThreadsTreeModel ().translate (tr);
+        } catch (UnknownTypeException e) {
+            e.printStackTrace ();
+            return null;
+        }
+    }
+
+    public Variable getVariable (Value value) {
+        return getLocalsTreeModel ().getVariable (value);
     }
 
 
-    // helper methods ..........................................................
+    // private helper methods ..................................................
+
+    private void setState (int state) {
+        if (state == this.state) return;
+        int o = this.state;
+        this.state = state;
+        firePropertyChange (PROP_STATE, new Integer (o), new Integer (state));
+    }
+
+    /**
+    * Fires property change.
+    */
+    private void firePropertyChange (String name, Object o, Object n) {
+        pcs.firePropertyChange (name, o, n);
+    }
 
     private ThreadsTreeModel threadsTreeModel;
     ThreadsTreeModel getThreadsTreeModel () {
@@ -602,15 +601,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             localsTreeModel = (LocalsTreeModel) lookupProvider.
                 lookupFirst ("LocalsView", TreeModel.class);
         return localsTreeModel;
-    }
-
-    private JPDAThread getThread (ThreadReference tr) {
-        try {
-            return (JPDAThread) getThreadsTreeModel ().translate (tr);
-        } catch (UnknownTypeException e) {
-            e.printStackTrace ();
-            return null;
-        }
     }
 
     private ThreadReference getEvaluationThread () {
@@ -629,6 +619,18 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
         }
         return thread;
+    }
+
+    private void updateCurrentCallStackFrame (JPDAThread thread) {
+        if ( (thread == null) ||
+             (thread.getStackDepth () < 1))
+            currentCallStackFrame = null;
+        else
+        try {
+            currentCallStackFrame = thread.getCallStack () [0];
+        } catch (NoInformationException e) {
+            currentCallStackFrame = null;
+        }
     }
 
     private void checkJSR45Languages (JPDAThread t) {

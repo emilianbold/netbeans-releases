@@ -106,6 +106,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             return perform (
                 breakpoint.getCondition (),
                 ((BreakpointEvent) event).thread (),
+                null,
                 null
             );
         return super.exec (event);

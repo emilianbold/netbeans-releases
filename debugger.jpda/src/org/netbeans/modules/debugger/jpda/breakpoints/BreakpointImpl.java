@@ -14,10 +14,12 @@
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.EventRequest;
@@ -112,20 +114,26 @@ public abstract class BreakpointImpl implements Executor {
     public boolean perform (
         String condition,
         ThreadReference thread,
-        ReferenceType referenceType
+        ReferenceType referenceType,
+        Value value
     ) {
         if ((condition == null) || condition.equals (""))
             getDebugger ().fireBreakpointEvent (
                 getBreakpoint (),
                 new JPDABreakpointEvent (
                     getBreakpoint (),
-                    JPDABreakpointEvent.CONDITION_NONE
+                    JPDABreakpointEvent.CONDITION_NONE,
+                    debugger.getThread (thread), 
+                    referenceType, 
+                    debugger.getVariable (value)
                 )
             );
         else {
             boolean result = evaluateCondition (
                 condition, 
-                thread
+                thread,
+                referenceType,
+                value
             );
             if (!result) return true; // resume
         }
@@ -139,7 +147,9 @@ public abstract class BreakpointImpl implements Executor {
 
     private boolean evaluateCondition (
         String condition, 
-        ThreadReference thread
+        ThreadReference thread,
+        ReferenceType referenceType,
+        Value value
     ) {
         try {
             StackFrame sf = thread.frame (0);
@@ -151,7 +161,10 @@ public abstract class BreakpointImpl implements Executor {
                         getBreakpoint (),
                         result ? 
                             JPDABreakpointEvent.CONDITION_TRUE : 
-                            JPDABreakpointEvent.CONDITION_FALSE
+                            JPDABreakpointEvent.CONDITION_FALSE,
+                        debugger.getThread (thread), 
+                        referenceType, 
+                        debugger.getVariable (value)
                     )
                 );
                 return result;
@@ -160,7 +173,10 @@ public abstract class BreakpointImpl implements Executor {
                     getBreakpoint (),
                     new JPDABreakpointEvent (
                         getBreakpoint (),
-                        ex
+                        ex,
+                        debugger.getThread (thread), 
+                        referenceType, 
+                        debugger.getVariable (value)
                     )
                 );
             } catch (InvalidExpressionException ex) {
@@ -168,7 +184,10 @@ public abstract class BreakpointImpl implements Executor {
                     getBreakpoint (),
                     new JPDABreakpointEvent (
                         getBreakpoint (),
-                        ex
+                        ex,
+                        debugger.getThread (thread), 
+                        referenceType, 
+                        debugger.getVariable (value)
                     )
                 );
             }
