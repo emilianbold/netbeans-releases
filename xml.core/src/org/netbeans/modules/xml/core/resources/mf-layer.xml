@@ -17,6 +17,9 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- DTD 'module' hosted entities -->
     <!ENTITY dtd-grammar-registration SYSTEM "nbres:/org/netbeans/modules/xml/dtd/resources/mf-plugins.ent">
+
+    <!-- XSD 'module' hosted entities -->
+    <!ENTITY xsd-grammar-registration SYSTEM "nbres:/org/netbeans/modules/xml/xsd/resources/mf-plugins.ent">
 ]>
 
 <filesystem>
@@ -145,7 +148,7 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="semantics-grammar-to-generic-grammar-separator"/>
                 <attr name="semantics-grammar-to-generic-grammar-separator/generic-grammar-to-universal-grammar-separator" boolvalue="true"/>
                 <file name="generic-grammar-to-universal-grammar-separator"/>
-                &dtd-grammar-registration;
+                &dtd-grammar-registration; <!-- &xsd-grammar-registration; -->
             </folder>
         </folder>
     </folder>    
