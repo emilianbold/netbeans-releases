@@ -302,7 +302,7 @@ public final class LoaderPoolNode extends AbstractNode {
             }
 
             if (obj != null) {
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("writing " + l.getDisplayName ());
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("writing " + l.getClass().getName());
                 // Find its module, if any.
                 Class c = l.getClass();
                 Iterator mit = modules.iterator();
@@ -310,7 +310,7 @@ public final class LoaderPoolNode extends AbstractNode {
                 while (mit.hasNext()) {
                     ModuleInfo m = (ModuleInfo)mit.next();
                     if (m.isEnabled() && m.owns(c)) {
-                        if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("belongs to module: " + m.getDisplayName());
+                        if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("belongs to module: " + m.getCodeNameBase());
                         oos.writeObject(m.getCodeNameBase());
                         int r = m.getCodeNameRelease();
                         oos.writeInt(r); // might be -1, note
@@ -349,7 +349,7 @@ public final class LoaderPoolNode extends AbstractNode {
                 obj = null;
             }
             if (obj != null) {
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("writing " + l.getDisplayName ());
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("writing " + l.getClass().getName());
                 // No associated module, no need to write such info.
                 oos.writeObject (obj);
             }
@@ -430,7 +430,7 @@ public final class LoaderPoolNode extends AbstractNode {
             try {
                 DataLoader loader = (DataLoader)obj.get ();
                 Class clazz = loader.getClass();
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("reading " + loader.getDisplayName () + " [" + clazz.getName() + "]");
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("reading " + loader.getClass().getName());
                 l.add (loader);
                 classes.add (clazz);
             } catch (IOException ex) {
@@ -462,7 +462,7 @@ public final class LoaderPoolNode extends AbstractNode {
             try {
                 // Just reads its shared state, nothing more.
                 DataLoader loader = (DataLoader) obj.get ();
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("reading " + loader.getDisplayName ());
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("reading " + loader.getClass().getName());
             } catch (IOException ex) {
                 t = ex;
             } catch (ClassNotFoundException ex) {
