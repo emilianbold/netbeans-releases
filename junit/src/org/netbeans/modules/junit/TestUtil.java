@@ -17,6 +17,10 @@
  */
 package org.netbeans.modules.junit;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.SourceCookie;
@@ -24,6 +28,7 @@ import org.openide.src.*;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Task;
 
@@ -36,7 +41,7 @@ import org.openide.util.Task;
 public class TestUtil {
     static private final String JAVA_SOURCES_SUFFIX               = "java";
     static private final String JAVA_SOURCES_FULL_SUFFIX          = "." + JAVA_SOURCES_SUFFIX;
-
+    private static final String JAVA_MIME_TYPE = "text/x-java";         //NOI18N
 
     static private String getTestClassSuffix() {
         return JUnitSettings.TEST_CLASSNAME_SUFFIX;
@@ -321,5 +326,49 @@ public class TestUtil {
         se = sc.getSource();
         return se.getClass(Identifier.create(dO.getPrimaryFile().getName()));
     }    
+    
+    /**
+     * Returns full names of all primary Java classes
+     * withing the specified folder (non-recursive).
+     *
+     * @param  packageFolder  folder to search
+     * @param  classPath  classpath to be used for the search
+     * @return  list of full names of all primary Java classes
+     *          within the specified package
+     */
+    public static List getJavaFileNames(FileObject packageFolder, ClassPath classPath) {
+        FileObject[] children = packageFolder.getChildren();
+        if (children.length == 0) {
+            return Collections.EMPTY_LIST;
+        }
+        
+        List result = new ArrayList(children.length);
+        for (int i = 0; i < children.length; i++) {
+            FileObject child = children[i];
+            if (child.isFolder() || child.isVirtual()
+                    || !child.getMIMEType().equals(JAVA_MIME_TYPE)) {
+                continue;
+            }
+            DataObject dataObject;
+            try {
+                dataObject = DataObject.find(child);
+            } catch (DataObjectNotFoundException ex) {
+                continue;
+            }
+            SourceCookie srcCookie = (SourceCookie)
+                                     dataObject.getCookie(SourceCookie.class);
+            if (srcCookie == null) {
+                continue;
+            }
+            SourceElement srcElement = srcCookie.getSource();
+            ClassElement classElement = srcElement.getClass(
+                                            Identifier.create(child.getName()));
+            if (classElement == null) {
+                continue;
+            }
+            result.add(classElement.getName().getFullName());
+        }
+        return result.isEmpty() ? Collections.EMPTY_LIST : result;
+    }
     
 }

@@ -198,7 +198,8 @@ public class CreateTestAction extends CookieAction {
         return false;
     }
     
-    private void createSuiteTest(ClassPath testClassPath, DataFolder folder,
+    public static DataObject createSuiteTest(ClassPath testClassPath, DataFolder folder,
+            String suiteName,
             LinkedList suite, DataObject doSuiteT, LinkedList parentSuite,
             ProgressIndicator progress) {
         
@@ -207,25 +208,30 @@ public class CreateTestAction extends CookieAction {
         ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
         assert cp != null : "SOURCE classpath was not found for "+fo;
         if (cp == null) {
-            return;
+            return null;
         }
         String pkg = cp.getResourceName(fo, '/', false);
+        String fullSuiteName = (suiteName != null)
+                               ? pkg + '/' + suiteName
+                               : TestUtil.convertPackage2SuiteName(pkg);
         
         // find the suite class, if it exists or create one from active template
-        DataObject doTarget = getTestClass(testClassPath, TestUtil.convertPackage2SuiteName(pkg), doSuiteT);
+        DataObject doTarget = getTestClass(testClassPath, fullSuiteName, doSuiteT);
         // generate the test suite for all listed test classes
         ClassElement[] classTargets = TestUtil.getAllClassElementsFromDataObject(doTarget);
 
         for (int i=0; i < classTargets.length; i++) {
             ClassElement classTarget = classTargets[i];
-            progress.setMessage(getCreatingMsg(classTarget.getName().getFullName()), false);
+            if (progress != null) {
+                progress.setMessage(getCreatingMsg(classTarget.getName().getFullName()), false);
+            }
 
             try {
                 TestCreator.createTestSuite(suite, pkg.replace('/', '.'), classTarget);
                 save(doTarget);
             } catch (Exception e) {
                 ErrorManager.getDefault().log(ErrorManager.ERROR, e.toString());
-                return;
+                return null;
             }
 
             // add the suite class to the list of members of the parent
@@ -233,6 +239,7 @@ public class CreateTestAction extends CookieAction {
                 parentSuite.add(classTarget.getName().getFullName());
             }
         }
+        return doTarget;
     }
     
     private boolean createTests(ClassPath testClassPath, FileObject foSource, 
@@ -259,7 +266,7 @@ public class CreateTestAction extends CookieAction {
             }
             
             if ((0 < mySuite.size())&(JUnitSettings.getDefault().isGenerateSuiteClasses())) {
-                createSuiteTest(testClassPath, DataFolder.findFolder(foSource), mySuite, doSuiteT, parentSuite, progress);
+                createSuiteTest(testClassPath, DataFolder.findFolder(foSource), (String) null, mySuite, doSuiteT, parentSuite, progress);
             }
         } else {
             createSingleTest(testClassPath, foSource, doTestT, doSuiteT, parentSuite, progress, true);

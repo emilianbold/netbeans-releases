@@ -18,22 +18,27 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.junit.CreateTestAction;
 import org.netbeans.modules.junit.GuiUtils;
 import org.netbeans.modules.junit.JUnitSettings;
+import org.netbeans.modules.junit.TestUtil;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -69,6 +74,9 @@ public class TestSuiteWizardIterator
     /** */
     private WizardDescriptor.Panel optionsPanel;
 
+    /** */
+    private SourceGroup[] testSrcGroups;
+    
     /**
      */
     public void addChangeListener(ChangeListener l) {
@@ -163,7 +171,6 @@ public class TestSuiteWizardIterator
                         NbBundle.getMessage(EmptyTestCaseWizardIterator.class,
                                             "MSG_NoTestSourceGroup"));  //NOI18N
             } else {
-                SourceGroup[] testSrcGroups;
                 sourceGroups.toArray(
                         testSrcGroups = new SourceGroup[sourceGroups.size()]);
                 if (optionsPanel == null) {
@@ -229,6 +236,7 @@ public class TestSuiteWizardIterator
         targetPanel = null;
         lastSelectedProject = null;
         optionsPanel = null;
+        testSrcGroups = null;
         
         changeListeners = null;
     }
@@ -256,12 +264,39 @@ public class TestSuiteWizardIterator
             return null;
         }
         
+        /* collect and build necessary data: */
         String name = Templates.getTargetName(wizard);
         FileObject targetFolder = Templates.getTargetFolder(wizard);
-        DataFolder targetFolderDataObj = DataFolder.findFolder(targetFolder);
-        DataObject testDataObj = templateDataObj.createFromTemplate(
-                                         targetFolderDataObj, name);
-        return Collections.singleton(testDataObj);
+        DataFolder targetDataFolder = DataFolder.findFolder(targetFolder);
+        FileObject testRootFolder = findTestRootFolder(targetFolder);
+        assert testRootFolder != null;
+        ClassPath testClassPath = ClassPathSupport.createClassPath(
+                new FileObject[] {testRootFolder});
+        List testClassNames = TestUtil.getJavaFileNames(targetFolder,
+                                                        testClassPath);
+        
+        /* create test class(es) for the selected source class: */
+        DataObject suite = CreateTestAction.createSuiteTest(
+                testClassPath, targetDataFolder, name,
+                new LinkedList(testClassNames),
+                templateDataObj, null, null);
+        
+        if (suite == null) {
+            throw new IOException();
+        }
+        return Collections.singleton(suite);
+    }
+    
+    /** */
+    private FileObject findTestRootFolder(FileObject targetFolder) {
+        for (int i = 0; i < testSrcGroups.length; i++) {
+            FileObject rootFolder = testSrcGroups[i].getRootFolder();
+            if (rootFolder == targetFolder
+                    || FileUtil.isParentOf(rootFolder, targetFolder)) {
+                return rootFolder;
+            }
+        }
+        return null;
     }
 
     /**
