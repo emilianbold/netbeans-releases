@@ -157,6 +157,7 @@ public class NbTestConfig extends Task {
             stop = visitElement_start(stop_node);
         
         MConfig.Setup setup = new MConfig.Setup();
+        setup.setName(name);
         setup.setStart(start);
         setup.setStop(stop);
         allSetups.put(name, setup);

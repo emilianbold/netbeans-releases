@@ -143,6 +143,15 @@ public class MConfig {
         }
 
         private StartStop start = null, stop = null;
+        private String name;
+        
+        public void setName(String n) {
+            name =n;
+        }
+        
+        public String getName() {
+            return name;
+        }
         
         public void setStart(StartStop start) {
             this.start = start;

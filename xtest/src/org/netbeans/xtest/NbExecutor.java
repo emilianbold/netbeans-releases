@@ -24,9 +24,7 @@ import org.apache.tools.ant.types.*;
 import org.apache.tools.ant.taskdefs.*;
 
 import java.util.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 
 /**
  *
@@ -76,6 +74,7 @@ public class NbExecutor extends Task {
         if (null == cfg)
             throw new BuildException("XTest configuration wasn't chosen, use call xtestconfig task first.", getLocation());        
         
+        
         MConfig.Setup setup = cfg.getConfigSetup();
         if (mode.equalsIgnoreCase("run") && setup != null) executeStart(setup);
 
@@ -93,6 +92,7 @@ public class NbExecutor extends Task {
 
             while(tests.hasMoreElements()) {
               MConfig.Test test = (MConfig.Test) tests.nextElement();
+              File outputfile = null;
               try {  
                 Ant   callee = (Ant) getProject().createTask( "ant" );
                 String       pattern;
@@ -125,52 +125,68 @@ public class NbExecutor extends Task {
                     newproperty.setName((String)map.getKey());
                     newproperty.setValue((String)map.getValue());
                 }
-                String testrundir = project.getProperty("xtest.results.testrun.dir");
-                if (testrundir != null) {
-                    String dir = testrundir + File.separator + "logs";
-                    File dirfile = new File(dir);
-                    if (!dirfile.exists()) dirfile.mkdirs();
-                    File file = new File(dirfile, test.getModule() + "_" + test.getType() + ".log");
-                    int c = 1;
-                    while (file.exists()) {
-                        file = new File(dirfile, test.getModule() + "_" + test.getType() + "_"+ c + ".log");
-                        c++;
-                    }
-                    callee.setOutput(file.getAbsolutePath());
-                    
-                }
+                
+                
+                outputfile = getLogFile(test.getModule() + "_" + test.getType());
+                if (outputfile != null) 
+                    callee.setOutput(outputfile.getAbsolutePath());
                 callee.execute(); 
               }
               catch (BuildException e) {
                   log("Exception during executiong test (module="+test.getModule()+",type="+test.getType()+"):\n"+e.toString(),Project.MSG_ERR);
-                  logError(e);
+                  logError(e,outputfile);
               }
             }
             if (mode.equalsIgnoreCase("run") && msetup != null) executeStop(msetup);
           }
           catch (BuildException e) {
               log("Exception during executiong test:\n"+e.toString(),Project.MSG_ERR);
-              logError(e);
+              logError(e,null);
           }
         } 
         if (mode.equalsIgnoreCase("run") && setup != null) executeStop(setup);
     } 
     
-    private void logError(Exception e) {
+    private File getLogFile(String prefix) {
+        String testrundir = project.getProperty("xtest.results.testrun.dir");
+        if (testrundir == null) return null;
+        String dir = testrundir + File.separator + "logs";
+        File dirfile = new File(dir);
+        if (!dirfile.exists()) dirfile.mkdirs();
+        File file = new File(dirfile, prefix + ".log");
+        int c = 1;
+        while (file.exists()) {
+            file = new File(dirfile, prefix + "_"+ c + ".log");
+            c++;
+        }
+        return file;
+    }
+    
+    private void logError(Exception e, File f) {
         String prop = System.getProperty(ERRORS_PROP,"");   
         prop = prop + "\n" + e.toString();
         System.setProperty(ERRORS_PROP,prop);
+        if (f != null) {
+          try {  
+            BufferedWriter wr = new BufferedWriter(new FileWriter(f.getAbsolutePath().substring(0,f.getAbsolutePath().length()-3)+"errors"));
+            wr.write(e.toString());
+            wr.close();
+          }
+          catch (IOException exp) {
+            log(exp.toString(),Project.MSG_ERR);
+          }
+        }
     }
     
     private void executeStart(MConfig.Setup setup) throws BuildException {
-        executeSetup(setup.getStartDir(), setup.getStartAntfile(), setup.getStartTarget(), setup.getStartOnBackground(), setup.getStartDelay());
+        executeSetup(setup.getName()+"_start", setup.getStartDir(), setup.getStartAntfile(), setup.getStartTarget(), setup.getStartOnBackground(), setup.getStartDelay());
     }
 
     private void executeStop(MConfig.Setup setup) throws BuildException {
-        executeSetup(setup.getStopDir(), setup.getStopAntfile(), setup.getStopTarget(), setup.getStopOnBackground(), setup.getStopDelay());
+        executeSetup(setup.getName()+"_stop", setup.getStopDir(), setup.getStopAntfile(), setup.getStopTarget(), setup.getStopOnBackground(), setup.getStopDelay());
     }
     
-    private void executeSetup(File dir, String antfile, String targetname, boolean onBackground, int delay) throws BuildException {
+    private void executeSetup(String name, File dir, String antfile, String targetname, boolean onBackground, int delay) throws BuildException {
         if (antfile == null && targetname == null) return;
         final Ant ant = (Ant) project.createTask("ant");
         ant.setOwningTarget(target);
@@ -179,10 +195,19 @@ public class NbExecutor extends Task {
         ant.setDir(dir);
         ant.setAntfile(antfile);
         ant.setTarget(targetname);
+        final File outputfile = getLogFile(name);
+        if (outputfile != null)
+            ant.setOutput(outputfile.getAbsolutePath());
         if (onBackground) {
            Thread thread = new Thread() {
                public void run() {
+                 try {
                    ant.execute();
+                 }
+                 catch (BuildException e) {
+                     log("Exception during executiong setup:\n"+e.toString(),Project.MSG_ERR);
+                     logError(e,outputfile);
+                 }
                }
            };
            thread.start();
@@ -191,7 +216,15 @@ public class NbExecutor extends Task {
                catch (InterruptedException e) { throw new BuildException(e);}
            }
         }
-        else ant.execute();
+        else {
+            try {
+               ant.execute();
+            }              
+            catch (BuildException e) {
+                log("Exception during executiong setup:\n"+e.toString(),Project.MSG_ERR);
+                logError(e,outputfile);
+            }
+        }
     }
         
 }
