@@ -1,14 +1,9 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.httpserver/1
-OpenIDE-Module-Public-Packages: -
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/httpserver/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/httpserver/HttpServerModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/httpserver/layer.xml
 OpenIDE-Module-Specification-Version: 1.15
-OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Provides: org.openide.util.HttpServer$Impl
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.servletapi/1
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.37
 OpenIDE-Module-Package-Dependencies: [org.apache.tomcat.core.Context]
 Class-Path: ext/webserver.jar
-

@@ -8,128 +8,18 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="httpserver" default="netbeans" basedir=".">
-  <import file="../nbbuild/default.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
+    
+    <target name="netbeans-extra" depends="release"/>
 
-  <target name="init" depends="default.init">
-    <patternset id="httpserver.files">
-      <include name="${nb.modules.dir}/httpserver.jar"/>
-      <include name="${nb.modules.dir}/ext/webserver*.jar"/>
-    </patternset>
-
-    <ant dir="external" target="unscramble"/>
-
-    <path id="cp">
-      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-      <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-      <fileset dir="external">
-        <include name="webserver*.jar"/>
-        <include name="servlet-2.2.jar"/>
-      </fileset>
-    </path>
-  </target>
-
-  <target name="compile" depends="init">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <classpath refid="cp"/>
-    </javac>
-  </target>
-
-  <target name="jars" depends="compile">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/httpserver.jar"
-         manifest="manifest-subst.mf"
-         basedir="src"
-	 excludesfile="../nbbuild/standard-jar-excludes.txt"
-	 compress="false"/>
-  </target>
-
-  <target name="netbeans" depends="jars,release">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/httpserver.jar">
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="httpserver.files"/>
-      </fileset>
-    </genlist>
-  </target>
-
-  <target name="release" depends="init">
-<!-- Doesn't make sense to me to create directory and then copy the files from it.
-    It can be probably used for developers to add files to build, but then they should add
-    those file to httpserver.files patternset, so I'm commenting this out for now
-    <mkdir dir="release"/>
-    <copy todir="netbeans" includeEmptyDirs="false">
-      <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-    </copy>-->
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
-    <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext">
-      <fileset dir="external">
-        <include name="webserver*.jar"/>
-      </fileset>
-    </copy>
-  </target>
-
-  <target name="nbm" depends="netbeans">
-    <makenbm file="httpserver.nbm"
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${nb.modules.dir}/httpserver.jar"
-	     homepage="http://httpserver.${homepage.base}/"
-	     distribution="http://${dist.base}/httpserver.nbm">
-      <license name="httpserver-module-license.txt">
-        <text>For the httpserver integration module:</text>
-        <file location="${license.file}"/>
-        <text>For the actual webserver:</text>
-        <file location="../nbbuild/external/apache-license.txt"/>
-      </license>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
-  </target>
-
-  <target name="clean" depends="init">
-    <delete>
-      <fileset dir="src">
-        <include name="**/*.class"/>
-      </fileset>
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="httpserver.files"/>
-      </fileset>
-    </delete>
-    <delete file="manifest-subst.mf"/>
-    <delete file="httpserver.nbm"/>
-    <delete dir="javadoc"/>
-  </target>
-
-  <!-- This target will only work *inside* the IDE! -->
-  <target name= "test" depends="netbeans" description="Test the module inside the running IDE." >
-    <nbinstaller action="reinstall" module="netbeans/modules/httpserver.jar"/>
-  </target>
-
-  <target name="javadoc" depends="init" description="Build httpserver module API documentation.">
-    <tstamp/>
-    <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
-    <echo message="Build httpserver module API documentation..."/>
-    <mkdir dir="javadoc"/>
-    <javadoc destdir="javadoc"
-             packagenames="org.netbeans.modules.httpserver"
-             doctitle="NetBeans httpserver module APIs"
-             windowtitle="NetBeans httpserver module APIs"
-             bottom="${apis-footer}"
-             use="true"
-             splitindex="true"
-             author="false"
-             version="false"
-             maxmemory="384m"
-    >
-      <sourcepath>
-        <pathelement location="src"/>
-      </sourcepath>
-      <classpath refid="cp"/>
-    </javadoc>    
-  </target>
-
+    <target name="release" depends="init">
+        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext">
+            <fileset file="external/webserver.jar"/>
+        </copy>
+    </target>
 </project>
