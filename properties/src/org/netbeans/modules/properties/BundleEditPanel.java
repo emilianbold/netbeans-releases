@@ -27,13 +27,9 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
+import javax.swing.table.*;
 
 import org.openide.DialogDescriptor;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.MultiDataObject;
 import org.openide.NotifyDescriptor;
 import org.openide.options.SystemOption;
 import org.openide.TopManager;
@@ -47,15 +43,18 @@ import org.openide.windows.Workspace;
  * @author  Petr Jiricka
  */
 public class BundleEditPanel extends javax.swing.JPanel {
-    private DataObject dobj;
-    private PropertiesTableModel ptm;
+    /** PropertiesDataObject this panel presents. */
+    private PropertiesDataObject obj;
 
+    /** Reference to row selection model for managing editing selected cells, together with #columnSelections. */
     private ListSelectionModel rowSelections;
+    
+    /** Reference to column selection model for managing editing cells, together with #rowSelections.*/
     private ListSelectionModel columnSelections;
 
     static final long serialVersionUID =-843810329041244483L;
 
-    /** Default implementation of PropertiesColors interface. */
+    /** Default implementation of PropertiesSettings interface. */
     public static final PropertiesSettings DEFAULT_SETTINGS = new PropertiesSettings() {
         public Color getKeyColor() {return Color.blue;}
         public Color getKeyBackground() {return Color.white;}
@@ -82,20 +81,26 @@ public class BundleEditPanel extends javax.swing.JPanel {
 
     
     /** Creates new form BundleEditPanel */
-    public BundleEditPanel(final DataObject obj, PropertiesTableModel ptm) {
-        this.dobj = obj;
-        this.ptm = ptm;
+    public BundleEditPanel(final PropertiesDataObject obj, PropertiesTableModel ptm) {
+        this.obj = obj;
 
         initComponents ();
         
         initSettings();
         
         // header renderer
-        final javax.swing.table.DefaultTableCellRenderer headerRenderer = new javax.swing.table.DefaultTableCellRenderer() {
+        final DefaultTableCellRenderer headerRenderer = new DefaultTableCellRenderer() {
+            
+            // Sorted column.
+            private int column;
+            
 	    public java.awt.Component getTableCellRendererComponent(JTable table, Object value,
                          boolean isSelected, boolean hasFocus, int row, int column) {
+                
+                this.column = column;             
+                             
 	        if (table != null) {
-	            javax.swing.table.JTableHeader header = table.getTableHeader();
+	            JTableHeader header = table.getTableHeader();
 	            if (header != null) {
 	                this.setForeground(header.getForeground());
 	                this.setBackground(header.getBackground());
@@ -107,14 +112,65 @@ public class BundleEditPanel extends javax.swing.JPanel {
 		this.setBorder(javax.swing.UIManager.getBorder("TableHeader.cellBorder")); // NOI18N
 	        return this;
             }
+    
+            // Overrides superclass for painting ascending/descending marks for sorted column header.
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+
+                // If the column is the sorted one draw mark on it header.
+                if(column == obj.getBundleStructure().getSortIndex() ) {
+                    
+                    Color oldColor = g.getColor();
+
+                    FontMetrics fm = g.getFontMetrics();
+                    Rectangle space = fm.getStringBounds(" ", g).getBounds(); // NOI18N
+                    Rectangle mark = fm.getStringBounds("\u25B2", g).getBounds(); // NOI18N
+                    Rectangle bounds = this.getBounds();
+                    
+                    Insets insets = this.getInsets();
+
+                    int x1, x2, x3, y1, y2, y3; 
+                    
+                    if(obj.getBundleStructure().getSortOrder()) {                    
+                        // Ascending order.
+                        x1 = space.width + mark.width/2;
+                        x2 = space.width;
+                        x3 = space.width + mark.width;
+
+                        y1 = bounds.y + insets.top+2;
+                        y2 = bounds.y + bounds.height - insets.bottom-2;
+                        y3 = y2;
+                    } else {
+                        // Descending order.
+                        x1 = space.width;
+                        x2 = space.width + mark.width;
+                        x3 = space.width + mark.width/2;
+
+                        y1 = bounds.y + insets.top + 2;
+                        y2 = y1;
+                        y3 = bounds.y + bounds.height - insets.bottom - 2;
+                    }
+
+                    // Draw inside of mark.
+                    g.setColor(SystemColor.lightGray);                    
+                    g.fillPolygon(new int[] {x1, x2, x3}, new int[] {y1, y2, y3}, 3);
+                    
+                    // Draw border of mark.
+                    g.setColor(SystemColor.darkGray);
+                    g.drawPolygon(new int[] {x1, x2, x3}, new int[] {y1, y2, y3}, 3);
+                    
+                    g.setColor(oldColor);
+                }
+            }
+
         };
 
         // this subclass of Default column model is provided due correct set of column widths 
         // see the JTable and horizontal scrolling problem in Java Discussion Forum
-        theTable.setColumnModel(new javax.swing.table.DefaultTableColumnModel() {
+        theTable.setColumnModel(new DefaultTableColumnModel() {
             public void addColumn(TableColumn aColumn) {
                 if (aColumn == null) {
-                    throw new IllegalArgumentException("Object is null");
+                    throw new IllegalArgumentException("Object is null"); // NOI18N
                 }
 
                 tableColumns.addElement(aColumn);
@@ -134,6 +190,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
             }
         });
         
+        // Sets table model.
         theTable.setModel(ptm);
 
         // table cell editor
@@ -143,7 +200,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
                                   new PropertiesTableCellEditor(textField, textComment, textValue));
 
         // set renderer
-        theTable.setDefaultRenderer(PropertiesTableModel.StringPair.class, new javax.swing.table.DefaultTableCellRenderer() {
+        theTable.setDefaultRenderer(PropertiesTableModel.StringPair.class, new DefaultTableCellRenderer() {
             public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table,
                     Object value, boolean isSelected, boolean hasFocus, int row, int column) {
   
@@ -213,7 +270,11 @@ public class BundleEditPanel extends javax.swing.JPanel {
             new ListSelectionListener() {
                 public void valueChanged(ListSelectionEvent e) {
                     rowSelections = (ListSelectionModel)e.getSource();
-                    selectionChanged();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            selectionChanged();
+                        }
+                    });
                 }
             });
         columnSelections = theTable.getColumnModel().getSelectionModel();
@@ -221,7 +282,11 @@ public class BundleEditPanel extends javax.swing.JPanel {
             new ListSelectionListener() {
                 public void valueChanged(ListSelectionEvent e) {
                     columnSelections = (ListSelectionModel)e.getSource();
-                    selectionChanged();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            selectionChanged();
+                        }
+                    });
                 }
             });
 
@@ -243,7 +308,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
                 // not detected column
                 if (modelIndex < 0)
                     return;
-                ((PropertiesDataObject)dobj).getBundleStructure().sort(modelIndex);
+                obj.getBundleStructure().sort(modelIndex);
             }
         });
 
@@ -286,7 +351,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
             column.setPreferredWidth(columnWidth);
         }
     }
-    
+
     void stopEditing() {
         if (!theTable.isEditing()) return;
         TableCellEditor cellEdit = theTable.getCellEditor();
@@ -334,15 +399,10 @@ public class BundleEditPanel extends javax.swing.JPanel {
             // the selection is ok - set cell editable if:
             // 1) it is not going to be edited as a search result (client property TABLE_SEARCH_RESULT)
             // 2) and if it is not already editing this field
-            if (theTable.getClientProperty(FindPerformer.TABLE_SEARCH_RESULT) == null &&
-                    (theTable.getEditingRow() != rowSelections.getMinSelectionIndex() ||
-                    theTable.getEditingColumn() != columnSelections.getMinSelectionIndex()) ) {
-                SwingUtilities.invokeLater(new Runnable() {
-                                               public void run() {
-                                                   theTable.editCellAt(rowSelections.getMinSelectionIndex(),
-                                                                       columnSelections.getMinSelectionIndex());
-                                               }
-                                           });
+            if (theTable.getClientProperty(FindPerformer.TABLE_SEARCH_RESULT) == null 
+                && (theTable.getEditingRow() != rowSelections.getMinSelectionIndex()
+                || theTable.getEditingColumn() != columnSelections.getMinSelectionIndex()) ) {
+                    theTable.editCellAt(rowSelections.getMinSelectionIndex(), columnSelections.getMinSelectionIndex());
             }
         }
     }
@@ -573,10 +633,10 @@ public class BundleEditPanel extends javax.swing.JPanel {
         if (TopManager.getDefault().notify(msg).equals(NotifyDescriptor.OK_OPTION)) {
             try {
                 // starts "atomic" acion for special undo redo manager of opend support
-                ((PropertiesDataObject)dobj).getOpenSupport().atomicUndoRedoFlag = new Object();
+                obj.getOpenSupport().atomicUndoRedoFlag = new Object();
 
-                for (int i=0; i < ((PropertiesDataObject)dobj).getBundleStructure().getEntryCount(); i++) {
-                    PropertiesFileEntry entry = ((PropertiesDataObject)dobj).getBundleStructure().getNthEntry(i);
+                for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {
+                    PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
                     if (entry != null) {
                         PropertiesStructure ps = entry.getHandler().getStructure();
                         if (ps != null) {
@@ -586,7 +646,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
                 }
             } finally {
                 // finishes "atomic" undo redo action for special undo redo manager of open support
-                ((PropertiesDataObject)dobj).getOpenSupport().atomicUndoRedoFlag = null;
+                obj.getOpenSupport().atomicUndoRedoFlag = null;
             }
         }
     }//GEN-LAST:event_removeButtonActionPerformed
@@ -602,12 +662,12 @@ public class BundleEditPanel extends javax.swing.JPanel {
         if (okPressed) {
             try {
                 // starts "atomic" acion for special undo redo manager of opend support
-                ((PropertiesDataObject)dobj).getOpenSupport().atomicUndoRedoFlag = new Object();
+                obj.getOpenSupport().atomicUndoRedoFlag = new Object();
 
                 String key = UtilConvert.charsToUnicodes(UtilConvert.escapePropertiesSpecialChars(descr.getInputText()));
                 // add key to all entries
-                for (int i=0; i < ((PropertiesDataObject)dobj).getBundleStructure().getEntryCount(); i++) {            
-                    PropertiesFileEntry entry = ((PropertiesDataObject)dobj).getBundleStructure().getNthEntry(i);
+                for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {            
+                    PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
                     if (!entry.getHandler().getStructure().addItem(key, "", "")) {
                         NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
                                                            java.text.MessageFormat.format(
@@ -619,7 +679,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
                 }
             } finally {
                 // finishes "atomic" undo redo action for special undo redo manager of open support
-                ((PropertiesDataObject)dobj).getOpenSupport().atomicUndoRedoFlag = null;
+                obj.getOpenSupport().atomicUndoRedoFlag = null;
             }
         }
     }//GEN-LAST:event_addButtonActionPerformed
