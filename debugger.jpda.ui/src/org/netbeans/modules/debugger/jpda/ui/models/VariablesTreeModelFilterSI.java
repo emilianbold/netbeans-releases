@@ -40,6 +40,7 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.netbeans.modules.debugger.jpda.ui.FixedWatch;
 
 
 /**
@@ -125,6 +126,7 @@ NodeModel, TableModel, NodeActionsProvider {
         int         from, 
         int         to
     ) throws NoInformationException, ComputingException, UnknownTypeException {
+        parent = switchParentIfFixedWatch(parent);
         if (parent instanceof ObjectVariable) {
             ObjectVariable variable = (ObjectVariable) parent;
             if (ignore.contains (variable.getType ()))
@@ -172,6 +174,7 @@ NodeModel, TableModel, NodeActionsProvider {
         TreeModel   original, 
         Object      parent
     ) throws NoInformationException, ComputingException, UnknownTypeException {
+        parent = switchParentIfFixedWatch(parent);
         if (parent instanceof ObjectVariable) {
             ObjectVariable variable = (ObjectVariable) parent;
             if (ignore.contains (variable.getType ()))
@@ -194,7 +197,17 @@ NodeModel, TableModel, NodeActionsProvider {
         }
         return original.getChildrenCount (parent);
     }
-    
+
+    private Object switchParentIfFixedWatch(Object parent) {
+        if (parent instanceof FixedWatch) {
+            FixedWatch fw = (FixedWatch) parent;
+            if (fw.getVariable() instanceof ObjectVariable) {
+                return fw.getVariable();
+            }
+        }
+        return parent;
+    }
+
     /**
      * Returns true if node is leaf.
      * 
