@@ -64,11 +64,7 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="LocalVariablesAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-LocalVariablesAction.instance"/>
                 </file>
-                <attr name="LocalVariablesAction.shadow/AllInOneAction.shadow" boolvalue="true" />
-                <file name="AllInOneAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-AllInOneAction.instance"/>
-                </file>
-                <attr name="AllInOneAction.shadow/WatchesAction.shadow" boolvalue="true" />
+                <attr name="LocalVariablesAction.shadow/WatchesAction.shadow" boolvalue="true" />
                 <file name="WatchesAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-WatchesAction.instance"/>
                 </file>
@@ -91,6 +87,10 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SessionsAction.shadow/ThreadsAction.shadow" boolvalue="true" />
                 <file name="ThreadsAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-ThreadsAction.instance"/>
+                </file>
+                <attr name="ThreadsAction.shadow/AllInOneAction.shadow" boolvalue="true" />
+                <file name="AllInOneAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-AllInOneAction.instance"/>
                 </file>
             </folder>
             <attr name="Debug/Separator3.instance" boolvalue="true" />
@@ -238,66 +238,69 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Shortcuts">
 
         <file name="S-F8.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.ToggleBreakpointAction"/>
-	</file>
+    	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.ToggleBreakpointAction"/>
+	    </file>
         <file name="CS-F7.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.AddWatchAction"/>
-	</file>
+    	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.AddWatchAction"/>
+	    </file>
         <file name="CS-F8.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.AddBreakpointAction"/>
-	</file>
+	        <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.AddBreakpointAction"/>
+    	</file>
         <file name="C-5.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.DebuggerWindowAction"/>
-	</file>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.DebuggerWindowAction"/>
+        </file>
         <file name="F4.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.RunToCursorAction"/>
-	</file>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.RunToCursorAction"/>
+        </file>
         <file name="SA-F7.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.StepOutAction"/>
-	</file>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.StepOutAction"/>
+        </file>
         <file name="F7.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.StepIntoAction"/>
-	</file>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.StepIntoAction"/>
+        </file>
         <file name="F8.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.StepOverAction"/>
-	</file>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.StepOverAction"/>
+        </file>
         <file name="C-F5.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.ContinueAction"/>
-	</file>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.ContinueAction"/>
+        </file>
         <file name="S-F5.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.FinishAction"/>
-	</file>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.FinishAction"/>
+        </file>
         <file name="A-F5.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.StartAction"/>
-	</file>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.StartAction"/>
+        </file>
         <file name="CA-UP.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.GoToCalledMethodAction"/>
-	</file>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.GoToCalledMethodAction"/>
+        </file>
         <file name="CA-DOWN.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.GoToCallingMethodAction"/>
-	</file>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.GoToCallingMethodAction"/>
+        </file>
         
-<!--        <file name="CS-3.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-LocalVariablesAction.instance"/>
-	</file>-->
-        <file name="CS-4.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-WatchesAction.instance"/>
-	</file>
-        <file name="CS-5.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-CallStackAction.instance"/>
-	</file>
-        <file name="CS-6.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-ClassesAction.instance"/>
-	</file>
-        <file name="CS-7.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-BreakpointsAction.instance"/>
-	</file>
-<!--        <file name="CS-8.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-SessionsAction.instance"/>
-	</file>-->
-        <file name="CS-9.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-ThreadsAction.instance"/>
-	</file>
+        <file name="CA-1.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-LocalVariablesAction.instance"/>
+        </file>
+        <file name="CA-2.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-WatchesAction.instance"/>
+        </file>
+        <file name="CA-3.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-CallStackAction.instance"/>
+        </file>
+        <file name="CA-4.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-ClassesAction.instance"/>
+        </file>
+        <file name="CA-5.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-BreakpointsAction.instance"/>
+        </file>
+        <file name="CA-6.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-SessionsAction.instance"/>
+        </file>
+        <file name="CA-7.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-ThreadsAction.instance"/>
+        </file>
+        <file name="CA-8.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-AllInOneAction.instance"/>
+        </file>
     </folder>
 
     <folder name="Services">
@@ -454,21 +457,21 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Modes">
             <file name="debugger.wsmode" url="modes/debugger.wsmode" />
             <folder name="debugger">
-                <file name="allinone.wstcref" url="modes/debugger/allinone.wstcref" />
-                <attr name="allinone.wstcref/watches.wstcref" boolvalue="true"/>
-                <file name="watches.wstcref" url="modes/debugger/watches.wstcref" />
-                <attr name="watches.wstcref/variables.wstcref" boolvalue="true"/>
                 <file name="variables.wstcref" url="modes/debugger/variables.wstcref" />
-                <attr name="variables.wstcref/callstack.wstcref" boolvalue="true"/>
+                <attr name="variables.wstcref/watches.wstcref" boolvalue="true"/>
+                <file name="watches.wstcref" url="modes/debugger/watches.wstcref" />
+                <attr name="watches.wstcref/callstack.wstcref" boolvalue="true"/>
                 <file name="callstack.wstcref" url="modes/debugger/callstack.wstcref" />
                 <attr name="callstack.wstcref/classes.wstcref" boolvalue="true"/>
                 <file name="classes.wstcref" url="modes/debugger/classes.wstcref" />
                 <attr name="classes.wstcref/breakpoints.wstcref" boolvalue="true"/>
                 <file name="breakpoints.wstcref" url="modes/debugger/breakpoints.wstcref" />
-                <attr name="breakpoints.wstcref/sessions/wstcref" boolvalue="true"/>
+                <attr name="breakpoints.wstcref/sessions.wstcref" boolvalue="true"/>
                 <file name="sessions.wstcref" url="modes/debugger/sessions.wstcref" />
                 <attr name="sessions.wstcref/threads.wstcref" boolvalue="true"/>
                 <file name="threads.wstcref" url="modes/debugger/threads.wstcref" />
+                <attr name="threads.wstcref/allinone.wstcref" boolvalue="true"/>
+                <file name="allinone.wstcref" url="modes/debugger/allinone.wstcref" />
             </folder>
             <!-- PENDING Debugger console is not yet fully defined from UI.
             <folder name="output">
