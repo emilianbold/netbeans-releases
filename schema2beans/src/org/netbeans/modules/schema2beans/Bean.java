@@ -18,11 +18,25 @@ import java.beans.*;
 public interface Bean {
     public void addPropertyChangeListener(PropertyChangeListener l);
     public void removePropertyChangeListener(PropertyChangeListener l);
+
+    /**
+     * @return a representation of the property.  This method does not return
+     * null.  If there is no object available for the specified
+     * property name, an exception is thrown.
+     */
     public BeanProp beanProp(String name);
+
+    /**
+     * @return the schema name of this bean as define by this bean's parent.
+     */
     public String dtdName();
     public boolean isRoot();
     public Bean _getParent();
     public Bean _getRoot();
+
+    /**
+     *	Return the bean name of this graph node.
+     */
     public String name();
     public boolean hasName(String name);
     public int indexToId(String name, int index);
