@@ -203,15 +203,14 @@ public class FileEntryNode extends AbstractNode {
      * @param ev event describing the change
      */
     void fireChange (PropertyChangeEvent ev) {
-        // XXX this is wrong - e.g. if propertyName = PROP_COOKIE, should *not* call fPC
         String propertyName = ev.getPropertyName();
+        if (propertyName.equals(Node.PROP_COOKIE)) {
+            fireCookieChange();
+            return;
+        }
         firePropertyChange(propertyName, ev.getOldValue(), ev.getNewValue());
         if (propertyName.equals(DataObject.PROP_NAME)) {
             super.setName (entry.getName ());
-            return;
-        }
-        if (propertyName.equals(Node.PROP_COOKIE)) {
-            fireCookieChange();
         }
     }
 
