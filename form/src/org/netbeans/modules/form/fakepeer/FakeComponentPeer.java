@@ -222,9 +222,9 @@ abstract class FakeComponentPeer implements FakePeer
     }
 
     // JDK 1.4 (VolatileImage not before 1.4)
-//    public VolatileImage createVolatileImage(int width, int height) {
-//        return null;
-//    }
+    public VolatileImage createVolatileImage(int width, int height) {
+        return null;
+    }
 
     public boolean prepareImage(Image img, int w, int h,
                                 ImageObserver imageObserver)
@@ -250,9 +250,9 @@ abstract class FakeComponentPeer implements FakePeer
     }
 
     // JDK 1.4 (BufferCapabilities not before 1.4)
-//    public void createBuffers(int numBuffers, BufferCapabilities caps)
-//        throws AWTException {
-//    }
+    public void createBuffers(int numBuffers, BufferCapabilities caps)
+        throws AWTException {
+    }
 
     // JDK 1.4
     public Image getBackBuffer() {
@@ -260,8 +260,8 @@ abstract class FakeComponentPeer implements FakePeer
     }
 
     // JDK 1.4 (BufferCapabilities not before 1.4)
-//    public void flip(BufferCapabilities.FlipContents flipAction) {
-//    }
+    public void flip(BufferCapabilities.FlipContents flipAction) {
+    }
 
     // JDK 1.4
     public void destroyBuffers() {
