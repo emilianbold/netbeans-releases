@@ -386,7 +386,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module innertesters..."/>
     <ant dir="../innertesters" target="netbeans"/>
   </target>
-  <target name="all-j2eeserver/deprecated" depends="all-openide,all-jarpackager,all-debuggercore,all-debuggerjpda,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi">
+  <target name="all-j2eeserver/deprecated" depends="all-openide,all-jarpackager,all-debuggercore,all-debuggerjpda,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-core/javahelp">
     <echo message="Building module j2eeserver(deprecated)..."/>
     <ant dir="../j2eeserver/deprecated" target="netbeans"/>
   </target>
@@ -666,7 +666,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../web/servletapi23" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
-  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver/deprecated,all-html,all-httpserver,all-jarpackager,all-debuggercore,all-openidex,all-schema2beans,all-xml/api,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi">
+  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver/deprecated,all-html,all-httpserver,all-jarpackager,all-debuggercore,all-openidex,all-schema2beans,all-xml/api,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-projects">
     <echo message="Building module web/core..."/>
     <ant dir="../web/core" target="netbeans"/>
   </target>
