@@ -238,8 +238,8 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
     public static class CollapseAllCommentsFolds extends BaseAction{
         public CollapseAllCommentsFolds(){
             super(collapseAllCommentsAction);
-            putValue(SHORT_DESCRIPTION, NbBundle.getBundle(HTMLKit.class).getString("collapse-all-comment-folds"));
-            putValue(BaseAction.POPUP_MENU_TEXT, NbBundle.getBundle(HTMLKit.class).getString("popup-collapse-all-comment-folds"));
+            putValue(SHORT_DESCRIPTION, NbBundle.getBundle(HTMLKit.class).getString("collapse-all-comment-folds")); //NOI18N
+            putValue(BaseAction.POPUP_MENU_TEXT, NbBundle.getBundle(HTMLKit.class).getString("popup-collapse-all-comment-folds")); //NOI18N
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -289,9 +289,9 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
                     String mime = flavors[i].getMimeType();
                     if (mime.startsWith(((JEditorPane)c).getEditorKit().getContentType())) {
                         //return flavors[i]; [REWRITE_PLACE]
-                    } else if (plainFlavor == null && mime.startsWith("text/plain")) {
+                    } else if (plainFlavor == null && mime.startsWith("text/plain")) { //NOI18N
                         plainFlavor = flavors[i];
-                    } else if (refFlavor == null && mime.startsWith("application/x-java-jvm-local-objectref")
+                    } else if (refFlavor == null && mime.startsWith("application/x-java-jvm-local-objectref") //NOI18N
                                                  && flavors[i].getRepresentationClass() == java.lang.String.class) {
                         refFlavor = flavors[i];
                     } else if (stringFlavor == null && flavors[i].equals(DataFlavor.stringFlavor)) {
@@ -311,9 +311,9 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
             
             for (int i = 0; i < flavors.length; i++) {
                 String mime = flavors[i].getMimeType();
-                if (mime.startsWith("text/plain")) {
+                if (mime.startsWith("text/plain")) { //NOI18N
                     return flavors[i];
-                } else if (refFlavor == null && mime.startsWith("application/x-java-jvm-local-objectref")
+                } else if (refFlavor == null && mime.startsWith("application/x-java-jvm-local-objectref") //NOI18N
                                              && flavors[i].getRepresentationClass() == java.lang.String.class) {
                     refFlavor = flavors[i];
                 } else if (stringFlavor == null && flavors[i].equals(DataFlavor.stringFlavor)) {
@@ -406,7 +406,7 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
                 if (lastWasCR) {
                     sbuff.append('\n');
                 }
-                c.replaceSelection(sbuff != null ? sbuff.toString() : "");
+                c.replaceSelection(sbuff != null ? sbuff.toString() : ""); //NOI18N
             }
 	}
 
@@ -503,7 +503,7 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
                     boolean useRead = false;
                     if (comp instanceof JEditorPane) {
                         JEditorPane ep = (JEditorPane)comp;
-                        if (!ep.getContentType().startsWith("text/plain") &&
+                        if (!ep.getContentType().startsWith("text/plain") && //NOI18N
                                 importFlavor.getMimeType().startsWith(ep.getContentType())) {
                             useRead = true;
                         }
@@ -570,14 +570,14 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
                         
                         mimeType = ep.getContentType();
 
-                        if (mimeType.startsWith("text/plain")) {
+                        if (mimeType.startsWith("text/plain")) { //NOI18N
                             return;
                         }
 
                         StringWriter sw = new StringWriter(p1.getOffset() - p0.getOffset());
                         ep.getEditorKit().write(sw, doc, p0.getOffset(), p1.getOffset() - p0.getOffset());
                         
-                        if (mimeType.startsWith("text/html")) {
+                        if (mimeType.startsWith("text/html")) { //NOI18N
                             htmlData = sw.toString();
                         } else {
                             richText = sw.toString();
@@ -611,9 +611,9 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
 
 		try {
 		    DataFlavor[] flavors = new DataFlavor[3];
-                    flavors[0] = new DataFlavor(mimeType + ";class=java.lang.String");
-                    flavors[1] = new DataFlavor(mimeType + ";class=java.io.Reader");
-                    flavors[2] = new DataFlavor(mimeType + ";class=java.io.InputStream;charset=unicode");
+                    flavors[0] = new DataFlavor(mimeType + ";class=java.lang.String"); //NOI18N
+                    flavors[1] = new DataFlavor(mimeType + ";class=java.io.Reader"); //NOI18N
+                    flavors[2] = new DataFlavor(mimeType + ";class=java.io.InputStream;charset=unicode"); //NOI18N
 		    return flavors;
 		} catch (ClassNotFoundException cle) {
 		    // fall through to unsupported (should not happen)
@@ -661,21 +661,21 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
         static {
             try {
                 htmlFlavors = new DataFlavor[3];
-                htmlFlavors[0] = new DataFlavor("text/html;class=java.lang.String");
-                htmlFlavors[1] = new DataFlavor("text/html;class=java.io.Reader");
-                htmlFlavors[2] = new DataFlavor("text/html;charset=unicode;class=java.io.InputStream");
+                htmlFlavors[0] = new DataFlavor("text/html;class=java.lang.String"); //NOI18N
+                htmlFlavors[1] = new DataFlavor("text/html;class=java.io.Reader"); //NOI18N
+                htmlFlavors[2] = new DataFlavor("text/html;charset=unicode;class=java.io.InputStream"); //NOI18N
 
                 plainFlavors = new DataFlavor[3];
-                plainFlavors[0] = new DataFlavor("text/plain;class=java.lang.String");
-                plainFlavors[1] = new DataFlavor("text/plain;class=java.io.Reader");
-                plainFlavors[2] = new DataFlavor("text/plain;charset=unicode;class=java.io.InputStream");
+                plainFlavors[0] = new DataFlavor("text/plain;class=java.lang.String"); //NOI18N
+                plainFlavors[1] = new DataFlavor("text/plain;class=java.io.Reader"); //NOI18N
+                plainFlavors[2] = new DataFlavor("text/plain;charset=unicode;class=java.io.InputStream"); //NOI18N
 
                 stringFlavors = new DataFlavor[2];
-                stringFlavors[0] = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+";class=java.lang.String");
+                stringFlavors[0] = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+";class=java.lang.String"); //NOI18N
                 stringFlavors[1] = DataFlavor.stringFlavor;
 
             } catch (ClassNotFoundException cle) {
-                System.err.println("error initializing javax.swing.plaf.basic.BasicTranserable");
+                System.err.println("error initializing javax.swing.plaf.basic.BasicTranserable"); ////NOI18N
             }
         }
 
@@ -754,7 +754,7 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
                 return getRicherData(flavor);
             } else if (isHTMLFlavor(flavor)) {
                 String data = getHTMLData();
-                data = (data == null) ? "" : data;
+                data = (data == null) ? "" : data; //NOI18N
                 if (String.class.equals(flavor.getRepresentationClass())) {
                     return data;
                 } else if (Reader.class.equals(flavor.getRepresentationClass())) {
@@ -777,7 +777,7 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
 
             } else if (isStringFlavor(flavor)) {
                 String data = getPlainData();
-                data = (data == null) ? "" : data;
+                data = (data == null) ? "" : data; //NOI18N
                 return data;
             }
             throw new UnsupportedFlavorException(flavor);
