@@ -13,6 +13,8 @@
 package org.netbeans.spi.xml.cookies;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URL;
 
 import org.xml.sax.EntityResolver;
@@ -130,7 +132,7 @@ public final class TransformableSupport implements TransformableCookie {
             if ( ( notifier != null ) &&
                  ( detail != null ) ) {
                 CookieMessage message = new CookieMessage
-                    (unwrapException(exc).getLocalizedMessage(), 
+                    (message(exc), 
                      CookieMessage.FATAL_ERROR_LEVEL,
                      detail);
                 notifier.receive (message);
@@ -183,8 +185,40 @@ public final class TransformableSupport implements TransformableCookie {
         return getTransformerFactory().newTransformer (xsl);
     }
 
+    /**
+     * Extract message from exception or use exception name.
+     */
+    private static String message(Throwable t) {
+        String msg = t.getLocalizedMessage();
+        return (msg!=null ? msg : new ExceptionWriter(t).toString());
+    }
 
+    /**
+     * Print first four exception lines.
+     */
+    private static class ExceptionWriter extends PrintWriter {
+        private int counter = 4;
+        private Throwable t;
+         
+        public ExceptionWriter(Throwable t) {
+            super(new StringWriter());
+            this.t = t;
+        }
+        
+        public void println(String s) {
+            if (counter-- > 0) super.println(s);
+        }
 
+        public void println(Object o) {
+            if (counter-- > 0) super.println(o);
+        }
+        
+        public String toString() {
+            t.printStackTrace(this);
+            flush();
+            return ((StringWriter)out).getBuffer().toString();
+        }
+    }
 
     //
     // class Proxy
@@ -227,7 +261,7 @@ public final class TransformableSupport implements TransformableCookie {
 
             Throwable unwrappedExc = unwrapException (tex);
             CookieMessage message = new CookieMessage (
-                unwrappedExc.getLocalizedMessage(), 
+                message(unwrappedExc), 
                 level,
                 new DefaultXMLProcessorDetail (tex)
             );
