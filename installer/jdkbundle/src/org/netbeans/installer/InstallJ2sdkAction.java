@@ -715,7 +715,8 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         if (!baseDirFile.exists()) {
             return null;
         }
-        String defaultJDKDir = resolveString("$L(org.netbeans.installer.Bundle,JDK.defaultInstallDirectory)");
+        String defaultJDKDir = resolveString("$L(org.netbeans.installer.Bundle,JDK.patchDirectory)");
+        String patchJDKDir = resolveString("$L(org.netbeans.installer.Bundle,JDK.defaultInstallDirectory)");
         File [] files = baseDirFile.listFiles();
         File jdkDirFile = null;
         boolean found = false;
@@ -737,7 +738,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         File patchDirFile = null;
         found = false;
         for (int i = 0; i < files.length; i++) {
-            if (files[i].getName().startsWith("patch-" + defaultJDKDir)) {
+            if (files[i].getName().startsWith("patch-" + patchJDKDir)) {
                 found = true;
                 patchDirFile = files[i];
                 break;
