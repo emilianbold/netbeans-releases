@@ -236,10 +236,10 @@ public class MTestExecutor extends Task {
                 defaultPatterns.append((PatternSet) o, p);
             } */
             
-            System.out.println("Testbag "+testbag.getName());
+            /*System.out.println("Testbag "+testbag.getName());
             System.out.println("testset = "+testset);
             System.out.println("Testset includes "+testset.getIncludes());
-
+            */
             ts.setIncludes(testset.getIncludes());
             ts.setExcludes(testset.getExcludes());
                 
