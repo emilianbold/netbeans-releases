@@ -18,7 +18,6 @@ import com.netbeans.ide.options.SystemOption;
 /** Settings for form data loader.
 *
 * @author Ian Formanek
-* @version 1.00, Jul 17, 1998
 */
 public class FormLoaderSettings extends SystemOption {
   /** generated Serialized Version UID */
@@ -54,6 +53,11 @@ public class FormLoaderSettings extends SystemOption {
   public static final String PROP_VARIABLES_MODIFIER = "variablesModifier";
   /** Property name of the displayWritableOnly property */
   public static final String PROP_DISPLAY_WRITABLE_ONLY = "displayWritableOnly";
+
+  /** Property name of the editorSearchPath property */
+  public static final String PROP_EDITOR_SEARCH_PATH = "editorSearchPath";
+  /** Property name of the registeredEditors property */
+  public static final String PROP_REGISTERED_EDITORS = "registeredEditors";
 
   /** A constant for "private" access modifier used in variablesModifier property */
   public static final int PRIVATE = 0;
@@ -107,6 +111,19 @@ public class FormLoaderSettings extends SystemOption {
   private static int variablesModifier = PRIVATE;
   /** If true, only editable properties are displayed in the ComponentInspector */
   private static boolean displayWritableOnly = true;
+  /** Array of package names to search for property editors used in Form Editor */
+  private static String [] editorSearchPath;
+  /** Array of items [Class Name, Editor1, Editor2, ...] */
+  private static String [][] registeredEditors = new String [][] {
+    { "byte", "sun.beans.editors.ByteEditor" },
+    { "short", "sun.beans.editors.ShortEditor" },
+    { "integer", "sun.beans.editors.IntEditor" },
+    { "long" ,"sun.beans.editors.LongEditor" },
+    { "boolean", "sun.beans.editors.BoolEditor" },
+    { "float", "sun.beans.editors.FloatEditor" },
+    { "double", "sun.beans.editors.DoubleEditor" },
+    { String[].class.getName (), "com.netbeans.developer.editors.StringArrayEditor.class"},
+  };
 
   private static int emptyFormType = 0;
 
@@ -116,6 +133,13 @@ public class FormLoaderSettings extends SystemOption {
   private static final int MIN_GRID_X = 2;
   private static final int MIN_GRID_Y = 2;
 
+  static {
+    String[] defaultPath = java.beans.PropertyEditorManager.getEditorSearchPath ();
+    editorSearchPath = new String[defaultPath.length + 1];
+    System.arraycopy (defaultPath, 0, editorSearchPath, 0, defaultPath.length);
+    editorSearchPath[editorSearchPath.length-1] = "com.netbeans.developer.explorer.propertysheet.editors";
+  }
+  
 // ------------------------------------------
 // property access methods
 
@@ -342,6 +366,32 @@ public class FormLoaderSettings extends SystemOption {
     firePropertyChange (PROP_DISPLAY_WRITABLE_ONLY, oldValue, new Boolean (displayWritableOnly));
   }
 
+  /** Getter for the editorSearchPath option */
+  public String[] getEditorSearchPath () {
+    return editorSearchPath;
+  }
+
+  /** Setter for the editorSearchPath option */
+  public void setEditorSearchPath (String[] value) {
+    String[] oldValue = editorSearchPath;
+    editorSearchPath = value;
+    FormPropertyEditorManager.clearEditorsCache (); // clear the editors cache so that the new editors can be used
+    firePropertyChange (PROP_EDITOR_SEARCH_PATH, oldValue, editorSearchPath);
+  }
+
+  /** Getter for the registeredEditors option */
+  public String[][] getRegisteredEditors () {
+    return registeredEditors;
+  }
+
+  /** Setter for the registeredEditors option */
+  public void setRegisteredEditors (String[][] value) {
+    String[][] oldValue = registeredEditors;
+    registeredEditors = value;
+    FormPropertyEditorManager.clearEditorsCache (); // clear the editors cache so that the new editors can be used
+    firePropertyChange (PROP_REGISTERED_EDITORS, oldValue, registeredEditors);
+  }
+
   /** This method must be overriden. It returns display name of this options.
   */
   public String displayName () {
@@ -352,11 +402,11 @@ public class FormLoaderSettings extends SystemOption {
 
 /*
  * Log
+ *  5    Gandalf   1.4         5/30/99  Ian Formanek    PropertyEditors 
+ *       management options
  *  4    Gandalf   1.3         5/24/99  Ian Formanek    
  *  3    Gandalf   1.2         3/16/99  Ian Formanek    
  *  2    Gandalf   1.1         3/10/99  Ian Formanek    Gandalf updated
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
- * Beta Change History:
- *  0    Tuborg    0.13        --/--/98 Jan Formanek    fires property changes
  */

@@ -64,6 +64,10 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                   "getApplyGridToSize", "setApplyGridToSize"),
           new PropertyDescriptor (FormLoaderSettings.PROP_VARIABLES_MODIFIER, FormLoaderSettings.class, 
                                   "getVariablesModifier", "setVariablesModifier"),
+          new PropertyDescriptor (FormLoaderSettings.PROP_EDITOR_SEARCH_PATH, FormLoaderSettings.class, 
+                                  "getEditorSearchPath", "setEditorSearchPath"),
+          new PropertyDescriptor (FormLoaderSettings.PROP_REGISTERED_EDITORS, FormLoaderSettings.class, 
+                                  "getRegisteredEditors", "setRegisteredEditors"),
         };
       } else {
         desc = new PropertyDescriptor[] {
@@ -95,6 +99,10 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                   "getApplyGridToSize", "setApplyGridToSize"),
           new PropertyDescriptor (FormLoaderSettings.PROP_VARIABLES_MODIFIER, FormLoaderSettings.class, 
                                   "getVariablesModifier", "setVariablesModifier"),
+          new PropertyDescriptor (FormLoaderSettings.PROP_EDITOR_SEARCH_PATH, FormLoaderSettings.class, 
+                                  "getEditorSearchPath", "setEditorSearchPath"),
+          new PropertyDescriptor (FormLoaderSettings.PROP_REGISTERED_EDITORS, FormLoaderSettings.class, 
+                                  "getRegisteredEditors", "setRegisteredEditors"),
           new PropertyDescriptor ("emptyFormType", FormLoaderSettings.class, 
                                   "getEmptyFormType", "setEmptyFormType"),
         };
@@ -139,6 +147,10 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
       desc[13].setDisplayName (formBundle.getString ("PROP_VARIABLES_MODIFIER"));
       desc[13].setShortDescription (formBundle.getString ("HINT_VARIABLES_MODIFIER"));
       desc[13].setPropertyEditorClass (ModifierPropertyEditor.class);
+      desc[14].setDisplayName (formBundle.getString ("PROP_EDITOR_SEARCH_PATH"));
+      desc[14].setShortDescription (formBundle.getString ("HINT_EDITOR_SEARCH_PATH"));
+      desc[15].setDisplayName (formBundle.getString ("PROP_REGISTERED_EDITORS"));
+      desc[15].setShortDescription (formBundle.getString ("HINT_REGISTERED_EDITORS"));
       
 
     } catch (IntrospectionException ex) {
@@ -209,6 +221,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  6    Gandalf   1.5         5/30/99  Ian Formanek    PropertyEditors 
+ *       management options
  *  5    Gandalf   1.4         3/29/99  Ian Formanek    
  *  4    Gandalf   1.3         3/29/99  Ian Formanek    Icon change
  *  3    Gandalf   1.2         3/16/99  Ian Formanek    
