@@ -67,7 +67,7 @@ public class InsertI18nStringAction extends CookieAction {
         final StyledDocument doc = sec.getDocument();
 
         final ResourceBundleStringEditor rbStringEditor = new ResourceBundleStringEditor();
-//        ResourceBundleString rbString = (ResourceBundleString)rbStringEditor.getValue(); // PENDING
+        ResourceBundleString rbString = (ResourceBundleString)rbStringEditor.getValue();
         rbString.setClassElement(I18nSupport.getSourceClassElement(sec.getSource())); // Set ClassElement. // TEMP
         
         final ResourceBundlePanel rbPanel = (ResourceBundlePanel)rbStringEditor.getCustomEditor();
