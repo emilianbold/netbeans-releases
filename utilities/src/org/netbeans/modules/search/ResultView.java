@@ -125,6 +125,7 @@ final class ResultView extends TopComponent
     /** Creates a new <code>ResultView</code>. */
     private ResultView() {
         initComponents();
+        setName("Search Results");                                      //NOI18N
         setDisplayName(NbBundle.getMessage(ResultView.class,
                                            "TITLE_SEARCH_RESULTS"));    //NOI18N
         setIcon(Utilities.loadImage(
