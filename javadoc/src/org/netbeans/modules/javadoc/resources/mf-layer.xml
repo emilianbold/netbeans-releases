@@ -170,6 +170,17 @@ SystemFileSystem
             </file>
         </folder>  
 
+        <folder name="ExternalJavadocProcess">
+            <attr name="hidden" boolvalue="true"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
+
+            <file name="javadoc_external_process.settings" url="javadoc_external_process.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
+                <attr name="SystemFileSystem.layer" stringvalue="project"/>
+            </file>
+         </folder>   
     </folder>
 
 <!--  Templates part -->
@@ -219,6 +230,17 @@ SystemFileSystem
               <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
             </file>
           </folder>  
+
+          <folder name="ExternalJavadocProcess">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
+
+            <file name="javadoc_external_process.settings" url="javadoc_external_process.settings">
+              <attr name="template" boolvalue="true"/>
+              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.Bundle"/>
+              <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
+            </file>    
+          </folder>
       </folder>
    </folder>
 

@@ -45,9 +45,9 @@ public class DocumentationSettings extends SystemOption {
     private static final String PROP_AUTOCOMENT_MOD_MASK = "autocommentModifierMask";   //NOI18N
     private static final String PROP_AUTOCOMENT_PACKAGE  = "autocommentPackage";   //NOI18N
     private static final String PROP_AUTOCOMENT_ERR_MASK = "autocommentErrorMask";   //NOI18N
-    private static final String PROP_EXECUTOR            = "executorEngine";       //NOI18N
+    private static final String PROP_EXECUTOR            = "executor";       //NOI18N
     private static final String PROP_SEARCH              = "searchEngine";   //NOI18N
-    private static final String PROP_FS_SETTING          = "filesystemSetting";   //NOI18N
+    private static final String PROP_FS_SETTING          = "filesystemSettings";   //NOI18N
     private static final String PROP_ASK_BEFORE_GEN      = "askBeforeGenerating";   //NOI18N
     private static final String PROP_ASK_AFTER_GEN       = "askAfterGenerating";   //NOI18N
        
@@ -70,12 +70,6 @@ public class DocumentationSettings extends SystemOption {
             setAutocommentPackage(false);        
         if( getProperty( PROP_AUTOCOMENT_ERR_MASK ) == null )
             setAutocommentErrorMask(AutoCommenter.JDC_OK | AutoCommenter.JDC_ERROR | AutoCommenter.JDC_MISSING);
-        if( getProperty( PROP_EXECUTOR ) == null )
-            setExecutor( new ExternalJavadocSettingsService() );
-        if( getProperty( PROP_SEARCH ) == null )
-            setSearchEngine( new Jdk12SearchType() );
-        if( getFileSystemSettings() == null )
-            setFileSystemSettings( new java.util.HashMap() );
         if( getProperty( PROP_ASK_BEFORE_GEN ) == null )
             setAskBeforeGenerating( false );
         if( getProperty( PROP_ASK_AFTER_GEN ) == null )
@@ -207,30 +201,28 @@ public class DocumentationSettings extends SystemOption {
     public ServiceType getExecutor() {
         JavadocType.Handle javadocType = (JavadocType.Handle)getProperty( PROP_EXECUTOR );
         JavadocType type = null;
-        
         if (javadocType != null) {
             type = (JavadocType)javadocType.getServiceType();
         }
         if (type == null) {
-            return setDefaultJavadocExecutor();
+            if (isWriteExternal()) {
+                return null;
+            }
+            return (JavadocType)Lookup.getDefault().lookup(org.netbeans.modules.javadoc.settings.ExternalJavadocSettingsService.class);
 	}
         return type;        
     }
-    
-    JavadocType setDefaultJavadocExecutor() {
-        JavadocType javadocType = (JavadocType)Lookup.getDefault().lookup(ExternalJavadocSettingsService.class);
-        //ServiceType.Registry.find("org.netbeans.ExternalJavadocSettingsService");
-        //ServiceType
-        //new ExternalJavadocSettingsService();
-        setExecutor(javadocType);
-        return javadocType;        
-    }    
-    
+        
     /** Setter for property executor.
      * @param executor New value of property executor.
      */
     public void setExecutor(ServiceType executor) {
-        putProperty( PROP_EXECUTOR , new JavadocType.Handle(executor), true );        
+        if (executor == null &&
+            isReadExternal()) {
+            putProperty(PROP_EXECUTOR, null, true);
+        } else {
+            putProperty( PROP_EXECUTOR , new JavadocType.Handle(executor), true );        
+	}
     }
     
     /** Getter for property search.
@@ -244,22 +236,24 @@ public class DocumentationSettings extends SystemOption {
             type = (JavadocSearchType)searchType.getServiceType();
         }
         if (type == null) {
-            return setDefaultJavadocSearchType();
+            if (isWriteExternal()) {
+                return null;
+            }
+            return (JavadocSearchType)Lookup.getDefault().lookup(org.netbeans.modules.javadoc.search.Jdk12SearchType.class);
 	}
         return type;        
     }    
     
-    JavadocSearchType setDefaultJavadocSearchType() {
-        JavadocSearchType searchType = new Jdk12SearchType();
-        setSearchEngine(searchType);
-        return searchType;        
-    }    
-
     /** Setter for property search.
      * @param search New value of property search.
     */
     public void setSearchEngine(ServiceType search) {
-        putProperty( PROP_SEARCH , new JavadocSearchType.Handle( search ), true );
+        if (search == null &&
+            isReadExternal()) {
+            putProperty(PROP_SEARCH, null, true);
+        } else {
+            putProperty( PROP_SEARCH , new JavadocSearchType.Handle( search ), true );
+	}        
     }    
 
     
