@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/* $Id$ */
 
 package org.netbeans.modules.form.editors2;
 
