@@ -42,9 +42,8 @@ Microsystems, Inc. All Rights Reserved.
           tofile="versioning-tmp/org/netbeans/core/Versioning.properties"
 	  filtering="on"/>
     <jar jarfile="netbeans/lib/developer.jar"
-	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false">
-      <fileset dir="src">
+      <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt">
         <exclude name="org/netbeans/core/Versioning.properties"/>
       </fileset>
       <fileset dir="versioning-tmp"/>
