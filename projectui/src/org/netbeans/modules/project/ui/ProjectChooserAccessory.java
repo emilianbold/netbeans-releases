@@ -109,6 +109,8 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         add(jLabelProjectName, gridBagConstraints);
+        jLabelProjectName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectChooserAccessory.class, "AN_ProjectName"));
+        jLabelProjectName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectChooserAccessory.class, "AD_ProjectName"));
 
         jTextFieldProjectName.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -411,6 +413,12 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         chooser.setDialogTitle( NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_Title" ) ); // NOI18N
         chooser.setFileFilter( ProjectDirFilter.INSTANCE );        
         chooser.setAcceptAllFileFilterUsed( false );
+        
+        // A11Y
+        chooser.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectChooserAccessory.class, "AN_ProjectChooserAccessory"));
+        chooser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectChooserAccessory.class, "AD_ProjectChooserAccessory"));
+
+        
         if ( defaultAccessory ) {
             chooser.setAccessory( new ProjectChooserAccessory( chooser, opls.isOpenSubprojects(), opls.isOpenAsMain() ) );
         }
