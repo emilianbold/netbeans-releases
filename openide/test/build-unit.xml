@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project basedir="." default="all" name="build-unit">
-    
+    <import file="../../nbbuild/default.xml"/>
+    <property file="../../nbbuild/directories.properties"/>
+
     <path id="compiletest.classpath">   
+        <pathelement location="${core.dir}/${nb.lib.dir}/org-netbeans-swing-plaf.jar"/>
+        <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-swing-tabcontrol.jar"/>
         <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
         <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
         <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
@@ -18,6 +22,8 @@
         <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
         <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
         <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+        <pathelement location="${core.dir}/${nb.lib.dir}/org-netbeans-swing-plaf.jar"/>
+        <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-swing-tabcontrol.jar"/>
         <pathelement location="${core/windows.dir}/${nb.modules.dir}/org-netbeans-core-windows.jar"/>
         <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
         <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
