@@ -241,7 +241,7 @@
 	<tocitem text="Configuring and Building Web Services" >
 		 <tocitem text="Setting Wscompile Features for a Web Service" target="select_wscompile_ws" />
  		 <tocitem text="Building a Web Service" target="build_ws" />
-                 <tocitem text="Tweaking the WSDL File" target="about_wsdl" />
+                 <tocitem text="Tweaking the WSDL File by Hand" target="about_wsdl" />
 	 </tocitem>
 	 <tocitem text="Exposing and Testing Web Services" >
                  <tocitem text="Exposing a Web Service" target="expose_ws" />
