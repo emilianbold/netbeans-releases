@@ -110,28 +110,22 @@ public class StructHandler extends Object {
 
     /** Starts parsing task. Tries to cancel previous parsing task if it is not running yet. */
     void autoParse() {
-        // Time to wait before start the parsing task.
-        // If no parsing task running yet, set delay time to 0.
-        int delayTime = 0;
-
         Task previousTask = (Task)parsingTaskWRef.get();
         if(previousTask != null) {
-            if(!previousTask.cancel() && !previousTask.isFinished())
-                // Previous task was not cancelled and is running currently -> next task delay time set to 500 milllis.
-                delayTime = 500;
-        }
-
-        // Request parsing to start after 'delayTime' milliseconds.
-        parsingTaskWRef = new WeakReference(
-            RequestProcessor.postRequest(
-                new Runnable() {
-                    public void run() {
-                        reparseNowBlocking();
+            // There was previous task already, reschedule it 500 ms later.
+            previousTask.schedule(500);
+        } else {
+            // Create a new task, and schedule it immediatelly.
+            parsingTaskWRef = new WeakReference(
+                RequestProcessor.postRequest(
+                    new Runnable() {
+                        public void run() {
+                            reparseNowBlocking();
+                        }
                     }
-                },
-                delayTime
-            )
-        );
+                )
+            );
+        }
     }
 
     /** When parser finishes its job, it's called this method to set new values.
