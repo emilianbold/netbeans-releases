@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
 <answer id="arch-what">
 The debuggerjpda module supports debugging of Java applications. 
 
-<api name="JPDADebuggerAPI" type="export" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" />
+<api name="JPDADebuggerAPI" type="export" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" group="java"/>
 See <a href="http://debugger.netbeans.org/">debugger.netbeans.org</a> and
  <a href="http://debuggercore.netbeans.org/">debuggercore.netbeans.org</a>
 for more information.
@@ -154,14 +154,14 @@ We would like to test 100% of our APIs.
         </question>
 -->
 <answer id="dep-nb">
-    <api name="OpenAPIs" type="import" category="official" url="http://openide.netbeans.org"/> 
-    <api name="DebuggerCoreAPI" type="import" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html"/> 
-    <api name="JavaHierarchyAPI" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/JavaHierarchyAPI/index.html"/>
-    <api name="JavaAPI" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/JavaHierarchyAPI/index.html"/>
+    <api name="OpenAPIs" type="import" category="official" url="http://openide.netbeans.org" group="java"/>
+    <api name="DebuggerCoreAPI" type="import" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" group="java"/>
+    <api name="JavaHierarchyAPI" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/JavaHierarchyAPI/index.html" group="java"/>
+    <api name="JavaAPI" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/JavaHierarchyAPI/index.html" group="java"/>
     <api name="ExecutionAPI" url="http://www.netbeans.org/download/dev/javadoc/ExecutionAPI/org/openide/execution/doc-files/api.html"
-      type="import" category="official"
+      type="import" category="official" group="java"
     />
-    <api name="OpenAPIs" type="import" category="official" url="http://openide.netbeans.org"/> 
+    <api name="OpenAPIs" type="import" category="official" url="http://openide.netbeans.org" group="java"/>
 </answer>
 
 
@@ -677,6 +677,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger/1,
         </question>
 -->
 <answer id="format-clipboard">
+    <!-- XXX huh?? -->
     <ul>
     <li>custom DataFlavor type referencing own structures (for copy/cut/paste)</li>
     <li>standard Open API's NodeTransfer.cookie for InstanceCookie (just for pasting):

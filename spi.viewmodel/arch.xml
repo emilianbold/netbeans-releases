@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
 <answer id="arch-what">
 The debuggercore/viewmodel module (View Model) allows to share one TreeTableView among different modules. 
 
-<api name="ViewModel" type="import" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html"/>
+<api name="ViewModel" type="import" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" group="java"/>
 
 See <a href="http://debugger.netbeans.org/">debugger.netbeans.org</a> and
  <a href="http://debuggercore.netbeans.org/">debuggercore.netbeans.org</a>
@@ -155,7 +155,7 @@ We would like to test 100% of our APIs.
         </question>
 -->
 <answer id="dep-nb">
-    <api name="OpenAPIs" type="import" category="official" url="http://openide.netbeans.org"/> 
+    <api name="OpenAPIs" type="import" category="official" url="http://openide.netbeans.org" group="java"/> 
 </answer>
 
 

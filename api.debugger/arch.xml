@@ -41,10 +41,10 @@ Microsystems, Inc. All Rights Reserved.
 <answer id="arch-what">
 The debuggercore/api module (Debugger Core API) allows to install different debugger implementation to one IDE. 
 It allows to share some common UI components. 
-
-<ul> List of APIs:
-<li><api name="DebuggerCoreAPI" type="export" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Debugger Core APIs</li>
-<li><api name="DebuggerCoreSPI" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Debugger Core SPIs</li>
+List of APIs:
+<ul>
+<li><api name="DebuggerCoreAPI" type="export" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html" group="java"/>Debugger Core APIs</li>
+<li><api name="DebuggerCoreSPI" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html" group="java"/>Debugger Core SPIs</li>
 
 <li><api name="Meta-inf/debugger/org.netbeans.api.debugger.Properties$Reader" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all property readers from given folder.</li>
 <li><api name="Meta-inf/debugger/&lt;DebuggerInfo-ID&gt;/org.netbeans.spi.debugger.SessionProvider" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Loads all session providers for specific DebuggerInfo.</li>
@@ -177,7 +177,7 @@ We would like to test 100% of our APIs.
         </question>
 -->
 <answer id="dep-nb">
-    <api name="OpenAPIs" type="import" category="official" url="http://openide.netbeans.org"/> 
+    <api name="OpenAPIs" type="import" category="official" url="http://openide.netbeans.org" group="java"/> 
 </answer>
 
 

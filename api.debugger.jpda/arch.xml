@@ -40,10 +40,10 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <answer id="arch-what">
 The debuggerjpda/api (Debugger JPDA API) defines API for NetBeans Java Debugger. 
-
-<ul> List of APIs:
-<li><api name="JPDADebuggerAPI" type="export" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" /></li>
-<li><api name="JPDADebuggerSPI" type="import" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" /></li>
+List of APIs:
+<ul>
+<li><api name="JPDADebuggerAPI" type="export" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" group="java"/></li>
+<li><api name="JPDADebuggerSPI" type="import" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" group="java"/></li>
 
 <li><api name="Meta-inf/debugger/netbeans-JPDASession/Java/org.netbeans.spi.debugger.jpda.JPDADebugger" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
 <li><api name="Meta-inf/debugger/netbeans-JPDASession/org.netbeans.spi.debugger.jpda.JPDADebugger" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
@@ -162,9 +162,9 @@ We would like to test 100% of our APIs.
         </question>
 -->
 <answer id="dep-nb">
-    <api name="OpenAPIs" type="import" category="official" url="http://openide.netbeans.org"/> 
-    <api name="DebuggerCoreAPI" type="import" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html"/> 
-    <api name="ViewModelAPI" type="import" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html"/> 
+    <api name="OpenAPIs" type="import" category="official" url="http://openide.netbeans.org" group="java"/>
+    <api name="DebuggerCoreAPI" type="import" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" group="java"/>
+    <api name="ViewModelAPI" type="import" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" group="java"/>
 </answer>
 
 
