@@ -163,35 +163,33 @@ public class EditorModule extends ModuleInstall {
          searchSelectedPatternListener = new PropertyChangeListener(){
              
              public void propertyChange(PropertyChangeEvent evt){
-                 if (evt == null){
+                 if (evt == null || !SearchHistory.LAST_SELECTED.equals(evt.getPropertyName())){
                      return;
                  }
-
-                 FindSupport fs = FindSupport.getFindSupport();                 
-                 if (SearchHistory.LAST_SELECTED.equals(evt.getPropertyName())){
-                     //System.out.println("API -> editor:");                
-                     SearchPattern sp = SearchHistory.getDefault().getLastSelected();
-                     if (sp==null){
-                         return;
-                     }
-
-                     FindSupport.SearchPatternWrapper spw = new FindSupport.SearchPatternWrapper(sp.getSearchExpression(),
-                             sp.isWholeWords(), sp.isMatchCase(), sp.isRegExp());
-                     //System.out.println("spw:"+spw);
-                     fs.setLastSelected(spw);
-                 } else if (SearchHistory.ADD_TO_HISTORY.equals(evt.getPropertyName())){
-                     List searchPatterns = SearchHistory.getDefault().getSearchPatterns();
-
-                     List history = new ArrayList();
-                     for (int i = 0; i<searchPatterns.size(); i++){
-                         SearchPattern sptr = ((SearchPattern)searchPatterns.get(i));
-                         SearchPatternWrapper spwrap = new SearchPatternWrapper(sptr.getSearchExpression(),
-                                 sptr.isWholeWords(), sptr.isMatchCase(), sptr.isRegExp());
-                         history.add(spwrap);
-                     }
-
-                     fs.setHistory(history);
+                 //System.out.println("");
+                 //System.out.println("API -> editor:");                
+                 FindSupport fs = FindSupport.getFindSupport();
+                 SearchPattern sp = SearchHistory.getDefault().getLastSelected();
+                 if (sp==null){
+                     return;
                  }
+                 
+                 FindSupport.SearchPatternWrapper spw = new FindSupport.SearchPatternWrapper(sp.getSearchExpression(),
+                         sp.isWholeWords(), sp.isMatchCase(), sp.isRegExp());
+                 //System.out.println("spw:"+spw);
+                 fs.setLastSelected(spw);
+                 
+                 List searchPatterns = SearchHistory.getDefault().getSearchPatterns();
+ 
+                 List history = new ArrayList();
+                 for (int i = 0; i<searchPatterns.size(); i++){
+                     SearchPattern sptr = ((SearchPattern)searchPatterns.get(i));
+                     SearchPatternWrapper spwrap = new SearchPatternWrapper(sptr.getSearchExpression(),
+                             sptr.isWholeWords(), sptr.isMatchCase(), sptr.isRegExp());
+                     history.add(spwrap);
+                 }
+ 
+                 fs.setHistory(history);
              }
          };
          

@@ -53,19 +53,8 @@ public final class SearchHistory {
     /** Singleton instance */
     private static SearchHistory INSTANCE = null;
     
-    /** Property name for last selected search pattern
-     *  Firing: 
-     *  oldValue - old selected pattern
-     *  newValue - new selected pattern
-     */
+    /** Property name for last selected search pattern */
     public final static String LAST_SELECTED = "last-selected"; //NOI18N
-    
-    /** Property name for adding pattern to history
-     *  Firing:
-     *  oldValue - null
-     *  newValue - added pattern
-     */
-    public final static String ADD_TO_HISTORY = "add-to-history"; //NOI18N
     
     /** Creates a new instance of SearchHistory */
     private SearchHistory() {
@@ -127,19 +116,10 @@ public final class SearchHistory {
      *  @param pattern the SearchPattern to add
      */
     public synchronized void add(SearchPattern pattern){
-        if (pattern == null || pattern.getSearchExpression() == null || pattern.getSearchExpression().length() == 0){
-            return;
-        }
-        if (searchPatternsList.size()>0 && pattern.equals(searchPatternsList.get(0))){
-            return;
-        }
         if (searchPatternsList.size() == MAX_SEARCH_PATTERNS_ITEMS){
             searchPatternsList.remove(MAX_SEARCH_PATTERNS_ITEMS-1);
         }
         searchPatternsList.add(0, pattern);
-        if (pcs != null){
-            pcs.firePropertyChange(ADD_TO_HISTORY, null, pattern);
-        }
     }
     
 }
