@@ -1,122 +1,122 @@
-Annotations Cycling [annotations-cycling]
-Beep [beep]
-Build Popup Menu [build-popup-menu]
-Build Tool Tip [build-tool-tip]
-Comment [comment]
-Copy [copy-to-clipboard]
-Cut [cut-to-clipboard]
-Debug Filename and Line Number [abbrev-debug-line]
-Debug Identifier [macro-debug-var]
-Default Typed [default-typed]
-Delete Line [remove-line]
-Delete Next Character [delete-next]
-Delete Preceding Characters in Line [remove-line-begin]
-Delete Previous Character [delete-previous]
-Delete Selection [remove-selection]
-Delete Tab [remove-tab]
-Delete Word [remove-word]
-Expand Abbreviation [abbrev-expand]
-Extend Selection Back [selection-previous-word]
-Extend Selection Backward [selection-backward]
-Extend Selection Down [selection-down]
-Extend Selection Forward [selection-forward]
-Extend Selection to Beginning of Document [selection-begin]
-Extend Selection to Beginning of Line [selection-line-first-column]
-Extend Selection to Beginning of Text on Line [selection-begin-line]
-Extend Selection to Beginning of Word [selection-begin-word]
-Extend Selection to End of Document [selection-end]
-Extend Selection to End of Line [selection-end-line]
-Extend Selection to End of Word [selection-end-word]
-Extend Selection to First Non-whitespace Char [selection-first-non-white]
-Extend Selection to Last Non-whitespace Char [selection-last-non-white]
-Extend Selection to Matching Brace [selection-match-brace]
-Extend Selection to Next Page [selection-page-down]
-Extend Selection to Next Word [selection-next-word]
-Extend Selection to Previous Page [selection-page-up]
-Extend Selection Up [selection-up]
-Fast Import [fast-import]
-Find [find]
-Find Next Occurrence [find-next]
-Find Previous Occurrence [find-previous]
-Find Selection [find-selection]
-generate-goto-popup [generate-goto-popup]
-Go to Declaration [goto-declaration]
-Go to First Non-whitespace Char [first-non-white]
-Go to Last Non-whitespace Char [last-non-white]
-Go to Line [goto]
-Go to Source [goto-source]
-Goto Javadoc [goto-help]
-Hide Code Completion [completion-hide]
-Hide Completion and JavaDoc Window [jdc-popup-hide]
-Insert Content [insert-content]
-Insert Current Date and Time [insert-date-time]
-Insert Newline [insert-break]
-Insert Tab [insert-tab]
-Insertion Point Backward [caret-backward]
-Insertion Point Down [caret-down]
-Insertion Point Forward [caret-forward]
-Insertion Point to Beginning of Document [caret-begin]
-Insertion Point to Beginning of Line [caret-line-first-column]
-Insertion Point to Beginning of Text on Line [caret-begin-line]
-Insertion Point to Beginning of Word [caret-begin-word]
-Insertion Point to End of Document [caret-end]
-Insertion Point to End of Line [caret-end-line]
-Insertion Point to End of Word [caret-end-word]
-Insertion Point to Next Word [caret-next-word]
-Insertion Point to Previous Word [caret-previous-word]
-Insertion Point Up [caret-up]
-Jump to Next Edit [jump-list-next]
-Jump to Next Edit Cross Window [jump-list-next-component]
-Jump to Previous Edit [jump-list-prev]
-Jump to Previous Edit Cross Window [jump-list-prev-component]
-Margin [generate-gutter-popup]
-Match Brace [match-brace]
-Move Insertion Point to Bottom [adjust-caret-bottom]
-Move Insertion Point to Center [adjust-caret-center]
-Move Insertion Point to Top [adjust-caret-top]
-Next Bookmark [bookmark-next]
-Next Matching Word [word-match-next]
-Page Down [page-down]
-Page Up [page-up]
-Paste [paste-from-clipboard]
-Previous Matching Word [word-match-prev]
-Redo [redo]
-Reformat Code [format]
-Replace [replace]
-Replace Variable With its Getter [make-getter]
-Replace Variable With its is* Method [make-is]
-Replace Variable With its Setter [make-setter]
-Reset Abbreviation [abbrev-reset]
-Scroll Down [scroll-down]
-Scroll Insertion Point to Bottom [adjust-window-bottom]
-Scroll Insertion Point to Center [adjust-window-center]
-Scroll Insertion Point to Top [adjust-window-top]
-Scroll Up [scroll-up]
-Select All [select-all]
-Select Identifier [select-identifier]
-Select Line [select-line]
-Select Next Parameter [select-next-parameter]
-Select Word [select-word]
-Set Read Only [set-read-only]
-Set Writable [set-writable]
-Shift Line Left [shift-line-left]
-Shift Line Right [shift-line-right]
-Show Code Completion [completion-show]
-Show Completion and JavaDoc Window [jdc-popup-show]
-Show Popup Menu [show-popup-menu]
-Show the JavaDoc Window [javadoc-show-action]
-Simulate Escape Key [escape]
-Start Macro Recording [start-macro-recording]
-Stop Macro Recording [stop-macro-recording]
-Substitute Code Completion Text [shift-insert-break]
-Switch Capitalization of Identifier [toggle-case-identifier-begin]
-Switch Case [switch-case]
-To Lowercase [to-lower-case]
-To Uppercase [to-upper-case]
-Toggle Bookmark [bookmark-toggle]
-Toggle Highlight Search [toggle-highlight-search]
-Toggle Line Numbers [toggle-line-numbers]
-Toggle Typing Mode [toggle-typing-mode]
-toggle-toolbar [toggle-toolbar]
-Uncomment [uncomment]
-Undo [undo]
+Annotations Cycling [annotations-cycling]: Ctrl+Shift+C 
+Beep [beep]: 
+Build Popup Menu [build-popup-menu]: 
+Build Tool Tip [build-tool-tip]: 
+Comment [comment]: Ctrl+Shift+T 
+Copy [copy-to-clipboard]: Ctrl+C Ctrl+Insert Copy 
+Cut [cut-to-clipboard]: Shift+Delete Ctrl+X Cut 
+Debug Filename and Line Number [abbrev-debug-line]: 
+Debug Identifier [macro-debug-var]: Ctrl+J D 
+Default Typed [default-typed]: 
+Delete Line [remove-line]: Ctrl+E 
+Delete Next Character [delete-next]: Delete 
+Delete Preceding Characters in Line [remove-line-begin]: Ctrl+U 
+Delete Previous Character [delete-previous]: Backspace Shift+Backspace 
+Delete Selection [remove-selection]: 
+Delete Tab [remove-tab]: Shift+Tab 
+Delete Word [remove-word]: Ctrl+W 
+Expand Abbreviation [abbrev-expand]: 
+Extend Selection Back [selection-previous-word]: Ctrl+Shift+Left 
+Extend Selection Backward [selection-backward]: Shift+Left 
+Extend Selection Down [selection-down]: Shift+Down 
+Extend Selection Forward [selection-forward]: Shift+Right 
+Extend Selection Up [selection-up]: Shift+Up 
+Extend Selection to Beginning of Document [selection-begin]: Ctrl+Shift+Home 
+Extend Selection to Beginning of Line [selection-line-first-column]: 
+Extend Selection to Beginning of Text on Line [selection-begin-line]: Shift+Home 
+Extend Selection to Beginning of Word [selection-begin-word]: 
+Extend Selection to End of Document [selection-end]: Ctrl+Shift+End 
+Extend Selection to End of Line [selection-end-line]: Shift+End 
+Extend Selection to End of Word [selection-end-word]: 
+Extend Selection to First Non-whitespace Char [selection-first-non-white]: 
+Extend Selection to Last Non-whitespace Char [selection-last-non-white]: 
+Extend Selection to Matching Brace [selection-match-brace]: Ctrl+Shift+[ 
+Extend Selection to Next Page [selection-page-down]: Shift+Page Down 
+Extend Selection to Next Word [selection-next-word]: Ctrl+Shift+Right 
+Extend Selection to Previous Page [selection-page-up]: Shift+Page Up 
+Fast Import [fast-import]: Alt+Shift+I 
+Find Next Occurrence [find-next]: F3 
+Find Previous Occurrence [find-previous]: Shift+F3 
+Find Selection [find-selection]: Ctrl+F3 
+Find [find]: Ctrl+F Find 
+Go to Declaration [goto-declaration]: Alt+G 
+Go to First Non-whitespace Char [first-non-white]: 
+Go to Last Non-whitespace Char [last-non-white]: 
+Go to Line [goto]: Ctrl+G 
+Go to Source [goto-source]: Alt+O 
+Goto Javadoc [goto-help]: Alt+F1 
+Hide Code Completion [completion-hide]: 
+Hide Completion and JavaDoc Window [jdc-popup-hide]: 
+Insert Content [insert-content]: 
+Insert Current Date and Time [insert-date-time]: 
+Insert Newline [insert-break]: Enter 
+Insert Tab [insert-tab]: Tab 
+Insertion Point Backward [caret-backward]: Left NumPad-Left 
+Insertion Point Down [caret-down]: Down NumPad-Down 
+Insertion Point Forward [caret-forward]: Right NumPad-Right 
+Insertion Point Up [caret-up]: Up NumPad-Up 
+Insertion Point to Beginning of Document [caret-begin]: Ctrl+Home 
+Insertion Point to Beginning of Line [caret-line-first-column]: 
+Insertion Point to Beginning of Text on Line [caret-begin-line]: Home 
+Insertion Point to Beginning of Word [caret-begin-word]: 
+Insertion Point to End of Document [caret-end]: Ctrl+End 
+Insertion Point to End of Line [caret-end-line]: End 
+Insertion Point to End of Word [caret-end-word]: Alt+U E 
+Insertion Point to Next Word [caret-next-word]: Ctrl+Right 
+Insertion Point to Previous Word [caret-previous-word]: Ctrl+Left 
+Jump to Next Edit Cross Window [jump-list-next-component]: Alt+Shift+L 
+Jump to Next Edit [jump-list-next]: Alt+L 
+Jump to Previous Edit Cross Window [jump-list-prev-component]: Alt+Shift+K 
+Jump to Previous Edit [jump-list-prev]: Alt+K 
+Margin [generate-gutter-popup]: 
+Match Brace [match-brace]: Ctrl+[ 
+Move Insertion Point to Bottom [adjust-caret-bottom]: Alt+Shift+B 
+Move Insertion Point to Center [adjust-caret-center]: Alt+Shift+M 
+Move Insertion Point to Top [adjust-caret-top]: Alt+Shift+T 
+Next Bookmark [bookmark-next]: F2 
+Next Matching Word [word-match-next]: Ctrl+L 
+Page Down [page-down]: Page Down 
+Page Up [page-up]: Page Up 
+Paste [paste-from-clipboard]: Ctrl+V Shift+Insert Paste 
+Previous Matching Word [word-match-prev]: Ctrl+K 
+Redo [redo]: Ctrl+Y 
+Reformat Code [format]: Ctrl+Shift+F 
+Replace Variable With its Getter [make-getter]: Alt+U G 
+Replace Variable With its Setter [make-setter]: Alt+U S 
+Replace Variable With its is* Method [make-is]: Alt+U I 
+Replace [replace]: Ctrl+H 
+Reset Abbreviation [abbrev-reset]: Shift+Space 
+Scroll Down [scroll-down]: Ctrl+Up 
+Scroll Insertion Point to Bottom [adjust-window-bottom]: Alt+U B 
+Scroll Insertion Point to Center [adjust-window-center]: Alt+U M 
+Scroll Insertion Point to Top [adjust-window-top]: Alt+U T 
+Scroll Up [scroll-up]: Ctrl+Down 
+Select All [select-all]: Ctrl+A 
+Select Identifier [select-identifier]: Alt+J 
+Select Line [select-line]: 
+Select Next Parameter [select-next-parameter]: Ctrl+M 
+Select Word [select-word]: 
+Set Read Only [set-read-only]: 
+Set Writable [set-writable]: 
+Shift Line Left [shift-line-left]: Ctrl+D 
+Shift Line Right [shift-line-right]: Ctrl+T 
+Show Code Completion [completion-show]: Ctrl+Space Ctrl+\ 
+Show Completion and JavaDoc Window [jdc-popup-show]: 
+Show Popup Menu [show-popup-menu]: Shift+F10 
+Show the JavaDoc Window [javadoc-show-action]: Ctrl+Shift+Space 
+Simulate Escape Key [escape]: Escape 
+Start Macro Recording [start-macro-recording]: Ctrl+J S 
+Stop Macro Recording [stop-macro-recording]: Ctrl+J E 
+Substitute Code Completion Text [shift-insert-break]: Shift+Enter 
+Switch Capitalization of Identifier [toggle-case-identifier-begin]: 
+Switch Case [switch-case]: Alt+U R 
+To Lowercase [to-lower-case]: Alt+U L 
+To Uppercase [to-upper-case]: Alt+U U 
+Toggle Bookmark [bookmark-toggle]: Ctrl+F2 
+Toggle Highlight Search [toggle-highlight-search]: Alt+Shift+H 
+Toggle Line Numbers [toggle-line-numbers]: 
+Toggle Typing Mode [toggle-typing-mode]: Insert 
+Uncomment [uncomment]: Ctrl+Shift+D 
+Undo [undo]: Ctrl+Z Undo 
+generate-goto-popup [generate-goto-popup]: 
+toggle-toolbar [toggle-toolbar]: 

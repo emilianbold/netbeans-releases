@@ -16,6 +16,7 @@ package org.netbeans.test.editor.suites.keybindings;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.util.*;
 import java.util.List;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.EditorOperator;
@@ -45,13 +46,22 @@ public class CheckActionsListPerformer extends JellyTestCase {
         log("doTest start");
         log("Editor name: "+editorName);
         try {
+            Hashtable table;
             log("Grabbing actions...");
-            List list = KeyBindings.listActions(editorName);
+            table = KeyBindings.listAllKeyBindings(editorName);
+            Object[] keys=table.keySet().toArray();
+            Arrays.sort(keys);
+            List list;
             log("Writting to ref file...");
             File f=new File(getWorkDir(),editorName+" actions.ref");
             PrintWriter pw=new PrintWriter(new FileWriter(f));
-            for (int i=0;i < list.size();i++) {
-                pw.println(list.get(i));
+            for (int i=0;i < keys.length;i++) {
+                pw.print(keys[i]+": ");
+                list=(List)table.get(keys[i]);
+                for (int j=0;j < list.size();j++) {
+                    pw.print(list.get(j)+" ");
+                }
+                pw.println();
             }
             pw.close();
         } finally {
