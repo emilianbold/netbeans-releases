@@ -97,7 +97,7 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
     <!-- A typed or generic source root. Also has a display name and maybe a type parameter (e.g. 'java'). -->
     <xsd:complexType name="maybe-typed-source-root">
         <xsd:sequence>
-            <xsd:element name="name" type="xsd:token"/>
+            <xsd:element name="label" type="xsd:token"/>
             <xsd:element name="type" type="xsd:NMTOKEN" minOccurs="0"/>
             <xsd:element name="location" type="substitutable-text"/>
         </xsd:sequence>
@@ -148,7 +148,10 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
             <xsd:choice minOccurs="0" maxOccurs="unbounded">
                 <xsd:element name="source-folder">
                     <xsd:complexType>
-                        <xsd:attribute name="refid" type="xsd:IDREF" use="required"/>
+                        <xsd:sequence>
+                            <xsd:element name="label" type="xsd:token" minOccurs="0"/>
+                            <xsd:element name="location" type="substitutable-text"/>
+                        </xsd:sequence>
                         <xsd:attribute name="style" type="xsd:NMTOKEN" use="required"/>
                     </xsd:complexType>
                 </xsd:element>
@@ -156,6 +159,7 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
                     <xsd:complexType>
                         <xsd:sequence>
                             <xsd:element name="location" type="substitutable-text"/>
+                            <xsd:element name="label" type="xsd:token" minOccurs="0"/>
                         </xsd:sequence>
                     </xsd:complexType>
                 </xsd:element>

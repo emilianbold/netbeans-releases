@@ -13,26 +13,31 @@
 
 package org.netbeans.modules.ant.freeform;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.util.Lookup;
 
+// XXX testClassPathProvider
+// XXX testSourceForBinaryQuery
+// XXX testSourceLevelQuery
 // XXX testAuxiliaryConfiguration
 // XXX testCacheProvider
-// XXX testClassPathProvider
 // XXX testSubprojectProvider
 // XXX testGlobalPathRegistryUsage
-// XXX testBasicActions
 // XXX testContextActions
 // XXX testLogicalViewItems
 // XXX testLogicalViewActions
 // XXX testAntArtifact
 // XXX testExternalSourceRoots
-// XXX testSourceForBinaryQuery
-// XXX testSourceLevelQuery
 
 /**
  * Test functionality of FreeformProject.
@@ -68,6 +73,17 @@ public class FreeformProjectTest extends TestBase {
         assertEquals("right display name #1", "Main Sources", groups[0].getDisplayName());
         assertEquals("right root folder #2", simple.getProjectDirectory().getFileObject("antsrc"), groups[1].getRootFolder());
         assertEquals("right display name #2", "Ant Task Sources", groups[1].getDisplayName());
+    }
+    
+    public void testBasicActions() throws Exception {
+        ActionProvider ap = (ActionProvider)simple.getLookup().lookup(ActionProvider.class);
+        assertNotNull("have an action provider", ap);
+        List/*<String>*/ actionNames = new ArrayList(Arrays.asList(ap.getSupportedActions()));
+        Collections.sort(actionNames);
+        assertEquals("right action names", Arrays.asList(new String[] {"build", "clean", "javadoc", "rebuild", "run"}), actionNames);
+        assertTrue("clean is enabled", ap.isActionEnabled("clean", Lookup.EMPTY));
+        // XXX actually test running the action? how to know when it is done though? there is no API for that...
+        // when Ant logger API is available, could provide a null InputOutput impl, and test that the right messages are logged
     }
     
 }

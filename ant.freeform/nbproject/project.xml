@@ -76,6 +76,12 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>4.33</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.openide.execution</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
             </module-dependencies>
             <public-packages/>
         </data>
