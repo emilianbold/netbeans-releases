@@ -770,6 +770,7 @@ Comments or questions? Post to the dev@openide.netbeans.org mailing list.
         <fail unless="test.includes">Must set test.includes</fail>
         <mkdir dir="${build.test.unit.results.dir}"/>
         <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
+            <jvmarg value="-ea" />
             <batchtest todir="test/results">
                 <fileset dir="test/unit/src" includes="${test.includes}"/>
             </batchtest>
@@ -801,6 +802,7 @@ Comments or questions? Post to the dev@openide.netbeans.org mailing list.
         </nbjpdastart>
         
         <java fork="true" classname="junit.textui.TestRunner">
+            <jvmarg value="-ea" />
             <jvmarg value="-Xdebug"/>
             <jvmarg value="-Xnoagent"/>
             <jvmarg value="-Djava.compiler=none"/>
