@@ -46,6 +46,15 @@ class FileMapStorage implements Storage {
      * and if more than the currently mapped bytes are requested, the
      * contents bufffer will be replaced by a larger one */
     private long mappedRange;
+    
+    /**
+     * max possible range to map.. 20 MB
+     */
+    private final long MAX_MAP_RANGE = 1024 * 1024 * 20;
+    /**
+     * start of the mapped range..
+     */
+    private long mappedStart;
     /**
      * The currently in use buffer.
      */
@@ -58,6 +67,8 @@ class FileMapStorage implements Storage {
      * The file we are writing to.
      */
     private File outfile = null;
+    
+    private int outstandingBufferCount = 0;
 
     FileMapStorage() {
         init();
@@ -66,6 +77,7 @@ class FileMapStorage implements Storage {
     private void init() {
         contents = null;
         mappedRange = -1;
+        mappedStart = 0;
         master = ByteBuffer.allocateDirect (BASE_BUFFER_SIZE);
         readChannel = null;
         writeChannel = null;
@@ -175,7 +187,6 @@ class FileMapStorage implements Storage {
         outstandingBufferCount++;
         return buffer;
     }
-    private int outstandingBufferCount = 0;
 
     /**
      * Dispose of a ByteBuffer which has been acquired for writing by one of
@@ -240,32 +251,34 @@ class FileMapStorage implements Storage {
      * into memory if it is not already mapped.
      */
     public ByteBuffer getReadBuffer(int start, int byteCount) throws IOException {
-        ByteBuffer contents;
+        ByteBuffer cont;
         synchronized (this) {
             //XXX Some optimizations possible here:
             // - Don't map the entire file, just what is requested (perhaps if the mapped
             //    start - currentlyMappedStart > someThreshold
             // - Use RandomAccessFile and use one buffer for reading and writing (this may
             //    cause contention problems blocking repaints)
-            contents = this.contents;
-            if (contents == null || start + byteCount > mappedRange) {
+            cont = this.contents;
+            if (cont == null || start + byteCount > mappedRange || start < mappedStart) {
                 FileChannel ch = readChannel();
+                long offset = start + byteCount;
+                mappedStart = Math.max(0, start - MAX_MAP_RANGE);
                 long prevMappedRange = mappedRange;
                 mappedRange = ch.size();
                 try {
                     try {
-                        contents = ch.position(0).map(FileChannel.MapMode.READ_ONLY,
-                            0, mappedRange);
-                        this.contents = contents;
+                        cont = ch.position(mappedStart).map(FileChannel.MapMode.READ_ONLY,
+                            mappedStart, mappedRange - mappedStart);
+                        this.contents = cont;
                     } catch (IOException ioe) {
-                        ioe.printStackTrace();
                         ErrorManager.getDefault().log("Failed to memory map output file for " + //NOI18N
                                 "reading.  Trying to read it normally."); //NOI18N
                         //If a lot of processes have crashed with mapped files (generally when testing),
                         //this exception may simply be that the memory cannot be allocated for mapping.
                         //Try to do it non-mapped
-                        contents = ByteBuffer.allocate((int) mappedRange);
-                        ch.position(0).read(contents);
+                        cont = ByteBuffer.allocate((int) (mappedRange - mappedStart));
+                        ch.position(mappedStart).read(cont);
+                        this.contents = cont;
                     }
                 } catch (IOException ioe) {
                     ErrorManager.getDefault().log("Failed to read output file. Start:" + start + " bytes reqd=" + //NOI18N
@@ -275,14 +288,19 @@ class FileMapStorage implements Storage {
                     throw ioe;
                 }
             }
-            contents.position (start);
+            if (start - mappedStart > cont.limit() - byteCount) {
+                cont.position(cont.limit() - byteCount);
+            } else {
+                cont.position((int) (start - mappedStart));
+            }
         }
-        int limit = Math.min(contents.limit(), byteCount);
+        int limit = Math.min(cont.limit(), byteCount);
         try {
-            return (ByteBuffer) contents.slice().limit(limit);
+            ByteBuffer toReturn = (ByteBuffer) cont.slice().limit(limit);
+            return toReturn;
         } catch (Exception e) {
             throw new IllegalStateException ("Error setting limit to " + limit //NOI18N
-            + " contents size = " + contents.limit() + " requested: read " + //NOI18N
+            + " contents size = " + cont.limit() + " requested: read " + //NOI18N
             "buffer from " + start + " to be " + byteCount + " bytes"); //NOI18N
         }
     }
