@@ -122,7 +122,9 @@
     <mapID target="ent_app_configure" url="enterprise/general/ent_app_configure.html" />
     <mapID target="ent_app_build" url="enterprise/general/ent_app_build.html" />
     <mapID target="ent_app_server" url="enterprise/general/ent_app_server.html" />
-    <mapID target="modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIterator" url="tbd" />
+    
+    <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIterator" url="NewEarProjectWizardIterator.html" />
+    <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.CompleteEarProjectWizardIterator" url="CompleteEarProjectWizardIterator.html" />
 
 <!-- End of Enterprise Application help -->
 
