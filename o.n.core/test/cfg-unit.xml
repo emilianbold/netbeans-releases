@@ -73,7 +73,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/filesystems/NbinstURLMapperTest.class"/>
                 <include name="org/netbeans/core/modules/*Test.class"/>
                 <include name="org/netbeans/core/modules/*Test?.class"/>
-                <exclude name="org/netbeans/core/modules/ModuleManagerTest.class/testModuleDeletion"/> <!-- #44828 -->
                 <include name="org/netbeans/core/projects/SystemFileSystemTest.class"/>
                 <include name="org/netbeans/core/projects/cache/*Test.class"/>
                 <include name="org/netbeans/core/lookup/*Test.class"/>
@@ -97,8 +96,6 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- But there is no way to track down what that is. When core-windows.jar includes all -->
                 <!-- GUI stuff, and plain core does not show dialogs for exceptions, this will be fixable. -->
                 <include name="org/netbeans/core/PlainTest.class/testPlainShowsNoGUI"/>
-                <!-- XXX #44828: fails on Windows; not known why -->
-                <include name="org/netbeans/core/modules/ModuleManagerTest.class/testModuleDeletion"/>
                 <!-- XXX #46116: who knows... -->
                 <include name="org/netbeans/core/NbClipboardNativeTest.class"/>
             </patternset>
