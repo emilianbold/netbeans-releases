@@ -812,7 +812,9 @@
    <mapID target="org.netbeans.core.LoaderPoolNode" url="objects/objects_object-types.html" /> 
    <mapID target="org.netbeans.core.LoaderPoolNode$LoaderPoolItemNode" url="objects/objects_object-types.html" /> 
    <mapID target="objects.object-types" url="objects/objects_object-types.html" /> 
-     
+
+   <mapID target="org.netbeans.core.filesystems.MIMEResolverImpl" url="pending.html" /> 
+   <mapID target="org.netbeans.core.filesystems.MIMEResolverImpl.FileTypeNode" url="pending.html" />         
    
    <mapID target="org.netbeans.core.MenuFolderNode" url="configure/menu_commands.html" /> 
    <mapID target="org.netbeans.core.actions.DockingAction" url="pending.html" />
