@@ -234,7 +234,7 @@ public class Arch extends Task implements ErrorHandler {
             t.setParameter("arch.answers.date", DateFormat.getDateInstance().format(new Date(questionsFile.lastModified())));
             
             String archTarget = output.toString();
-            int slash = archTarget.lastIndexOf('/');
+            int slash = archTarget.lastIndexOf(File.separatorChar);
             if (slash > 0) {
                 archTarget = archTarget.substring (slash + 1);
             }
