@@ -30,22 +30,12 @@ Microsystems, Inc. All Rights Reserved.
 <list module="xml">
     <item priority="2">
         <summary>XML module API</summary>
-        <description>When we will have xml-api module (see core's <a href="#core">TODO</a>), than we can guarantee TAX, XML-API with Looks as API around xml.</description>
-    </item>
-
-    <item priority="2">
-        <summary>Javahelp</summary>
-        <description>What about javahelp?</description>
+        <description>When we will have xml-api module (see core's <a href="#core">TODO</a>), than we can guarantee TAX, XML-API with Looks as API around XML stuff.</description>
     </item>
 
     <item priority="2">
         <summary>Upgrade modules to use 3.3 implementation.</summary>
         <description>Upgrade modules to use 3.3 implementation, especially mf-layer advantages -- see <a href="http://www.netbeans.org/unbranded-source/browse/~checkout~/openide/api/doc/org/openide/doc-files/upgrade.html">3.2 -> 3.3 Upgrade Guide</a> for more info.</description>
-    </item>
-
-    <item priority="4">
-        <summary>Move all __module__/src/META_INF to __module__/compat/src/META_INF.</summary>
-        <description>Move all __module__/src/META_INF to __module__/<b>compat</b>/src/META_INF -- all backward compatibility stuff should be in <b>compat</b> directory.</description>
     </item>
 
     &catalog_todo.xml;
