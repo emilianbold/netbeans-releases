@@ -97,4 +97,19 @@ Major known problems:
 - Refactoring while an XML file is expanded sometimes causes an infinite loop and
   GUI freeze. (Possible Xerces bug? If so, still apparently in 2.4.0...)
 
+Some informal timing results:
+-------------------------------------
+1.2GHz PIII, Linux 2.4.18, XF86 4.2.0, JDK 1.4.2
+10k sample files in ramdisk, scattered among 256 folders, incl. 4k XML + 6k text
+Using LookNode view
+
+Event-Hybrid locking:
+  folder expansion: nearly immediate
+  complete index: ???
+    heap: usually <10M
+    AWT: little blockage
+
+MORE COMING...
+-------------------------------------
+
 -jglick@netbeans.org
