@@ -208,7 +208,7 @@ public final class AttachingDICookie extends AbstractDICookie {
             attachingConnectors ().iterator ();
         while (iter.hasNext ()) {
             AttachingConnector ac = (AttachingConnector) iter.next ();
-            if (ac.transport ().name ().toLowerCase ().indexOf (s) > -1)
+            if (ac.transport() != null && ac.transport ().name ().toLowerCase ().indexOf (s) > -1)
                 return ac;
         }
         return null;

@@ -158,7 +158,7 @@ public class JPDAUtils {
         System.out.println ("  Connector: " + connector); // NOI18N
         System.out.println ("    name: " + connector.name ()); // NOI18N
         System.out.println ("    description: " + connector.description ()); // NOI18N
-        System.out.println ("    transport: " + connector.transport ().name ()); // NOI18N
+        System.out.println ("    transport: " + (connector.transport () != null ? connector.transport ().name () : "null")); // NOI18N
         showProperties (connector.defaultArguments ());
         System.out.println ("  ============================================"); // NOI18N
     }

@@ -16,11 +16,8 @@ package org.netbeans.modules.debugger.jpda.ui;
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VirtualMachineManager;
-import com.sun.jdi.connect.AttachingConnector;
-import com.sun.jdi.connect.Connector;
 import com.sun.jdi.connect.Connector.Argument;
-import com.sun.jdi.connect.IllegalConnectorArgumentsException;
-import com.sun.jdi.connect.ListeningConnector;
+import com.sun.jdi.connect.*;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -178,7 +175,8 @@ Controller, ActionListener {
             c.fill = GridBagConstraints.HORIZONTAL;
             c.weightx = 1.0;
             layout.setConstraints (tfTransport, c);
-            tfTransport.setText (connector.transport ().name ());
+            Transport t = connector.transport();
+            tfTransport.setText (t != null ? t.name() : "");
             tfTransport.getAccessibleContext ().setAccessibleDescription (
                 NbBundle.getMessage (ConnectPanel.class, "ACSD_CTL_Transport")
             );

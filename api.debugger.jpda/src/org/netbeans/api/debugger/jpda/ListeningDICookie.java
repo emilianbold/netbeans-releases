@@ -118,7 +118,7 @@ public final class ListeningDICookie extends AbstractDICookie {
             listeningConnectors ().iterator ();
         while (iter.hasNext ()) {
             ListeningConnector ac = (ListeningConnector) iter.next ();
-            if (ac.transport ().name ().toLowerCase ().indexOf (s) > -1)
+            if (ac.transport() != null && ac.transport ().name ().toLowerCase ().indexOf (s) > -1)
                 return ac;
         }
         return null;
