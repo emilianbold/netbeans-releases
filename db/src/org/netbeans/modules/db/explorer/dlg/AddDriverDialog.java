@@ -26,6 +26,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -391,21 +392,33 @@ public class AddDriverDialog extends javax.swing.JPanel {
     }
     
     private void startProgress() {
-        findProgressBar.setBorderPainted(true);
-        findProgressBar.setIndeterminate(true);
-        findProgressBar.setString(NbBundle.getBundle(BUNDLE).getString("AddDriverProgressStart")); //NOI18N
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                findProgressBar.setBorderPainted(true);
+                findProgressBar.setIndeterminate(true);
+                findProgressBar.setString(NbBundle.getBundle(BUNDLE).getString("AddDriverProgressStart")); //NOI18N
+            }
+        });
     }
 
     private void stopProgress() {
-        findProgressBar.setValue(findProgressBar.getMaximum());
-        findProgressBar.setString(NbBundle.getBundle(BUNDLE).getString("AddDriverProgressStop")); //NOI18N
-        findProgressBar.setIndeterminate(false);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                findProgressBar.setValue(findProgressBar.getMaximum());
+                findProgressBar.setString(NbBundle.getBundle(BUNDLE).getString("AddDriverProgressStop")); //NOI18N
+                findProgressBar.setIndeterminate(false);
+            }
+        });
     }
 
     private void hideProgress() {
-        findProgressBar.setBorderPainted(false);
-        findProgressBar.setIndeterminate(false);
-        findProgressBar.setString(""); //NOI18N
-        findProgressBar.setValue(findProgressBar.getMinimum());
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                findProgressBar.setBorderPainted(false);
+                findProgressBar.setIndeterminate(false);
+                findProgressBar.setString(""); //NOI18N
+                findProgressBar.setValue(findProgressBar.getMinimum());
+            }
+        });
     }
 }
