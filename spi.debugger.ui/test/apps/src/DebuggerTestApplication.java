@@ -5,8 +5,8 @@
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * The Original Code is NetBeans. 
- * The Initial Developer of the Original Code is Sun Microsystems, Inc. 
+ * The Original Code is NetBeans.
+ * The Initial Developer of the Original Code is Sun Microsystems, Inc.
  * Portions created by Sun Microsystems, Inc. are Copyright (C) 2003
  * All Rights Reserved.
  *
@@ -21,13 +21,10 @@ public class DebuggerTestApplication extends javax.swing.JFrame {
         initComponents();
         
         counterThread = new Thread(new Runnable() {
-            private boolean running = false;
-            
             public void run() {
                 Thread thisThread = Thread.currentThread();
                 while (counterThread == thisThread) {
-                    jLabel1.setText(String.valueOf(counter++));
-                    jProgressBar1.setValue(counter);
+                    updateCounter();
                     try {
                         Thread.currentThread().sleep(1000);
                         if (counterThreadSuspended) {
@@ -60,6 +57,7 @@ public class DebuggerTestApplication extends javax.swing.JFrame {
         jButton2 = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jProgressBar1 = new javax.swing.JProgressBar();
+        jProgressBar1.setMaximum(MAX_COUNT);
 
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
@@ -67,7 +65,7 @@ public class DebuggerTestApplication extends javax.swing.JFrame {
             }
         });
 
-        jButton1.setText("jButton1");
+        jButton1.setText("Stop");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 DebuggerTestApplication.this.jButton1ActionPerformed(evt);
@@ -76,7 +74,7 @@ public class DebuggerTestApplication extends javax.swing.JFrame {
 
         jPanel1.add(jButton1);
 
-        jButton2.setText("jButton2");
+        jButton2.setText("Clear");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 DebuggerTestApplication.this.jButton2ActionPerformed(evt);
@@ -98,17 +96,31 @@ public class DebuggerTestApplication extends javax.swing.JFrame {
     }//GEN-END:initComponents
     
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        counterThreadSuspended = true;
+        if (!counterThreadSuspended) {
+            counterThreadSuspended = !counterThreadSuspended;
+            jButton1.setText("Start");
+        } else {
+            synchronized(counterThread) {
+                counterThreadSuspended = !counterThreadSuspended;
+                counterThread.notify();
+                jButton1.setText("Stop");
+            }
+            
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
     
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        synchronized(counterThread) {            
-            counterThreadSuspended = false;
-            counterThread.notify();
-        }                 
+        counter = 0;        
+        jLabel1.setText(String.valueOf(counter));
     }//GEN-LAST:event_jButton2ActionPerformed
-        
-        /** Exit the Application */
+    
+    private void updateCounter() {
+        counter = (counter < MAX_COUNT) ? ++counter : 0 ;
+        jLabel1.setText(String.valueOf(counter));
+        jProgressBar1.setValue(counter);
+    }
+    
+    /** Exit the Application */
     private void exitForm(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_exitForm
         System.exit(0);
     }//GEN-LAST:event_exitForm
@@ -131,5 +143,7 @@ public class DebuggerTestApplication extends javax.swing.JFrame {
     private Thread counterThread;
     public volatile boolean  counterThreadSuspended = false;
     private int counter = 0;
+    
+    private static final int MAX_COUNT = 13;
     
 }
