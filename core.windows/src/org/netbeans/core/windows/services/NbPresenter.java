@@ -15,6 +15,7 @@ package org.netbeans.core.windows.services;
 
 
 import java.util.Arrays;
+import java.util.List;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.openide.DialogDescriptor;
@@ -396,6 +397,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
     
     private void initializeClosingOptions (boolean init) {
         Object[] options = getClosingOptions ();
+        
         if (options == null) return ;
         for (int i = 0; i < options.length; i++) {
             modifyListener (options[i], buttonListener, init);
@@ -737,9 +739,19 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
         if (comp instanceof JButton) {
             JButton b = (JButton)comp;
             if (add) { 
-                b.addActionListener(l);
-                b.addComponentListener(l);
-                b.addPropertyChangeListener(l);
+                List listeners;
+                listeners = Arrays.asList (b.getActionListeners ());
+                if (!listeners.contains (l)) {
+                    b.addActionListener(l);
+                }
+                listeners = Arrays.asList (b.getComponentListeners ());
+                if (!listeners.contains (l)) {
+                    b.addComponentListener(l);
+                }
+                listeners = Arrays.asList (b.getPropertyChangeListeners ());
+                if (!listeners.contains (l)) {
+                    b.addPropertyChangeListener(l);
+                }
             } else {
                 b.removeActionListener(l);
                 b.removeComponentListener(l);
