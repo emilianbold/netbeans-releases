@@ -40,6 +40,9 @@ public class EditQueryStringAction extends CookieAction {
     * @param activatedNodes Currently activated nodes.
     */
     public void performAction (final Node[] activatedNodes) {
+        if (activatedNodes.length == 0) {
+            return;
+        }
         DataObject dObj = (DataObject)(activatedNodes[0]).getCookie(DataObject.class);
         QueryStringCookie qsc = (QueryStringCookie)activatedNodes[0].getCookie(QueryStringCookie.class);
 
@@ -68,6 +71,9 @@ public class EditQueryStringAction extends CookieAction {
     }
 
     protected boolean enable (Node[] activatedNodes){
+        if (activatedNodes.length == 0) {
+            return false;
+        }
         for (int i = 0; i < activatedNodes.length; i++){
             DataObject dObj = (DataObject)(activatedNodes[i]).getCookie(DataObject.class);
             QueryStringCookie qsc = (QueryStringCookie)activatedNodes[0].getCookie(QueryStringCookie.class);
