@@ -728,10 +728,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module testtools..."/>
     <ant dir="../testtools" target="netbeans"/>
   </target>
-  <target name="all-text" depends="build-platform">
-    <echo message="Building module text..."/>
-    <ant dir="../text" target="netbeans"/>
-  </target>
   <target name="all-tomcatint/tomcat5" depends="build-platform,all-ant,all-schema2beans/rt,all-java/srcmodel,all-j2eeserver,all-web/ddapi,build-schema2beans/anttask">
     <echo message="Building module tomcatint/tomcat5..."/>
     <ant dir="../tomcatint/tomcat5" target="netbeans"/>
