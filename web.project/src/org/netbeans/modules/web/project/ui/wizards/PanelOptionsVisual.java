@@ -14,6 +14,7 @@
 package org.netbeans.modules.web.project.ui.wizards;
 
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.project.WebProjectGenerator;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -22,6 +23,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 //    private static boolean lastMainClassCheck = false; // XXX Store somewhere
     
     private PanelConfigureProject panel;
+    private String sourceStructure;
     private String j2eeLevel;
     private boolean contextModified = false;
     
@@ -30,6 +32,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         initComponents();
         this.panel = panel;
         initJ2EESpecLevels();
+        initJSrcStructureSpecs();
     }
     
     /** This method is called from within the constructor to
@@ -48,8 +51,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         j2eeSpecDescLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         j2eeSpecDescTextPane = new javax.swing.JTextPane();
-
-        FormListener formListener = new FormListener();
+        srcStructLabel = new javax.swing.JLabel();
+        srcStructComboBox = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -76,7 +79,11 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jLabelContextPath, gridBagConstraints);
 
-        jTextFieldContextPath.addKeyListener(formListener);
+        jTextFieldContextPath.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jTextFieldContextPathKeyReleased(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -92,18 +99,22 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         j2eeSpecLabel.setText(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_J2EESpecLevel_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(j2eeSpecLabel, gridBagConstraints);
 
         j2eeSpecComboBox.setMinimumSize(new java.awt.Dimension(100, 24));
         j2eeSpecComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
-        j2eeSpecComboBox.addActionListener(formListener);
+        j2eeSpecComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                j2eeSpecComboBoxActionPerformed(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
@@ -115,15 +126,15 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         j2eeSpecDescLabel.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_J2EESpecLevelDesc_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
         add(j2eeSpecDescLabel, gridBagConstraints);
 
         j2eeSpecDescTextPane.setEditable(false);
-        j2eeSpecDescTextPane.setFocusable(false);
         j2eeSpecDescTextPane.setEnabled(false);
+        j2eeSpecDescTextPane.setFocusable(false);
         jScrollPane1.setViewportView(j2eeSpecDescTextPane);
         j2eeSpecDescTextPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_J2EESpecLevelDesc_A11YDesc"));
 
@@ -136,29 +147,40 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(jScrollPane1, gridBagConstraints);
 
-    }
+        srcStructLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SourceStructure_CheckBoxMnemonic").charAt(0));
+        srcStructLabel.setLabelFor(srcStructComboBox);
+        srcStructLabel.setText(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SourceStructure_Label"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        add(srcStructLabel, gridBagConstraints);
 
-    // Code for dispatching events from components to event handlers.
-
-    private class FormListener implements java.awt.event.ActionListener, java.awt.event.KeyListener {
-        public void actionPerformed(java.awt.event.ActionEvent evt) {
-            if (evt.getSource() == j2eeSpecComboBox) {
-                PanelOptionsVisual.this.j2eeSpecComboBoxActionPerformed(evt);
+        srcStructComboBox.setMinimumSize(new java.awt.Dimension(150, 24));
+        srcStructComboBox.setPreferredSize(new java.awt.Dimension(150, 24));
+        srcStructComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                srcStructComboBoxActionPerformed(evt);
             }
-        }
+        });
 
-        public void keyPressed(java.awt.event.KeyEvent evt) {
-        }
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        add(srcStructComboBox, gridBagConstraints);
 
-        public void keyReleased(java.awt.event.KeyEvent evt) {
-            if (evt.getSource() == jTextFieldContextPath) {
-                PanelOptionsVisual.this.jTextFieldContextPathKeyReleased(evt);
-            }
-        }
-
-        public void keyTyped(java.awt.event.KeyEvent evt) {
-        }
     }//GEN-END:initComponents
+
+    private void srcStructComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_srcStructComboBoxActionPerformed
+        switch (srcStructComboBox.getSelectedIndex()) {
+            case 0: sourceStructure = WebProjectGenerator.SRC_STRUCT_BLUEPRINTS;
+                    break;
+            case 1: sourceStructure = WebProjectGenerator.SRC_STRUCT_JAKARTA;
+        }
+    }//GEN-LAST:event_srcStructComboBoxActionPerformed
 
     private void jTextFieldContextPathKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextFieldContextPathKeyReleased
         contextModified = true;
@@ -181,6 +203,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 
     void store(WizardDescriptor d) {
         d.putProperty(WizardProperties.SET_AS_MAIN, setAsMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE );
+        d.putProperty(WizardProperties.SOURCE_STRUCTURE, sourceStructure);
         d.putProperty(WizardProperties.J2EE_LEVEL, j2eeLevel);
         d.putProperty(WizardProperties.CONTEXT_PATH, jTextFieldContextPath.getText().trim());
     }
@@ -197,16 +220,24 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     protected javax.swing.JTextField jTextFieldContextPath;
     private javax.swing.JCheckBox setAsMainCheckBox;
+    private javax.swing.JComboBox srcStructComboBox;
+    private javax.swing.JLabel srcStructLabel;
     // End of variables declaration//GEN-END:variables
 
     private void initJ2EESpecLevels() {
-       j2eeSpecComboBox.addItem(NbBundle.getMessage(PanelOptionsVisual.class, "J2EESpecLevel_0")); //NOI18N
-       j2eeSpecComboBox.addItem(NbBundle.getMessage(PanelOptionsVisual.class, "J2EESpecLevel_1")); //NOI18N
-       j2eeSpecComboBox.setSelectedIndex(0);
+        j2eeSpecComboBox.addItem(NbBundle.getMessage(PanelOptionsVisual.class, "J2EESpecLevel_0")); //NOI18N
+        j2eeSpecComboBox.addItem(NbBundle.getMessage(PanelOptionsVisual.class, "J2EESpecLevel_1")); //NOI18N
+        j2eeSpecComboBox.setSelectedIndex(0);
     }
+    
+    private void initJSrcStructureSpecs() {
+        srcStructComboBox.addItem(NbBundle.getMessage(PanelOptionsVisual.class, "SourceStructure_0")); //NOI18N
+        srcStructComboBox.addItem(NbBundle.getMessage(PanelOptionsVisual.class, "SourceStructure_1")); //NOI18N
+        srcStructComboBox.setSelectedIndex(0);
+    }    
 
     protected boolean isContextModified() {
-        return contextModified;
+         return contextModified;
     }
     
 }
