@@ -243,7 +243,7 @@ class OutWriter extends PrintWriter {
      * a writable one.  Typically this happens when an executing process was sent Thread.stop()
      * in the middle of a write.
      */
-    private void threadDeathClose() {
+    void threadDeathClose() {
         terminated = true;
         if (Controller.log) Controller.log (this + " Close due to termination");
         ErrWriter err = owner.writer().err();
@@ -321,7 +321,11 @@ class OutWriter extends PrintWriter {
     public synchronized void close() {
         closed = true;
         try {
-            storage.close();
+            //#49955 - possible (but difficult) to end up with close()
+            //called twice
+            if (storage != null) {
+                storage.close();
+            }
             if (lines != null) {
                 lines.fire();
             }

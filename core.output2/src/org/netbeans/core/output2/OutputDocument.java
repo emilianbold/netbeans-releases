@@ -156,10 +156,20 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         if (length > reusableSubrange.length) {
             reusableSubrange = new char[length];
         }
-        char[] chars = getLines().getText(offset, offset + length, reusableSubrange);
-        txt.array = chars;
-        txt.offset = 0;
-        txt.count = Math.min(length, chars.length);
+        try {
+            char[] chars = getLines().getText(offset, offset + length, reusableSubrange);
+            txt.array = chars;
+            txt.offset = 0;
+            txt.count = Math.min(length, chars.length);
+        } catch (OutOfMemoryError error) {
+            //#50189 - try to salvage what we can
+            OutWriter.lowDiskSpace = true;
+            //Sets the error flag and releases the storage
+            writer.dispose();
+            ErrorManager.getDefault().log (ErrorManager.INFORMATIONAL, 
+                "OOME while reading output.  Cleaning up."); //NOI18N
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, error);
+        }
     }
     
     public void insertString(int param, String str, AttributeSet attributeSet) throws BadLocationException {
