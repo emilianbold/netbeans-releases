@@ -175,6 +175,52 @@ public class TopComponentGetLookupTest extends NbTestCase {
         assertEquals ("Second is the one added by the TC lookup", n2, it.next ());
     }
     
+    public void testNoChangeWhenSomethingIsChangedOnNotActivatedNode () {
+        Object obj = new org.openide.cookies.OpenCookie () { public void open () {} };
+        
+        Lookup.Result res = lookup.lookup (new Lookup.Template (org.openide.cookies.OpenCookie.class));
+        Lookup.Result nodeRes = lookup.lookup (new Lookup.Template (org.openide.nodes.Node.class));
+        int mask = 0x01;
+        
+        InstanceContent ic = new InstanceContent ();
+        CountingLookup cnt = new CountingLookup (ic);
+        org.openide.nodes.AbstractNode ac = new org.openide.nodes.AbstractNode (
+            org.openide.nodes.Children.LEAF, cnt
+        );
+        
+        top.setActivatedNodes(new org.openide.nodes.Node[] { ac });
+        ic.add (obj);
+        
+        L listener = new L ();
+        
+        res.allItems();
+        nodeRes.allItems ();
+        res.addLookupListener (listener);
+        
+        java.util.Collection allListeners = cnt.listeners;
+        
+        assertEquals ("Has the cookie", 1, res.allItems ().size ());
+        listener.check ("No changes yet", 0);
+
+        ic.remove (obj);
+        
+        assertEquals ("Does not have the cookie", 0, res.allItems ().size ());
+        listener.check ("One change", 1);
+        
+        top.setActivatedNodes (new N[0]);
+        listener.checkAtLeast ("There should be no change, but there is one now, improve if possible", 1);
+
+        cnt.queries = 0;
+        ic.add (obj);
+        ic.add (ac);
+        listener.check ("Removing the object or node from not active node does not send any event", 0);
+        
+        nodeRes.allItems ();
+        listener.check ("Queriing for node does generate an event", 0);
+        assertEquals ("No Queries to the not active node made", 0, cnt.queries);
+        assertEquals ("No listeneners on cookies", allListeners, cnt.listeners);
+    }
+    
     
     /** Listener to count number of changes.
      */
@@ -241,5 +287,59 @@ public class TopComponentGetLookupTest extends NbTestCase {
             }
             return null;
         }
+    }
+    
+    private static final class CountingLookup extends Lookup {
+        private Lookup delegate;
+        public ArrayList listeners = new ArrayList ();
+        public int queries;
+        
+        public CountingLookup (org.openide.util.lookup.InstanceContent ic) {
+            delegate = new org.openide.util.lookup.AbstractLookup (ic);
+            
+        }
+        
+        public Object lookup(Class clazz) {
+            return delegate.lookup (clazz);
+        }
+        
+        public org.openide.util.Lookup.Result lookup(org.openide.util.Lookup.Template template) {
+            if (
+                !org.openide.nodes.Node.Cookie.class.isAssignableFrom(template.getType ()) &&
+                !org.openide.nodes.Node.class.isAssignableFrom(template.getType ())
+            ) {
+                return delegate.lookup (template);
+            }
+            
+            
+            final Lookup.Result d = delegate.lookup (template);
+            
+            class Wrap extends Lookup.Result {
+                public void addLookupListener (org.openide.util.LookupListener l) {
+                    listeners.add (l);
+                    d.addLookupListener (l);
+                }
+                
+                public void removeLookupListener (org.openide.util.LookupListener l) {
+                    listeners.remove (l);
+                    d.removeLookupListener (l);
+                }
+                public java.util.Collection allInstances () {
+                    queries++;
+                    return d.allInstances ();
+                }
+                public java.util.Collection allItems () {
+                    queries++;
+                    return d.allItems ();
+                }
+                public java.util.Set allClasses () {
+                    queries++;
+                    return d.allClasses ();
+                }
+            }
+            
+            return new Wrap ();
+        }
+        
     }
 }
