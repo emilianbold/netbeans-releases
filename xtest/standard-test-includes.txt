@@ -4,3 +4,4 @@
 **/src/**/*.xml
 **/src/**/*.ser
 **/src/**/*.txt
+**/src/META-INF/**
