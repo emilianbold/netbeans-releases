@@ -153,7 +153,7 @@ public class JavaAbbreviationsTestPerformer extends AbbreviationsTest {
     }
     
     public void moveCaretIntoCode() {
-        getTestEditor().pushKey(KeyEvent.VK_END, KeyEvent.CTRL_DOWN_MASK);
+        getTestEditor().pushKey(KeyEvent.VK_END, KeyEvent.CTRL_MASK);
     }
     
     public void moveCaretIntoComment() {
@@ -166,8 +166,8 @@ public class JavaAbbreviationsTestPerformer extends AbbreviationsTest {
     public void prepareEditor() {
         EditorOperator op = getTestEditor();
         
-        op.pushKey(KeyEvent.VK_HOME, KeyEvent.CTRL_DOWN_MASK);
-        op.pushKey(KeyEvent.VK_END, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        op.pushKey(KeyEvent.VK_HOME, KeyEvent.CTRL_MASK);
+        op.pushKey(KeyEvent.VK_END, KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK);
 //        op.select(op.getText());
 //        op.select(1, op.getLineNumber());
         op.pushKey(KeyEvent.VK_DELETE);
