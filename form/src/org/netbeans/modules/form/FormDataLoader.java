@@ -40,6 +40,8 @@ public class FormDataLoader extends JavaDataLoader {
 
         setActions(new SystemAction[] {
             SystemAction.get(OpenAction.class),
+            SystemAction.get(EditAction.class),
+            null,
             SystemAction.get(CustomizeBeanAction.class),
             SystemAction.get(FileSystemAction.class),
             null,

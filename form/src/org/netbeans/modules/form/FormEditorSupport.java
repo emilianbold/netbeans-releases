@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -24,6 +24,7 @@ import java.util.Hashtable;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.UndoRedo;
+import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.src.nodes.SourceChildren;
@@ -40,7 +41,7 @@ import org.netbeans.modules.java.JavaEditor;
  *
  * @author Ian Formanek
  */
-public class FormEditorSupport extends JavaEditor implements FormCookie {
+public class FormEditorSupport extends JavaEditor implements FormCookie, EditCookie {
 
     /** The reference to FormDataObject */
     private FormDataObject formObject;
@@ -180,6 +181,12 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
         super.open();
     }
 
+    /** EditCookie implementation - opens only java file.
+     */
+    public void edit() {
+        super.open();
+    }
+
     /* Calls superclass.
      * @param pos Where to place the caret.
      * @return always non null editor
@@ -258,10 +265,10 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
         return formManager.getFormTopComponent();
     }
 
-    /** Marks the form as modified if it's not yet. Used if changes made 
+    /** Marks the form as modified if it's not yet. Used if changes made
      * in form data don't project to the java source file (generated code). */
     void markFormModified() {
-        if (!formObject.isModified())
+        if (formLoaded && !formObject.isModified())
             super.notifyModified();
     }
 
@@ -288,13 +295,17 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     }
 
     protected Task reloadDocumentTask() {
-        closeForm();
-        openForm();
+        if (formLoaded) {
+            closeForm();
+            openForm();
+        }
 
         Task docLoadTask = super.reloadDocumentTask();
-        FormManager2 fm = getFormManager();
-        fm.getCodeGenerator().initialize(fm);
-//        fm.fireFormLoaded();
+
+        if (formLoaded) {
+            FormManager2 fm = getFormManager();
+            fm.getCodeGenerator().initialize(fm);
+        }
 
         return docLoadTask;
     }
@@ -324,7 +335,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     }
 
     /** Loads the DesignForm from the .form file.
-     * @return true if the form was correcly loaded, false if any error occured 
+     * @return true if the form was correcly loaded, false if any error occured
      */
     protected boolean loadForm() {
         return loadFormInternal(null);
@@ -332,7 +343,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
     /** Loads the DesignForm from the .form file.
      * @param formTopComponent the top component that the formManager should be initialized with - used during deserialization of workspaces
-     * @return true if the form was correcly loaded, false if any error occured 
+     * @return true if the form was correcly loaded, false if any error occured
      */
     protected boolean loadFormInternal(FormTopComponent formTopComponent) {
         PersistenceManager loadManager = null;
@@ -463,10 +474,6 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
     /** Method from FormCookie */
     public void gotoEditor() {
-        synchronized(OPEN_FORM_LOCK) {
-            if (!formLoaded)
-                if (!loadForm()) return;
-        }
         super.open();
 
     }
