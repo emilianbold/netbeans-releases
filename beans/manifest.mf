@@ -1,0 +1,7 @@
+OpenIDE-Module: com.netbeans.developer.modules.beans/1
+OpenIDE-Module-Name: Bean Patterns Support
+OpenIDE-Module-Install: com/netbeans/developer/modules/beans/BeansModule.class
+OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Implementation-Version: 1.0
+OpenIDE-Module-Update-Location: http://update.netbeans.com/eap/developer30/updateInfoEAP.xml
+
