@@ -16,10 +16,7 @@ package org.netbeans.modules.tomcat5.progress;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
-import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
-import javax.management.j2ee.Management;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetNameResolver;
 
 
 /** Implementation of DeploymentStatus
