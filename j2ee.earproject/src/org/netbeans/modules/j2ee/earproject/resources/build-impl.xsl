@@ -295,6 +295,7 @@ is divided into following sections:
 
             <target name="pre-pre-compile">
                 <xsl:attribute name="depends">init,deps-jar,deps-j2ee-archive</xsl:attribute>
+                <delete dir="${{build.dir}}"/>
                 <mkdir dir="${{build.classes.dir}}"/>
             </target>
 
