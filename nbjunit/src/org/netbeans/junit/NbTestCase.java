@@ -687,8 +687,10 @@ public abstract class NbTestCase extends TestCase implements NbTest {
       * @param url URL to convert
       * @return absolute path
       */
-    
     public static String convertNBFSURL(URL url) {
+        if(url == null) {
+            throw new IllegalArgumentException("Given URL should not be null.");
+        }
         String externalForm = url.toExternalForm();
         if (externalForm.startsWith("nbfs://")) {
             // new nbfsurl format (post 06/2003)
