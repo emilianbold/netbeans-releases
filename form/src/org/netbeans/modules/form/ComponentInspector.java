@@ -250,12 +250,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
     }
 
     protected void updateTitle() {
-        String title;
-
-        if (focusedForm == null)
-            setName(formBundle.getString("CTL_InspectorTitle"));
-        else
-            setName(focusedForm.getFormModel().getName());
+        setName(formBundle.getString("CTL_InspectorTitle"));
     }
 
     FormEditorSupport getFocusedForm() {

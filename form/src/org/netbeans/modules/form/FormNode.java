@@ -60,12 +60,10 @@ public class FormNode extends AbstractNode implements FormCookie {
 
     protected SystemAction[] createActions() {
         return new SystemAction[] {
-            SystemAction.get(GotoFormAction.class),
             SystemAction.get(GotoEditorAction.class),
-            SystemAction.get(GotoInspectorAction.class),
             null,
-//            SystemAction.get(ToolsAction.class),
-            SystemAction.get(PropertiesAction.class) };
+            SystemAction.get(PropertiesAction.class) 
+        };
     }
 
     void updateChildren() {

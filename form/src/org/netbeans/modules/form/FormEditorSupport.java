@@ -736,6 +736,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                         if (ext)
                             formName += ".java"; // NOI18N
                         if (formName.equals(componentName)) {
+                            fes.gotoForm();
                             ComponentInspector.getInstance().focusForm(fes);
                             break;
                         }
@@ -769,7 +770,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                     openForm(true);
                 else {
                     formModel.getFormDesigner().open();
-                    formModel.getFormDesigner().requestFocus();
+                    formModel.getFormDesigner().requestVisible();
                 }
             }
         });
