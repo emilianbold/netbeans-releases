@@ -33,6 +33,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.j2ee.ejbjarproject.classpath.EjbJarProjectClassPathExtender;
 import org.netbeans.modules.j2ee.ejbjarproject.queries.CompiledSourceForBinaryQuery;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarCustomizerProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
@@ -190,7 +191,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new ProjectEjbJarProvider(),
                 ejbModule, //implements J2eeModuleProvider
                 new EjbJarActionProvider( this, helper, refHelper ),
-                new EjbJarLogicalViewProvider(this, helper, evaluator(), spp, refHelper),
+                new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper),
                 new EjbJarCustomizerProvider( this, helper, refHelper ),
                 new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(),getTestSourceRoots()),
                 new CompiledSourceForBinaryQuery(helper,evaluator(),getSourceRoots(),getTestSourceRoots()),
@@ -207,7 +208,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                     new String[] {
                     "${"+EjbJarProjectProperties.BUILD_DIR+"}",
                     "${"+EjbJarProjectProperties.DIST_DIR+"}"}
-                )
+                ),
+                new EjbJarProjectClassPathExtender(this, updateHelper, evaluator(), refHelper)
             });
     }
     

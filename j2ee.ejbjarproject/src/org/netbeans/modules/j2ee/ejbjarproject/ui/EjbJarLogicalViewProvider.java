@@ -40,6 +40,7 @@ import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
+import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
 import org.openide.loaders.DataFolder;
 import org.openide.util.lookup.Lookups;
 
@@ -53,16 +54,18 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
     
     private final Project project;
     private final AntProjectHelper helper;    
+    private final UpdateHelper updateHelper;
     private final PropertyEvaluator evaluator;
     private final SubprojectProvider spp;
     private final ReferenceHelper resolver;
     
     
-    public EjbJarLogicalViewProvider(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
+    public EjbJarLogicalViewProvider(Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
         this.project = project;
         assert project != null;
-        this.helper = helper;
-        assert helper != null;
+        this.updateHelper = updateHelper;
+        assert updateHelper != null;
+        this.helper = updateHelper.getAntProjectHelper();
         this.evaluator = evaluator;
         assert evaluator != null;
         this.spp = spp;
@@ -107,7 +110,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
         
         
         public WebLogicalViewRootNode() {
-            super( new LogicalViewChildren( project ), createLookup( project ) ); 
+            super( new LogicalViewChildren( project, updateHelper, evaluator, resolver ), createLookup( project ) ); 
             setIconBase( "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon" ); // NOI18N
             setName( ProjectUtils.getInformation( project ).getDisplayName() );            
             if (hasBrokenLinks(helper, resolver)) {
