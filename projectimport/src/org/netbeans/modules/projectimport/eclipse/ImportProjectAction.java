@@ -16,6 +16,8 @@ package org.netbeans.modules.projectimport.eclipse;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 import javax.swing.JDialog;
 import javax.swing.Timer;
@@ -25,6 +27,7 @@ import org.netbeans.modules.projectimport.eclipse.wizard.ProgressPanel;
 import org.netbeans.modules.projectimport.eclipse.wizard.ProjectImporterWizard;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -72,6 +75,20 @@ public class ImportProjectAction extends CallableSystemAction {
                     progressTimer.stop();
                     progressDialog.setVisible(false);
                     progressDialog.dispose();
+                    Collection warnings = importer.getWarnings();
+                    if (warnings != null) {
+                        StringBuffer messages = new StringBuffer(
+                                NbBundle.getMessage(ImportProjectAction.class,
+                                "MSG_ProblemsOccured")); // NOI18N
+                        messages.append("\n\n"); // NOI18N
+                        for (Iterator it = warnings.iterator(); it.hasNext(); ) {
+                            String message = (String) it.next();
+                            messages.append(" - " + message + "\n"); // NOI18N
+                        }
+                        NotifyDescriptor d = new DialogDescriptor.Message(
+                                messages.toString(), NotifyDescriptor.WARNING_MESSAGE);
+                        DialogDisplayer.getDefault().notify(d);
+                    }
                     // open created projects when importing finished
                     OpenProjects.getDefault().open(importer.getProjects(), true);
                 }

@@ -84,6 +84,9 @@ public final class EclipseProject implements Comparable {
         return cp;
     }
     
+    /**
+     * Returns project's name.
+     */
     public String getName() {
         return name;
     }

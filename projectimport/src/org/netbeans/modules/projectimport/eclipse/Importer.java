@@ -16,6 +16,7 @@ package org.netbeans.modules.projectimport.eclipse;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -68,6 +69,7 @@ final class Importer {
     private int nOfProcessed;
     private String progressInfo;
     private boolean done;
+    private Collection warnings;
     
     private JavaPlatform[] nbPlfs; // All netbeans platforms
     private String nbDefPlfDir; // NetBeans default platform directory
@@ -135,6 +137,10 @@ final class Importer {
      */
     boolean isDone() {
         return done;
+    }
+    
+    Collection getWarnings() {
+        return warnings;
     }
     
     /**
@@ -265,12 +271,8 @@ final class Importer {
                         // update installed platform
                         nbPlfs = JavaPlatformManager.getDefault().getInstalledPlatforms();
                     } else {
-                        // tzezula: TODO: User should be notified in the UI
-                        // that the platform is JRE and can't be used
-                        ErrorManager.getDefault().log(ErrorManager.ERROR,
-                                "The Eclipse Project platform can't be used, " + // NOI18N
-                                "it is an JRE, the NetBeans project requires JDK, " +    //NOI18N
-                                "the default platform will be used."); // NOI18N
+                        logWarning(NbBundle.getMessage(Importer.class, "MSG_JRECannotBeUsed", // NOI18N
+                                eclProject.getName()), true);
                     }
                 } else {
                     // tzezula: TODO: User should be notified in the UI and
@@ -304,13 +306,26 @@ final class Importer {
             prop.setProperty(J2SEProjectProperties.JAVA_PLATFORM, normalizedName);
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
         } else {
-            logWarning("Setting of platform for project \"" 
-                    + eclProject.getName() + "\" failed.");
+            logWarning("Setting of platform for project \"" // NOI18N
+                    + eclProject.getName() + "\" failed."); // NOI18N
         }
     }
     
-    /** Delegates to ErrorManager */
     private void logWarning(String message) {
+        logWarning(message, false);
+    }
+    
+    /**
+     * Delegates to ErrorManager. When the <code>isGUIWarning</code> is true,
+     * the warning will be also shown to the user after importing is done.
+     */
+    private void logWarning(String message, boolean isGUIWarning) {
+        if (isGUIWarning) {
+            if (warnings == null) {
+                warnings = new ArrayList();
+            }
+            warnings.add(message);
+        }
         ErrorManager.getDefault().log(ErrorManager.WARNING, message);
     }
     
