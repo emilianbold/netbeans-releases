@@ -68,7 +68,7 @@ public final class MasterURLMapper extends URLMapper {
     }
     
     private static boolean isWindowsDriveRoot(File file) {
-        return Utilities.isWindows() && file.getParent() == null;
+        return (Utilities.isWindows () || (Utilities.getOperatingSystem () == Utilities.OS_OS2)) && file.getParent() == null;
     }
     
     static URL fileToURL(File file, FileObject fo) throws MalformedURLException {        

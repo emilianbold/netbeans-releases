@@ -57,7 +57,7 @@ public class Attributes extends DefaultAttributes {
     private String preparePrefix(File fileSystemRoot) {
         fileSystemRoot = FileUtil.normalizeFile(fileSystemRoot);
         String rootPath = fileSystemRoot.getAbsolutePath().replace('\\', '/');
-        return (Utilities.isWindows()) ? rootPath.toLowerCase() : rootPath;
+        return ((Utilities.isWindows () || (Utilities.getOperatingSystem () == Utilities.OS_OS2))) ? rootPath.toLowerCase() : rootPath;
     }
 
     public static File getRootForAttributes() {

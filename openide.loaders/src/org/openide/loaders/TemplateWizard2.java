@@ -33,7 +33,8 @@ import org.openide.explorer.propertysheet.DefaultPropertyModel;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.NbBundle;
+import org.openide.util.*;
+import org.openide.util.Utilities;
 
 /** Dialog that can be used in create from template.
  *
@@ -265,8 +266,8 @@ final class TemplateWizard2 extends javax.swing.JPanel implements DocumentListen
         if (f != null) {
             return NbBundle.getMessage(TemplateWizard2.class, "MSG_file_already_exist", sb.toString()); // NOI18N
         }
-        
-        if (org.openide.util.Utilities.isWindows ()) {
+
+        if ((Utilities.isWindows () || (Utilities.getOperatingSystem () == Utilities.OS_OS2))) {
             if (TemplateWizard.checkCaseInsensitiveName (locationFolder.getPrimaryFile (), newObjectName.getText (), extension)) {
                 return NbBundle.getMessage(TemplateWizard2.class, "MSG_file_already_exist", newObjectName.getText ()); // NOI18N
             }

@@ -30,8 +30,8 @@ public class ExtensionList extends Object
     
     /** if true, ignore case of file extensions (not MIME types tho!) */
     private static final boolean CASE_INSENSITIVE =
-        Utilities.isWindows() || Utilities.getOperatingSystem() == Utilities.OS_VMS;
-    
+            (Utilities.isWindows () || (Utilities.getOperatingSystem () == Utilities.OS_OS2)) || Utilities.getOperatingSystem() == Utilities.OS_VMS;
+
     /** set of extensions to recognize */
     private TreeSet list;
     /** set of mime types to recognize */

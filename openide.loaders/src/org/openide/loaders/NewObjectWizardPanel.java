@@ -19,8 +19,8 @@ import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.openide.util.*;
+import org.openide.util.Utilities;
 
 /** Implementaion of WizardDescriptor.Panel that can be used in create from template.
  *
@@ -113,7 +113,7 @@ final class NewObjectWizardPanel implements WizardDescriptor.FinishablePanel {
                     errorMsg = NbBundle.getMessage(TemplateWizard2.class, "MSG_file_already_exist", f.getNameExt()); //NOI18N
                     isOK = false;
                 }
-                if (org.openide.util.Utilities.isWindows ()) {
+                if ((Utilities.isWindows () || (Utilities.getOperatingSystem () == Utilities.OS_OS2))) {
                     if (TemplateWizard.checkCaseInsensitiveName (targetFolder.getPrimaryFile (), getPanelUI ().getNewObjectName (), extension)) {
                         errorMsg = NbBundle.getMessage(TemplateWizard2.class, "MSG_file_already_exist", getPanelUI ().getNewObjectName ()); // NOI18N
                         isOK = false;
