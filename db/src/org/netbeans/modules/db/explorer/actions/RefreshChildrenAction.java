@@ -15,37 +15,45 @@ package org.netbeans.modules.db.explorer.actions;
 
 import java.text.MessageFormat;
 
-import org.openide.*;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
-import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.modules.db.explorer.*;
-import org.netbeans.modules.db.explorer.nodes.*;
-import org.netbeans.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
 public class RefreshChildrenAction extends DatabaseAction {
     static final long serialVersionUID =-2858583720506557569L;
     
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length == 1)
-            return true;
-        else
-            return false;
+            if (activatedNodes[0].getChildren().getNodesCount() == 1 && activatedNodes[0].getChildren().getNodes()[0].getName().equals(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("WaitNode"))) //NOI18N
+                return false;
+            else
+                return true;
+        
+        return false;
     }
     
     public void performAction (Node[] activatedNodes) {
-        Node node;
+        final Node node;
         if (activatedNodes != null && activatedNodes.length == 1)
             node = activatedNodes[0];
         else
             return;
 
-        try {
-            DatabaseNodeInfo nfo = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-            nfo.refreshChildren();
-        } catch(Exception exc) {
-            String message = MessageFormat.format(bundle.getString("RefreshChildrenErrorPrefix"), new String[] {exc.getMessage()}); // NOI18N
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-        }
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run () {
+                try {
+                    DatabaseNodeInfo nfo = (DatabaseNodeInfo) node.getCookie(DatabaseNodeInfo.class);
+                    if (nfo != null)
+                        nfo.refreshChildren();
+                } catch(Exception exc) {
+                    String message = MessageFormat.format(bundle.getString("RefreshChildrenErrorPrefix"), new String[] {exc.getMessage()}); // NOI18N
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                }
+            }
+        }, 0);
     }
 }
