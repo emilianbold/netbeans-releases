@@ -22,7 +22,6 @@ import java.io.IOException;
 import javax.swing.border.*;
 
 import org.openide.ErrorManager;
-import org.openide.awt.SplittedPanel;
 import org.openide.nodes.*;
 import org.openide.explorer.view.ListView;
 import org.openide.explorer.propertysheet.PropertySheetView;
@@ -208,23 +207,20 @@ public final class BorderEditor extends PropertyEditorSupport
 
     // --------------------------
     // innerclasses
-
-    // PENDING get rid of ExplorerPanel
-    final class BorderPanel extends ExplorerPanel
+    
+    final class BorderPanel extends JPanel
                             implements PropertyChangeListener,
-                                       VetoableChangeListener
+                                       VetoableChangeListener,
+                                       ExplorerManager.Provider
     {
+        private ExplorerManager manager = new ExplorerManager ();
+        
         private BorderPanel() {
             getExplorerManager().addPropertyChangeListener(this);
             getExplorerManager().addVetoableChangeListener(this);
 
             setLayout(new BorderLayout());
-            setBorder(new EmptyBorder(5, 5, 5, 5));
-
-            SplittedPanel split = new SplittedPanel();
-            split.setSplitType(SplittedPanel.VERTICAL);
-            split.setSplitAbsolute(false);
-            split.setSplitPosition(45);
+            setBorder(new EmptyBorder(5, 5, 5, 5));            
 
             ResourceBundle bundle = getBundle();
 
@@ -242,11 +238,17 @@ public final class BorderEditor extends PropertyEditorSupport
             panel.setLayout(new BorderLayout(0, 2));
             panel.add(label, BorderLayout.NORTH);
             panel.add(BorderLayout.CENTER, listView);
-            split.add(panel, SplittedPanel.ADD_TOP);
 
             PropertySheetView sheetView = new PropertySheetView();
-            split.add(sheetView, SplittedPanel.ADD_BOTTOM);
-
+            
+            JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+            split.setTopComponent(panel);
+            split.setBottomComponent(sheetView);
+            split.setUI(new javax.swing.plaf.basic.BasicSplitPaneUI());
+            split.setBorder(BorderFactory.createEmptyBorder());
+            split.setDividerLocation(170);
+            split.setContinuousLayout(true);
+            
             add(BorderLayout.CENTER, split);
             
             getAccessibleContext().setAccessibleDescription(
@@ -360,6 +362,10 @@ public final class BorderEditor extends PropertyEditorSupport
 
         public Dimension getPreferredSize() {
             return new Dimension(360, 440);
+        }
+        
+        public ExplorerManager getExplorerManager() {
+            return manager;
         }
     }
 
