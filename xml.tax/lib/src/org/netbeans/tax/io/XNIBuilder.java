@@ -144,16 +144,16 @@ public final class XNIBuilder implements TreeBuilder {
             
             // we just stopped the parser at the end of standalone DTD
             
-        } catch (SAXException sex) {
+        } catch (SAXException sax) {
             
             // test whether wrapped exception is XNI one
             // if so it wrrap actual exception
             
-            Exception exception = sex.getException ();
+            Exception exception = sax.getException ();
             
             if ((exception instanceof DTDStopException) == false ) {
                 
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("sex", sex); // NOI18N
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("sax", sax); // NOI18N
                 if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("exception", exception); // NOI18N
                 
                 if (exception instanceof XNIException) {
@@ -161,10 +161,10 @@ public final class XNIBuilder implements TreeBuilder {
                 }
                 if (exception != null) {
                     if (!!! (exception instanceof TreeException)) {
-                        exception = new TreeException (sex);
+                        exception = new TreeException (sax);
                     }
                 } else {
-                    exception = new TreeException (sex);
+                    exception = new TreeException (sax);
                 }
                 throw (TreeException) exception;
             }
