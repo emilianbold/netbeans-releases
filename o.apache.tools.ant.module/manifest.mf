@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Created-By: Jayme C. Edwards
 OpenIDE-Module: org.apache.tools.ant.module
 OpenIDE-Module-Name: Ant
-OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Specification-Version: 1.3
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/apache/tools/ant/module/AntModuleLayer.xml
 OpenIDE-Module-Description: org.apache.tools.ant.module.docs.HelpSet
