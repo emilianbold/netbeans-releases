@@ -15,6 +15,7 @@ package org.netbeans.modules.db.explorer.infos;
 
 import java.sql.*;
 import java.util.*;
+import org.openide.*;
 import java.io.IOException;
 import org.netbeans.lib.ddl.*;
 import org.openide.nodes.Node;
@@ -29,7 +30,7 @@ public class ColumnNodeInfo extends DatabaseNodeInfo
 {
     static final long serialVersionUID =-1470704512178901918L;
     public boolean canAdd(Map propmap, String propname)
-    {
+{
         if (propname.equals("decdigits")) {
             int type = ((Integer)get("datatype")).intValue();
             if (type == java.sql.Types.FLOAT || type == java.sql.Types.REAL || type == java.sql.Types.DOUBLE) return true;
@@ -58,6 +59,10 @@ public class ColumnNodeInfo extends DatabaseNodeInfo
             RemoveColumn cmd = (RemoveColumn)spec.createCommandRemoveColumn(table);
             cmd.removeColumn((String)get(code));
             cmd.execute();
+            // refresh list of columns after column drop
+            getParent().refreshChildren();
+        } catch(DatabaseException e) {
+            TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to delete column, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
