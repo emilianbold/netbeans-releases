@@ -264,8 +264,9 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.ide.path" refid="xtest.ide.path">
             <classpath id="xtest.ide.path">
                 <!-- XXX this is bad, it assumes the Ant module is installed! -->
-                <pathelement location="${netbeans.test.home}/modules/ext/ant.jar" />
-                <pathelement location="${netbeans.test.home}/modules/ext/ant-optional.jar" />
+                <fileset dir="${netbeans.test.home}/modules/ext">
+                    <include name="ant*.jar"/>
+                </fileset>
             </classpath>
         </property>
 

@@ -35,7 +35,10 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-	<pathelement location="${binroot}/ant/release/modules/ext/ant.jar"/>
+        <fileset dir="${binroot}/ant/release/modules/ext">
+          <include name="ant.jar"/>
+          <include name="ant-1.*.jar"/>
+        </fileset>
 	<pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
       </classpath>
     </javac>
@@ -178,6 +181,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
         <include name="org/apache/tools/ant/types/*.java"/>
         <include name="org/apache/tools/ant/util/*.java"/>
         <include name="org/apache/tools/ant/util/regexp/RegexpMatcher.java"/>
+        <include name="org/apache/tools/ant/util/regexp/RegexpMatcherFactory.java"/>
         <!-- Do not forget about the package list for Javadoc below... -->
       </fileset>
     </copy>
