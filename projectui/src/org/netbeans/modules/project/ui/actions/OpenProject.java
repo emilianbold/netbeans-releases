@@ -27,6 +27,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.windows.WindowManager;
 
 public class OpenProject extends BasicAction {
     
@@ -46,7 +47,7 @@ public class OpenProject extends BasicAction {
         while( true ) {  // Cycle while users does some reasonable action e.g.
                          // select project dir or cancel the chooser
         
-            int option = chooser.showOpenDialog( null ); // Sow the chooser
+            int option = chooser.showOpenDialog( WindowManager.getDefault().getMainWindow() ); // Sow the chooser
               
             if ( option == JFileChooser.APPROVE_OPTION ) {
 
