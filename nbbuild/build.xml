@@ -367,7 +367,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module httpserver/servletapi..."/>
     <ant dir="../httpserver/servletapi" target="netbeans"/>
   </target>
-  <target name="all-i18n" depends="all-openide,all-core,all-properties,all-form,all-openide/deprecated,all-java/srcmodel,all-openide/execution">
+  <target name="all-i18n" depends="all-openide,all-core,all-core/javahelp,all-properties,all-form,all-openide/deprecated,all-java/srcmodel,all-openide/execution">
     <echo message="Building module i18n..."/>
     <ant dir="../i18n" target="netbeans"/>
   </target>
