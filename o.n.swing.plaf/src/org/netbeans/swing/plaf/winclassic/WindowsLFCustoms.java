@@ -129,7 +129,19 @@ public final class WindowsLFCustoms extends LFCustoms {
                 new GuaranteedValue("TabbedPane.focus", Color.GRAY),
 
             "TabbedPane.highlight",
-                new GuaranteedValue("TabbedPane.highlight", Color.WHITE),
+                new GuaranteedValue("TabbedPane.highlight", Color.WHITE) ,
+             
+            "Button.dashedRectGapX",
+               new GuaranteedValue("Button.dashedRectGapX", new Integer(5)),
+               
+            "Button.dashedRectGapY",
+               new GuaranteedValue("Button.dashedRectGapY", new Integer(4)),
+               
+            "Button.dashedRectGapWidth",
+               new GuaranteedValue("Button.dashedRectGapWidth", new Integer(10)),
+               
+            "Button.dashedRectGapHeight",
+               new GuaranteedValue("Button.dashedRectGapHeight", new Integer(8))
         };
     }
     
