@@ -39,13 +39,15 @@ import org.openide.debugger.DebuggerNotFoundException;
 import org.openide.filesystems.*;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.options.ControlPanel;
-import org.openide.windows.*;
+import org.openide.windows.WindowManager;
+import org.openide.windows.OutputWriter;
+import org.openide.windows.InputOutput;
 import org.openide.explorer.*;
 import org.openide.explorer.view.BeanTreeView;
 
-
 import com.netbeans.developer.impl.actions.*;
 import com.netbeans.developer.impl.output.OutputTab;
+import com.netbeans.developer.impl.windows.WindowManagerImpl;
 import org.openide.util.*;
 import org.openide.util.io.*;
 import org.openide.nodes.*;
@@ -81,9 +83,6 @@ public class NbTopManager extends TopManager {
 
   /** ProjectOperation main variable */
   static NbProjectOperation projectOperation;
-
-  /** window manager */
-  static NbWindowManager windowManager;
 
   /** support for listeners */
   static PropertyChangeSupport change;
@@ -155,10 +154,7 @@ public class NbTopManager extends TopManager {
   /** Window manager.
   */
   public WindowManager getWindowManager () {
-    if (windowManager == null) {
-      windowManager = new NbWindowManager ();
-    }
-    return windowManager;
+    return WindowManagerImpl.getDefault();
   }
 
   /** Provides support for www documents.
@@ -428,12 +424,6 @@ public class NbTopManager extends TopManager {
   }
   */
   
-  /** @return the workspace pool for this manager
-  */
-  public WorkspacePool getWorkspacePool () {
-    return NbWorkspacePool.getDefault ();
-  }
-
   /** Provides access to data loader pool.
   * @return the loader pool for the system
   */

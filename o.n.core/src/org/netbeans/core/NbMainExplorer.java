@@ -37,6 +37,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
+import org.openide.windows.Mode;
 
 import com.netbeans.developer.impl.output.OutputTab;
 
@@ -267,6 +268,20 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     }
   }
 
+  private void setRequestedSize(Dimension dim) {
+    Workspace ws = TopManager.getDefault().getWindowManager().
+                   getCurrentWorkspace();
+    if (ws != null) {
+      Mode mode = ws.findMode(this);
+      if (mode != null) {
+        Rectangle bounds = mode.getBounds();
+        bounds.width = dim.width;
+        bounds.height = dim.height;
+        mode.setBounds(bounds);
+      }
+    }
+  }
+
   private void updateTitle () {
     String name = currentManager.getExploredContext().getDisplayName();
     if (name == null) {
@@ -302,8 +317,9 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
   /** Removes listeners.
   */
-  public boolean close () {
-    if (super.close ()) {
+  public boolean canClose () {
+    boolean result = super.canClose();
+    if (result) {
       for (int i = 0; i < managers.length; i++) {
         managers[i].removePropertyChangeListener (managersListener);
       }
@@ -311,10 +327,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
        roots[i].removePropertyChangeListener (rootsListener);
       }
       listenersRegistered = false;
-      return true;
-    } else {
-      return false;
     }
+    return result;
   }
 
   /** Activates copy/cut/paste actions.
@@ -408,6 +422,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  14   Gandalf   1.13        7/11/99  David Simonek   window system change...
 *  13   Gandalf   1.12        6/8/99   Ian Formanek    ---- Package Change To 
 *       org.openide ----
 *  12   Gandalf   1.11        5/30/99  Ian Formanek    Fixed bug 1647 - Open, 

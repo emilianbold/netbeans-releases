@@ -22,7 +22,7 @@ import org.openide.util.NotImplementedException;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import com.netbeans.developer.impl.workspace.WorkspacePoolContext;
+import com.netbeans.developer.impl.windows.nodes.WorkspacePoolContext;
 import com.netbeans.developer.impl.execution.ExecutionEngine;
 
 /** Important places in the system.
@@ -254,6 +254,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  24   Gandalf   1.23        7/11/99  David Simonek   window system change...
 *  23   Gandalf   1.22        7/8/99   Jesse Glick     Context help.
 *  22   Gandalf   1.21        6/28/99  Jaroslav Tulach Debugger types are like 
 *       Executors
