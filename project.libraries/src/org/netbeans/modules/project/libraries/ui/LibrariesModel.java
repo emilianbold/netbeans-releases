@@ -44,14 +44,12 @@ class LibrariesModel extends javax.swing.AbstractListModel implements PropertyCh
 
     /** Creates a new instance of LibrariesModel */
     public LibrariesModel () {
-        this.lresult = Lookup.getDefault().lookup (new Lookup.Template(LibraryProvider.class));
-        this.lresult.addLookupListener (this);
         this.addedLibraries = new ArrayList ();
         this.removedLibraries = new ArrayList ();
         this.changedLibraries = new ArrayList ();
         this.currentStorages = Collections.EMPTY_SET;
         this.storageByLib = new HashMap ();
-        this.actualLibraries = this.getLibraries ();
+        this.getLibraries ();
     }
     
     public Object getElementAt(int index) {
@@ -155,8 +153,11 @@ class LibrariesModel extends javax.swing.AbstractListModel implements PropertyCh
     }
 
     public void storagesChanged () {
-        int oldSize = this.actualLibraries.size();
-        this.actualLibraries = getLibraries();
+        int oldSize;
+        synchronized (this) {
+            oldSize = this.actualLibraries.size();
+            getLibraries();
+        }
         this.fireContentsChanged(this, 0, Math.max(oldSize,this.actualLibraries.size()));
     }
 
@@ -180,8 +181,13 @@ class LibrariesModel extends javax.swing.AbstractListModel implements PropertyCh
         this.currentStorages = Collections.EMPTY_SET;
     }
 
-    private synchronized List getLibraries () {
+    private synchronized void getLibraries () {
         List libraries = new ArrayList();
+        if (this.lresult == null) {
+            //First time
+            this.lresult = Lookup.getDefault().lookup (new Lookup.Template(LibraryProvider.class));
+            this.lresult.addLookupListener (this);
+        }
         Collection instances = this.lresult.allInstances();
         Collection toAdd = new HashSet (instances);
         toAdd.removeAll(this.currentStorages);
@@ -215,13 +221,13 @@ class LibrariesModel extends javax.swing.AbstractListModel implements PropertyCh
         libraries.addAll (this.addedLibraries);
         Collections.sort(libraries, new LibrariesComparator());
 
-        for (Iterator it = toAdd.iterator(); it.hasNext();) {
-            ((LibraryProvider)it.next()).addPropertyChangeListener (this);
-        }
         for (Iterator it = toRemove.iterator(); it.hasNext();) {
             ((LibraryProvider)it.next()).removePropertyChangeListener (this);
         }
-        return libraries;
+        for (Iterator it = toAdd.iterator(); it.hasNext();) {
+            ((LibraryProvider)it.next()).addPropertyChangeListener (this);
+        }
+        this.actualLibraries = libraries;
     }
 
 
