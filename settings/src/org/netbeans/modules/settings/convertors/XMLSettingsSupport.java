@@ -219,6 +219,12 @@ final class XMLSettingsSupport {
             Class clazz = Class.forName(newN, false, cl);
             ObjectStreamClass newOse = ObjectStreamClass.lookup(clazz);
 
+            // #28021 - it is possible that lookup return null. In that case the conversion
+            // table contains class which is not Serializable or Externalizable.
+            if (newOse == null) {
+                throw new java.io.NotSerializableException(newN);
+            }
+            
             return newOse;
         }
     
