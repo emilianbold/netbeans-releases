@@ -219,12 +219,15 @@ public class ServerInstance implements Node.Cookie {
     }
     
     //---------- State API's:  running, debuggable, startedByIDE -----------
+    long lastCheck = 0;
+    boolean isRunning = false;
     public boolean isRunning() {
+        if (System.currentTimeMillis() - lastCheck < 2000) 
+            return isRunning;
         StartServer ss = getStartServer();
-        return ss != null && ss.isRunning();
-    }
-    public boolean isStartedByIde() {
-        return managerStartedByIde;
+        isRunning = ss != null && ss.isRunning();
+        lastCheck = System.currentTimeMillis();
+        return isRunning;
     }
     public boolean isDebuggable() {
         StartServer ss = getStartServer();
@@ -395,6 +398,8 @@ public class ServerInstance implements Node.Cookie {
     //------------------------------------------------------------
     // startDeploymentManager
     private synchronized boolean _start(DeployProgressUI ui) {
+        if (isRunning())
+            return true;
         
         DeployProgressUI.CancelHandler ch = getCancelHandler();
         ui.addCancelHandler(ch);
@@ -431,6 +436,9 @@ public class ServerInstance implements Node.Cookie {
 
 
     private synchronized void _start() {
+        if (isRunning())
+            return;
+        
         StartServer ss = getStartServer();
         String errorMessage = checkStartDM(ss);
         if (errorMessage != null) {
@@ -491,7 +499,7 @@ public class ServerInstance implements Node.Cookie {
             po.addProgressListener(new StartProgressHandler());
             
             // wait until done or cancelled
-            boolean done = sleep();
+             boolean done = sleep();
             if (! done)
                 showStatusText(NbBundle.getMessage(ServerInstance.class, "MSG_StopServerTimeout", url));
             
