@@ -96,6 +96,10 @@ public final class Main extends JFrame {
     }
     
     private void showView() {
+        // Clear caches first!
+        System.gc();
+        System.runFinalization();
+        System.gc();
         final Phadhail model;
         if (synchButton.isSelected()) {
             model = Phadhails.synchronous(root);
@@ -141,10 +145,6 @@ public final class Main extends JFrame {
         frame.pack();
         frame.setSize(500, 500);
         frame.setLocation(mainFrame.getX() + mainFrame.getWidth(), 0);
-        // Clear caches first!
-        System.gc();
-        System.runFinalization();
-        System.gc();
         frame.show();
     }
     
