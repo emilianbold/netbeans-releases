@@ -12,6 +12,7 @@
  */
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.wizards;
+
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
