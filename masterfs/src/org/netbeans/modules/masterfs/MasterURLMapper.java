@@ -78,7 +78,7 @@ public final class MasterURLMapper extends URLMapper {
         } else {
             if (fo.isFolder() && !fo.isValid()) {                
                 String urlDef = file.toURI().toURL().toExternalForm();
-                String pathSeparator = String.valueOf(File.separatorChar);
+                String pathSeparator = "/";//NOI18N
                 if (!urlDef.endsWith(pathSeparator)) {
                     retVal = new URL (urlDef + pathSeparator);     
                 }                  
