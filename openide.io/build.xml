@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
         </enhanceclass>
     </target>
 
-    <target name="jars" depends="init,compile">
+    <target name="jars" depends="compile">
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
@@ -56,7 +56,7 @@ Microsystems, Inc. All Rights Reserved.
 	        compress="false"/>
     </target>
 
-    <target name="netbeans" depends="init,jars">
+    <target name="netbeans" depends="jars">
         <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules/autoload.dir}/openide-io.jar">
           <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
              <patternset refID="openide/io.files"/>
@@ -67,7 +67,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="nbm" depends="netbeans">
         <makenbm file="openide-io.nbm"
                  productdir="${netbeans.dest.dir}/${cluster.dir}"
-                 module="${nb.modules/autoload}/openide-io.jar"
+                 module="${nb.modules/autoload.dir}/openide-io.jar"
                  homepage="http://openide.${homepage.base}/"
                  distribution="http://${dist.base}/openide-io.nbm">
             <license file="${license.file}"/>
