@@ -21,6 +21,11 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="openide" default="netbeans" basedir=".">
   <property name="binroot" location="../../nbextra"/>
+  <property name="homepage.base" value="netbeans.org"/>
+  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+  <property name="license.file" location="org-openide-nbm-license.txt"/>
+
+  <property name="nbm_alias" value="nb_ide"/>
 
   <taskdef name="preprocess" classname="org.netbeans.nbbuild.Preprocess" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="postprocess" classname="org.netbeans.nbbuild.Postprocess" classpath="../nbbuild/nbantext.jar"/>
