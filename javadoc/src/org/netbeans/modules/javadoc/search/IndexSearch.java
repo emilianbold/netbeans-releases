@@ -52,6 +52,8 @@ public class IndexSearch
 
   //static final long serialVersionUID =3206093459760846163L;          
 
+  private static final java.awt.Dimension PREFFERED_SIZE = new java.awt.Dimension( 580, 430 );
+
   static final long serialVersionUID =1200348578933093459L;          
 
   /** The only instance allowed in system */        
@@ -557,19 +559,27 @@ private void showSource (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_show
     quickFind = null;
   }
 
+  java.awt.Dimension getPrefferedSize() {
+    return PREFFERED_SIZE; 
+  }
+
   public static IndexSearch getDefault() {
     if ( indexSearch == null ) {
       indexSearch = new IndexSearch ();
       Workspace workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();  
+
+      /*
       Mode myMode = workspace.createMode(
         "JavaDocSearch", //NOI8N // NOI18N
         org.openide.util.NbBundle.getBundle(IndexSearch.class).getString("IndexSearch.workspace.name"), 
         IndexSearch.class.getResource (ICON_RESOURCE));
-      myMode.setBounds(new Rectangle( 200, 200, 450, 200 ) );
+      myMode.setBounds(new Rectangle( 200, 200, 600, 400 ) );
       myMode.dockInto( indexSearch );
+      */
 
       indexSearch.setName( bundle.getString ("CTL_SEARCH_WindowTitle") );
       indexSearch.setIcon( windowIcon );
+      
     }
     
     return indexSearch;
@@ -768,6 +778,7 @@ private void showSource (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_show
 
 /*
  * Log
+ *  27   Gandalf   1.26        1/18/00  Petr Hrebejk    Window made bigger
  *  26   Gandalf   1.25        1/15/00  Petr Hrebejk    UI Change
  *  25   Gandalf   1.24        1/13/00  Petr Hrebejk    i18n mk3  
  *  24   Gandalf   1.23        1/12/00  Petr Hrebejk    i18n mk2
