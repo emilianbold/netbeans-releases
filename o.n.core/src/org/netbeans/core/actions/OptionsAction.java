@@ -33,6 +33,8 @@ import org.netbeans.core.NbMainExplorer;
  */
 public class OptionsAction extends CallableSystemAction {
 
+    public static final String HELP_ID = "configure"; // NOI18N 
+
     /** Creates new OptionsAction. */
     public OptionsAction() {
     }
@@ -52,7 +54,7 @@ public class OptionsAction extends CallableSystemAction {
     }
 
     public HelpCtx getHelpCtx() {
-        return new org.openide.util.HelpCtx(OptionsAction.class);
+        return new HelpCtx (HELP_ID);
     }
 
     public String getName() {
@@ -61,8 +63,6 @@ public class OptionsAction extends CallableSystemAction {
 
     /** Options panel. Uses singleton pattern. */
     public static final class OptionsPanel extends NbMainExplorer.SettingsTab {
-
-        public static final String HELP_ID = "configure"; // NOI18N 
 
         /** Singleton instance of options panel */
         private static OptionsPanel singleton;
