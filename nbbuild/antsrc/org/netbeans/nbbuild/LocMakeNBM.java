@@ -37,8 +37,13 @@ public class LocMakeNBM extends Task {
   protected String baseFileName = null ;
   protected boolean deleteInfo = false ;
   protected String modInfo = null ;
-  protected File locBundle = null ;  // directory of localizing bundle
-  protected boolean couldNotInferLocBundle = false ;
+  protected String findLocBundle = "." ;  // relative to the directory 
+				          // corresponding to the module's 
+                                          // codename
+  protected File locBundle = null ;  // path to localizing bundle - overrides 
+                                     // findLocBundle
+  protected String locIncludes = null ; // comma-separated list of 
+                                        // "<locale>:<pattern>" elements
 
   public void setLocales( String s) {
     locales = s ;
@@ -64,6 +69,12 @@ public class LocMakeNBM extends Task {
   }
   public void setLocBundle( File f) {
     locBundle = f ;
+  }
+  public void setFindLocBundle( String s) {
+    findLocBundle = s ;
+  }
+  public void setLocIncludes( String s) {
+    locIncludes = s ;
   }
 
   public void execute() throws BuildException {
@@ -124,7 +135,7 @@ public class LocMakeNBM extends Task {
     }
   }
 
-  // Build the NBM for this locale. //
+  /** Build the NBM for this locale. */
   protected void buildNbm( String locale) throws BuildException {
     MakeLNBM makenbm ;
     LinkedList list = new LinkedList() ;
@@ -166,10 +177,10 @@ public class LocMakeNBM extends Task {
 
     // Set the localizing bundle specified, or look for it. //
     if( locBundle != null) {
-      setLocBundle( makenbm, locBundle, locale) ;
+      setLocBundle( makenbm, getSpecificLocBundleFile( locBundle, locale)) ;
     }
     else {
-      lookForLocBundle( makenbm, locale) ;
+      setLocBundle( makenbm, findLocBundle( makenbm, locale)) ;
     }
 
     // Set up the signing data if it's specified. //
@@ -204,8 +215,9 @@ public class LocMakeNBM extends Task {
     switchInfo( false, locale) ;
   }
 
-  // Return the license file associated with this locale if there is //
-  // one.							     //
+  /** Return the license file associated with this locale if there is
+   * one.
+   */
   protected File getLicenseFile( String locale) {
     String license_prop_name = locale + ".license.file" ;
     String license_prop = project.getProperty( license_prop_name) ;
@@ -230,7 +242,7 @@ public class LocMakeNBM extends Task {
     }
   }
 
-  // Get the localized version of the NBM filename. //
+  /** Get the localized version of the NBM filename. */
   protected String getLocalizedFileName( String locale) {
     return( baseFileName + "_" + locale + ".nbm") ;
   }
@@ -242,7 +254,7 @@ public class LocMakeNBM extends Task {
     return( getGlobalProp( "locmakenbm.locales")) ;
   }
 
-  // See if there are any files for the given locale. //
+  /** See if there are any files for the given locale. */
   protected boolean hasFilesInLocale( String loc) {
     FileSet fs ;
     boolean ret = true ;
@@ -261,7 +273,7 @@ public class LocMakeNBM extends Task {
     return( ret) ;
   }
 
-  // Add the patterns to include the localized files for the given locale. //
+  /** Add the patterns to include the localized files for the given locale. */
   protected void addLocalePatterns( FileSet fs,
 				    String loc) {
     LinkedList list = new LinkedList() ;
@@ -291,12 +303,42 @@ public class LocMakeNBM extends Task {
     re = dir + "/**/" + loc + "/" ;    // pattern is: ${dir}/${locale}/
     list.add( new String( re)) ;
 
+    addLocIncludes( list, loc) ;
+
     // For ja locale, include these other variants. //
     if( loc.equals( "ja")) {
       addLocalePatterns( list, "ja_JP.PCK") ;
       addLocalePatterns( list, "ja_JP.SJIS") ;
       addLocalePatterns( list, "ja_JP.UTF-8") ;
       addLocalePatterns( list, "ja_JP.UTF8") ;
+    }
+  }
+
+  protected void addLocIncludes( LinkedList list,
+				 String loc) {
+    StringTokenizer tkzr ;
+    String locInc, incLocale, incPattern ;
+    int idx ;
+
+    if( locIncludes == null) {
+      return ;
+    }
+
+    // For each locale-specific include. //
+    tkzr = new StringTokenizer( locIncludes, ",\n\t ") ;
+    while( tkzr.hasMoreTokens()) {
+      locInc = tkzr.nextToken() ;
+      idx = locInc.indexOf( ":") ;
+      if( idx != -1) {
+	incLocale = locInc.substring( 0, idx) ;
+	incPattern = locInc.substring( idx+1) ;
+	if( incLocale.equals( loc)) {
+	  list.add( new String( incPattern)) ;
+	}
+      }
+      else {
+	list.add( new String( locInc)) ;
+      }
     }
   }
 
@@ -329,7 +371,7 @@ public class LocMakeNBM extends Task {
     return( getGlobalProp( "locmakenbm.alias")) ;
   }
 
-  // If the topDir doesn't exist, warn the user and return true. //
+  /** If the topDir doesn't exist, warn the user and return true. */
   protected boolean printMissingDirWarning() {
     boolean ret = false ;
     File dir = new File( topDir) ;
@@ -340,70 +382,14 @@ public class LocMakeNBM extends Task {
     return( ret) ;
   }
 
-  // If the localizing bundle is there, use it. //
+  /** If the localizing bundle is there, use it. */
   protected void setLocBundle( MakeLNBM makenbm,
-			       File dir,
-			       String locale) {
-    File bundle = getLocBundleFile( dir, locale) ;
-    if( bundle.exists()) {
+			       File bundle) {
+    if( bundle != null && bundle.exists()) {
       makenbm.setLocBundle( bundle) ;
     }
     else {
-      log( "WARNING: Localizing bundle not found: " + bundle) ;
-    }
-  }
-
-  // If we find the localizing bundle in the "normal" place, use it. //
-  protected void lookForLocBundle( MakeLNBM makenbm,
-				   String locale) {
-    String s = null ;
-    int index ;
-    File f, srcdirfile, locdir, locbundlefile ;
-    String srcdir = null ;
-
-    // We don't want to print multiple warnings. //
-    if( couldNotInferLocBundle) {
-      return ;
-    }
-
-    // See if the file containing the srcdir is there. //
-    srcdirfile = new File( topDir + "/srcdir.properties") ;
-    if( srcdirfile.exists()) {
-      srcdir = getSrcDir( srcdirfile) ;
-    }
-    if( srcdir == null) {
-      log( "WARNING: Could not infer the localizing bundle for " + fileName) ;
-      couldNotInferLocBundle = true ;
-      return ;
-    }
-
-    // Get the codename of this module. //
-    index = modInfo.indexOf( "/") ;
-    if( index != -1) {
-      s = modInfo.substring( 0, index) ;
-    }
-    else {
-      s = new String( modInfo) ;
-    }
-
-    // Convert to pathname and set the loc bundle. //
-    s = s.replace( '.', '/') ;
-    locdir = new File( srcdir + "/" + s) ;
-    locbundlefile = getLocBundleFile( locdir, locale) ;
-    if( locbundlefile.exists()) {
-      setLocBundle( makenbm, locdir, locale) ;
-    }
-    else {
-      locdir = new File( locdir.getPath() + "/resources") ;
-      locbundlefile = getLocBundleFile( locdir, locale) ;
-      if( locbundlefile.exists()) {
-	setLocBundle( makenbm, locdir, locale) ;
-      }
-      else {
-	log( "WARNING: Could not find localizing bundle for " + fileName) ;
-log( "file: " + locbundlefile.getPath()) ;
-	couldNotInferLocBundle = true ;
-      }
+      log( "WARNING: Localizing bundle not found: " + ((bundle==null)?(""):(bundle.getPath())) ) ;
     }
   }
 
@@ -443,8 +429,86 @@ log( "file: " + locbundlefile.getPath()) ;
     return( s) ;
   }
 
-  protected File getLocBundleFile( File dir,
-				   String locale) {
+  protected File findLocBundle( MakeLNBM makenbm,
+				String locale) {
+    File srcdirfile, locdir ;
+    int index ;
+    String s, srcdir = null ;
+
+    // See if the file containing the srcdir is there. //
+    srcdirfile = new File( topDir + "/srcdir.properties") ;
+    if( srcdirfile.exists()) {
+      srcdir = getSrcDir( srcdirfile) ;
+    }
+    if( srcdir == null) {
+      throw new BuildException( "ERROR: Could not get source dir for: " + fileName) ;
+    }
+
+    // Get the codename of this module. //
+    index = modInfo.indexOf( "/") ;
+    if( index != -1) {
+      s = modInfo.substring( 0, index) ;
+    }
+    else {
+      s = new String( modInfo) ;
+    }
+
+    // Convert to pathname and set the loc bundle. //
+    s = s.replace( '.', '/') ;
+    locdir = new File( getRelPath( srcdir + "/" + s, findLocBundle)) ;
+    return( getDefaultLocBundleFile( locdir, locale)) ;
+  }
+
+  protected File getDefaultLocBundleFile( File dir,
+					  String locale) {
     return( new File( dir.getPath() + "/Bundle_" + locale + ".properties")) ;
   }
+
+  protected File getSpecificLocBundleFile( File enBundle,
+					   String locale) {
+    String path = enBundle.getPath() ;
+    int idx = path.lastIndexOf( '.') ;
+    if( idx != -1) {
+      return( new File( path.substring( 0, idx) + "_" + locale + path.substring( idx))) ;
+    }
+    else {
+      return( new File( path + "_" + locale)) ;
+    }
+  }
+
+  /** This supports ".." path elements at the start of path2. */
+  protected String getRelPath( String path1,
+			       String path2) {
+    int idx1, idx2 ;
+
+    if( path2.equals( ".")) {
+      return( path1) ;
+    }
+
+    // For each ".." element in path2. //
+    while( true) {
+      idx2 = path2.indexOf( "..") ;
+      if( idx2 == -1) {
+	break ;
+      }
+
+      // Strip off the ".." //
+      path2 = path2.substring( 2) ;
+
+      // Strip off the slash if it starts with slash. //
+      idx2 = path2.indexOf( "/") ;
+      if( idx2 == 0) {
+	path2 = path2.substring( 1) ;
+      }
+
+      // Strip off the last element of path1. //
+      idx1 = path1.lastIndexOf( "/") ;
+      if( idx1 != -1) {
+	path1 = path1.substring( 0, idx1) ;
+      }
+    }
+
+    return( path1 + "/" + path2) ;
+  }
+
 }
