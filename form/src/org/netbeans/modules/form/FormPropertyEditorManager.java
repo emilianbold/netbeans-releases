@@ -159,6 +159,8 @@ final public class FormPropertyEditorManager extends Object {
       }
     }
 
+    // Fourth add the RADConnectionPropertyEditor as the default editor for all values
+    editorsList.add (new RADConnectionPropertyEditor (type));
 
     PropertyEditor[] eds = new PropertyEditor[editorsList.size ()];
     editorsList.toArray (eds);
@@ -177,6 +179,8 @@ final public class FormPropertyEditorManager extends Object {
 
 /*
  * Log
+ *  5    Gandalf   1.4         6/27/99  Ian Formanek    Employed 
+ *       RADConnectionPropertyEditor
  *  4    Gandalf   1.3         6/22/99  Ian Formanek    registering transient 
  *       property editors
  *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
