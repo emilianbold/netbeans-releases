@@ -76,7 +76,7 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
             return perform (
                 breakpoint.getCondition (),
                 ((ExceptionEvent) event).thread (),
-                ((ExceptionEvent) event).exception ().referenceType (),
+                ((ExceptionEvent) event).location().declaringType(),
                 ((ExceptionEvent) event).exception ()
             );
         return super.exec (event);
