@@ -42,6 +42,7 @@ import org.openide.options.ControlPanel;
 import org.openide.windows.WindowManager;
 import org.openide.windows.OutputWriter;
 import org.openide.windows.InputOutput;
+import org.openide.windows.TopComponent;
 import org.openide.explorer.*;
 import org.openide.explorer.view.BeanTreeView;
 
@@ -148,13 +149,28 @@ public class NbTopManager extends TopManager {
   /** Creates new dialog.
   */
   public Dialog createDialog (DialogDescriptor d) {
+    // if there is some modal dialog active, sets it as a parent
+    // of created dialog
     if (NbPresenter.currentModalDialog != null) {
       return new NbDialog(d, NbPresenter.currentModalDialog);
     }
-    return new NbDialog(
-      d, 
-      TopManager.getDefault().getWindowManager().getMainWindow()
-    );
+    // if there is some active top component and has focus, set its frame as
+    // an owner of created dialog, or set main window otherwise
+    TopComponent curTc = TopComponent.getRegistry().getActivated();
+    Frame mainWindow = TopManager.getDefault().getWindowManager().getMainWindow();
+    Frame owner = null;
+    if ((curTc != null) && (SwingUtilities.findFocusOwner(curTc) != null)) {
+      // try to find top component's parent frame
+      Component comp = SwingUtilities.windowForComponent(curTc);
+      while ((comp != null) && !(comp instanceof Frame)) {
+        comp = comp.getParent();
+      }
+      owner = (Frame)comp;
+    }
+    if (owner == null) {
+      owner = mainWindow;
+    }
+    return new NbDialog(d, owner);
   }
 
   /** Interesting places.
