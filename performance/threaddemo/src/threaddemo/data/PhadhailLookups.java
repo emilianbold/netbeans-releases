@@ -35,15 +35,14 @@ public class PhadhailLookups {
     /** no instances */
     private PhadhailLookups() {}
     
-    private static final Map lookups = new WeakHashMap(); // Map<Phadhail,Reference<PhadhailLookup>>
+    private static final Map lookups = new WeakHashMap(); // Map<Phadhail,PhadhailLookup>
     
     // XXX rather than being synch, should be readAccess, and modified/saved should be writeAccess
     public static synchronized Lookup getLookup(Phadhail ph) {
-        Reference r = (Reference)lookups.get(ph);
-        Lookup l = (r != null) ? (Lookup)r.get() : null;
+        Lookup l = (Lookup)lookups.get(ph);
         if (l == null) {
             l = new PhadhailLookup(ph);
-            lookups.put(ph, new WeakReference(l));
+            lookups.put(ph, l);
         }
         return l;
     }
