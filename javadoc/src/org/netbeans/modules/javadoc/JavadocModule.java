@@ -187,6 +187,8 @@ public class JavadocModule implements ModuleInstall {
     String actionShortName = Utilities.getShortClassName (actionClass);
     String actionName = actionClass.getName ();
 
+    if (InstanceDataObject.find (folder, actionShortName, actionName) != null) return;  
+
     DataObject[] children = folder.getChildren ();
     DataObject[] newOrder = new DataObject [children.length + 2 ];
     
@@ -265,6 +267,7 @@ public class JavadocModule implements ModuleInstall {
 
 /* 
  * Log
+ *  14   Gandalf   1.13        7/21/99  Petr Hrebejk    Action installation fix
  *  13   Gandalf   1.12        7/20/99  Petr Hrebejk    Action installation 
  *       added
  *  12   Gandalf   1.11        7/9/99   Petr Hrebejk    JavaDoc comments support
