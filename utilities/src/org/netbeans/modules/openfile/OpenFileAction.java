@@ -49,14 +49,12 @@ static final long serialVersionUID =-3424129228987962529L;
     currDir = chooser.getCurrentDirectory ();
   }
   
-  public static void main (String[] ignore) {
-    new OpenFileAction ().performAction ();
-  }
-  
 }
 
 /*
  * Log
+ *  8    Gandalf   1.7         11/2/99  Jesse Glick     Commented out testing 
+ *       code.
  *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  6    Gandalf   1.5         8/18/99  Jesse Glick     Compilation error.
