@@ -28,10 +28,19 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Root directory of the file browsers: -->
     <property name="testdir" location="/tmp"/>
 
-    <path id="cp">
+    <path id="build.cp">
         <pathelement location="${openide.jar}"/>
         <pathelement location="${looks.jar}"/>
         <pathelement location="${Spin.jar}"/>
+    </path>
+    
+    <path id="run.cp">
+        <path refid="build.cp"/>
+        <pathelement location="threaddemo.jar"/>
+        <fileset dir="${nbroot}/libs/external">
+            <include name="xerces*.jar"/>
+            <include name="xml-commons-dom-ranges*.jar"/>
+        </fileset>
     </path>
     
     <target name="init">
@@ -46,24 +55,38 @@ Microsystems, Inc. All Rights Reserved.
     <target name="build-looks" depends="init,build-openide">
         <ant dir="${nbroot}/nbbuild" target="all-openide/looks"/>
     </target>
-
-    <target name="build" depends="build-openide,build-looks">
+    
+    <target name="compile" depends="build-openide,build-looks">
         <javac srcdir="src" destdir="src" debug="true" deprecation="true" source="1.4">
-            <classpath refid="cp"/>
+            <classpath refid="build.cp"/>
         </javac>
-        <jar jarfile="threaddemo.jar" manifest="manifest.mf">
+    </target>
+
+    <target name="build" depends="compile">
+        <jar jarfile="threaddemo.jar" manifest="manifest.mf" compress="false">
             <fileset dir="src">
                 <include name="**/*.class"/>
             </fileset>
         </jar>
     </target>
+    
+    <target name="build-complete" depends="compile">
+        <jar jarfile="threaddemo-complete.jar" manifest="manifest.mf" compress="true">
+            <fileset dir="src"/>
+            <zipfileset src="${openide.jar}"/>
+            <zipfileset src="${looks.jar}"/>
+            <zipfileset src="${Spin.jar}"/>
+            <!-- Xerces -->
+            <zipgroupfileset dir="${nbroot}/libs/external">
+                <include name="xerces*.jar"/>
+                <include name="xml-commons-dom-ranges*.jar"/>
+            </zipgroupfileset>
+        </jar>
+    </target>
 
     <target name="run" depends="build">
         <java classname="threaddemo.Main" fork="true" failonerror="true">
-            <classpath>
-                <path refid="cp"/>
-                <pathelement location="threaddemo.jar"/>
-            </classpath>
+            <classpath refid="run.cp"/>
             <arg file="${testdir}"/>
             <jvmarg value="-Xmx64m"/>
             <jvmarg value="-ea"/>
@@ -72,10 +95,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="debug" depends="build">
         <java classname="threaddemo.Main" fork="true" failonerror="true">
-            <classpath>
-                <path refid="cp"/>
-                <pathelement location="threaddemo.jar"/>
-            </classpath>
+            <classpath refid="run.cp"/>
             <arg file="${testdir}"/>
             <jvmarg value="-Xmx64m"/>
             <jvmarg value="-ea"/>
@@ -89,8 +109,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="optit" depends="build">
         <java classname="intuitive.audit.Audit" fork="true" failonerror="true">
             <classpath>
-                <path refid="cp"/>
-                <pathelement location="threaddemo.jar"/>
+                <path refid="run.cp"/>
                 <pathelement location="${optit}/lib/optit.jar"/>
             </classpath>
             <arg value="-startCPUprofiler:type=sampler,samplingPeriod=1,onlyCPU=true"/>
@@ -107,14 +126,19 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="javadoc">
+        <property name="javadoc.docs.jdk" value="http://java.sun.com/j2se/1.4.2/docs/api"/>
+        <property name="javadoc.web.root" value="http://www.netbeans.org/download/dev/javadoc"/>
+        <property name="javadoc.docs.openide" value="${javadoc.web.root}/OpenAPIs"/>
         <javadoc destdir="javadoc" source="1.4">
             <classpath>
-                <path refid="cp"/>
+                <path refid="build.cp"/>
             </classpath>
             <sourcepath>
                 <pathelement location="src"/>
             </sourcepath>
             <fileset dir="src"/>
+            <link href="${javadoc.docs.jdk}" offline="true" packagelistloc="${nbroot}/openide/api/doc"/>
+            <link href="${javadoc.docs.openide}" offline="true" packagelistloc="${nbroot}/openide/javadoc/OpenAPIs"/>
         </javadoc>
     </target>
     
