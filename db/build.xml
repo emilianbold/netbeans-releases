@@ -29,7 +29,6 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
 	<pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
-        <!--<pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>-->
         <fileset dir="${nbroot}/openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
@@ -42,7 +41,6 @@ Microsystems, Inc. All Rights Reserved.
       <classpath>
         <pathelement path="libsrc"/>
 	<pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
-        <!--<pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>-->
         <fileset dir="${nbroot}/openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
@@ -52,7 +50,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="tojar">
-    <tojar srcdir="src" unpackeddir="tojar"/>
+<!--    <tojar srcdir="src" unpackeddir="tojar"/>-->
   </target>
 
   <target name="jars" depends="tojar,compile">
