@@ -22,6 +22,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="compile">
     <javac srcdir="src" destdir="src">
+      <include name="org/netbeans/modules/extbrowser/"/>
       <classpath>
         <!--<pathelement location="patches"/>-->
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
@@ -40,14 +41,6 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <jar jarfile="netbeans/modules/extbrowser.jar"
          manifest="manifest-subst.mf"
-         excludes="org/openide/"
-         basedir="src"
-	 excludesfile="../nbbuild/standard-jar-excludes.txt"
-	 compress="false"/>
-    <mkdir dir="netbeans/lib"/>
-    <mkdir dir="netbeans/lib/patches"/>
-    <jar jarfile="netbeans/lib/patches/extbrowser_patch.jar"
-         excludes="org/netbeans/"
          basedir="src"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
@@ -73,13 +66,15 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="clean">
-    <delete dir="src">
-      <include name="**/*.class"/>
+    <delete>
+      <fileset dir="src">
+        <include name="**/*.class"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="extbrowser.nbm"/>
-    <deltree dir="netbeans"/>
-    <deltree dir="Info"/>
+    <delete dir="netbeans"/>
+    <delete dir="Info"/>
   </target>
 
 </project>

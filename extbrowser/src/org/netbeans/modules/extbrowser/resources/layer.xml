@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+  <folder name="Services">
+    <folder name="Browsers">
+      <file name="Simple External Browser.ser" url="SimpleExtBrowser.ser"/>
+      <file name="External Web Browser.ser" url="ExtWebBrowser.ser"/>
+    </folder>
+  </folder>
+
+  <folder name="ServiceTemplates">
+    <folder name="Browsers">
+      <file name="Simple External Browser[org-netbeans-modules-extbrowser-SimpleExtBrowser].instance">
+        <attr name="isTemplate" boolvalue="true"/>
+      </file>
+    </folder>
+  </folder>
+</filesystem>

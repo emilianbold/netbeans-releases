@@ -38,22 +38,10 @@ import org.netbeans.modules.httpserver.*;
  * @author Radim Kubacki
  * @version 1.0
  */
-public class UnixBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
+public class UnixBrowserImpl extends ExtBrowserImpl {
     
     private static ResourceBundle bundle = NbBundle.getBundle(UnixBrowserImpl.class);
     
-    /** standart helper variable */
-    private PropertyChangeSupport pcs;
-    
-    /** component displayed in NB window */
-    private HtmlBrowser.Impl   browserComp;
-    
-    /** requested URL */
-    private URL url;
-    private String statusMsg = "";  // NOI18N
-    private String title = "";      // NOI18N
-    
-
     /** windowID of servicing window (-1 if there is no assocciated window */
     private transient int     currWinID = -1;
     
@@ -64,77 +52,21 @@ public class UnixBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
     int probeDelayLength = 3000;
 
     /** Creates new UnixBrowserImpl */
-    public UnixBrowserImpl (org.openide.awt.HtmlBrowser.Factory fact) {
-        pcs = new PropertyChangeSupport (this);
+    public UnixBrowserImpl () {
+        super ();
         currWinID = -1;
-        browserComp = fact.createHtmlBrowserImpl ();
     }
     
-    /** Moves the browser forward. Failure is ignored.
-     *  disabled
+    /** This should navigate browser back. Actually does nothing.
      */
     public void backward() {
         return;
     }
     
-    /** Moves the browser forward. Failure is ignored.
-     *  disabled
+    /** This should navigate browser forward. Actually does nothing.
      */
     public void forward() {
         return;
-    }
-    
-    /** Returns default component of html browser which is based on swing editor pane.
-     *
-     * @return visual component of html browser.
-     */
-    public java.awt.Component getComponent() {
-        return browserComp.getComponent ();
-    }
-    
-    /** Sets new status message for the displayed page.
-     * @param msg new message
-     */
-    private void setStatusMessage (String msg) {
-        String old = this.statusMsg;
-        this.statusMsg = msg;
-        pcs.firePropertyChange (PROP_STATUS_MESSAGE, old, msg);
-        
-        return;
-    }
-    
-    /** Returns status message representing status of html browser.
-     *
-     * @return status message.
-     */
-    public String getStatusMessage() {
-        return statusMsg;
-    }
-    
-    /** Sets new title of the displayed page.
-     * @param title new title
-     */
-    private void setTitle (String title) {
-        String old = this.title;
-        this.title = title;
-        pcs.firePropertyChange (PROP_TITLE, old, title);
-        
-        return;
-    }
-    
-    /** Returns title of the displayed page.
-     * @return title
-     */
-    public String getTitle() {
-        return title;
-    }
-    
-    /** Returns current URL.
-     *
-     * @return current URL.
-     */
-    public URL getURL() {
-        return url;
     }
     
     /** Is backward button enabled?
@@ -158,7 +90,7 @@ public class UnixBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
         return false;
     }
     
-    /** Reloads current html page.
+    /** It does nothing in this implementation.
      */
     public void reloadDocument() {
     }
@@ -178,17 +110,9 @@ public class UnixBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
      */
     public void setURL(URL url) {
         try {
+            super.setURL (url);
             // internal protocols cannot be displayed in external viewer
-            if (url.getProtocol ().equals ("nbfs")               // NOI18N
-            ||  url.getProtocol ().equals ("nbres")              // NOI18N
-            ||  url.getProtocol ().equals ("nbrescurr")          // NOI18N
-            ||  url.getProtocol ().equals ("nbresloc")           // NOI18N
-            ||  url.getProtocol ().equals ("nbrescurrloc")) { // NOI18N
-                browserComp.setURL (url);
-
-                URL old = this.url;
-                this.url = url;
-                pcs.firePropertyChange (PROP_URL, old, url);
+            if (isInternalProtocol (url.getProtocol ())) {
                 if (url.getProtocol ().equals ("nbfs") // NOI18N
                 &&  url.getPath () != null)               
                     url = new java.net.URL ("http", "localhost", getInternalServerPort (), 
@@ -301,22 +225,6 @@ public class UnixBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
         return setting.getPort ();
     }
     
-    /** Adds PropertyChangeListener to this browser.
-     *
-     * @param l Listener to add.
-     */
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        pcs.addPropertyChangeListener (l);
-    }
-    
-    /** Removes PropertyChangeListener from this browser.
-     *
-     * @param l Listener to remove.
-     */
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        pcs.removePropertyChangeListener (l);
-    }
-    
     /** 
      *  tries to find property for window, property must be of type STRING
      *
@@ -408,18 +316,4 @@ public class UnixBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
         }
         
     }
-    
-    public static class UnixBrowserFactory implements org.openide.awt.HtmlBrowser.Factory {
-        
-        org.openide.awt.HtmlBrowser.Factory oldFactory;
-        
-        public UnixBrowserFactory (org.openide.awt.HtmlBrowser.Factory oldFact) {
-            oldFactory = oldFact;
-        }
-        
-        public HtmlBrowser.Impl createHtmlBrowserImpl () {
-            return new UnixBrowserImpl (oldFactory);
-        }
-    }
-    
 }
