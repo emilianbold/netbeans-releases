@@ -99,26 +99,27 @@ class FakeTextComponentPeer extends FakeComponentPeer
 
     protected class Delegate extends Component
     {
+        Delegate() {
+            this.setBackground(SystemColor.window);
+            this.setForeground(SystemColor.windowText);
+        }
+        
         public void paint(Graphics g) {
             Dimension sz = _target.getSize();
-            int w = sz.width,
-                h = sz.height;
+            int w = sz.width;
+            int h = sz.height;
 
-            // background & border
-            Color c = getBackground();
-            if (c == null)
-                c = SystemColor.window; // white
-            g.setColor(c);
+            g.setColor(_target.getBackground());
             FakePeerUtils.drawLoweredBox(g,0,0,w,h);
 
             g.setClip(1,1,w-3,h-3);
 
             if (_target.isEnabled()) {
-                c = getForeground();
-                if (c == null)
-                    c = SystemColor.controlText;
-            } else c = SystemColor.controlShadow;
-            g.setColor(c);
+                g.setColor(_target.getForeground());
+            }
+            else {
+                g.setColor(SystemColor.controlShadow);
+            }
         }
     }
 }

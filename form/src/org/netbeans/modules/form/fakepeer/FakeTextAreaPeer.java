@@ -72,20 +72,22 @@ class FakeTextAreaPeer extends FakeTextComponentPeer implements TextAreaPeer
         public void paint(Graphics g) {
             super.paint(g);
 
-            TextArea target =(TextArea) _target;
+            TextArea target = (TextArea) _target;
             Dimension sz = target.getSize();
-            int w = sz.width,
-                h = sz.height;
+            int w = sz.width;
+            int h = sz.height;
             String text = target.getText();
 
-            if (text != null) { // draw the text
+            if (text != null) {
                 g.setFont(target.getFont());
-
+                g.setColor(target.getForeground());
+                
                 FontMetrics fm = g.getFontMetrics();
-                int th = fm.getHeight(),
-                    ty = th,
-                    i = target.getCaretPosition(),
-                    len = text.length();
+                int th = fm.getHeight();
+                int ty = th;
+                int i = target.getCaretPosition();
+                int len = text.length();
+                
                 StringBuffer buf = new StringBuffer(len);
 
                 for ( ; i < len; i++) {
@@ -93,27 +95,28 @@ class FakeTextAreaPeer extends FakeTextComponentPeer implements TextAreaPeer
                     if (ch != '\n' && ch != '\r') buf.append(ch);
                     else if (ch == '\n') {
                         g.drawString(buf.toString(),4,ty);
-                        if (ty > h) break;
+                        if (ty > h)
+                            break;
                         ty += th;
                         buf.delete(0,buf.length());
                     }
                 }
-                g.drawString(buf.toString(),4,ty);
+                g.drawString(buf.toString(), 4, ty);
             }
 
             if (sz.width > FakePeerUtils.SCROLL_W*2 && 
                 sz.height > FakePeerUtils.SCROLL_H*2) {
-                g.setColor(SystemColor.controlHighlight); //SystemColor.scrollbar
+                g.setColor(SystemColor.controlHighlight);
                 FakePeerUtils.drawScrollbar(g,2,h-FakePeerUtils.SCROLL_H-2,
                                             w-4-FakePeerUtils.SCROLL_W,FakePeerUtils.SCROLL_H,
                                             Scrollbar.HORIZONTAL,false,true,0,0,0);
 
-                g.setColor(SystemColor.controlHighlight); //SystemColor.scrollbar
+                g.setColor(SystemColor.controlHighlight);
                 FakePeerUtils.drawScrollbar(g,w-FakePeerUtils.SCROLL_W-2,2,
                                             FakePeerUtils.SCROLL_W,h-4-FakePeerUtils.SCROLL_H,
                                             Scrollbar.VERTICAL,false,true,0,0,0);
 
-                g.setColor(SystemColor.controlHighlight); //SystemColor.scrollbar
+                g.setColor(SystemColor.controlHighlight);
                 g.fillRect(w-FakePeerUtils.SCROLL_W-2,h-FakePeerUtils.SCROLL_H-2,
                            FakePeerUtils.SCROLL_W,FakePeerUtils.SCROLL_H);
             }

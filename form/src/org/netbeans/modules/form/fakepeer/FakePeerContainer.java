@@ -26,6 +26,7 @@ public class FakePeerContainer extends Container
 {
     public FakePeerContainer() {
         super();
+        setFont(new Font("Dialog", Font.PLAIN, 12)); // NOI18N
     }
 
     public void addNotify() {

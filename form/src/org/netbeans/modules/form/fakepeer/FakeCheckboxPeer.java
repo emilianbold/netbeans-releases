@@ -48,22 +48,22 @@ class FakeCheckboxPeer extends FakeComponentPeer implements CheckboxPeer
 
     private class Delegate extends Component
     {
+        Delegate() {
+            this.setBackground(SystemColor.control);
+            this.setForeground(SystemColor.controlText);
+        }
+        
         public void paint(Graphics g) {
-            Checkbox target =(Checkbox) _target;
-
+            Checkbox target = (Checkbox) _target;
             Dimension sz = target.getSize();
-            int bx = 0,
-                by = (sz.height - BOX_H) / 2;
+            int bx = 0;
+            int by = (sz.height - BOX_H) / 2;
 
-            // background
-            Color c = getBackground();
-            if (c == null)
-                c = SystemColor.control;
-            g.setColor(c);
+            g.setColor(target.getBackground());
             g.fillRect(0, 0, sz.width, sz.height);
 
-            // label
             String label = target.getLabel();
+            
             if (label != null) {
                 g.setFont(target.getFont());
 
@@ -71,13 +71,11 @@ class FakeCheckboxPeer extends FakeComponentPeer implements CheckboxPeer
                 int h = fm.getHeight() - fm.getDescent(),
                     x = 18,
                     y = (sz.height - h) / 2 + h - 2;
-
+            
                 if (target.isEnabled()) {
-                    c = getForeground();
-                    if (c == null)
-                        c = SystemColor.controlText;
-                    g.setColor(c);
-                } else {
+                    g.setColor(target.getForeground());
+                }
+                else {
                     g.setColor(SystemColor.controlLtHighlight);
                     g.drawString(label, x+1, y+1);
                     g.setColor(SystemColor.controlShadow);
@@ -88,6 +86,7 @@ class FakeCheckboxPeer extends FakeComponentPeer implements CheckboxPeer
             }
 
             // the check-box (Windows like - lowered, white background)
+            
             if (target.getCheckboxGroup() == null) {
                 g.setColor(SystemColor.window);
                 FakePeerUtils.drawLoweredBox(g,bx,by,BOX_W,BOX_H);
@@ -98,10 +97,10 @@ class FakeCheckboxPeer extends FakeComponentPeer implements CheckboxPeer
                         g.drawLine(drCheckPosX_W[i-1]+bx,drCheckPosY_W[i-1]+by,
                                    drCheckPosX_W[i]+bx,drCheckPosY_W[i]+by);
                 }
-            } else { // radio button
+            }
+            else { // radio button
                 if (radButtIcon1 == null || radButtIcon2 == null)
                     initRBImages();
-
                 g.drawImage(target.getState() ? radButtIcon2:radButtIcon1, bx+1, by+1, this);
             }
         }

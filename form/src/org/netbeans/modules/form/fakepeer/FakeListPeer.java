@@ -92,40 +92,42 @@ class FakeListPeer extends FakeComponentPeer implements ListPeer
 
     private class Delegate extends Component 
     {
+        Delegate() {
+            this.setBackground(SystemColor.window);
+            this.setForeground(SystemColor.windowText);
+        }
+        
         public void paint(Graphics g) {
             List target =(List) _target;
-
             Dimension sz = target.getSize();
-            int w = sz.width,
-                h = sz.height;
+            int w = sz.width;
+            int h = sz.height;
 
-            // background & border
-            Color c = getBackground();
-            if (c == null)
-                c = SystemColor.window; // white
-            g.setColor(c);
+            g.setColor(target.getBackground());
             FakePeerUtils.drawLoweredBox(g,0,0,w,h);
 
             int n = target.getItemCount();
-            if (n > 0) { // draw the items of the list...
-                if (target.isEnabled()) {
-                    c = getForeground();
-                    if (c == null)
-                        c = SystemColor.controlText;
-                } else c = SystemColor.controlShadow;
-                g.setColor(c);
-                g.setFont(target.getFont());
-                g.setClip(1,1,w-5,h-4);
+            if (n <= 0)
+                return;
 
-                FontMetrics fm = g.getFontMetrics();
-                int th = fm.getHeight(),
-                    ty = th+2;
+            if (target.isEnabled()) {
+                g.setColor(target.getForeground());
+            }
+            else {
+                g.setColor(SystemColor.controlShadow);
+            }
+            
+            g.setFont(target.getFont());
+            g.setClip(1,1,w-5,h-4);
 
-                for (int i=0; i < n; i++) {
-                    g.drawString(target.getItem(i), 4, ty);
-                    if (ty > h) break;
-                    ty += th;
-                }
+            FontMetrics fm = g.getFontMetrics();
+            int th = fm.getHeight(),
+                ty = th+2;
+            
+            for (int i=0; i < n; i++) {
+                g.drawString(target.getItem(i), 4, ty);
+                if (ty > h) break;
+                ty += th;
             }
         }
 

@@ -52,16 +52,15 @@ class FakeScrollPanePeer extends FakeContainerPeer implements ScrollPanePeer
 
     private class Delegate extends Component
     {
+        Delegate() {
+            this.setBackground(SystemColor.scrollbar);
+        }
+        
         public void paint(Graphics g) {
-            ScrollPane target =(ScrollPane) _target;
-
+            ScrollPane target = (ScrollPane) _target;
             Dimension sz = target.getSize();
 
-            // background & border
-            Color c = getBackground();
-            if (c == null)
-                c = SystemColor.scrollbar; // light gray
-            g.setColor(c);
+            g.setColor(target.getBackground());
             FakePeerUtils.drawLoweredBox(g,0,0,sz.width,sz.height);
         }
 

@@ -85,6 +85,21 @@ public class FormModel
         }
         topRADComponent.initialize(this);
         topRADComponent.setComponent(formInfo.getFormInstance().getClass());
+
+        Object refInstance = formInfo.getFormInstance();
+        Object instance = topRADComponent.getBeanInstance();
+        if (refInstance instanceof java.applet.Applet
+            || refInstance instanceof Frame
+            || refInstance instanceof Panel
+            || refInstance instanceof Dialog)
+        {
+            Component refComp = (Component) refInstance;
+            Component comp = (Component) instance;
+            
+            comp.setBackground(refComp.getBackground());
+            comp.setForeground(refComp.getForeground());
+            comp.setFont(refComp.getFont());
+        }
         topRADComponent.setName(formDataObject.getName());
     }
 

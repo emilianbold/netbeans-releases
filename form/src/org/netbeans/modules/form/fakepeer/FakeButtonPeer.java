@@ -44,42 +44,40 @@ class FakeButtonPeer extends FakeComponentPeer implements ButtonPeer
 
     private class Delegate extends Component
     {
+        Delegate() {
+            this.setBackground(SystemColor.control);
+            this.setForeground(SystemColor.controlText);
+        }
+        
         public void paint(Graphics g) {
             Button target =(Button) _target;
-
             Dimension sz = target.getSize();
 
-            // background & border
-            Color c = getBackground();
-            if (c == null)
-                c = SystemColor.control; // light gray
-            g.setColor(c);
+            g.setColor(target.getBackground());
             FakePeerUtils.drawButton(g, 0, 0, sz.width, sz.height);
 
-            // label
             String label = target.getLabel();
-            if (label != null) {
-                g.setFont(_target.getFont());
+            if (label == null)
+                return;
+            
+            g.setFont(target.getFont());
 
-                FontMetrics fm = g.getFontMetrics();
-                int w = fm.stringWidth(label),
-                    h = fm.getHeight() - fm.getDescent(),
-                    x = (sz.width - w) / 2,
-                    y = (sz.height - h) / 2 + h - 2;
-
-                if (target.isEnabled()) {
-                    c = getForeground();
-                    if (c == null)
-                        c = SystemColor.controlText;
-                    g.setColor(c);
-                } else {
-                    g.setColor(SystemColor.controlLtHighlight);
-                    g.drawString(label, x+1, y+1);
-                    g.setColor(SystemColor.controlShadow);
-                }
-
-                g.drawString(label, x, y);
+            FontMetrics fm = g.getFontMetrics();
+            int w = fm.stringWidth(label),
+                h = fm.getHeight() - fm.getDescent(),
+                x = (sz.width - w) / 2,
+                y = (sz.height - h) / 2 + h - 2;
+            
+            if (target.isEnabled()) {
+                g.setColor(target.getForeground());
             }
+            else {
+                g.setColor(SystemColor.controlLtHighlight);
+                g.drawString(label, x+1, y+1);
+                g.setColor(SystemColor.controlShadow);
+            }
+
+            g.drawString(label, x, y);
         }
 
         public Dimension getMinimumSize() {

@@ -24,7 +24,7 @@ import java.awt.*;
 
 class FakePeerUtils
 {
-    public static void drawButton(Graphics g,int x,int y,int w,int h) {
+    static void drawButton(Graphics g,int x,int y,int w,int h) {
         g.fillRect(x,y,w,h);
 
         // button has a raised border (Windows)
@@ -44,8 +44,9 @@ class FakePeerUtils
         }
     }
 
-    public static void drawArrowButton(Graphics g,
-                                       int x,int y,int w,int h,int type,boolean enabled) {
+    static void drawArrowButton(Graphics g,
+                                int x, int y, int w, int h,
+                                int type, boolean enabled) {
         g.setColor(SystemColor.control);
         drawButton(g,x,y,w,h);
 
@@ -99,17 +100,17 @@ class FakePeerUtils
         }
     }
 
-    public static void drawChoiceButton(Graphics g,int x,int y,int w,int h,boolean enabled) {
+    static void drawChoiceButton(Graphics g,int x,int y,int w,int h,boolean enabled) {
         // Windows-like style - a button with an arrow
         drawArrowButton(g,x,y,w,h,4,enabled);
     }
 
-    public static void drawScrollThumb(Graphics g,int x,int y,int w,int h) {
+    static void drawScrollThumb(Graphics g,int x,int y,int w,int h) {
         // Windows-like style - thumb looks just like a button
         drawButton(g,x,y,w,h);
     }
 
-    public static void drawLoweredBox(Graphics g,int x,int y,int w,int h) {
+    static void drawLoweredBox(Graphics g,int x,int y,int w,int h) {
         g.fillRect(x,y,w,h);
 
         g.setColor(SystemColor.controlShadow);
@@ -128,8 +129,11 @@ class FakePeerUtils
         }
     }
 
-    public static void drawScrollbar(Graphics g,int x,int y,int w,int h,int orientation,
-                                     boolean enabled,boolean border,int relValue,int amount,int range) {
+    static void drawScrollbar(Graphics g,
+                              int x,int y,int w,int h,
+                              int orientation,
+                              boolean enabled,
+                              boolean border,int relValue,int amount,int range) {
         g.fillRect(x, y, w, h); // color (for background) is expected to be set outside
 
         if (border) { // border (Windows style)

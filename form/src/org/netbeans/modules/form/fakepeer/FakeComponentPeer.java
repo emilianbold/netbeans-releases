@@ -60,10 +60,7 @@ abstract class FakeComponentPeer implements FakePeer
         _delegate = null;
     }
 
-    // XXX should be abstract
-    Component createDelegate() {
-        return null;
-    }
+    abstract Component createDelegate();
 
     public void setVisible(boolean visible) {
         _delegate.setVisible(visible);
@@ -74,8 +71,16 @@ abstract class FakeComponentPeer implements FakePeer
     }
 
     public void paint(Graphics g) {
-        _delegate.paint(g);
-        _target.paint(g);
+        Font oldFont = g.getFont();
+        Color oldColor = g.getColor();
+        try {
+            _delegate.paint(g);
+            _target.paint(g);
+        }
+        finally {
+            g.setColor(oldColor);
+            g.setFont(oldFont);
+        }
     }
 
     public void repaint(long tm, int x, int y, int w, int h) {
@@ -234,15 +239,14 @@ abstract class FakeComponentPeer implements FakePeer
         public void paint(Graphics g) {
             Dimension sz = _target.getSize();
 
-            // background & border
-            Color c = getBackground();
+            Color c = _target.getBackground();
             if (c == null)
                 c = SystemColor.window;
             g.setColor(c);
             FakePeerUtils.drawLoweredBox(g,0,0,sz.width,sz.height);
 
             // by default display the class name
-            g.setFont(new Font("Dialog", Font.BOLD, 12));
+            g.setFont(new Font("Dialog", Font.BOLD, 12)); // NOI18N
 
             String className = _target.getClass().getName();
             className = className.substring(className.lastIndexOf('.') + 1);
@@ -251,18 +255,18 @@ abstract class FakeComponentPeer implements FakePeer
             int w = fm.stringWidth(className);
             int h = fm.getHeight() - fm.getDescent();
 
-            int x =(sz.width - w) / 2;
+            int x = (sz.width - w) / 2;
 
             g.setColor(SystemColor.text);
             g.drawString(className, x,(sz.height - h) / 2 + h - 1);
-
         }
 
         public Dimension getMinimumSize() {
             String className = _target.getClass().getName();
             className = className.substring(className.lastIndexOf('.') + 1);
 
-            FontMetrics fm = this.getFontMetrics(new Font("Dialog", Font.BOLD, 12));
+            FontMetrics fm = this.getFontMetrics(
+                new Font("Dialog", Font.BOLD, 12)); // NOI18N
             int w = fm.stringWidth(className);
             int h = fm.getHeight();
 

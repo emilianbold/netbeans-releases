@@ -55,10 +55,15 @@ class FakeChoicePeer extends FakeComponentPeer implements ChoicePeer
 
     private class Delegate extends Component
     {
+        Delegate() {
+            this.setBackground(SystemColor.window);
+            this.setBackground(SystemColor.controlText);
+        }
+        
         public void paint(Graphics g) {
             Choice target =(Choice) _target;
-
             Dimension sz = target.getSize();
+            
             FontMetrics fm = g.getFontMetrics();
             int w = sz.width,
                 h = sz.height,
@@ -66,26 +71,20 @@ class FakeChoicePeer extends FakeComponentPeer implements ChoicePeer
                 comph = h > fh+4 ? fh+4 : h, // component's height
                 y = (h-comph)/2; // component's vertical position
 
-            // background & border
-            Color c = getBackground();
-            if (c == null)
-                c = SystemColor.window; // white
-            g.setColor(c);
+            g.setColor(target.getBackground());
             FakePeerUtils.drawLoweredBox(g, 0,y,w,comph);
 
-            // selected text
             String item = target.getSelectedItem();
             if (item != null) {
                 if (target.isEnabled()) {
-                    c = getForeground();
-                    if (c == null)
-                        c = SystemColor.controlText;
-                } else c = SystemColor.controlShadow;
-                g.setColor(c);
+                    g.setColor(target.getForeground());
+                }
+                else {
+                    g.setColor(SystemColor.controlShadow);
+                }
                 g.setFont(target.getFont());
 
                 g.setClip(2,y+2,w-4,comph-4);
-
                 int ih = fh - fm.getDescent(), // item's height
                     iy = y + 1 + ih;
 
@@ -93,7 +92,8 @@ class FakeChoicePeer extends FakeComponentPeer implements ChoicePeer
             }
 
             // combo-box button (Windows style)
-            FakePeerUtils.drawArrowButton(g, w-BUT_W-2, y+2, BUT_W, comph-4, 4, target.isEnabled());
+            FakePeerUtils.drawArrowButton(
+                g, w-BUT_W-2, y+2, BUT_W, comph-4, 4, target.isEnabled());
         }
 
         public Dimension getMinimumSize() {

@@ -34,30 +34,35 @@ class FormLAF
     
     private FormLAF() {}
 
-    static Object executeWithLookAndFeel(String lafclassname,
-                                         Mutex.ExceptionAction act)
+    static Object executeWithLookAndFeel(final String lafclassname,
+                                         final Mutex.ExceptionAction act)
         throws Exception
     {
-        boolean restoreAfter = true;
-        UIDefaults defaults = UIManager.getDefaults();
-        synchronized (defaults) {
-            try {
-                if (lafclassname.equals(lastLAFName))
-                    restoreAfter = false;
-                else {
-                    lastLAFName = lafclassname;
-                    useLookAndFeel(lafclassname);
-                    restoreAfter = true;
+        return Mutex.EVENT.readAccess(
+            new Mutex.ExceptionAction () {
+                public Object run() throws Exception {
+                    boolean restoreAfter = true;
+                    UIDefaults defaults = UIManager.getDefaults();
+                    synchronized (defaults) {
+                        try {
+                            if (lafclassname.equals(lastLAFName))
+                                restoreAfter = false;
+                            else {
+                                lastLAFName = lafclassname;
+                                useLookAndFeel(lafclassname);
+                                restoreAfter = true;
+                            }
+                            return act.run();
+                        }
+                        finally {
+                            if (restoreAfter) {
+                                useIDELookAndFeel();
+                                lastLAFName = null;
+                            }
+                        }
+                    }
                 }
-                return act.run();
-            }
-            finally {
-                if (restoreAfter) {
-                    useIDELookAndFeel();
-                    lastLAFName = null;
-                }
-            }
-        }
+            });
     }
     
     private static boolean checkUseIdeLaf() {

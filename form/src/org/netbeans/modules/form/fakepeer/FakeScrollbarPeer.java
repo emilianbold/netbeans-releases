@@ -43,25 +43,28 @@ class FakeScrollbarPeer extends FakeComponentPeer implements ScrollbarPeer
 
     private class Delegate extends Component
     {
+        Delegate() {
+            this.setBackground(SystemColor.scrollbar);
+        }
+        
         public void paint(Graphics g) {
-            Scrollbar target =(Scrollbar) _target;
-
+            Scrollbar target = (Scrollbar) _target;
             Dimension sz = target.getSize();
-            int w = sz.width,
-                h = sz.height,
-                scrollRange = target.getMaximum() - target.getMinimum(),
-                scrollValue = target.getValue() - target.getMinimum(),
-                thumbAmount = target.getVisibleAmount();
+            int scrollRange = target.getMaximum() - target.getMinimum();
+            int scrollValue = target.getValue() - target.getMinimum();
+            int thumbAmount = target.getVisibleAmount();
             boolean enabled = target.isEnabled();
 
-            // background
-            Color c = getBackground();
-            if (c == null)
-                c = SystemColor.scrollbar; // light gray
-            g.setColor(c);
+            g.setColor(target.getBackground());
 
-            FakePeerUtils.drawScrollbar(g,0,0,w,h,target.getOrientation(),target.isEnabled(),
-                                        true,scrollValue,thumbAmount,scrollRange);
+            FakePeerUtils.drawScrollbar(g,
+                                        0, 0, sz.width, sz.height,
+                                        target.getOrientation(),
+                                        target.isEnabled(),
+                                        true,
+                                        scrollValue,
+                                        thumbAmount,
+                                        scrollRange);
         }
 
         public Dimension getMinimumSize() {

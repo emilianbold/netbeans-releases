@@ -582,6 +582,29 @@ public class FormDesigner extends TopComponent
                             FakePeerSupport.attachFakePeer(cont);
                         componentLayer.add(cont, BorderLayout.CENTER);
 
+                        RADProperty prop;
+                        Object val;
+                        RADComponent topcomp = formModel.getTopRADComponent();
+
+                        prop = topcomp.getPropertyByName("background"); // NOI18N
+                        if (prop != null) {
+                            val = prop.getTargetValue();
+                            if (val instanceof Color)
+                                componentLayer.setBackground((Color) val);
+                        }
+                        prop = topcomp.getPropertyByName("foreground"); // NOI18N
+                        if (prop != null) {
+                            val = prop.getTargetValue();
+                            if (val instanceof Color)
+                                componentLayer.setForeground((Color) val);
+                        }
+                        prop = topcomp.getPropertyByName("font"); // NOI18N
+                        if (prop != null) {
+                            val = prop.getTargetValue();
+                            if (val instanceof Font)
+                                componentLayer.setFont((Font) val);
+                        }
+                        
                         metaCompToComp.put(topDesignContainer, cont);
                         compToMetaComp.put(cont, topDesignContainer);
 

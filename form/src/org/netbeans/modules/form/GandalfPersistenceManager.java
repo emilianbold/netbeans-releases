@@ -1107,7 +1107,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     new String[] {
                         ATTR_PROPERTY_NAME,
                         ATTR_PROPERTY_TYPE,
-                        ATTR_PROPERTY_EDITOR,
                         ATTR_PROPERTY_VALUE,
                         ATTR_PROPERTY_PRE_CODE,
                         ATTR_PROPERTY_POST_CODE,
@@ -1115,7 +1114,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     new String[] {
                         prop.getName(),
                         prop.getValueType().getName(),
-                        prop.getCurrentEditor().getClass().getName(),
                         encodedValue,
                         prop.getPreCode(),
                         prop.getPostCode(),

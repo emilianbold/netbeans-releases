@@ -59,7 +59,7 @@ public class FakePeerSupport
             return;
 
         try {
-            Field f = Component.class.getDeclaredField("peer");
+            Field f = Component.class.getDeclaredField("peer"); // NOI18N
             f.setAccessible(true);
             f.set(comp, peer);
         }

@@ -42,11 +42,11 @@ class FakePanelPeer extends FakeContainerPeer implements PanelPeer
         public void paint(Graphics g) {
             Dimension sz = _target.getSize();
 
-            // background
-            Color c = getBackground();
+            Color c = _target.getBackground();
             if (c == null)
                 c = SystemColor.window;
             g.setColor(c);
+            
             g.fillRect(0, 0, sz.width, sz.height);
         }
     }
