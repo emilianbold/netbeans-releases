@@ -712,9 +712,7 @@ public class FormDesigner extends TopComponent
         }
 
         public void componentsReordered(FormModelEvent e) {
-            ComponentContainer metacont = e.getContainer();
-            if (metacont instanceof RADVisualContainer)
-                placeUpdateTask(UpdateTask.LAYOUT, e.getContainer());
+            placeUpdateTask(UpdateTask.ORDER, e.getContainer());
         }
 
         public void componentPropertyChanged(FormModelEvent e) {
@@ -805,10 +803,11 @@ public class FormDesigner extends TopComponent
     class UpdateTask {
         // types of update
         static final int ALL = 1; // re-create whole form
-        static final int LAYOUT = 2; // update container layout
-        static final int ADD = 3; // add component
-        static final int REMOVE = 4; // remove component
-        static final int PROPERTY = 5; // update property
+        static final int ORDER = 2; // reorder components
+        static final int LAYOUT = 3; // update container layout
+        static final int ADD = 4; // add component
+        static final int REMOVE = 5; // remove component
+        static final int PROPERTY = 6; // update property
 
         int type;
         Object param;
@@ -829,6 +828,10 @@ public class FormDesigner extends TopComponent
                         componentLayer.add(formClone, BorderLayout.CENTER);
                     }
                     updateName(formModel.getName());
+                    break;
+
+                case ORDER:
+                    replicator.reorderComponents((ComponentContainer) param);
                     break;
 
                 case LAYOUT:
@@ -856,13 +859,14 @@ public class FormDesigner extends TopComponent
                 return false;
 
             switch (type) {
+                case ORDER:
                 case LAYOUT:
-                    if (prevTask.type == LAYOUT)
+                    if (prevTask.type == type)
                         return param == prevTask.param;
                     if (prevTask.type == ADD || prevTask.type == REMOVE)
-                        return prevTask.param instanceof RADVisualComponent
+                        return prevTask.param instanceof RADComponent
                                 && ((RADComponent)prevTask.param)
-                                    .getParentComponent() == param;
+                                        .getParentComponent() == param;
                     break;
 
                 case ADD:

@@ -143,6 +143,26 @@ public class VisualReplicator {
         return clone;
     }
 
+    public void reorderComponents(ComponentContainer metacont) {
+        if (metacont instanceof RADVisualContainer) {
+            updateContainerLayout((RADVisualContainer) metacont);
+        }
+        else if (metacont instanceof RADMenuComponent) {
+            Container cont = (Container) getClonedComponent((RADComponent)metacont);
+            if (cont == null) // should not happen
+                return;
+
+            cont.removeAll();
+
+            RADComponent[] metacomps = ((RADMenuComponent)metacont).getSubBeans();
+            for (int i = 0; i < metacomps.length; i++) {
+                Component comp = (Component) getClonedComponent(metacomps[i]);
+                if (comp != null)
+                    addToMenu(cont, comp);
+            }
+        }
+    }
+
     public void updateContainerLayout(RADVisualContainer metacont) {
         if (metacont == null)
             return;
