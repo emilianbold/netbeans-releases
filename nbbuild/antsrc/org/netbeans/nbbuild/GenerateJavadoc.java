@@ -113,7 +113,7 @@ public class GenerateJavadoc extends Task
         javaDoc.setSourcepath( path );
         
         javaDoc.setDestdir( dest );
-        if (packageNames == null)
+        if (packageNames != null)
             javaDoc.setPackagenames(packageNames);
         else javaDoc.setPackagenames("org.netbeans.*,com.sun.*");
         javaDoc.setUse(true);
