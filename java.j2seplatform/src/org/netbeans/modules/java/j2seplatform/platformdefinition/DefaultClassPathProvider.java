@@ -421,7 +421,6 @@ public class DefaultClassPathProvider implements ClassPathProvider {
         
         public synchronized List getResources () {
             if (this.cachedCompiledClassPath == null) {
-                System.out.println("CREATING");
                 GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
                 regs.addGlobalPathRegistryListener(this);
                 Set roots = new HashSet ();
@@ -465,7 +464,6 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                 for (Iterator it = roots.iterator(); it.hasNext();) {
                     this.cachedCompiledClassPath.add (ClassPathSupport.createResource((URL)it.next()));
                 }
-                System.out.println("Roots:"+roots);
             }
             return this.cachedCompiledClassPath;
         }

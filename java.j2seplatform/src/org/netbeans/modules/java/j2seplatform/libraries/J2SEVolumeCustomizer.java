@@ -86,24 +86,24 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             this.addButton.setMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_AddJavadoc").charAt(0));
             this.message.setText(NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_ContentJavadoc"));
             this.message.setDisplayedMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_ContentJavadoc").charAt(0));
-            this.addURLButton = new JButton ();
-            this.addURLButton.setText(NbBundle.getMessage (J2SEVolumeCustomizer.class,"CTL_AddJavadocURL"));
-            this.addURLButton.setMnemonic(NbBundle.getMessage (J2SEVolumeCustomizer.class,"MNE_AddJavadocURL").charAt(0));
-            this.addURLButton.addActionListener (new ActionListener () {
-                public void actionPerformed(ActionEvent e) {
-                    addURLResource ();
-                }
-            });
-            GridBagConstraints c = new GridBagConstraints();
-            c.gridx = 1;
-            c.gridy = 2;
-            c.gridwidth = GridBagConstraints.REMAINDER;
-            c.gridheight = 1;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.anchor = GridBagConstraints.NORTHWEST;
-            c.insets = new Insets (0,6,5,6);
-            ((GridBagLayout)this.getLayout()).setConstraints(this.addURLButton,c);
-            this.add (this.addURLButton);
+//            this.addURLButton = new JButton ();
+//            this.addURLButton.setText(NbBundle.getMessage (J2SEVolumeCustomizer.class,"CTL_AddJavadocURL"));
+//            this.addURLButton.setMnemonic(NbBundle.getMessage (J2SEVolumeCustomizer.class,"MNE_AddJavadocURL").charAt(0));
+//            this.addURLButton.addActionListener (new ActionListener () {
+//                public void actionPerformed(ActionEvent e) {
+//                    addURLResource ();
+//                }
+//            });
+//            GridBagConstraints c = new GridBagConstraints();
+//            c.gridx = 1;
+//            c.gridy = 2;
+//            c.gridwidth = GridBagConstraints.REMAINDER;
+//            c.gridheight = 1;
+//            c.fill = GridBagConstraints.HORIZONTAL;
+//            c.anchor = GridBagConstraints.NORTHWEST;
+//            c.insets = new Insets (0,6,5,6);
+//            ((GridBagLayout)this.getLayout()).setConstraints(this.addURLButton,c);
+//            this.add (this.addURLButton);
         }
         else if (this.volumeType.equals("src")) {  //NOI18N
             this.addButton.setText (NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_AddSources"));
@@ -311,25 +311,25 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
     }//GEN-LAST:event_addResource
 
 
-    private void addURLResource () {
-        DialogDescriptor.InputLine input = new DialogDescriptor.InputLine (
-                NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_AddJavadocURLMessage"),
-                NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_AddJavadocURLTitle"));
-        if (DialogDisplayer.getDefault().notify(input) == DialogDescriptor.OK_OPTION) {
-            try {
-                String value = input.getInputText();
-                URL url = new URL (value);
-                this.model.addResource(url);
-                this.content.setSelectedIndex(this.model.getSize()-1);
-            } catch (MalformedURLException mue) {
-                DialogDescriptor.Message message = new DialogDescriptor.Message (
-                        NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_InvalidURLFormat"),
-                        DialogDescriptor.ERROR_MESSAGE
-                );
-                DialogDisplayer.getDefault().notify(message);
-            }
-        }
-    }
+//    private void addURLResource () {
+//        DialogDescriptor.InputLine input = new DialogDescriptor.InputLine (
+//                NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_AddJavadocURLMessage"),
+//                NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_AddJavadocURLTitle"));
+//        if (DialogDisplayer.getDefault().notify(input) == DialogDescriptor.OK_OPTION) {
+//            try {
+//                String value = input.getInputText();
+//                URL url = new URL (value);
+//                this.model.addResource(url);
+//                this.content.setSelectedIndex(this.model.getSize()-1);
+//            } catch (MalformedURLException mue) {
+//                DialogDescriptor.Message message = new DialogDescriptor.Message (
+//                        NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_InvalidURLFormat"),
+//                        DialogDescriptor.ERROR_MESSAGE
+//                );
+//                DialogDisplayer.getDefault().notify(message);
+//            }
+//        }
+//    }
 
 
     private void addFiles (File[] files) throws MalformedURLException {
