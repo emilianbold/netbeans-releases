@@ -94,7 +94,7 @@ is divided into following sections:
             <attribute name="name"/>
             <attribute name="value"/>
             <sequential>
-                <property name="@{name}" value="${@{value}}"/>
+                <property value="${@{value}}" name="@{name}"/>
             </sequential>
         </macrodef>
     </target>
