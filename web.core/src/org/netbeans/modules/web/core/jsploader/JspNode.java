@@ -63,7 +63,16 @@ public class JspNode extends DataNode {
     private void initialize () {
         setIconBase(getIconBase());
         setDefaultAction (SystemAction.get (OpenAction.class));
-        setShortDescription (NbBundle.getMessage(JspNode.class, "LBL_jspNodeShortDesc"));
+        
+        String ext = getDataObject().getPrimaryFile().getExt();
+        
+        if (ext.equals(JspLoader.TAGF_FILE_EXTENSION) 
+            || ext.equals(JspLoader.TAGX_FILE_EXTENSION)
+            || ext.equals(JspLoader.TAG_FILE_EXTENSION))
+                setShortDescription (NbBundle.getMessage(JspNode.class, "LBL_tagNodeShortDesc"));
+        else
+                setShortDescription (NbBundle.getMessage(JspNode.class, "LBL_jspNodeShortDesc"));
+        
     }
 
     public DataObject getDataObject() {
