@@ -629,26 +629,54 @@ public abstract class NbTopManager /*extends TopManager*/ {
 	 */
 	private void showUrl (URL url) {
 	    if (Boolean.TRUE.equals (getClientProperty ("InternalBrowser"))) { // NOI18N
-                // PEMNDING ??? What a terrible hack., how is this used?
-//		NbPresenter d = NbPresenter.currentModalDialog;
-//		if (d != null) {
-//                    HtmlBrowser htmlViewer = new HtmlBrowser ();
-//                    htmlViewer.setURL (url);
-//                    JDialog d1 = new JDialog (d);
-//                    d1.getContentPane ().add ("Center", htmlViewer); // NOI18N
-//                    // [PENDING] if nonmodal, better for the dialog to be reused...
-//                    // (but better nonmodal than modal here)
-//                    d1.setModal (false);
-//                    d1.setTitle (Main.getString ("CTL_Help"));
-//                    d1.pack ();
-//                    d1.show ();
-//                    return;
-//		} // TEMP
+                // XXX Ugly hack.
+                Dialog d = findTopModalDialog(WindowManager.getDefault().getMainWindow());
+                if(d == null) {
+                    // Try find out one from shared frame.
+                    // XXX Trick to get the shared frame instance.
+                    d = findTopModalDialog(new JDialog().getOwner());
+                }
+		if (d != null) {
+                    HtmlBrowser htmlViewer = new HtmlBrowser ();
+                    htmlViewer.setURL (url);
+                    JDialog d1 = new JDialog (d);
+                    d1.getContentPane ().add ("Center", htmlViewer); // NOI18N
+                    // [PENDING] if nonmodal, better for the dialog to be reused...
+                    // (but better nonmodal than modal here)
+                    d1.setModal (false);
+                    d1.setTitle (Main.getString ("CTL_Help"));
+                    d1.pack ();
+                    d1.show ();
+                    return;
+		}
 	    }
             open ();
             requestFocus ();
             setURL (url);
 	}
+
+        /** Finds top level modal dialog in the specified window hierarchy. */
+        private static Dialog findTopModalDialog(Window window) {
+            if(window == null) {
+                return null;
+            }
+            Window[] ownedWindows = window.getOwnedWindows();
+            for(int i = 0; i < ownedWindows.length; i++) {
+                Window w = ownedWindows[i];
+                if(w instanceof Dialog && ((Dialog)w).isModal()) {
+                    // Try find out whether the modal dialog doesn't own another one.
+                    Dialog d = findTopModalDialog(w);
+                    if(d != null) {
+                        return d;
+                    } else {
+                        return (Dialog)w;
+                    }
+                }
+            }
+            
+            return null;
+        }
+        
         /* Deserialize this top component.
         * @param in the stream to deserialize from
         */
