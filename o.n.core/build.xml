@@ -185,6 +185,9 @@ included with the NetBeans core:</text>
       <fileset dir="libsrc">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir=".">
+        <include name="*-subst.mf"/>
+      </fileset>
     </delete>
     <delete dir="netbeans"/>
     <delete dir="modules-lib"/>

@@ -101,6 +101,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="JavahelpAPIs.zip"/>
         <delete dir="JavaHelpAPIs"/>
         <delete file="JavaHelpAPIs.zip"/>
+        <delete file="manifest-subst.mf"/>
     </target>
 
     <target name="real-clean" depends="clean">
