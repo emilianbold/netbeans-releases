@@ -1065,6 +1065,10 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
                 single.add(f);
                 if (!DataObjectPool.getPOOL().revalidate(single).isEmpty()) {
                     ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "It was not possible to invalidate data object: " + this); // NOI18N
+                } else {
+                    // we need to refresh parent folder if it is there 
+                    // this should be covered by DataLoaderPoolTest.testChangeIsAlsoReflectedInNodes
+                    FolderList.changedDataSystem (f.getParent());
                 }
             }
         }
