@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,18 +17,21 @@ import java.io.*;
 import java.lang.ref.*;
 import java.text.Collator;
 import java.util.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 import javax.swing.text.html.parser.*;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 
 import org.openide.util.RequestProcessor;
+import org.netbeans.modules.javadoc.settings.DocumentationSettings;
 
 /**
  * Builds index of Javadoc filesystems.
  * @author Svata Dedic, Jesse Glick
  */
-public class IndexBuilder implements Runnable, RepositoryListener {
+public class IndexBuilder implements Runnable, RepositoryListener, PropertyChangeListener {
 
     private static final String[] INDEX_FILE_NAMES = {
         "overview-summary.html", // NOI18N
@@ -62,10 +65,15 @@ public class IndexBuilder implements Runnable, RepositoryListener {
          * Name of the index/overview file
          */
         String      indexFileName;
+        /**
+         * filesystem offset
+         */ 
+        String      root;
     }
 
     private IndexBuilder() {
         Repository.getDefault().addRepositoryListener(this);
+        DocumentationSettings.getDefault().addPropertyChangeListener(this);
         err = ErrorManager.getDefault().getInstance("org.netbeans.modules.javadoc.search.IndexBuilder"); // NOI18N
         if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
             err.log("new IndexBuilder");
@@ -158,16 +166,25 @@ public class IndexBuilder implements Runnable, RepositoryListener {
 
         while (e.hasMoreElements()) {
             FileSystem fs = (FileSystem)e.nextElement();
+            JavaDocFSSettings fss = JavaDocFSSettings.getSettingForFS(fs);
+            String secondRoot = fss.getSecondRoot();
             Info oldInfo = (Info)oldMap.get(fs);
-            if (oldInfo != null) {
+            if (oldInfo != null && oldInfo.root == secondRoot) {
                 // No need to reparse.
                 m.put(fs, oldInfo);
                 continue;
             }
             
+            FileObject root;
+            if (secondRoot == null) {
+                root = fs.getRoot();
+            } else {
+                root = fs.findResource(secondRoot);
+            }
+            
             FileObject index = null;
             for (int i = 0; i < INDEX_FILE_NAMES.length; i++) {
-                if ((index = fs.findResource(INDEX_FILE_NAMES[i])) != null) {
+                if ((index = root.getFileObject(INDEX_FILE_NAMES[i])) != null) {
                     break;
                 }
             }
@@ -178,9 +195,9 @@ public class IndexBuilder implements Runnable, RepositoryListener {
                 // [PENDING] Display name is not ideal, e.g. "org.openide.windows (NetBeans Input/Output API)"
                 // where simply "NetBeans Input/Output API" is preferable... but standard title filter
                 // regexps are not so powerful (to avoid matching e.g. "Servlets (Main Documentation)").
-                FileObject packageList = fs.findResource("package-list"); // NOI18N
+                FileObject packageList = root.getFileObject("package-list"); // NOI18N
                 if (packageList == null) {
-                    packageList = fs.findResource("api/package-list"); // NOI18N
+                    packageList = root.getFileObject("api/package-list"); // NOI18N
                 }
                 if (packageList != null) {
                     try {
@@ -191,9 +208,9 @@ public class IndexBuilder implements Runnable, RepositoryListener {
                             if (line != null && r.readLine() == null) {
                                 // Good, exactly one line as expected. A package name.
                                 String resName = line.replace('.', '/') + "/package-summary.html"; // NOI18N
-                                FileObject pindex = fs.findResource(resName);
+                                FileObject pindex = root.getFileObject(resName);
                                 if (pindex == null) {
-                                    pindex = fs.findResource("api/" + resName); // NOI18N
+                                    pindex = root.getFileObject("api/" + resName); // NOI18N
                                 }
                                 if (pindex != null) {
                                     index = pindex;
@@ -212,7 +229,6 @@ public class IndexBuilder implements Runnable, RepositoryListener {
             if (index != null) {
                 // Try to find a title.
                 String title = parseTitle(index);
-                JavaDocFSSettings fss = JavaDocFSSettings.getSettingForFS(fs);
                 if (title != null && fss != null) {
                     JavadocSearchType st = fss.getSearchTypeEngine();
                     if (st == null)
@@ -228,6 +244,7 @@ public class IndexBuilder implements Runnable, RepositoryListener {
                 Info info = new Info();
                 info.title = title == null ? fs.getDisplayName() : title;
                 info.indexFileName = index.getPath();
+                info.root = secondRoot;
                 m.put(fs, info);
             }
             synchronized (this) {
@@ -306,5 +323,12 @@ public class IndexBuilder implements Runnable, RepositoryListener {
 
     public void fileSystemPoolReordered(RepositoryReorderedEvent ev) {
         // do nothing here - do not care about order
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        // root offset of some filesystem could be changed
+        if ("fileSystemSettings".equals(evt.getPropertyName())) { // NOI18N
+            scheduleTask();
+        }
     }
 }
