@@ -47,7 +47,7 @@ HTML contents of the document, with substitutions.
           id ID #REQUIRED
 >
 
-<!ELEMENT api EMPTY >
+<!ELEMENT api %Flow; >
 <!ATTLIST api
           name CDATA #REQUIRED
           type (import|export) #REQUIRED
@@ -59,6 +59,7 @@ HTML contents of the document, with substitutions.
 <!ATTLIST property
           name CDATA #REQUIRED
           category %category; #REQUIRED
+          url CDATA #REQUIRED
 >
 
 <!-- now the content of included questions file -->
