@@ -97,18 +97,24 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
     public void arrangeContainer(Container container,
                                  Container containerDelegate)
     {
-        if (!(container instanceof JTabbedPane) || selectedTab < 0)
+        if (!(container instanceof JTabbedPane))
             return;
 
-        // select the tab
         JTabbedPane tabbedPane = (JTabbedPane) container;
-        tabbedPane.setSelectedIndex(selectedTab);
+        if (selectedTab >= 0) {
+            // select the tab
+            tabbedPane.setSelectedIndex(selectedTab);
 
-        // workaround for JTabbedPane bug 4190719
-        Component comp = tabbedPane.getSelectedComponent();
-        if (comp != null)
-            comp.setVisible(true);
-        tabbedPane.repaint();
+            // workaround for JTabbedPane bug 4190719
+            Component comp = tabbedPane.getSelectedComponent();
+            if (comp != null)
+                comp.setVisible(true);
+            tabbedPane.repaint();
+        }
+        else if (tabbedPane.getComponentCount() > 0) {
+            // workaround for JTabbedPane bug 4190719
+            tabbedPane.getComponent(0).setVisible(true);
+        }
     }
 
     /** This method should calculate position (index) for a component dragged
@@ -194,17 +200,21 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
             if (constraints instanceof TabConstraints) {
                 JTabbedPane tabbedPane = (JTabbedPane) container;
                 try {
-                    FormProperty titleProperty = (FormProperty)
-                                                 constraints.getProperties()[0];
-                    FormProperty iconProperty = (FormProperty)
-                                                constraints.getProperties()[1];
-                    FormProperty tooltipProperty = (FormProperty)
-                                                   constraints.getProperties()[2];
+                    Object title =
+                        ((FormProperty)constraints.getProperties()[0])
+                            .getRealValue();
+                    Object icon =
+                        ((FormProperty)constraints.getProperties()[1])
+                            .getRealValue();
+                    Object tooltip =
+                        ((FormProperty)constraints.getProperties()[2])
+                            .getRealValue();
 
-                    tabbedPane.addTab((String) titleProperty.getRealValue(),
-                                      (Icon) iconProperty.getRealValue(),
-                                      components[i],
-                                      (String) tooltipProperty.getRealValue());
+                    tabbedPane.addTab(
+                        title instanceof String ? (String) title : null,
+                        icon instanceof Icon ? (Icon) icon : null,
+                        components[i],
+                        tooltip instanceof String ? (String) tooltip : null);
                 }
                 catch (Exception ex) {
                     if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -454,6 +464,13 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
 
                         public void setTargetValue(Object value) {
                             toolTip = (String)value;
+                        }
+
+                        protected Object getRealValue(Object value) {
+                            Object realValue = super.getRealValue(value);
+                            if (realValue == FormDesignValue.IGNORED_VALUE)
+                                realValue = ((FormDesignValue)value).getDescription();
+                            return realValue;
                         }
 
                         public boolean supportsDefaultValue() {

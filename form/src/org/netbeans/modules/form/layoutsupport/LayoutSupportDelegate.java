@@ -58,10 +58,12 @@ public interface LayoutSupportDelegate {
      *                      layout delegate
      * @param lmInstance LayoutManager instance for initialization (may be null)
      * @param fromCode indicates whether to initialize from code structure
+     * @exception any Exception occurred during initialization
      */
     void initialize(LayoutSupportContext layoutContext,
                     LayoutManager lmInstance,
-                    boolean fromCode);
+                    boolean fromCode)
+        throws Exception;
 
     /** Gets the supported layout manager or container class. Container class
      * is returned if the delegate is "dedicated" to some special container
@@ -152,6 +154,7 @@ public interface LayoutSupportDelegate {
      *        components to be accepted
      * @param constraints array of layout constraints of the components, may
      *        contain nulls
+     * @exception RunTimeException to refuse components
      */
     void acceptNewComponents(CodeExpression[] compExpressions,
                              LayoutConstraints[] constraints);

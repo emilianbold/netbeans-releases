@@ -262,12 +262,11 @@ public class FormModel
     public void setContainerLayout(RADVisualContainer metacont,
                                    LayoutSupportDelegate layoutDelegate,
                                    java.awt.LayoutManager lmInstance)
+        throws Exception
     {
         LayoutSupportDelegate current =
             metacont.getLayoutSupport().getLayoutDelegate();
 
-        // this may throw a RuntimeException if the new layout support does
-        // not accept current components in the container
         metacont.setLayoutSupportDelegate(layoutDelegate, lmInstance);
 
         fireContainerLayoutChanged(metacont, current, layoutDelegate);

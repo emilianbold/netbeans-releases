@@ -242,7 +242,7 @@ public class MetaComponentCreator {
      * (or applied on) a target component in FormModel. It returns a constant
      * of corresponding target operation. This method is used in two modes.
      * It is more strict for copy/cut/paste operations (paramaters canUseParent
-     * and DefaultToOthers are set to false), and less strict for visual
+     * and defaultToOthers are set to false), and less strict for visual
      * ("click") operations (canUseParent and defaultToOthers set to true).
      */
     private static int getTargetPlacement(Class beanClass,
@@ -379,16 +379,11 @@ public class MetaComponentCreator {
             newComp.initInstance(sourceComp.getBeanClass());
         }
         catch (Exception ex) { // this is rather unlikely to fail
-            ErrorManager em = TopManager.getDefault ().getErrorManager();
-            em.annotate(
-                ex,
-                ErrorManager.EXCEPTION,
-                null, 
-                FormEditor.getFormBundle().getString("MSG_ERR_CannotCopyInstance"), // NOI18N
-                null,
-                null);
+            ErrorManager em = ErrorManager.getDefault();
+            em.annotate(ex,
+                        FormEditor.getFormBundle().getString(
+                                 "MSG_ERR_CannotCopyInstance")); // NOI18N
             em.notify(ex);
-
             return null;
         }
 
@@ -487,13 +482,39 @@ public class MetaComponentCreator {
                 return null;
 
             // initialize layout support (if the new component is a container)
-            if (newMetaCont != null
-                && !newMetaCont.getLayoutSupport().initializeLayoutDelegate(false))
-            {   // no LayoutSupportDelegate found for the container,
-                // create RADVisualComponent only
-                newMetaCont.resetCodeExpression(); // must be called for unused components
-                newMetaCont = null;
-                newMetaComp = null;
+            if (newMetaCont != null) {
+                boolean layoutInitialized = false;
+                Throwable layoutEx = null;
+                try {
+                    layoutInitialized = newMetaCont.getLayoutSupport()
+                                          .initializeLayoutDelegate(false);
+                }
+                catch (Exception ex) {
+                    layoutEx = ex;
+                }
+                catch (LinkageError ex) {
+                    layoutEx = ex;
+                }
+
+                if (!layoutInitialized) {
+                    if (layoutEx == null) {
+                        // no LayoutSupportDelegate found for the container
+                        TopManager.getDefault().notify(
+                            new NotifyDescriptor.Message(
+                                FormUtils.getBundleString(
+                                            "MSG_ERR_NoLayoutSupportFound2"), // NOI18N
+                            NotifyDescriptor.WARNING_MESSAGE));
+                    }
+                    else { // layout support initialization failed
+                        ErrorManager em = ErrorManager.getDefault();
+                        em.annotate(
+                            layoutEx, 
+                            FormUtils.getBundleString("MSG_ERR_LayoutInitFailed2")); // NOI18N
+                        em.notify(layoutEx);
+                    }
+
+                    newMetaCont.getLayoutSupport().setUnknownLayoutDelegate(false);
+                }
             }
         }
 
@@ -588,6 +609,10 @@ public class MetaComponentCreator {
                 showInstErrorMessage(ex);
                 return null;
             }
+            catch (LinkageError ex) {
+                showInstErrorMessage(ex);
+                return null;
+            }
         }
         else layoutInstance = null;
 
@@ -609,6 +634,7 @@ public class MetaComponentCreator {
         }
 
         LayoutSupportDelegate layoutDelegate = null;
+        Throwable t = null;
         try {
             if (LayoutManager.class.isAssignableFrom(layoutClass)) {
                 // LayoutManager -> find LayoutSupportDelegate for it
@@ -622,14 +648,19 @@ public class MetaComponentCreator {
             }
         }
         catch (Exception ex) {
+            t = ex;
+        }
+        catch (LinkageError ex) {
+            t = ex;
+        }
+        if (t != null) {
             String msg = MessageFormat.format(
                 FormEditor.getFormBundle().getString("FMT_ERR_LayoutInit"), // NOI8N
                 new Object[] { layoutClass.getName() });
 
-            ErrorManager em = TopManager.getDefault ().getErrorManager();
-            em.annotate(ex, ErrorManager.EXCEPTION, null, msg, null, null);
-            em.notify(ex);
-
+            ErrorManager em = ErrorManager.getDefault();
+            em.annotate(t, msg);
+            em.notify(t);
             return null;
         }
 
@@ -649,10 +680,20 @@ public class MetaComponentCreator {
                                          layoutDelegate,
                                          layoutInstance);
         }
-        catch (RuntimeException ex) {
-            // LayoutSupportDelegate may refuse to work with current components
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+        catch (Exception ex) {
+            t = ex;
+        }
+        catch (LinkageError ex) {
+            t = ex;
+        }
+        if (t != null) {
+            String msg = MessageFormat.format(
+                FormEditor.getFormBundle().getString("FMT_ERR_LayoutInit"), // NOI8N
+                new Object[] { layoutClass.getName() });
+
+            ErrorManager em = ErrorManager.getDefault();
+            em.annotate(t, msg);
+            em.notify(t);
             return null;
         }
 
@@ -695,6 +736,11 @@ public class MetaComponentCreator {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                 ex.printStackTrace();
         }
+        catch (LinkageError ex) { // ignore
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                ex.printStackTrace();
+        }
+
         return targetComp;
     }
 
@@ -711,6 +757,10 @@ public class MetaComponentCreator {
             prop.setValue(border);
         }
         catch (Exception ex) {
+            showInstErrorMessage(ex);
+            return null;
+        }
+        catch (LinkageError ex) {
             showInstErrorMessage(ex);
             return null;
         }
@@ -759,6 +809,11 @@ public class MetaComponentCreator {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                 ex.printStackTrace();
         }
+        catch (LinkageError ex) { // ignore
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                ex.printStackTrace();
+        }
+
         return targetComp;
     }
 
@@ -866,11 +921,11 @@ public class MetaComponentCreator {
 
             return true;
         }
-        catch (Throwable th) {
-            if (th instanceof ThreadDeath)
-                throw (ThreadDeath)th;
-            else
-                showInstErrorMessage(th);
+        catch (Exception ex) {
+            showInstErrorMessage(ex);
+        }
+        catch (LinkageError ex) {
+            showInstErrorMessage(ex);
         }
         return false;
     }
@@ -878,14 +933,10 @@ public class MetaComponentCreator {
     // --------
 
     private static void showInstErrorMessage(Throwable ex) {
-        ErrorManager em = TopManager.getDefault ().getErrorManager();
-        em.annotate(
-            ex,
-            ErrorManager.EXCEPTION,
-            null, 
-            FormEditor.getFormBundle().getString("MSG_ERR_CannotInstantiate"), // NOI18N
-            null,
-            null);
+        ErrorManager em = ErrorManager.getDefault();
+        em.annotate(ex,
+                    FormEditor.getFormBundle().getString(
+                              "MSG_ERR_CannotInstantiate")); // NOI18N
         em.notify(ex);
     }
 
@@ -894,6 +945,12 @@ public class MetaComponentCreator {
             return ic.instanceClass();
         }
         catch (Exception ex) {
+            // report exception...
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                ex.printStackTrace();
+            return null;
+        }
+        catch (LinkageError ex) {
             // report exception...
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                 ex.printStackTrace();

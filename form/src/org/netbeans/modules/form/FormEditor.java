@@ -71,10 +71,6 @@ final public class FormEditor extends Object
 
     static ExplorerActions actions = new ExplorerActions();
 
-    // ---------------------------------------------------
-    // Private static variables
-
-    private static ArrayList errorLog = new ArrayList();
 
     // -----------------------------------------------------------------------------
     // Static methods
@@ -88,22 +84,6 @@ final public class FormEditor extends Object
     public static FormLoaderSettings getFormSettings() {
         return (FormLoaderSettings)
             SharedClassObject.findObject(FormLoaderSettings.class, true);
-    }
-
-    // used by GandalfPersistenceManager only
-    // why is this in FormEditor class??
-    public static PropertyEditor createPropertyEditor(
-        Class editorClass, Class propertyType, FormProperty property)
-        throws InstantiationException, IllegalAccessException
-    {
-        PropertyEditor ed;
-        if (editorClass.equals(RADConnectionPropertyEditor.class)) {
-            ed = new RADConnectionPropertyEditor(propertyType);
-        } else {
-            ed = (PropertyEditor)editorClass.newInstance();
-        }
-        property.getPropertyContext().initPropertyEditor(ed);
-        return ed;
     }
 
     public static Image getGridImage(Container gridCont) {
@@ -143,79 +123,6 @@ final public class FormEditor extends Object
         return (RADProperty[]) properties.toArray(
             new RADProperty[properties.size()]); // noop so far [PENDING]
     }
-
-    // ---------------------------------------------------
-    // inner classes
-
-
-    final static class ErrorLogItem {
-        public static final int WARNING = 0;
-        public static final int ERROR = 1;
-
-        public ErrorLogItem(String desc, Throwable t) {
-            this(desc, t, ERROR);
-        }
-
-        public ErrorLogItem(String desc, Throwable t, int type) {
-            thr = t;
-            this.type = type;
-            this.desc = desc;
-        }
-
-        String getDescription() {
-            return desc;
-        }
-
-        Throwable getThrowable() {
-            return thr;
-        }
-
-        int getType() {
-            return type;
-        }
-
-        private String desc;
-        private int type;
-        private Throwable thr;
-    }
-
-
-    static void clearLog() {
-        errorLog.clear();
-    }
-
-    public static void fileError(String desc, Throwable t) {
-        errorLog.add(new ErrorLogItem(desc, t, ErrorLogItem.ERROR));
-    }
-
-    public static void fileWarning(String desc, Throwable t) {
-        errorLog.add(new ErrorLogItem(desc, t, ErrorLogItem.WARNING));
-    }
-
-    public static void displayErrorLog() {
-        if (errorLog.size() == 0) return;
-
-        ErrorLogDialog eld = new ErrorLogDialog((ErrorLogItem[])errorLog.toArray(new ErrorLogItem[errorLog.size()]));
-        errDlg = TopManager.getDefault().createDialog(new DialogDescriptor(
-            eld,
-            FormEditor.getFormBundle().getString("CTL_ErrorsNotificationTitle"),
-            true,
-            new Object[] { DialogDescriptor.CLOSED_OPTION },
-            DialogDescriptor.CLOSED_OPTION,
-            DialogDescriptor.BOTTOM_ALIGN,
-            null,
-            new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    errDlg.setVisible(false);
-                }
-            }
-            )
-                                                      );
-        errDlg.show();
-
-        clearLog();
-    }
-    private static java.awt.Dialog errDlg;
 
     // ---------------
 

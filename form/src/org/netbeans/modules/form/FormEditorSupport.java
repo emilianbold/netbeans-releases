@@ -32,11 +32,16 @@ import org.netbeans.modules.form.actions.FormEditorAction;
 
 /**
  *
- * @author Ian Formanek
+ * @author Ian Formanek, Tomas Pavek
  */
-public class FormEditorSupport extends JavaEditor implements FormCookie, EditCookie
+
+public class FormEditorSupport extends JavaEditor
+                               implements FormCookie, EditCookie
 {
     static final String NO_WORKSPACE = "None"; // NOI18N
+
+    private static final int LOADING = 1;
+    private static final int SAVING = 2;
 
     /** The FormModel instance holding the form itself */
     private FormModel formModel;
@@ -54,9 +59,12 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
 //    private CodeGenerator codeGenerator;
 
     /** Persistence manager responsible for saving the form */
-    private PersistenceManager saveManager;
+    private PersistenceManager persistenceManager;
 
-    /** An indicator whether form has been loaded from the .form file */
+    /** List of exceptions occurred during the last persistence operation */
+    private List persistenceErrors;
+
+    /** An indicator whether the form has been loaded (from the .form file) */
     private boolean formLoaded = false; 
 
     /** An indicator whether the form should be opened additionally when
@@ -86,18 +94,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     }
 
     // ----------
-    // opening & saving (interface methods)
+    // opening & saving interface methods
 
-    /**
-     * works around a Jikes bug which results int bad bytecode if you calls
-     * OuterClass.super.open() from inside an inner class.  Instead of
-     * super.open() jikes generates bytecode for open() => infinite recursion
-     */
-    private void superOpen() {
-        super.open();
-    }
-
-    
     /** OpenCookie implementation - opens the form (loads it first if needed).
      * @see OpenCookie#open
      */
@@ -105,42 +103,66 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
         // set status text "Opening Form..."
         TopManager.getDefault().setStatusText(
             java.text.MessageFormat.format(
-                FormEditor.getFormBundle().getString("FMT_OpeningForm"), // NOI18N
+                FormUtils.getBundleString("FMT_OpeningForm"), // NOI18N
                 new Object[] { formDataObject.getName() }));
 
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                // load form data
-                loadFormImpl();
+                // load form data and report errors
+                try {
+                    loadFormData();
+                }
+                catch (PersistenceException ex) {
+                    logPersistenceError(ex, 0);
+                }
+
                 // ensure GUI workspace is active (if form loading successful)
                 boolean openGui = formLoaded && activateWorkspace();
+
                 // open java editor (even if form loading failed)
                 FormEditorSupport.this.superOpen();
+
                 // open form designer (if loading successful and workspace active)
                 if (openGui)
                     openGUI();
 
                 // clear status text
                 TopManager.getDefault().setStatusText(""); // NOI18N
+
+                // report errors during loading
+                reportErrors(LOADING);
             }
         });
     }
 
-    /** Loads form data from file, does not open designer. Runs in AWT event
-     * queue thread. Returns after the form is loaded. The returned value
-     * indicates whether the form is loaded (also true if it already was).
+    /** Public method for loading form data from file. Does not open the
+     * source editor and designer, does not report errors and does not throw
+     * any exceptions. Runs in AWT event queue thread, returns after the form
+     * is loaded (even if not called from AWT thread). 
+     & @return whether the form is loaded (true also if it already was)
      */
     public boolean loadForm() {
         if (formLoaded)
             return true;
 
-        if (java.awt.EventQueue.isDispatchThread())
-            loadFormImpl();
+        if (java.awt.EventQueue.isDispatchThread()) {
+            try {
+                loadFormData();
+            }
+            catch (PersistenceException ex) {
+                logPersistenceError(ex, 0);
+            }
+        }
         else { // loading must be done in AWT event queue
             try {
                 java.awt.EventQueue.invokeAndWait(new Runnable() {
                     public void run() {
-                        loadFormImpl();
+                        try {
+                            loadFormData();
+                        }
+                        catch (PersistenceException ex) {
+                            logPersistenceError(ex, 0);
+                        }
                     }
                 });
             }
@@ -169,8 +191,24 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
      * @exception IOException on I/O error
      */
     public void saveDocument() throws IOException {
-        saveForm();
-        super.saveDocument();
+        IOException ioEx = null;
+        try {
+            saveFormData();
+            super.saveDocument();
+        }
+        catch (PersistenceException ex) {
+            Throwable t = ex.getOriginalException();
+            if (t instanceof IOException)
+                ioEx = (IOException) t;
+            else {
+                ioEx = new IOException("Cannot save the form"); // NOI18N
+                ErrorManager.getDefault().annotate(ioEx, t != null ? t : ex);
+            }
+        }
+        reportErrors(SAVING);
+
+        if (ioEx != null)
+            throw ioEx;
     }
 
     /** Save the document in this thread.
@@ -178,24 +216,130 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
      * @exception IOException on I/O error
      */
     protected void saveDocumentIfNecessary(boolean parse) throws IOException {
-        saveForm();
-        super.saveDocumentIfNecessary(parse);
+        IOException ioEx = null;
+        try {
+            saveFormData();
+            super.saveDocumentIfNecessary(parse);
+        }
+        catch (PersistenceException ex) {
+            Throwable t = ex.getOriginalException();
+            if (t instanceof IOException)
+                ioEx = (IOException) t;
+            else {
+                ioEx = new IOException("Cannot save the form"); // NOI18N
+                ErrorManager.getDefault().annotate(ioEx, t != null ? t : ex);
+            }
+        }
+        reportErrors(SAVING);
+
+        if (ioEx != null)
+            throw ioEx;
+    }
+
+    /** Public method for saving form data to file. Does not save the
+     * source code (document), does not report errors and does not throw
+     * any exceptions.
+     * @return whether the form was saved without fatal errors
+     */
+    public boolean saveForm() {
+        try {
+            saveFormData();
+            return true;
+        }
+        catch (PersistenceException ex) {
+            logPersistenceError(ex, 0);
+            return false;
+        }
     }
 
     // ------------
     // other interface methods
 
-    public FormDataObject getFormDataObject() {
+    /** @return data object representing the form */
+    public final FormDataObject getFormDataObject() {
         return formDataObject;
     }
 
-    public Node getFormRootNode() {
+    /** @return root node representing the form (in pair with the class node) */
+    public final Node getFormRootNode() {
         return formRootNode;
     }
 
-    /** @return the FormModel of this form */
+    /** @return the FormModel of this form, null if the form is not loaded */
     public final FormModel getFormModel() {
         return formModel;
+    }
+
+    /** @return errors occurred during last form loading or saving operation */
+    public Throwable[] getPersistenceErrors() {
+        if (!anyPersistenceError())
+            return new Throwable[0];
+
+        Throwable[] errors = new Throwable[persistenceErrors.size()];
+        persistenceErrors.toArray(errors);
+        return errors;
+    }
+
+    /** Reports errors occurred during loading or saving the form.
+     */
+    public void reportErrors(int operation) {
+        if (!anyPersistenceError())
+            return; // no errors or warnings logged
+
+        ErrorManager errorManager = ErrorManager.getDefault();
+
+        boolean checkLoadingErrors = operation == LOADING && formLoaded;
+        boolean anyNonFatalLoadingError = false; // was there a real error?
+
+        for (Iterator it=persistenceErrors.iterator(); it.hasNext(); ) {
+            Throwable t = (Throwable) it.next();
+            if (t instanceof PersistenceException) {
+                Throwable th = ((PersistenceException)t).getOriginalException();
+                if (th != null)
+                    t = th;
+            }
+
+            if (checkLoadingErrors && !anyNonFatalLoadingError) {
+                // was there a real loading error (not just warnings) causing
+                // some data not loaded?
+                ErrorManager.Annotation[] annotations =
+                                            errorManager.findAnnotations(t);
+                int severity = 0;
+                if (annotations != null) {
+                    for (int i=0; i < annotations.length; i++) {
+                        int s = annotations[i].getSeverity();
+                        if (s > severity)
+                            severity = s;
+                    }
+                }
+                else severity = ErrorManager.EXCEPTION;
+
+                if (severity > ErrorManager.WARNING)
+                    anyNonFatalLoadingError = true;
+            }
+
+            errorManager.notify(t);
+        }
+
+        if (checkLoadingErrors && anyNonFatalLoadingError) {
+            // the form was loaded with some non-fatal errors - some data
+            // was not loaded - show a warning about possible data loss
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    // for some reason this would be displayed before the
+                    // ErrorManager if not invoked later
+                    TopManager.getDefault().notify(new NotifyDescriptor(
+                        FormUtils.getBundleString("MSG_FormLoadedWithErrors"), // NOI18N
+                        FormUtils.getBundleString("CTL_FormLoadedWithErrors"), // NOI18N
+                        NotifyDescriptor.DEFAULT_OPTION,
+                        NotifyDescriptor.WARNING_MESSAGE,
+                        new Object[] { NotifyDescriptor.OK_OPTION },
+                        null));
+                }
+            });
+        }
+
+        resetPersistenceErrorLog();
     }
 
     /** @return the FormDesigner for this form */
@@ -218,10 +362,6 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
 //            codeGenerator = new JavaCodeGenerator();
 //        return codeGenerator;
 //    }
-
-    boolean supportsAdvancedFeatures() {
-        return saveManager.supportsAdvancedFeatures();
-    }
 
     /** Marks the form as modified if it's not yet. Used if changes made 
      * in form data don't affect the java source file (generated code). */
@@ -311,32 +451,47 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     // ------------
     // loading
 
+    /** Works around a Jikes bug which results into bad bytecode if
+     * OuterClass.super.open() is called from inside an inner class.
+     * Instead of super.open() Jikes generates bytecode for open() which
+     * leads to an infinite recursion
+     */
+    private void superOpen() {
+        super.open();
+    }
+
     private void openForm(final boolean openGui) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                loadFormImpl();
-                if (formLoaded) {
+                try {
+                    loadFormData();
+                }
+                catch (PersistenceException ex) {
+                    logPersistenceError(ex, 0);
+                }
+
+                if (formLoaded) { // continue only on successful loading
                     boolean reallyOpenGui = openGui && activateWorkspace();
                     FormEditorSupport.this.superOpen();
                     if (reallyOpenGui)
                         openGUI();
                 }
+
+                reportErrors(LOADING);
             }
         });
     }
 
     /** This method performs the form data loading.
      */
-    private void loadFormImpl() {
+    private void loadFormData() throws PersistenceException {
         if (formLoaded)
             return; // form already loaded
 
+        resetPersistenceErrorLog(); // clear log of errors
+
         // first find PersistenceManager for loading the form
-        PersistenceManager[] pms = recognizeForm(formDataObject);
-        if (pms == null)
-            return;
-        PersistenceManager loadManager = pms[0];
-        saveManager = pms[1];
+        persistenceManager = recognizeForm(formDataObject);
 
         // create and register new FormModel instance
         formModel = new FormModel();
@@ -345,21 +500,18 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
         openForms.put(formModel, this);
 
         // load the form data (FormModel) and report errors
-        try {
-            loadManager.loadForm(formDataObject, formModel);
-
-            reportErrors(false, null); // non fatal errors
-        }
-        catch (Throwable t) {
-            if (t instanceof ThreadDeath)
-                throw (ThreadDeath)t;
-
-            saveManager = null;
-            openForms.remove(formModel);
-            formModel = null;
-
-            reportErrors(true, t); // fatal errors
-            return;
+        synchronized(persistenceManager) {
+            try {
+                persistenceManager.loadForm(formDataObject,
+                                            formModel,
+                                            persistenceErrors);
+            }
+            catch (PersistenceException ex) { // some fatal error occurred
+                persistenceManager = null;
+                openForms.remove(formModel);
+                formModel = null;
+                throw ex;
+            }
         }
 
         // form is successfully loaded...
@@ -380,74 +532,107 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     }
 
     /** Finds PersistenceManager that can load and save the form.
-     * Returns array of two managers - the first for loading, second for saving.
      */
-    private PersistenceManager[] recognizeForm(FormDataObject formDO) {
-        PersistenceManager loadManager = null;
-        PersistenceManager saveManager = null;
+    private PersistenceManager recognizeForm(FormDataObject formDO)
+        throws PersistenceException
+    {
+        Iterator it = PersistenceManager.getManagers();
+        if (!it.hasNext()) { // there's no PersistenceManager available
+            PersistenceException ex = new PersistenceException(
+                                      "No persistence manager registered"); // NOI18N
+            ErrorManager.getDefault().annotate(
+                ex,
+                ErrorManager.ERROR,
+                null,
+                FormUtils.getBundleString("MSG_ERR_NoPersistenceManager"), // NOI18N
+                null,
+                null);
+            throw ex;
+        }
 
-        for (Iterator it = PersistenceManager.getManagers(); it.hasNext(); ) {
-            PersistenceManager man = (PersistenceManager)it.next();
-            try {
-                if (man.canLoadForm(formDO)) {
-                    loadManager = man;
-                    break;
+        do {
+            PersistenceManager pm = (PersistenceManager)it.next();
+            synchronized(pm) {
+                try {
+                    if (pm.canLoadForm(formDO)) {
+                        resetPersistenceErrorLog();
+                        return pm;
+                    }
+                }
+                catch (PersistenceException ex) {
+                    logPersistenceError(ex);
+                    // [continue on exception?]
                 }
             }
-            catch (IOException e) {} // ignore error and try the next manager
         }
+        while (it.hasNext());
 
-        if (loadManager == null) { // no PersistenceManager is able to load form
-            TopManager.getDefault().notify(
-                new NotifyDescriptor.Message(
-                    FormEditor.getFormBundle().getString("MSG_ERR_NotRecognizedForm"),
-                    NotifyDescriptor.ERROR_MESSAGE));
-            return null;
+        // no PersistenceManager is able to load the form
+        PersistenceException ex;
+        if (!anyPersistenceError()) {
+            // no error occurred, the format is just unknown
+            ex = new PersistenceException("Form file format not recognized"); // NOI18N
+            ErrorManager.getDefault().annotate(
+                ex,
+                ErrorManager.ERROR,
+                null,
+                FormUtils.getBundleString("MSG_ERR_NotRecognizedForm"), // NOI18N
+                null,
+                null);
         }
-
-        if (!loadManager.supportsAdvancedFeatures()) {
-            Object result = TopManager.getDefault().notify(
-                new NotifyDescriptor.Confirmation(
-                    FormEditor.getFormBundle().getString("MSG_ConvertForm"),
-                    NotifyDescriptor.YES_NO_OPTION,
-                    NotifyDescriptor.QUESTION_MESSAGE));
-
-            if (NotifyDescriptor.YES_OPTION.equals(result))
-                saveManager = new GandalfPersistenceManager();
+        else { // some errors occurred when recognizing the form file format
+            Throwable annotateT = null;
+            int n = persistenceErrors.size();
+            if (n == 1) { // just one exception occurred
+                ex = (PersistenceException) persistenceErrors.get(0);
+                Throwable t = ex.getOriginalException();
+                annotateT = t != null ? t : ex;
+                n = 0;
+            }
+            else { // there were more exceptions
+                ex = new PersistenceException("Form file cannot be loaded"); // NOI18N
+                annotateT = ex;
+            }
+            ErrorManager.getDefault().annotate(
+                annotateT,
+                FormUtils.getBundleString("MSG_ERR_LoadingErrors") // NOI18N
+            );
+            for (int i=0; i < n; i++) {
+                PersistenceException pe = (PersistenceException)
+                                          persistenceErrors.get(i);
+                Throwable t = pe.getOriginalException();
+                ErrorManager.getDefault().annotate(ex, (t != null ? t : pe));
+            }
+            // all the exceptions were attached to the main exception to
+            // be thrown, so the log can be cleared
+            resetPersistenceErrorLog();
         }
-
-        if (saveManager == null) saveManager = loadManager;
-
-        return new PersistenceManager[] { loadManager, saveManager };
+        throw ex;
     }
 
-    /** Used for reporting errors occured when loading form.
-     */
-    private void reportErrors(boolean fatalError, Throwable ex) {
-        if (fatalError) {
-            if (ex == null) {
-                TopManager.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                        java.text.MessageFormat.format(
-                            FormEditor.getFormBundle().getString("FMT_ERR_LoadingForm"),
-                            new Object[] { formDataObject.getName() }),
-                        NotifyDescriptor.ERROR_MESSAGE));
-            }
-            else {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ex.printStackTrace();
+    private void logPersistenceError(Throwable t) {
+        logPersistenceError(t, -1);
+    }
 
-                TopManager.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                        java.text.MessageFormat.format(
-                            FormEditor.getFormBundle().getString("FMT_ERR_LoadingFormDetails"),
-                            new Object[] { formDataObject.getName(),
-                                           Utilities.getShortClassName(ex.getClass()),
-                                           ex.getMessage() }),
-                        NotifyDescriptor.ERROR_MESSAGE));
-            }
-        }
-        else FormEditor.displayErrorLog();
+    private void logPersistenceError(Throwable t, int index) {
+        if (persistenceErrors == null)
+            persistenceErrors = new ArrayList();
+
+        if (index < 0)
+            persistenceErrors.add(t);
+        else
+            persistenceErrors.add(index, t);
+    }
+
+    private void resetPersistenceErrorLog() {
+        if (persistenceErrors != null)
+            persistenceErrors.clear();
+        else
+            persistenceErrors = new ArrayList();
+    }
+
+    private boolean anyPersistenceError() {
+        return persistenceErrors != null && !persistenceErrors.isEmpty();
     }
 
     /** Activates GUI Editing workspace (on certain conditions). Returns
@@ -486,9 +671,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
 
     /** Opens FormDesigner and ComponentInspector.
      */
-    private void openGUI() {
+    synchronized private void openGUI() {
         // open FormDesigner
-        FormDesigner designer = getFormDesigner(formModel);
+        FormDesigner designer = getFormDesigner();
         designer.initialize();
         designer.open();
 
@@ -506,14 +691,16 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     // -----------
     // saving
 
-    private void saveForm() {
-        if (formLoaded && !formDataObject.formFileReadOnly()) {
+    private void saveFormData() throws PersistenceException {
+        if (formLoaded) {
             formModel.fireFormToBeSaved();
-            try {
-                saveManager.saveForm(formDataObject, formModel);
-            }
-            catch (IOException e) {
-                e.printStackTrace();
+
+            resetPersistenceErrorLog();
+
+            synchronized(persistenceManager) {
+                persistenceManager.saveForm(formDataObject,
+                                            formModel,
+                                            persistenceErrors);
             }
         }
     }
@@ -542,7 +729,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
 
     /** Closes the form. Used when closing or reloading the document.
      */
-    private void closeForm() {
+    synchronized private void closeForm() {
 //        formModel.fireFormToBeClosed();
         openForms.remove(formModel);
 
@@ -580,7 +767,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
         // reset references
         formRootNode = null;
         formDesigner = null;
-        saveManager = null;
+        persistenceManager = null;
+        persistenceErrors = null;
         formLoaded = false;
         formModel = null;
     }

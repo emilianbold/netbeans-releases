@@ -96,10 +96,12 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      *                      layout delegate
      * @param lmInstance LayoutManager instance for initialization (may be null)
      * @param fromCode indicates whether to initialize from code structure
+     * @exception any Exception occurred during initialization
      */
     public void initialize(LayoutSupportContext layoutContext,
                            LayoutManager lmInstance,
                            boolean fromCode)
+        throws Exception
     {
         this.layoutContext = layoutContext;
         clean();
@@ -110,14 +112,8 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
             boolean defaultInstance = lmInstance == null;
             if (lmInstance == null || !lmInstance.getClass().equals(cls)) {
                 // no valid layout manager instance - create a default one
-                try {
-                    lmInstance = createDefaultLayoutInstance();
-                    defaultInstance = true;
-                }
-                catch (Exception ex) { // cannot make default layout instance
-                    ex.printStackTrace(); // [just ignore??]
-                    lmInstance = null;
-                }
+                lmInstance = createDefaultLayoutInstance();
+                defaultInstance = true;
             }
 
             if (lmInstance != null)
@@ -292,7 +288,8 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @return number of components in the layout
      */
     public int getComponentCount() {
-        return componentCodeExpressions.size();
+        return componentCodeExpressions != null ?
+                 componentCodeExpressions.size() : 0;
     }
 
     /** This method is called to accept new components before they are added
@@ -389,9 +386,12 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * The code structures describing the layout is updated immediately.
      */
     public void removeAll() {
-        componentCodeExpressions.clear();
-        componentCodeGroups.clear();
-        componentConstraints.clear();
+        if (componentCodeExpressions != null)
+            componentCodeExpressions.clear();
+        if (componentCodeGroups != null)
+            componentCodeGroups.clear();
+        if (componentConstraints != null)
+            componentConstraints.clear();
     }
 
     /** Indicates whether there's some change in the layout in comparison
@@ -697,13 +697,13 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
         AbstractLayoutSupport clone;
         try {
             clone = (AbstractLayoutSupport) getClass().newInstance();
+            clone.initialize(targetContext, null, false);
         }
         catch (Exception ex) {
             ex.printStackTrace();
             return null;
         }
 
-        clone.initialize(targetContext, null, false);
 
         FormProperty[] sourceProperties = getAllProperties();
         FormProperty[] targetProperties = clone.getAllProperties();

@@ -39,6 +39,7 @@ import org.netbeans.modules.form.compat2.border.BorderDesignSupport;
 public class FormUtils
 {
     // Static variables
+    private static ResourceBundle formBundle;
 
     // constants for CopyProperties method
     public static final int CHANGED_ONLY = 1;
@@ -212,41 +213,21 @@ public class FormUtils
     // -----------------------------------------------------------------------------
     // Utility methods
 
-    // !! not called from anywhere
-    public static void notifyPropertyException(Class beanClass,
-                                               String propertyName,
-                                               String displayName,
-                                               Throwable t,
-                                               boolean reading) {
-        boolean dontPrint = false;
-        // if it is a subclass of Applet, we ignore InvocationTargetException on
-        // codeBase, documentBase and appletContext properties
+    public static String getBundleString(String key) {
+        if (formBundle == null)
+            formBundle = NbBundle.getBundle(FormUtils.class);
 
-        if (java.applet.Applet.class.isAssignableFrom(beanClass))
-            if ("codeBase".equals(propertyName) || // NOI18N
-                "documentBase".equals(propertyName) || // NOI18N
-                "appletContext".equals(propertyName)) // NOI18N
-                dontPrint = true;
-        if ("tearOff".equals(propertyName) || "helpMenu".equals(propertyName)) // NOI18N
-            dontPrint = true;
-        if (!dontPrint) {
-            String fmt;
-            if (reading)
-                fmt = NbBundle.getBundle(FormUtils.class).getString("FMT_ERR_ReadingProperty");
-            else
-                fmt = NbBundle.getBundle(FormUtils.class).getString("FMT_ERR_WritingProperty");
-
-            TopManager.getDefault().getStdOut().println(
-                MessageFormat.format(fmt,
-                                     new Object[] { t.getClass().getName(),
-                                                    propertyName,
-                                                    displayName }));
-        }
+        return formBundle.getString(key);
     }
 
-    //
-    //
-    //
+    public static String getFormattedBundleString(String key,
+                                                  Object[] arguments)
+    {
+        if (formBundle == null)
+            formBundle = NbBundle.getBundle(FormUtils.class);
+
+        return MessageFormat.format(formBundle.getString(key), arguments);
+    }
 
     /** Utility method that tries to clone an object. Objects of explicitly
      * specified types are constructed directly, other are serialized and
@@ -899,75 +880,6 @@ public class FormUtils
         if (stopClass == null) return cl;
         if ((cl == null) ||(!(stopClass.isAssignableFrom(cl)))) return null;
         return cl;
-    }
-
-    // -----------------------------------------------------------------------------
-    // XML utilities
-
-    /** Read property from XML node.
-     * @param propName name of property
-     * @param propClass class of property(to find editor)
-     * @param element XML element representing the property
-     * @return value of property created from XML element
-     */
-    public static Object readProperty(String propName, Class propClass, org.w3c.dom.Node element) throws java.io.IOException {
-        org.w3c.dom.NodeList items = element.getChildNodes();
-        Object result = null;
-        if (items.getLength() >0) {
-            PropertyEditor propEdit = FormPropertyEditorManager.findEditor(propClass);
-            for (int i=0, n=items.getLength();i<n; i++){
-                if (items.item(i).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE &&
-                    ((org.w3c.dom.Element) items.item(i)).getAttribute(PROP_NAME).equals(propName)) {
-                    ((XMLPropertyEditor) propEdit).readFromXML(items.item(i));
-                    result = propEdit.getValue();
-                }
-            }
-        }
-        if (result == null) {
-            org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
-            if (attributes != null) {
-                org.w3c.dom.Node attr = attributes.getNamedItem(propName);
-                if (attr!=null) {
-                    String valueText = attr.getNodeValue();
-                    if (valueText != null){
-                        result = GandalfPersistenceManager.decodeValue(valueText);
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    /** Write information about Color into XML element.
-     * @param propName name of property
-     * @param value value of property
-     * @param propClass class of property(to find editor)
-     * @param element XML element to write to
-     * @param doc the whole XML document
-     */
-    public static void writeProperty(String propName, Object value, Class propClass, org.w3c.dom.Element el,org.w3c.dom.Document doc) {
-        boolean written = false;
-        PropertyEditor propEdit = FormPropertyEditorManager.findEditor(propClass);
-        org.w3c.dom.Node valueNode = null;
-        if (propEdit instanceof XMLPropertyEditor) {
-            propEdit.setValue(value);
-            valueNode =((XMLPropertyEditor) propEdit).storeToXML(doc);
-            if (valueNode != null) {
-                el.appendChild(valueNode);
-                if (valueNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                    ((org.w3c.dom.Element) valueNode).setAttribute(PROP_NAME, propName);
-                }
-                written = true;
-            }
-        }
-        if (!written) {
-            String encodedSerializeValue = GandalfPersistenceManager.encodeValue(value);
-            if (encodedSerializeValue != null) {
-                el.setAttribute(propName, encodedSerializeValue);
-            } else {
-                // [PENDING - notify problem?]
-            }
-        }
     }
 
     // ---------

@@ -57,6 +57,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
     public void setLayoutSupportDelegate(LayoutSupportDelegate layoutDelegate,
                                          LayoutManager lmInstance)
+        throws Exception
     {
         layoutSupport.setLayoutDelegate(layoutDelegate, lmInstance, false);
         setLayoutNodeReference(null);
