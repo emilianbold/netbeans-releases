@@ -30,6 +30,8 @@ import org.openide.util.enum.EmptyEnumeration;
 import org.openide.util.enum.SingletonEnumeration;
 
 import org.netbeans.modules.xsl.XSLDataObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * Provide DTD grammar. It must be registered at layer.
@@ -96,7 +98,13 @@ public class XSLGrammarQueryProvider extends GrammarQueryManager {
     }
     
     public GrammarQuery getGrammar(GrammarEnvironment input) {
-        return new XSLGrammarQuery();
+        DataObject dataObj = null;
+        try {
+            dataObj = DataObject.find(input.getFileObject());
+        } catch(DataObjectNotFoundException e) {
+            // What should we do?
+        }
+        return new XSLGrammarQuery(dataObj);
     }
     
 }
