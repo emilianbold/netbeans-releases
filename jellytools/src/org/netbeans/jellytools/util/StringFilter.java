@@ -33,13 +33,13 @@ import java.util.ArrayList;
  * </pre>
  *
  * @author Martin.Schovanek@sun.com
- * @see #String replaceString(String original, String begin, String end, String replace)
+ * @see #replaceString(String original, String begin, String end, String replace)
  */
 public class StringFilter {
     ArrayList filter = new ArrayList();
     
     /** Adds replace pattern into Filter.
-     * @see #String replaceString(String original, String begin, String end, String replace )
+     * @see #replaceString(String original, String begin, String end, String replace )
      * @param begin the begin of substring to be find
      * @param end the end of substring to be find
      * @param replace text to replace
@@ -49,7 +49,7 @@ public class StringFilter {
     }
     
     /** Adds replace pattern into Filter.
-     * @see #String replaceString(String original, String begin, String end, String replace )
+     * @see #replaceString(String original, String begin, String end, String replace )
      * @param find text to find
      * @param replace text to replace
      */
@@ -107,7 +107,7 @@ public class StringFilter {
     }
     
     /** Finds and replace all substrings.
-     * @see #String replaceString(String original, String begin, String end, String replace)
+     * @see #replaceString(String original, String begin, String end, String replace)
      * @param original the original string
      * @param find text to find
      * @param replace text to replace
@@ -131,21 +131,5 @@ public class StringFilter {
             this.end = end;
             this.replace = replace;
         }
-    }
-    
-    /** Performs simple test of StringFilter.
-     * @param args args
-     */
-    public static void main(String[] args) {
-        StringFilter sf = new StringFilter();
-        // remove 1st comment
-        sf.addReplaceFilter("/*",  "*/", "");
-        // replace all multiple spaces
-        sf.addReplaceAllFilter("  ", " ");
-        // change author name
-        sf.addReplaceFilter("author: ", "", "author: spl@sun.com");
-        String string = "/* comment */    4s  2s   3s author: xxx@sun.com";
-        System.out.println(string);
-        System.out.println(sf.filter(string));
     }
 }
