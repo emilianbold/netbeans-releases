@@ -33,7 +33,11 @@ public class JDialog extends javax.swing.JDialog {
     * @param args the command line arguments
     */
     public static void main(String args[]) {
-        new __NAME__(new javax.swing.JFrame(), true).setVisible(true);
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new __NAME__(new javax.swing.JFrame(), true).setVisible(true);
+            }
+        });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

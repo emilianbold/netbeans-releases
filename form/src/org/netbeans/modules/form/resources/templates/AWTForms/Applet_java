@@ -14,7 +14,15 @@ public class Applet extends java.applet.Applet {
 
     /** Initializes the applet __NAME__ */
     public void init() {
-        initComponents();
+        try {
+            java.awt.EventQueue.invokeAndWait(new Runnable() {
+                public void run() {
+                    initComponents();
+                }
+            });
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     /** This method is called from within the init() method to
