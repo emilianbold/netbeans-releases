@@ -1,0 +1,69 @@
+ 
+<html>
+
+<!--
+  *     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+  *     Use is subject to license terms.
+-->
+<head>
+
+
+<title>Calling an Enterprise Bean</title> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+
+</head>
+<body>
+
+<h2>Calling an Enterprise Bean</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>Calling an enterprise bean is the process of getting a reference to the enterprise 
+  bean so that you can call its methods. You can call an enterprise bean from 
+  another enterprise bean's bean class or from a servlet in a web application. 
+  When you call an enterprise bean, the IDE does the following:</p>
+<ul>
+  <li>Creates a lookup method in the caller class that gets a reference to the 
+    enterprise bean.</li>
+  <li>Adds the enterprise bean project to the caller project's classpath.</li>
+  <li>Adds a reference to the entity bean to the caller project's deployment descriptor.</li>
+</ul>
+<p><b>To call an enterprise bean:</b></p>
+<ol>
+  <li>Open the IDE project that contains the enterprise bean that you want to 
+    call. </li>
+  <li>Open the file from which you want to call the enterprise bean. You can call 
+    an enterprise bean from another enterprise bean's bean class or from a servlet 
+    in a web application.</li>
+  <li>In the Source Editor, right-click anywhere in the body of the class and 
+    choose Enterprise Resources <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Call 
+    EJB.</li>
+  <li>In the dialog box, expand the node for the project that contains the enterprise 
+    bean and select the enterprise bean.</li>
+  <li>Click OK.</li>
+</ol>
+<table border="0">
+  <tr><th colspan="2" align="left" ><a name="seealso">See Also</a></th>
+    </tr>
+    
+  <tr valign="top"> 
+    <td width="23px" nowrap>&nbsp;</td><!--
+      
+    <td nowrap><a href="add_ejbql.html">Enterprise JavaBeans Query Language</a><br>
+      <a href="">EJBQL Property Editor</a><br>
+      <a href="define_finder_method.html">Defining a Finder Method</a><br>
+      <a href="define_select_method.html">Defining a Select Method</a><br>
+      <a href="add_ejbql.html">Creating an Enterprise Bean</a><br>
+      <a href="add_ejbql.html">Working With Enterprise Beans</a></td>
+    --></tr>
+  </table>
+ 
+<hr>
+<small> <a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="150" border="0"> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   </table> 
+</body>
+
+</html>

@@ -105,7 +105,9 @@
     <mapID target="define_finder_method" url="ejb/editing/define_finder_method.html" />
     <mapID target="define_primary_key_field" url="ejb/editing/define_primary_key_field.html" />
     <mapID target="define_select_method" url="ejb/editing/define_select_method.html" />
+    <mapID target="call_ejb" url="ejb/editing/call_ejb.html" />
 
+    <mapID target="add_ejb_to_j2ee_app" url="ejb/configuring/add_ejb_to_j2ee_app.html" />
 <!-- End of EJB help -->
 
 </map>
