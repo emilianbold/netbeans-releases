@@ -381,4 +381,16 @@ public class FormPropertyEditor implements PropertyEditor,
         if (modifiedEditor instanceof ExPropertyEditor)
             ((ExPropertyEditor)modifiedEditor).attachEnv(env);
     }
+
+    // ---------
+    // delegating hashCode and equals to modifiedEditor - for PropertyPanel
+    // mapping property editors to PropertyEnv
+
+    public int hashCode() {
+        return modifiedEditor.hashCode();
+    }
+
+    public boolean equals(Object obj) {
+        return modifiedEditor.equals(obj);
+    }
 }
