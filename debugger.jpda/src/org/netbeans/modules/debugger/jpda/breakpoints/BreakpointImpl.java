@@ -56,19 +56,36 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         breakpoint = p;
     }
 
+    /**
+     * Called from XXXBreakpointImpl constructor only.
+     */
     final void set () {
-        breakpoint.addPropertyChangeListener(this);
+        breakpoint.addPropertyChangeListener (this);
+        update ();
+    }
+    
+    /**
+     * Called when Fix&Continue is invoked. Reqritten in LineBreakpointImpl.
+     */
+    void fixed () {
+        update ();
+    }
+    
+    /**
+     * Called from set () and propertyChanged.
+     */
+    final void update () {
         if ( (getVirtualMachine () == null) ||
              (getDebugger ().getState () == JPDADebugger.STATE_DISCONNECTED)
         ) return;
         removeAllEventRequests ();
-        if (breakpoint.isEnabled()) {
+        if (breakpoint.isEnabled ()) {
             setRequests ();
         }
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        set();
+    public void propertyChange (PropertyChangeEvent evt) {
+        update ();
     }
 
     protected abstract void setRequests ();

@@ -20,6 +20,8 @@ import com.sun.jdi.event.ClassUnloadEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.ClassPrepareRequest;
 import com.sun.jdi.request.ClassUnloadRequest;
+import com.sun.jdi.VirtualMachine;
+
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
@@ -35,6 +37,9 @@ import org.netbeans.modules.debugger.jpda.util.Executor;
 * @author   Jan Jancura
 */
 public abstract class ClassBasedBreakpoint extends BreakpointImpl {
+    
+    private static boolean verbose = 
+        System.getProperty ("netbeans.debugger.breakpoints") != null;
 
     public ClassBasedBreakpoint (
         JPDABreakpoint breakpoint, 
@@ -54,11 +59,17 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                 ClassPrepareRequest cpr = getEventRequestManager ().
                     createClassPrepareRequest ();
                 int i, k = classFilters.length;
-                for (i = 0; i < k; i++)
+                for (i = 0; i < k; i++) {
                     cpr.addClassFilter (classFilters [i]);
+                    if (verbose)
+                        System.out.println ("B     set class load request: " + classFilters [i]);
+                }
                 k = classExclusionFilters.length;
-                for (i = 0; i < k; i++)
+                for (i = 0; i < k; i++) {
                     cpr.addClassExclusionFilter (classExclusionFilters [i]);
+                    if (verbose)
+                        System.out.println ("B     set class load exclusion request: " + classExclusionFilters [i]);
+                }
                 addEventRequest (cpr);
             }
             if ((breakpointType & ClassLoadUnloadBreakpoint.TYPE_CLASS_UNLOADED) != 0
@@ -66,11 +77,17 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                 ClassUnloadRequest cur = getEventRequestManager ().
                     createClassUnloadRequest ();
                 int i, k = classFilters.length;
-                for (i = 0; i < k; i++)
+                for (i = 0; i < k; i++) {
                     cur.addClassFilter (classFilters [i]);
+                    if (verbose)
+                        System.out.println ("B     set class unload request: " + classFilters [i]);
+                }
                 k = classExclusionFilters.length;
-                for (i = 0; i < k; i++)
+                for (i = 0; i < k; i++) {
                     cur.addClassExclusionFilter (classExclusionFilters [i]);
+                    if (verbose)
+                        System.out.println ("B     set class unload exclusion request: " + classExclusionFilters [i]);
+                }
                 addEventRequest (cur);
             }
         } catch (VMDisconnectedException e) {
@@ -81,19 +98,27 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         String className, 
         boolean all
     ) {
+        if (verbose)
+            System.out.println("B   check loaded classes: " + className + " : " + all);
+        VirtualMachine vm = getVirtualMachine ();
+        if (vm == null) return;
         try {
             Iterator i = null;
             if (all) {
-                i = getVirtualMachine().allClasses().iterator ();
+                i = getVirtualMachine ().allClasses ().iterator ();
             } else {
-                i = getVirtualMachine ().classesByName (className).iterator();
+                i = getVirtualMachine ().classesByName (className).iterator ();
             }
             while (i.hasNext ()) {
-                Object ref = i.next();
+                ReferenceType referenceType = (ReferenceType) i.next ();
+                if (verbose)
+                    System.out.println("B     cls: " + referenceType);
                 if (i != null) {
-                    String name = ((ReferenceType)ref).name();
-                    if (name.startsWith(className)) {
-                        classLoaded ((ReferenceType) ref);
+                    String name = referenceType.name ();
+                    if (name.startsWith (className)) {
+                        if (verbose)
+                            System.out.println("B       cls loaded! ");
+                        classLoaded (referenceType);
                     }
                 }
             }

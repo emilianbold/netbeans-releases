@@ -15,6 +15,12 @@ package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
+import java.util.Iterator;
+
+import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.ActionsManagerListener;
+
+
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -75,25 +81,25 @@ implements PropertyChangeListener, DebuggerManagerListener {
             DebuggerManager.PROP_BREAKPOINTS,
             this
         );
-        removeBreakpoints ();
+        removeBreakpointImpls ();
     }
     
     public String[] getProperties () {
-        return new String[] {"a"};
+        return new String[] {"asd"};
     }
 
     public void propertyChange (java.beans.PropertyChangeEvent evt) {
         if (debugger.getState () == JPDADebugger.STATE_RUNNING) {
             if (started) return;
             started = true;
-            updateBreakpoints ();
+            createBreakpointImpls ();
             DebuggerManager.getDebuggerManager ().addDebuggerListener (
                 DebuggerManager.PROP_BREAKPOINTS,
                 this
             );
         }
         if (debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {
-            removeBreakpoints ();
+            removeBreakpointImpls ();
             started = false;
             DebuggerManager.getDebuggerManager ().removeDebuggerListener (
                 DebuggerManager.PROP_BREAKPOINTS,
@@ -101,13 +107,18 @@ implements PropertyChangeListener, DebuggerManagerListener {
             );
         }
     }
+    
+    public void actionPerformed (Object action) {
+//        if (action == ActionsManager.ACTION_FIX)
+//            fixBreakpointImpls ();
+    }
 
     public void breakpointAdded (Breakpoint breakpoint) {
-        updateBreakpoint (breakpoint);
+        createBreakpointImpl (breakpoint);
     }    
 
     public void breakpointRemoved (Breakpoint breakpoint) {
-        removeBreakpoint (breakpoint);
+        removeBreakpointImpl (breakpoint);
     }
     
 
@@ -126,24 +137,30 @@ implements PropertyChangeListener, DebuggerManagerListener {
     private HashMap breakpointToImpl = new HashMap ();
     
     
-    private void updateBreakpoints () {
+    private void createBreakpointImpls () {
         Breakpoint[] bs = DebuggerManager.getDebuggerManager ().getBreakpoints ();
         int i, k = bs.length;
         for (i = 0; i < k; i++)
-            updateBreakpoint (bs [i]);
+            createBreakpointImpl (bs [i]);
     }
     
-    private void removeBreakpoints () {
+    private void removeBreakpointImpls () {
         Breakpoint[] bs = DebuggerManager.getDebuggerManager ().getBreakpoints ();
         int i, k = bs.length;
         for (i = 0; i < k; i++)
-            removeBreakpoint (bs [i]);
+            removeBreakpointImpl (bs [i]);
+    }
+    
+    public void fixBreakpointImpls () {
+        Iterator i = breakpointToImpl.values ().iterator ();
+        while (i.hasNext ())
+            ((BreakpointImpl) i.next ()).fixed ();
     }
 
-    private void updateBreakpoint (Breakpoint b) {
+    private void createBreakpointImpl (Breakpoint b) {
         if (breakpointToImpl.containsKey (b)) return;
         if (verbose)
-            System.out.println ("Update breakpoint " + b);
+            System.out.println ("B create breakpoint impl for breakpoint: " + b);
         if (b instanceof LineBreakpoint) {
             breakpointToImpl.put (
                 b,
@@ -201,7 +218,9 @@ implements PropertyChangeListener, DebuggerManagerListener {
         }
     }
 
-    private void removeBreakpoint (Breakpoint b) {
+    private void removeBreakpointImpl (Breakpoint b) {
+        if (verbose)
+            System.out.println ("B remove breakpoint impl for breakpoint: " + b);
         BreakpointImpl impl = (BreakpointImpl) breakpointToImpl.get (b);
         if (impl == null) return;
         impl.remove ();

@@ -31,9 +31,13 @@ import java.lang.reflect.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.debugger.DebuggerEngine;
+
 
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.LazyActionsManagerListener;
+
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
@@ -47,6 +51,8 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsEngineListener;
+
 
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.LocalsTreeModel;
@@ -89,7 +95,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private JavaEngineProvider          javaEngineProvider;
     private Set                         languages;
     private String                      lastStratumn;
-    private ContextProvider              lookupProvider;
+    private ContextProvider             lookupProvider;
 
 
 
@@ -268,6 +274,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
             setState (STATE_RUNNING);
             updateCurrentCallStackFrame (t);
             setState (STATE_STOPPED);
+            
+            // update breakpoints
+            Session s = (Session) 
+                lookupProvider.lookupFirst (null, Session.class);
+            DebuggerEngine de = s.getEngineForLanguage ("Java");
+            BreakpointsEngineListener bel = (BreakpointsEngineListener) 
+                de.lookupFirst (null, LazyActionsManagerListener.class);
+            bel.fixBreakpointImpls ();
         }
     }
 
