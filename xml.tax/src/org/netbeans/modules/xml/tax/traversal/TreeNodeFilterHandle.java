@@ -22,6 +22,8 @@ import org.netbeans.tax.traversal.TreeNodeFilter;
  * @version 0.1
  */
 public final class TreeNodeFilterHandle implements Serializable {
+    private static final long serialVersionUID = -571598256778542088L;
+
     /** */
     private static final boolean DEBUG = false;
 
@@ -32,8 +34,6 @@ public final class TreeNodeFilterHandle implements Serializable {
 
     /** */
     transient private TreeNodeFilter nodeFilter;
-
-private static final long serialVersionUID = -571598256778542088L;
 
 
     //
@@ -75,9 +75,9 @@ private static final long serialVersionUID = -571598256778542088L;
     /**
      */
     private void initFields () {
-        acceptPolicy = nodeFilter.getAcceptPolicy();
+        acceptPolicy = getNodeFilter().getAcceptPolicy();
 
-        Class[] nodeTypes = nodeFilter.getNodeTypes();
+        Class[] nodeTypes = getNodeFilter().getNodeTypes();
         nodeTypeNames = new String [nodeTypes.length];
         for (int i = 0; i < nodeTypes.length; i++) {
             nodeTypeNames[i] = nodeTypes[i].getName();
