@@ -196,6 +196,10 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
     public DatabaseSpecification createSpecification(DBConnection connection, String databaseProductName, Connection c)
     throws DatabaseProductNotFoundException
     {
+        //IBM DB2 hack
+        if (databaseProductName.toUpperCase().startsWith("DB2/")) //NOI18N
+            databaseProductName = "DB2/"; //NOI18N
+        
         HashMap product = (HashMap) dbSpecs.get(databaseProductName);
 
         if (product == null)
@@ -343,27 +347,3 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
     }
 
 }
-
-/*
-* <<Log>>
-*  13   Gandalf   1.12        1/25/00  Radko Najman    
-*  12   Gandalf   1.11        1/12/00  Radko Najman    deepUnion() method is not
-*       called for TypeMap key
-*  11   Gandalf   1.10        12/15/99 Radko Najman    driverspec.plist
-*  10   Gandalf   1.9         11/1/99  Radko Najman    getDatabaseProductName().trim()
-*       
-*  9    Gandalf   1.8         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  8    Gandalf   1.7         9/13/99  Slavek Psenicka 
-*  7    Gandalf   1.6         9/10/99  Slavek Psenicka 
-*  6    Gandalf   1.5         6/15/99  Slavek Psenicka adding support for live 
-*       connection
-*  5    Gandalf   1.4         5/14/99  Slavek Psenicka new version
-*  4    Gandalf   1.3         4/23/99  Slavek Psenicka Chyba v createSpec pri 
-*       ConnectAs
-*  3    Gandalf   1.2         4/23/99  Slavek Psenicka Opravy v souvislosti se 
-*       spravnym throwovanim :) CommandNotImplementedException
-*  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
-*  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
-* $
-*/

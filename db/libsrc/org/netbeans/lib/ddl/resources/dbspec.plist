@@ -845,8 +845,8 @@
 //
 //  ********************************************************************************/
 
-  "DB2/NT" = {
-    DatabaseProductName = "DB2/NT";
+  "DB2/" = {
+    DatabaseProductName = "DB2/";
     DatabaseProductVersion = 6;
 
     TypeMap = {
