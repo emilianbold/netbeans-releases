@@ -92,13 +92,33 @@ public class PropertiesLocaleNode extends FileEntryNode {
                };
     }
 
+    /** Get the name. Note: It gets only the local part of the name  (e.g. "de_DE_EURO").
+    * Reason is to allow user change only this part of name by renaming (on Node).
+    * @return locale part of name
+    */
+    public String getName() {
+        String localeName = Util.getLocalePartOfFileName (getFileEntry());
+        if (localeName.length() > 0)
+            if (localeName.charAt(0) == PropertiesDataLoader.PRB_SEPARATOR_CHAR)
+                localeName = localeName.substring(1);
+        
+        return localeName;
+    }
+    
     /** Set the system name. Fires a property change event.
     * Also may change the display name according to {@link #displayFormat}.
     *
-    * @param s the new name
+    * @param name the new name
     */
-    public void setName (String s) {
-        super.setName (s);
+    public void setName (String name) {
+        if(!name.startsWith(((PropertiesFileEntry)getFileEntry()).basicName)) {
+            name = Util.assembleName (((PropertiesFileEntry)getFileEntry()).basicName, name);
+        }
+        
+        // new name is same as old one, do nothing
+        if (name.equals(super.getName())) return;
+        
+        super.setName (name);
         setDisplayName (Util.getPropertiesLabel(getFileEntry()));
     }
 
