@@ -76,6 +76,8 @@ public class SelectLayoutAction extends NodeAction {
     * @return <code>true</code> to be enabled, <code>false</code> to be disabled
     */
     protected boolean enable(Node[] activatedNodes) {
+        // Fix of 43921 that allows us to leave fix of 39035 untouched
+        activatedNodes = ComponentInspector.getInstance().getExplorerManager().getSelectedNodes();
         for (int i=0; i < activatedNodes.length; i++) {
             RADVisualContainer container = getContainer(activatedNodes[i]);
             if (container == null)
@@ -127,27 +129,36 @@ public class SelectLayoutAction extends NodeAction {
      * @return the JMenuItem representation for the Action
      */
     public JMenuItem getPopupPresenter() {
-        final JMenu layoutMenu = new org.openide.awt.JMenuPlus(getName());
+        JMenu layoutMenu = new LayoutMenu(getName());
         layoutMenu.setEnabled(isEnabled());
         HelpCtx.setHelpIDString(layoutMenu, SelectLayoutAction.class.getName());
-        layoutMenu.getPopupMenu().addPopupMenuListener(new PopupMenuListener() {
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                Node[] nodes = getActivatedNodes();
-                if (nodes.length == 0)
-                    return;
-                layoutMenu.removeAll();
+        return layoutMenu;
+    }
+    
+    private class LayoutMenu extends org.openide.awt.JMenuPlus {
+        private boolean initialized = false;
+        
+        private LayoutMenu(String name) {
+            super(name);
+        }
+        
+        public JPopupMenu getPopupMenu() {
+            JPopupMenu popup = super.getPopupMenu();
+            Node[] nodes = getActivatedNodes();
+
+            if ((nodes.length != 0) && !initialized) {
+                popup.removeAll();
                 PaletteItem[] layouts = getAllLayouts();
                 for (int i = 0; i < layouts.length; i++) {
                     JMenuItem mi = new JMenuItem(layouts[i].getNode().getDisplayName());
                     HelpCtx.setHelpIDString(mi, SelectLayoutAction.class.getName());
-                    layoutMenu.add(mi);
+                    popup.add(mi);
                     mi.addActionListener(new LayoutActionListener(nodes, layouts[i]));
                 }
+                initialized = true;
             }
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
-            public void popupMenuCanceled(PopupMenuEvent e) {}
-        });
-        return layoutMenu;
+            return popup;
+        }
     }
 
     class LayoutActionListener implements ActionListener
