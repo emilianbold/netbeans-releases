@@ -88,7 +88,7 @@ public class FormDesigner extends TopComponent
         this(null);
     }
 
-    void initialize() {
+    public void initialize() {
         updateWholeDesigner();
     }
     
