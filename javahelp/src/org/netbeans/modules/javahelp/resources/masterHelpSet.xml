@@ -30,13 +30,11 @@ Microsystems, Inc. All Rights Reserved.
     <label>Index</label>
     <type>javax.help.IndexView</type>
   </view>
-<!-- XXX disable for now; merging help sets is apparently broken in JH 2.0:
   <view>
     <name>Search</name>
     <label>Search</label>
     <type>javax.help.SearchView</type>
   </view>
--->
   <view>
     <name>Favorites</name>
     <label>Favorites</label>
