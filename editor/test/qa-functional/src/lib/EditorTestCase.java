@@ -6,7 +6,6 @@
 
 package lib;
 
-import java.awt.event.KeyEvent;
 import java.io.File;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -16,8 +15,11 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.ide.ProjectSupport;
 
@@ -160,6 +162,27 @@ public class EditorTestCase extends NbTestCase {
         pto.invoke();
         ProjectRootNode prn = pto.getProjectRootNode(projectName);
         prn.select();
+        
+        // fix of issue #51191
+        Node parent = new Node(prn, treeSubPackagePathToFile);
+        final String finalFileName = fileName;
+        try {
+            // wait for max. 30 seconds for the file node to appear
+            JemmyProperties.setCurrentTimeout("Waiter.WaitingTime", 30000);
+            new Waiter(new Waitable() {
+                public Object actionProduced(Object parent) {
+                    return ((Node)parent).isChildPresent(finalFileName) ? 
+                            Boolean.TRUE: null;
+                }
+                public String getDescription() {
+                    return("Waiting for the tree to load.");
+                }
+            }).waitAction(parent);
+        } catch (InterruptedException e) {
+            throw new JemmyException("Interrupted.", e);
+        }        
+        // end of fix of issue #51191
+        
         Node node = new Node(prn,treeSubPackagePathToFile+treeSeparator+fileName);
         node.performPopupAction("Open");
     }
