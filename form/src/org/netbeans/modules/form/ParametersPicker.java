@@ -173,7 +173,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         sb.append (selectedComponent.getName ());
         sb.append (".");
       }
-      sb.append (selectedMethod.getName ()); // [PENDING - method parameters]
+      sb.append (selectedMethod.getName ()); // [FUTURE: - method parameters]
       sb.append (" ()");
       return  sb.toString ();
     } else return "";
@@ -457,6 +457,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
 /*
  * Log
+ *  11   Gandalf   1.10        7/31/99  Ian Formanek    Cleaned up comments
  *  10   Gandalf   1.9         7/11/99  Ian Formanek    JEditorPane instead of 
  *       JTextArea for user code (WARNING: in guarded code, so opening the form 
  *       will destroy this change)
