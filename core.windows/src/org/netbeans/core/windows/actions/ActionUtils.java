@@ -14,42 +14,23 @@
 
 package org.netbeans.core.windows.actions;
 
-import java.awt.Frame;
-
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.WeakHashMap;
-import javax.swing.Action;
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.KeyStroke;
-import javax.swing.text.Keymap;
-
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
-
-import org.openide.cookies.SaveCookie;
 import org.openide.ErrorManager;
 import org.openide.actions.SaveAction;
-import org.openide.filesystems.FileObject;
+import org.openide.cookies.SaveCookie;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.*;
 
 
 /**
@@ -75,6 +56,7 @@ public abstract class ActionUtils {
             actions.add(new SaveDocumentAction(tc));
             actions.add(new CloneDocumentAction(tc));
             actions.add(null); // Separator
+            actions.add(new CloseAllButThisAction(tc));
         }
 
         actions.add(new CloseWindowAction(tc));
@@ -121,7 +103,10 @@ public abstract class ActionUtils {
         private final TopComponent tc;
         public CloseWindowAction(TopComponent tc) {
             this.tc = tc;
-            putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class, "LBL_CloseWindowAction"));
+            //Include the name in the label for the popup menu - it may be clicked over
+            //a component that is not selected
+            putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class, "LBL_CloseWindowAction",
+                new String[] {WindowManagerImpl.getInstance().getTopComponentDisplayName(tc)}));
         }
         
         public void actionPerformed(ActionEvent evt) {
@@ -150,6 +135,45 @@ public abstract class ActionUtils {
             }
         }
         
+    } // End of class CloseWindowAction.
+
+    private static class CloseAllButThisAction extends AbstractAction {
+        private final TopComponent tc;
+        public CloseAllButThisAction(TopComponent tc) {
+            this.tc = tc;
+            //Include the name in the label for the popup menu - it may be clicked over
+            //a component that is not selected
+            putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class, "LBL_CloseAllButThisAction",
+                new String[] {WindowManagerImpl.getInstance().getTopComponentDisplayName(tc)}));
+
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            closeAllExcept(tc);
+        }
+
+        /** Overriden to share accelerator with
+         * org.netbeans.core.windows.actions.CloseWindowAction
+         */
+        public void putValue(String key, Object newValue) {
+            if (Action.ACCELERATOR_KEY.equals(key)) {
+                putSharedAccelerator("CloseAllButThis", newValue);
+            } else {
+                super.putValue(key, newValue);
+            }
+        }
+
+        /** Overriden to share accelerator with
+         * org.netbeans.core.windows.actions.CloseWindowAction
+         */
+        public Object getValue(String key) {
+            if (Action.ACCELERATOR_KEY.equals(key)) {
+                return getSharedAccelerator("CloseAllButThis");
+            } else {
+                return super.getValue(key);
+            }
+        }
+
     } // End of class CloseWindowAction.
 
     private static class SaveDocumentAction extends AbstractAction implements PropertyChangeListener {
@@ -196,7 +220,7 @@ public abstract class ActionUtils {
     } // End of class CloneDocumentAction.
     
     // Utility methods >>
-    static void closeAllDocuments() {
+    public static void closeAllDocuments() {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         Set tcs = new HashSet();
         for(Iterator it = wm.getModes().iterator(); it.hasNext(); ) {
@@ -211,7 +235,27 @@ public abstract class ActionUtils {
             tc.close();
         }
     }
-    
+
+    public static void closeAllExcept (TopComponent c) {
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        Set tcs = new HashSet();
+        for(Iterator it = wm.getModes().iterator(); it.hasNext(); ) {
+            ModeImpl mode = (ModeImpl)it.next();
+            if(mode.getKind() == Constants.MODE_KIND_EDITOR) {
+                tcs.addAll(mode.getOpenedTopComponents());
+            }
+        }
+
+        for(Iterator it = tcs.iterator(); it.hasNext(); ) {
+            TopComponent tc = (TopComponent)it.next();
+            if (tc != c) {
+                tc.close();
+            }
+        }
+    }
+
+
+
     static void closeWindow(TopComponent tc) {
         tc.close();
     }

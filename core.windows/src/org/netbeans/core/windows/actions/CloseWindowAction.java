@@ -15,14 +15,13 @@
 package org.netbeans.core.windows.actions;
 
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
+
+import javax.swing.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 
 /**

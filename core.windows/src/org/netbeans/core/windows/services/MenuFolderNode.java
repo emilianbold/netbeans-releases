@@ -13,22 +13,24 @@
 
 package org.netbeans.core.windows.services;
 
-import java.util.ResourceBundle;
-
 import org.netbeans.core.NbPlaces;
-
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.*;
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.InstanceDataObject;
-import org.openide.nodes.*;
-import org.openide.util.datatransfer.NewType;
-import org.openide.util.actions.SystemAction;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.NewType;
+
+import java.util.ResourceBundle;
 
 /** The node for the menu folder representation.
 * Delegates most of its functionality to the original data folder node.

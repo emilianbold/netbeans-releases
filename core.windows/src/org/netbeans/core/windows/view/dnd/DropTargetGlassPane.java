@@ -14,35 +14,18 @@
 package org.netbeans.core.windows.view.dnd;
 
 
-import java.awt.BasicStroke;
-import java.awt.Component;
-import java.awt.Color;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Area;
-import java.awt.geom.GeneralPath;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Polygon;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.Stroke;
-import java.awt.Toolkit;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetListener;
-import java.util.Set;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.RepaintManager;
-import javax.swing.SwingUtilities;
-
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.view.Controller;
-import org.netbeans.core.windows.view.ui.tabcontrol.EqualPolygon;
+import org.netbeans.swing.tabcontrol.plaf.EqualPolygon;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.dnd.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
+import java.awt.geom.GeneralPath;
+import java.util.Set;
 
 
 /**

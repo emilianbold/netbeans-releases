@@ -15,10 +15,11 @@
 package org.netbeans.core.windows;
 
 
-import java.awt.Dimension;
-import javax.swing.JSplitPane;
+import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.openide.util.Utilities;
 
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * Constants in window system.
@@ -36,8 +37,9 @@ public abstract class Constants {
     public static final int MODE_STATE_SEPARATED = 1;
     
     /** Constant that identifies mode kind */
-    public static final int MODE_KIND_EDITOR = 0;
-    public static final int MODE_KIND_VIEW   = 1;
+    public static final int MODE_KIND_EDITOR = TabbedContainer.TYPE_EDITOR;
+    public static final int MODE_KIND_VIEW   = TabbedContainer.TYPE_VIEW;
+    public static final int MODE_KIND_SLIDING = TabbedContainer.TYPE_SLIDING;
 
     /** Vertical orientation constant used in constraint. */
     public static final int VERTICAL   = JSplitPane.VERTICAL_SPLIT;
@@ -60,7 +62,7 @@ public abstract class Constants {
     
     // DnD drop ratios.
     /** How big portion of the original mode has to be taken (range from 0.0 to 1.0). */
-    public static final double DROP_TO_SIDE_RATIO = 0.5D;
+    public static final double DROP_TO_SIDE_RATIO = 0.15D;
     /** How big portion should take the new mode from each one (between which is dropped) (range from 0.0 to 1.0). */
     public static final double DROP_BETWEEN_RATIO = 1.0D/3;
     /** How big portion of entire area should take the dropped mode (range from 0.0 to 1.0). */
@@ -111,7 +113,7 @@ public abstract class Constants {
     //HIE approval and performance impact evaluation - probably safe for Windows, probably
     //a big performance hit on Linux.  Appears that XP L&F will not display images even if
     //supplied.
-    public static final boolean SWITCH_USE_DRAG_IMAGES = Boolean.getBoolean("netbeans.windows.useDragImages") || Utilities.getOperatingSystem() == Utilities.OS_MAC;
+    public static final boolean SWITCH_USE_DRAG_IMAGES = Boolean.getBoolean("netbeans.winsys.dragimage") || Utilities.getOperatingSystem() == Utilities.OS_MAC;
    
     /** Allowing complete removal of toolbars. */
     public static final boolean NO_TOOLBARS = Boolean.getBoolean("netbeans.winsys.no_toolbars"); // NOI18N

@@ -15,7 +15,7 @@
 package org.netbeans.core.windows.view;
 
 
-import java.awt.Component;
+import java.awt.*;
 
 
 /**

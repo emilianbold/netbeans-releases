@@ -14,25 +14,10 @@
 package org.netbeans.core.windows.model;
 
 
-import java.awt.Image;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.HashMap;
-
-import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.WindowManagerImpl;
-
-import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
+
+import java.awt.*;
+import java.util.List;
 
 
 /**

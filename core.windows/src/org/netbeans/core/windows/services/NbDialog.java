@@ -13,12 +13,11 @@
 
 package org.netbeans.core.windows.services;
 
-import java.awt.*;
-import java.awt.event.ActionListener;
-import javax.swing.*;
-
 import org.openide.DialogDescriptor;
 import org.openide.util.HelpCtx;
+
+import java.awt.*;
+import java.awt.event.ActionListener;
 
 // XXx Before as org.netbeans.core.NbDialog
 

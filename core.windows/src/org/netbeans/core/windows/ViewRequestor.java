@@ -15,16 +15,15 @@
 package org.netbeans.core.windows;
 
 
-import java.awt.Frame;
-import java.awt.Rectangle;
+import org.netbeans.core.windows.view.View;
+import org.netbeans.core.windows.view.ViewEvent;
+import org.netbeans.core.windows.view.ViewFactory;
+
+import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.SwingUtilities;
-
-import org.netbeans.core.windows.view.ViewEvent;
-import org.netbeans.core.windows.view.View;
-import org.netbeans.core.windows.view.ViewFactory;
 
 
 /**

@@ -13,12 +13,11 @@
 
 package org.netbeans.core.windows.view.ui.toolbars;
 
+import org.openide.awt.ToolbarPool;
+import org.openide.windows.WindowManager;
+
 import java.awt.*;
 import java.util.*;
-import javax.swing.*;
-
-import org.openide.awt.*;
-import org.openide.windows.WindowManager;
 
 /**
  * ToolbarLayout is a LayoutManager2 that should be used on a toolbar panel to

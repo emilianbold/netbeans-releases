@@ -13,17 +13,6 @@
 
 package org.netbeans.core.windows.view.ui.toolbars;
 
-import java.awt.BorderLayout;
-import java.awt.Dialog;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.text.DefaultEditorKit;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
@@ -35,6 +24,11 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.text.DefaultEditorKit;
+import java.awt.*;
 
 
 /**

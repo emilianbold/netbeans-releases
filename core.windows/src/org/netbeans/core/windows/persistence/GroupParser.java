@@ -13,26 +13,7 @@
 
 package org.netbeans.core.windows.persistence;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
-
+import org.netbeans.core.windows.Debug;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -41,8 +22,11 @@ import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
+import org.xml.sax.*;
+import org.xml.sax.helpers.DefaultHandler;
 
-import org.netbeans.core.windows.Debug;
+import java.io.*;
+import java.util.*;
 
 /**
  * Handle loading/saving of Group configuration data.

@@ -13,11 +13,11 @@
 
 package org.netbeans.core.windows.view.ui.toolbars;
 
-import java.io.IOException;
-
-import org.openide.loaders.XMLDataObject;
 import org.openide.cookies.InstanceCookie;
+import org.openide.loaders.XMLDataObject;
 import org.openide.util.WeakListeners;
+
+import java.io.IOException;
 
 /**
  * ToolbarProcessor is cookie of XMLDataObject which creates ToolbarConfiguration.

@@ -13,15 +13,13 @@
 
 package org.netbeans.core.windows.view.ui;
 
-import java.awt.Font;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.JLabel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.WeakListeners;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
 
 /** The status line component of the main window.
 *

@@ -13,33 +13,33 @@
 
 package org.netbeans.core.windows.services;
 
-import org.openide.util.WeakListeners;
-import org.openide.util.WeakListeners;
-import java.beans.*;
-import java.awt.Image;
-import java.util.ResourceBundle;
-import java.io.IOException;
-
-import org.openide.nodes.*;
-import org.openide.actions.*;
-import org.openide.cookies.InstanceCookie;
-import org.openide.NotifyDescriptor;
+import org.netbeans.core.NbPlaces;
+import org.netbeans.core.windows.WindowManagerImpl;
+import org.netbeans.core.windows.view.ui.toolbars.ToolbarConfiguration;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.actions.*;
+import org.openide.awt.Toolbar;
+import org.openide.awt.ToolbarPool;
+import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.InstanceDataObject;
-import org.openide.util.datatransfer.NewType;
-import org.openide.util.actions.SystemAction;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.awt.Toolbar;
-import org.openide.awt.ToolbarPool;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.NewType;
 
-import org.netbeans.core.NbPlaces;
-import org.netbeans.core.windows.view.ui.toolbars.ToolbarConfiguration;
-import org.netbeans.core.windows.WindowManagerImpl;
-import org.openide.windows.WindowManager;
+import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.util.ResourceBundle;
 
 /** The node for the toolbar folder representation.
 * Delegates most of its functionality to the original data folder node.

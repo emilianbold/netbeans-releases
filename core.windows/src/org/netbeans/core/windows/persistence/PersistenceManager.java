@@ -13,56 +13,36 @@
 
 package org.netbeans.core.windows.persistence;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
-import java.io.FileNotFoundException;
-import java.io.InvalidObjectException;
-import java.io.IOException;
-import java.io.NotSerializableException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.WeakHashMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.lang.ref.WeakReference;
-import javax.swing.SwingUtilities;
-
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.modules.ModuleInfo;
-import org.openide.modules.SpecificationVersion;
-import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
-import org.openide.util.Lookup;
-import org.openide.windows.WindowManager;
-import org.openide.windows.Workspace;
-import org.openide.windows.TopComponent;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.InstanceDataObject;
-import org.openide.loaders.DataObject;
-import org.openide.cookies.SaveCookie;
-import org.openide.cookies.InstanceCookie;
-import org.openide.util.io.SafeException;
-
-import org.netbeans.core.projects.SessionManager;
-
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.RegistryImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.persistence.convert.ImportManager;
-import org.openide.nodes.Node;
+import org.openide.ErrorManager;
+import org.openide.cookies.InstanceCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.InstanceDataObject;
+import org.openide.modules.ModuleInfo;
+import org.openide.modules.SpecificationVersion;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.io.SafeException;
+import org.openide.windows.TopComponent;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.NotSerializableException;
+import java.lang.ref.WeakReference;
+import java.util.*;
 
 
 /** Manages persistent data of window system, currently stored in XML format.

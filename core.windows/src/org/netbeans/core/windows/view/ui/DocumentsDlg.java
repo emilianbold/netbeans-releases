@@ -13,53 +13,36 @@
 
 package org.netbeans.core.windows.view.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.Image;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.plaf.basic.BasicBorders;
-
-
+import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.explorer.view.ListView;
-import org.openide.explorer.ExplorerPanel;
+import org.openide.cookies.SaveCookie;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerPanel;
+import org.openide.explorer.view.ListView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.windows.TopComponent;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.cookies.SaveCookie;
+import org.openide.windows.TopComponent;
 
-import org.netbeans.core.NbTopManager; // XXX core dependency.
-import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.WindowManagerImpl;
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Panel to display list of TopComponents in editor area.

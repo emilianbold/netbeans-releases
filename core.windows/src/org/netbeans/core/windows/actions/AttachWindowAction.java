@@ -14,28 +14,22 @@
 package org.netbeans.core.windows.actions;
 
 
+import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.WindowManagerImpl;
+import org.openide.awt.JMenuPlus;
+import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
+import org.openide.util.actions.Presenter;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
+
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 import java.util.Set;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
-
-import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.WindowManagerImpl;
-
-import org.openide.awt.JMenuPlus;
-import org.openide.util.actions.Presenter;
-import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 
 /**

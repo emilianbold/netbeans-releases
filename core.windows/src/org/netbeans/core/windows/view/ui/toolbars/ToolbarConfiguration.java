@@ -13,39 +13,38 @@
 
 package org.netbeans.core.windows.view.ui.toolbars;
 
-import java.beans.*;
-import java.io.*;
-import java.util.*;
-import java.text.*;
-import java.awt.Component;
-import java.awt.FlowLayout;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.MenuListener;
 import org.netbeans.core.NbPlaces;
-
-import org.openide.util.NbBundle;
-import org.openide.NotifyDescriptor;
+import org.netbeans.core.windows.WindowManagerImpl;
+import org.netbeans.core.windows.services.ToolbarFolderNode;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileLock;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.JPopupMenuPlus;
 import org.openide.awt.Toolbar;
 import org.openide.awt.ToolbarPool;
-import org.openide.loaders.XMLDataObject;
-import org.openide.nodes.NodeOperation;
-import org.openide.util.Lookup;
-import org.openide.util.Utilities;
-
-import org.w3c.dom.*;
-import org.xml.sax.*;
-import org.openide.windows.WindowManager;
-
-import org.netbeans.core.windows.services.ToolbarFolderNode;
-import org.netbeans.core.windows.WindowManagerImpl;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataNode;
+import org.openide.loaders.XMLDataObject;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.xml.sax.*;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.List;
 
 /** Toolbar configuration.
  * It can load configuration from DOM Document, store configuration int XML file. 

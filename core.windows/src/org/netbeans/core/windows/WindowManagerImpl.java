@@ -15,25 +15,21 @@
 package org.netbeans.core.windows;
 
 
-import java.awt.Frame;
-import java.awt.Image;
-import java.awt.Rectangle;
-import java.net.URL;
-import java.util.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import javax.swing.Action;
-import javax.swing.SwingUtilities;
-
 import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.core.windows.persistence.PersistenceManager;
-
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.*;
+
+import javax.swing.*;
+import java.awt.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.net.URL;
+import java.util.Iterator;
+import java.util.Set;
 
 
 /**

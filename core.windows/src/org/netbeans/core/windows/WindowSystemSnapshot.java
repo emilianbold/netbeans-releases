@@ -15,7 +15,7 @@
 package org.netbeans.core.windows;
 
 
-import java.awt.Rectangle;
+import java.awt.*;
 
 
 /**

@@ -41,6 +41,16 @@ Microsystems, Inc. All Rights Reserved.
                     <build-prerequisite/>
                     <compile-dependency/>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.swing.plaf</code-name-base>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.swing.tabcontrol</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency/>  
+                </dependency>
             </module-dependencies>
             <public-packages/>
         </data>

@@ -15,39 +15,24 @@
 package org.netbeans.core.windows.services;
 
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.beans.BeanInfo;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
-import java.util.ResourceBundle;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.ImageIcon;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.ListCellRenderer;
-import javax.swing.UIManager;
-
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
 import org.openide.util.NbBundle;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import java.awt.*;
+import java.awt.event.*;
+import java.beans.BeanInfo;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.util.ResourceBundle;
 
 
 // XXX Before as org.netbeans.core.FileSelector.
@@ -58,6 +43,8 @@ import org.openide.util.NbBundle;
  * @version 0.13, Jun 07, 1998
  */
 final class FileSelector extends CoronaDialog implements PropertyChangeListener {
+    //XXX AFAIK nothing in NetBeans uses NodeOperation.select().  Probably this class can be deleted and NodeOperation.select deprecated. - Tim
+
     /** generated Serialized Version UID */
     static final long serialVersionUID = 6524404012203099065L;
     /** manages tree */

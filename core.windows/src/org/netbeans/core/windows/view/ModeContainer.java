@@ -15,9 +15,9 @@
 package org.netbeans.core.windows.view;
 
 
-import java.awt.Component;
-
 import org.openide.windows.TopComponent;
+
+import java.awt.*;
 
 
 /**

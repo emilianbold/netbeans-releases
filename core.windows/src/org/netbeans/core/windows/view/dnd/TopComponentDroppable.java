@@ -15,13 +15,10 @@
 package org.netbeans.core.windows.view.dnd;
 
 
-import java.awt.Component;
-import java.awt.Point;
-import java.awt.Shape;
-
 import org.netbeans.core.windows.view.ViewElement;
-
 import org.openide.windows.TopComponent;
+
+import java.awt.*;
 
 
 /**

@@ -15,16 +15,14 @@
 package org.netbeans.core.windows.view;
 
 
-import java.awt.Component;
-import java.awt.Container;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.BorderFactory;
-import javax.swing.JSplitPane;
-
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.view.ui.NestedSplitPane;
+
+import javax.swing.*;
+import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 
 /**

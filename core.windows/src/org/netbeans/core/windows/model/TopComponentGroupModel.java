@@ -14,10 +14,10 @@
 package org.netbeans.core.windows.model;
 
 
+import org.openide.windows.TopComponent;
+
 import java.util.Collection;
 import java.util.Set;
-
-import org.openide.windows.TopComponent;
 
 
 /**

@@ -15,16 +15,14 @@
 package org.netbeans.core.windows;
 
 
-import java.awt.Dimension;
-import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.netbeans.core.windows.persistence.GroupConfig;
 import org.netbeans.core.windows.persistence.ModeConfig;
-import org.netbeans.core.windows.persistence.TCGroupConfig;
 import org.netbeans.core.windows.persistence.TCRefConfig;
 import org.netbeans.core.windows.persistence.WindowManagerConfig;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**

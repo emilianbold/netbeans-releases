@@ -15,10 +15,9 @@
 package org.netbeans.core.windows.actions;
 
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-
 import org.openide.util.NbBundle;
+
+import javax.swing.*;
 
 
 /**

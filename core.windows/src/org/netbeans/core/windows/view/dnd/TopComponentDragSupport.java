@@ -15,61 +15,33 @@
 package org.netbeans.core.windows.view.dnd;
 
 
-import java.awt.AWTEvent;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.Dialog;
-import java.awt.Dimension;
+import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.Debug;
+import org.netbeans.core.windows.view.ui.ModeComponent;
+import org.netbeans.core.windows.view.ui.Tabbed;
+import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
+import org.openide.ErrorManager;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
+import org.openide.util.WeakSet;
+import org.openide.windows.TopComponent;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragGestureEvent;
-import java.awt.dnd.DragGestureRecognizer;
-import java.awt.dnd.DragSource;
-import java.awt.dnd.DragSourceContext;
-import java.awt.dnd.DragSourceEvent;
-import java.awt.dnd.DragSourceDragEvent;
-import java.awt.dnd.DragSourceDropEvent;
-import java.awt.dnd.DragSourceListener;
-import java.awt.dnd.InvalidDnDOperationException;
+import java.awt.dnd.*;
 import java.awt.event.AWTEventListener;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.GraphicsEnvironment;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.Transparency;
-import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import javax.swing.JDialog;
-import javax.swing.JTabbedPane;
-import javax.swing.JTree;
-import javax.swing.SwingUtilities;
-
-import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.Debug;
-import org.netbeans.core.windows.view.ui.JdkBug4620540Hack;
-import org.netbeans.core.windows.view.ui.ModeComponent;
-import org.netbeans.core.windows.view.ui.Tabbed;
-
-import org.openide.ErrorManager;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
-import org.openide.util.WeakSet;
-import org.openide.windows.TopComponent;
 
 
 /**
@@ -122,7 +94,7 @@ implements AWTEventListener, DragSourceListener {
     private static final int CURSOR_MOVE_NO = 3;
     /** Cursor type indicating there cannont be copy operation 
      * done, but could be done move operation. In fact is
-     * the same like {@lingk #CURSOR_COPY_NO} with the diff name
+     * the same like {@link #CURSOR_COPY_NO} with the diff name
      * to be recognized correctly when switching action over drop target */
     private static final int CURSOR_COPY_NO_MOVE = 4;
 
@@ -241,24 +213,10 @@ implements AWTEventListener, DragSourceListener {
         // and we need always the deepest component to start from.
         srcComp = SwingUtilities.getDeepestComponentAt(srcComp, point.x, point.y);
 
-        boolean shiftDown = me.isShiftDown();
         boolean ctrlDown  = me.isControlDown();
         
         TopComponent tc = null;
 
-        // #38849 Don't want to start drag when used from inside TopComponent.
-//        if (shiftDown || ctrlDown) {
-//            if (srcComp instanceof TopComponent) {
-//                tc = (TopComponent) srcComp;
-//            }
-//            else {
-//                tc = (TopComponent) SwingUtilities.getAncestorOfClass(
-//                    TopComponent.class, srcComp);
-//            }
-//        }
-
-        // JDK 1.4 SCROLL_TAB_LAYOUT JTabbedPane is very special.  The tab
-        // handle is not part of the component
         if (tc == null) {
             Tabbed tabbed;
             if(srcComp instanceof Tabbed) {
@@ -272,21 +230,12 @@ implements AWTEventListener, DragSourceListener {
 
             Point pp = new Point(point);
             Point p = SwingUtilities.convertPoint(srcComp, pp, (Component)tabbed);
-            
-            int i;
-            if(tabbed instanceof JTabbedPane) {
-                i = JdkBug4620540Hack.findTabForCoordinate((JTabbedPane)tabbed, p.x, p.y);
-            } else {
-                i = tabbed.tabForCoordinate(p.x, p.y);
-            }
-            
+
             // #38362 Don't start DnD when closing tab.
-            if(tabbed.isPointInCloseButton(p)) {
-                return;
-            }
-            
-            if(i >= 0) {
-                tc = tabbed.getTopComponentAt(i);
+            String cmd = tabbed.getCommandAtPoint(p);
+
+            if (TabbedAdapter.COMMAND_SELECT.equals(cmd)) {
+                tc = tabbed.getTopComponentAt(tabbed.tabForCoordinate(p));
             }
         }
 
@@ -386,10 +335,10 @@ implements AWTEventListener, DragSourceListener {
         
         Image img = null;
         if (tabbed != null && Constants.SWITCH_USE_DRAG_IMAGES) {
-            img = tabbed.getDragImage(firstTC);
+            int idx = tabbed.indexOf(firstTC);
+            img = tabbed.createImageOfTab(idx);
         }
-        
-        
+
         try {
             evt.startDrag(
                 cursor,

@@ -13,13 +13,14 @@
 
 package org.netbeans.core.windows.view.ui.toolbars;
 
-import java.util.Vector;
-import java.util.Iterator;
-import org.openide.awt.ToolbarPool;
 import org.openide.awt.Toolbar;
-import java.beans.PropertyChangeListener;
+import org.openide.awt.ToolbarPool;
+
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
-import java.awt.Dimension;
+import java.beans.PropertyChangeListener;
+import java.util.Iterator;
+import java.util.Vector;
 
 /**
  * This class represents one row of toolbars.

@@ -14,27 +14,22 @@
 
 package org.netbeans.core.windows.actions;
 
-import java.awt.Frame;
-import java.awt.KeyboardFocusManager;
+import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.WindowManagerImpl;
+import org.netbeans.core.windows.view.ui.RecentViewListDlg;
+import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Iterator;
-import java.util.List;
-import javax.swing.AbstractAction;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-
-import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.windows.view.ui.RecentViewListDlg;
-
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
-import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
 
 /**
  * Invokes Recent View List

@@ -150,23 +150,23 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         
         setFloatable (false);
         String lAndF = UIManager.getLookAndFeel().getName();
+        
         if (lAndF.equals("Windows")) {
             //Get rid of extra height, also allow for minimalist main
             //window
             setBorder(Boolean.getBoolean("netbeans.small.main.window") ?
                 BorderFactory.createEmptyBorder(1,1,1,1) : 
                 BorderFactory.createEmptyBorder()); //NOI18N
-        } else if (!"Aqua".equals(UIManager.getLookAndFeel().getID())){
+        } else if (!"Aqua".equals(UIManager.getLookAndFeel().getID()) && !"GTK".equals(UIManager.getLookAndFeel().getID())){
             Border b = UIManager.getBorder ("ToolBar.border"); //NOI18N
-            //(TDB) hack to avoid no borders on toolbars
-            //Can be removed once theme file ships with NetBeans, so that
-            //NB will respect toolbar.border from other look and feels.
+            
             if ((b==null) || (b instanceof javax.swing.plaf.metal.MetalBorders.ToolBarBorder))  
                 b=BorderFactory.createEtchedBorder (EtchedBorder.LOWERED);
             setBorder (new CompoundBorder ( 
                    b,
                    new EmptyBorder (TOP, LEFT, BOTTOM, RIGHT))
                    );  
+             
         } 
         if (!"Aqua".equals(UIManager.getLookAndFeel().getID())) {
             putClientProperty("JToolBar.isRollover", Boolean.TRUE); // NOI18N
@@ -176,23 +176,13 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         getAccessibleContext().setAccessibleName(displayName == null ? getName() : displayName);
         getAccessibleContext().setAccessibleDescription(getName());
     }
-    
-    public void updateUI() {
-        if ("Aqua".equals(UIManager.getLookAndFeel().getID())) {
-            //see org.netbeans.core.windows.view.ui.plaf.PlainAquaToolbarUI and
-            //org.netbeans.core.windows.view.ui.plaf.AquaLFCustoms
-            Object ui = UIManager.get("Nb.ToolBar.ui"); //NOI18N
-            
-            if (ui instanceof ToolBarUI) {
-                try {
-                    setUI ((ToolBarUI) ui);
-                    return;
-                } catch (Exception e) {
-                    ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
-                }
-            }
+
+    public String getUIClassID() {
+        if (UIManager.get("Nb.Toolbar.ui") != null) { //NOI18N
+            return "Nb.Toolbar.ui"; //NOI18N
+        } else {
+            return super.getUIClassID();
         }
-        super.updateUI();
     }
     
     public Dimension getPreferredSize() {
@@ -239,6 +229,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             dragarea.addMouseListener (mouseListener);
             dragarea.addMouseMotionListener (mouseListener);
 
+            dragarea.setName ("grip");
             add (dragarea);
             addSeparator (new Dimension (4, 1));
         }
@@ -372,7 +363,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
 
         /**
          * Creates a new folder on the specified <code>DataFolder</code>.
-         * @param folder a <code>DataFolder</code> to work with
+         *
          */
         public Folder () {
             super (backingFolder);

@@ -15,26 +15,16 @@
 package org.netbeans.core.windows.view.ui;
 
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.Window;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-
 import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.view.dnd.TopComponentDroppable;
-import org.netbeans.core.windows.view.dnd.WindowDnDManager;
-import org.netbeans.core.windows.view.ModeContainer;
+import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ModeView;
 import org.netbeans.core.windows.view.ViewElement;
-import org.netbeans.core.windows.WindowManagerImpl;
-
+import org.netbeans.core.windows.view.dnd.TopComponentDroppable;
+import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.openide.windows.TopComponent;
+
+import javax.swing.*;
+import java.awt.*;
 
 
 /** 

@@ -14,14 +14,13 @@
 package org.netbeans.core.windows.model;
 
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.ModeStructureSnapshot;
 import org.netbeans.core.windows.SplitConstraint;
+
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**

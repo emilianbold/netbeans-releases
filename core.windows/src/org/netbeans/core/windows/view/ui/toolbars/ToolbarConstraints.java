@@ -13,13 +13,13 @@
 
 package org.netbeans.core.windows.view.ui.toolbars;
 
-import java.util.*;
-import java.awt.Dimension;
-import java.awt.Rectangle;
-
 import org.openide.awt.Toolbar;
-import java.beans.PropertyChangeSupport;
+
+import java.awt.*;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.Iterator;
+import java.util.Vector;
 
 /** An object that encapsulates position and (optionally) size for
  * Absolute positioning of components.

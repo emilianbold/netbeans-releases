@@ -15,19 +15,17 @@
 package org.netbeans.core.windows.actions;
 
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Iterator;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
-
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
+
+import javax.swing.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Iterator;
 
 
 /**

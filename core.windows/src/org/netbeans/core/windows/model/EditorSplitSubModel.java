@@ -15,10 +15,6 @@
 package org.netbeans.core.windows.model;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeStructureSnapshot;
 import org.netbeans.core.windows.SplitConstraint;

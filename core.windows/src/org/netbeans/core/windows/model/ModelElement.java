@@ -15,7 +15,7 @@
 package org.netbeans.core.windows.model;
 
 
-import java.awt.Component;
+
 
 /**
  * Identifies model element.

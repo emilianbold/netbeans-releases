@@ -1,0 +1,21 @@
+<html><head><title>TabbedContainer and TabDisplayer</title</head><body>
+<h2>TabDisplayer and TabbedControl</h2>
+This package contains two gui components:
+<ul>
+<li><b>TabDisplayer</b> - A component which displays tabs, the contents of which are defined in a <code>TabDataModel</code>.  This can be used as a standalone component for tab-driven navigation.  It has several UI styles available to suit different purposes, such as scrollable tabs, fixed width tabs, or toggle buton tabs.</li>
+<li><b>TabbedContainer</b> - A component which also takes a <code>TabDataModel</code>, which offers similar functionality to a JTabbedPane, and (as an implementation detail) embeds a TabDisplayer to display its tabs.</li>
+</ul>
+
+Where these classes differ from JTabbedPane is as follows:
+<ul>
+<li>Fully model driven - the contents of the AWT hierarchy are an artifact, not the primary source of information about the contents of the tabbed container.  Several policies are available for when components to be displayed in tabs are to be physically added to a container</li>
+<li>Multiple UI styles supported up front - Several different UI styles are supported, with UI delegates for the major look and feels.</li>
+<li>Drag and drop visualization support - while the actual functionality of what to drag and what to do with it is left up to the application, there is built in support for creating drag images of tabs and visual feedback for where a tab will be placed if dropped.</li>
+<li>Support for using a single component across multiple tabs is designed in - there are some hacks one can do which (maybe) will allow a JTabbedPane to do this, but they are not recommended.  This is made easy using the <code>ComponentConverter</code> class, which determines how an element in the data model is translated into a GUI component</li>
+<li>Very granular event model - TabDataModel is designed on the assumption that the application may atomically add/remove/modify discontiguous ranges of tabs, their contents, titles or icons, and that such operations should be handled atomically, generating a single event/repaint</li>
+</ul>
+
+<h2>How it works</h2>
+Pending...
+
+</body></html>

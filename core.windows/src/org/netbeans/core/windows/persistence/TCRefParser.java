@@ -13,20 +13,7 @@
 
 package org.netbeans.core.windows.persistence;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
-
+import org.netbeans.core.windows.Debug;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -34,8 +21,10 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
+import org.xml.sax.*;
+import org.xml.sax.helpers.DefaultHandler;
 
-import org.netbeans.core.windows.Debug;
+import java.io.*;
 
 /**
  * Handle loading/saving of TopComponent reference in Mode configuration data.

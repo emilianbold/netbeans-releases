@@ -15,8 +15,7 @@
 package org.netbeans.core.windows.view;
 
 
-import java.awt.Rectangle;
-import java.util.Set;
+
 
 
 /**

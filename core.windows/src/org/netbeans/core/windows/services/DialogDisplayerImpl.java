@@ -15,17 +15,13 @@
 package org.netbeans.core.windows.services;
 
 
-import java.awt.Component;
-import java.awt.Dialog;
-import java.awt.Frame;
-import java.awt.KeyboardFocusManager;
-import java.awt.Window;
-
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Mutex;
 import org.openide.windows.WindowManager;
+
+import java.awt.*;
 
 
 // Extracted from core/NbTopManager.

@@ -15,31 +15,19 @@
 package org.netbeans.core.windows.view;
 
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.util.Arrays;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-
 import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.dnd.TopComponentDroppable;
-import org.netbeans.core.windows.view.dnd.WindowDnDManager; // PENDING
-import org.netbeans.core.windows.ModeImpl; // PENDING
-import org.netbeans.core.windows.WindowManagerImpl; // PENDING
-
+import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.openide.ErrorManager;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
+import java.util.Arrays;
 
 
 /**

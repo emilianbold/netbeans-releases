@@ -15,9 +15,9 @@
 package org.netbeans.core.windows.view;
 
 
-import java.awt.Rectangle;
-
 import org.openide.windows.TopComponent;
+
+import java.awt.*;
 
 
 /**

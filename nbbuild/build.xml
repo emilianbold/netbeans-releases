@@ -189,7 +189,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module core/bootstrap..."/>
     <ant dir="../core/bootstrap" target="netbeans"/>
   </target>
-  <target name="all-core" depends="all-openide,all-openide/loaders,all-core/bootstrap">
+  <target name="all-core" depends="all-openide,all-openide/loaders,all-core/bootstrap,all-core/swing/plaf">
     <echo message="Building IDE core implementation..."/>
     <ant dir="../core" target="netbeans"/>
   </target>
@@ -229,7 +229,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module htmldiff ..."/>
     <ant dir="../contrib/htmldiff" target="netbeans"/>
   </target>
-  <target name="all-core/windows" depends="all-openide,all-openide/loaders,all-core">
+  <target name="all-core/windows" depends="all-openide,all-openide/loaders,all-core,all-core/swing/tabcontrol">
     <echo message="Building module core/windows..."/>
     <ant dir="../core/windows" target="netbeans"/>
   </target>
@@ -1034,6 +1034,16 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="all-i18n/form" depends="all-form,all-i18n,all-java,all-properties,all-openide,all-openide/loaders,all-java/srcmodel">
     <echo message="Building module i18n/form..."/>
     <ant dir="../i18n/form" target="netbeans"/>
+  </target>
+
+  <target name="all-core/swing/plaf">
+     <echo message="Building look and feel library..."/>
+     <ant dir="../core/swing/plaf" target="netbeans"/>
+  </target>
+
+  <target name="all-core/swing/tabcontrol">
+     <echo message="Building tabcontrol javabean..."/>
+     <ant dir="../core/swing/tabcontrol" target="netbeans"/>
   </target>
 
   <!-- #27098: MakeParserDB requires several modules to have been successfully built. -->

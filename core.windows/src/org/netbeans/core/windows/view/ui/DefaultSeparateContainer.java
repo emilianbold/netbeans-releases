@@ -15,28 +15,17 @@
 package org.netbeans.core.windows.view.ui;
 
 
-import java.awt.Component;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowStateListener;
-import java.awt.Frame;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-
 import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.view.dnd.TopComponentDroppable;
-import org.netbeans.core.windows.view.dnd.WindowDnDManager;
-import org.netbeans.core.windows.view.ModeContainer;
+import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ModeView;
 import org.netbeans.core.windows.view.ViewElement;
-import org.netbeans.core.windows.WindowManagerImpl;
-
+import org.netbeans.core.windows.view.dnd.TopComponentDroppable;
+import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.openide.windows.TopComponent;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 
 
 /** 

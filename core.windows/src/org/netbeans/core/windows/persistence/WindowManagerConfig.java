@@ -15,10 +15,9 @@
 package org.netbeans.core.windows.persistence;
 
 
-import java.awt.Dimension;
-import java.awt.Rectangle;
-
 import org.netbeans.core.windows.SplitConstraint;
+
+import java.awt.*;
 
 
 /**

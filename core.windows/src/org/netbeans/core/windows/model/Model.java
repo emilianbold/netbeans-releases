@@ -14,18 +14,16 @@
 package org.netbeans.core.windows.model;
 
 
-import java.awt.Rectangle;
+import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.SplitConstraint;
+import org.netbeans.core.windows.TopComponentGroupImpl;
+import org.netbeans.core.windows.WindowSystemSnapshot;
+import org.openide.windows.TopComponent;
+
+import java.awt.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-
-import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.ModeStructureSnapshot;
-import org.netbeans.core.windows.TopComponentGroupImpl;
-import org.netbeans.core.windows.SplitConstraint;
-import org.netbeans.core.windows.WindowSystemSnapshot;
-
-import org.openide.windows.TopComponent;
 
 
 /**

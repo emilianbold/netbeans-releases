@@ -15,31 +15,26 @@
 package org.netbeans.core.windows.view.ui;
 
 
-import java.awt.AWTEvent;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.dnd.DnDConstants;
-import java.awt.event.AWTEventListener;
-import java.awt.event.MouseEvent;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Shape;
-import java.awt.Toolkit;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Arrays;
-import javax.swing.Icon;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.ImageIcon;
-import javax.swing.JTabbedPane;
-
 import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.WindowManagerImpl;
+import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.actions.CloseAllDocumentsAction;
+import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.core.windows.view.ModeView;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
-import org.netbeans.core.windows.WindowManagerImpl;
-
+import org.netbeans.swing.tabcontrol.TabbedContainer;
+import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 import org.openide.windows.TopComponent;
+import org.openide.util.Utilities;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.AWTEventListener;
 
 
 /** Helper class which handles <code>Tabbed</code> component inside
@@ -47,7 +42,7 @@ import org.openide.windows.TopComponent;
  *
  * @author  Peter Zavadsky
  */
-final class TabbedHandler implements ChangeListener, PropertyChangeListener {
+final class TabbedHandler implements ChangeListener, ActionListener {
 
     /** Associated mode container. */
     private final ModeView modeView;
@@ -57,17 +52,24 @@ final class TabbedHandler implements ChangeListener, PropertyChangeListener {
 
     /** Ignore own changes. */
     private boolean ignoreChange = false;
-    
-    
+    private static final boolean NO_POPUP_PLACEMENT_HACK = Boolean.getBoolean("netbeans.popup.no_hack"); // NOI18N
+
+    private static ActivationManager activationManager = null;
+
     /** Creates new SimpleContainerImpl */
     public TabbedHandler(ModeView modeView, int kind) {
         this.modeView = modeView;
 
-        // Manages popup showing, maximization and activation.
-        TabbedListener.install();
+        synchronized (TabbedHandler.class) {
+            if (activationManager == null) {
+                activationManager = new ActivationManager();
+                Toolkit.getDefaultToolkit().addAWTEventListener(
+                    activationManager, AWTEvent.MOUSE_EVENT_MASK);
+            }
+        }
 
         tabbed = createTabbedComponent(kind);
-        // XXX so the focus is not 'fallen out' outside the window.
+
         // E.g. when switching tabs in mode.
         ((Container)tabbed).setFocusCycleRoot(true);
     }
@@ -77,31 +79,15 @@ final class TabbedHandler implements ChangeListener, PropertyChangeListener {
     private Tabbed createTabbedComponent(int kind) {
         Tabbed tabbed;
 
-        // For debbugging of the tabbed component only!
-        // XXX Not supported switches over releases.
-        boolean oldTabs   = Constants.SWITCH_OLD_TABS;
-        boolean oldView   = Constants.SWITCH_OLD_TABS_VIEW;
-        boolean oldEditor = Constants.SWITCH_OLD_TABS_EDITOR;
-        
         if(kind == Constants.MODE_KIND_EDITOR) {
-            if(oldTabs || oldEditor) {
-                tabbed = new CloseButtonTabbedPane();
-            } else {
-                tabbed = new TabbedAdapter(Constants.MODE_KIND_EDITOR);
-            }
-            tabbed.setTabPlacement(JTabbedPane.TOP);
+            tabbed = new TabbedAdapter(Constants.MODE_KIND_EDITOR);
         } else {
-            if(oldTabs || oldView) {
-                tabbed = new CloseButtonTabbedPane();
-            } else {
-                tabbed = new TabbedAdapter(Constants.MODE_KIND_VIEW);
-            }
-            tabbed.setTabPlacement(JTabbedPane.BOTTOM);
+            tabbed = new TabbedAdapter(Constants.MODE_KIND_VIEW);
         }
         
         tabbed.addChangeListener(this);
-        tabbed.addPropertyChangeListener(Tabbed.PROP_TOPCOMPONENT_CLOSED, this);
-        
+        tabbed.addActionListener(this);
+
         return tabbed;
     }
 
@@ -141,62 +127,30 @@ final class TabbedHandler implements ChangeListener, PropertyChangeListener {
                 title = ""; // NOI18N
             }
             tabbed.addTopComponent(
-                title + CloseButtonTabbedPane.TAB_NAME_TRAILING_SPACE,
+                title,
                 icon == null ? null : new ImageIcon(icon),
                 tc, tc.getToolTipText());
         } finally {
             ignoreChange = false;
         }
     }
-    
-    /** Inserts TC into specified atb at specified position. */
-    private void insertTCIntoTab(TopComponent tc, int position, int kind) {
-
-        if(containsTC(tabbed, tc)) {
-            return;
-        }
-
-        // #24864. Check index validity.
-        int tabCount = tabbed.getTopComponentCount();
-        if(position > tabCount) {
-            position = tabCount;
-        };
-        
-        Image icon = tc.getIcon();
-        try {
-            ignoreChange = true;
-            String title = WindowManagerImpl.getInstance().getTopComponentDisplayName(tc);
-            if(title == null) {
-                title = ""; // NOI18N
-            }
-            tabbed.insertTopComponent(
-                title + CloseButtonTabbedPane.TAB_NAME_TRAILING_SPACE,
-                icon == null ? null : new ImageIcon(icon),
-                tc, tc.getToolTipText(), position);
-        } finally {
-            ignoreChange = false;
-        }
-        
-    }
 
     /** Checks whether the tabbedPane already contains the component. */
     private static boolean containsTC(Tabbed tabbed, TopComponent tc) {
-        return Arrays.asList(tabbed.getTopComponents()).contains(tc);
+        return tabbed.indexOf(tc) != -1;
     }
     
     /** Removes TopComponent from this container. */
     public void removeTopComponent(TopComponent tc) {
         removeTCFromTab(tc); 
     }
-    
-
 
     /** Removes TC from tab. */
     private void removeTCFromTab (TopComponent tc) {
-        if(tabbed.indexOfTopComponent(tc) != -1) {
+        if(tabbed.indexOf(tc) != -1) {
             try {
                 ignoreChange = true;
-                tabbed.removeTopComponent(tc);
+                tabbed.removeComponent(tc);
             } finally {
                 ignoreChange = false;
             }
@@ -209,7 +163,7 @@ final class TabbedHandler implements ChangeListener, PropertyChangeListener {
     
     /** Called when icon of some component in this multi frame has changed  */
     public void topComponentIconChanged(TopComponent tc) {
-        int index = tabbed.indexOfTopComponent(tc);
+        int index = tabbed.indexOf(tc);
         if (index < 0) {
             return;
         }
@@ -219,7 +173,7 @@ final class TabbedHandler implements ChangeListener, PropertyChangeListener {
     
     /** Called when the name of some component has changed  */
     public void topComponentNameChanged(TopComponent tc, int kind) {
-        int index = tabbed.indexOfTopComponent(tc);
+        int index = tabbed.indexOf(tc);
         if (index < 0) {
             return;
         }
@@ -228,11 +182,11 @@ final class TabbedHandler implements ChangeListener, PropertyChangeListener {
         if(title == null) {
             title = ""; // NOI18N
         }
-        tabbed.setTitleAt(index, title + CloseButtonTabbedPane.TAB_NAME_TRAILING_SPACE);
+        tabbed.setTitleAt (index, title);
     }
     
     public void topComponentToolTipChanged(TopComponent tc) {
-        int index = tabbed.indexOfTopComponent(tc);
+        int index = tabbed.indexOf(tc);
         if (index < 0) {
             return;
         }
@@ -247,26 +201,12 @@ final class TabbedHandler implements ChangeListener, PropertyChangeListener {
             return;
         }
         
-        if(tabbed.indexOfTopComponent(tc) >= 0) {
+        if(tabbed.indexOf(tc) >= 0) {
             try {
                 ignoreChange = true;
-                tabbed.setSelectedTopComponent(tc);
+                tabbed.setSelectedComponent(tc);
             } finally {
                 ignoreChange = false;
-            }
-
-            if(tabbed instanceof JTabbedPane) {
-                // [PENDING] XXX #24422. Workaround to ensure the unselected
-                // components are hidden. 
-                // Needs to be found out which ensureTCisVisible is at wrong place.
-                
-                //XXX this may not work anymore, ensureTCisVisible is gone - Tim
-                TopComponent[] tcs = tabbed.getTopComponents();
-                for(int i = 0; i < tcs.length; i++) {
-                    if(tcs[i] != tc && tcs[i].isVisible()) {
-                        tcs[i].setVisible(false);
-                   }
-                }
             }
         }
     }
@@ -294,14 +234,6 @@ final class TabbedHandler implements ChangeListener, PropertyChangeListener {
         modeView.getController().userSelectedTab(modeView, (TopComponent)selected);
     }
     
-    ////////////////////
-    // PropertyChangeListener
-    /** Listens on proeptry TOP_COPOMPONENT_CLOSED and informs user observer. */
-    public void propertyChange(PropertyChangeEvent evt) {
-        TopComponent tc = (TopComponent)evt.getNewValue();
-        modeView.getController().userClosedTopComponent(modeView, tc);
-    }
-    
     // DnD>>
     public Shape getIndicationForLocation(Point location, TopComponent startingTransfer,
     Point startingPoint, boolean attachingPossible) {
@@ -312,8 +244,152 @@ final class TabbedHandler implements ChangeListener, PropertyChangeListener {
     public Object getConstraintForLocation(Point location, boolean attachingPossible) {
         return tabbed.getConstraintForLocation(location, attachingPossible);
     }
-    // DnD<<
+
+    public void actionPerformed(ActionEvent e) {
+        if (e instanceof TabActionEvent) {
+            TabActionEvent tae = (TabActionEvent) e;
+            String cmd = tae.getActionCommand();
+            tae.consume();
+            if (TabbedContainer.COMMAND_CLOSE == cmd) { //== test is safe here
+                TopComponent tc = (TopComponent) tabbed.getTopComponentAt(tae.getTabIndex());
+                if (tc == null) {
+                    throw new IllegalStateException ("Component to be closed " +
+                        "is null at index " + tae.getTabIndex());
+                }
+                modeView.getController().userClosedTopComponent(modeView, tc);
+            } else if (TabbedContainer.COMMAND_POPUP_REQUEST == cmd) {
+                handlePopupMenuShowing(tae.getMouseEvent(), tae.getTabIndex());
+            } else if (TabbedContainer.COMMAND_MAXIMIZE == cmd) {
+                handleMaximization(tae.getMouseEvent(), tae.getTabIndex());
+            } else if (TabbedContainer.COMMAND_CLOSE_ALL == cmd) {
+                ActionUtils.closeAllDocuments();
+            } else if (TabbedContainer.COMMAND_CLOSE_ALL_BUT_THIS == cmd) {
+                TopComponent tc = (TopComponent) tabbed.getTopComponentAt(tae.getTabIndex());
+                ActionUtils.closeAllExcept(tc);
+            }
+            //Pin button handling here
+        }
+    }
+
+    /** Possibly invokes popup menu. */
+    public static void handlePopupMenuShowing(MouseEvent e, int idx) {
+        Component c = (Component) e.getSource();
+        while (c != null && !(c instanceof Tabbed))
+            c = c.getParent();
+        if (c == null) {
+            return;
+        }
+        final Tabbed tab = (Tabbed) c;
+
+        final Point p = SwingUtilities.convertPoint((Component) e.getSource(), e.getPoint(), (Component)tab);
+
+        final int clickTab = idx;
+        if (clickTab < 0) {
+            return;
+        }
+
+        TopComponent tc = tab.getTopComponentAt(clickTab);
+        if(tc == null) {
+            return;
+        }
+
+        showPopupMenu(
+            Utilities.actionsToPopup(tc.getActions(), tc.getLookup()),
+            p,
+            (Component)tab);
+    }
+
+    /** Shows given popup on given coordinations and takes care about the
+     * situation when menu can exceed screen limits */
+    private static void showPopupMenu (JPopupMenu popup, Point p, Component comp) {
+        if (NO_POPUP_PLACEMENT_HACK) {
+            popup.show(comp, p.x, p.y);
+            return;
+        }
+
+        SwingUtilities.convertPointToScreen (p, comp);
+        Dimension popupSize = popup.getPreferredSize ();
+        Rectangle screenBounds = Utilities.getUsableScreenBounds(comp.getGraphicsConfiguration());
+
+        if (p.x + popupSize.width > screenBounds.x + screenBounds.width) {
+            p.x = screenBounds.x + screenBounds.width - popupSize.width;
+        }
+        if (p.y + popupSize.height > screenBounds.y + screenBounds.height) {
+            p.y = screenBounds.y + screenBounds.height - popupSize.height;
+        }
+
+        SwingUtilities.convertPointFromScreen (p, comp);
+        popup.show(comp, p.x, p.y);
+    }
+
+    /** Possibly invokes the (un)maximization. */
+    public static void handleMaximization(MouseEvent e, int idx) {
+        Component c = (Component) e.getSource();
+        while (c != null && !(c instanceof Tabbed))
+            c = c.getParent();
+        if (c == null) {
+            return;
+        }
+        final Tabbed tab = (Tabbed) c;
+
+        TopComponent tc = tab.getTopComponentAt(idx);
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        ModeImpl mode = (ModeImpl)wm.findMode(tc);
+        if(mode != null) {
+            ModeImpl maximizedMode = wm.getMaximizedMode();
+            if(maximizedMode == null) {
+                wm.setMaximizedMode(mode);
+            } else if(mode == maximizedMode) {
+                wm.setMaximizedMode(null);
+            }
+        }
+    }
+
+    /** Well, we can't totally get rid of AWT event listeners - this is what
+     * keeps track of the activated mode. */
+    private static class ActivationManager implements AWTEventListener {
+        public void eventDispatched(AWTEvent e) {
+            if(e.getID() == MouseEvent.MOUSE_PRESSED) {
+                handleActivation((MouseEvent) e);
+            }
+        }
 
 
+    //
+    /* XXX(-ttran) when the split container contains two TopComponents say TC1
+     * and TC2.  If TC2 itself does not accept focus or the user clicks on one
+     * of TC2's child compoennts which does not accept focus, then the whole
+     * split container is activated.  It in turn may choose to activate TC1 not
+     * TC2.  This is a very annoying problem if TC1 is an Explorer and TC2 is
+     * the global property sheet.  The user clicks on the property sheet but
+     * the Explorer gets activated which has a different selected node than the
+     * one attached to the property sheet at that moment.  The contents of the
+     * property sheet is updated immediately after the mouse click.  For more
+     * details see <http://www.netbeans.org/issues/show_bug.cgi?id=11149>
+     *
+     * What follows here is a special hack for mouse click on _any_
+     * TopComponent.  The hack will cause the nearest upper TopComponent in the
+     * AWT hieararchy to be activated on MOUSE_PRESSED on any of its child
+     * components.  This behavior is compatible with all window managers I can
+     * imagine.
+     */
+    private void handleActivation(MouseEvent evt) {
+        Component comp = (Component) evt.getSource();
+
+        if (!(comp instanceof Component)) {
+            return;
+        }
+
+        while (comp != null && !(comp instanceof ModeComponent)) {
+            comp = comp.getParent();
+        }
+
+        if (comp instanceof ModeComponent) {
+            ModeView modeView = ((ModeComponent)comp).getModeView();
+            modeView.getController().userActivatedModeView(modeView);
+        }
+    }
+
+    }
 }
 

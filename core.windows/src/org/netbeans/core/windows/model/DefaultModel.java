@@ -15,25 +15,13 @@
 package org.netbeans.core.windows.model;
 
 
-import java.awt.Frame;
-import java.awt.Rectangle;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
-
-import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.ModeStructureSnapshot;
-import org.netbeans.core.windows.TopComponentGroupImpl;
-import org.netbeans.core.windows.SplitConstraint;
-import org.netbeans.core.windows.WindowSystemSnapshot;
-
+import org.netbeans.core.windows.*;
 import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
+
+import java.awt.*;
+import java.util.*;
+import java.util.List;
 
 
 /**

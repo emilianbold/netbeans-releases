@@ -120,11 +120,6 @@ public final class NbSheet extends TopComponent {
 //            putClientProperty(ModeImpl.NAMING_TYPE, ModeImpl.SDI_ONLY_COMP_NAME); // TEMP
         //Bugfix #36087: Fix naming type
         putClientProperty("NamingType", "BothOnlyCompName"); // NOI18N
-        // Force winsys to not show tab when this comp will be alone
-//            putClientProperty(WindowManagerImpl.TopComponentManager.TAB_POLICY, 
-//                              WindowManagerImpl.TopComponentManager.HIDE_WHEN_ALONE); // TEMP
-        putClientProperty("TabPolicy", "HideWhenAlone"); // NOI18N
-
 
         setLayout (new BorderLayout ());
         add(propertySheet, BorderLayout.CENTER);
@@ -170,14 +165,18 @@ public final class NbSheet extends TopComponent {
                     NbSheet.getDefault();
                 }
             } else {
-                //OutputView cannot be deserialized
+                //NbSheet cannot be deserialized
                 //Fallback to accessor reserved for window system.
                 NbSheet.getDefault();
             }
         }
         return sharedSheet;
     }
-    
+
+    public String preferredId() {
+        return "properties"; //NOI18N
+    }
+
     /* Singleton accessor reserved for window system ONLY. Used by window system to create
      * NbSheet instance from settings file when method is given. Use <code>findDefault</code>
      * to get correctly deserialized instance of NbSheet. */

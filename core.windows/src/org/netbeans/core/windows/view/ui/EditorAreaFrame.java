@@ -15,10 +15,10 @@
 package org.netbeans.core.windows.view.ui;
 
 
-import java.awt.Component;
-import javax.swing.JFrame;
-
 import org.openide.util.NbBundle;
+
+import javax.swing.*;
+import java.awt.*;
 
 
 /**

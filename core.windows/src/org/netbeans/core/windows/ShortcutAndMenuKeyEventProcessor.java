@@ -13,18 +13,17 @@
 
 package org.netbeans.core.windows;
 
-import java.awt.*;
-import javax.swing.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.ActionEvent;
-import javax.swing.text.Keymap;
-import java.lang.reflect.*;
-
 import org.openide.actions.ActionManager;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
-import org.openide.ErrorManager;
+
+import javax.swing.*;
+import javax.swing.text.Keymap;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.lang.reflect.Method;
 
 
 /**

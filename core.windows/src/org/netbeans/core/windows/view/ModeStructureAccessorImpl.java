@@ -15,19 +15,15 @@
 package org.netbeans.core.windows.view;
 
 
-import java.awt.Rectangle;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
-import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.ModeStructureSnapshot;
 import org.netbeans.core.windows.ModeStructureSnapshot.ElementSnapshot;
 import org.netbeans.core.windows.model.ModelElement;
-
 import org.openide.windows.TopComponent;
+
+import java.awt.*;
+import java.util.Iterator;
+import java.util.Set;
 
 
 /**

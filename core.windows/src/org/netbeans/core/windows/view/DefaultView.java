@@ -14,40 +14,19 @@
 package org.netbeans.core.windows.view;
 
 
-import java.awt.Component;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowStateListener;
-import java.awt.Frame;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JSplitPane;
-import javax.swing.SwingUtilities;
-
-import org.openide.awt.ToolbarPool; // Why is this in open API?
+import org.netbeans.core.windows.*;
+import org.netbeans.core.windows.model.ModelElement;
+import org.netbeans.core.windows.view.dnd.WindowDnDManager;
+import org.openide.awt.ToolbarPool;
 import org.openide.util.WeakSet;
 import org.openide.windows.TopComponent;
 
-import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.Debug;
-import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.ModeStructureSnapshot;
-import org.netbeans.core.windows.model.ModelElement;
-import org.netbeans.core.windows.view.dnd.WindowDnDManager;
-import org.netbeans.core.windows.view.ui.MainWindow;
-import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.windows.WindowSystemSnapshot;
+import javax.swing.*;
+import java.awt.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 
 /**

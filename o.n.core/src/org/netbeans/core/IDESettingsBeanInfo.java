@@ -71,37 +71,37 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
             
             desc[1].setHidden (true);
 
-            desc[2].setDisplayName (Main.getString ("PROP_CONFIRM_DELETE"));
-            desc[2].setShortDescription (Main.getString ("HINT_CONFIRM_DELETE"));
+            desc[2].setDisplayName (NbBundle.getMessage (Main.class, "PROP_CONFIRM_DELETE"));
+            desc[2].setShortDescription (NbBundle.getMessage (Main.class, "HINT_CONFIRM_DELETE"));
 
             desc[3].setHidden(true);
 
-            desc[4].setDisplayName (Main.getString ("PROP_HOME_PAGE"));
-            desc[4].setShortDescription (Main.getString ("HINT_HOME_PAGE"));
+            desc[4].setDisplayName (NbBundle.getMessage (Main.class, "PROP_HOME_PAGE"));
+            desc[4].setShortDescription (NbBundle.getMessage (Main.class, "HINT_HOME_PAGE"));
 
-            desc[5].setDisplayName (Main.getString ("PROP_USE_PROXY"));
-            desc[5].setShortDescription (Main.getString ("HINT_USE_PROXY"));
+            desc[5].setDisplayName (NbBundle.getMessage (Main.class, "PROP_USE_PROXY"));
+            desc[5].setShortDescription (NbBundle.getMessage (Main.class, "HINT_USE_PROXY"));
 
-            desc[6].setDisplayName (Main.getString ("PROP_PROXY_HOST"));
-            desc[6].setShortDescription (Main.getString ("HINT_PROXY_HOST"));
+            desc[6].setDisplayName (NbBundle.getMessage (Main.class, "PROP_PROXY_HOST"));
+            desc[6].setShortDescription (NbBundle.getMessage (Main.class, "HINT_PROXY_HOST"));
 
-            desc[7].setDisplayName (Main.getString ("PROP_PROXY_PORT"));
-            desc[7].setShortDescription (Main.getString ("HINT_PROXY_PORT"));
+            desc[7].setDisplayName (NbBundle.getMessage (Main.class, "PROP_PROXY_PORT"));
+            desc[7].setShortDescription (NbBundle.getMessage (Main.class, "HINT_PROXY_PORT"));
 
-            desc[8].setDisplayName (Main.getString ("PROP_SHOW_FILE_EXTENSIONS"));
-            desc[8].setShortDescription (Main.getString ("HINT_SHOW_FILE_EXTENSIONS"));
+            desc[8].setDisplayName (NbBundle.getMessage (Main.class, "PROP_SHOW_FILE_EXTENSIONS"));
+            desc[8].setShortDescription (NbBundle.getMessage (Main.class, "HINT_SHOW_FILE_EXTENSIONS"));
 
             desc[9].setHidden (true);
 
-            desc[10].setDisplayName (Main.getString ("PROP_WWW_BROWSER"));
-            desc[10].setShortDescription (Main.getString ("HINT_WWW_BROWSER"));
+            desc[10].setDisplayName (NbBundle.getMessage (Main.class, "PROP_WWW_BROWSER"));
+            desc[10].setShortDescription (NbBundle.getMessage (Main.class, "HINT_WWW_BROWSER"));
 
             desc[11].setDisplayName(bundleUIMode.getString("PROP_UI_Mode"));
             desc[11].setShortDescription(bundleUIMode.getString("HINT_UI_Mode"));
             desc[11].setPropertyEditorClass(UIModePropertyEditor.class);
 
-            desc[12].setDisplayName (Main.getString ("PROP_SHOW_TOOLTIPS_IN_IDE"));
-            desc[12].setShortDescription (Main.getString ("HINT_SHOW_TOOLTIPS_IN_IDE"));            
+            desc[12].setDisplayName (NbBundle.getMessage (Main.class, "PROP_SHOW_TOOLTIPS_IN_IDE"));
+            desc[12].setShortDescription (NbBundle.getMessage (Main.class, "HINT_SHOW_TOOLTIPS_IN_IDE"));
 
             desc[13].setDisplayName (bundleMiniStatusBar.getString("PROP_MINI_STATUS_BAR_STATE"));
             desc[13].setShortDescription (bundleMiniStatusBar.getString("HINT_MINI_STATUS_BAR_STATE"));

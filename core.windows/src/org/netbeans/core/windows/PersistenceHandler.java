@@ -15,31 +15,15 @@
 package org.netbeans.core.windows;
 
 
-import java.awt.Dimension;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
-
-import org.netbeans.core.windows.persistence.GroupConfig;
-import org.netbeans.core.windows.persistence.ModeConfig;
-import org.netbeans.core.windows.persistence.PersistenceManager;
-import org.netbeans.core.windows.persistence.PersistenceObserver;
-import org.netbeans.core.windows.persistence.TCGroupConfig;
-import org.netbeans.core.windows.persistence.TCRefConfig;
-import org.netbeans.core.windows.persistence.WindowManagerConfig;
-
+import org.netbeans.core.windows.persistence.*;
 import org.openide.ErrorManager;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+
+import java.awt.*;
+import java.util.*;
+import java.util.List;
 
 
 /** 

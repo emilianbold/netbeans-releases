@@ -15,10 +15,10 @@
 package org.netbeans.core.windows;
 
 
+import org.openide.ErrorManager;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
-
-import org.openide.ErrorManager;
 
 
 /**

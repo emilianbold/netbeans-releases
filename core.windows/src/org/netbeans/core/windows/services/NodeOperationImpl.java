@@ -15,35 +15,23 @@
 package org.netbeans.core.windows.services;
 
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dialog;
-import java.awt.Window;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
-
 import org.netbeans.core.NbMainExplorer;
 import org.netbeans.core.NbSheet;
-
 import org.openide.DialogDescriptor;
 import org.openide.explorer.ExplorerManager;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeAcceptor;
-import org.openide.nodes.NodeAdapter;
-import org.openide.nodes.NodeEvent;
-import org.openide.nodes.NodeListener;
-import org.openide.nodes.NodeOp;
-import org.openide.nodes.NodeOperation;
+import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.HashSet;
+import java.util.Set;
 
 
 // XXX Before as org.netbeans.core.NbNodeOperation.

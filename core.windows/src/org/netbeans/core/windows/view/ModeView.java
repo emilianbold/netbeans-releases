@@ -15,22 +15,16 @@
 package org.netbeans.core.windows.view;
 
 
-import java.awt.Component;
-import java.awt.Frame;
-import java.awt.Rectangle;
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.netbeans.core.windows.view.ui.DefaultSeparateContainer;
 import org.netbeans.core.windows.view.ui.DefaultSplitContainer;
-import org.netbeans.core.windows.WindowManagerImpl;
-
 import org.openide.windows.TopComponent;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**

@@ -14,18 +14,17 @@
 package org.netbeans.core.windows;
 
 
-import java.awt.Rectangle;
-import java.awt.Image;
-import java.beans.PropertyChangeSupport;
-import java.beans.PropertyChangeListener;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import javax.swing.SwingUtilities;
-
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
+
+import javax.swing.*;
+import java.awt.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 
 /** This class is an implementation of Mode interface.

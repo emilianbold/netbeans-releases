@@ -14,53 +14,28 @@
 package org.netbeans.core.windows.services;
 
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.KeyboardFocusManager;
-import java.awt.Rectangle;
+import org.netbeans.core.windows.WindowManagerImpl;
+import org.netbeans.core.windows.view.dnd.WindowDnDManager;
+import org.openide.DialogDescriptor;
+import org.openide.NotifyDescriptor;
+import org.openide.WizardDescriptor;
+import org.openide.modules.Dependency;
+import org.openide.modules.SpecificationVersion;
+import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.Set;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import org.netbeans.core.windows.view.dnd.WindowDnDManager;
-import org.netbeans.core.windows.WindowManagerImpl;
-
-import org.openide.modules.Dependency;
-import org.openide.modules.SpecificationVersion;
-import org.openide.NotifyDescriptor;
-import org.openide.DialogDescriptor;
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 
 // XXX Before as org.netbeans.core.NbPresenter

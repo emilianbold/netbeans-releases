@@ -15,10 +15,7 @@
 package org.netbeans.core.windows.view;
 
 
-import java.awt.Rectangle;
-
-import org.netbeans.core.windows.Debug;
-import org.netbeans.core.windows.ModeImpl;
+import java.awt.*;
 
 
 /**

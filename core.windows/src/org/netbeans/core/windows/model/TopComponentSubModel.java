@@ -15,13 +15,12 @@
 package org.netbeans.core.windows.model;
 
 
+import org.netbeans.core.windows.WindowManagerImpl;
+import org.openide.windows.TopComponent;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.netbeans.core.windows.WindowManagerImpl;
-
-import org.openide.windows.TopComponent;
 
 
 /**

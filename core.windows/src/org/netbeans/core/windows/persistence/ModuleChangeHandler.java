@@ -13,21 +13,14 @@
 
 package org.netbeans.core.windows.persistence;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.SwingUtilities;
-
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
-
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.WindowManagerImpl;
+import org.openide.ErrorManager;
+import org.openide.filesystems.*;
+
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Handler of changes in module folder. Changes can be for example

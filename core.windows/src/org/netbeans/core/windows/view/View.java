@@ -15,9 +15,9 @@
 package org.netbeans.core.windows.view;
 
 
-import java.awt.Frame;
-
 import org.netbeans.core.windows.WindowSystemSnapshot;
+
+import java.awt.*;
 
 
 /**

@@ -192,17 +192,6 @@ implements RepositoryListener, NewTemplateAction.Cookie {
         return true;
     }
 
-    /** Create the customizer */
-    public Component getCustomizer () {
-        NbMainExplorer.SettingsTab nb = new NbMainExplorer.SettingsTab ();
-        nb.getExplorerManager ().setRootContext (
-            NbPlaces.getDefault().repositorySettings()
-        );
-        nb.getAccessibleContext().setAccessibleDescription(
-            NbBundle.getBundle(DataSystem.class).getString("ACSD_DataSystemCustomizer"));
-        return nb;
-    }
-
     /** Getter for the wizard that should be used for this cookie.
      */
     public org.openide.loaders.TemplateWizard getTemplateWizard() {

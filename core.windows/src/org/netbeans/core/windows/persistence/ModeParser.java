@@ -13,34 +13,9 @@
 
 package org.netbeans.core.windows.persistence;
 
-import java.awt.Frame;
-import java.awt.Rectangle;
-
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
-
+import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.Debug;
+import org.netbeans.core.windows.SplitConstraint;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -51,10 +26,13 @@ import org.openide.util.NbBundle;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
+import org.xml.sax.*;
+import org.xml.sax.helpers.DefaultHandler;
 
-import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.Debug;
-import org.netbeans.core.windows.SplitConstraint;
+import java.awt.*;
+import java.io.*;
+import java.util.*;
+import java.util.List;
 
 
 /**

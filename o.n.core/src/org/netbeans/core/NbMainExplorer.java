@@ -1125,24 +1125,6 @@ public final class NbMainExplorer extends CloneableTopComponent {
         }
     }
 
-    /** Special class for projects tab in main explorer
-     * @deprecated Now unused.
-     */
-    public static class ProjectsTab extends RepositoryTab {
-        static final long serialVersionUID =-8178367548546385799L;
-        
-        /** Must have *default* constructor - deserialization from 3.2 supposes it */
-        private ProjectsTab() {
-        }
-        
-        /** Old (3.2) deserialization of the ProjectTab */
-        public Object readResolve() throws java.io.ObjectStreamException {
-            throw new java.io.InvalidObjectException(
-                "Old [NB3.2 ProjectsTab] component is not supported anymore."); // NOI18N
-        }
-
-    } // end of ProjectsTab inner class
-
     /** Special class for tabs added by modules to the main explorer */
     public static class ModuleTab extends MainTab {
         static final long serialVersionUID =8089827754534653731L;
@@ -1194,58 +1176,6 @@ public final class NbMainExplorer extends CloneableTopComponent {
         }
 
     } // end of ModuleTab inner class
-
-    /** Top component for project and global settings. */
-    public static class SettingsTab extends ExplorerTab {
-        static final long serialVersionUID =9087127908986061114L;
-
-        /** Overrides superclass version - put tree view and property
-        * sheet to the split panel.
-        * @return Tree view that will serve as main view for this explorer.
-        */
-        protected TreeView initGui () {
-            TreeView view = new BeanTreeView();
-            JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-            PropertySheetView propertyView = new PropertySheetView();
-            propertyView.getAccessibleContext().setAccessibleName(NbBundle.getBundle(NbMainExplorer.class).getString("ACSN_ExplorerPropertySheetView"));
-            propertyView.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(NbMainExplorer.class).getString("ACSD_ExplorerPropertySheetView"));
-            split.setLeftComponent(view);
-            split.setRightComponent(propertyView);
-            // add to the panel
-            setLayout(new BorderLayout());
-            add(split, BorderLayout.CENTER);
-            
-            return view;
-        }
-
-        /** Called when the explored context changes.
-        * Overriden - we don't want title to chnage in this style.
-        */
-        protected void updateTitle () {
-            // empty to keep the title unchanged
-        }
-        
-        /** Overriden to explicitely set persistence type of SettingsTab
-         * to PERSISTENCE_NEVER because SettingsTab is used only in Customizer dialog.
-         * If you subclass SettingsTab override this method accordingly as 
-         * eg. OptionsAction.OptionsPanel does. */
-        public int getPersistenceType() {
-            return TopComponent.PERSISTENCE_NEVER;
-        }
-        
-        /** Get context help for a NbMainExplorer.SettingsTab.
-        * Looks at the manager's node selection if no node is selected
-        * returns root context node's help context.
-        * @return the help context
-        */
-        public HelpCtx getHelpCtx () {
-            HelpCtx hlp = super.getHelpCtx ();
-            if(hlp==null || hlp.equals(new HelpCtx(ExplorerPanel.class))) {
-                return getExplorerManager ().getRootContext ().getHelpCtx ();
-            }
-            return hlp;
-        }
-    }
 
     /** Listener on roots, listens to changes of roots content */
     private static final class RootsListener extends Object implements ChangeListener {

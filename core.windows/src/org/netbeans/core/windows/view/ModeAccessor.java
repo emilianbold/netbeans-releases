@@ -15,11 +15,10 @@
 package org.netbeans.core.windows.view;
 
 
-import java.awt.Rectangle;
-
 import org.netbeans.core.windows.ModeImpl;
-
 import org.openide.windows.TopComponent;
+
+import java.awt.*;
 
 
 /**

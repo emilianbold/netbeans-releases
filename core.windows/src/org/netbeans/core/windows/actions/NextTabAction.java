@@ -15,15 +15,14 @@
 package org.netbeans.core.windows.actions;
 
 
-import java.awt.event.ActionEvent;
-import java.util.List;
-import javax.swing.AbstractAction;
-
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
-
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.util.List;
 
 
 

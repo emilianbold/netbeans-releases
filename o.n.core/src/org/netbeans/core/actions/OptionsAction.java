@@ -121,7 +121,7 @@ public class OptionsAction extends CallableSystemAction {
     }
 
     /** Options panel. Uses singleton pattern. */
-    public static final class OptionsPanel extends NbMainExplorer.SettingsTab
+    public static final class OptionsPanel extends NbMainExplorer.ExplorerTab
     implements PropertyChangeListener {
         /** Name of mode in which options panel is docked by default */
         public static final String MODE_NAME = "options";
@@ -267,6 +267,13 @@ public class OptionsAction extends CallableSystemAction {
             }
             
             return result;
+        }
+
+        /** Called when the explored context changes.
+        * Overriden - we don't want title to chnage in this style.
+        */
+        protected void updateTitle () {
+            // empty to keep the title unchanged
         }
 
         boolean isPrepared () {

@@ -23,6 +23,7 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseKit;
@@ -125,7 +126,8 @@ public class NbEditorUI extends ExtEditorUI {
         scroller.getViewport().setMinimumSize(new Dimension(4,4));
 
         // remove default scroll-pane border, winsys will handle borders itself           
-        scroller.setBorder(null);
+        scroller.setBorder(BorderFactory.createEmptyBorder());
+        scroller.setViewportBorder(BorderFactory.createEmptyBorder());
         
         CustomizableSideBar bar = new CustomizableSideBar(component);
 

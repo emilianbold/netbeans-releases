@@ -14,26 +14,10 @@
 package org.netbeans.core.windows.model;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.WeakHashMap;
-
-import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.Debug;
-import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.ModeStructureSnapshot;
-import org.netbeans.core.windows.SplitConstraint;
-
+import org.netbeans.core.windows.*;
 import org.openide.ErrorManager;
-import org.openide.windows.TopComponent;
+
+import java.util.*;
 
 
 /**

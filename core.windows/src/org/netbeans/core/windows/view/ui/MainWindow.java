@@ -13,40 +13,30 @@
 
 package org.netbeans.core.windows.view.ui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
-import java.io.*;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Locale;
-
-import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
+import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.WindowManagerImpl;
+import org.openide.ErrorManager;
+import org.openide.LifecycleManager;
 import org.openide.awt.MenuBar;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
+import org.openide.awt.ToolbarPool;
 import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.actions.*;
-import org.openide.windows.TopComponent;
-import org.openide.awt.ToolbarPool;
-import org.openide.ErrorManager;
 
-import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.windows.Constants;
-
-import org.openide.LifecycleManager;
-import org.openide.windows.WindowManager;
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Arrays;
+import java.util.Locale;
 
 /** The MainWindow of IDE. Holds toolbars, main menu and also entire desktop
  * if in MDI user interface. Singleton.
@@ -148,15 +138,17 @@ public final class MainWindow extends JFrame {
         
         // initialize desktop panel
         desktopPanel = new JPanel();
+    
         desktopPanel.setBorder(getDesktopBorder());
         desktopPanel.setLayout(new BorderLayout());
-        if (UIUtils.isXPLF()) {
-            // install our XP color scheme
-            // XXX - should be flexible, also for other LFs
-            UIUtils.installXPColors();
-            Color fillC = (Color)UIManager.get("nb_workplace_fill"); //NOI18N
+        /*
+        Color fillC = (Color)UIManager.get("nb_workplace_fill"); //NOI18N
+        if (fillC != null) {
+            System.err.println("Workplace fill is " + fillC);
             desktopPanel.setBackground(fillC);
         }
+         */
+
         getContentPane().add(desktopPanel, BorderLayout.CENTER);
         //#38810 start - focusing the main window in case it's not active and the menu is
         // selected..
@@ -191,12 +183,12 @@ public final class MainWindow extends JFrame {
     /** Creates and returns border for desktop which is visually aligned
      * with currently active LF */
     private static Border getDesktopBorder () {
-        if (UIUtils.isXPLF()) {
-            return new EmptyBorder(6, 5, 4, 6);
-        } else if (UIUtils.isWindowsLF()) {
-            return new EmptyBorder(4, 2, 1, 2);
+        Border b = (Border) UIManager.get ("nb.desktop.splitpane.border");
+        if (b != null) {
+            return b;
+        } else {
+            return new EmptyBorder(1, 1, 1, 1);
         }
-        return new EmptyBorder(1, 1, 1, 1);
     }
     
     static Image createIDEImage() {

@@ -14,20 +14,17 @@
 package org.netbeans.core.windows;
 
 
-import java.awt.Window;
+import org.openide.nodes.Node;
+import org.openide.util.WeakSet;
+import org.openide.windows.TopComponent;
+
+import javax.swing.*;
+import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Arrays;
-
-import javax.swing.MenuElement;
-import javax.swing.MenuSelectionManager;
-import javax.swing.SwingUtilities;
-
-import org.openide.nodes.Node;
-import org.openide.windows.TopComponent;
-import org.openide.util.WeakSet;
 
 
 /** Implementstion of registry of top components. This implementation
@@ -116,13 +113,29 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
             return;
         }
         
-        TopComponent old = activatedTopComponent;
+        final TopComponent old = activatedTopComponent;
         activatedTopComponent = tc;
         
         Window w = tc == null ? null : SwingUtilities.windowForComponent(tc);
         cancelMenu(w);
         
-        doFirePropertyChange(PROP_ACTIVATED, old, activatedTopComponent);
+/** PENDING:  Firing the change asynchronously improves perceived responsiveness
+ considerably (toolbars are updated after the component repaints, so it appears
+ to immediately become selected), but means that 
+ for one EQ cycle the activated TopComponent will be out of sync with the 
+ global node selection.  Needs testing. -Tim
+ 
+ C.f. issue 42256 - most of the delay may be called by contention in 
+     ProxyLookup, but this fix will have some responsiveness benefits 
+     even if that is fixed
+ 
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+ */
+                doFirePropertyChange(PROP_ACTIVATED, old, activatedTopComponent);
+/**            }
+        });
+ */
 
         selectedNodesChanged(activatedTopComponent,
             activatedTopComponent == null ? null : activatedTopComponent.getActivatedNodes());

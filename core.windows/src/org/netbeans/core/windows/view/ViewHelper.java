@@ -15,19 +15,12 @@
 package org.netbeans.core.windows.view;
 
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.ModeStructureSnapshot;
 import org.netbeans.core.windows.ModeStructureSnapshot.ElementSnapshot;
 import org.netbeans.core.windows.WindowSystemSnapshot;
+
+import java.util.*;
 
 
 /**

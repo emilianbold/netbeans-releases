@@ -15,16 +15,12 @@
 package org.netbeans.core.windows.view.ui;
 
 
-import java.awt.Component;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Shape;
-import java.beans.PropertyChangeListener;
-
-import javax.swing.event.ChangeListener;
-import javax.swing.Icon;
-
 import org.openide.windows.TopComponent;
+
+import javax.swing.*;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.event.ActionListener;
 
 
 /**
@@ -34,26 +30,22 @@ import org.openide.windows.TopComponent;
  * @author  Peter Zavadsky
  */
 public interface Tabbed {
-    
-    /** Name of property change when user closed TopComponent, (via close button). */
-    public String PROP_TOPCOMPONENT_CLOSED = "topComponentClosed";
-    
-    
+
     public void addTopComponent(String name, Icon icon, TopComponent tc, String toolTip);
 
-    public void insertTopComponent(String name, Icon icon, TopComponent tc, String toolTip, int position);
+    public void insertComponent(String name, Icon icon, Component comp, String toolTip, int position);
     
     public void setTopComponents(TopComponent[] tcs, TopComponent selected);
     
-    public int getTopComponentCount();
+    public int getTabCount();
     
     public TopComponent[] getTopComponents();
     
     public TopComponent getTopComponentAt(int index);
     
-    public int indexOfTopComponent(TopComponent tc);
+    public int indexOf(Component tc);
     
-    public void removeTopComponent(TopComponent tc);
+    public void removeComponent(Component comp);
     
     public void setTitleAt(int index, String title);
     
@@ -61,33 +53,29 @@ public interface Tabbed {
     
     public void setToolTipTextAt(int index, String toolTip);
     
-    public void setSelectedTopComponent(TopComponent tc);
+    public void setSelectedComponent(Component comp);
     
     public TopComponent getSelectedTopComponent();
-    
-    public void setTabPlacement(int placement);
-    
+
     public void addChangeListener(ChangeListener listener);
     
     public void removeChangeListener(ChangeListener listener);
-    
-    public void addPropertyChangeListener(String name, PropertyChangeListener listener);
-    
-    public void removePropertyChangeListener(String name, PropertyChangeListener listener);
+
+    public void addActionListener (ActionListener al);
+
+    public void removeActionListener (ActionListener al);
 
     public void setActive(boolean active);
     
-    public int tabForCoordinate(int x, int y);
+    public int tabForCoordinate(Point p);
    
     public Shape getIndicationForLocation(Point location, TopComponent startingTransfer,
             Point startingPoint, boolean attachingPossible);
     
     public Object getConstraintForLocation(Point location, boolean attachingPossible);
     
-    public Image getDragImage (TopComponent tc);
-    
-    /** Indicates whether the point is in tab close button.
-     @param p <code>Point</code> in coordinates of this component */
-    public boolean isPointInCloseButton (Point p);
+    public Image createImageOfTab (int tabIndex);
+
+    public String getCommandAtPoint (Point p);
 }
 

@@ -14,14 +14,13 @@
 package org.netbeans.core.windows.model;
 
 
+import org.netbeans.core.windows.WindowManagerImpl;
+import org.openide.windows.TopComponent;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
-import org.netbeans.core.windows.WindowManagerImpl;
-
-import org.openide.windows.TopComponent;
 
 
 /**

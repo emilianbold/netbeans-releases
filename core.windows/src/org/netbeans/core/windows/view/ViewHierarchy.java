@@ -15,37 +15,17 @@
 package org.netbeans.core.windows.view;
 
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowStateListener;
-import java.awt.Frame;
-import java.awt.KeyboardFocusManager;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashMap;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.netbeans.core.windows.view.ui.EditorAreaFrame;
 import org.netbeans.core.windows.view.ui.MainWindow;
 import org.openide.ErrorManager;
 
-import org.openide.windows.TopComponent;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+import java.util.List;
 
 /**
  * Class which manages GUI components.

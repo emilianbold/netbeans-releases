@@ -15,52 +15,27 @@
 package org.netbeans.core.windows.view.dnd;
 
 
-import java.awt.AWTEvent;
-import java.awt.Component;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragSource;
-import java.awt.dnd.DragSourceDragEvent;
-import java.awt.dnd.DragSourceMotionListener;
-import java.awt.dnd.DropTarget;
-import java.awt.Frame;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.Window;
-import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
-import javax.swing.JRootPane;
-import javax.swing.RootPaneContainer;
-import javax.swing.SwingUtilities;
-
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
-import org.netbeans.core.windows.view.Controller;
-import org.netbeans.core.windows.view.EditorView;
-import org.netbeans.core.windows.view.ModeView;
-import org.netbeans.core.windows.view.ViewElement;
-import org.netbeans.core.windows.view.SplitView;
+import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.WindowManagerImpl;
+import org.netbeans.core.windows.view.*;
 import org.netbeans.core.windows.view.ui.MainWindow;
 import org.netbeans.core.windows.view.ui.ModeComponent;
-import org.netbeans.core.windows.ModeImpl; // PENDING
-import org.netbeans.core.windows.WindowManagerImpl; // PENDING
-
 import org.openide.ErrorManager;
 import org.openide.util.WeakSet;
 import org.openide.windows.TopComponent;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.*;
+import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.*;
 
 
 /**

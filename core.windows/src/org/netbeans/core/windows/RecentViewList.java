@@ -14,14 +14,14 @@
 
 package org.netbeans.core.windows;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.List;
-import java.lang.ref.WeakReference;
-
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Instance of this class keeps list of (weak references to) recently activated TopComponents.

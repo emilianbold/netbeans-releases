@@ -15,11 +15,11 @@
 package org.netbeans.core.windows;
 
 
-import java.util.Iterator;
-import java.util.Set;
-
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
+
+import java.util.Iterator;
+import java.util.Set;
 
 
 /**

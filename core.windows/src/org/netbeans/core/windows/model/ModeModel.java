@@ -14,15 +14,10 @@
 package org.netbeans.core.windows.model;
 
 
-import java.awt.Image;
-import java.awt.Rectangle;
-import java.net.URL;
-import java.util.List;
-import java.util.Map;
-
-import org.netbeans.core.windows.ModeImpl;
-
 import org.openide.windows.TopComponent;
+
+import java.awt.*;
+import java.util.List;
 
 
 /**

@@ -13,16 +13,14 @@
 
 package org.netbeans.core.windows.actions;
 
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import org.netbeans.core.windows.view.ui.toolbars.ToolbarConfiguration;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.ToolbarPool;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
+
+import javax.swing.*;
 
 
 /** Action that lists toolbars of current toolbar config in a submenu, the

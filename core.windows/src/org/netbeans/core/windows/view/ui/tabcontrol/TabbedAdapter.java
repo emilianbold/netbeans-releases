@@ -13,32 +13,23 @@
 
 package org.netbeans.core.windows.view.ui.tabcontrol;
 
-import java.awt.Component;
-import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.geom.GeneralPath;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Polygon;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
+import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ui.Tabbed;
-import org.openide.windows.TopComponent;
+import org.netbeans.swing.tabcontrol.ComponentConverter;
+import org.netbeans.swing.tabcontrol.TabData;
+import org.netbeans.swing.tabcontrol.TabbedContainer;
+import org.netbeans.swing.tabcontrol.plaf.EqualPolygon;
 import org.openide.ErrorManager;
-import java.awt.Image;
+import org.openide.windows.TopComponent;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /** Adapter class that implements a pseudo JTabbedPane API on top
  * of the new tab control.  This class should eventually be eliminated
@@ -55,20 +46,29 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
     
     /** Debugging flag. */
     private static final boolean DEBUG = Debug.isLoggable(TabbedAdapter.class);
-    
+    private ChangeEvent changeEvent = new ChangeEvent(this);
+
     /** Creates a new instance of TabbedAdapter */
     public TabbedAdapter (int type) {
-        super(type == Constants.MODE_KIND_EDITOR 
-                ? (TabbedContainer.TabsDisplayer)new TabControl(new DefaultTabDataModel())
-                : (TabbedContainer.TabsDisplayer)new ViewTabControl(new DefaultTabDataModel()));                                
-        getSelectionModel().addChangeListener(this);
+        super (type);
+        getSelectionModel().addChangeListener(new ChangeListener() {
+            public void stateChanged (ChangeEvent ce) {
+                int idx = getSelectionModel().getSelectedIndex();
+                if (idx != -1) {
+                    fireStateChanged();
+                }
+            }
+        });
     }
     
     public void addTopComponent(String name, javax.swing.Icon icon, TopComponent tc, String toolTip) {
-        insertTopComponent (name, icon, tc, toolTip, getTopComponentCount());
+        insertComponent (name, icon, tc, toolTip, getTabCount());
     }
     
     public TopComponent getTopComponentAt(int index) {
+        if (index == -1) {
+            return null;
+        }
         return (TopComponent)getModel().getTab(index).getComponent();
     }
     
@@ -76,93 +76,51 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
         int i = getSelectionModel().getSelectedIndex();
         return i == -1 ? null : getTopComponentAt(i);
     }
-    
-    public int getTopComponentCount() {
-        return getModel().size();
-    }
-    
-    public int indexOfTopComponent(TopComponent tc) {
-        int max = model.size();
-        TabDataModel mdl = getModel();
-        for (int i=0; i < max; i++) {
-            TabData curr = mdl.getTab(i);
-            if (tc == curr.getComponent()) return i;
-        }
-        return -1;
-    }
-    
-    public void insertTopComponent(String name, javax.swing.Icon icon, TopComponent tc, String toolTip, int position) {
-        TabData td = new TabData (tc, icon, name, toolTip);
+
+    public void insertComponent(String name, javax.swing.Icon icon, Component comp, String toolTip, int position) {
+        TabData td = new TabData (comp, icon, name, toolTip);
         
         if(DEBUG) {
-            debugLog("InsertTab: " + name + " hash:" + System.identityHashCode(tc)); // NOI18N
+            debugLog("InsertTab: " + name + " hash:" + System.identityHashCode(comp)); // NOI18N
         }
         
         getModel().addTab(position, td);
     }
-    
-    protected void initDisplayer () {
-        super.initDisplayer();
-        TopComponent tc = getSelectedTopComponent();
-    }
-    
-    public void setIconAt(int index, javax.swing.Icon icon) {
-        getModel().setIcon(index, icon);
-    }
-    
-    public void setSelectedTopComponent(TopComponent tc) {
-        int i = indexOfTopComponent (tc);
+
+    public void setSelectedComponent(Component comp) {
+        int i = indexOf (comp);
         if (i == -1) {
             throw new IllegalArgumentException (
-                "Component not a child of this control: " + tc); //NOI18N
+                "Component not a child of this control: " + comp); //NOI18N
         } else {
             getSelectionModel().setSelectedIndex(i);
         }
     }
     
     public TopComponent[] getTopComponents() {
-        int max = getModel().size();
-        TopComponent[] result = new TopComponent[max];
-        for (int i=0; i < max; i++) {
-            result[i] = (TopComponent) getModel().getTab(i).getComponent();
+        ComponentConverter cc = getComponentConverter();
+        TabData[] td = (TabData[]) getModel().getTabs().toArray(new TabData[0]);
+        TopComponent[] result = new TopComponent[getModel().size()];
+        for (int i=0; i < td.length; i++) {
+            result[i] = (TopComponent) cc.getComponent(td[i]);
         }
         return result;
     }
     
-    public void removeTopComponent(TopComponent tc) {
-        int i=indexOfTopComponent(tc);
+    public void removeComponent(Component comp) {
+        int i=indexOf(comp);
         getModel().removeTab(i);
         if (getModel().size() == 0) {
             revalidate();
             repaint();
         }
     }
-    
-    public void setTabPlacement(int placement) {
-        //XXX not supported, this will be handled by using different views/ui's
-    }
-    
-    public void setTitleAt(int index, String title) {
-        getModel().setText(index, title);
-    }
-    
-    public void setToolTipTextAt(int index, String toolTip) {
-        // PENDING revise.
-        
-        //The idea here is to silently change the tooltip text in the
-        //model without triggering an event from the model (it is very unlikely
-        //that the text will change *while* the tooltip happens to be showing) -Tim
-        TabData tabData = getModel().getTab(index);
-        if(tabData != null) {
-            tabData.tip  = toolTip;
-        }
-    }
-    
-    public void addTopComponents(TopComponent[] tcs, String[] names, javax.swing.Icon[] icons, String[] tips) {
-        ArrayList al = new ArrayList (tcs.length);
-        TabData[] data = new TabData[tcs.length];
-        for (int i=0; i < tcs.length; i++) {
-            TabData td = new TabData (tcs[i], icons[i], names[i], tips[i]);
+
+    public void addComponents(Component[] comps, String[] names, javax.swing.Icon[] icons, String[] tips) {
+        ArrayList al = new ArrayList (comps.length);
+        TabData[] data = new TabData[comps.length];
+        for (int i=0; i < comps.length; i++) {
+            TabData td = new TabData (comps[i], icons[i], names[i], tips[i]);
             data[i] = td;
         }
         getModel().addTabs (0, data);
@@ -218,7 +176,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
     
     // DnD>>
     /** Finds tab which contains x coordinate of given location point.
-     * @param input point
+     * @param location The point for which a constraint is required
      * @return Integer object representing found tab index. Returns null if
      * no such tab can be found.
      */
@@ -229,11 +187,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
                 return s;
             }
         }
-        
-        TabbedContainer.TabsDisplayer tabs = getTabsDisplayer();
-        // ignore original y axis to create projection into z-axis
-        int newY = tabs.getComponent().getHeight() / 2;
-        int index = tabs.getTabsUI().getLayoutModel().dropIndexOfPoint(location.x, newY);
+        int index = dropIndexOfPoint(location);
         return index < 0 ? null : new Integer(index);
     }
 
@@ -243,7 +197,8 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
      * @return Shape representing feedback indication
      */
     public Shape getIndicationForLocation(Point location,
-    TopComponent startingTransfer, Point startingPoint, boolean attachingPossible) {
+        TopComponent startingTransfer, Point startingPoint, boolean attachingPossible) {
+
         Rectangle rect = getBounds();
         rect.setLocation(0, 0);
         
@@ -265,13 +220,13 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
             return new Rectangle(0, rect.height - (int)(rect.height * ratio), rect.width, (int)(rect.height * ratio));
         }
 
-        Shape s = getTabIndication(startingTransfer, location);
+        Shape s = getDropIndication(startingTransfer, location);
         if(s != null) {
             return s;
         }
         
         if(startingPoint != null
-        && Arrays.asList(getTopComponents()).contains(startingTransfer)) {
+            && indexOf(startingTransfer) != -1) {
             return getStartingIndication(startingPoint, location);
         }
         
@@ -284,9 +239,9 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
         
         final int TOP_HEIGHT = 10;
         final int BOTTOM_HEIGHT = (int)(0.25 * bounds.height);
-        TabLayoutModel mdl = tabs.getTabsUI().getLayoutModel();
-        final int LEFT_WIDTH = Math.min((int)(0.25 * mdl.getW(0)), 30);
-        final int RIGHT_WIDTH = Math.min((int)(0.25 * mdl.getW(getTopComponentCount() - 1)), 30);
+        
+        final int LEFT_WIDTH = Math.max (getWidth() / 8, 40);
+        final int RIGHT_WIDTH = LEFT_WIDTH;
         
         if(DEBUG) {
             debugLog(""); // NOI18N
@@ -304,7 +259,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
             return Constants.TOP;
         }
         
-        Polygon left = new Polygon(
+        Polygon left = new EqualPolygon(
             new int[] {0, LEFT_WIDTH, LEFT_WIDTH, 0},
             new int[] {TOP_HEIGHT, TOP_HEIGHT, bounds.height - BOTTOM_HEIGHT, bounds.height},
             4
@@ -313,7 +268,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
             return Constants.LEFT;
         }
         
-        Polygon right = new Polygon(
+        Polygon right = new EqualPolygon(
             new int[] {bounds.width - RIGHT_WIDTH, bounds.width, bounds.width, bounds.width - RIGHT_WIDTH},
             new int[] {TOP_HEIGHT, TOP_HEIGHT, bounds.height, bounds.height - BOTTOM_HEIGHT},
             4
@@ -322,7 +277,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
             return Constants.RIGHT;
         }
 
-        Polygon bottom = new Polygon(
+        Polygon bottom = new EqualPolygon(
             new int[] {LEFT_WIDTH, bounds.width - RIGHT_WIDTH, bounds.width, 0},
             new int[] {bounds.height - BOTTOM_HEIGHT, bounds.height - BOTTOM_HEIGHT, bounds.height, bounds.height},
             4
@@ -333,72 +288,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
             
         return null;
     }
-    
-    private Shape getTabIndication(TopComponent startingTransfer, Point location) {
-        TabbedContainer.TabsDisplayer tabs = getTabsDisplayer();
-        int newY = tabs.getComponent().getHeight() / 2;
-        int index = tabs.getTabsUI().getLayoutModel().dropIndexOfPoint(location.x, newY);
-        if(index < 0) { // XXX PENDING The tab is not found, later simulate the last one.
-            Rectangle r = getBounds();
-            r.setLocation(0, 0);
-            return r;
-        }
-        int tabsHeight = tabs.getComponent().getHeight();
-        Polygon p;
-        int startingIndex = indexOfTopComponent(startingTransfer);
-        if(startingIndex >= 0 && (startingIndex == index || startingIndex + 1 == index)) {
-            // merge with indication from tabs UI
-            p = (Polygon) tabs.getTabsUI().getExactTabIndication(startingIndex);
-        } else {
-            // merge with indication from tabs UI
-            p = (Polygon) tabs.getTabsUI().getInsertTabIndication(index);
-        }
-        
-        int width = getWidth();
-        int height = getHeight();
-        
-        int[] xpoints = new int[p.npoints + 4];
-        int[] ypoints = new int[xpoints.length];
-        
-        int pos = 0;
-        
-        xpoints[pos] = 0;
-        ypoints[pos] = tabsHeight;
-        
-        pos++;
-        
-        xpoints[pos] = p.xpoints[p.npoints-1];
-        ypoints[pos] = tabsHeight;
-        pos++;
-        
-        for (int i=0; i < p.npoints-2; i++) {
-            xpoints [pos] = p.xpoints[i];
-            ypoints [pos] = p.ypoints[i];
-            pos++;
-        }
 
-        xpoints[pos] = xpoints[pos-1];
-        ypoints[pos] = tabsHeight;
-        
-        pos++;
-        
-        xpoints[pos] = width - 1;
-        ypoints[pos] = tabsHeight;
-        
-        pos++;
-        
-        xpoints[pos] = width - 1;
-        ypoints[pos] = height -1;
-        
-        pos++;
-        
-        xpoints[pos] = 0;
-        ypoints[pos] = height - 1;
-        
-        Polygon result = new EqualPolygon (xpoints, ypoints, xpoints.length);
-        return result;
-    }
-     
     private Shape getStartingIndication(Point startingPoint, Point location) {
         Rectangle rect = getBounds();
         rect.setLocation(location.x - startingPoint.x, location.y - startingPoint.y);
@@ -428,12 +318,8 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
         }
     }
     
-    /** Notifies all registered listeners about the event.
-     *
-     * @param event The event to be fired
-     *
-     */
-    private void fireStateChanged(javax.swing.event.ChangeEvent event) {
+    /** Notifies all registered listeners about the event. */
+    private void fireStateChanged() {
         java.util.ArrayList list;
         synchronized (this) {
             if (changeListenerList == null) return;
@@ -445,11 +331,9 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
         //so you'll really see every repaint.  When switching between a form
         //tab and an editor tab, you will see the property sheet get repainted
         //8 times due to changes in the component hierarchy, before the 
-        //selected node is event changed to the appropriate one for the new tab.
+        //selected node is even changed to the appropriate one for the new tab.
         //Synchronizing here ensures that never happens.
         
-        //XXX need to double check that this code is *never* called from
-        //non AWT thread
         if (!SwingUtilities.isEventDispatchThread()) {
             ErrorManager.getDefault().log(ErrorManager.WARNING, 
                 "All state changes to the tab component must happen on the event thread!"); //NOI18N
@@ -460,32 +344,13 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
         
         synchronized (getTreeLock()) {
             for (int i = 0; i < list.size(); i++) {
-                ((javax.swing.event.ChangeListener)list.get(i)).stateChanged(event);
+                ((javax.swing.event.ChangeListener)list.get(i)).stateChanged(changeEvent);
             }
         }
     }
     
-    public void stateChanged (javax.swing.event.ChangeEvent e) {
-        TopComponent tc = getSelectedTopComponent();
-        
-        super.stateChanged(e);  //move this after?
-        fireStateChanged(new ChangeEvent (this));
-    }
-
-    
     private static void debugLog(String message) {
         Debug.log(TabbedAdapter.class, message);
     }
-    
-    public boolean isPointInCloseButton(Point p) {
-        return getTabsDisplayer().isPointInCloseButton(p);
-    }
-    
-    public Image getDragImage(TopComponent tc) {
-        TabbedContainer.TabsDisplayer tabs = getTabsDisplayer();
-        Polygon p;
-        int idx = indexOfTopComponent(tc);
-        return tabs.getDragImage(idx);
-    }
-    
+
 }

@@ -13,48 +13,26 @@
 
 package org.netbeans.core.windows.persistence;
 
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.Rectangle;
-
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
-
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.ModuleInfo;
-import org.openide.modules.SpecificationVersion;
-import org.openide.util.NbBundle;
-import org.openide.xml.XMLUtil;
-
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.SplitConstraint;
 import org.netbeans.core.windows.persistence.convert.ImportManager;
 import org.netbeans.core.windows.persistence.convert.ImportedItem;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.ModuleInfo;
+import org.openide.modules.SpecificationVersion;
+import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
+import org.xml.sax.*;
+import org.xml.sax.helpers.DefaultHandler;
+
+import java.awt.*;
+import java.io.*;
+import java.util.*;
+import java.util.List;
 
 /**
  * Handle loading/saving of WindowManager configuration data.
