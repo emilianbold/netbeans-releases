@@ -11,7 +11,9 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.properties;
+
 
 import java.beans.*;
 import java.io.*;
@@ -24,7 +26,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
-import javax.swing.Timer;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.EditorKit;
@@ -62,80 +63,41 @@ import org.openide.windows.CloneableOpenSupport;
 /** Support for viewing porperties files (EditCookie) by opening them in a text editor */
 public class PropertiesEditorSupport extends CloneableEditorSupport implements EditCookie, Serializable {
 
-    /** Timer which countdowns the auto-reparsing time. */
-    javax.swing.Timer timer;
-
     /** New lines in this file was delimited by '\n' */
     static final byte NEW_LINE_N = 0;
-
     /** New lines in this file was delimited by '\r' */
     static final byte NEW_LINE_R = 1;
-
     /** New lines in this file was delimited by '\r\n' */
     static final byte NEW_LINE_RN = 2;
 
     /** The type of new lines */
     byte newLineType = NEW_LINE_N;
 
-    /** The flag saying if we should listen to the document modifications */
-    private boolean listenToEntryModifs = true;
-
-    private Document listenDocument;
-    
-    private boolean modificationListening = true;
-
-    /** Listener to the document changes - entry. The superclass holds a saving manager
-    * for the whole dataobject. */
-    private EntrySavingManager entryModifL;
-
-    
+    /** Visible view of underlying file entry */
+    transient PropertiesFileEntry myEntry;
     
     /** Properties Settings */
     static final PropertiesSettings settings = new PropertiesSettings();
-
-    //static final long serialVersionUID =1787354011149868490L;
+    
+    
+    static final long serialVersionUID =1787354011149868490L;
     /** Constructor */
     public PropertiesEditorSupport(PropertiesFileEntry entry) {
         super (new Env(entry));
         this.myEntry = entry;
-        //System.out.println("editor support constructor - " + entry.getFile().getName());
-        //Thread.dumpStack();
         initialize();
     }
 
     public void initialize() {
-        modificationListening = false;
         setMIMEType (PropertiesDataObject.MIME_PROPERTIES);
-        initTimer();
-
-        // listen to myself so I can add a listener for changes when the document is loaded
-        addChangeListener(new ChangeListener() {
-                              public void stateChanged(ChangeEvent evt) {
-                                  if (isDocumentLoaded()) {
-                                      setListening(true);
-                                  }
-                              }
-                          });
-
-        //PENDING
-        // set actions
-        /*setActions (new SystemAction [] {
-          SystemAction.get (CutAction.class),
-          SystemAction.get (CopyAction.class),
-          SystemAction.get (PasteAction.class),
-    });*/
     }
 
-    /** Overrides teh super method. Adds checking for opened Table component.
+    /** Overrides the super method. Adds checking for opened Table component.
     */
     protected void notifyUnmodified () {
-        // unmark as modified only in case there is not opened Table component, otherwise just close
-        if(!hasOpenTableComponent()) // TEMP
-            super.notifyUnmodified ();
-        
-        if (modificationListening) {
-            ((Env)env).removeSaveCookie ();
-        }
+        super.notifyUnmodified();
+
+        ((Env)env).removeSaveCookie ();
     }
     
     /** Overrides the super method to add a save cookie if the 
@@ -145,16 +107,27 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
     *    or false if it refused it and the document should still be unmodified
     */
     protected boolean notifyModified () {
+        // reparse file
+        myEntry.getHandler().autoParse();
+        
         if (super.notifyModified ()) {
-            if (modificationListening) {
-                ((Env)env).addSaveCookie ();
-            }
+
+            ((Env)env).addSaveCookie ();
+            
             return true;
         } else {
             return false;
         }
     }
   
+    
+    /** Used only by PropertiesOpen support when closing last Table component. 
+     * Note: It's quite ugly by-pass of notifyClosed() function. Should be revised. */
+    void forceNotifyClosed() {
+        super.notifyClosed();
+    }
+    
+    
     /** Overrides super method. Adds checknig for opened Table panel. 
     */
     protected void notifyClosed() {
@@ -169,33 +142,7 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
         allEditors = ref;
     }
 
-// TEMP    
-/*    Object writeReplace() throws ObjectStreamException {
-        System.err.println("writeReplace="+myEntry.getFile().getName()); // TEMP
-        return new SerialProxy(myEntry);
-    }
 
-    public static class SerialProxy implements Serializable {
-
-//        static final long serialVersionUID =2675098551717845346L;
-        public SerialProxy(PropertiesFileEntry serialEntry) {
-            this.serialEntry = serialEntry;
-        }
-
-        private PropertiesFileEntry serialEntry;
-
-        Object readResolve() throws ObjectStreamException {
-            System.out.println("deserializing properties editor"); // TEMP
-            System.out.println("serialEntry " + serialEntry); // TEMP
-            System.out.println("name=" + serialEntry.getFile().getName()); // TEMP
-            Object pe = serialEntry.getPropertiesEditor();
-            //System.out.println("deserializing properties editor END");
-            return pe;
-        }
-    } // end of SerialProxy */
-
-    /** Visible view of underlying file entry */
-    transient PropertiesFileEntry myEntry;
 
     /** Focuses existing component to open, or if none exists creates new.
     * @see OpenCookie#open
@@ -231,21 +178,6 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
         }
     }
 
-
-
-
-    /** Launches the timer for autoreparse */
-    private void initTimer() {
-        // initialize timer
-        timer = new Timer(0, new java.awt.event.ActionListener() {
-                              public void actionPerformed(java.awt.event.ActionEvent e) {
-                                  myEntry.getHandler().autoParse();
-                              }
-                          });
-        timer.setInitialDelay(settings.getAutoParsingDelay());
-        timer.setRepeats(false);
-    }
-
     /** Returns whether there is an open component (editor or open). */
     public synchronized boolean hasOpenComponent() {
         return (hasOpenTableComponent() || hasOpenEditorComponent());
@@ -273,38 +205,12 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
         if ((savec != null) && hasOpenTableComponent()) {
             return false;
         }
-        //System.out.println("closing");
+
         if (!super.close())
             return false;
 
-        //System.out.println("closed - document open = " + isDocumentLoaded());
-
-        closeDocumentEntry();
         myEntry.getHandler().reparseNowBlocking();
         return true;
-    }
-
-    /** Clears all data from memory.
-    */
-//    protected void closeDocument () {
-//        System.err.println("in close document"); // TEMP
-//        super.closeDocument();
-//        closeDocumentEntry();
-//    }
-
-    /** Utility method which enables or disables listening to modifications
-    * on asociated document.
-    * <P>
-    * Could be useful if we have to modify document, but do not want the
-    * Save and Save All actions to be enabled/disabled automatically.
-    * Initially modifications are listened to.
-    * @param listenToModifs whether to listen to modifications
-    */
-    public void setModificationListening (final boolean listenToModifs) {
-        //System.out.println("set modification listening - " + listenToModifs);
-        this.listenToEntryModifs = listenToModifs;
-        if (getDocument() == null) return;
-        setListening(listenToEntryModifs);
     }
 
     /** Message to display when an object is being opened.
@@ -505,40 +411,6 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
         }
     }
 
-
-    /** Does part of the cleanup - removes a listener.
-    */
-    private void closeDocumentEntry () {
-        // listen to modifs
-        if (listenToEntryModifs) {
-            getEntryModifL().clearSaveCookie();
-
-            setListening(false);
-        }
-    }
-
-    private void setListening(boolean listen) {
-        if (listen) {
-            if ((getDocument() == null) || (listenDocument == getDocument()))
-                return;
-            if (listenDocument != null) // also holds that listenDocument != getDocument()
-                listenDocument.removeDocumentListener(getEntryModifL());
-            listenDocument = getDocument();
-            listenDocument.addDocumentListener(getEntryModifL());
-        }
-        else {
-            if (listenDocument != null) {
-                listenDocument.removeDocumentListener(getEntryModifL());
-                listenDocument = null;
-            }
-        }
-    }
-
-    /** Visible view of the underlying method. */
-//    public Editor openAt(PositionRef pos) { // TEMP
-//        return super.openAt(pos);
-//    }
-
     /** Forcibly create one editor component. Then set the caret
     * to the given position.
     * @param pos where to place the caret
@@ -601,27 +473,9 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
 
     }
 
-
-    /** Returns an entry saving manager. */
-    private synchronized EntrySavingManager getEntryModifL () {
-        if (entryModifL == null) {
-            entryModifL = new EntrySavingManager();
-            // listens whether to add or remove SaveCookie
-            myEntry.addPropertyChangeListener(entryModifL);
-        }
-        return entryModifL;
-    }
-
-    /** Make modifiedApendix accessible for inner classes. */
-    /*String getModifiedAppendix() {
-        // TEMP due changes in EditorSupport
-        return " *";
-        //return modifiedAppendix;
-    }*/
-
     /** Implementation of the default Environment for EditorSupport
     */
-    private static final class Env implements CloneableEditorSupport.Env, SaveCookie
+    private static final class Env implements CloneableEditorSupport.Env , SaveCookie
         /*PropertyChangeListener, VetoableChangeListener*/ {
         /** generated Serialized Version UID */
         //static final long serialVersionUID = 354528097109874355L;
@@ -629,15 +483,6 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
         /** Entry on which is Support build */
         private PropertiesFileEntry entry;
         
-        
-        /** object to connected to*/
-//        private transient DataObject obj;
-
-        /** The file object this environment is associated to.
-        * This file object can be changed by a call to refresh file.
-        */
-//        private transient FileObject fileObject;
-
         /** Lock acquired after the first modification and used in save.
         * Transient => is not serialized.
         */
@@ -663,13 +508,13 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
         * @return the file input/output operation should be performed on
         */
         protected FileObject getFileObject() {
-            return entry.getFile(); // TEMP
+            return entry.getFile();
         }
         
         /** Getter for data object.
         */
         protected final DataObject getDataObject () {
-            return entry.getDataObject(); // TEMP
+            return entry.getDataObject();
         }
         
         /** Locks the file.
@@ -677,7 +522,7 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
         * @exception IOException if the file cannot be locked
         */
         protected FileLock takeLock () throws IOException {
-            return entry.takeLock(); // TEMP
+            return entry.takeLock();
         }
         
         /** Adds property listener.
@@ -703,40 +548,6 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
         public void removeVetoableChangeListener(VetoableChangeListener l) {
             veto ().removeVetoableChangeListener (l);
         }
-                        
-        /** Gives notification that the DataObject was changed.
-        * @param ev PropertyChangeEvent
-        */
-//        public void propertyChange(PropertyChangeEvent ev) {
-//            if (ev.getPropertyName().equals(DataObject.PROP_PRIMARY_FILE)) {
-//                changeFile ();
-//            }
-
-            // connected            
-//            if (DataObject.PROP_MODIFIED.equals (ev.getPropertyName())) {
-//                if (getDataObject ().isModified ()) {
-//                    getDataObject ().addVetoableChangeListener(this);
-//                } else {
-//                    getDataObject ().removeVetoableChangeListener(this);
-//                }
-//            }
-            
-//            firePropertyChange (
-//                ev.getPropertyName (),
-//                ev.getOldValue (),
-//                ev.getNewValue ()
-//            );
-//        }
-
-        /** Accepts vetoable changes and fires them to own listeners.
-        */
-//        public void vetoableChange(PropertyChangeEvent ev) throws PropertyVetoException {
-//            fireVetoableChange (
-//                ev.getPropertyName (),
-//                ev.getOldValue (),
-//                ev.getNewValue ()
-//            );
-//        }
         
         /** Fires property change.
         * @param name the name of property that changed
@@ -783,25 +594,12 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
             return vetoSupp;
         }
 
-        /** Getter for the file to work on.
-        * @return the file
-        */
-//        private FileObject getFileImpl () {
-//            if (fileObject == null) {
-//                fileObject = getFileObject();
-//                fileObject.addFileChangeListener (new EnvListener (this));
-//            }
-//            return fileObject;
-//        }
-        
         /** Method that allows subclasses to notify this environment that
         * the file associated with this support has changed and that 
         * the environment should listen on modifications of different 
         * file object.
         */
         protected final void changeFile () {
-//            fileObject = null; // TEMP
-            
 
             boolean lockAgain;
             if (fileLock != null) {
@@ -810,8 +608,6 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
             } else {
                 lockAgain = false;
             }
-
-//            fileObject = getFileImpl (); // TEMP
 
             if (lockAgain) { // refresh lock
                 try {
@@ -853,7 +649,7 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
          * @return true if the object is modified
          */
         public boolean isModified() {
-            return entry.isModified(); // TEMP
+            return entry.isModified();
         }
                         
         /** First of all tries to lock the primary file and
@@ -868,8 +664,7 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
                 fileLock = takeLock ();
             }
 
-            entry.setModified(true); // TEMP
-            getDataObject ().setModified (true);
+            entry.setModified(true);
         }
         
         /** Reverse method that can be called to make the environment 
@@ -887,62 +682,51 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
         * @exception IOException if an I/O error occures
         */
         public InputStream inputStream() throws IOException {
-            return getFileObject().getInputStream(); // TEMP
+            return getFileObject().getInputStream();
         }
         
         /** Obtains the output stream.
         * @exception IOException if an I/O error occures
         */
         public OutputStream outputStream() throws IOException {
-            return getFileObject().getOutputStream(fileLock); // TEMP
+            return getFileObject().getOutputStream(fileLock);
         }
                         
-        /** Method that allows environment to find its 
-         * cloneable open support.
+        /** Overrides superclass method for finding the editor support.
         * @return the support or null if the environemnt is not in valid 
         * state and the CloneableOpenSupport cannot be found for associated
         * entry object
         */
         public CloneableOpenSupport findCloneableOpenSupport() {
-            return (PropertiesEditorSupport)entry.getCookieSet().getCookie(EditCookie.class); // TEMP
+            return (PropertiesEditorSupport)entry.getCookieSet().getCookie(EditCookie.class);
         }
         
         /** Invoke the save operation.
         * @throws IOException if the object could not be saved
         */
         public void save() throws java.io.IOException {
-            System.err.println("Saving thru Env"); // TEMP
-            ((CloneableEditorSupport)findCloneableOpenSupport ()).saveDocument ();
+            // do saving job
+            ((PropertiesEditorSupport)findCloneableOpenSupport()).saveThisEntry();
         }
-/*
-        void clearSaveCookie() {
-            DataObject dataObj = findDataObject();
-            // remove save cookie (if save was succesfull)
-            dataObj.setModified(false);
-            releaseFileLock();
-        }
-*/
-        /** Adds save cookie to the DO.
+        
+        /** Adds save cookie to the entry.
         */
         final void addSaveCookie() {
-            DataObject dataObj = getDataObject ();
-            // add Save cookie to the data object
-            if (dataObj instanceof MultiDataObject) {
-                if (dataObj.getCookie(SaveCookie.class) == null) {
-                    ((MultiDataObject)dataObj).getCookieSet().add(this);
-                }
+            if (entry.getCookie(SaveCookie.class) == null) {
+                entry.getCookieSet().add(this);
             }
+            ((PropertiesDataObject)entry.getDataObject()).updateModificationStatus();
         }
-        /** Removes save cookie from the DO.
+        
+        /** Removes save cookie from the entry.
         */
         final void removeSaveCookie() {
-            DataObject dataObj = getDataObject ();
-            // add Save cookie to the data object
-            if (dataObj instanceof MultiDataObject) {
-                if (dataObj.getCookie(SaveCookie.class) == this) {
-                    ((MultiDataObject)dataObj).getCookieSet().remove(this);
-                }
+            // remove Save cookie from the entry
+            SaveCookie sc = (SaveCookie)entry.getCookie(SaveCookie.class);
+            if (sc != null && sc.equals(this)) {
+                entry.getCookieSet().remove(this);
             }
+            ((PropertiesDataObject)entry.getDataObject()).updateModificationStatus();
         }
         
         /** Called from the EnvListener
@@ -1006,7 +790,7 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
         /** Listener for entry's name changes */
 //        private transient NodeAdapter nodeL;
 
-        //static final long serialVersionUID =-2702087884943509637L;
+        static final long serialVersionUID =-2702087884943509637L;
         /** Constructor for deserialization */
         public PropertiesEditor() {
             super();
@@ -1025,20 +809,6 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
             // add to EditorSupport - patch for a bug in deserialization
             ((PropertiesEditorSupport)cloneableEditorSupport()).setRef(getReference());
 
-// TEMP>>
-/*            entry.getNodeDelegate().addNodeListener (
-                new WeakListener.Node(nodeL =
-                                          new NodeAdapter () {
-                                              public void propertyChange (PropertyChangeEvent ev) {
-                                                  if (ev.getPropertyName ().equals (Node.PROP_DISPLAY_NAME)) {
-                                                      System.err.println("Node prop displayName"); // TEMP
-                                                      PropertiesEditor.super.updateName();
-                                                  }
-                                              }
-                                          }
-                                     )); */
-// TEMP<<
-                        
             Node n = entry.getNodeDelegate ();
             setActivatedNodes (new Node[] { n });
 
@@ -1098,29 +868,12 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
             boolean canClose = super.closeLast();
             if (!canClose)
               return false;
+            
             if(!((PropertiesEditorSupport)cloneableEditorSupport()).hasOpenTableComponent()) {
-                ((PropertiesEditorSupport)cloneableEditorSupport()).closeDocumentEntry();
                 entry.getHandler().reparseNowBlocking();
             }
             return true;
         }
-
-        /** Updates the name of this top component according to
-        * the existence of the save cookie in ascoiated data object
-        */
-/*        protected void updateName () {
-            if (entry == null) {
-                setName("");
-                return;
-            }
-            else {
-                String name = entry.getFile().getName();
-                if (entry.getCookie(SaveCookie.class) != null)
-                    setName(name + ((PropertiesEditorSupport)cloneableEditorSupport()).getModifiedAppendix()); // TEMP
-                else
-                    setName(name);
-            }
-        }*/
 
         /* Serialize this top component.
         * @param out the stream to serialize to
@@ -1140,107 +893,6 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
         }
 
     } // end of PropertiesEditor inner class
-
-    /** EntrySavingManager manages two tasks concerning saving:<P>
-    * 1) It tracks changes in document asociated with ther entry and
-    *    sets modification flag appropriately.<P>
-    * 2) This class also implements functionality of SaveCookie interface
-    */
-    private final class EntrySavingManager implements DocumentListener, SaveCookie, PropertyChangeListener {
-
-        /*********** Implementation of the DocumentListener *******/
-
-        /** Gives notification that an attribute or set of attributes changed.
-        * @param ev event describing the action
-        */
-        public void changedUpdate(DocumentEvent ev) {
-            // do nothing - just an attribute
-        }
-
-        /** Gives notification that there was an insert into the document.
-        * @param ev event describing the action
-        */
-        public void insertUpdate(DocumentEvent ev) {
-            modified();
-            changeStructureStatus();
-        }
-
-        /** Gives notification that a portion of the document has been removed.
-        * @param ev event describing the action
-        */
-        public void removeUpdate(DocumentEvent ev) {
-            modified();
-            changeStructureStatus();
-        }
-
-        private void changeStructureStatus() {
-            int delay = settings.getAutoParsingDelay();
-            myEntry.getHandler().setDirty(true);
-            if (delay > 0) {
-                timer.setInitialDelay(delay);
-                timer.restart();
-            }
-        }
-
-        /** Gives notification that the DataObject was changed.
-        * @param ev PropertyChangeEvent
-        */
-        public void propertyChange(PropertyChangeEvent ev) {
-            if ((ev.getSource() == myEntry) &&
-                    (PropertiesFileEntry.PROP_MODIFIED.equals(ev.getPropertyName()))) {
-
-                if (((Boolean) ev.getNewValue()).booleanValue()) {
-                    addSaveCookie();
-                } else {
-                    removeSaveCookie();
-                }
-            }
-        }
-
-        /******* Implementation of the Save Cookie *********/
-
-        public void save () throws IOException {
-            // do saving job
-            saveThisEntry();
-        }
-
-        void clearSaveCookie() {
-            // remove save cookie (if save was succesfull)
-            myEntry.setModified(false);
-        }
-
-        /** Sets modification flag.
-        */
-        private void modified () {
-            myEntry.setModified(true);
-        }
-        /** Adds save cookie to the DO. Only if a component is open, otherwise saves it right away
-        */
-        private void addSaveCookie() {
-            if (myEntry.getCookie(SaveCookie.class) == null) {
-                myEntry.getCookieSet().add(this);
-            }
-            ((PropertiesDataObject)myEntry.getDataObject()).updateModificationStatus();
-            if (!hasOpenComponent()) {
-                RequestProcessor.postRequest(new Runnable() {
-                                                 public void run() {
-                                                     myEntry.getPropertiesEditor().open();
-                                                 }
-                                             });
-            }
-
-        }
-        /** Removes save cookie from the DO.
-        */
-        private void removeSaveCookie() {
-            // remove Save cookie from the data object
-            if (myEntry.getCookie(SaveCookie.class) == this) {
-                myEntry.getCookieSet().remove(this);
-            }
-            ((PropertiesDataObject)myEntry.getDataObject()).updateModificationStatus();
-        }
-
-    } // end of EntrySavingManager inner class
 
 
     /** This stream is able to filter various new line delimiters and replace them by \n.

@@ -11,7 +11,9 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.properties;
+
 
 import java.io.IOException;
 import java.awt.*;
@@ -55,29 +57,21 @@ import org.openide.DialogDescriptor;
 import org.openide.TopManager;
 import org.openide.windows.CloneableOpenSupport;
 
+
 /** Support for opening properties files (OpenCookie) in visual editor */
 public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
 
     /** Main properties dataobject */
     PropertiesDataObject obj;
     
-    /** Entry to work with. */
-    protected MultiDataObject.Entry entry;
-
     /** Listener for modificationc on dataobject, adding and removing save cookie */
     PropertyChangeListener modifL;
 
-    
-//    private PropertiesTableModel tableModel = null; // TEMP
-//    private Dialog dialog; // TEMP
-//    private boolean closingLast = false; // TEMP teh methods are synchronized already
-
 
     /** Constructor */
-    public PropertiesOpen(PropertiesFileEntry fe) {
-        super(new Env(fe.getDataObject()));
-        this.obj = (PropertiesDataObject)fe.getDataObject();
-        this.entry = fe;
+    public PropertiesOpen(PropertiesDataObject obj) {
+        super(new Env(obj));
+        this.obj = obj;
         
         this.obj.addPropertyChangeListener(WeakListener.propertyChange(modifL = 
             new ModifiedListener(), this.obj));
@@ -98,36 +92,21 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
         return new PropertiesCloneableTopComponent(obj);
     }
 
-    PropertiesFileEntry getEntry() {
-        return (PropertiesFileEntry)entry;
-    }
-
     /** Opens the table at a given key */
     public PropertiesOpenAt getOpenerForKey(PropertiesFileEntry entry, String key) {
-        return new PropertiesOpenAt(entry, key);
+        return new PropertiesOpenAt(key);
     }
 
     public synchronized boolean hasOpenComponent() {
-//        if (closingLast) return false; // TEMP
         java.util.Enumeration en = allEditors.getComponents ();
         return en.hasMoreElements ();
     }
 
-// TEMP>>    
-/*    public PropertiesTableModel getTableModel() {
-        if (tableModel == null)
-            tableModel = new PropertiesTableModel(obj);
-        return tableModel;
-    }*/
-// TEMP<<
-
     private synchronized void closeDocuments() {
-//        closingLast = true; // TEMP
         closeEntry((PropertiesFileEntry)obj.getPrimaryEntry());
         for (Iterator it = obj.secondaryEntries().iterator(); it.hasNext(); ) {
             closeEntry((PropertiesFileEntry)it.next());
         }
-//        closingLast = false; // TEMP
     }
 
     private void closeEntry(PropertiesFileEntry entry) {
@@ -135,11 +114,11 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
         if (pes.hasOpenEditorComponent())
             return;
         else {
-            pes.close(); // PENDING - shouldn't close the editor support
+            // make possible to close document as well if exist
+            entry.getPropertiesEditor().forceNotifyClosed();
             entry.getHandler().reparseNowBlocking();
         }
     }
-
 
     /** Should test whether all data is saved, and if not, prompt the user
     * to save.
@@ -156,18 +135,23 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_CANCEL_OPTION);
             Object ret = TopManager.getDefault().notify(nd);
 
-            if (NotifyDescriptor.CANCEL_OPTION.equals(ret))
-                return false;
 
             if (NotifyDescriptor.YES_OPTION.equals(ret)) {
                 try {
                     savec.save();
+                    obj.updateModificationStatus();
                 }
                 catch (IOException e) {
                     TopManager.getDefault().notifyException(e);
                     return false;
                 }
             }
+
+            obj.updateModificationStatus();
+            
+            if (NotifyDescriptor.CANCEL_OPTION.equals(ret))
+                return false;
+            
         }
         return true;
     }
@@ -176,7 +160,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
     * @return the message or null if nothing should be displayed
     */
     protected String messageOpening () {
-        DataObject obj = entry.getDataObject ();
+//        DataObject obj = entry.getDataObject ();
 
         return NbBundle.getMessage (OpenSupport.class , "CTL_ObjectOpen", // NOI18N
             obj.getName(),
@@ -393,10 +377,8 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
     public class PropertiesOpenAt implements OpenCookie {
 
         private String key;
-        private PropertiesFileEntry entry;
 
-        PropertiesOpenAt(PropertiesFileEntry entry, String key) {
-            this.entry = entry;
+        PropertiesOpenAt(String key) {
             this.key   = key;
         }
 
@@ -413,7 +395,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
             PropertiesOpen.this.open();
             BundleStructure bs = obj.getBundleStructure();
             // find the entry
-            int entryIndex = bs.getEntryIndexByFileName(entry.getFile().getName());
+            int entryIndex = bs.getEntryIndexByFileName(obj.getPrimaryEntry().getFile().getName());
             int rowIndex   = bs.getKeyIndexByName(key);
             if ((entryIndex != -1) && (rowIndex != -1)) {
                 editor.editCellAt(rowIndex, entryIndex + 1);
@@ -465,14 +447,13 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
             setName(dobj.getNodeDelegate().getDisplayName());
 
             // listen to saving and renaming
-            dobj.addPropertyChangeListener(new WeakListener.PropertyChange(cookieL =
+            dobj.addPropertyChangeListener(WeakListener.propertyChange(cookieL =
                                                new PropertyChangeListener() {
                                                    public void propertyChange(PropertyChangeEvent evt) {
-                                                       // TEMP
                                                        if (DataObject.PROP_NAME.equals(evt.getPropertyName()) || DataObject.PROP_COOKIE.equals(evt.getPropertyName())) 
                                                            setName(dobj.getNodeDelegate().getDisplayName());
                                                    }
-                                               }));
+                                               }, dobj));
 
             initComponents();
 
@@ -599,6 +580,11 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
         throws IOException {
             super.writeExternal(out);
             out.writeObject(dobj);
+
+            // PATCH serialize secondaries this way due to bug (probably jdk1.2 only)
+            // HashSet s contains elements which are referencies to secondary entries
+            HashSet s = (HashSet)dobj.secondaryEntries();
+            out.writeObject(s);
         }
 
         /** Deserialize this top component.
@@ -609,6 +595,10 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
         throws IOException, ClassNotFoundException {
             super.readExternal(in);
             dobj = (PropertiesDataObject)in.readObject();
+            
+            // deserialize secondaries this way see writeExternal
+            HashSet s = (HashSet)in.readObject();
+            
             initMe();
         }
 
@@ -656,14 +646,15 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
             }
         }
 
-        /** Adds save cookie to the DO.
+        /** Adds save cookie to the dataobject.
         */
         private void addSaveCookie() {
             if (obj.getCookie(SaveCookie.class) == null) {
                 obj.getCookieSet().add(this);
             }
         }
-        /** Removes save cookie from the DO.
+        
+        /** Removes save cookie from the dataobject.
         */
         private void removeSaveCookie() {
             if (obj.getCookie(SaveCookie.class) == this) {
