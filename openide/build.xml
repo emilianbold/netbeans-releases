@@ -101,6 +101,7 @@ Microsystems, Inc. All Rights Reserved.
       <include name="org/openide/filesystems/JarFileSystem.java"/>
       <include name="org/openide/filesystems/AbstractFileSystem.java"/>
       <include name="org/openide/explorer/propertysheet/PropertyDialogManager.java"/>
+      <include name="org/openide/explorer/propertysheet/SetDefaultValueAction.java"/>
       <include name="org/openide/awt/Toolbar.java"/>
       <include name="org/openide/explorer/view/BeanTreeView.java"/>
     </preprocess>
@@ -212,7 +213,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
       <group title="&lt;a href=&quot;@TOP@org/openide/nodes/doc-files/api.html&quot;&gt;Nodes API&lt;/a&gt;"
              packages="org.openide.nodes"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/explorer/doc-files/api.html&quot;&gt;Explorer API&lt;/a&gt;"
-             packages="org.openide.explorer*"/>
+             packages="org.openide.explorer:org.openide.explorer.propertysheet:org.openide.explorer.view"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/actions/doc-files/api.html&quot;&gt;Actions API&lt;/a&gt;"
              packages="org.openide.actions:org.openide.util.actions"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/compiler/doc-files/api.html&quot;&gt;Compiler API&lt;/a&gt;"
