@@ -438,7 +438,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
                 // Listen on changes of pending tasks and if all has finished
                 // close the dialog.
                 if(ExplorerManager.PROP_EXPLORED_CONTEXT.equals(evt.getPropertyName())) {
-                    if(getPendingTasks().isEmpty()) {
+                    if(dialog[0] != null && getPendingTasks().isEmpty()) {
                         dialog[0].setVisible(false);
                     }
                 }
@@ -478,13 +478,24 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         if(!getPendingTasks().isEmpty()) {
             root.addNodeListener(new NodeAdapter() {
                 public void childrenRemoved(NodeMemberEvent evt) {
-                    if(getPendingTasks().isEmpty()) {
+                    if(dialog[0] != null && getPendingTasks().isEmpty()) {
                         dialog[0].setVisible(false);
                     }
                 }
             });
 
             dialog[0] = TopManager.getDefault().createDialog(dd);
+            
+            dialog[0].addWindowListener(new java.awt.event.WindowAdapter() {
+                public void windowOpened(java.awt.event.WindowEvent evt) {
+                    // Dialog was opened but pending tasks could disappear
+                    // inbetween.
+                    if(getPendingTasks().isEmpty()) {
+                        dialog[0].setVisible(false);
+                    }
+                }
+            });
+            
             dialog[0].show();
             dialog[0].dispose();
 
