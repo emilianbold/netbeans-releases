@@ -354,6 +354,12 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
 
                 // Establish the connection with the server
                 hconn.connect();
+                if (Boolean.getBoolean("org.netbeans.modules.tomcat5.LogManagerCommands")) { // NOI18N
+                    int code = hconn.getResponseCode();
+                    String message = "Tomcat 5 receiving response, code: " + code;
+                    System.out.println(message);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new Exception(message));
+                }
 
                 // Send the request data (if any)
                 if (istream != null) {
