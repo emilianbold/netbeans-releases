@@ -14,6 +14,7 @@
 package org.netbeans.modules.editor;
 
 import java.awt.event.ActionEvent;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JEditorPane;
@@ -73,6 +74,20 @@ public class NbEditorKit extends ExtKit {
     public static final String BOOKMARK_ANNOTATION_TYPE = "editor-bookmark";
     
     static final long serialVersionUID =4482122073483644089L;
+    
+    private static final Map contentTypeTable;
+
+    static {
+        contentTypeTable = new HashMap();
+        contentTypeTable.put("org.netbeans.modules.properties.syntax.PropertiesKit", "text/x-properties");
+        contentTypeTable.put("org.netbeans.modules.web.core.syntax.JSPKit", "text/x-jsp");
+        contentTypeTable.put("org.netbeans.modules.css.text.syntax.CSSEditorKit", "text/css"); // new  - open source package
+        contentTypeTable.put("org.netbeans.modules.xml.css.editor.CSSEditorKit", "text/css"); // old  - close source package
+        contentTypeTable.put("org.netbeans.modules.xml.text.syntax.DTDKit", "text/x-dtd");
+        contentTypeTable.put("org.netbeans.modules.xml.text.syntax.XMLKit", "text/xml");
+        contentTypeTable.put("org.netbeans.modules.corba.idl.editor.coloring.IDLKit", "text/x-idl");
+    }
+    
 
     public Document createDefaultDocument() {
         return new NbEditorDocument(this.getClass());
@@ -121,7 +136,8 @@ public class NbEditorKit extends ExtKit {
     }
     
     public String getContentType() {
-        return null;
+        return (contentTypeTable.containsKey(this.getClass().getName())) ? 
+            (String)contentTypeTable.get(this.getClass().getName()) : null;
     }
 
     public class NbBuildPopupMenuAction extends BuildPopupMenuAction {
