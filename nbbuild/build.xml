@@ -214,6 +214,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module core/windows..."/>
     <ant dir="../core/windows" target="netbeans"/>
   </target>
+  <target name="all-core/multiview" depends="all-openide,all-openide/loaders">
+    <echo message="Building module core/multiview..."/>
+    <ant dir="../core/multiview" target="netbeans"/>
+  </target>  
   <target name="all-core/ide" depends="all-openide">
     <echo message="Building module core/ide..."/>
     <ant dir="../core/ide" target="netbeans"/>
