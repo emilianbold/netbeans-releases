@@ -126,7 +126,7 @@ public class CompileData {
         sb.append("\n"); // NOI18N
 //        sb.append("server          : " + serverInstance); // NOI18N
 //        sb.append("\n"); // NOI18N
-        sb.append("JSP page        : " + jspPage.getPrimaryFile().getPackageNameExt('/','.')); // NOI18N
+        sb.append("JSP page        : " + FileUtil.getFileDisplayName(jspPage.getPrimaryFile())); // NOI18N
         sb.append("\n"); // NOI18N
         sb.append("servletJavaRoot : " + servletJavaRoot + ", exists= " +  // NOI18N
             ((servletJavaRoot == null) ? "false" : "" + servletJavaRoot.exists())); // NOI18N
