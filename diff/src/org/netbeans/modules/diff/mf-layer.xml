@@ -81,6 +81,8 @@ SystemFileSystem
 ]]>
           </file>
           <folder name="DiffTypes">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/diff/diffSettingsIcon.gif" />
             <file name="Diffs.shadow">
 <![CDATA[Services/Diffs
 SystemFileSystem
