@@ -19,6 +19,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- (though compiling in pieces *sometimes* works). -->
     <!-- XXX Apparently Win2000 1.3 can compile it with modern compiler, so make this -->
     <!-- test conditional on Linux, to avoid penalizing others with a slow compiler. -->
+    <!-- Also see same situation in beans and form modules. -->
     <ant dir="../core" target="compile-with-classic-Javac">
       <property name="build.compiler" value="classic"/>
     </ant>

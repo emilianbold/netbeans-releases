@@ -12,6 +12,11 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
+<!--
+ToDo:
+- if jpda.jar is available in a standard location ($JH/lib/ or $JH/lib/ext/ or similar)
+  but not in current classpath, then automatically add it to the classpath and continue
+-->
 <project name="debuggerjpda" default="maybe-nbm" basedir=".">
   <target name="check">
     <available property="jpda" classname="com.sun.jdi.ObjectReference"/>
