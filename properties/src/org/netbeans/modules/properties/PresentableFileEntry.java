@@ -80,6 +80,8 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
     /** array of cookies for this entry */
     private transient CookieSet cookieSet;
 
+    // guard used in getNodeDelegate
+    private transient Object nodeDelegateMutex = new Object();
     
     /** Creates new presentable file entry initially attached to a given file object.
      * @param obj the data object this entry belongs to
@@ -100,21 +102,12 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
      * @return the node delegate (without parent) for this data object
      */
     public final Node getNodeDelegate () {
+        synchronized (nodeDelegateMutex) {
         if (nodeDelegate == null) {
-            // Changed like in DataObject.
-            // JST:
-            // changed to require write access because a lot of subclasses
-            // in createNodeDelegate requires it neither, so this should
-            // prevent deadlocks (because it uses only one lock and not two).
-            Children.MUTEX.writeAccess(new Runnable() {
-                public void run () {
-                    if(nodeDelegate == null) {
                         nodeDelegate = createNodeDelegate();
                     }
-                }
-            });
-        }
         return nodeDelegate;
+        }
     }
     
     /** Package private method to assign template attribute to a file.
