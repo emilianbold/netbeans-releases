@@ -36,7 +36,7 @@ import org.netbeans.beaninfo.editors.DebuggerTypeEditor;
 *
 * @author Jaroslav Tulach
 */
-final class Services extends ServiceType.Registry {
+final class Services extends ServiceType.Registry implements Comparator {
     /** serial */
     static final long serialVersionUID =-7558069607307508327L;
     
@@ -196,6 +196,9 @@ final class Services extends ServiceType.Registry {
                     ErrorManager.WARNING, mainExc
                 );
             }
+            
+            // sort the array
+            java.util.Collections.sort (arr, this);
         }
         
         current.clear ();
@@ -324,8 +327,22 @@ final class Services extends ServiceType.Registry {
     private Object readResolve () {
         return INSTANCE;
     }
-    
-    
+
+    /** Compares two instances of ManifestSection. The default one should
+    * go first.
+    */        
+    public int compare(Object p1, Object p2) {
+        ManifestSection.ServiceSection s1 = (ManifestSection.ServiceSection)p1;
+        ManifestSection.ServiceSection s2 = (ManifestSection.ServiceSection)p2;
+        
+        if (s1.isDefault()) {
+            if (s2.isDefault ()) {
+                return 0;
+            }
+            return -1;
+        } 
+        return 1;
+    }
     /** Class for New Type of service type.
     */
     private static class NSNT extends NewType {
@@ -421,6 +438,10 @@ final class Services extends ServiceType.Registry {
 
 /*
 * $Log$
+* Revision 1.31  2000/06/21 14:23:32  jtulach
+* Default services should be at the begining, when clear services are
+* installed (setServiceType (null)
+*
 * Revision 1.30  2000/06/21 14:03:08  jtulach
 * Services now create default instance of its class and do not deserialize their
 * values. This is a (hopefully) temporary hack to solve the problematic confclict
