@@ -146,8 +146,7 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src"
        deprecation="${build.compiler.deprecation}" 
        debug="${build.compiler.debug}"
-       includes="**/monitor/server/**"
-       excludes="**/SCCS/**, **/CVS/**">
+       includes="**/monitor/server/**">
        <classpath refID="server-cp"/>
      </javac>
   </target>
