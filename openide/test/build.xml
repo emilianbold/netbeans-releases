@@ -249,7 +249,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- XXX -->
                 <pathelement location="../loaders/src/"/>
                 <pathelement location="../compiler/src/"/>
-                <pathelement location="../execution/src/"/>
+                <pathelement location="../execution/build/classes/"/>
                 <pathelement location="../io/src/"/>
                 <pathelement location="../windows/src/"/>
                 <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
@@ -300,7 +300,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- XXX -->
                 <pathelement location="../loaders/src/"/>
                 <pathelement location="../compiler/src/"/>
-                <pathelement location="../execution/src/"/>
+                <pathelement location="../execution/build/classes/"/>
                 <pathelement location="../io/src/"/>
                 
                 <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/> <!-- for the manifest -->
