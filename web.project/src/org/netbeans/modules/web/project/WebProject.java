@@ -117,8 +117,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     private WebServicesClientSupport apiWebServicesClientSupport;
     private WebContainerImpl enterpriseResourceSupport;
     private FileWatch webPagesFileWatch;
-//    private FileWatch javaSourceFileWatch;
-//    private FileWatch testSourceFileWatch;
     private PropertyChangeListener j2eePlatformListener;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
@@ -239,7 +237,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     WebProject(final AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
-//        AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, eval);
         genFilesHelper = new GeneratedFilesHelper(helper);
@@ -254,14 +251,16 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         helper.addAntProjectListener(this);
         css = new CopyOnSaveSupport();
         webPagesFileWatch = new FileWatch(WebProjectProperties.WEB_DOCBASE_DIR);
-//        javaSourceFileWatch = new FileWatch(WebProjectProperties.SRC_DIR);
-//        testSourceFileWatch = new FileWatch(WebProjectProperties.TEST_SRC_DIR);
     }
 
     public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
     }
 
+    public UpdateHelper getUpdateHelper() {
+        return updateHelper;
+    }
+    
     public String toString() {
         return "WebProject[" + getProjectDirectory() + "]"; // NOI18N
     }
@@ -434,40 +433,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     /** Timeout within which request to show alert will be ignored. */
     private static int BROKEN_ALERT_TIMEOUT = 1000;
     
-//    private static synchronized void showBrokenReferencesAlert() {
-//        // Do not show alert if it is already shown or if it was shown
-//        // in last BROKEN_ALERT_TIMEOUT milliseconds or if user do not wish it.
-//        if (brokenAlertShown || 
-//            brokenAlertLastTime+BROKEN_ALERT_TIMEOUT > System.currentTimeMillis() ||
-//            !FoldersListSettings.getDefault().isShowAgainBrokenRefAlert()) {
-//                return;
-//        }
-//        brokenAlertShown = true;
-//        SwingUtilities.invokeLater(new Runnable() {
-//                public void run() {
-//                    try {
-//                        Object ok = NbBundle.getMessage(BrokenReferencesAlertPanel.class,"MSG_Broken_References_OK");
-//                        DialogDescriptor dd = new DialogDescriptor(new BrokenReferencesAlertPanel(), 
-//                            NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Title"),
-//                            true, new Object[] {ok}, ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
-//                        Dialog dlg = null;
-//                        try {
-//                            dlg = DialogDisplayer.getDefault().createDialog(dd);
-//                            dlg.setVisible(true);
-//                        } finally {
-//                            if (dlg != null)
-//                                dlg.dispose();
-//                        }
-//                    } finally {
-//                        synchronized (WebProject.class) {
-//                            brokenAlertLastTime = System.currentTimeMillis();
-//                            brokenAlertShown = false;
-//                        }
-//                    }
-//                }
-//            });
-//    }
-    
     /** Return configured project name. */
     public String getName() {
         return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
@@ -486,32 +451,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         });
     }
     
-    /** Store configured project name. * /
-    public void setName(final String name) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
-                Element data = helper.getPrimaryConfigurationData(true);
-                // XXX replace by XMLUtil when that has findElement, findText, etc.
-                NodeList nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
-                Element nameEl;
-                if (nl.getLength() == 1) {
-                    nameEl = (Element) nl.item(0);
-                    NodeList deadKids = nameEl.getChildNodes();
-                    while (deadKids.getLength() > 0) {
-                        nameEl.removeChild(deadKids.item(0));
-                    }
-                } else {
-                    nameEl = data.getOwnerDocument().createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
-                    data.insertBefore(nameEl, / * OK if null * /data.getChildNodes().item(0));
-                }
-                nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
-                helper.putPrimaryConfigurationData(data, true);
-                return null;
-            }
-        });
-    }
-     */
-        
     public void registerJ2eePlatformListener(final J2eePlatform platform) {
         // listen to classpath changes
         j2eePlatformListener = new PropertyChangeListener() {
@@ -708,6 +647,16 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                             // TODO inform the user that no server is set
                         }
                     }
+                } else {
+                    //not 4.0 project
+                    //should we create test folder if it doesn't exist?
+                    wpp.put("test.src.dir", "");
+                    wpp.put("build.test.classes.dir", "");
+                    wpp.put("build.test.results.dir", "");
+                    //store() opens update project dialog (incompatible metadata changes);
+                    //it seems strange to user to show this dialog if he doesn't change anything;
+                    //need to solve with HIE, provide more descriptive message at least
+//                    wpp.store ();
                 }
                 
             } catch (IOException e) {
@@ -745,13 +694,10 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 BrokenReferencesSupport.showAlert();
             }
             webPagesFileWatch.init();
-//            javaSourceFileWatch.init();
         }
 
         protected void projectClosed() {
-
             webPagesFileWatch.reset();
-//            javaSourceFileWatch.reset();
 
             // listen to j2ee platform classpath changes
             WebProjectProperties wpp = getWebProjectProperties();

@@ -248,7 +248,7 @@ public class WebProjectProperties {
         this.refHelper = refHelper;
         read();                                
     }
-
+    
     /** XXX to be deleted when introduced in AntPropertyHeleper API
      */    
     public static String getAntPropertyName( String property ) {
@@ -262,11 +262,11 @@ public class WebProjectProperties {
         }
     }
     
-     static boolean isAntProperty (String string) {
+    static boolean isAntProperty (String string) {
         return string != null && string.startsWith( "${" ) && string.endsWith( "}" ); //NOI18N
     }
     
-   public void put( String propertyName, Object value ) {
+    public void put( String propertyName, Object value ) {
         PropertyInfo pi = getPropertyInfo(propertyName);
         pi.setValue( value );
         if (J2EE_SERVER_INSTANCE.equals (propertyName)) {
@@ -548,14 +548,12 @@ public class WebProjectProperties {
     private void setPlatform(boolean isDefault, String platformAntID) {
         Element pcd = updateHelper.getPrimaryConfigurationData( true );
         NodeList sps = pcd.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); // NOI18N
-//        NodeList sps = pcd.getElementsByTagName( "explicit-platform" ); // NOI18N
         if (isDefault && sps.getLength() > 0) {
             pcd.removeChild(sps.item(0));
         } else if (!isDefault) {
             Element el;
             if (sps.getLength() == 0) {
                 el = pcd.getOwnerDocument().createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); // NOI18N
-//                el = pcd.getOwnerDocument().createElement("explicit-platform"); // NOI18N
                 pcd.appendChild(el);
             } else {
                 el = (Element)sps.item(0);
@@ -703,7 +701,7 @@ public class WebProjectProperties {
         }
     }
     
-    class PropertyInfo {        
+    class PropertyInfo {
         private PropertyDescriptor propertyDesciptor;
         private String rawValue;
         private String evaluatedValue;
@@ -856,9 +854,10 @@ public class WebProjectProperties {
         public PathParser(String webLibraryElementName) {
             this.webLibraryElementName = webLibraryElementName;
         }
-
+        
         public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
-            Map warIncludesMap = createWarIncludesMap(antProjectHelper);
+            UpdateHelper uh = ((WebProject) project).getUpdateHelper();
+            Map warIncludesMap = createWarIncludesMap(uh);
             if (raw != null) {
                 String pe[] = PropertyUtils.tokenizePath( raw );
                 for( int i = 0; i < pe.length; i++ ) {
@@ -932,10 +931,10 @@ public class WebProjectProperties {
             return libraryElement;
         }
 
-        private Map createWarIncludesMap(AntProjectHelper antProjectHelper) {
+        private Map createWarIncludesMap(UpdateHelper uh) {
             Map warIncludesMap = new LinkedHashMap();
             if (webLibraryElementName != null) {
-                Element data = antProjectHelper.getPrimaryConfigurationData(true);
+                Element data = uh.getPrimaryConfigurationData(true);
                 final String ns = WebProjectType.PROJECT_CONFIGURATION_NAMESPACE;
                 Element webModuleLibs = (Element) data.getElementsByTagNameNS(ns, webLibraryElementName).item(0);
                 NodeList ch = webModuleLibs.getChildNodes();
