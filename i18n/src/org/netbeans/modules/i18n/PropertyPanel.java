@@ -92,7 +92,7 @@ public class PropertyPanel extends JPanel {
 
     
     /** Initializes UI values. */
-    private void updateAllValues() {
+    void updateAllValues() {
         updateBundleKeys();        
         updateKey();
         updateValue();
