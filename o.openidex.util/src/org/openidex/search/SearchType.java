@@ -34,7 +34,7 @@ import org.openide.nodes.*;
 */
 public abstract class SearchType extends org.openide.ServiceType implements Cloneable {
   
-  public static final long serialVersionUID = 2L;
+  public static final long serialVersionUID = 1L; //fixed
   
   /** Name of valid property. */
   public static final String PROP_VALID = "valid";
@@ -108,10 +108,18 @@ public abstract class SearchType extends org.openide.ServiceType implements Clon
   public final boolean isValid() {
     return valid;
   }
+
+  /** Just be serialization compaticle. */
+  private void readObject(java.io.ObjectInputStream in) 
+                throws java.io.IOException, ClassNotFoundException {  
+    valid = true; //may mark as valid even invalid
+    in.defaultReadObject();    
+  }
 }
 
 /* 
 * Log
+*  8    Gandalf-post-FCS1.5.1.1     4/11/00  Petr Kuzel      Serialization fix.
 *  7    Gandalf-post-FCS1.5.1.0     4/4/00   Petr Kuzel      unknown state
 *  6    Gandalf   1.5         1/18/00  Jesse Glick     Context help.
 *  5    Gandalf   1.4         1/14/00  Ian Formanek    I18N
