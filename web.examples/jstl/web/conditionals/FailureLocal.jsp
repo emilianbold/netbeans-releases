@@ -11,15 +11,15 @@
 
 <c:forEach var="customer" items="${customers}">
   <c:choose>
-    <c:otherwise>
-      <font color="green">	
-    </c:otherwise>	
     <c:when test="${customer.address.country == 'USA'}">
       <font color="blue">
     </c:when>
     <c:when test="${customer.address.country == 'Canada'}">
       <font color="red">
     </c:when>
+    <c:otherwise>
+      <font color="green">	
+    </c:otherwise>	
   </c:choose>
   <c:out value="${customer}"/></font><br>
 </c:forEach>
