@@ -786,6 +786,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         }
         //Check if component id is not already present in cache of invalid ids
         boolean isUsed = true;
+        String origName = compName;
         compName = escape(compName);
         String srcName = compName;
         int i = 1;
@@ -798,10 +799,11 @@ public final class PersistenceManager implements PropertyChangeListener {
 
                 if (!srcName.equals(uniqueName) || globalIDSet.contains(uniqueName)) {
                     isUsed = true;
-                    srcName = compName + "_" + i;
+                    // #44293 - proper escaping to keep name synced with InstanceDataObject naming
+                    srcName = escape(origName + "_" + i);
                     i++;
                 }
-
+                
             }
 
             topComponent2IDMap.put(tc, srcName);
