@@ -14,18 +14,17 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 /**
  * @author pfiala
  */
-class EntityNode extends EjbSectionNode {
+class EntityNode extends EjbNode {
 
     private EntityHelper entityHelper;
 
     EntityNode(SectionNodeView sectionNodeView, Entity entity) {
-        super(sectionNodeView, false, entity, Utils.getEjbDisplayName(entity), Utils.ICON_BASE_ENTITY_NODE);
+        super(sectionNodeView, entity, Utils.ICON_BASE_ENTITY_NODE);
         EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) sectionNodeView.getDataObject();
         entityHelper = dataObject.getEntityHelper(entity);
         addChild(new EntityOverviewNode(sectionNodeView, entity, entityHelper));
@@ -37,10 +36,5 @@ class EntityNode extends EjbSectionNode {
         }
         addChild(new BeanEnvironmentNode(sectionNodeView, entity));
         addChild(new BeanDetailNode(sectionNodeView, entity));
-        helpProvider = true;
-    }
-
-    protected SectionNodeInnerPanel createNodeInnerPanel() {
-        return null;
     }
 }

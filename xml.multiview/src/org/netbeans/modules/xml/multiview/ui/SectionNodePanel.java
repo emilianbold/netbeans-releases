@@ -22,6 +22,8 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * @author pfiala
@@ -31,7 +33,7 @@ import java.awt.*;
  */
 public class SectionNodePanel extends SectionPanel {
 
-    public SectionNodePanel(SectionNode node) {
+    public SectionNodePanel(final SectionNode node) {
         super(node.getSectionNodeView(), node, node.getDisplayName(), node);
         if (node.getKey() instanceof SectionView) {
             // the section corresponding to the top level node is always expanded
@@ -39,6 +41,13 @@ public class SectionNodePanel extends SectionPanel {
         } else if (node.isExpanded()) {
             setExpandedViewMode();
         }
+        node.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (Node.PROP_DISPLAY_NAME.equals(evt.getPropertyName())) {
+                    setTitle(node.getDisplayName());
+                }
+            }
+        });
     }
 
     /**
