@@ -62,7 +62,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
 
 
     /** Module is being closed. */
-    public boolean closing () {
+    public void close () {
         // stop the server, don't set the running status
         try {
             org.openide.util.HttpServer.deregisterServer(HttpServerSettings.OPTIONS);
@@ -73,7 +73,6 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         synchronized (HttpServerSettings.OPTIONS) {
             stopHTTPServer();
         }
-        return true; // agree to close
     }
 
     /** initiates HTTPServer so it runs */
