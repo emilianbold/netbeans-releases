@@ -14,6 +14,7 @@
 package com.netbeans.developer.modules.debugger.jpda.util;
 
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.EventRequest;
 
@@ -58,11 +59,11 @@ public class Operator {
               }
               Executor exec = null;
               if (e.request () == null) {
-                //S ystem.out.println ("EVENT: " + e + " REQUEST: null");          
+                System.out.println ("EVENT: " + e + " REQUEST: null");          
               } else 
                 exec = (Executor) e.request ().getProperty ("executor");
               
-              //printEvent (e, exec);
+              printEvent (e, exec);
 
               // safe invocation of user action
               if (exec != null) 
@@ -74,13 +75,14 @@ public class Operator {
                   ex.printStackTrace ();
                 }
             }
-            //S ystem.out.println ("END (" + set.suspendPolicy () + ") ===========================================================================");
+            System.out.println ("END (" + set.suspendPolicy () + ") ===========================================================================");
             if (resume) {
               resume = false;
               virtualMachine.resume ();
             }
           }
         } catch (InterruptedException e) {
+        } catch (VMDisconnectedException e) {
         }
         if (finalizer != null) finalizer.run ();
         //S ystem.out.println ("Operator end");          
@@ -124,6 +126,7 @@ public class Operator {
 
 /*
  * Log
+ *  6    Gandalf   1.5         11/8/99  Jan Jancura     Somma classes renamed
  *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  4    Gandalf   1.3         9/28/99  Jan Jancura     
