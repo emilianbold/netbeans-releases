@@ -21,11 +21,11 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
-import org.netbeans.modules.debugger.jpda.ui.Context;
+import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 
 
@@ -40,26 +40,26 @@ public class RunToCursorActionProvider extends ActionsProviderSupport implements
     private LineBreakpoint breakpoint;
     
     
-    public RunToCursorActionProvider (LookupProvider lookupProvider) {
+    public RunToCursorActionProvider (ContextProvider lookupProvider) {
         debugger = (JPDADebugger) lookupProvider.lookupFirst 
-                (JPDADebugger.class);
+                (null, JPDADebugger.class);
         session = (Session) lookupProvider.lookupFirst 
-                (Session.class);
+                (null, Session.class);
         debugger.addPropertyChangeListener (debugger.PROP_STATE, this);
-        Context.addPropertyChangeListener (this);
+        EditorContextBridge.addPropertyChangeListener (this);
     }
     
     private void destroy () {
         debugger.removePropertyChangeListener (debugger.PROP_STATE, this);
-        Context.removePropertyChangeListener (this);
+        EditorContextBridge.removePropertyChangeListener (this);
     }
     
     public void propertyChange (PropertyChangeEvent evt) {
         setEnabled (
             DebuggerManager.ACTION_RUN_TO_CURSOR,
             (debugger.getState () == debugger.STATE_STOPPED) &&
-            (Context.getCurrentLineNumber () >= 0) && 
-            (Context.getCurrentURL ().endsWith (".java"))
+            (EditorContextBridge.getCurrentLineNumber () >= 0) && 
+            (EditorContextBridge.getCurrentURL ().endsWith (".java"))
         );
         if ( (debugger.getState () != debugger.STATE_RUNNING) &&
              (breakpoint != null)
@@ -81,8 +81,8 @@ public class RunToCursorActionProvider extends ActionsProviderSupport implements
             breakpoint = null;
         }
         breakpoint = LineBreakpoint.create (
-            Context.getCurrentURL (),
-            Context.getCurrentLineNumber ()
+            EditorContextBridge.getCurrentURL (),
+            EditorContextBridge.getCurrentLineNumber ()
         );
         breakpoint.setHidden (true);
         DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);

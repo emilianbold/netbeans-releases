@@ -15,6 +15,7 @@ package org.netbeans.modules.debugger.jpda.ui;
 
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.NoInformationException;
 
 import java.beans.PropertyChangeEvent;
@@ -40,10 +41,13 @@ public class BreakpointOutput extends LazyActionsManagerListener
     private DebuggerEngine          engine;
     private IOManager               ioManager;
     private JPDADebugger            debugger;
+    private ContextProvider         contextProvider;
 
-    public BreakpointOutput(DebuggerEngine engine) {
-        this.engine = engine;
-        this.debugger = (JPDADebugger) engine.lookupFirst(JPDADebugger.class);
+    
+    public BreakpointOutput (ContextProvider contextProvider) {
+        this.contextProvider = contextProvider;
+        this.engine = (DebuggerEngine) contextProvider.lookupFirst (null, DebuggerEngine.class);
+        this.debugger = (JPDADebugger) contextProvider.lookupFirst (null, JPDADebugger.class);
         hookBreakpoints();
         DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_BREAKPOINTS, this);
     }
@@ -146,8 +150,8 @@ public class BreakpointOutput extends LazyActionsManagerListener
         return printText;
     }
 
-    private void lookupIOManager() {
-        List lamls = engine.lookup(LazyActionsManagerListener.class);
+    private void lookupIOManager () {
+        List lamls = contextProvider.lookup (null, LazyActionsManagerListener.class);
         for (Iterator i = lamls.iterator(); i.hasNext();) {
             Object o = i.next();
             if (o instanceof DebuggerOutput) {

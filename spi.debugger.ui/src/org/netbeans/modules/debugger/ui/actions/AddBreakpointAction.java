@@ -64,7 +64,7 @@ public class AddBreakpointAction extends AbstractAction {
     public void actionPerformed (ActionEvent e) {
         DebuggerManager dm = DebuggerManager.getDebuggerManager ();
             
-        if (dm.lookup (BreakpointType.class).size () == 0) 
+        if (dm.lookup (null, BreakpointType.class).size () == 0) 
             return; // no breakpoint events...
 
         // create Add Breakpoint Dialog for it

@@ -41,7 +41,7 @@ public class TestEngineProvider extends DebuggerEngineProvider {
     }
     
     public Object[] getServices () {
-        return null;
+        return new Object [0];
     }
     
     public void setDestructor (DebuggerEngine.Destructor desctuctor) {

@@ -32,18 +32,18 @@ public class Context {
 
     public static final String LINE = "line";
 
-    private static ContextProvider context;
+    private static EditorContext editorContext;
     
-    private static ContextProvider getContext () {
-        if (context == null) {
-            List l = DebuggerManager.getDebuggerManager().lookup(ContextProvider.class);
-            context = (ContextProvider) l.get (0);
+    private static EditorContext getContext () {
+        if (editorContext == null) {
+            List l = DebuggerManager.getDebuggerManager().lookup(null, EditorContext.class);
+            editorContext = (EditorContext) l.get (0);
         }
-        return context;
+        return editorContext;
     }
 
     
-    // ContextProvider methods .................................................
+    // EditorContext methods .................................................
     
     /**
      * Shows source with given url on given line number.
@@ -186,10 +186,10 @@ public class Context {
         boolean isConditional = (condition != null) &&
             !condition.trim ().equals (""); // NOI18N
         String annotationType = b.isEnabled () ?
-            (isConditional ? ContextProvider.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
-                             ContextProvider.BREAKPOINT_ANNOTATION_TYPE) :
-            (isConditional ? ContextProvider.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
-                             ContextProvider.DISABLED_BREAKPOINT_ANNOTATION_TYPE);
+            (isConditional ? EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
+                             EditorContext.BREAKPOINT_ANNOTATION_TYPE) :
+            (isConditional ? EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
+                             EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE);
 
         return annotate (
             url,

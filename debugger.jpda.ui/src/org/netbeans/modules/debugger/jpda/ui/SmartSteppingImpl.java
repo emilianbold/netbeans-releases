@@ -20,14 +20,14 @@ import java.util.Set;
 
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
-import org.netbeans.spi.debugger.jpda.EngineContextProvider;
+import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.spi.debugger.jpda.SmartSteppingListener;
+import org.netbeans.spi.debugger.jpda.SmartSteppingCallback;
 
 
-public class SmartSteppingImpl extends SmartSteppingListener implements 
+public class SmartSteppingImpl extends SmartSteppingCallback implements 
 PropertyChangeListener {
     
     
@@ -56,14 +56,14 @@ PropertyChangeListener {
      * @return true if execution should be stopped on the current position
      */
     public boolean stopHere (
-        LookupProvider lookupProvider, 
+        ContextProvider lookupProvider, 
         JPDAThread thread, 
         SmartSteppingFilter f
     ) {
         String className = thread.getClassName ();
         if (className == null) return false;
 
-        EngineContext ectx = getEngineContext (lookupProvider);
+        SourcePath ectx = getEngineContext (lookupProvider);
         boolean b = ectx.sourceAvailable (thread, null);
         if (b) return true;
         
@@ -93,19 +93,19 @@ PropertyChangeListener {
         exclusionPatterns = new HashSet ();
     }
     
-    private EngineContext engineContext;
+    private SourcePath engineContext;
     
-    private EngineContext getEngineContext (LookupProvider lookupProvider) {
+    private SourcePath getEngineContext (ContextProvider lookupProvider) {
         if (engineContext == null) {
-            engineContext = (EngineContext) lookupProvider.lookupFirst 
-                (EngineContext.class);
+            engineContext = (SourcePath) lookupProvider.lookupFirst 
+                (null, SourcePath.class);
             engineContext.addPropertyChangeListener (this);
         }
         return engineContext;
     }
     
     public void propertyChange (PropertyChangeEvent evt) {
-        if (evt.getPropertyName () == EngineContextProvider.PROP_SOURCE_ROOTS) {
+        if (evt.getPropertyName () == SourcePathProvider.PROP_SOURCE_ROOTS) {
             removeExclusionPatterns ();
         }
     }

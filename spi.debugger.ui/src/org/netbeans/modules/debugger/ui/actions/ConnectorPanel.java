@@ -53,7 +53,7 @@ Controller {
                 "ACSD_CTL_Connect_through")// NOI18N
         ); 
         attachTypes = DebuggerManager.getDebuggerManager ().lookup (
-            AttachType.class
+            null, AttachType.class
         );
 //        DebuggerProjectSettings connectSettings = (DebuggerProjectSettings) 
 //            DebuggerProjectSettings.findObject 

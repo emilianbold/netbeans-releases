@@ -42,7 +42,7 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
             getCurrentEngine ();
         if (currentEngine == null) return null;
-        JPDADebugger d = (JPDADebugger) currentEngine.lookupFirst (JPDADebugger.class);
+        JPDADebugger d = (JPDADebugger) currentEngine.lookupFirst (null, JPDADebugger.class);
         if (d == null) return null;
 
         Line.Part lp = (Line.Part) getAttachedAnnotatable();
@@ -111,7 +111,7 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
         
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (currentEngine == null) return;
-        JPDADebugger d = (JPDADebugger) currentEngine.lookupFirst (JPDADebugger.class);
+        JPDADebugger d = (JPDADebugger) currentEngine.lookupFirst (null, JPDADebugger.class);
         if (d == null) return;
         
         try {

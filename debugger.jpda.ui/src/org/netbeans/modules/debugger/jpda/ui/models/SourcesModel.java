@@ -29,9 +29,9 @@ import javax.swing.Action;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.modules.debugger.jpda.ui.EngineContext;
+import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.ComputingException;
 import org.netbeans.spi.viewmodel.Models;
@@ -51,7 +51,7 @@ public class SourcesModel extends ColumnModel implements TreeModel, TableModel,
 NodeActionsProvider {
     
     private Listener listener;
-    private EngineContext context;
+    private SourcePath context;
     private JPDADebugger debugger;
     private Vector listeners = new Vector ();
     private Set filters = new HashSet ();
@@ -59,11 +59,11 @@ NodeActionsProvider {
     private String FILTER_PREFIX = "Do not stop in: ";
     
     
-    public SourcesModel (LookupProvider lookupProvider) {
-         context = (EngineContext) lookupProvider.
-            lookupFirst (EngineContext.class);
+    public SourcesModel (ContextProvider lookupProvider) {
+         context = (SourcePath) lookupProvider.
+            lookupFirst (null, SourcePath.class);
          debugger = (JPDADebugger) lookupProvider.
-            lookupFirst (JPDADebugger.class);
+            lookupFirst (null, JPDADebugger.class);
     }
     
     

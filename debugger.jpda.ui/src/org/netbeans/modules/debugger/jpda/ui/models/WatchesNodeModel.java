@@ -13,7 +13,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -33,7 +33,7 @@ public class WatchesNodeModel extends VariablesNodeModel {
         "org/netbeans/modules/debugger/resources/watchesView/FixedWatch";
 
 
-    public WatchesNodeModel (LookupProvider lookupProvider) {
+    public WatchesNodeModel (ContextProvider lookupProvider) {
         super (lookupProvider);
     }
     

@@ -84,7 +84,8 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         DebuggerEngine currentEngine = DebuggerManager.
             getDebuggerManager ().getCurrentEngine ();
         if (currentEngine == null) return null;
-        return (JPDADebugger) currentEngine.lookupFirst (JPDADebugger.class);
+        return (JPDADebugger) currentEngine.lookupFirst 
+            (null, JPDADebugger.class);
     }
 
     private void updateCurrentThread () {
@@ -123,16 +124,17 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             public void run () {
                 // show current line
                 if (currentPC != null)
-                    Context.removeAnnotation (currentPC);
+                    EditorContextBridge.removeAnnotation (currentPC);
                 Session currentSession = DebuggerManager.getDebuggerManager ().
                     getCurrentSession();
                 if (currentSession != null) {
-                    EngineContext ectx = (EngineContext) currentSession.
-                        lookupFirst (EngineContext.class);
-                    ectx.showSource (ct, language);
+                    SourcePath sp = (SourcePath) DebuggerManager.
+                        getDebuggerManager ().getCurrentEngine ().lookupFirst 
+                        (null, SourcePath.class);
+                    sp.showSource (ct, language);
 
                     // annotate current line
-                    currentPC = ectx.annotate (ct, language);
+                    currentPC = sp.annotate (ct, language);
                 }
             }
         });
@@ -156,11 +158,11 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         task = RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
                 if (currentPC != null)
-                    Context.removeAnnotation (currentPC);
+                    EditorContextBridge.removeAnnotation (currentPC);
                 currentPC = null;
                 Iterator i = stackAnnotations.values ().iterator ();
                 while (i.hasNext ())
-                    Context.removeAnnotation (i.next ());
+                    EditorContextBridge.removeAnnotation (i.next ());
                 stackAnnotations.clear ();
             }
         }, 500);
@@ -185,7 +187,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                 for (i = 1; i < k; i++) {
 
                     // 1) check Line
-                    String resourceName = Context.getRelativePath
+                    String resourceName = EditorContextBridge.getRelativePath
                         (stack [i], language);
                     int lineNumber = stack [i].getLineNumber (language);
                     String line = resourceName + lineNumber;
@@ -198,10 +200,10 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                     Object da = stackAnnotations.remove (line);
                     if (da == null) {
                         // line has not been annotated -> create annotation
-                        EngineContext ectx = (EngineContext) DebuggerManager.
-                            getDebuggerManager ().getCurrentSession ().
-                            lookupFirst (EngineContext.class);
-                        da = ectx.annotate (stack [i], language);
+                        SourcePath sp = (SourcePath) DebuggerManager.
+                            getDebuggerManager ().getCurrentEngine ().lookupFirst 
+                            (null, SourcePath.class);
+                        da = sp.annotate (stack [i], language);
                     }
 
                     // 4) add new line to hashMap
@@ -212,7 +214,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                 // delete old anotations
                 Iterator iter = stackAnnotations.values ().iterator ();
                 while (iter.hasNext ())
-                    Context.removeAnnotation (
+                    EditorContextBridge.removeAnnotation (
                         iter.next ()
                     );
                 stackAnnotations = newAnnotations;

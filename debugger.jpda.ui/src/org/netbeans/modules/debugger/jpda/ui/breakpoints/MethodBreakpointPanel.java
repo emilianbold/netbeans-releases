@@ -10,7 +10,7 @@ import javax.swing.JPanel;
 import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
-import org.netbeans.modules.debugger.jpda.ui.Context;
+import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.util.NbBundle;
 
@@ -28,8 +28,8 @@ public class MethodBreakpointPanel extends JPanel implements Controller {
     
     private static MethodBreakpoint creteBreakpoint () {
         MethodBreakpoint mb = MethodBreakpoint.create (
-            Context.getCurrentClassName (),
-            Context.getCurrentMethodName ()
+            EditorContextBridge.getCurrentClassName (),
+            EditorContextBridge.getCurrentMethodName ()
         );
         mb.setPrintText (
             NbBundle.getBundle (MethodBreakpointPanel.class).getString 

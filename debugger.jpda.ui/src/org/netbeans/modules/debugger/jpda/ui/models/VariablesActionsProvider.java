@@ -16,14 +16,14 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 import javax.swing.Action;
 
 import org.netbeans.api.debugger.jpda.*;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
-import org.netbeans.modules.debugger.jpda.ui.EngineContext;
+import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 
 
 /**
@@ -46,10 +46,10 @@ public class VariablesActionsProvider implements NodeActionsProvider {
     );
         
         
-    private LookupProvider lookupProvider;
+    private ContextProvider lookupProvider;
 
     
-    public VariablesActionsProvider (LookupProvider lookupProvider) {
+    public VariablesActionsProvider (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
     }
 
@@ -91,14 +91,14 @@ public class VariablesActionsProvider implements NodeActionsProvider {
     }
     
     public void goToSource (Field variable) {
-        EngineContext ectx = (EngineContext) lookupProvider.lookupFirst
-            (EngineContext.class);
+        SourcePath ectx = (SourcePath) lookupProvider.lookupFirst
+            (null, SourcePath.class);
         ectx.showSource (variable);
     }
 
     private boolean isSourceAvailable (Field v) {
-        EngineContext ectx = (EngineContext) lookupProvider.lookupFirst 
-            (EngineContext.class);
+        SourcePath ectx = (SourcePath) lookupProvider.lookupFirst 
+            (null, SourcePath.class);
         return ectx.sourceAvailable (v);
     }
 }

@@ -16,7 +16,7 @@ package org.netbeans.modules.debugger.jpda.actions;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
@@ -29,13 +29,13 @@ import org.netbeans.spi.viewmodel.NoInformationException;
 */
 public class PopToHereActionProvider extends JPDADebuggerActionProvider {
     
-    private LookupProvider lookupProvider;
+    private ContextProvider lookupProvider;
 
     
-    public PopToHereActionProvider (LookupProvider lookupProvider) {
+    public PopToHereActionProvider (ContextProvider lookupProvider) {
         super (
             (JPDADebuggerImpl) lookupProvider.lookupFirst 
-                (JPDADebugger.class) 
+                (null, JPDADebugger.class) 
         );
         this.lookupProvider = lookupProvider;
     }

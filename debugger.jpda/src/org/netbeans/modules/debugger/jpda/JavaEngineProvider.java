@@ -17,6 +17,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 
 
 /**
@@ -31,8 +32,8 @@ public class JavaEngineProvider extends DebuggerEngineProvider {
     private DebuggerEngine.Destructor   desctuctor;
     private Session                     session;  
     
-    public JavaEngineProvider (Session s) {
-        session = s;
+    public JavaEngineProvider (ContextProvider contextProvider) {
+        session = (Session) contextProvider.lookupFirst (null, Session.class);
     }
     
     public String[] getLanguages () {
@@ -44,7 +45,7 @@ public class JavaEngineProvider extends DebuggerEngineProvider {
     }
     
     public Object[] getServices () {
-        return null;
+        return new Object [0];
     }
     
     public void setDestructor (DebuggerEngine.Destructor desctuctor) {

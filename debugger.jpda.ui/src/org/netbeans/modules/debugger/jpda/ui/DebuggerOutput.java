@@ -32,6 +32,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LaunchingDICookie;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
 import org.netbeans.spi.viewmodel.NoInformationException;
+import org.netbeans.spi.debugger.ContextProvider;
 
 import org.openide.util.NbBundle;
 
@@ -53,15 +54,19 @@ PropertyChangeListener {
     
     private JPDADebugger        debugger;
     private DebuggerEngine      engine;
-    private EngineContext       engineContext;
+    private SourcePath       engineContext;
     private IOManager           ioManager;
+    private ContextProvider     contextProvider;
 
 
-    public DebuggerOutput (DebuggerEngine engine) {
-        this.debugger = (JPDADebugger) engine.lookupFirst
-            (JPDADebugger.class);
-        this.engine = engine;
-        engineContext = (EngineContext) engine.lookupFirst (EngineContext.class);
+    public DebuggerOutput (ContextProvider contextProvider) {
+        this.contextProvider = contextProvider;
+        this.debugger = (JPDADebugger) contextProvider.lookupFirst 
+            (null, JPDADebugger.class);
+        this.engine = (DebuggerEngine) contextProvider.lookupFirst 
+            (null, DebuggerEngine.class);
+        engineContext = (SourcePath) contextProvider.lookupFirst 
+            (null, SourcePath.class);
         
         // close old tabs
         if (DebuggerManager.getDebuggerManager ().getSessions ().length == 1) {
@@ -72,7 +77,7 @@ PropertyChangeListener {
         }
         
         // open new tab
-        String title = (String) engine.lookupFirst (String.class);
+        String title = (String) contextProvider.lookupFirst (null, String.class);
         if (title == null)
             title = NbBundle.getBundle (IOManager.class).getString 
                 ("CTL_DebuggerConsole_Title");
@@ -108,8 +113,8 @@ PropertyChangeListener {
     public void propertyChange (java.beans.PropertyChangeEvent evt) {
         JPDAThread t = debugger.getCurrentThread ();
         if (debugger.getState () == JPDADebugger.STATE_STARTING) {
-            AbstractDICookie cookie = (AbstractDICookie) engine.
-                lookupFirst (AbstractDICookie.class);
+            AbstractDICookie cookie = (AbstractDICookie) contextProvider.
+                lookupFirst (null, AbstractDICookie.class);
             if (cookie instanceof AttachingDICookie) {
                 AttachingDICookie c = (AttachingDICookie) cookie;
                 if (c.getHostName () != null)
@@ -184,11 +189,16 @@ PropertyChangeListener {
             if (e == null)
                 print ("CTL_Debugger_finished", null, null);
             else {
-                ioManager.println (
-                    e.getMessage (),
-//                    where,
-                    null
-                );
+                if (e.getMessage () != null)
+                    ioManager.println (
+                        e.getMessage (),
+                        null
+                    );
+                else
+                    ioManager.println (
+                        e.toString (),
+                        null
+                    );
                 e.printStackTrace ();
             }
         } else
@@ -210,7 +220,7 @@ PropertyChangeListener {
                 CallStackFrame f = t.getStackDepth () > 0 ?
                     t.getCallStack () [0] : null;
                 String relativePath = f != null ? 
-                    Context.getRelativePath (f, language) : null;
+                    EditorContextBridge.getRelativePath (f, language) : null;
                 String url = (relativePath != null) ?
                     engineContext.getURL (relativePath) :
                     null;

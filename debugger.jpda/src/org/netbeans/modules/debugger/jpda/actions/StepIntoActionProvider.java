@@ -27,16 +27,16 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 
-import org.netbeans.modules.debugger.jpda.EngineContext;
+import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
-import org.netbeans.spi.debugger.jpda.EngineContextProvider;
+import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 
 
 /**
@@ -56,18 +56,18 @@ implements Executor, PropertyChangeListener {
     private StepRequest stepRequest;
     private ThreadReference tr;
     private String position;
-    private LookupProvider lookupProvider;
+    private ContextProvider lookupProvider;
 
         
-    public StepIntoActionProvider (LookupProvider lookupProvider) {
+    public StepIntoActionProvider (ContextProvider lookupProvider) {
         super (
             (JPDADebuggerImpl) lookupProvider.lookupFirst 
-                (JPDADebugger.class)
+                (null, JPDADebugger.class)
         );
         this.lookupProvider = lookupProvider;
         getSmartSteppingFilterImpl ().addPropertyChangeListener (this);
-        EngineContext ec = (EngineContext) lookupProvider.
-            lookupFirst (EngineContext.class);
+        SourcePath ec = (SourcePath) lookupProvider.
+            lookupFirst (null, SourcePath.class);
         ec.addPropertyChangeListener (this);
     }
 
@@ -118,7 +118,7 @@ implements Executor, PropertyChangeListener {
                 );
             }
         } else
-        if (ev.getPropertyName () == EngineContextProvider.PROP_SOURCE_ROOTS) {
+        if (ev.getPropertyName () == SourcePathProvider.PROP_SOURCE_ROOTS) {
             if (ssverbose)
                 System.out.println("\nSS:  source roots changed");
             removeStepRequests ();
@@ -203,7 +203,7 @@ implements Executor, PropertyChangeListener {
     private SmartSteppingFilterImpl getSmartSteppingFilterImpl () {
         if (smartSteppingFilterImpl == null)
             smartSteppingFilterImpl = (SmartSteppingFilterImpl) lookupProvider.
-                lookupFirst (SmartSteppingFilter.class);
+                lookupFirst (null, SmartSteppingFilter.class);
         return smartSteppingFilterImpl;
     }
 
@@ -212,7 +212,7 @@ implements Executor, PropertyChangeListener {
     private CompoundSmartSteppingListener getCompoundSmartSteppingListener () {
         if (compoundSmartSteppingListener == null)
             compoundSmartSteppingListener = (CompoundSmartSteppingListener) 
-                lookupProvider.lookupFirst (CompoundSmartSteppingListener.class);
+                lookupProvider.lookupFirst (null, CompoundSmartSteppingListener.class);
         return compoundSmartSteppingListener;
     }
 

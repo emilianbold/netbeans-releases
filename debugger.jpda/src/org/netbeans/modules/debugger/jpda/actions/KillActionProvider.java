@@ -20,7 +20,7 @@ import java.util.Hashtable;
 import java.util.Set;
 
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
@@ -33,10 +33,10 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 public class KillActionProvider extends JPDADebuggerActionProvider {
 
     
-    public KillActionProvider (LookupProvider lookupProvider) {
+    public KillActionProvider (ContextProvider lookupProvider) {
         super (
             (JPDADebuggerImpl) lookupProvider.lookupFirst 
-                (JPDADebugger.class)
+                (null, JPDADebugger.class)
         );
     }
     

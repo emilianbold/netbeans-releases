@@ -22,7 +22,7 @@ import java.util.Set;
 import javax.swing.Action;
 
 import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
@@ -88,10 +88,10 @@ NodeModel, TableModel, NodeActionsProvider {
         "java.util.LinkedHashMap$Entry",
         "java.beans.PropertyChangeSupport"
     }));
-    private LookupProvider lookupProvider;
+    private ContextProvider lookupProvider;
     
     
-    public VariablesTreeModelFilterSI (LookupProvider lookupProvider) {
+    public VariablesTreeModelFilterSI (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
     }
 

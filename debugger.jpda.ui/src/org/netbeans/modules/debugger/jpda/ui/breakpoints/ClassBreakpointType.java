@@ -20,7 +20,7 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.spi.debugger.ui.BreakpointType;
 
-import org.netbeans.modules.debugger.jpda.ui.Context;
+import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 
 import org.openide.util.NbBundle;
 
@@ -51,7 +51,7 @@ public class ClassBreakpointType extends BreakpointType {
     }
     
     public boolean isDefault () {
-        return Context.getDefaultType () == Context.CLASS;
+        return EditorContextBridge.getDefaultType () == EditorContextBridge.CLASS;
     }
 }
 

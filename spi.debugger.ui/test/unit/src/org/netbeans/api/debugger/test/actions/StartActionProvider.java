@@ -17,7 +17,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.test.TestDebugger;
 import org.netbeans.api.debugger.test.TestDICookie;
 import org.netbeans.spi.debugger.ActionsProvider;
@@ -32,11 +32,12 @@ import org.netbeans.spi.debugger.ActionsProviderListener;
 public class StartActionProvider extends ActionsProvider {
 
     private TestDebugger    debuggerImpl;
-    private LookupProvider  lookupProvider;
+    private ContextProvider  lookupProvider;
     
     
-    public StartActionProvider (LookupProvider lookupProvider) {
-        debuggerImpl = (TestDebugger) lookupProvider.lookupFirst(TestDebugger.class);
+    public StartActionProvider (ContextProvider lookupProvider) {
+        debuggerImpl = (TestDebugger) lookupProvider.lookupFirst 
+            (null, TestDebugger.class);
         this.lookupProvider = lookupProvider;
     }
     
@@ -46,7 +47,8 @@ public class StartActionProvider extends ActionsProvider {
     
     public void doAction (Object action) {
         if (debuggerImpl == null) return;
-        final TestDICookie cookie = (TestDICookie) lookupProvider.lookupFirst(TestDICookie.class);
+        final TestDICookie cookie = (TestDICookie) lookupProvider.lookupFirst
+            (null, TestDICookie.class);
         cookie.addInfo(DebuggerManager.ACTION_START);
     }
 

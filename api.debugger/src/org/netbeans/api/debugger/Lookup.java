@@ -29,21 +29,23 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.netbeans.spi.debugger.ContextProvider;
+
 
 /**
  *
  * @author   Jan Jancura
  */
-abstract class Lookup {
+abstract class Lookup implements ContextProvider {
     
     abstract List lookup (String folder, Class service, Set hidden);
     abstract Set getHiddenItems (String folder, Class service);
-    Object lookupFirst (String folder, Class service) {
+    public Object lookupFirst (String folder, Class service) {
         List l = lookup (folder, service);
         if (l.isEmpty ()) return null;
         return l.get (0);
     }
-    List lookup (String folder, Class service) {
+    public List lookup (String folder, Class service) {
         return lookup (folder, service, Collections.EMPTY_SET);
     }
     
@@ -86,6 +88,7 @@ abstract class Lookup {
         Compound (Lookup l1, Lookup l2) {
             this.l1 = l1;
             this.l2 = l2;
+            setContext (this);
         }
         
         List lookup (String folder, Class service, Set hidden) {
@@ -105,19 +108,29 @@ abstract class Lookup {
                 s.add (i.next ());
             return s;
         }
+        
+        void setContext (Lookup context) {
+            if (l1 instanceof Compound) ((Compound) l1).setContext (context);
+            if (l1 instanceof MetaInf) ((MetaInf) l1).setContext (context);
+            if (l2 instanceof Compound) ((Compound) l2).setContext (context);
+            if (l2 instanceof MetaInf) ((MetaInf) l2).setContext (context);
+        }
     }
     
     static class MetaInf extends Lookup {
         
-        private Object context;
         private String rootFolder;
         private HashMap registrationCache = new HashMap ();
         private HashMap instanceCache = new HashMap ();
+        private Lookup context;
 
         
-        MetaInf (String rootFolder, Object context) {
-            this.context = context;
+        MetaInf (String rootFolder) {
             this.rootFolder = rootFolder;
+        }
+        
+        void setContext (Lookup context) {
+            this.context = context;
         }
         
         List lookup (String folder, Class service, Set hidden) {
@@ -218,6 +231,15 @@ abstract class Lookup {
                         try {
                             o = c.newInstance (new Object[] {context});
                         } catch (IllegalAccessException e) {
+                            if (verbose) {
+                                System.out.println("\nservice: " + service);
+                                e.printStackTrace ();
+                            }
+                        } catch (IllegalArgumentException e) {
+                            if (verbose) {
+                                System.out.println("\nservice: " + service);
+                                e.printStackTrace ();
+                            }
                         }
                     }
                 }
@@ -229,19 +251,18 @@ abstract class Lookup {
                 return o;
             } catch (ClassNotFoundException e) {
                 System.out.println("\nservice: " + service);
-                System.out.println("context: " + context);
                 e.printStackTrace ();
             } catch (InstantiationException e) {
                 System.out.println("\nservice: " + service);
-                System.out.println("context: " + context);
                 e.printStackTrace ();
             } catch (IllegalAccessException e) {
                 System.out.println("\nservice: " + service);
-                System.out.println("context: " + context);
                 e.printStackTrace ();
             } catch (InvocationTargetException ex) {
                 System.out.println("\nservice: " + service);
-                System.out.println("context: " + context);
+                ex.getCause ().printStackTrace ();
+            } catch (ExceptionInInitializerError ex) {
+                System.out.println("\nservice: " + service);
                 ex.getCause ().printStackTrace ();
             }
             return null;

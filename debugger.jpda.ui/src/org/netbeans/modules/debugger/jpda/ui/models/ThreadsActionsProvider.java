@@ -19,12 +19,12 @@ import javax.swing.Action;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
-import org.netbeans.modules.debugger.jpda.ui.Context;
-import org.netbeans.modules.debugger.jpda.ui.EngineContext;
+import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
+import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -60,10 +60,10 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
                 String language = DebuggerManager.getDebuggerManager ().
                     getCurrentSession ().getCurrentLanguage ();
                 String className = ((JPDAThread) nodes [0]).getClassName ();
-                EngineContext ectx = (EngineContext) DebuggerManager.
-                    getDebuggerManager ().getCurrentSession ().lookupFirst 
-                    (EngineContext.class);
-                ectx.showSource ((JPDAThread) nodes [0], language);
+                SourcePath sp = (SourcePath) DebuggerManager.
+                    getDebuggerManager ().getCurrentEngine ().lookupFirst 
+                    (null, SourcePath.class);
+                sp.showSource ((JPDAThread) nodes [0], language);
             }
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
@@ -114,9 +114,9 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
     private JPDADebugger debugger;
     
     
-    public ThreadsActionsProvider (LookupProvider lookupProvider) {
+    public ThreadsActionsProvider (ContextProvider lookupProvider) {
         debugger = (JPDADebugger) lookupProvider.
-            lookupFirst (JPDADebugger.class);
+            lookupFirst (null, JPDADebugger.class);
     }
     
     public Action[] getActions (Object node) throws UnknownTypeException {
@@ -177,9 +177,9 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
         if (!t.isSuspended ())
             return false;
         String className = t.getClassName ();
-        EngineContext ectx = (EngineContext) DebuggerManager.
-            getDebuggerManager ().getCurrentSession ().lookupFirst 
-            (EngineContext.class);
-        return ectx.sourceAvailable (t, language);
+        SourcePath sp = (SourcePath) DebuggerManager.
+            getDebuggerManager ().getCurrentEngine ().lookupFirst 
+            (null, SourcePath.class);
+        return sp.sourceAvailable (t, language);
     }
 }

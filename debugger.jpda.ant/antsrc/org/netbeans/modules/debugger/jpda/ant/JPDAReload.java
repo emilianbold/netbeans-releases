@@ -65,7 +65,8 @@ public class JPDAReload extends Task {
         if (debuggerEngine == null) {
             throw new BuildException ("No debugging sessions was found.");
         }
-        JPDADebugger debugger = (JPDADebugger) debuggerEngine.lookupFirst (JPDADebugger.class);
+        JPDADebugger debugger = (JPDADebugger) debuggerEngine.lookupFirst 
+            (null, JPDADebugger.class);
         if (debugger == null) {
             throw new BuildException("Current debugger is not JPDA one.");
         }

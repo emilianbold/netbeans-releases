@@ -18,7 +18,7 @@ import javax.swing.JComponent;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
-import org.netbeans.modules.debugger.jpda.ui.Context;
+import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.debugger.ui.BreakpointType;
 
 import org.openide.util.NbBundle;
@@ -49,6 +49,6 @@ public class MethodBreakpointType extends BreakpointType {
     }
     
     public boolean isDefault () {
-        return Context.getDefaultType () == Context.METHOD;
+        return EditorContextBridge.getDefaultType () == EditorContextBridge.METHOD;
     }
 }

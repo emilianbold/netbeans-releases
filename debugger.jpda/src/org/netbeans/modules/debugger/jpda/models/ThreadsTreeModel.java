@@ -20,7 +20,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -37,13 +37,13 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 public class ThreadsTreeModel extends TranslatingTreeModel {
 
     private JPDADebuggerImpl    debugger;
-    private LookupProvider      lookupProvider;
+    private ContextProvider      lookupProvider;
     
     
-    public ThreadsTreeModel (LookupProvider lookupProvider) {
+    public ThreadsTreeModel (ContextProvider lookupProvider) {
         super (new BasicThreadsTreeModel (lookupProvider));
         debugger = (JPDADebuggerImpl) lookupProvider.
-            lookupFirst (JPDADebugger.class);
+            lookupFirst (null, JPDADebugger.class);
         this.lookupProvider = lookupProvider;
     }
 

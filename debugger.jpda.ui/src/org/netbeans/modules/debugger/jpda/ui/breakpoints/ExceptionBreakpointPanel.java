@@ -10,7 +10,7 @@ import javax.swing.JPanel;
 import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
-import org.netbeans.modules.debugger.jpda.ui.Context;
+import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.util.NbBundle;
 
@@ -28,7 +28,7 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller {
     
     private static ExceptionBreakpoint creteBreakpoint () {
         ExceptionBreakpoint mb = ExceptionBreakpoint.create (
-            Context.getCurrentClassName (),
+            EditorContextBridge.getCurrentClassName (),
             ExceptionBreakpoint.TYPE_EXCEPTION_CATCHED_UNCATCHED
         );
         mb.setPrintText (

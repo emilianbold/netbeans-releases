@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.Vector;
 
 import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.viewmodel.ComputingException;
@@ -49,16 +49,16 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
  */
 public class CallStackTreeModel implements TreeModel {
 
-    private LookupProvider              lookupProvider;
+    private ContextProvider              lookupProvider;
     private JPDADebuggerImpl            debugger;
     private BasicCallStackTreeModel     model;
     //private Vector listeners = new Vector ();
     //private Listener listener = new Listener ();
     
    
-    public CallStackTreeModel (LookupProvider lookupProvider) {
+    public CallStackTreeModel (ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.
-            lookupFirst (JPDADebugger.class);
+            lookupFirst (null, JPDADebugger.class);
         model = new BasicCallStackTreeModel (lookupProvider);
         //model.addTreeModelListener (listener);
         this.lookupProvider = lookupProvider;

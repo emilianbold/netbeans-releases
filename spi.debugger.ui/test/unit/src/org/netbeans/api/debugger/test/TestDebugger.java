@@ -13,7 +13,7 @@
 
 package org.netbeans.api.debugger.test;
 
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 
 import java.util.*;
@@ -29,10 +29,10 @@ public class TestDebugger {
 
     public static final String  SESSION_ID  = "netbeans-TestSession";
 
-    private LookupProvider      lookupProvider;
+    private ContextProvider      lookupProvider;
     private TestEngineProvider  testEngineProvider;
 
-    public TestDebugger(LookupProvider lookupProvider) {
+    public TestDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         List l = lookupProvider.lookup(DebuggerEngineProvider.class);
         int i, k = l.size ();

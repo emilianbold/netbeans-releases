@@ -15,7 +15,7 @@ package org.netbeans.api.debugger.test.actions;
 
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderListener;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.test.TestDebugger;
 import org.netbeans.api.debugger.test.TestDICookie;
@@ -30,10 +30,10 @@ import java.util.*;
 public class TestDebuggerActionsProvider extends ActionsProvider {
 
     private TestDebugger    debuggerImpl;
-    private LookupProvider  lookupProvider;
+    private ContextProvider  lookupProvider;
     private Set             supportedActions;
 
-    public TestDebuggerActionsProvider(LookupProvider lookupProvider) {
+    public TestDebuggerActionsProvider(ContextProvider lookupProvider) {
         debuggerImpl = (TestDebugger) lookupProvider.lookupFirst(TestDebugger.class);
         this.lookupProvider = lookupProvider;
         supportedActions = new HashSet();

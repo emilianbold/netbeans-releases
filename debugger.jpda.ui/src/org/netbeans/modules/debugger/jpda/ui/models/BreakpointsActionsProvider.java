@@ -31,7 +31,7 @@ import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.viewmodel.Models;
 
-import org.netbeans.modules.debugger.jpda.ui.Context;
+import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.*;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
@@ -178,6 +178,6 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
     }
     
     private static void goToSource (LineBreakpoint b) {
-        Context.showSource (b);
+        EditorContextBridge.showSource (b);
     }
 }

@@ -14,7 +14,7 @@
 package org.netbeans.modules.debugger.jpda.ui;
 
 import org.netbeans.spi.viewmodel.*;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.*;
 import org.openide.util.NbBundle;
 
@@ -63,10 +63,10 @@ NodeActionsProvider, NodeActionsProviderFilter {
         
     private List            fixedWatches;
     private HashSet         listeners;
-    private LookupProvider  lookupProvider; // not used at the moment
+    private ContextProvider  lookupProvider; // not used at the moment
 
     
-    public FixedWatchesManager (LookupProvider lookupProvider) {
+    public FixedWatchesManager (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
     }
 

@@ -15,12 +15,13 @@ package org.netbeans.modules.debugger.jpda;
 
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.connect.ListeningConnector;
+
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
 import org.netbeans.spi.debugger.SessionProvider;
-
+import org.netbeans.spi.debugger.ContextProvider;
 
 /**
  *
@@ -28,17 +29,18 @@ import org.netbeans.spi.debugger.SessionProvider;
  */
 public class ListeningSessionProvider extends SessionProvider {
     
-    private DebuggerInfo info;
+    private ContextProvider contextProvider;
     private ListeningDICookie smadic;
     
-    public ListeningSessionProvider (DebuggerInfo info) {
-        this.info = info;
-        smadic = (ListeningDICookie) info.lookupFirst 
-            (ListeningDICookie.class);
+    public ListeningSessionProvider (ContextProvider contextProvider) {
+        this.contextProvider = contextProvider;
+        smadic = (ListeningDICookie) contextProvider.lookupFirst 
+            (null, ListeningDICookie.class);
     };
     
     public String getSessionName () {
-        String processName = (String) info.lookupFirst (String.class);
+        String processName = (String) contextProvider.lookupFirst 
+            (null, String.class);
         if (processName != null)
             return processName;
         if (smadic.getSharedMemoryName () != null)

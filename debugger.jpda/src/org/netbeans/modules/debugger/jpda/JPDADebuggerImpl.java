@@ -35,7 +35,7 @@ import java.util.Map;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AbstractDICookie;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
@@ -89,16 +89,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private JavaEngineProvider          javaEngineProvider;
     private Set                         languages;
     private String                      lastStratumn;
-    private LookupProvider              lookupProvider;
+    private ContextProvider              lookupProvider;
 
 
 
     // init ....................................................................
 
-    public JPDADebuggerImpl (LookupProvider lookupProvider) {
+    public JPDADebuggerImpl (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         pcs = new PropertyChangeSupport (this);
-        List l = lookupProvider.lookup (DebuggerEngineProvider.class);
+        List l = lookupProvider.lookup (null, DebuggerEngineProvider.class);
         int i, k = l.size ();
         for (i = 0; i < k; i++)
             if (l.get (i) instanceof JavaEngineProvider)
@@ -281,7 +281,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public SmartSteppingFilter getSmartSteppingFilter () {
         if (smartSteppingFilter == null)
             smartSteppingFilter = (SmartSteppingFilter) lookupProvider.
-                lookupFirst (SmartSteppingFilter.class);
+                lookupFirst (null, SmartSteppingFilter.class);
         return smartSteppingFilter;
     }
 
@@ -418,7 +418,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         List imports = new ArrayList ();
         List staticImports = new ArrayList ();
         imports.add ("java.lang.*");
-        imports.addAll (Arrays.asList (Context.getImports (
+        imports.addAll (Arrays.asList (EditorContextBridge.getImports (
             getEngineContext ().getURL (frame, "Java")
         )));
         try {
@@ -576,7 +576,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public void finish () {
         synchronized (LOCK) {
             AbstractDICookie di = (AbstractDICookie) lookupProvider.lookupFirst 
-                (AbstractDICookie.class);
+                (null, AbstractDICookie.class);
             if (getState () == STATE_DISCONNECTED) return;
             startingThread.interrupt ();
             startingThread = null;
@@ -669,11 +669,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
         pcs.firePropertyChange (name, o, n);
     }
 
-    private EngineContext engineContext;
-    EngineContext getEngineContext () {
+    private SourcePath engineContext;
+    SourcePath getEngineContext () {
         if (engineContext == null)
-            engineContext = (EngineContext) lookupProvider.
-                lookupFirst (EngineContext.class);
+            engineContext = (SourcePath) lookupProvider.
+                lookupFirst (null, SourcePath.class);
         return engineContext;
     }
 

@@ -20,6 +20,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LaunchingDICookie;
 import org.netbeans.spi.debugger.SessionProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 
 
 /**
@@ -28,17 +29,18 @@ import org.netbeans.spi.debugger.SessionProvider;
  */
 public class LaunchingSessionProvider extends SessionProvider {
     
-    private DebuggerInfo info;
-    private LaunchingDICookie launchingCookie;
+    private ContextProvider         contextProvider;
+    private LaunchingDICookie       launchingCookie;
     
-    public LaunchingSessionProvider (DebuggerInfo info) {
-        this.info = info;
-        launchingCookie = (LaunchingDICookie) info.lookupFirst 
-            (LaunchingDICookie.class);
+    public LaunchingSessionProvider (ContextProvider contextProvider) {
+        this.contextProvider = contextProvider;
+        launchingCookie = (LaunchingDICookie) contextProvider.lookupFirst 
+            (null, LaunchingDICookie.class);
     };
     
     public String getSessionName () {
-        String processName = (String) info.lookupFirst (String.class);
+        String processName = (String) contextProvider.lookupFirst 
+            (null, String.class);
         if (processName != null)
             return processName;
         String sessionName = launchingCookie.getClassName ();

@@ -39,12 +39,12 @@ import java.util.Set;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
-import org.netbeans.spi.debugger.jpda.SmartSteppingListener;
+import org.netbeans.spi.debugger.jpda.SmartSteppingCallback;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
@@ -66,7 +66,7 @@ public class StepActionProvider extends JPDADebuggerActionProvider
 implements Executor {
     
     private StepRequest             stepRequest;
-    private LookupProvider          lookupProvider;
+    private ContextProvider          lookupProvider;
 
     
     private static boolean ssverbose = 
@@ -82,10 +82,10 @@ implements Executor {
     }
     
     
-    public StepActionProvider (LookupProvider lookupProvider) {
+    public StepActionProvider (ContextProvider lookupProvider) {
         super (
             (JPDADebuggerImpl) lookupProvider.lookupFirst 
-                (JPDADebugger.class)
+                (null, JPDADebugger.class)
         );
         this.lookupProvider = lookupProvider;
     }
@@ -194,7 +194,7 @@ implements Executor {
     
     private StepIntoActionProvider getStepIntoActionProvider () {
         if (stepIntoActionProvider == null) {
-            List l = lookupProvider.lookup (ActionsProvider.class);
+            List l = lookupProvider.lookup (null, ActionsProvider.class);
             int i, k = l.size ();
             for (i = 0; i < k; i++)
                 if (l.get (i) instanceof StepIntoActionProvider)
@@ -208,7 +208,7 @@ implements Executor {
     private SmartSteppingFilterImpl getSmartSteppingFilterImpl () {
         if (smartSteppingFilterImpl == null)
             smartSteppingFilterImpl = (SmartSteppingFilterImpl) lookupProvider.
-                lookupFirst (SmartSteppingFilter.class);
+                lookupFirst (null, SmartSteppingFilter.class);
         return smartSteppingFilterImpl;
     }
 
@@ -217,7 +217,7 @@ implements Executor {
     private CompoundSmartSteppingListener getCompoundSmartSteppingListener () {
         if (compoundSmartSteppingListener == null)
             compoundSmartSteppingListener = (CompoundSmartSteppingListener) lookupProvider.
-                lookupFirst (CompoundSmartSteppingListener.class);
+                lookupFirst (null, CompoundSmartSteppingListener.class);
         return compoundSmartSteppingListener;
     }
 }

@@ -10,7 +10,7 @@ import javax.swing.JPanel;
 import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
-import org.netbeans.modules.debugger.jpda.ui.Context;
+import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.util.NbBundle;
 
@@ -28,8 +28,8 @@ public class FieldBreakpointPanel extends JPanel implements Controller {
     
     private static FieldBreakpoint creteBreakpoint () {
         FieldBreakpoint mb = FieldBreakpoint.create (
-            Context.getCurrentClassName (),
-            Context.getCurrentFieldName (), 
+            EditorContextBridge.getCurrentClassName (),
+            EditorContextBridge.getCurrentFieldName (), 
             FieldBreakpoint.TYPE_ACCESS
         );
         mb.setPrintText (

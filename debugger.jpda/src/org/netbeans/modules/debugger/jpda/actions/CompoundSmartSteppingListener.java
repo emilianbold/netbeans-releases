@@ -14,12 +14,12 @@ package org.netbeans.modules.debugger.jpda.actions;
 
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
-import org.netbeans.spi.debugger.jpda.SmartSteppingListener;
+import org.netbeans.spi.debugger.jpda.SmartSteppingCallback;
 
 
 /**
@@ -27,30 +27,31 @@ import org.netbeans.spi.debugger.jpda.SmartSteppingListener;
  *
  * @author  Jan Jancura
  */
-public class CompoundSmartSteppingListener extends SmartSteppingListener {
+public class CompoundSmartSteppingListener extends SmartSteppingCallback {
     
     
     private List smartSteppings;
-    private LookupProvider lookupProvider;
+    private ContextProvider lookupProvider;
     
     
     private static boolean ssverbose = 
         System.getProperty ("netbeans.debugger.smartstepping") != null;
 
     
-    public CompoundSmartSteppingListener (LookupProvider lookupProvider) {
+    public CompoundSmartSteppingListener (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         SmartSteppingFilter smartSteppingFilter = (SmartSteppingFilter) lookupProvider.
-            lookupFirst (SmartSteppingFilter.class);
+            lookupFirst (null, SmartSteppingFilter.class);
         initFilter (smartSteppingFilter);
     }
     
     public void initFilter (SmartSteppingFilter filter) {
         // init list of smart stepping listeners
-        smartSteppings = lookupProvider.lookup (SmartSteppingListener.class);
+        smartSteppings = lookupProvider.lookup 
+            (null, SmartSteppingCallback.class);
         Iterator i = smartSteppings.iterator ();
         while (i.hasNext ()) {
-            SmartSteppingListener ss = (SmartSteppingListener) i.next ();
+            SmartSteppingCallback ss = (SmartSteppingCallback) i.next ();
             ss.initFilter (filter);
         }
     }
@@ -60,7 +61,7 @@ public class CompoundSmartSteppingListener extends SmartSteppingListener {
      * current place represented by JPDAThread.
      */
     public boolean stopHere (
-        LookupProvider lookupProvider, 
+        ContextProvider lookupProvider, 
         JPDAThread t, 
         SmartSteppingFilter smartSteppingFilter
     ) {
@@ -74,7 +75,7 @@ public class CompoundSmartSteppingListener extends SmartSteppingListener {
         Iterator i = smartSteppings.iterator ();
         boolean stop = true;
         while (i.hasNext ()) {
-            SmartSteppingListener ss = (SmartSteppingListener) i.next ();
+            SmartSteppingCallback ss = (SmartSteppingCallback) i.next ();
             boolean sh = ss.stopHere (lookupProvider, t, smartSteppingFilter);
             stop = stop && sh;
             if (ssverbose)

@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+
 /** Session visually represents one process or application. It should
  * be simple bean with properties like process ID, session name, etc.
  * All other functionality is deleagted to current debugger engine.
@@ -105,7 +106,7 @@ import java.util.List;
  *
  * @author Jan Jancura
  */
-public final class Session implements LookupProvider {
+public final class Session {
     
     /** Name of property for current language. */
     public static final String PROP_CURRENT_LANGUAGE = "currentLanguage";
@@ -142,13 +143,14 @@ public final class Session implements LookupProvider {
         this.languages = new String [0];
         this.engines = new DebuggerEngine [0];
         pcs = new PropertyChangeSupport (this);
-//        listener = new Listener ();
+        
+        // create lookup
         Object[] s = new Object [services.length + 1];
         System.arraycopy (services, 0, s, 0, services.length);
         s [s.length - 1] = this;
         privateLookup = new Lookup.Compound (
             new Lookup.Instance (s),
-            new Lookup.MetaInf (id, this)
+            new Lookup.MetaInf (id)
         );
         this.lookup = new Lookup.Compound (
             diLookup,
@@ -217,6 +219,26 @@ public final class Session implements LookupProvider {
     }
     
     /**
+     * Returns list of services of given type from given folder.
+     *
+     * @param service a type of service to look for
+     * @return list of services of given type
+     */
+    public List lookup (String folder, Class service) {
+        return lookup.lookup (folder, service);
+    }
+    
+    /**
+     * Returns one service of given type from given folder.
+     *
+     * @param service a type of service to look for
+     * @return ne service of given type
+     */
+    public Object lookupFirst (String folder, Class service) {
+        return lookup.lookupFirst (folder, service);
+    }
+    
+    /**
      * Kills all registerred engines / languages. This utility method calls
      * <pre>doAction (DebuggerEngine.ACTION_KILL)</pre> method on all
      * registerred DebuggerEngines.
@@ -263,46 +285,6 @@ public final class Session implements LookupProvider {
                 );
             }
         }
-    }
-    
-    /**
-     * Returns list of services of given type.
-     *
-     * @param service a type of service to look for
-     * @return list of services of given type
-     */
-    public List lookup (Class service) {
-        return lookup.lookup (null, service);
-    }
-    
-    /**
-     * Returns one service of given type.
-     *
-     * @param service a type of service to look for
-     * @return ne service of given type
-     */
-    public Object lookupFirst (Class service) {
-        return lookup.lookupFirst (null, service);
-    }    
-    
-    /**
-     * Returns list of services of given type from given folder.
-     *
-     * @param service a type of service to look for
-     * @return list of services of given type
-     */
-    public List lookup (String folder, Class service) {
-        return lookup.lookup (folder, service);
-    }
-    
-    /**
-     * Returns one service of given type from given folder.
-     *
-     * @param service a type of service to look for
-     * @return ne service of given type
-     */
-    public Object lookupFirst (String folder, Class service) {
-        return lookup.lookupFirst (folder, service);
     }
 
     

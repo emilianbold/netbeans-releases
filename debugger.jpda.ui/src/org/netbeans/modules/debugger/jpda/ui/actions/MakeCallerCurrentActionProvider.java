@@ -20,13 +20,13 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.viewmodel.NoInformationException;
 
-import org.netbeans.modules.debugger.jpda.ui.EngineContext;
+import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 
 
 /**
@@ -36,13 +36,13 @@ import org.netbeans.modules.debugger.jpda.ui.EngineContext;
 */
 public class MakeCallerCurrentActionProvider extends JPDADebuggerAction {
     
-    private LookupProvider lookupProvider;
+    private ContextProvider lookupProvider;
 
     
-    public MakeCallerCurrentActionProvider (LookupProvider lookupProvider) {
+    public MakeCallerCurrentActionProvider (ContextProvider lookupProvider) {
         super (
             (JPDADebugger) lookupProvider.lookupFirst 
-                (JPDADebugger.class)
+                (null, JPDADebugger.class)
         );
         this.lookupProvider = lookupProvider;
         getDebuggerImpl ().addPropertyChangeListener 
@@ -97,7 +97,7 @@ public class MakeCallerCurrentActionProvider extends JPDADebuggerAction {
     static void setCurrentCallStackFrameIndex (
         JPDADebugger debuggerImpl,
         int index,
-        final LookupProvider lookupProvider
+        final ContextProvider lookupProvider
     ) {
         try {
             JPDAThread t = debuggerImpl.getCurrentThread ();
@@ -109,8 +109,8 @@ public class MakeCallerCurrentActionProvider extends JPDADebuggerAction {
                 public void run () {
                     String language = DebuggerManager.getDebuggerManager ().
                         getCurrentSession ().getCurrentLanguage ();
-                    EngineContext ectx = (EngineContext) lookupProvider.lookupFirst 
-                        (EngineContext.class);
+                    SourcePath ectx = (SourcePath) lookupProvider.lookupFirst 
+                        (null, SourcePath.class);
                     ectx.showSource (csf, language);
                 }
             });

@@ -105,7 +105,7 @@ import org.netbeans.spi.debugger.ActionsProviderListener;
  *
  * @author   Jan Jancura
  */
-public final class DebuggerEngine implements LookupProvider {
+public final class DebuggerEngine {
     
     
     // variables ...............................................................
@@ -120,11 +120,14 @@ public final class DebuggerEngine implements LookupProvider {
         Object[] services,
         Lookup sessionLookup
     ) {
+        Object[] services1 = new Object [services.length + 1];
+        System.arraycopy (services, 0, services1, 0, services.length);
+        services1 [services1.length - 1] = this;
         Lookup privateLookup = (services == null) ? 
-            (Lookup) new Lookup.MetaInf (typeID, this) :
+            (Lookup) new Lookup.MetaInf (typeID) :
             new Lookup.Compound (
-                new Lookup.Instance (services),
-                new Lookup.MetaInf (typeID, this)
+                new Lookup.Instance (services1),
+                new Lookup.MetaInf (typeID)
             );
         this.lookup = new Lookup.Compound (
             privateLookup,
@@ -132,25 +135,25 @@ public final class DebuggerEngine implements LookupProvider {
         );
     }
     
-    /**
-     * Returns list of services of given type.
-     *
-     * @param service a type of service to look for
-     * @return list of services of given type
-     */
-    public List lookup (Class service) {
-        return lookup.lookup (null, service);
-    }
-    
-    /**
-     * Returns one service of given type.
-     *
-     * @param service a type of service to look for
-     * @return ne service of given type
-     */
-    public Object lookupFirst (Class service) {
-        return lookup.lookupFirst (null, service);
-    }
+//    /**
+//     * Returns list of services of given type.
+//     *
+//     * @param service a type of service to look for
+//     * @return list of services of given type
+//     */
+//    public List lookup (Class service) {
+//        return lookup.lookup (null, service);
+//    }
+//    
+//    /**
+//     * Returns one service of given type.
+//     *
+//     * @param service a type of service to look for
+//     * @return ne service of given type
+//     */
+//    public Object lookupFirst (Class service) {
+//        return lookup.lookupFirst (null, service);
+//    }
     
     /**
      * Returns list of services of given type from given folder.

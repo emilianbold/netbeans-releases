@@ -34,9 +34,9 @@ public class JspGoToCursorActionProvider extends ActionsProviderSupport implemen
     private JspLineBreakpoint breakpoint;
     
     
-    public JspGoToCursorActionProvider(LookupProvider lookupProvider) {
-        debugger = (JPDADebugger) lookupProvider.lookupFirst(JPDADebugger.class);
-        session = (Session) lookupProvider.lookupFirst(Session.class);
+    public JspGoToCursorActionProvider(ContextProvider contextProvider) {
+        debugger = (JPDADebugger) contextProvider.lookupFirst(null, JPDADebugger.class);
+        session = (Session) contextProvider.lookupFirst(null, Session.class);
         debugger.addPropertyChangeListener(debugger.PROP_STATE, this);
         Context.addPropertyChangeListener(this);
     }

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+
 /**
  * Contains information needed to start new debugging. Process of starting of
  * debugger can create one or more {@link Session} and one or more
@@ -26,7 +27,7 @@ import java.util.List;
  *
  * @author   Jan Jancura
  */
-public final class DebuggerInfo implements LookupProvider {
+public final class DebuggerInfo {
 
     private String typeID;
     private Lookup lookup;
@@ -61,7 +62,7 @@ public final class DebuggerInfo implements LookupProvider {
         s [s.length - 1] = this;
         lookup = new Lookup.Compound (
             new Lookup.Instance (s),
-            new Lookup.MetaInf (typeID, this)
+            new Lookup.MetaInf (typeID)
         );
     }
 
@@ -75,25 +76,25 @@ public final class DebuggerInfo implements LookupProvider {
 //        return typeID;
 //    }
     
-    /**
-     * Returns list of services of given type.
-     *
-     * @param service a type of service to look for
-     * @return list of services of given type
-     */
-    public List lookup (Class service) {
-        return lookup.lookup (null, service);
-    }
-    
-    /**
-     * Returns one service of given type.
-     *
-     * @param service a type of service to look for
-     * @return ne service of given type
-     */
-    public Object lookupFirst (Class service) {
-        return lookup.lookupFirst (null, service);
-    }
+//    /**
+//     * Returns list of services of given type.
+//     *
+//     * @param service a type of service to look for
+//     * @return list of services of given type
+//     */
+//    public List lookup (Class service) {
+//        return lookup.lookup (null, service);
+//    }
+//    
+//    /**
+//     * Returns one service of given type.
+//     *
+//     * @param service a type of service to look for
+//     * @return ne service of given type
+//     */
+//    public Object lookupFirst (Class service) {
+//        return lookup.lookupFirst (null, service);
+//    }
     
     /**
      * Returns list of services of given type from given folder.

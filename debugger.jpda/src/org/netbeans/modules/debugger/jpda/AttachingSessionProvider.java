@@ -18,6 +18,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.debugger.SessionProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 
 
 /**
@@ -26,16 +27,18 @@ import org.netbeans.spi.debugger.SessionProvider;
  */
 public class AttachingSessionProvider extends SessionProvider {
     
-    private DebuggerInfo info;
+    private ContextProvider contextProvider;
     private AttachingDICookie sadic;
     
-    public AttachingSessionProvider (DebuggerInfo info) {
-        this.info = info;
-        sadic = (AttachingDICookie) info.lookupFirst (AttachingDICookie.class);
+    public AttachingSessionProvider (ContextProvider contextProvider) {
+        this.contextProvider = contextProvider;
+        sadic = (AttachingDICookie) contextProvider.lookupFirst 
+            (null, AttachingDICookie.class);
     };
     
     public String getSessionName () {
-        String processName = (String) info.lookupFirst (String.class);
+        String processName = (String) contextProvider.lookupFirst 
+            (null, String.class);
         if (processName != null)
             return processName;
         if (sadic.getHostName () != null)

@@ -19,7 +19,7 @@ import java.lang.ref.WeakReference;
 import java.util.Vector;
 
 import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -56,11 +56,11 @@ public class ThreadsNodeModel implements NodeModel {
     private Vector listeners = new Vector ();
     
     
-    public ThreadsNodeModel (LookupProvider lookupProvider) {
+    public ThreadsNodeModel (ContextProvider lookupProvider) {
         debugger = (JPDADebugger) lookupProvider.
-            lookupFirst (JPDADebugger.class);
+            lookupFirst (null, JPDADebugger.class);
         session = (Session) lookupProvider.
-            lookupFirst (Session.class);
+            lookupFirst (null, Session.class);
         new Listener (this, debugger);
     }
     

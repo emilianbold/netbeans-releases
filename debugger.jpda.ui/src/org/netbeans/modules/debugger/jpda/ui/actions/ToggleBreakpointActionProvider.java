@@ -20,12 +20,14 @@ import java.util.Set;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
-import org.netbeans.modules.debugger.jpda.ui.Context;
+import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.BreakpointAnnotationListener;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
+
+import org.openide.util.NbBundle;
 
 
 /** 
@@ -39,27 +41,27 @@ implements PropertyChangeListener {
 
     
     public ToggleBreakpointActionProvider () {
-        Context.addPropertyChangeListener (this);
+        EditorContextBridge.addPropertyChangeListener (this);
     }
     
-    public ToggleBreakpointActionProvider (LookupProvider lookupProvider) {
+    public ToggleBreakpointActionProvider (ContextProvider lookupProvider) {
         debugger = (JPDADebugger) lookupProvider.lookupFirst 
-                (JPDADebugger.class);
+                (null, JPDADebugger.class);
         debugger.addPropertyChangeListener (debugger.PROP_STATE, this);
-        Context.addPropertyChangeListener (this);
+        EditorContextBridge.addPropertyChangeListener (this);
     }
     
     private void destroy () {
         debugger.removePropertyChangeListener (debugger.PROP_STATE, this);
-        Context.removePropertyChangeListener (this);
+        EditorContextBridge.removePropertyChangeListener (this);
     }
     
     public void propertyChange (PropertyChangeEvent evt) {
         setEnabled (
             DebuggerManager.ACTION_TOGGLE_BREAKPOINT,
-            (Context.getCurrentLineNumber () >= 0) && 
-            (Context.getCurrentURL () != null) &&
-            (Context.getCurrentURL ().endsWith (".java"))
+            (EditorContextBridge.getCurrentLineNumber () >= 0) && 
+            (EditorContextBridge.getCurrentURL () != null) &&
+            (EditorContextBridge.getCurrentURL ().endsWith (".java"))
         );
         if ( debugger != null && 
              debugger.getState () == debugger.STATE_DISCONNECTED
@@ -75,8 +77,8 @@ implements PropertyChangeListener {
         DebuggerManager d = DebuggerManager.getDebuggerManager ();
         
         // 1) get source name & line number
-        int ln = Context.getCurrentLineNumber ();
-        String url = Context.getCurrentURL ();
+        int ln = EditorContextBridge.getCurrentLineNumber ();
+        String url = EditorContextBridge.getCurrentURL ();
         if (url == null) return;
         
         // 2) find and remove existing line breakpoint
@@ -99,11 +101,15 @@ implements PropertyChangeListener {
 //        }
         
         // 3) create a new line breakpoint
-        Breakpoint p = LineBreakpoint.create (
+        lb = LineBreakpoint.create (
             url,
             ln
         );
-        d.addBreakpoint (p);
+        lb.setPrintText (
+            NbBundle.getBundle (ToggleBreakpointActionProvider.class).getString 
+                ("CTL_Line_Breakpoint_Print_Text")
+        );
+        d.addBreakpoint (lb);
     }
     
     private BreakpointAnnotationListener breakpointAnnotationListener;
@@ -111,7 +117,7 @@ implements PropertyChangeListener {
         if (breakpointAnnotationListener == null)
             breakpointAnnotationListener = (BreakpointAnnotationListener) 
                 DebuggerManager.getDebuggerManager ().lookupFirst 
-                (BreakpointAnnotationListener.class);
+                (null, BreakpointAnnotationListener.class);
         return breakpointAnnotationListener;
     }
 }

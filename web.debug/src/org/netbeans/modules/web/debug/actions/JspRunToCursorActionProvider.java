@@ -22,7 +22,7 @@ import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.debugger.*;
-import org.netbeans.spi.debugger.jpda.ContextProvider;
+import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.*;
 
@@ -37,12 +37,12 @@ import org.netbeans.modules.web.debug.breakpoints.JspLineBreakpoint;
 */
 public class JspRunToCursorActionProvider extends ActionsProviderSupport {
     
-    private ContextProvider contextProvider;
+    private EditorContext editorContext;
     private JspLineBreakpoint breakpoint;
         
     {
-        contextProvider = (ContextProvider) DebuggerManager.
-            getDebuggerManager().lookupFirst(ContextProvider.class);
+        editorContext = (EditorContext) DebuggerManager.
+            getDebuggerManager().lookupFirst(null, EditorContext.class);
         
         Listener listener = new Listener ();
         MainProjectManager.getDefault ().addPropertyChangeListener (listener);
@@ -63,8 +63,8 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
             breakpoint = null;
         }
         breakpoint = JspLineBreakpoint.create (
-            contextProvider.getCurrentURL(),
-            contextProvider.getCurrentLineNumber()
+            editorContext.getCurrentURL(),
+            editorContext.getCurrentLineNumber()
         );
         breakpoint.setHidden(true);
         DebuggerManager.getDebuggerManager().addBreakpoint(breakpoint);
@@ -81,7 +81,7 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
     
     private boolean shouldBeEnabled () {
 
-        if (!Utils.isJsp(contextProvider.getCurrentURL())) {
+        if (!Utils.isJsp(editorContext.getCurrentURL())) {
             return false;
         }
         

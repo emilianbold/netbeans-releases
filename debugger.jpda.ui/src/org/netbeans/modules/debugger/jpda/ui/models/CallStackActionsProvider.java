@@ -20,7 +20,7 @@ import javax.swing.SwingUtilities;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -32,8 +32,8 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.TreeModel;
 
-import org.netbeans.modules.debugger.jpda.ui.Context;
-import org.netbeans.modules.debugger.jpda.ui.EngineContext;
+import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
+import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 
 
 /**
@@ -67,13 +67,13 @@ public class CallStackActionsProvider implements NodeActionsProvider {
     );
         
     private JPDADebugger    debugger;
-    private LookupProvider  lookupProvider;
+    private ContextProvider  lookupProvider;
 
 
-    public CallStackActionsProvider (LookupProvider lookupProvider) {
+    public CallStackActionsProvider (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         debugger = (JPDADebugger) lookupProvider.
-            lookupFirst (JPDADebugger.class);
+            lookupFirst (null, JPDADebugger.class);
     }
     
     public Action[] getActions (Object node) throws UnknownTypeException {
@@ -136,8 +136,8 @@ public class CallStackActionsProvider implements NodeActionsProvider {
             public void run () {
                 String language = DebuggerManager.getDebuggerManager ().
                     getCurrentSession ().getCurrentLanguage ();
-                EngineContext ectx = (EngineContext) lookupProvider.lookupFirst 
-                    (EngineContext.class);
+                SourcePath ectx = (SourcePath) lookupProvider.lookupFirst 
+                    (null, SourcePath.class);
                 ectx.showSource (frame, language);
             }
         });

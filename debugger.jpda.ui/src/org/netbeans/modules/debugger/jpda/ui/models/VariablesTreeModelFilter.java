@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import javax.swing.Action;
 
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.jpda.VariablesFilter;
@@ -43,10 +43,10 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 public class VariablesTreeModelFilter implements TreeModelFilter, 
 NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
     
-    private LookupProvider lookupProvider;
+    private ContextProvider lookupProvider;
     
     
-    public VariablesTreeModelFilter (LookupProvider lookupProvider) {
+    public VariablesTreeModelFilter (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
     }
 
@@ -209,7 +209,7 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
         if (typeToFilter == null) {
             typeToFilter = new HashMap ();
             ancestorToFilter = new HashMap ();
-            List l = lookupProvider.lookup (VariablesFilter.class);
+            List l = lookupProvider.lookup (null, VariablesFilter.class);
             int i, k = l.size ();
             for (i = 0; i < k; i++) {
                 VariablesFilter f = (VariablesFilter) l.get (i);

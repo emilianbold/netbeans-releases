@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.util.Operator;
@@ -31,10 +31,10 @@ import org.netbeans.modules.debugger.jpda.util.Operator;
  */
 public class ContinueActionProvider extends JPDADebuggerActionProvider {
     
-    public ContinueActionProvider (LookupProvider lookupProvider) {
+    public ContinueActionProvider (ContextProvider lookupProvider) {
         super (
             (JPDADebuggerImpl) lookupProvider.lookupFirst 
-                (JPDADebugger.class)
+                (null, JPDADebugger.class)
         );
     }
     

@@ -430,7 +430,7 @@ public abstract class Properties {
 
         private void initReaders () {
             register = new HashMap ();
-            Lookup lookup = new Lookup.MetaInf (null, null);
+            Lookup lookup = new Lookup.MetaInf (null);
             Iterator i = lookup.lookup (null, Reader.class).iterator ();
             while (i.hasNext ()) {
                 Reader r = (Reader) i.next ();

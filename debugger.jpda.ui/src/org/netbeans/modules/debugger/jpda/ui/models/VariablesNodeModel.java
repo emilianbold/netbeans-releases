@@ -16,7 +16,7 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 import java.util.Vector;
 
 import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -50,9 +50,9 @@ public class VariablesNodeModel implements NodeModel {
     private JPDADebugger debugger;
     
     
-    public VariablesNodeModel (LookupProvider lookupProvider) {
+    public VariablesNodeModel (ContextProvider lookupProvider) {
         debugger = (JPDADebugger) lookupProvider.
-            lookupFirst (JPDADebugger.class);
+            lookupFirst (null, JPDADebugger.class);
     }
     
     

@@ -189,7 +189,7 @@ public final class DebuggerManager {
     private ActionsManager                    actionsManager = null;
 //    private PropertyChangeSupport pcs = new PropertyChangeSupport (this);
     
-    private Lookup                            lookup = new Lookup.MetaInf (null, null);
+    private Lookup                            lookup = new Lookup.MetaInf (null);
     
     
     /**
@@ -219,21 +219,21 @@ public final class DebuggerManager {
     
     // lookup management .............................................
     
-    /**
-     * Finds all registrations of given service in Meta-inf/debugger/ folder 
-     * and returns instances of it.
-     */
-     public List lookup (Class service) {
-        return lookup.lookup (null, service);
-    }
-    
-    /**
-     * Finds first occurence of service in Meta-inf/debugger/ folder 
-     * and returns instance of it.
-     */
-    public Object lookupFirst (Class service) {
-        return lookup.lookupFirst (null, service);
-    }
+//    /**
+//     * Finds all registrations of given service in Meta-inf/debugger/ folder 
+//     * and returns instances of it.
+//     */
+//     public List lookup (Class service) {
+//        return lookup.lookup (null, service);
+//    }
+//    
+//    /**
+//     * Finds first occurence of service in Meta-inf/debugger/ folder 
+//     * and returns instance of it.
+//     */
+//    public Object lookupFirst (Class service) {
+//        return lookup.lookupFirst (null, service);
+//    }
     
     /**
      * Returns list of services of given type from given folder.
@@ -917,7 +917,7 @@ public final class DebuggerManager {
     private void initDebuggerManagerListeners () {
         if (listerersLoaded) return;
         listerersLoaded = true;
-        List listeners = lookup (LazyDebuggerManagerListener.class);
+        List listeners = lookup.lookup (null, LazyDebuggerManagerListener.class);
         int i, k = listeners.size ();
         for (i = 0; i < k; i++) {
             LazyDebuggerManagerListener l = (LazyDebuggerManagerListener)

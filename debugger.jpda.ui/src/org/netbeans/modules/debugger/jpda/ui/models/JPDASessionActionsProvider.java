@@ -19,6 +19,8 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.spi.debugger.ContextProvider;
+
 import org.openide.util.actions.Presenter;
 import org.openide.util.NbBundle;
 
@@ -34,8 +36,11 @@ import java.awt.event.ActionEvent;
 public class JPDASessionActionsProvider implements NodeActionsProviderFilter {
 
     private HashSet         listeners;
+    private ContextProvider contextProvider;
+    
 
-    public JPDASessionActionsProvider(Session session) {
+    public JPDASessionActionsProvider (ContextProvider contextProvider) {
+        this.contextProvider = contextProvider;
     }
 
     public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
@@ -107,23 +112,32 @@ public class JPDASessionActionsProvider implements NodeActionsProviderFilter {
         }
 
         public JMenuItem getPopupPresenter() {
-            JMenu displayAsPopup = new JMenu(localize("CTL_Session_Resume_Threads"));
+            JMenu displayAsPopup = new JMenu 
+                (localize ("CTL_Session_Resume_Threads"));
 
-            JRadioButtonMenuItem resumeAllItem = new JRadioButtonMenuItem(new AbstractAction(localize("CTL_Session_Resume_All_Threads")) {
-                public void actionPerformed(ActionEvent e) {
-                    JPDADebugger dbg = (JPDADebugger) session.lookupFirst(JPDADebugger.class);
-                    dbg.setSuspend(JPDADebugger.SUSPEND_ALL);
+            JRadioButtonMenuItem resumeAllItem = new JRadioButtonMenuItem (
+                new AbstractAction (localize ("CTL_Session_Resume_All_Threads")
+            ) {
+                public void actionPerformed (ActionEvent e) {
+                    JPDADebugger dbg = (JPDADebugger) contextProvider.
+                        lookupFirst (null, JPDADebugger.class);
+                    dbg.setSuspend (JPDADebugger.SUSPEND_ALL);
                 }
             });
-            JRadioButtonMenuItem resumeCurrentItem = new JRadioButtonMenuItem(new AbstractAction(localize("CTL_Session_Resume_Current_Thread")) {
+            JRadioButtonMenuItem resumeCurrentItem = new JRadioButtonMenuItem (
+                new AbstractAction (localize ("CTL_Session_Resume_Current_Thread")
+            ) {
                 public void actionPerformed(ActionEvent e) {
-                    JPDADebugger dbg = (JPDADebugger) session.lookupFirst(JPDADebugger.class);
-                    dbg.setSuspend(JPDADebugger.SUSPEND_EVENT_THREAD);
+                    JPDADebugger dbg = (JPDADebugger) contextProvider.
+                        lookupFirst (null, JPDADebugger.class);
+                    dbg.setSuspend (JPDADebugger.SUSPEND_EVENT_THREAD);
                 }
             });
 
-            JPDADebugger dbg = (JPDADebugger) session.lookupFirst(JPDADebugger.class);
-            if (dbg.getSuspend() == JPDADebugger.SUSPEND_ALL) resumeAllItem.setSelected(true);
+            JPDADebugger dbg = (JPDADebugger) contextProvider.lookupFirst
+                (null, JPDADebugger.class);
+            if (dbg.getSuspend() == JPDADebugger.SUSPEND_ALL) 
+                resumeAllItem.setSelected(true);
             else resumeCurrentItem.setSelected(true);
 
             displayAsPopup.add(resumeAllItem);

@@ -17,7 +17,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 
@@ -29,13 +29,13 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 */
 public class MakeCalleeCurrentActionProvider extends JPDADebuggerAction {
     
-    private LookupProvider lookupProvider;
+    private ContextProvider lookupProvider;
     
     
-    public MakeCalleeCurrentActionProvider (LookupProvider lookupProvider) {
+    public MakeCalleeCurrentActionProvider (ContextProvider lookupProvider) {
         super (
             (JPDADebugger) lookupProvider.lookupFirst 
-                (JPDADebugger.class)
+                (null, JPDADebugger.class)
         );
         this.lookupProvider = lookupProvider;
         getDebuggerImpl ().addPropertyChangeListener 

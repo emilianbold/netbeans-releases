@@ -17,7 +17,7 @@ import javax.swing.JPanel;
 import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
-import org.netbeans.modules.debugger.jpda.ui.Context;
+import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.debugger.ui.Controller;
 
 import java.net.URI;
@@ -37,8 +37,8 @@ public class LineBreakpointPanel extends JPanel implements Controller {
     
     private static LineBreakpoint creteBreakpoint () {
         LineBreakpoint mb = LineBreakpoint.create (
-            Context.getCurrentURL (),
-            Context.getCurrentLineNumber ()
+            EditorContextBridge.getCurrentURL (),
+            EditorContextBridge.getCurrentLineNumber ()
         );
         mb.setPrintText (
             NbBundle.getBundle (LineBreakpointPanel.class).getString 

@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AbstractDICookie;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -39,12 +39,12 @@ public class StartActionProvider extends ActionsProvider {
 //        {"main", "start", "init", "<init>"}; // NOI18N
 
     private JPDADebuggerImpl debuggerImpl;
-    private LookupProvider lookupProvider;
+    private ContextProvider lookupProvider;
     
     
-    public StartActionProvider (LookupProvider lookupProvider) {
+    public StartActionProvider (ContextProvider lookupProvider) {
         debuggerImpl = (JPDADebuggerImpl) lookupProvider.lookupFirst
-            (JPDADebugger.class);
+            (null, JPDADebugger.class);
         this.lookupProvider = lookupProvider;
     }
     
@@ -53,10 +53,11 @@ public class StartActionProvider extends ActionsProvider {
     }
     
     public void doAction (Object action) {
-        JPDADebuggerImpl debugger = (JPDADebuggerImpl) lookupProvider.lookupFirst(JPDADebugger.class);
+        JPDADebuggerImpl debugger = (JPDADebuggerImpl) lookupProvider.
+            lookupFirst (null, JPDADebugger.class);
         if (debugger != null && debugger.getVirtualMachine() != null) return;
         final AbstractDICookie cookie = (AbstractDICookie) lookupProvider.
-            lookupFirst (AbstractDICookie.class);
+            lookupFirst (null, AbstractDICookie.class);
         
         Thread startingThread = new Thread (
             new Runnable () {
@@ -74,8 +75,8 @@ public class StartActionProvider extends ActionsProvider {
 //                        debuggerImpl.setRunning ();
                     } catch (Exception ex) {
                         debuggerImpl.setException (ex);
-                        ((Session) lookupProvider.lookupFirst (Session.class)).
-                            kill ();
+                        ((Session) lookupProvider.lookupFirst 
+                            (null, Session.class)).kill ();
                     }
                 }
             },
@@ -107,8 +108,8 @@ public class StartActionProvider extends ActionsProvider {
             null,
             new Runnable () {
                 public void run () {
-                    ((Session) lookupProvider.lookupFirst (Session.class)).
-                        kill ();
+                    ((Session) lookupProvider.lookupFirst 
+                        (null, Session.class)).kill ();
                 }
             }
         );

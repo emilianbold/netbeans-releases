@@ -44,7 +44,7 @@ import java.util.Vector;
 import java.util.WeakHashMap;
 
 import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.viewmodel.NoInformationException;
@@ -73,9 +73,9 @@ public class LocalsTreeModel implements TreeModel {
     private Vector              listeners = new Vector ();
     
     
-    public LocalsTreeModel (LookupProvider lookupProvider) {
+    public LocalsTreeModel (ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.
-            lookupFirst (JPDADebugger.class);
+            lookupFirst (null, JPDADebugger.class);
     }
     
     public Object getRoot () {

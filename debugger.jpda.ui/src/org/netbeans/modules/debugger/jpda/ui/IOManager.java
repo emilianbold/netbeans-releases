@@ -158,7 +158,7 @@ public class IOManager {
         }
         
         void show () {
-            Context.showSource (url, lineNumber, debugger);
+            EditorContextBridge.showSource (url, lineNumber, debugger);
         }
     }
 }

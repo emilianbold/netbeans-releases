@@ -17,7 +17,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.test.TestDICookie;
 import org.netbeans.api.debugger.test.TestDebugger;
@@ -32,12 +32,13 @@ import org.netbeans.spi.debugger.ActionsProviderListener;
 */
 public class KillActionProvider extends ActionsProvider {
 
-    private LookupProvider lookupProvider;
+    private ContextProvider lookupProvider;
     private TestDebugger debugger;
 
-    public KillActionProvider (LookupProvider lookupProvider) {
+    public KillActionProvider (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
-        debugger = (TestDebugger) lookupProvider.lookupFirst(TestDebugger.class);
+        debugger = (TestDebugger) lookupProvider.lookupFirst
+            (null, TestDebugger.class);
     }
 
     public boolean isEnabled(Object action) {
@@ -53,7 +54,8 @@ public class KillActionProvider extends ActionsProvider {
         
     public void doAction (Object action) {
         debugger.finish();
-        DebuggerInfo di = (DebuggerInfo) lookupProvider.lookupFirst(DebuggerInfo.class);
+        DebuggerInfo di = (DebuggerInfo) lookupProvider.lookupFirst
+            (null, DebuggerInfo.class);
         TestDICookie tic = (TestDICookie) di.lookupFirst(TestDICookie.class);
         tic.addInfo(DebuggerManager.ACTION_KILL);
     }

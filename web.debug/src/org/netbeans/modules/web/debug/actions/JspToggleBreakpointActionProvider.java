@@ -41,9 +41,9 @@ public class JspToggleBreakpointActionProvider extends ActionsProviderSupport im
         Context.addPropertyChangeListener (this);
     }
     
-    public JspToggleBreakpointActionProvider (LookupProvider lookupProvider) {
-        debugger = (JPDADebugger) lookupProvider.lookupFirst 
-                (JPDADebugger.class);
+    public JspToggleBreakpointActionProvider (ContextProvider contextProvider) {
+        debugger = (JPDADebugger) contextProvider.lookupFirst 
+                (null, JPDADebugger.class);
         debugger.addPropertyChangeListener (debugger.PROP_STATE, this);
         Context.addPropertyChangeListener (this);
     }

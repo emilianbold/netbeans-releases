@@ -69,7 +69,7 @@ public class AddBreakpointPanel extends javax.swing.JPanel {
     /** Creates new form AddBreakpointPanel */
     public AddBreakpointPanel () {
         breakpointTypes = DebuggerManager.getDebuggerManager ().lookup 
-            (BreakpointType.class);
+            (null, BreakpointType.class);
         int i, k = breakpointTypes.size ();
         String def = null;
         cbCathegory = new javax.swing.JComboBox ();

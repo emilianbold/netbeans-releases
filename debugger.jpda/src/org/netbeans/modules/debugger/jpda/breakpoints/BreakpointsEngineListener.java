@@ -21,7 +21,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
 
@@ -33,9 +33,8 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
-import org.netbeans.spi.debugger.jpda.EngineContextProvider;
 
-import org.netbeans.modules.debugger.jpda.EngineContext;
+import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 
@@ -52,15 +51,15 @@ implements PropertyChangeListener, DebuggerManagerListener {
         System.getProperty ("netbeans.debugger.breakpoints") != null;
 
     private JPDADebuggerImpl        debugger;
-    private EngineContext           engineContext;
+    private SourcePath           engineContext;
     private boolean                 started = false;
     
     
-    public BreakpointsEngineListener (LookupProvider lookupProvider) {
+    public BreakpointsEngineListener (ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.lookupFirst 
-            (JPDADebugger.class);
-        engineContext = (EngineContext) lookupProvider.
-            lookupFirst (EngineContext.class);
+            (null, JPDADebugger.class);
+        engineContext = (SourcePath) lookupProvider.
+            lookupFirst (null, SourcePath.class);
         debugger.addPropertyChangeListener (
             JPDADebugger.PROP_STATE,
             this

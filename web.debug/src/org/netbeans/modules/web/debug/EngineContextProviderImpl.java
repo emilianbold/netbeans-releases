@@ -17,14 +17,14 @@ import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.spi.debugger.jpda.EngineContextProvider;
+import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 
 
 /**
  *
  * @author Jan Jancura
  */
-public class EngineContextProviderImpl extends EngineContextProvider {
+public class EngineContextProviderImpl extends SourcePathProvider {
     
     private static boolean verbose = 
         System.getProperty ("netbeans.debugger.enginecontextproviderimpl") != null;

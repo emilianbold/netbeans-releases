@@ -28,7 +28,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
-import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.spi.viewmodel.NoInformationException;
@@ -58,13 +58,13 @@ public class WatchesModel implements TreeModel {
     private JPDADebuggerImpl    debugger;
     private Listener            listener;
     private Vector              listeners = new Vector ();
-    private LookupProvider      lookupProvider;
+    private ContextProvider      lookupProvider;
     WeakHashMap watchToExpression = new WeakHashMap();
 
     
-    public WatchesModel (LookupProvider lookupProvider) {
+    public WatchesModel (ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.
-            lookupFirst (JPDADebugger.class);
+            lookupFirst (null, JPDADebugger.class);
         this.lookupProvider = lookupProvider;
     }
     

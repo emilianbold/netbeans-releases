@@ -23,7 +23,7 @@ import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
-import org.netbeans.modules.debugger.jpda.ui.Context;
+import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
@@ -53,7 +53,7 @@ public class BreakpointsNodeModel implements NodeModel {
                     BreakpointsNodeModel.class,
                     "CTL_Line_Breakpoint"
                 )).format (new Object[] {
-                    Context.getFileName ((LineBreakpoint) o),
+                    EditorContextBridge.getFileName ((LineBreakpoint) o),
                     "" + ((LineBreakpoint) o).getLineNumber ()
                 });
         } else
@@ -194,7 +194,7 @@ public class BreakpointsNodeModel implements NodeModel {
                     BreakpointsNodeModel.class,
                     "CTL_Line_Breakpoint"
                 )).format (new Object[] {
-                    Context.getFileName ((LineBreakpoint) o),
+                    EditorContextBridge.getFileName ((LineBreakpoint) o),
                     "" + ((LineBreakpoint) o).getLineNumber ()
                 });
         } else
