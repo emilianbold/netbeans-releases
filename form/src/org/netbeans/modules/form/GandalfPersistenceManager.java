@@ -16,6 +16,7 @@ package com.netbeans.developer.modules.loaders.form;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.io.*;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -26,6 +27,7 @@ import java.util.Map;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 import org.openide.TopManager;
 
@@ -62,7 +64,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
   public static final String ATTR_PROPERTY_NAME = "name";
   public static final String ATTR_PROPERTY_TYPE = "type";
   public static final String ATTR_PROPERTY_EDITOR = "editor";
-  public static final String ATTR_PROPERTY_VALUE_TYPE = "valuetype";
   public static final String ATTR_PROPERTY_VALUE = "value";
   public static final String ATTR_EVENT_NAME = "event";
   public static final String ATTR_EVENT_HANDLER = "handler";
@@ -72,8 +73,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
   public static final String ATTR_CONSTRAINT_LAYOUT = "layoutClass";
   public static final String ATTR_CONSTRAINT_VALUE = "value";
 
-  public static final String VALUE_RAD_CONNECTION = "RADConnection";
-  
   private static final String ONE_INDENT =  "  ";
 
   private org.w3c.dom.Document topDocument = new com.ibm.xml.dom.DocumentImpl ();
@@ -132,6 +131,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     try {
       formInfo = (FormInfo)TopManager.getDefault ().systemClassLoader ().loadClass (infoClass).newInstance ();
     } catch (Exception e) {
+        e.printStackTrace ();
       throw new IOException (java.text.MessageFormat.format (
         FormEditor.getFormBundle ().getString ("FMT_ERR_FormInfoNotFound"),
         new String[] { infoClass }
@@ -150,13 +150,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
       throw new IOException (FormEditor.getFormBundle ().getString ("ERR_BadXMLFormat"));
     }
 
-    processNonVisuals (mainElement, formManager2);
-    processContainer (mainElement, formManager2, topComp, null);
+    loadNonVisuals (mainElement, formManager2);
+    loadContainer (mainElement, formManager2, topComp, null);
 
     return formManager2;
   }
 
-  private boolean processNonVisuals (org.w3c.dom.Node node, FormManager2 formManager2) {
+  private boolean loadNonVisuals (org.w3c.dom.Node node, FormManager2 formManager2) {
     org.w3c.dom.Node nonVisualsNode = findSubNode (node, XML_NON_VISUAL_COMPONENTS);
     org.w3c.dom.NodeList childNodes = (nonVisualsNode == null) ? null : nonVisualsNode.getChildNodes ();
     ArrayList list = new ArrayList ();
@@ -165,12 +165,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (childNodes.item (i).getNodeType () == org.w3c.dom.Node.TEXT_NODE) return true; // ignore text nodes
         if (XML_COMPONENT.equals (childNodes.item (i).getNodeName ())) {
           RADComponent comp = new RADComponent ();
-          if (processComponent (childNodes.item (i), formManager2, comp, null)) {
+          if (loadComponent (childNodes.item (i), formManager2, comp, null)) {
             list.add (comp);
           }
         } else if (XML_CONTAINER.equals (childNodes.item (i).getNodeName ())) {
           RADContainer cont = new RADContainer ();
-          if (processContainer (childNodes.item (i), formManager2, cont, null)) {
+          if (loadContainer (childNodes.item (i), formManager2, cont, null)) {
             list.add (cont);
           }
         }
@@ -183,59 +183,62 @@ public class GandalfPersistenceManager extends PersistenceManager {
     return true;
   }
 
-  private boolean processComponent (org.w3c.dom.Node node, FormManager2 formManager2, RADComponent comp, ComponentContainer parentContainer) {
-    System.out.println ("ProcessComponent: "+node.getNodeName ());
-    if (!(comp instanceof FormContainer)) {
-      comp.initialize (formManager2);
-      org.w3c.dom.NamedNodeMap attributes = node.getAttributes ();
-      String className = attributes.getNamedItem (ATTR_COMPONENT_CLASS).getNodeValue (); // [PENDING - survive non-existent attr]
-      Class compClass = null;
-      try {
-        compClass = TopManager.getDefault ().systemClassLoader ().loadClass (className);
-      } catch (Exception e) {
-        e.printStackTrace ();
+  private boolean loadComponent (org.w3c.dom.Node node, FormManager2 formManager2, RADComponent comp, ComponentContainer parentContainer) {
+    try {
+//      System.out.println ("loadComponent: "+node.getNodeName ());
+      if (!(comp instanceof FormContainer)) {
+        comp.initialize (formManager2);
+        String className = findAttribute (node, ATTR_COMPONENT_CLASS);
+        Class compClass = null;
+        try {
+          compClass = TopManager.getDefault ().systemClassLoader ().loadClass (className);
+        } catch (Exception e) {
+          e.printStackTrace ();
+        }
+        String compName = findAttribute (node, ATTR_COMPONENT_NAME);
+        comp.setComponent (compClass);
+        comp.setName (compName);
+        formManager2.getVariablesPool ().createVariable (compName, compClass);
       }
-      String compName = attributes.getNamedItem (ATTR_COMPONENT_NAME).getNodeValue (); // [PENDING - survive non-existent attr]
-      comp.setComponent (compClass);
-      comp.setName (compName);
-      formManager2.getVariablesPool ().createVariable (compName, compClass);
-    }
-
-
-    //convertComponent (node, nonVisualsComps[i]);
-    org.w3c.dom.NodeList childNodes = node.getChildNodes ();
-
-    if (childNodes != null) {
-      for (int i = 0; i < childNodes.getLength (); i++) {
-        org.w3c.dom.Node componentNode = childNodes.item (i);
-        if (componentNode.getNodeType () == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
-
-        if (XML_PROPERTIES.equals (componentNode.getNodeName ())) {
-          loadProperties (componentNode, comp);
-        } else if (XML_EVENTS.equals (componentNode.getNodeName ())) {
-          Hashtable events = loadEvents (componentNode);
-          if (events != null) {
-            comp.initDeserializedEvents (events);
-          }
-          
-        } else if (XML_AUX_VALUES.equals (componentNode.getNodeName ())) {
-          HashMap auxValues = loadAuxValues (componentNode);
-          if (auxValues != null) {
-            for (Iterator it = auxValues.keySet ().iterator (); it.hasNext (); ) {
-              String auxName = (String)it.next ();
-              comp.setAuxValue (auxName, auxValues.get (auxName));
+  
+  
+      //convertComponent (node, nonVisualsComps[i]);
+      org.w3c.dom.NodeList childNodes = node.getChildNodes ();
+  
+      if (childNodes != null) {
+        for (int i = 0; i < childNodes.getLength (); i++) {
+          org.w3c.dom.Node componentNode = childNodes.item (i);
+          if (componentNode.getNodeType () == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
+  
+          if (XML_PROPERTIES.equals (componentNode.getNodeName ())) {
+            loadProperties (componentNode, comp);
+          } else if (XML_EVENTS.equals (componentNode.getNodeName ())) {
+            Hashtable events = loadEvents (componentNode);
+            if (events != null) {
+              comp.initDeserializedEvents (events);
+            }
+            
+          } else if (XML_AUX_VALUES.equals (componentNode.getNodeName ())) {
+            HashMap auxValues = loadAuxValues (componentNode);
+            if (auxValues != null) {
+              for (Iterator it = auxValues.keySet ().iterator (); it.hasNext (); ) {
+                String auxName = (String)it.next ();
+                comp.setAuxValue (auxName, auxValues.get (auxName));
+              }
             }
           }
         }
       }
+  
+      return true;
+    } catch (Exception e) {
+        e.printStackTrace ();
+      return false; // [PENDING - undo already processed init?]
     }
-
-
-    return true;
   }
 
-  private boolean processVisualComponent (org.w3c.dom.Node node, FormManager2 formManager2, RADComponent comp, ComponentContainer parentContainer) {
-    processComponent (node, formManager2, comp, parentContainer);
+  private boolean loadVisualComponent (org.w3c.dom.Node node, FormManager2 formManager2, RADComponent comp, ComponentContainer parentContainer) {
+    loadComponent (node, formManager2, comp, parentContainer);
 
     if (!(comp instanceof FormContainer)) {
       // [PENDING - constraints]
@@ -244,11 +247,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
     return true;
   }
 
-  private boolean processContainer (org.w3c.dom.Node node, FormManager2 formManager2, RADComponent comp, ComponentContainer parentContainer) {
+  private boolean loadContainer (org.w3c.dom.Node node, FormManager2 formManager2, RADComponent comp, ComponentContainer parentContainer) {
     if (comp instanceof RADVisualComponent) {
-      processVisualComponent (node, formManager2, comp, parentContainer);
+      loadVisualComponent (node, formManager2, comp, parentContainer);
     } else {
-      processComponent (node, formManager2, comp, parentContainer);
+      loadComponent (node, formManager2, comp, parentContainer);
     }
 
     if (comp instanceof ComponentContainer) {
@@ -262,11 +265,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
           if (XML_COMPONENT.equals (componentNode.getNodeName ())) {  // [PENDING - visual x non-visual]
             RADVisualComponent newComp = new RADVisualComponent ();
-            processVisualComponent (componentNode, formManager2, newComp, (ComponentContainer)comp);
+            loadVisualComponent (componentNode, formManager2, newComp, (ComponentContainer)comp);
             list.add (newComp);
           } else {
             RADVisualContainer newComp = new RADVisualContainer ();
-            processContainer (componentNode, formManager2, newComp, (ComponentContainer)comp);
+            loadContainer (componentNode, formManager2, newComp, (ComponentContainer)comp);
             list.add (newComp);
           }
         }
@@ -280,71 +283,63 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     if (comp instanceof RADVisualContainer) {
       org.w3c.dom.Node layoutNode = findSubNode (node, XML_LAYOUT);
-      org.w3c.dom.NamedNodeMap attributes = layoutNode.getAttributes ();
-      String className = attributes.getNamedItem (ATTR_LAYOUT_CLASS).getNodeValue (); // [PENDING - survive non-existent attr]
+      String className = findAttribute (layoutNode, ATTR_LAYOUT_CLASS);
       try {
         DesignLayout dl = (DesignLayout)TopManager.getDefault ().systemClassLoader ().loadClass (className).newInstance ();
-        ((RADVisualContainer)comp).setDesignLayout (dl); // [PENDING]
+        org.w3c.dom.Node[] propNodes = findSubNodes (layoutNode, XML_PROPERTY);
+        if (propNodes.length > 0) {
+          HashMap propsMap = new HashMap (propNodes.length * 2);
+          for (int i = 0; i < propNodes.length; i++) {
+            Object propValue = getEncodedPropertyValue (propNodes[i], null);
+            String propName = findAttribute (propNodes[i], ATTR_PROPERTY_NAME);
+            if ((propName != null) && (propValue != null)) {
+              propsMap.put (propName, propValue);
+            }
+          }
+          dl.initChangedProperties (propsMap);
+        }
+
+        ((RADVisualContainer)comp).setDesignLayout (dl);
       } catch (Exception e) {
+        e.printStackTrace ();
         return false; // [PENDING - notify]
       }
     }
     return true;
   }
 
-  private org.w3c.dom.Node findSubNode (org.w3c.dom.Node node, String name) {
-    org.w3c.dom.NodeList children = node.getChildNodes ();
-    if (children != null) {
-      for (int i = 0; i < children.getLength (); i++) {
-        if (children.item (i).getNodeType () == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
-        if (name.equals (children.item (i).getNodeName ())) {
-          return children.item (i);
-        }
-      }
-    }
-    return null;
-  }
-
   private void loadProperties (org.w3c.dom.Node node, RADComponent comp) {
+    org.w3c.dom.Node[] propNodes = findSubNodes (node, XML_PROPERTY);
+    if (propNodes.length > 0) {
+      for (int i = 0; i < propNodes.length; i++) {
+        Object propValue = getEncodedPropertyValue (propNodes[i], comp);
+        String propName = findAttribute (propNodes[i], ATTR_PROPERTY_NAME);
 
-    org.w3c.dom.NodeList children = node.getChildNodes ();
-    if (children != null) {
-      for (int i = 0; i < children.getLength (); i++) {
-        if (children.item (i).getNodeType () == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
+        org.openide.nodes.Node.Property prop = comp.getPropertyByName (propName);
 
-        if (XML_PROPERTY.equals (children.item (i).getNodeName ())) {
-
-          org.w3c.dom.NamedNodeMap attrs = children.item (i).getAttributes ();
-          if (attrs != null) {
-            org.w3c.dom.Node nameNode = attrs.getNamedItem (ATTR_PROPERTY_NAME);
-            org.w3c.dom.Node typeNode = attrs.getNamedItem (ATTR_PROPERTY_TYPE);
-            org.w3c.dom.Node editorNode = attrs.getNamedItem (ATTR_PROPERTY_EDITOR);
-            org.w3c.dom.Node valueTypeNode = attrs.getNamedItem (ATTR_PROPERTY_VALUE_TYPE);
-            org.w3c.dom.Node valueNode = attrs.getNamedItem (ATTR_PROPERTY_VALUE);
-            System.out.println ("Property: "+nameNode.getNodeValue ());
-            System.out.println ("Property Type: "+typeNode.getNodeValue ());
-            System.out.println ("Editor: "+editorNode.getNodeValue ());
-            System.out.println ("Value Type: "+valueTypeNode.getNodeValue ());
-            System.out.println ("Value: "+valueNode.getNodeValue ());
-            if ((nameNode != null) && (typeNode != null) && (editorNode != null) && (valueTypeNode != null) && (valueNode != null)) { // [PENDING - error check]
-              org.openide.nodes.Node.Property prop = comp.getPropertyByName (nameNode.getNodeValue ());
-              try {
-                PropertyEditor ed = (PropertyEditor)TopManager.getDefault ().systemClassLoader ().loadClass (editorNode.getNodeValue ()).newInstance ();
-                Object value = decodeValue (valueNode.getNodeValue (), ed);
-                if (prop instanceof RADComponent.RADProperty) {
-                  ((RADComponent.RADProperty)prop).setCurrentEditor (ed);
-                }
-                prop.setValue (value);
-              } catch (Exception e) {
-        e.printStackTrace ();
-                // [PENDING - handle error]
-              }
+        if (prop instanceof RADComponent.RADProperty) {
+          String propertyEditor = findAttribute (propNodes[i], ATTR_PROPERTY_EDITOR);
+          if (propertyEditor != null) {
+            try {
+              PropertyEditor ed = (PropertyEditor)TopManager.getDefault ().systemClassLoader ().loadClass (propertyEditor).newInstance ();
+              ((RADComponent.RADProperty)prop).setCurrentEditor (ed);
+            } catch (Exception e) {
+              // ignore
             }
           }
-            
+        }
+        if (propValue != null) {
+          try {
+            prop.setValue (propValue);
+          } catch (java.lang.reflect.InvocationTargetException e) {
+            // ignore this property // [PENDING]
+          } catch (IllegalAccessException e) {
+            // ignore this property // [PENDING]
+          }
         }
       }
     }
+
   }
 
   private Hashtable loadEvents (org.w3c.dom.Node node) {
@@ -356,16 +351,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (children.item (i).getNodeType () == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
 
         if (XML_EVENT.equals (children.item (i).getNodeName ())) {
-
-          org.w3c.dom.NamedNodeMap attrs = children.item (i).getAttributes ();
-          if (attrs != null) {
-            org.w3c.dom.Node nameNode = attrs.getNamedItem (ATTR_EVENT_NAME);
-            org.w3c.dom.Node handlerNode = attrs.getNamedItem (ATTR_EVENT_HANDLER);
-            if ((nameNode != null) && (handlerNode != null)) { // [PENDING - error check]
-              eventsTable.put (nameNode.getNodeValue (), handlerNode.getNodeValue ());
-            }
+          String eventName = findAttribute (children.item (i), ATTR_EVENT_NAME);
+          String handlerName = findAttribute (children.item (i), ATTR_EVENT_HANDLER);
+          if ((eventName != null) && (handlerName != null)) { // [PENDING - error check]
+            eventsTable.put (eventName, handlerName);
           }
-            
         }
       }
     }
@@ -382,44 +372,21 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         if (XML_AUX_VALUE.equals (children.item (i).getNodeName ())) {
 
-          org.w3c.dom.NamedNodeMap attrs = children.item (i).getAttributes ();
-          if (attrs != null) {
-            org.w3c.dom.Node nameNode = attrs.getNamedItem (ATTR_AUX_NAME);
-            org.w3c.dom.Node valueNode = attrs.getNamedItem (ATTR_AUX_VALUE);
-            if ((nameNode != null) && (valueNode != null)) { // [PENDING - error check]
-              try {
-                Object auxValue = decodeValue (valueNode.getNodeValue (), null);
-                auxTable.put (nameNode.getNodeValue (), auxValue);
-              } catch (IOException e) {
-        e.printStackTrace ();
-                // [PENDING - handle error]
-              }
+          String auxName = findAttribute (children.item (i), ATTR_AUX_NAME);
+          String auxValue = findAttribute (children.item (i), ATTR_AUX_VALUE);
+          if ((auxName != null) && (auxValue != null)) { // [PENDING - error check]
+            try {
+              Object auxValueDecoded = decodeValue (auxValue);
+              auxTable.put (auxName, auxValueDecoded);
+            } catch (IOException e) {
+              e.printStackTrace ();
+              // [PENDING - handle error]
             }
           }
-            
         }
       }
     }
     return auxTable;
-  }
-
-  private void walkTree (org.w3c.dom.Node node, String indent) {
-    if (node.getNodeType () == org.w3c.dom.Node.TEXT_NODE) return; // ignore text nodes
-    System.out.println (indent + node.getNodeName ());
-    org.w3c.dom.NamedNodeMap attrs = node.getAttributes ();
-    if (attrs != null) {
-      for (int i = 0; i < attrs.getLength (); i++) {
-        org.w3c.dom.Node attr = attrs.item(i);
-        System.out.println (indent + "  Attribute: "+ attr.getNodeName ()+", value: "+attr.getNodeValue ());
-      }
-    }
-
-    org.w3c.dom.NodeList children = node.getChildNodes ();
-    if (children != null) {
-      for (int i = 0; i < children.getLength (); i++) {
-        walkTree (children.item (i), indent + "  ");
-      }
-    }
   }
 
   /** Called to actually save the form represented by specified FormManager2 into specified formObject.
@@ -492,16 +459,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
   private void saveContainer (ComponentContainer container, StringBuffer buf, String indent) {
     if (container instanceof RADVisualContainer) {
       saveVisualComponent ((RADVisualComponent)container, buf, indent);
-      buf.append ("\n");
-      buf.append (indent);
-      addElementOpenAttr (
-          buf, 
-          XML_LAYOUT, 
-          new String[] { ATTR_LAYOUT_CLASS }, 
-          new String[] { ((RADVisualContainer)container).getDesignLayout ().getClass ().getName () }
-      );
-      // [PENDING]
-      buf.append (indent); addElementClose (buf, XML_LAYOUT);
+      saveLayout (((RADVisualContainer)container).getDesignLayout (), buf, indent);
     } else {
       saveComponent ((RADComponent)container, buf, indent);
     }
@@ -538,10 +496,101 @@ public class GandalfPersistenceManager extends PersistenceManager {
     buf.append (indent); addElementClose (buf, XML_SUB_COMPONENTS);
   }
 
+  private void saveLayout (DesignLayout layout, StringBuffer buf, String indent) {
+    buf.append ("\n");
+    buf.append (indent);
+    List changedProperties = layout.getChangedProperties ();
+    if (changedProperties.size () == 0) {
+      addLeafElementOpenAttr (
+          buf, 
+          XML_LAYOUT, 
+          new String[] { ATTR_LAYOUT_CLASS }, 
+          new String[] { layout.getClass ().getName () }
+      );
+    } else {
+      addElementOpenAttr (
+          buf, 
+          XML_LAYOUT, 
+          new String[] { ATTR_LAYOUT_CLASS }, 
+          new String[] { layout.getClass ().getName () }
+      );
+      for (Iterator it = changedProperties.iterator (); it.hasNext (); ) {
+        Node.Property prop = (Node.Property)it.next ();
+        String propertyName = prop.getName ();
+        Object value = null;
+        try {
+          value = prop.getValue ();
+        } catch (java.lang.reflect.InvocationTargetException e) {
+          continue; // ignore this property
+        } catch (IllegalAccessException e) {
+          continue; // ignore this property
+        }
+        PropertyEditor ed = prop.getPropertyEditor ();
+
+        String encodedValue = null; 
+        String encodedSerializeValue = null; 
+        org.w3c.dom.Node valueNode = null;
+        if (ed instanceof XMLPropertyEditor) {
+          ed.setValue (value);
+          valueNode = ((XMLPropertyEditor)ed).storeToXML (topDocument);
+        } else {
+          encodedValue = encodePrimitiveValue (value);
+          if (encodedValue == null) encodedSerializeValue = encodeValue (value);
+          if ((encodedValue == null) && (encodedSerializeValue == null)) {
+            // [PENDING - notify problem?]
+            continue;
+          }
+        }
+
+        buf.append (indent + ONE_INDENT);
+
+        if (encodedValue != null) {
+          addLeafElementOpenAttr (
+              buf, 
+              XML_PROPERTY, 
+              new String[] { ATTR_PROPERTY_NAME, ATTR_PROPERTY_TYPE, ATTR_PROPERTY_VALUE }, 
+              new String[] { propertyName, prop.getValueType ().getName (), encodedValue }
+          );
+        } else {
+          addElementOpenAttr (
+              buf, 
+              XML_PROPERTY, 
+              new String[] { 
+                ATTR_PROPERTY_NAME, 
+                ATTR_PROPERTY_TYPE, 
+                ATTR_PROPERTY_EDITOR, 
+                },
+              new String[] { 
+                prop.getName (), 
+                prop.getValueType ().getName (), 
+                ed.getClass ().getName (), 
+              }
+          );
+          if (valueNode != null) {
+            saveNodeIntoText (buf, valueNode, indent + ONE_INDENT);
+          } else {
+            addLeafElementOpenAttr (
+                buf, 
+                XML_SERIALIZED_PROPERTY_VALUE, 
+                new String[] { 
+                  ATTR_PROPERTY_VALUE, 
+                  },
+                new String[] {
+                  encodedSerializeValue,
+                }
+            );
+          }
+          buf.append (indent); 
+          addElementClose (buf, XML_PROPERTY);
+        }
+      }
+      buf.append (indent); addElementClose (buf, XML_LAYOUT);
+    }
+  }
+
   private void saveVisualComponent (RADVisualComponent component, StringBuffer buf, String indent) {
     saveComponent (component, buf, indent);
     if (!(component instanceof FormContainer)) {
-      buf.append ("\n");
       buf.append (indent); addElementOpen (buf, XML_CONSTRAINTS);
       saveConstraints (component, buf, indent + ONE_INDENT);
       buf.append (indent); addElementClose (buf, XML_CONSTRAINTS);
@@ -578,55 +627,71 @@ public class GandalfPersistenceManager extends PersistenceManager {
       RADComponent.RADProperty prop = (RADComponent.RADProperty) it.next ();
       PropertyDescriptor desc = prop.getPropertyDescriptor ();
       Object value = changedProperties.get (prop);
-      String valueType = value.getClass ().getName ();
-      if (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {
-        valueType = VALUE_RAD_CONNECTION;
-      }
       String encodedValue = null; 
+      String encodedSerializeValue = null; 
       org.w3c.dom.Node valueNode = null;
       if (prop.getCurrentEditor () instanceof XMLPropertyEditor) {
         prop.getCurrentEditor ().setValue (value);
         valueNode = ((XMLPropertyEditor)prop.getCurrentEditor ()).storeToXML (topDocument);
       } else {
-        encodedValue = encodeValue (value, prop.getCurrentEditor ());
-        if (encodedValue == null) {
+        encodedValue = encodePrimitiveValue (value);
+        if (encodedValue == null) encodedSerializeValue = encodeValue (value);
+        if ((encodedValue == null) && (encodedSerializeValue == null)) {
           // [PENDING - notify problem?]
           continue;
         }
       }
       buf.append (indent); 
-      addElementOpenAttr (
-          buf, 
-          XML_PROPERTY, 
-          new String[] { 
-            ATTR_PROPERTY_NAME, 
-            ATTR_PROPERTY_TYPE, 
-            ATTR_PROPERTY_EDITOR, 
-            ATTR_PROPERTY_VALUE_TYPE, 
-            },
-          new String[] { 
-            desc.getName (), 
-            desc.getPropertyType ().getName (), 
-            prop.getCurrentEditor ().getClass ().getName (), 
-            valueType, 
-          }
-      );
-      if (valueNode != null) {
-        saveNodeIntoText (buf, valueNode, indent + ONE_INDENT);
-      } else {
+      if (encodedValue != null) {
         addLeafElementOpenAttr (
             buf, 
-            XML_SERIALIZED_PROPERTY_VALUE, 
+            XML_PROPERTY, 
             new String[] { 
+              ATTR_PROPERTY_NAME, 
+              ATTR_PROPERTY_TYPE, 
+              ATTR_PROPERTY_EDITOR, 
               ATTR_PROPERTY_VALUE, 
               },
-            new String[] {
+            new String[] { 
+              desc.getName (), 
+              desc.getPropertyType ().getName (), 
+              prop.getCurrentEditor ().getClass ().getName (), 
               encodedValue,
             }
         );
+      } else {
+        addElementOpenAttr (
+            buf, 
+            XML_PROPERTY, 
+            new String[] { 
+              ATTR_PROPERTY_NAME, 
+              ATTR_PROPERTY_TYPE, 
+              ATTR_PROPERTY_EDITOR, 
+              },
+            new String[] { 
+              desc.getName (), 
+              desc.getPropertyType ().getName (), 
+              prop.getCurrentEditor ().getClass ().getName (), 
+            }
+        );
+        if (valueNode != null) {
+          saveNodeIntoText (buf, valueNode, indent + ONE_INDENT);
+        } else {
+          buf.append (indent + ONE_INDENT); 
+          addLeafElementOpenAttr (
+              buf, 
+              XML_SERIALIZED_PROPERTY_VALUE, 
+              new String[] { 
+                ATTR_PROPERTY_VALUE, 
+                },
+              new String[] {
+                encodedSerializeValue,
+              }
+          );
+        }
+        buf.append (indent); 
+        addElementClose (buf, XML_PROPERTY);
       }
-      buf.append (indent); 
-      addElementClose (buf, XML_PROPERTY);
     }
   }
 
@@ -656,7 +721,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       String valueName = (String) it.next ();
       Object value = auxValues.get (valueName);
       if (value == null) continue; // such values are not saved
-      String encodedValue = encodeValue (value, null);
+      String encodedValue = encodeValue (value);
       if (encodedValue == null) {
         // [PENDING - solve problem?]
         continue;
@@ -700,8 +765,166 @@ public class GandalfPersistenceManager extends PersistenceManager {
   
 // --------------------------------------------------------------------------------------
 // Value encoding methods
-  
-  private Object decodeValue (String value, PropertyEditor editor) throws IOException {
+
+  private Object getEncodedPropertyValue (org.w3c.dom.Node propertyNode, RADComponent radComponent) {
+    org.w3c.dom.NamedNodeMap attrs = propertyNode.getAttributes ();
+    if (attrs == null) {
+      return null;
+    }
+    org.w3c.dom.Node nameNode = attrs.getNamedItem (ATTR_PROPERTY_NAME);
+    org.w3c.dom.Node typeNode = attrs.getNamedItem (ATTR_PROPERTY_TYPE);
+    org.w3c.dom.Node editorNode = attrs.getNamedItem (ATTR_PROPERTY_EDITOR);
+    org.w3c.dom.Node valueNode = attrs.getNamedItem (ATTR_PROPERTY_VALUE);
+
+/*    System.out.println ("getEncodedPropertyValue::Property: "+nameNode.getNodeValue ());
+    System.out.println ("getEncodedPropertyValue::Property Type: "+typeNode.getNodeValue ());
+    System.out.println ("getEncodedPropertyValue::Editor Node: "+editorNode);
+    System.out.println ("getEncodedPropertyValue::Value Node: "+valueNode);
+    if (valueNode != null) {
+      System.out.println ("getEncodedPropertyValue::Value in Node: "+valueNode.getNodeValue ());
+    }
+*/
+    if ((nameNode == null) || (typeNode == null)) {
+      return null;
+    }
+
+    try {
+      PropertyEditor ed = null;
+      if (editorNode != null) {
+        ed = (PropertyEditor)TopManager.getDefault ().systemClassLoader ().loadClass (editorNode.getNodeValue ()).newInstance ();
+        if (ed instanceof FormAwareEditor) {
+          ((FormAwareEditor)ed).setRADComponent (radComponent);
+        }
+      }
+      Class propertyType = findPropertyType (typeNode.getNodeValue ());
+      Object value = null;
+
+      if (valueNode != null) {
+        value = decodePrimitiveValue (valueNode.getNodeValue (), propertyType);
+      } else {
+        if ((ed != null) && (ed instanceof XMLPropertyEditor)) {
+          org.w3c.dom.NodeList propChildren = propertyNode.getChildNodes ();
+          if ((propChildren != null) && (propChildren.getLength () > 0)) {
+            for (int i = 0; i < propChildren.getLength (); i++) {
+              if (propChildren.item (i).getNodeType () == org.w3c.dom.Node.ELEMENT_NODE) {
+                ((XMLPropertyEditor)ed).readFromXML (propChildren.item (i));
+                value = ed.getValue ();
+                break;
+              }
+            }
+          }
+        } else {
+          org.w3c.dom.NodeList propChildren = propertyNode.getChildNodes ();
+          if ((propChildren != null) && (propChildren.getLength () > 0)) {
+            for (int i = 0; i < propChildren.getLength (); i++) {
+              if (XML_SERIALIZED_PROPERTY_VALUE.equals (propChildren.item (i).getNodeName ())) {
+                String serValue = findAttribute (propChildren.item (i), ATTR_PROPERTY_VALUE);
+                if (serValue != null) {
+                  value = decodeValue (serValue);
+                }
+                break;
+              }
+            }
+          }
+        }
+      }
+/*      if (value == null) {
+        System.out.println ("getEncodedPropertyValue::returning null");
+      } else {
+        System.out.println ("getEncodedPropertyValue::returning: "+value.getClass ().getName ()+", value: "+value);
+      } */
+      return value;
+
+    } catch (Exception e) {
+        e.printStackTrace ();
+      return null; 
+    }
+  }
+
+  private Class  findPropertyType (String type) throws ClassNotFoundException {
+    if ("int".equals (type)) return Integer.TYPE;
+    else if ("short".equals (type)) return Short.TYPE;
+    else if ("byte".equals (type)) return Byte.TYPE;
+    else if ("long".equals (type)) return Long.TYPE;
+    else if ("float".equals (type)) return Float.TYPE;
+    else if ("double".equals (type)) return Double.TYPE;
+    else if ("boolean".equals (type)) return Boolean.TYPE;
+    else if ("char".equals (type)) return Character.TYPE;
+    else {
+      return TopManager.getDefault ().systemClassLoader ().loadClass (type);
+    }
+  }
+
+  /** Decodes a value of given type from the specified String. Supported types are: <UL>
+  * <LI> RADConnectionPropertyEditor.RADConnectionDesignValue
+  * <LI> Class
+  * <LI> String
+  * <LI> Integer, Short, Byte, Long, Float, Double, Boolean, Character </UL>
+  * @return decoded value or null if specified object is not of supported type
+  */
+  private Object decodePrimitiveValue (String encoded, Class type) {
+    System.out.println ("Decode primitive value: "+encoded+", of type: "+type.getName ());
+    if (Integer.class.isAssignableFrom (type) || Integer.TYPE.equals (type)) {
+      return Integer.valueOf (encoded);
+    } else if (Short.class.isAssignableFrom (type) || Short.TYPE.equals (type)) {
+      return Short.valueOf (encoded);
+    } else if (Byte.class.isAssignableFrom (type) || Byte.TYPE.equals (type)) {
+      return Byte.valueOf (encoded);
+    } else if (Long.class.isAssignableFrom (type) || Long.TYPE.equals (type)) {
+      return Long.valueOf (encoded);
+    } else if (Float.class.isAssignableFrom (type) || Float.TYPE.equals (type)) {
+      return Float.valueOf (encoded);
+    } else if (Double.class.isAssignableFrom (type) || Double.TYPE.equals (type)) {
+      return Double.valueOf (encoded);
+    } else if (Boolean.class.isAssignableFrom (type) || Boolean.TYPE.equals (type)) {
+      return Boolean.valueOf (encoded);
+    } else if (Character.class.isAssignableFrom (type) || Character.TYPE.equals (type)) {
+      return new Character (encoded.charAt(0));
+    } else if (String.class.isAssignableFrom (type)) {
+      return encoded;
+    } else if (Class.class.isAssignableFrom (type)) {
+      try {
+        return TopManager.getDefault ().systemClassLoader ().loadClass (encoded);
+      } catch (ClassNotFoundException e) {
+        e.printStackTrace ();
+        // will return null as the notification of failure
+      }
+    }
+    return null;
+  }
+
+  /** Encodes specified value into a String. Supported types are: <UL>
+  * <LI> Class
+  * <LI> String
+  * <LI> Integer, Short, Byte, Long, Float, Double, Boolean, Character </UL>
+  * @return String containing encoded value or null if specified object is not of supported type
+  */
+  private String encodePrimitiveValue (Object value) {
+    System.out.println ("Encode primitive value: "+value);
+   
+    if ((value instanceof Integer) || 
+        (value instanceof Short) ||
+        (value instanceof Byte) ||
+        (value instanceof Long) ||
+        (value instanceof Float) ||
+        (value instanceof Double) ||
+        (value instanceof Boolean) ||
+        (value instanceof Character) ||
+        (value instanceof String)) {
+      return value.toString ();
+    } 
+     
+    if (value instanceof Class) {
+      return ((Class)value).getName ();
+    }
+    return null; // is not a primitive type
+  }
+
+  /** Decodes a value of from the specified String containing textual representation of serialized stream.
+  * @return decoded object
+  * @exception IOException thrown if an error occures during deserializing the object
+  */
+  private Object decodeValue (String value) throws IOException {
      if ((value == null) || (value.length () == 0)) return null;
     System.out.println ("Decode value: "+value);
      char[] bisChars = value.toCharArray ();
@@ -711,7 +934,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
      for (int i = 0; i < bisChars.length; i++) {
        if (',' == bisChars[i]) {
          try {
-           System.out.println ("Parsing int: "+singleNum);
+//           System.out.println ("Parsing int: "+singleNum);
 //           bytes[count++] = (byte)Integer.parseInt (singleNum, 16);
            bytes[count++] = Byte.parseByte (singleNum);
          } catch (NumberFormatException e) {
@@ -738,87 +961,34 @@ public class GandalfPersistenceManager extends PersistenceManager {
      }
   }
 
-  private String encodeValue (Object value, PropertyEditor ed) {
+  /** Encodes specified value to a String containing textual representation of serialized stream.
+  * @return String containing textual representation of the serialized object
+  */
+  private String encodeValue (Object value) {
     System.out.println ("Encode value: "+value);
-/*    if (value == null) return "null";
-   
-    if (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {
-      RADConnectionPropertyEditor.RADConnectionDesignValue radConn = (RADConnectionPropertyEditor.RADConnectionDesignValue) value;
-      StringBuffer sb = new StringBuffer ();
-      switch (radConn.type) {
-        case RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_PROPERTY:  
-          sb.append ("type=property"); 
-          sb.append (";component=");
-          sb.append (radConn.radComponentName);
-          sb.append (";name=");
-          sb.append (radConn.propertyName);
-          break;
-        case RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_METHOD:  
-          sb.append ("type=method"); 
-          sb.append (";component=");
-          sb.append (radConn.radComponentName);
-          sb.append (";name=");
-          sb.append (radConn.propertyName);
-          break;
-        case RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_CODE:  
-          sb.append ("type=code"); 
-          sb.append (";code=");
-          sb.append (Utilities.replaceString (radConn.userCode, "\n", "\\n"));
-          break;
-        case RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_VALUE:  
-          sb.append ("type=value"); 
-          sb.append (";value=");
-          sb.append (radConn.value);
-          break;
-      }
-      return sb.toString ();
+
+    ByteArrayOutputStream bos = new ByteArrayOutputStream ();
+    try {
+      ObjectOutputStream oos = new ObjectOutputStream (bos);
+      oos.writeObject (value);
+      oos.close ();
+    } catch (Exception e) {
+      e.printStackTrace ();
+      return null; // problem during serialization
     }
-    
-    if ((value instanceof Integer) || 
-        (value instanceof Short) ||
-        (value instanceof Byte) ||
-        (value instanceof Long) ||
-        (value instanceof Float) ||
-        (value instanceof Double) ||
-        (value instanceof Boolean) ||
-        (value instanceof Character) ||
-        (value instanceof String)) {
-       return value.toString ();
-     } 
-     
-     if (ed instanceof XMLPropertyEditor) {
-       ed.setValue (value);
-       org.w3c.dom.Node node = ((XMLPropertyEditor)ed).storeToXML ();
-       
-       return "XMLized"; // [PENDING]
-     }
-     
-     if (value instanceof Class) {
-       return ((Class)value).getName ();
-     }
-*/     
-     ByteArrayOutputStream bos = new ByteArrayOutputStream ();
-     try {
-       ObjectOutputStream oos = new ObjectOutputStream (bos);
-       oos.writeObject (value);
-       oos.close ();
-     } catch (Exception e) {
-       e.printStackTrace ();
-       return null; // problem during serialization
-     }
-     byte[] bosBytes = bos.toByteArray ();
-     StringBuffer sb = new StringBuffer (bosBytes.length);
-     for (int i = 0; i < bosBytes.length; i++) {
-       if (i != bosBytes.length - 1) {
-//         sb.append (Integer.toHexString (bosBytes[i])+","); //(int)bosBytes[i] & 0xFF)+",");
+    byte[] bosBytes = bos.toByteArray ();
+    StringBuffer sb = new StringBuffer (bosBytes.length);
+    for (int i = 0; i < bosBytes.length; i++) {
+      if (i != bosBytes.length - 1) {
+//       sb.append (Integer.toHexString (bosBytes[i])+","); //(int)bosBytes[i] & 0xFF)+",");
          sb.append (bosBytes[i]+",");
-       } else {
-//         sb.append (Integer.toHexString (bosBytes[i])); //(int)bosBytes[i] & 0xFF));
-         sb.append (""+bosBytes[i]);
-       }
-     }
-     System.out.println ("Encoded value: "+sb.toString ());
-     return sb.toString ();
+      } else {
+//        sb.append (Integer.toHexString (bosBytes[i])); //(int)bosBytes[i] & 0xFF));
+        sb.append (""+bosBytes[i]);
+      }
+    }
+    System.out.println ("Encoded value: "+sb.toString ());
+    return sb.toString ();
   }
   
 // --------------------------------------------------------------------------------------
@@ -899,11 +1069,79 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
   }
 
+// --------------------------------------------------------------------------------------
+// Utility DOM access methods
 
+/*  private void walkTree (org.w3c.dom.Node node, String indent) {
+    if (node.getNodeType () == org.w3c.dom.Node.TEXT_NODE) return; // ignore text nodes
+    System.out.println (indent + node.getNodeName ());
+    org.w3c.dom.NamedNodeMap attrs = node.getAttributes ();
+    if (attrs != null) {
+      for (int i = 0; i < attrs.getLength (); i++) {
+        org.w3c.dom.Node attr = attrs.item(i);
+        System.out.println (indent + "  Attribute: "+ attr.getNodeName ()+", value: "+attr.getNodeValue ());
+      }
+    }
+
+    org.w3c.dom.NodeList children = node.getChildNodes ();
+    if (children != null) {
+      for (int i = 0; i < children.getLength (); i++) {
+        walkTree (children.item (i), indent + "  ");
+      }
+    }
+  }
+*/
+  /** Finds first subnode of given node with specified name.
+  * @param node the node whose subnode we are looking for
+  * @param name requested name of the subnode
+  * @return the found subnode or null if no such subnode exists
+  */
+  private org.w3c.dom.Node findSubNode (org.w3c.dom.Node node, String name) {
+    org.w3c.dom.NodeList children = node.getChildNodes ();
+    if (children != null) {
+      for (int i = 0; i < children.getLength (); i++) {
+        if (children.item (i).getNodeType () == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
+        if (name.equals (children.item (i).getNodeName ())) {
+          return children.item (i);
+        }
+      }
+    }
+    return null;
+  }
+
+  /** Finds all subnodes of given node with specified name.
+  * @param node the node whose subnode we are looking for
+  * @param name requested name of the subnode
+  * @return array of the found subnodes
+  */
+  private org.w3c.dom.Node[] findSubNodes (org.w3c.dom.Node node, String name) {
+    ArrayList list = new ArrayList ();
+    org.w3c.dom.NodeList children = node.getChildNodes ();
+    if (children != null) {
+      for (int i = 0; i < children.getLength (); i++) {
+        if (children.item (i).getNodeType () == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
+        if (name.equals (children.item (i).getNodeName ())) {
+          list.add (children.item (i));
+        }
+      }
+    }
+    return (org.w3c.dom.Node[]) list.toArray (new org.w3c.dom.Node[list.size ()]);
+  }
+
+  /** Utility method to obtain given attribute value from specified Node.
+  * @return attribute name or null if the attribute is not present
+  */
+  private String findAttribute (org.w3c.dom.Node node, String attributeName) {
+    org.w3c.dom.NamedNodeMap attributes = node.getAttributes ();
+    org.w3c.dom.Node valueNode = attributes.getNamedItem (attributeName);
+    if (valueNode == null) return null;
+    else return valueNode.getNodeValue ();
+  }
 }
 
 /*
  * Log
+ *  14   Gandalf   1.13        7/13/99  Ian Formanek    Third draft
  *  13   Gandalf   1.12        7/12/99  Ian Formanek    Uses XMLPropertyEditor 
  *       or sub element for serialized property values
  *  12   Gandalf   1.11        7/12/99  Ian Formanek    Second cut - loads/saves
