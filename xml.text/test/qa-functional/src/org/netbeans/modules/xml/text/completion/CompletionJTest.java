@@ -24,7 +24,6 @@ import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.modules.xml.text.syntax.XMLOptions;
-import org.netbeans.test.oo.gui.jam.JamController;
 import org.netbeans.tests.xml.JXTest;
 import org.openide.loaders.DataObject;
 import org.openide.options.SystemOption;
@@ -101,10 +100,11 @@ public class CompletionJTest extends JXTest {
         }
         
         clearText();
-        insert(""
+        editor.txtEditorPane().setText(""
         + "<?xml version='1.0' encoding='UTF-8'?>\n"
-        + "<!DOCTYPE html PUBLIC '-//Test//DTD XHTML 1.0 Subset//EN' 'xhtml.dtd'>\n"
-        + "<h");
+        + "<!DOCTYPE html PUBLIC '-//Test//DTD XHTML 1.0 Subset//EN' 'xhtml.dtd'>\n");
+
+        insert("<h");
         save();
         //tml>
         showCompl(NO_EMPTY);
@@ -360,7 +360,7 @@ public class CompletionJTest extends JXTest {
      * @param args
      */
     public static void main(String[] args) {
-        JamController.setFast(false);
+        //JamController.setFast(false);
         DEBUG = true;
         TestRunner.run(CompletionJTest.class);
     }
