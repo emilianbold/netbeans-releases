@@ -1298,9 +1298,14 @@ public class FormEditorSupport extends JavaEditor
             });
         }
         else if (!designerSelected && !Boolean.FALSE.equals(groupVisible)) {
+            // Workaround for issue 46694 (bug 5057174)
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    group.close();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            group.close();
+                        }
+                    });
                 }
             });
         }
