@@ -32,8 +32,10 @@ public class RefreshAction extends CookieAction {
     }
     
     protected void performAction(Node[] nodes) {
-        RefreshCookie r = (RefreshCookie) nodes[0].getCookie(RefreshCookie.class);
-        r.refresh();
+        if (nodes.length > 0) {
+            RefreshCookie r = (RefreshCookie) nodes[0].getCookie(RefreshCookie.class);
+            r.refresh();
+         }
     }
     
     protected Class[] cookieClasses() {
