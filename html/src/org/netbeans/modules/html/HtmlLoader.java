@@ -51,6 +51,7 @@ public class HtmlLoader extends UniFileLoader {
     }
 
     protected void initialize () {
+        super.initialize();
         getExtensions ().addExtension ("html"); // NOI18N
         getExtensions ().addExtension ("htm"); // NOI18N
         getExtensions ().addExtension ("shtml"); // NOI18N
