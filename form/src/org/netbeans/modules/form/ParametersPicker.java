@@ -496,8 +496,8 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         final DialogDescriptor dd = new DialogDescriptor(picker, title);
         dd.setValid(picker.isPickerValid());
         picker.addPropertyChangeListener("pickerValid", new PropertyChangeListener() { // NOI18N
-            public void propertyChange(PropertyChangeEvent evt) {
-                dd.setValid(((Boolean)evt.getNewValue()).booleanValue());
+            public void propertyChange(PropertyChangeEvent evt2) {
+                dd.setValid(((Boolean)evt2.getNewValue()).booleanValue());
             }
         });
         java.awt.Dialog dialog = TopManager.getDefault().createDialog(dd);
@@ -537,8 +537,8 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         final DialogDescriptor dd = new DialogDescriptor(propertyPicker, title);
         dd.setValid(propertyPicker.isPickerValid());
         propertyPicker.addPropertyChangeListener("pickerValid", new PropertyChangeListener() { // NOI18N
-            public void propertyChange(PropertyChangeEvent evt) {
-                dd.setValid(((Boolean)evt.getNewValue()).booleanValue());
+            public void propertyChange(PropertyChangeEvent evt2) {
+                dd.setValid(((Boolean)evt2.getNewValue()).booleanValue());
             }
         });
         java.awt.Dialog dialog = TopManager.getDefault().createDialog(dd);
