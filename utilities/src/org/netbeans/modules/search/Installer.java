@@ -35,10 +35,10 @@ public class Installer extends ModuleInstall {
   private final static long serialVersionUID = 1;
   
   // place itself in
-  private final String MENU = "Tools";  
+  private final String MENU = "Tools"; // NOI18N
   // place itself behind
-  private final String MENUITEM = "UnmountFSAction";
-  private final String ACTION = "RepositorySearchAction";
+  private final String MENUITEM = "UnmountFSAction"; // NOI18N
+  private final String ACTION = "RepositorySearchAction"; // NOI18N
 
   /** Holds hooking code. */
   private SearchHook hook;
@@ -114,7 +114,7 @@ public class Installer extends ModuleInstall {
       );
       
     } catch (Exception ex) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
         ex.printStackTrace ();         
     }
   }
@@ -124,6 +124,7 @@ public class Installer extends ModuleInstall {
 
 /* 
 * Log
+*  9    Gandalf   1.8         1/13/00  Radko Najman    I18N
 *  8    Gandalf   1.7         1/6/00   Petr Kuzel      Tools menu position and 
 *       debug removed.
 *  7    Gandalf   1.6         1/5/00   Petr Kuzel      Margins used. Help 

@@ -107,7 +107,7 @@ public class ResultModel implements NodeAcceptor, TaskListener {
     if (found==1) {
       root.setDisplayName (
         MessageFormat.format(
-          Res.text("MSG_FOUND_A_NODE"), 
+          Res.text("MSG_FOUND_A_NODE"), // NOI18N
           new Object[] {new Integer(found)}
         )
       );
@@ -115,13 +115,13 @@ public class ResultModel implements NodeAcceptor, TaskListener {
     } else if (found>1) {
       root.setDisplayName (
         MessageFormat.format(
-          Res.text("MSG_FOUND_X_NODES"), 
+          Res.text("MSG_FOUND_X_NODES"), // NOI18N
           new Object[] {new Integer(found)}
         )
       ); 
         
     } else { // <1
-      root.setDisplayName(Res.text("MSG_NO_NODE_FOUND"));
+      root.setDisplayName(Res.text("MSG_NO_NODE_FOUND")); // NOI18N
     }
     
     done = true;
@@ -162,13 +162,13 @@ public class ResultModel implements NodeAcceptor, TaskListener {
     public ResultRootNode () {
       super(new Children.Array());
       
-      setDisplayName(Res.text("SEARCHING___"));      
+      setDisplayName(Res.text("SEARCHING___")); // NOI18N
     }
     
     /** @return universal search icon.
     */
     public Image getIcon(int type) {
-      return Res.image("SEARCH");
+      return Res.image("SEARCH"); // NOI18N
     }
         
     public Image getOpenedIcon(int type) {
@@ -180,6 +180,7 @@ public class ResultModel implements NodeAcceptor, TaskListener {
 
 /* 
 * Log
+*  9    Gandalf   1.8         1/13/00  Radko Najman    I18N
 *  8    Gandalf   1.7         1/5/00   Petr Kuzel      Margins used. Help 
 *       contexts.
 *  7    Gandalf   1.6         1/4/00   Petr Kuzel      Bug hunting.
