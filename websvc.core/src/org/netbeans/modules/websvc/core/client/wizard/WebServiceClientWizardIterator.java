@@ -17,17 +17,19 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.NoSuchElementException;
+import java.util.Collections;
 import java.util.Set;
-import java.util.HashSet;
 import java.awt.Component;
 import javax.swing.JComponent;
+import javax.swing.ProgressMonitor;
 import javax.swing.event.ChangeListener;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
-
+import org.openide.windows.WindowManager;
+        
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -108,7 +110,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
 
     public Set/*FileObject*/ instantiate() throws IOException {
 
-        Set result = new HashSet();
+        Set result = Collections.EMPTY_SET;
 
         // Steps:
         // 1. invoke wizard to select which service to add a reference to.
@@ -137,7 +139,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
             return result;
         }
 
-        byte [] sourceWsdlDownload = (byte []) wiz.getProperty(WizardProperties.WSDL_DOWNLOAD_FILE);
+        final byte [] sourceWsdlDownload = (byte []) wiz.getProperty(WizardProperties.WSDL_DOWNLOAD_FILE);
         String wsdlFilePath = (String) wiz.getProperty(WizardProperties.WSDL_FILE_PATH);
         String packageName = (String) wiz.getProperty(WizardProperties.WSDL_PACKAGE_NAME);
         StubDescriptor stubDescriptor = (StubDescriptor) wiz.getProperty(WizardProperties.CLIENT_STUB_TYPE);
@@ -196,27 +198,45 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
                 return result;
             }
         }
-        
-        // 2. add the service to the project.
-        ClientBuilder builder = new ClientBuilder(project, clientSupport, sourceWsdlFile, packageName, sourceUrl, stubDescriptor);
-        result = builder.generate();
-        
-        if(sourceWsdlDownload != null) {
-            // we used a temp file, delete it now.
-            try {
-                sourceWsdlFile.delete();
-                sourceWsdlFile = null;
-            } catch(FileAlreadyLockedException ex) {
-                String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_TempFileLocked", sourceWsdlFile.getNameExt()); // NOI18N
-                NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(desc);
-            } catch(IOException ex) {
-                String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_TempFileNotDeleted", sourceWsdlFile.getNameExt()); // NOI18N
-                NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(desc);
-            }
-        }
 
+        // 2. add the service client to the project.
+        // " " for note parameter ensures monitor panel has proper room for our notes.
+        final ProgressMonitor monitor = new ProgressMonitor(WindowManager.getDefault().getMainWindow(), 
+            NbBundle.getMessage(WebServiceClientWizardIterator.class, "MSG_WizCreateClient"), " ", 0, 100); // NOI18N
+        monitor.setMillisToPopup(0);
+        monitor.setMillisToDecideToPopup(0);
+        monitor.setProgress(1);
+
+        final ClientBuilder builder = new ClientBuilder(project, clientSupport, sourceWsdlFile, packageName, sourceUrl, stubDescriptor);
+        final FileObject sourceWsdlFileTmp = sourceWsdlFile;
+        
+        org.openide.util.RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    builder.generate(monitor);
+
+                    if(sourceWsdlDownload != null) {
+                        // we used a temp file, delete it now.
+                        try {
+                            sourceWsdlFileTmp.delete();
+                        } catch(FileAlreadyLockedException ex) {
+                            String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_TempFileLocked", sourceWsdlFileTmp.getNameExt()); // NOI18N
+                            NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notify(desc);
+                        } catch(IOException ex) {
+                            String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_TempFileNotDeleted", sourceWsdlFileTmp.getNameExt()); // NOI18N
+                            NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notify(desc);
+                        }
+                    }
+                    
+                    builder.updateMonitor(monitor, NbBundle.getMessage(WebServiceClientWizardIterator.class, "MSG_WizDone"), 99); // NOI18N
+                } finally {
+                    builder.updateMonitor(monitor, null, 100);
+                }
+            }
+        });
+        
         return result;
     }
 
