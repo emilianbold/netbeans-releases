@@ -51,13 +51,13 @@ public class Breakpoints extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        //suite.addTest(new Breakpoints("testLineBreakpoint"));
+        suite.addTest(new Breakpoints("testLineBreakpoint"));
         //suite.addTest(new Breakpoints("testConditionalLineBreakpoint"));
-        //suite.addTest(new Breakpoints("testMethodBreakpoint"));
-        //suite.addTest(new Breakpoints("testClassBreakpoint"));
-        //suite.addTest(new Breakpoints("testVariableAccessBreakpoint"));
-        //suite.addTest(new Breakpoints("testVariableModificationBreakpoint"));
-//        suite.addTest(new Breakpoints("testThreadBreakpoint"));
+        suite.addTest(new Breakpoints("testMethodBreakpoint"));
+        suite.addTest(new Breakpoints("testClassBreakpoint"));
+        suite.addTest(new Breakpoints("testVariableAccessBreakpoint"));
+        suite.addTest(new Breakpoints("testVariableModificationBreakpoint"));
+        //suite.addTest(new Breakpoints("testThreadBreakpoint"));
         suite.addTest(new Breakpoints("testExceptionBreakpoint"));
         return suite;
     }
