@@ -3,6 +3,7 @@ Netbeans-Module-Name: Form Module
 
 Name: com/netbeans/developer/modules/loaders/form/FormDataLoader.class
 Netbeans-Module-Class: Loader
+Install-Before: com.netbeans.developer.modules.loaders.java.JavaDataLoader
 
 Name: com/netbeans/developer/modules/loaders/form/FormLoaderSettings.class
 Netbeans-Module-Class: Option
@@ -10,3 +11,16 @@ Netbeans-Module-Class: Option
 Name: com/netbeans/developer/modules/loaders/form/palette/PaletteNode.class
 Netbeans-Module-Class: Node
 Type: Environment
+
+Name: com/netbeans/developer/modules/loaders/form/palette/PaletteAction.class
+Netbeans-Module-Class: Action
+Toolbar: Form
+
+Name: com/netbeans/developer/modules/loaders/form/actions/DesignModeAction.class
+Netbeans-Module-Class: Action
+Toolbar: Form
+
+Name: com/netbeans/developer/modules/loaders/form/actions/TestModeAction.class
+Netbeans-Module-Class: Action
+Toolbar: Form
+

@@ -38,7 +38,6 @@ import com.netbeans.ide.actions.ReorderAction;
 * The same situation applies for NbLoaderPool inner class.
 * Instance of CoronaLoaderPool (the only instance in the system) you
 * can obtain through getNbLoaderPool().
-*
 * @author Dafe Simonek
 */
 public final class LoaderPoolNode extends IndexedNode {
@@ -387,9 +386,6 @@ public final class LoaderPoolNode extends IndexedNode {
     * @exception IllegalArgumentException if the loader is already there
     */
     void addLoader (final DataLoader dl, final Class before, final Class after) {
-      String bef = (before == null) ? "null" : before.getName ();
-      String af = (after == null) ? "null" : after.getName ();
-      System.out.println("AddLoader: "+dl+", before: "+bef+", after:"+af);
       MUTEX.readAccess(new Mutex.Action () {
         public Object run () {
           // obtain the map holding loaders-nodes pairs
@@ -503,35 +499,6 @@ public final class LoaderPoolNode extends IndexedNode {
     protected Enumeration loaders () {
      final java.util.Map map =
        ((LoaderPoolNodeChildren)getLoaderPoolNode().getChildren()).getMyMap();
-     Children.MUTEX.readAccess(
-       new Mutex.Action() {
-         public Object run () {
-           Collection nodes = map.values ();
-           Set loaders = map.keySet ();
-           Object[] loadersArray = new Object [loaders.size ()];
-           LoaderPoolNodeChildren lpnc = (LoaderPoolNodeChildren)getLoaderPoolNode().getChildren();
-
-           for (Iterator it = loaders.iterator (); it.hasNext ();) {
-             Object ldr = it.next ();
-             loadersArray[lpnc.indexOf ((Node)map.get (ldr))] = ldr;
-             System.out.println("Loaders1: "+it.next ());
-           }
-           for (int i = 0; i < loadersArray.length; i++) {
-             System.out.println("Real Loaders ["+i+"]="+loadersArray [i]);
-             }
-           return null;
-         }
-       });
-     Children.MUTEX.readAccess(
-       new Mutex.Action() {
-         public Object run () {
-           for (Enumeration e = Collections.enumeration(new HashSet(map.keySet())); e.hasMoreElements (); ) {
-             System.out.println("Loaders2: "+e.nextElement ());
-           }
-           return null;
-         }
-       });
-     
      return (Enumeration)Children.MUTEX.readAccess(
        new Mutex.Action() {
          public Object run () {
@@ -556,6 +523,7 @@ public final class LoaderPoolNode extends IndexedNode {
 
 /*
 * Log
+*  11   Gandalf   1.10        3/24/99  Ian Formanek    
 *  10   Gandalf   1.9         3/24/99  Ian Formanek    
 *  9    Gandalf   1.8         3/18/99  Ian Formanek    
 *  8    Gandalf   1.7         3/18/99  Jaroslav Tulach 
