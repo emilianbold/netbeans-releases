@@ -416,7 +416,7 @@ final class NbErrorManager extends ErrorManager {
         private static String[] decompose (Throwable t) {
             StringWriter sw = new StringWriter ();
             t.printStackTrace (new PrintWriter (sw));
-            StringTokenizer tok = new StringTokenizer (sw.toString (), "\n"); // NOI18N
+            StringTokenizer tok = new StringTokenizer (sw.toString (), "\n\r"); // NOI18N
             int c = tok.countTokens ();
             String[] lines = new String[c];
             for (int i = 0; i < c; i++)
