@@ -537,7 +537,7 @@ public class NewTemplateAction extends NodeAction {
             }
             
             // bugfix #38421, read node in contextLookup to select the right wizard
-            TemplateWizard wizard = getWizard (nodesInContext != null ? nodesInContext[0] : null);
+            TemplateWizard wizard = getWizard (nodesInContext[0]);
             
             try {
                 wizard.setTargetName (null);
