@@ -612,11 +612,16 @@ public final class BeanInstaller
 
     private static class CategorySelector extends JPanel {
         private JList list;
+        private PaletteCategoryNode[] catNodes;
 
         static final long serialVersionUID =936459317386043582L;
-        
+      
         public CategorySelector() {
-            String[] categories = ComponentPalette.getDefault().getPaletteCategories();
+            catNodes = ComponentPalette.getDefault().getCategoriesNodes();
+            String[] categories = new String[catNodes.length];
+            for (int i=0; i < catNodes.length; i++)
+                categories[i] = catNodes[i].getDisplayName();
+//            String[] categories = ComponentPalette.getDefault().getPaletteCategories();
 
             list = new JList(categories);
             list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -644,7 +649,9 @@ public final class BeanInstaller
         }
 
         public String getSelectedCategory() {
-            return(String) list.getSelectedValue();
+            int i = list.getSelectedIndex();
+            return i >= 0 ? catNodes[i].getName() : null;
+//            return(String) list.getSelectedValue();
         }
 
         public Dimension getPreferredSize() {
