@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- use junit with already compiled extensions -->
 	<pathelement location="src"/>
 	<pathelement location="${xtest.extra.home}/lib/junit.jar"/>
-	<pathelement location="${xtest.extra.home}/lib/xml-apis.jar"/>
+	<pathelement location="${xtest.extra.home}/lib/xerces.jar"/>
 	<pathelement location="${xtest.extra.home}/lib/xalan.jar"/>
 	<pathelement location="${xtest.extra.home}/lib/junit-ext.jar"/>
       </classpath>
@@ -73,7 +73,6 @@ Microsystems, Inc. All Rights Reserved.
         <include name="org/netbeans/core/modules/"/>
     </jar>        
     <copy file="${xtest.extra.home}/lib/junit.jar" todir="lib"/>
-    <copy file="${xtest.extra.home}/lib/xml-apis.jar" todir="lib"/>
     <copy file="${xtest.extra.home}/lib/xerces.jar" todir="lib"/>
     <copy file="${xtest.extra.home}/lib/xalan.jar" todir="lib"/>
     <copy file="${xtest.extra.home}/lib/xtest-ext.jar" todir="lib"/>
@@ -106,7 +105,6 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="lib/xtest.jar"/>
     <delete file="lib/junit-ext.jar"/>
     <delete file="lib/junit.jar"/>
-    <delete file="lib/xml-apis.jar"/>
     <delete file="lib/xerces.jar"/>
     <delete file="lib/xalan.jar"/>
     <delete file="lib/xtest-ext.jar"/>
