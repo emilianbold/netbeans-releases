@@ -16,36 +16,78 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
   <folder name="Services">
     <folder name="Browsers">
+
+      <!-- Present on all platforms -->
       <file name="SimpleExtBrowser.settings" url="simpleBrowser.xml">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
-    </file>
-    <file name="UnixWebBrowser.settings" url="unixBrowser.xml">
-      <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.UnixWebBrowser.isHidden"/>
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
-      <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
-    </file>
-    <file name="WinWebBrowser.settings" url="winBrowser.xml">
-      <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.WinWebBrowser.isHidden"/>
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
-      <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
-    </file>
+      </file>
 
-    <attr name="SimpleExtBrowser.settings/SwingBrowser.ser" boolvalue="true"/>
-    <attr name="UnixWebBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
-    <attr name="WinWebBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
-    <attr name="WinWebBrowser.settings/UnixWebBrowser.settings" methodvalue="org.openide.util.Utilities.isWindows"/>
-    </folder>
+      <file name="SystemDefaultBrowser.settings" url="SystemDefaultBrowser.xml">
+        <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.SystemDefaultBrowser.isHidden"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
+      </file>
+
+      <file name="NetscapeBrowser.settings" url="NetscapeBrowser.xml">
+        <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.NetscapeBrowser.isHidden"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/netscape.png"/>
+      </file>
+
+      <file name="IExplorerBrowser.settings" url="IExplorerBrowser.xml">
+        <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.IExplorerBrowser.isHidden"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
+      </file>
+
+      <file name="MozillaBrowser.settings" url="MozillaBrowser.xml">
+        <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.MozillaBrowser.isHidden"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/mozilla.png"/>
+      </file>
+      
+      <!-- Default system browser should be first on Windows -->
+      <attr name="SystemDefaultBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
+      <attr name="SystemDefaultBrowser.settings/MozillaBrowser.settings" boolvalue="true"/>
+      <attr name="SystemDefaultBrowser.settings/NetscapeBrowser.settings" boolvalue="true"/>
+      <attr name="SystemDefaultBrowser.settings/IExplorerBrowser.settings" boolvalue="true"/>
+
+      <!-- Browsers order -->
+      <attr name="MozillaBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
+      <attr name="NetscapeBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
+      <attr name="IExplorerBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
+
+      <attr name="IExplorerBrowser.settings/MozillaBrowser.settings" boolvalue="true"/>
+      <attr name="MozillaBrowser.settings/NetscapeBrowser.settings" boolvalue="true"/>
+
+      <!-- Other browsers order -->
+      <attr name="SimpleExtBrowser.settings/SwingBrowser.ser" boolvalue="true"/>
+            
+     </folder>
   </folder>
 
   <folder name="Templates">
     <folder name="Services">
       <folder name="Browsers">
+      
         <file name="SimpleExtBrowser.settings" url="simpleBrowser.xml">
           <attr name="template" boolvalue="true"/>
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
           <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
         </file>
+        
+        <file name="MozillaBrowser.settings" url="MozillaBrowser.xml">
+          <attr name="template" boolvalue="true"/>
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
+          <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/mozilla.png"/>
+        </file>
+        <file name="NetscapeBrowser.settings" url="NetscapeBrowser.xml">
+          <attr name="template" boolvalue="true"/>
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
+          <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/netscape.png"/>
+        </file>
+
       </folder>
     </folder>
   </folder>
