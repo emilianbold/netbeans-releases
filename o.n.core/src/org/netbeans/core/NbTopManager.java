@@ -838,6 +838,7 @@ public abstract class NbTopManager extends TopManager {
         * For externalization.
         */
         public NbBrowser () {
+            super ((HtmlBrowser.Factory)Lookup.getDefault().lookup(HtmlBrowser.Factory.class), true, true);
         }
 
         /* Deserialize this top component.
