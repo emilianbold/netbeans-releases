@@ -31,7 +31,6 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <!-- this shall be enabled! <exclude name="org/netbeans/core/AutomountSupportTest.class"/> -->
                 <include name="org/netbeans/core/BundleKeysTest.class"/> <!-- see JellyTools_compatibility -->
-                <include name="org/netbeans/core/projects/SystemFileSystemTest.class"/>
             </patternset>
         </testset>
     </testbag>
