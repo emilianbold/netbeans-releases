@@ -494,7 +494,10 @@ public final class PersistenceManager implements PropertyChangeListener {
                     "[WinSys.PersistenceManager.getTopComponentForID]" // NOI18N
                     + " Problem when deserializing TopComponent for tcID:'" + stringId + "'. Reason: " // NOI18N
                     + excAnnotation);
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, resultExc);
+// can happen quite often when switching projects (in pre-40 codebase).. TC are project layer based while the winmanager+mainwindow are session based.
+// IMHO not really a problem. (mkleint) - issue #40244                
+// with new projects should not happen, since projects are not switched in winsys anymore.                
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, resultExc);
             }
         } catch (NoClassDefFoundError ndfe) { // TEMP>>
             ErrorManager.getDefault().log(ErrorManager.WARNING,
