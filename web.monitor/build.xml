@@ -51,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- These are the primary targets. -->
 
-  <target name="netbeans" depends="jars,javahelp,copy-to-tomcat"/>
+  <target name="netbeans" depends="jars,javahelp,copy-to-tomcat4"/>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="monitor.nbm"
@@ -100,7 +100,7 @@ Microsystems, Inc. All Rights Reserved.
     </locjar>
   </target>
 
-  <target name="copy-to-tomcat" if="tomcat-bundled" depends="bundled-tomcat-check">
+  <target name="copy-to-tomcat4" if="tomcat4-bundled" depends="bundled-tomcat4-check">
     <!-- Originally added by Radim Kubacki. This target copies the
     server side component directly to the installed Tomcat server,
     should such a server exist, for release purposes. This makes sense
@@ -117,8 +117,8 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="netbeans/modules/ext/monitor-valve.jar"                    tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat406/server/lib/monitor-valve.jar"/>
   </target>
 
-  <target name="bundled-tomcat-check">
-    <available property="tomcat-bundled" 
+  <target name="bundled-tomcat4-check">
+    <available property="tomcat4-bundled" 
     file="${nb_root}/tomcatint/bundledtomcat/netbeans/modules/tomcat40-bundled.jar"/>
   </target>
 
@@ -156,7 +156,7 @@ Microsystems, Inc. All Rights Reserved.
      </javac>
   </target>
 
-  <target name="compile-catalina">
+  <target name="compile-catalina" if="tomcat4-bundled" depends="bundled-tomcat4-check">
     <javac srcdir="src" destdir="src"
          deprecation="${build.compiler.deprecation}" 
 	 debug="${build.compiler.debug}"
@@ -208,7 +208,7 @@ Microsystems, Inc. All Rights Reserved.
     </jar>
   </target>
 
-  <target name="catalina-jar">
+  <target name="catalina-jar" if="tomcat4-bundled" depends="bundled-tomcat4-check">
  <!-- NOTE: this is not an IDE module. It is deployed on the execution 
       server. It will not be deployed correctly if we build a separate 
       version for another language. 
