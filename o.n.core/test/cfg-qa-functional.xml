@@ -103,41 +103,19 @@ Microsystems, Inc. All Rights Reserved.
 
 
 <!-- Start Property Editors testbag -->
-    <testbag testattribs="validation or ide or pe" executor="ide" name="Property Editors and Customizers tests - validation" resultsprocessor="unit">
+    <testbag testattribs="validation or ide or pe" executor="ide" name="Property Editors tests - validation" resultsprocessor="unit">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/propertyeditors/PropertyType_BooleanO.class/testByComboTrue"/>
 		<include name="gui/propertyeditors/PropertyType_ByteO.class/testByInPlace"/>
 		<include name="gui/propertyeditors/PropertyType_Character.class/testByInPlace"/>
 		<include name="gui/propertyeditors/PropertyType_Class.class/testByInPlace"/>
-		<include name="gui/propertyeditors/PropertyType_Color.class/testCustomizerOk"/>
-		<include name="gui/propertyeditors/PropertyType_CompilerType.class/testCustomizerOk"/>
-		<include name="gui/propertyeditors/PropertyType_DebuggerType.class/testCustomizerOk"/>
-		<include name="gui/propertyeditors/PropertyType_Dimension.class/testCustomizerOk"/>
 		<include name="gui/propertyeditors/PropertyType_DoubleO.class/testByInPlace"/>
 		<include name="gui/propertyeditors/PropertyType_ElementFormat.class/testByInPlace"/>
-		<include name="gui/propertyeditors/PropertyType_Executor.class/testCustomizerOk"/>
-		<include name="gui/propertyeditors/PropertyType_ExtensionList.class/testCustomizerAdd"/>
-		<include name="gui/propertyeditors/PropertyType_File.class/testCustomizerOk"/>
-		<include name="gui/propertyeditors/PropertyType_Filesystem.class/testCustomizerAddDirectory"/>
 		<include name="gui/propertyeditors/PropertyType_FloatO.class/testByInPlace"/>
-		<include name="gui/propertyeditors/PropertyType_Font.class/testCustomizerOk"/>
-		<include name="gui/propertyeditors/PropertyType_HTMLBrowser.class/testByComboSWINGBrowser"/>
-		<include name="gui/propertyeditors/PropertyType_Icon.class/testCustomizerOkURL"/>
-		<include name="gui/propertyeditors/PropertyType_IdentifierArray.class/testCustomizerAdd"/>
-		<include name="gui/propertyeditors/PropertyType_IndentEngine.class/testCustomizerOk"/>
-		<include name="gui/propertyeditors/PropertyType_Insets.class/testCustomizerOk"/>
 		<include name="gui/propertyeditors/PropertyType_Integer.class/testByInPlace"/>
 		<include name="gui/propertyeditors/PropertyType_LongO.class/testByInPlace"/>
-		<include name="gui/propertyeditors/PropertyType_NbClassPath.class/testCustomizerAddDirectory"/>
-		<include name="gui/propertyeditors/PropertyType_NbProcessDescriptor.class/testCustomizerOk"/>
-		<include name="gui/propertyeditors/PropertyType_Point.class/testCustomizerOk"/>
-		<include name="gui/propertyeditors/PropertyType_Properties.class/testCustomizerOk"/>
-		<include name="gui/propertyeditors/PropertyType_Rectangle.class/testCustomizerOk"/>
-		<include name="gui/propertyeditors/PropertyType_ServiceType.class/testCustomizerOk"/>
 		<include name="gui/propertyeditors/PropertyType_ShortO.class/testByInPlace"/>
-		<include name="gui/propertyeditors/PropertyType_String.class/testCustomizerOk"/>
-		<include name="gui/propertyeditors/PropertyType_StringArray.class/testCustomizerAdd"/>
 		<include name="gui/propertyeditors/PropertyType_Type.class/testByInPlace"/>
 		<include name="gui/propertyeditors/PropertyType_URL.class/testByInPlace"/>
 		<include name="gui/propertyeditors/PropertyType_boolean.class/testByComboFalse"/>
@@ -148,6 +126,40 @@ Microsystems, Inc. All Rights Reserved.
 		<include name="gui/propertyeditors/PropertyType_int.class/testByInPlace"/>
 		<include name="gui/propertyeditors/PropertyType_long.class/testByInPlace"/>
 		<include name="gui/propertyeditors/PropertyType_short.class/testByInPlace"/>
+	    </patternset>
+	</testset>
+    </testbag>
+
+    <testbag testattribs="validation or ide or pe" executor="ide" name="Property Customizers tests - validation" resultsprocessor="unit">
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/propertyeditors/PropertyType_Color.class/testCustomizerOk"/>
+		<include name="gui/propertyeditors/PropertyType_CompilerType.class/testCustomizerOk"/>
+		<include name="gui/propertyeditors/PropertyType_DebuggerType.class/testCustomizerOk"/>
+		<include name="gui/propertyeditors/PropertyType_Dimension.class/testCustomizerOk"/>
+		<include name="gui/propertyeditors/PropertyType_Executor.class/testCustomizerOk"/>
+		<include name="gui/propertyeditors/PropertyType_ExtensionList.class/testByInPlace"/>
+		<include name="gui/propertyeditors/PropertyType_ExtensionList.class/testCustomizerAdd"/>
+		<include name="gui/propertyeditors/PropertyType_File.class/testCustomizerOk"/>
+		<include name="gui/propertyeditors/PropertyType_Filesystem.class/testCustomizerAddDirectory"/>
+		<include name="gui/propertyeditors/PropertyType_Font.class/testCustomizerOk"/>
+		<include name="gui/propertyeditors/PropertyType_HTMLBrowser.class/testByComboSWINGBrowser"/>
+		<include name="gui/propertyeditors/PropertyType_Icon.class/testCustomizerOkURL"/>
+		<include name="gui/propertyeditors/PropertyType_IdentifierArray.class/testByInPlace"/>
+		<include name="gui/propertyeditors/PropertyType_IdentifierArray.class/testCustomizerAdd"/>
+		<include name="gui/propertyeditors/PropertyType_IndentEngine.class/testCustomizerOk"/>
+		<include name="gui/propertyeditors/PropertyType_Insets.class/testCustomizerOk"/>
+		<include name="gui/propertyeditors/PropertyType_NbClassPath.class/testByInPlace"/>
+		<include name="gui/propertyeditors/PropertyType_NbClassPath.class/testCustomizerAddDirectory"/>
+		<include name="gui/propertyeditors/PropertyType_NbProcessDescriptor.class/testCustomizerOk"/>
+		<include name="gui/propertyeditors/PropertyType_Point.class/testCustomizerOk"/>
+		<include name="gui/propertyeditors/PropertyType_Properties.class/testByInPlace"/>
+		<include name="gui/propertyeditors/PropertyType_Properties.class/testCustomizerOk"/>
+		<include name="gui/propertyeditors/PropertyType_Rectangle.class/testCustomizerOk"/>
+		<include name="gui/propertyeditors/PropertyType_ServiceType.class/testCustomizerOk"/>
+		<include name="gui/propertyeditors/PropertyType_String.class/testCustomizerOk"/>
+		<include name="gui/propertyeditors/PropertyType_StringArray.class/testByInPlace"/>
+		<include name="gui/propertyeditors/PropertyType_StringArray.class/testCustomizerAdd"/>
 	    </patternset>
 	</testset>
     </testbag>
