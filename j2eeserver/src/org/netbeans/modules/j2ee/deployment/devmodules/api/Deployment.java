@@ -227,15 +227,7 @@ public final class Deployment {
     public J2eePlatform getJ2eePlatform(String serverInstanceID) {
         ServerInstance serInst = ServerRegistry.getInstance().getServerInstance(serverInstanceID);
         if (serInst == null) return null;
-        J2eePlatform result = serInst.getJ2eePlatform();
-        if (result == null) {
-            J2eePlatformImpl platformImpl = serInst.getJ2eePlatformImpl();
-            if (platformImpl != null) {
-                result = new J2eePlatform(platformImpl);
-                serInst.setJ2eePlatform(result);
-            }
-        }
-        return result;
+        return J2eePlatform.create(serInst);
     }
     
     public String getServerDisplayName (String id) {

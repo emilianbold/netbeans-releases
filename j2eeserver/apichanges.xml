@@ -80,6 +80,24 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+    
+	<change id="J2eePlatform-Icon">
+	<api name="j2eeserver"/>
+	<summary>Added J2EE Platform icon</summary>
+	<version major="1" minor="6"/>
+	<date day="06" month="01" year="2004"/>
+	<author login="abadea"/>
+	<compatibility binary="incompatible" source="incompatible" semantic="compatible" addition="yes"/>
+	<description>
+		<p>
+        Added methods for the J2EE Platform to be able to specify an icon. The new methods are
+        <code>J2eePlatform.getIcon()</code> and <code>J2eePlatformImpl.getIcon()</code>.
+		</p>
+	</description>
+	<class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eePlatform"/>
+	<class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="J2eePlatformImpl"/>
+	<issue number="52993"/>
+	</change>
 
 	<change id="J2eePlatform">
 	<api name="j2eeserver"/>

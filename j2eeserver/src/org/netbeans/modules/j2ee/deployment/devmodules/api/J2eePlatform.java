@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
+import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -21,11 +22,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Utilities;
 
 
 /**
@@ -46,9 +50,12 @@ public final class J2eePlatform {
     /** Platform roots property */
     public static final String PROP_PLATFORM_ROOTS = "platformRoots";   //NOI18N
     
+    private static final String DEFAULT_ICON = "org/netbeans/modules/j2ee/deployment/impl/ui/resources/ServerRegistry.gif"; // NOI18N
+    
     private J2eePlatformImpl impl;
     private File[] classpathCache;
     private String currentClasspath;
+    private ServerInstance serverInstance;
     
     // listens to libraries content changes
     private PropertyChangeListener librariesChangeListener = new PropertyChangeListener() {
@@ -69,8 +76,15 @@ public final class J2eePlatform {
      * 
      * @param aImpl instance of <code>J2eePlatformImpl</code>.
      */
-    J2eePlatform(J2eePlatformImpl aImpl) {
+    private J2eePlatform(ServerInstance aServerInstance, J2eePlatformImpl aImpl) {
         impl = aImpl;
+        serverInstance = aServerInstance;
+        serverInstance.getInstanceProperties().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(InstanceProperties.DISPLAY_NAME_ATTR))
+                    impl.firePropertyChange(PROP_DISPLAY_NAME, evt.getOldValue(), evt.getNewValue());
+            }
+        });
         // listens to libraries changes
         addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -95,6 +109,18 @@ public final class J2eePlatform {
             libs[i].addPropertyChangeListener(librariesChangeListener);
         }
         currentClasspath = getClasspathAsString();
+    }
+    
+    static J2eePlatform create(ServerInstance serInst) {
+        J2eePlatform result = serInst.getJ2eePlatform();
+        if (result == null) {
+            J2eePlatformImpl platformImpl = serInst.getJ2eePlatformImpl();
+            if (platformImpl != null) {
+                result = new J2eePlatform(serInst, platformImpl);
+                serInst.setJ2eePlatform(result);
+            }
+        }
+        return result;
     }
     
     /**
@@ -156,7 +182,23 @@ public final class J2eePlatform {
      * @return platform's display name.
      */
     public String getDisplayName() {
-        return impl.getDisplayName();
+        // return impl.getDisplayName();
+        // AB: for now return server instance's display name
+        return serverInstance.getDisplayName();
+    }
+    
+    /**
+     * Return platform's icon.
+     *
+     * @return platform's icon.
+     * @since 1.6
+     */
+    public Image getIcon() {
+        Image result = impl.getIcon();
+        if (result == null) 
+            result = Utilities.loadImage(DEFAULT_ICON);
+        
+        return result;
     }
     
     /**
