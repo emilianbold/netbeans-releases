@@ -197,6 +197,8 @@ public final class MainWindow extends JFrame {
             return;
         }
 
+        Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+
         if(desktop != null) {
             getContentPane().remove(desktop);
         }
@@ -210,6 +212,14 @@ public final class MainWindow extends JFrame {
         invalidate();
         validate();
         repaint();
+
+        // XXX #37239 Preserve focus remains at the needed place.
+        // Even if it has focus now (when you ask KeyboardFocusManager),
+        // it is requested again, so the already scheduled requests
+        // (caused by the above remove/add) are replaced.
+        if(focusOwner != null) {
+            focusOwner.requestFocus();
+        }
     }
 
     // XXX PENDING used in DnD only.
