@@ -17,6 +17,7 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -362,6 +363,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             this.root = root;
             this.dataFolder = dataFolder;
             this.isDefaultPackage = root.equals( dataFolder.getPrimaryFile() );
+            
         }
                        
         public String getName() {
@@ -373,10 +375,15 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 return false;
             }
             else {         
-                // XXX for now - pending UI spec
-                return false;
+                return false; // XXX For now
             }
         }
+        
+        public void setName(String name) {
+            System.out.println( "Rename to " + name );
+            assert false : "Cannot rename";
+        }
+        
         
         public boolean canDestroy() {
             if ( isDefaultPackage ) {
@@ -387,9 +394,18 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             }
         }
         
-        public void setName(String name) {
-            assert false : "Cannot rename";
+        public void destroy() throws IOException {
+            FileObject parent = dataFolder.getPrimaryFile().getParent();
+            // First; delete the package
+            super.destroy();
+            // Second; delete empty super packages
+            while( !parent.equals( root ) && isEmpty( parent ) ) {
+                FileObject newParent = parent.getParent();
+                parent.delete();
+                parent = newParent;
+            }
         }
+        
         
         public String getDisplayName() {
             return computePackageName(TRUNCATE_PACKAGE_NAMES);
@@ -480,7 +496,10 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             if ( dataFolder == null ) {
                 return true;
             }
-            FileObject fo = dataFolder.getPrimaryFile();
+            return isEmpty( dataFolder.getPrimaryFile() );
+        }
+        
+        private static boolean isEmpty( FileObject fo ) {    
             FileObject[] kids = fo.getChildren();
             for( int i = 0; i < kids.length; i++ ) {
                 if ( !kids[i].isFolder() ) {
