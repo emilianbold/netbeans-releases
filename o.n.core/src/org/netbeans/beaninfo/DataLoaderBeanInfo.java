@@ -28,7 +28,7 @@ public class DataLoaderBeanInfo extends SimpleBeanInfo {
 
     public PropertyDescriptor[] getPropertyDescriptors () {
         try {
-            PropertyDescriptor representationClass = new PropertyDescriptor ("representationClass", DataLoader.class, "getRepresentationClass", null); // NOI18N
+            PropertyDescriptor representationClass = new PropertyDescriptor ("representationClassName", DataLoader.class, "getRepresentationClassName", null); // NOI18N
             representationClass.setDisplayName (NbBundle.getBundle (DataLoaderBeanInfo.class).getString ("PROP_representationClass"));
             representationClass.setShortDescription (NbBundle.getBundle (DataLoaderBeanInfo.class).getString ("HINT_representationClass"));
             representationClass.setExpert (true);

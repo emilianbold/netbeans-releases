@@ -63,6 +63,8 @@ public final class LoaderPoolNode extends AbstractNode {
     private static Set modifiedLoaders = new HashSet(); // Set<DataLoader>
     /** Loaders by class name */
     private static Map names2Loaders = new HashMap(200); // Map<String,DataLoader>
+    /** Loaders by representation class name */
+    private static Map repNames2Loaders = new HashMap(200); // Map<String,DataLoader>
 
     /** Map from loader class names to arrays of class names for Install-Before's */
     private static Map installBefores = new HashMap (); // Map<String,String[]>
@@ -162,6 +164,7 @@ public final class LoaderPoolNode extends AbstractNode {
         
         String cname = l.getClass().getName();
         names2Loaders.put(cname, l);
+        repNames2Loaders.put(l.getRepresentationClassName(), l);
         String[] ib = s.getInstallBefore();
         if (ib != null) installBefores.put(cname, ib);
         String[] ia = s.getInstallAfter();
@@ -185,107 +188,83 @@ public final class LoaderPoolNode extends AbstractNode {
     */
     private static synchronized void resort () {
         // A partial ordering over loaders based on their Install-* tags:
-        Comparator c = new Comparator () {
-                           public int compare (Object o1, Object o2) {
-                               if (o1 == o2) return 0;
-                               String l1 = o1.getClass ().getName ();
-                               String l2 = o2.getClass ().getName ();
-                               String rep1 = ((DataLoader) o1).getRepresentationClass ().getName ();
-                               String rep2 = ((DataLoader) o2).getRepresentationClass ().getName ();
-                               // Determine if either of them specify an Install-After or Install-Before on the other.
-                               boolean mustbe12 = false;
-                               String[] befores1 = (String[]) installBefores.get (l1);
-                               if (befores1 != null) {
-                                   for (int i = 0; i < befores1.length; i++) {
-                                       if (befores1[i].equals (rep2)) {
-                                           mustbe12 = true;
-                                           break;
-                                       }
-                                       if (befores1[i].equals (l2)) warn (l1, l2, rep2);
-                                   }
-                               }
-                               if (! mustbe12) {
-                                   String[] afters2 = (String[]) installAfters.get (l2);
-                                   if (afters2 != null) {
-                                       for (int i = 0; i < afters2.length; i++) {
-                                           if (afters2[i].equals (rep1)) {
-                                               mustbe12 = true;
-                                               break;
-                                           }
-                                           if (afters2[i].equals (l1)) warn (l2, l1, rep1);
-                                       }
-                                   }
-                               }
-                               boolean mustbe21 = false;
-                               String[] befores2 = (String[]) installBefores.get (l2);
-                               if (befores2 != null) {
-                                   for (int i = 0; i < befores2.length; i++) {
-                                       if (befores2[i].equals (rep1)) {
-                                           mustbe21 = true;
-                                           break;
-                                       }
-                                       if (befores2[i].equals (l1)) warn (l2, l1, rep1);
-                                   }
-                               }
-                               if (! mustbe21) {
-                                   String[] afters1 = (String[]) installAfters.get (l1);
-                                   if (afters1 != null) {
-                                       for (int i = 0; i < afters1.length; i++) {
-                                           if (afters1[i].equals (rep2)) {
-                                               mustbe21 = true;
-                                               break;
-                                           }
-                                           if (afters1[i].equals (l2)) warn (l1, l2, rep2);
-                                       }
-                                   }
-                               }
-                               /* Test for #13880:
-                               if (err.isLoggable(ErrorManager.UNKNOWN)) {
-                                   if ((l1.equals("org.netbeans.modules.web.core.jsploader.ServletDataLoader") && // NOI18N
-                                        l2.equals("org.netbeans.modules.java.JavaDataLoader")) || // NOI18N
-                                       (l2.equals("org.netbeans.modules.web.core.jsploader.ServletDataLoader") && // NOI18N
-                                        l1.equals("org.netbeans.modules.java.JavaDataLoader"))) { // NOI18N
-                                       err.log("Comparator: l1=" + l1 + " l2=" + l2 + " mustbe12=" + mustbe12 + " mustbe21=" + mustbe21);
-                                   }
-                               }
-                               */
-                               // Compute resulting order.
-                               if (mustbe12) {
-                                   if (mustbe21) {
-                                       err.log (ErrorManager.USER,
-                                                "Warning: mutually contradictory loader ordering will be ignored; " + // NOI18N
-                                                l1 + " and " + l2); // NOI18N
-                                       return 0;
-                                   } else {
-                                       return -1;
-                                   }
-                               } else {
-                                   if (mustbe21) {
-                                       return 1;
-                                   } else {
-                                       return 0;
-                                   }
-                               }
-                           }
-                           private void warn (String yourLoader, String otherLoader, String otherRepn) {
-                               err.log (ErrorManager.USER, "Warning: a possible error in the manifest containing " + yourLoader + " was found."); // NOI18N
-                               err.log (ErrorManager.USER, "The loader specified an Install-{After,Before} on " + otherLoader + ", but this is a DataLoader class."); // NOI18N
-                               err.log (ErrorManager.USER, "Probably you wanted " + otherRepn + " which is the loader's representation class."); // NOI18N
-                           }
-                       };
+        Map deps = new HashMap(); // Map<DataLoader,List<DataLoader>>
+        add2Deps(deps, installBefores, true);
+        add2Deps(deps, installAfters, false);
         if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
             err.log("Before sort: " + loaders);
         }
-        try {
-            loaders = Utilities.partialSort (loaders, c, true);
-        } catch (Utilities.UnorderableException uue) {
-            err.notify (ErrorManager.WARNING, uue);
+        List sortedLoaders = Utilities.topologicalSort(loaders, deps);
+        if (sortedLoaders != null) {
+            loaders = sortedLoaders;
+            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                err.log("After sort: " + loaders);
+            }
+        } else {
+            err.log(ErrorManager.WARNING, "Contradictory loader ordering: " + deps);
             // leave order as it was
         }
-        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            err.log("After sort: " + loaders);
-        }
         update ();
+    }
+    /**
+     * Add to loader ordering dependencies.
+     * Only pays attention to dependencies among loaders that actually exist.
+     * @param deps a map from loaders to lists of loaders they must come before
+     * @param orderings either {@link #installBefore} or {@link #installAfter}
+     * @param before true if orderings refers to before, false if to after
+     * @see Utilities#topologicalSort
+     */
+    private static void add2Deps(Map deps, Map orderings, boolean before) {
+        Iterator it = orderings.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry e = (Map.Entry)it.next();
+            String loaderClassName = (String)e.getKey();
+            DataLoader l = (DataLoader)names2Loaders.get(loaderClassName);
+            if (l == null) {
+                throw new IllegalStateException("No such loader: " + loaderClassName); // NOI18N
+            }
+            String[] repClassNames = (String[])e.getValue();
+            for (int i = 0; i < repClassNames.length; i++) {
+                String repClassName = repClassNames[i];
+                DataLoader l2 = (DataLoader)repNames2Loaders.get(repClassName);
+                if (l2 != null) {
+                    if (before) {
+                        addDep(deps, l, l2);
+                    } else {
+                        addDep(deps, l2, l);
+                    }
+                } else {
+                    l2 = (DataLoader)names2Loaders.get(repClassName);
+                    if (l2 != null) {
+                        warn(loaderClassName, repClassName, l2.getRepresentationClassName());
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * Add one loader ordering dependency.
+     * @param deps see {@link #add2Deps}
+     * @param a the earlier loader
+     * @param b the later loader
+     */
+    private static void addDep(Map deps, DataLoader a, DataLoader b) {
+        List l = (List)deps.get(a);
+        if (l == null) {
+            deps.put(a, l = new LinkedList());
+        }
+        if (!l.contains(b)) {
+            l.add(b);
+        }
+    }
+    /**
+     * Warn about misuse of Install-{After,Before} to refer to loader class names rather
+     * than representation class names.
+     */
+    private static void warn(String yourLoader, String otherLoader, String otherRepn) {
+        err.log(ErrorManager.WARNING, "Warning: a possible error in the manifest containing " + yourLoader + " was found."); // NOI18N
+        err.log(ErrorManager.WARNING, "The loader specified an Install-{After,Before} on " + otherLoader + ", but this is a DataLoader class."); // NOI18N
+        err.log(ErrorManager.WARNING, "Probably you wanted " + otherRepn + " which is the loader's representation class."); // NOI18N
     }
 
     /** Notification to finish installation of nodes during startup.
@@ -651,6 +630,7 @@ public final class LoaderPoolNode extends AbstractNode {
             if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("remove: " + dl);
             String cname = dl.getClass().getName();
             names2Loaders.remove(cname);
+            repNames2Loaders.remove(dl.getRepresentationClassName());
             installBefores.remove(cname);
             installAfters.remove(cname);
             dl.removePropertyChangeListener (getNbLoaderPool ());
