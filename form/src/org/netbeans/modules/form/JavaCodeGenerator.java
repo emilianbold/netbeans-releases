@@ -14,6 +14,7 @@
 package com.netbeans.developer.modules.loaders.form;
 
 import org.openide.nodes.*;
+import org.openide.text.IndentEngine;
 import org.openide.util.Utilities;
 import com.netbeans.developer.modules.loaders.java.JavaEditor;
 import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
@@ -21,6 +22,9 @@ import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.beans.*;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Iterator;
@@ -54,8 +58,8 @@ public class JavaCodeGenerator extends CodeGenerator {
   private JavaEditor.SimpleSection initComponentsSection;
   private JavaEditor.SimpleSection variablesSection;
 
-  private static final String INIT_COMPONENTS_HEADER = "  private void initComponents () {\n";
-  private static final String INIT_COMPONENTS_FOOTER = "  }\n";
+  private static final String INIT_COMPONENTS_HEADER = "private void initComponents () {\n";
+  private static final String INIT_COMPONENTS_FOOTER = "}\n";
   private static final String VARIABLES_HEADER = FormEditor.getFormBundle ().getString ("MSG_VariablesBegin");
   private static final String VARIABLES_FOOTER = FormEditor.getFormBundle ().getString ("MSG_VariablesEnd");
 
@@ -82,8 +86,8 @@ public class JavaCodeGenerator extends CodeGenerator {
     formManager.addFormListener (listener);
     FormEditorSupport s = formManager.getFormEditorSupport ();
     
-    initComponentsSection = s.findSimpleSection (SECTION_INIT_COMPONENTS); // [PENDING]
-    variablesSection = s.findSimpleSection (SECTION_VARIABLES); // [PENDING]
+    initComponentsSection = s.findSimpleSection (SECTION_INIT_COMPONENTS); 
+    variablesSection = s.findSimpleSection (SECTION_VARIABLES);
 
     if ((initComponentsSection == null) || (variablesSection == null)) {
       System.out.println("ERROR: Cannot initialize guarded sections... code generation is disabled.");
@@ -121,160 +125,179 @@ public class JavaCodeGenerator extends CodeGenerator {
 
   private void regenerateInitializer () {
     if (errorInitializing) return;
-    StringBuffer text = new StringBuffer (); 
-    text.append (INIT_COMPONENTS_HEADER);
-    RADForm form = formManager.getRADForm ();
-    RADComponent top = form.getTopLevelComponent ();
-    addInitCode (top, text, "    "); // [PENDING - indentation engine]
-    RADComponent[] nonVisualComponents = formManager.getNonVisualComponents ();
-    for (int i = 0; i < nonVisualComponents.length; i++) {
-      addInitCode (nonVisualComponents[i], text, "    "); // [PENDING - indentation engine]
-    }
-    // for visual forms append sizing text
-    if (form.getTopLevelComponent () instanceof RADVisualFormContainer) {
-      RADVisualFormContainer visualForm = (RADVisualFormContainer)form.getTopLevelComponent ();
-
-      int formPolicy = visualForm.getFormSizePolicy ();
-      boolean genSize = visualForm.getGenerateSize();
-      boolean genPosition = visualForm.getGeneratePosition();
-      boolean genCenter = visualForm.getGenerateCenter();
-      Dimension formSize = visualForm.getFormSize ();
-      Point formPosition = visualForm.getFormPosition ();
-
-      String sizeText = "";
-      String twoIndents = oneIndent+oneIndent;
-
-      switch (formPolicy) {
-        case RADVisualFormContainer.GEN_PACK: 
-            sizeText = twoIndents + "pack ();\n";
-            break;
-        case RADVisualFormContainer.GEN_BOUNDS: 
-            if (genCenter) {
-              StringBuffer sizeBuffer = new StringBuffer ();
-              if (genSize) {
-                sizeBuffer.append (twoIndents);
-                sizeBuffer.append ("pack ();\n");
-                sizeBuffer.append (twoIndents);
-                sizeBuffer.append ("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n");
-                sizeBuffer.append (twoIndents);
-                sizeBuffer.append ("java.awt.Dimension dialogSize = getSize();\n");
-                sizeBuffer.append (twoIndents);
-                sizeBuffer.append ("setSize (new java.awt.Dimension ("+formSize.width + ", " + formSize.height + "));\n");
-                sizeBuffer.append (twoIndents);
-                sizeBuffer.append ("setLocation((screenSize.width-"+formSize.width+")/2, (screenSize.height-"+formSize.height+")/2);\n");
-              } else {
-                sizeBuffer.append (twoIndents);
-                sizeBuffer.append ("pack ();\n");
-                sizeBuffer.append (twoIndents);
-                sizeBuffer.append ("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n");
-                sizeBuffer.append (twoIndents);
-                sizeBuffer.append ("java.awt.Dimension dialogSize = getSize();\n");
-                sizeBuffer.append (twoIndents);
-                sizeBuffer.append ("setLocation((screenSize.width-dialogSize.width)/2, (screenSize.height-dialogSize.height)/2);\n");
-              }
-
-              sizeText = sizeBuffer.toString ();
-
-            } else if (genPosition && genSize) { // both size and position
-              sizeText = twoIndents + "setBounds ("+formPosition.x + ", " + formPosition.y +", " + formSize.width + ", " + formSize.height + ");\n";
-            } else if (genPosition) { // position only
-              sizeText = twoIndents + "setLocation (new java.awt.Point ("+formPosition.x + ", " + formPosition.y + "));\n";
-            } else if (genSize) { // size only
-              sizeText = twoIndents + "setSize (new java.awt.Dimension ("+formSize.width + ", " + formSize.height + "));\n";
-            }
-            break;
+    try {
+      IndentEngine engine = IndentEngine.find ("text/x-java");
+      AWTIndentStringWriter initCodeBuffer = new AWTIndentStringWriter ();
+      Writer initCodeWriter = engine.createWriter (formManager.getFormEditorSupport ().getDocument (), initComponentsSection.getBegin ().getOffset (), initCodeBuffer);
+  
+      initCodeWriter.write (INIT_COMPONENTS_HEADER);
+      RADForm form = formManager.getRADForm ();
+      RADComponent top = form.getTopLevelComponent ();
+      RADComponent[] nonVisualComponents = formManager.getNonVisualComponents ();
+      for (int i = 0; i < nonVisualComponents.length; i++) {
+        addInitCode (nonVisualComponents[i], initCodeWriter, initCodeBuffer, 0);
       }
-
-      text.append (sizeText);
-    }
-
-    text.append (INIT_COMPONENTS_FOOTER);
-
-    // set the text into the guarded block
-    synchronized (GEN_LOCK) {
-      initComponentsSection.setText (text.toString ());
+      addInitCode (top, initCodeWriter, initCodeBuffer, 0);
+      // for visual forms append sizing text
+      if (form.getTopLevelComponent () instanceof RADVisualFormContainer) {
+        RADVisualFormContainer visualForm = (RADVisualFormContainer)form.getTopLevelComponent ();
+  
+        int formPolicy = visualForm.getFormSizePolicy ();
+        boolean genSize = visualForm.getGenerateSize();
+        boolean genPosition = visualForm.getGeneratePosition();
+        boolean genCenter = visualForm.getGenerateCenter();
+        Dimension formSize = visualForm.getFormSize ();
+        Point formPosition = visualForm.getFormPosition ();
+  
+        String sizeText = "";
+  
+        switch (formPolicy) {
+          case RADVisualFormContainer.GEN_PACK: 
+              sizeText = "pack ();\n";
+              break;
+          case RADVisualFormContainer.GEN_BOUNDS: 
+              if (genCenter) {
+                StringBuffer sizeBuffer = new StringBuffer ();
+                if (genSize) {
+                  sizeBuffer.append ("pack ();\n");
+                  sizeBuffer.append ("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n");
+                  sizeBuffer.append ("java.awt.Dimension dialogSize = getSize();\n");
+                  sizeBuffer.append ("setSize (new java.awt.Dimension ("+formSize.width + ", " + formSize.height + "));\n");
+                  sizeBuffer.append ("setLocation((screenSize.width-"+formSize.width+")/2, (screenSize.height-"+formSize.height+")/2);\n");
+                } else {
+                  sizeBuffer.append ("pack ();\n");
+                  sizeBuffer.append ("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n");
+                  sizeBuffer.append ("java.awt.Dimension dialogSize = getSize();\n");
+                  sizeBuffer.append ("setLocation((screenSize.width-dialogSize.width)/2, (screenSize.height-dialogSize.height)/2);\n");
+                }
+  
+                sizeText = sizeBuffer.toString ();
+  
+              } else if (genPosition && genSize) { // both size and position
+                sizeText = "setBounds ("+formPosition.x + ", " + formPosition.y +", " + formSize.width + ", " + formSize.height + ");\n";
+              } else if (genPosition) { // position only
+                sizeText = "setLocation (new java.awt.Point ("+formPosition.x + ", " + formPosition.y + "));\n";
+              } else if (genSize) { // size only
+                sizeText = "setSize (new java.awt.Dimension ("+formSize.width + ", " + formSize.height + "));\n";
+              }
+              break;
+        }
+  
+        initCodeWriter.write (sizeText);
+      }
+  
+      initCodeWriter.write (INIT_COMPONENTS_FOOTER);
+  
+      // set the text into the guarded block
+      synchronized (GEN_LOCK) {
+        initComponentsSection.setText (initCodeBuffer.toString ());
+      }
+    } catch (IOException e) {
+      throw new InternalError (); // cannot happen
     }
   }
 
   private void regenerateVariables () {
     if (errorInitializing) return;
-    StringBuffer text = new StringBuffer (); 
-    text.append (VARIABLES_HEADER);
-    text.append ("\n");
-    RADForm form = formManager.getRADForm ();
+    IndentEngine engine = IndentEngine.find ("text/x-java");
+    StringWriter variablesBuffer = new StringWriter ();
+    Writer variablesWriter = engine.createWriter (formManager.getFormEditorSupport ().getDocument (), variablesSection.getBegin ().getOffset (), variablesBuffer);
 
-    addVariables ((ComponentContainer)form.getTopLevelComponent (), text); // [PENDING - illegal cast]
-    addVariables (formManager.getNonVisualsContainer (), text);
-    
-    text.append (VARIABLES_FOOTER);
-    text.append ("\n");
-    synchronized (GEN_LOCK) {
-      variablesSection.setText (text.toString ());
+    try {
+      variablesWriter.write (VARIABLES_HEADER);
+      variablesWriter.write ("\n");
+      RADForm form = formManager.getRADForm ();
+  
+      addVariables (formManager.getNonVisualsContainer (), variablesWriter);
+      addVariables ((ComponentContainer)form.getTopLevelComponent (), variablesWriter); // [PENDING - illegal cast]
+      
+      variablesWriter.write (VARIABLES_FOOTER);
+      variablesWriter.write ("\n");
+      synchronized (GEN_LOCK) {
+        variablesSection.setText (variablesWriter.toString ());
+      }
+    } catch (IOException e) {
+      throw new InternalError (); // cannot happen
     }
   }
 
-  private void addNonVisualsInitCode (RADComponent comp, StringBuffer text, String indent) {
+  private void addNonVisualsInitCode (RADComponent comp, Writer initCodeWriter, int level) throws IOException {
   }
   
-  private void addInitCode (RADComponent comp, StringBuffer text, String indent) {
+  private void addInitCode (RADComponent comp, Writer initCodeWriter, AWTIndentStringWriter initCodeBuffer, int level) throws IOException {
     //System.out.println("Adding init code for: "+comp.getName ());
     if (!(comp instanceof FormContainer)) {
-      generateComponentCreate (comp, text, indent);
+      generateComponentCreate (comp, initCodeWriter);
     }
-    generateComponentInit (comp, text, indent);
-    generateComponentEvents (comp, text, indent);
+    generateComponentInit (comp, initCodeWriter);
+    generateComponentEvents (comp, initCodeWriter);
     if (comp instanceof ComponentContainer) {
       RADComponent[] children = ((ComponentContainer)comp).getSubBeans ();
       for (int i = 0; i < children.length; i++) {
-        text.append ("\n"); // [PENDING - indentation engine]
         if ((comp instanceof FormContainer) || (!FormEditor.getFormSettings ().getIndentAWTHierarchy ())) {
+          initCodeWriter.write ("\n");
           // do not indent for top-level children
-          addInitCode (children[i], text, indent);
+          addInitCode (children[i], initCodeWriter, initCodeBuffer, level);
+
+          if (comp instanceof RADVisualContainer) {
+            if (comp instanceof RADVisualFormContainer) {
+              // no indent for top-level container
+              initCodeWriter.write ("\n");
+              generateComponentAddCode (children[i], (RADVisualContainer)comp, initCodeWriter);
+            } else {
+              generateComponentAddCode (children[i], (RADVisualContainer)comp, initCodeWriter);
+            }
+          } // [PENDING - adding to non-visual containers]
+
         } else {
-          addInitCode (children[i], text, indent + oneIndent);
+          initCodeBuffer.setIndentLevel (level + 1, oneIndent);
+          initCodeWriter.write ("\n");
+          addInitCode (children[i], initCodeWriter, initCodeBuffer, level + 1);
+
+          if (comp instanceof RADVisualContainer) {
+            if (comp instanceof RADVisualFormContainer) {
+              // no indent for top-level container
+              initCodeWriter.write ("\n");
+              generateComponentAddCode (children[i], (RADVisualContainer)comp, initCodeWriter);
+            } else {
+              generateComponentAddCode (children[i], (RADVisualContainer)comp, initCodeWriter);
+            }
+          } // [PENDING - adding to non-visual containers]
+
+          initCodeBuffer.setIndentLevel (level, oneIndent);
         }
-        if (comp instanceof RADVisualContainer) {
-          if (comp instanceof RADVisualFormContainer) {
-            // no indent for top-level container
-            text.append ("\n");
-            generateComponentAddCode (children[i], (RADVisualContainer)comp, text, indent);
-          } else {
-            generateComponentAddCode (children[i], (RADVisualContainer)comp, text, indent);
-          }
-        } // [PENDING - adding to non-visual containers
       }
     }
-    text.append ("\n");
+    initCodeWriter.write ("\n");
   }
   
-  private void generateComponentCreate (RADComponent comp, StringBuffer text, String indent) {
-    text.append (indent); // [PENDING - will be done by indentation engine]
-    text.append (comp.getName ());
-    text.append (" = new ");
-    text.append (comp.getComponentClass ().getName ());
-    text.append (" ();\n");
+  private void generateComponentCreate (RADComponent comp, Writer initCodeWriter) throws IOException {
+    initCodeWriter.write (comp.getName ());
+    initCodeWriter.write (" = new ");
+    initCodeWriter.write (comp.getComponentClass ().getName ());
+    initCodeWriter.write (" ();\n");
   }
   
-  private void generateComponentInit (RADComponent comp, StringBuffer text, String indent) {
+  private void generateComponentInit (RADComponent comp, Writer initCodeWriter) throws IOException {
     if (comp instanceof RADVisualContainer) {
       // generate layout init code
       DesignLayout dl = ((RADVisualContainer)comp).getDesignLayout ();
-      text.append (dl.generateInitCode (indent, (RADVisualContainer)comp));
+      initCodeWriter.write (dl.generateInitCode ((RADVisualContainer)comp));
     }
     Map changedProps = comp.getChangedProperties ();
     for (Iterator it = changedProps.keySet ().iterator (); it.hasNext ();) {
       RADComponent.RADProperty rprop = (RADComponent.RADProperty)it.next ();
 /*      if (desc instanceof IndexedPropertyDescriptor) {
-        generateIndexedPropertySetter (comp, desc, value, text, indent);
+        generateIndexedPropertySetter (comp, rprop, initCodeWriter);
       } else { */
-        generatePropertySetter (comp, rprop, text, indent);
+        generatePropertySetter (comp, rprop, initCodeWriter);
 //      }
     }
   }
 
-  private void generateComponentAddCode (RADComponent comp, RADVisualContainer container, StringBuffer text, String indent) {
+  private void generateComponentAddCode (RADComponent comp, RADVisualContainer container, Writer initCodeWriter) throws IOException {
     DesignLayout dl = container.getDesignLayout ();
-    text.append (dl.generateComponentCode (indent, container, (RADVisualComponent)comp)); // [PENDING incorrect cast]
+    initCodeWriter.write (dl.generateComponentCode (container, (RADVisualComponent)comp));
   }
   
 /*  private void generateIndexedPropertySetter (RADComponent comp, PropertyDescriptor desc, StringBuffer text, String indent) {
@@ -282,10 +305,9 @@ public class JavaCodeGenerator extends CodeGenerator {
   }
 */
   
-  private void generatePropertySetter (RADComponent comp, RADComponent.RADProperty prop, StringBuffer text, String indent) {
+  private void generatePropertySetter (RADComponent comp, RADComponent.RADProperty prop, Writer initCodeWriter) throws IOException {
     PropertyDescriptor desc = prop.getPropertyDescriptor ();
     Method writeMethod = desc.getWriteMethod ();
-    String indentToUse = indent;
     PropertyEditor ed = null;
     try {
       ed = (PropertyEditor)prop.getCurrentEditor ().getClass ().newInstance ();
@@ -308,54 +330,47 @@ public class JavaCodeGenerator extends CodeGenerator {
     // if the setter throws checked exceptions, we must generate try/catch block around it.
     Class[] exceptions = writeMethod.getExceptionTypes ();
     if (exceptions.length > 0) {
-      indentToUse = indent + oneIndent; // [PENDING indentation engine]
-      text.append (indent);
-      text.append ("try {\n");
+      initCodeWriter.write ("try {\n");
     }
           
-    text.append (indentToUse); // [PENDING - will be done by indentation engine]
-    text.append (getVariableGenString (comp, false));
-    text.append (writeMethod.getName ());
-    text.append (" (");
+    initCodeWriter.write (getVariableGenString (comp, false));
+    initCodeWriter.write (writeMethod.getName ());
+    initCodeWriter.write (" (");
 
     // null values are generated separately, as most property editors cannot cope with nulls
     if (value != null) {
       ed.setValue (value);
-      text.append (ed.getJavaInitializationString ());
+      initCodeWriter.write (ed.getJavaInitializationString ());
     } else {
-      text.append ("null");
+      initCodeWriter.write ("null");
     }
     
-    text.append (");\n");
+    initCodeWriter.write (");\n");
 
     int varCount = 1;
     // add the catch for all checked exceptions
     for (int j = 0; j < exceptions.length; j++) {
-      text.append (indent);
-      text.append ("} catch (");
-      text.append (exceptions[j].getName ());
-      text.append (" ");
+      initCodeWriter.write ("} catch (");
+      initCodeWriter.write (exceptions[j].getName ());
+      initCodeWriter.write (" ");
       String excName = "e"+varCount;
       varCount++;
       while (formManager.getVariablesPool ().isReserved (excName)) {
         excName = "e"+varCount;
         varCount++;
       }
-      text.append (excName);
-      text.append (") {\n");
-      text.append (indent);
-      text.append (oneIndent);
-      text.append (excName);
-      text.append (".printStackTrace ();\n");
+      initCodeWriter.write (excName);
+      initCodeWriter.write (") {\n");
+      initCodeWriter.write (excName);
+      initCodeWriter.write (".printStackTrace ();\n");
       if (j == exceptions.length - 1) {
-        text.append (indent);
-        text.append ("}\n");
+        initCodeWriter.write ("}\n");
       }
     }
   }
           
   
-  private void generateComponentEvents (RADComponent comp, StringBuffer text, String indent) {
+  private void generateComponentEvents (RADComponent comp, Writer initCodeWriter) throws IOException {
     String variablePrefix = getVariableGenString (comp, false);
 
     EventsList.EventSet[] eventSets = comp.getEventsList ().getEventSets ();
@@ -394,7 +409,6 @@ public class JavaCodeGenerator extends CodeGenerator {
 
       if (shouldGenerate) {
         Method eventAddMethod = eventSetDesc.getAddListenerMethod ();
-        String indentToUse = indent;
         
         boolean unicastEvent = false;
         if ((eventAddMethod.getExceptionTypes ().length == 1) && 
@@ -402,17 +416,14 @@ public class JavaCodeGenerator extends CodeGenerator {
           unicastEvent = true;
         
         if (unicastEvent) {
-          text.append (indent);
-          text.append ("try {\n");
-          indentToUse = indent + oneIndent;
+          initCodeWriter.write ("try {\n");
         }
         
         // beginning of the addXXXListener
-        text.append(indentToUse);
-        text.append(variablePrefix);
-        text.append(eventSetDesc.getAddListenerMethod().getName());
-        text.append(" (new ");
-        text.append(classToGenerate.getName() + " () {\n");
+        initCodeWriter.write(variablePrefix);
+        initCodeWriter.write(eventSetDesc.getAddListenerMethod().getName());
+        initCodeWriter.write(" (new ");
+        initCodeWriter.write(classToGenerate.getName() + " () {\n");
 
         // listener innerclass' methods - indented one more indent to the right
         for (int j = 0; j < events.length; j++) {
@@ -435,45 +446,32 @@ public class JavaCodeGenerator extends CodeGenerator {
           }
 
           // generate the listener's method
-          text.append (FormUtils.getMethodHeaderText (
-              evtMethod, indentToUse + oneIndent + oneIndent, varNames)
-          );
-          text.append (" {\n");
+          initCodeWriter.write (getMethodHeaderText (evtMethod, varNames));
+          initCodeWriter.write (" {\n");
 
           if (events[j].getHandler () != null) {
             // generate the call to the handler
-            text.append (indentToUse);
-            text.append (oneIndent);
-            text.append (oneIndent);
-            text.append (oneIndent);
-            text.append (events[j].getHandler ().getName ());
-            text.append (" (");
+            initCodeWriter.write (events[j].getHandler ().getName ());
+            initCodeWriter.write (" (");
             for (int k = 0; k < varNames.length; k++) {
-              text.append (varNames[k]);
+              initCodeWriter.write (varNames[k]);
               if (k != varNames.length - 1)
-               text.append (", ");
+               initCodeWriter.write (", ");
             }
-            text.append (");");
+            initCodeWriter.write (");");
           }
-          text.append ("\n");
-          text.append (indentToUse);
-          text.append (oneIndent);
-          text.append (oneIndent);
-          text.append ("}\n");
+          initCodeWriter.write ("\n");
+          initCodeWriter.write ("}\n");
         }
 
         // end of the innerclass
-        text.append (indentToUse);
-        text.append (oneIndent);
-        text.append ("}\n");
-        text.append (indentToUse);
-        text.append (");\n");
+        initCodeWriter.write ("}\n");
+        initCodeWriter.write (");\n");
 
 
         // if the event is unicast, generate the catch for TooManyListenersException
         if (unicastEvent) {
-          text.append (indent);
-          text.append ("} catch (java.util.TooManyListenersException ");
+          initCodeWriter.write ("} catch (java.util.TooManyListenersException ");
           String varName = "e";
           if (formManager.getVariablesPool ().isReserved (varName)) {
             int varCount = 1;
@@ -485,34 +483,30 @@ public class JavaCodeGenerator extends CodeGenerator {
             }
           }
            
-          text.append (varName);
-          text.append (") {\n");
-          text.append (indent);
-          text.append (oneIndent);
-          text.append (varName);
-          text.append (".printStackTrace ();\n");
-          text.append (indent);
-          text.append ("}\n");          
+          initCodeWriter.write (varName);
+          initCodeWriter.write (") {\n");
+          initCodeWriter.write (varName);
+          initCodeWriter.write (".printStackTrace ();\n");
+          initCodeWriter.write ("}\n");          
         }
       }
     }
   }
 
-  private void addVariables (ComponentContainer cont, StringBuffer text) {
+  private void addVariables (ComponentContainer cont, Writer variablesWriter) throws IOException {
     RADComponent[] children = cont.getSubBeans ();
     for (int i = 0; i < children.length; i++) {
-      text.append (oneIndent); // [PENDING - will be done by indentation engine]
       switch (FormEditor.getFormSettings ().getVariablesModifier ()) {
-        case FormLoaderSettings.PRIVATE: text.append ("private "); break;
-        case FormLoaderSettings.PROTECTED: text.append ("protected "); break;
-        case FormLoaderSettings.PUBLIC: text.append ("public "); break;
+        case FormLoaderSettings.PRIVATE: variablesWriter.write ("private "); break;
+        case FormLoaderSettings.PROTECTED: variablesWriter.write ("protected "); break;
+        case FormLoaderSettings.PUBLIC: variablesWriter.write ("public "); break;
       }
-      text.append (children[i].getComponentClass ().getName ());
-      text.append (" ");
-      text.append (children[i].getName ());
-      text.append (";\n");
+      variablesWriter.write (children[i].getComponentClass ().getName ());
+      variablesWriter.write (" ");
+      variablesWriter.write (children[i].getName ());
+      variablesWriter.write (";\n");
       if (children[i] instanceof ComponentContainer) {
-        addVariables ((ComponentContainer)children[i], text);
+        addVariables ((ComponentContainer)children[i], variablesWriter);
       }
     }
   }
@@ -532,6 +526,7 @@ public class JavaCodeGenerator extends CodeGenerator {
   
 // -----------------------------------------------------------------------------
 // Event handlers
+
   /** Generates the specified event handler, if it does not exist yet.
   * @param handlerName The name of the event handler
   * @param paramList the list of event handler parameter types
@@ -552,9 +547,8 @@ public class JavaCodeGenerator extends CodeGenerator {
         sec.setBody (getEventHandlerBody (handlerName, paramTypes, bodyText));
         sec.setBottom (getEventHandlerFooter (handlerName, paramTypes));
       } catch (javax.swing.text.BadLocationException e) {
-        e.printStackTrace (); // [PENDING]
       }
-//      clearUndo ();
+//      clearUndo (); // [PENDING]
     }
 
     return true;
@@ -595,7 +589,6 @@ public class JavaCodeGenerator extends CodeGenerator {
 
   private String getEventHandlerHeader (String handlerName, String[] paramTypes) {
     StringBuffer buf = new StringBuffer ();
-    buf.append (oneIndent);
     buf.append ("private void ");
     buf.append (handlerName);
     buf.append (" (");
@@ -623,9 +616,9 @@ public class JavaCodeGenerator extends CodeGenerator {
     if (bodyText == null) {
       bodyText = getDefaultEventBody ();
     } else {
-      bodyText = Utilities.replaceString (bodyText, "\n", "\n"+oneIndent);
+/*      bodyText = Utilities.replaceString (bodyText, "\n", "\n"+oneIndent);
       bodyText = Utilities.replaceString (bodyText, "\t", oneIndent);
-      bodyText = oneIndent + oneIndent + bodyText;
+      bodyText = oneIndent + oneIndent + bodyText; */ // [PENDING]
     }
     return bodyText;
   }
@@ -635,14 +628,7 @@ public class JavaCodeGenerator extends CodeGenerator {
   }
   
   private String getDefaultEventBody () {
-    StringBuffer evtCode = new StringBuffer();
-    evtCode.append (oneIndent);
-    evtCode.append (oneIndent);
-    evtCode.append (FormEditor.getFormBundle ().getString ("MSG_EventHandlerBody"));
-    evtCode.append ("\n");
-    evtCode.append (oneIndent);
-    evtCode.append ("\n");
-    return evtCode.toString();
+    return FormEditor.getFormBundle ().getString ("MSG_EventHandlerBody");
   }
 
   /** Renames the specified event handler to the given new name.
@@ -691,6 +677,45 @@ public class JavaCodeGenerator extends CodeGenerator {
 
   private String getEventSectionName (String handlerName) {
     return EVT_SECTION_PREFIX + handlerName;
+  }
+
+  /** A utility method for formatting method header text for specified
+  * method, its name and parameter names.
+  * @param m The method - its modifiers, return type, parameter types and
+  *                       exceptions are used
+  * @param paramNames An array of names of parameters - the length of this
+  *            array MUST be the same as the actual number of method's parameters
+  */
+  private String getMethodHeaderText (Method m, String[] paramNames) {
+    StringBuffer buf = new StringBuffer() ;
+    buf.append ("public ");
+    buf.append (m.getReturnType().getName());
+    buf.append (" ");
+    buf.append (m.getName());
+    buf.append (" (");
+
+    Class[] params = m.getParameterTypes();
+    for (int i = 0; i < params.length; i++) {
+      buf.append (params[i].getName());
+      buf.append (" ");
+      buf.append (paramNames[i]);
+      if (i != params.length - 1)
+        buf.append (", ");
+    }
+    buf.append (")");
+
+    Class[] exceptions = m.getExceptionTypes();
+    if (exceptions.length != 0) {
+      buf.append ("\n");
+      buf.append ("throws ");
+    }
+    for (int i = 0; i < exceptions.length; i++) {
+      buf.append (exceptions[i].getName());
+      if (i != exceptions.length - 1)
+        buf.append (", ");
+    }
+
+    return buf.toString();
   }
 
 
@@ -798,10 +823,77 @@ public class JavaCodeGenerator extends CodeGenerator {
       regenerateInitializer ();
     }
   }
+
+  class AWTIndentStringWriter extends StringWriter {
+    String currentIndent = null;
+
+    void setIndentLevel (int level, String indentString) {
+      if (level == 0) {
+        currentIndent = null;
+      } else {
+        currentIndent = "";
+        for (int i = 0; i < level; i++) {
+          currentIndent = currentIndent + indentString;
+        }
+      }
+    }
+
+    /**
+    * Write a single character.
+    */
+    public void write(int c) {
+      if ((currentIndent != null) && (c == (int)'\n')) {
+        super.write ("\n" + currentIndent);
+      } else {
+        super.write (c);
+      }
+    }
+    
+    /**
+    * Write a portion of an array of characters.
+    *
+    * @param  cbuf  Array of characters
+    * @param  off   Offset from which to start writing characters
+    * @param  len   Number of characters to write
+    */
+    public void write(char cbuf[], int off, int len) {
+      if (currentIndent != null) {
+        String str = new String (cbuf, off, len);
+        str = Utilities.replaceString (str, "\n", "\n"+currentIndent);
+        char[] newBuf = str.toCharArray ();
+        super.write (newBuf, 0, newBuf.length);
+      } else {
+        super.write (cbuf, off, len);
+      }
+    }
+    
+    /**
+    * Write a string.
+    */
+    public void write(String str) {
+      if (currentIndent != null) str = Utilities.replaceString (str, "\n", "\n"+currentIndent);
+      super.write (str);
+    }
+    
+    /**
+    * Write a portion of a string.
+    *
+    * @param  str  String to be written
+    * @param  off  Offset from which to start writing characters
+    * @param  len  Number of characters to write
+    */
+    public void write(String str, int off, int len)  {
+      if (currentIndent != null) str = Utilities.replaceString (str, "\n", "\n"+currentIndent);
+      super.write (str, off, len);
+    }
+
+  }
 }
 
 /*
  * Log
+ *  27   Gandalf   1.26        6/27/99  Ian Formanek    Uses indentation engine 
+ *       for code generation
  *  26   Gandalf   1.25        6/25/99  Ian Formanek    Improved size policy 
  *       code generation
  *  25   Gandalf   1.24        6/24/99  Ian Formanek    Generation of size for 
