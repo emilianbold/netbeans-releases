@@ -1406,6 +1406,7 @@ public final class Models {
             if (model != null) 
                 try {
                     model.performDefaultAction (node);
+                    return;
                 } catch (UnknownTypeException e) {
                 }
             int i, k = models.length;
