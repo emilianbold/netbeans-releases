@@ -727,7 +727,6 @@
 <mapID target="org.netbeans.modules.extbrowser.UnixWebBrowser" url="webbrowser/unixwebbrowser.html" />
 <mapID target="org.netbeans.modules.extbrowser.SimpleExtBrowser" url="webbrowser/simpleextbrowser.html" />
 <mapID target="org.openide.awt.SwingBrowser" url="webbrowser/swingbrowser.html" />
-<mapID target="org.netbeans.modules.icebrowser.IceBrowser" url="webbrowser/webbrowser.html" />
 
 
 <mapID target="NetbeansDebuggerDebuggerNode" url="objects/objects_runtime.html" />
@@ -1232,7 +1231,6 @@
    <mapID target="org.netbeans.modules.editor.options.BasePrintOptions" url="pending.html" />
    <mapID target="org.netbeans.modules.form.PropertyPicker" url="pending.html" />
    <mapID target="org.netbeans.core.NbNodeOperation$Sheet" url="pending.html" /> 
-   <mapID target="org.netbeans.modules.icebrowser.ICEBrowserSettings" url="pending.html" />
    <mapID target="org.netbeans.modules.projects.ProjectManagerAction" url="project/project.html" />
    <mapID target="org.netbeans.modules.projects.settings.ProjectOption" url="project/project_adding-new.html" />
    <mapID target="org.netbeans.modules.projects.settings.OptionsAction" url="project/project_adding-new.html" />
@@ -1313,32 +1311,7 @@
    <mapID target="VCS_VariableEditor" url="vcs-nb/vcsgeneric/vcsgeneric_variables.html" />
    <mapID target="VCS_CommandEditor" url="vcs-nb/vcsgeneric/vcsgeneric_command-props.html" />
    <mapID target="org.netbeans.modules.vcs.advanced.VcsCustomizer" url="vcs-nb/vcsgeneric/vcsgeneric_customizer.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsCustomizer" url="vcs-nb/cvs-nb/cvs_create-fs.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.commands.CvsRevisionChooserPanel" url="pending.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.commands.CvsBranchFrame" url="pending.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.LIST" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.LIST_SUB" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.INIT" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.UPDATE" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.COMMIT" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.ADD" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.REMOVE" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.IMPORT" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.CHECKOUT" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.STATUS" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.LOG" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.CHECKOUT_REV" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.UPDATE_REV" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.COMMIT_REV" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.MERGE" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.REM_STICKY" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.TAGS" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.BRANCHES" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.DIFF" url="vcs-nb/cvs-nb/cvs_commands.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.commands.AddTagDialog" url="pending.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.AdditionalCommandDialog" url="pending.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.ErrorCommandDialog" url="pending.html" />
+
    <mapID target="org.netbeans.modules.vcs.RetrievingDialog" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.nodes.DebuggerView" url="pending.html" />
    <mapID target="org.netbeans.modules.group.CreateGroupAction" url="pending.html" />
@@ -1462,13 +1435,11 @@
 <!--was used for root node of a Javadoc filesystem on the javadoc tab in the Explorer-->
    <mapID target="org.netbeans.modules.javadoc.search.JavaDocNode" url="pending.html" />
 
-   <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.UNCONFIG" url="pending.html" />
    <mapID target="org.openide.windows.TopComponent" url="pending.html" /> 
    <mapID target="org.openide.text.NbDocument$Colors" url="pending.html" />
    <mapID target="org.netbeans.core.ServicesNode$MakeDefaultAction" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.DebuggerTypeEditor$NoDebugger" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.ExecutorEditor$NoExecutor" url="pending.html" />
-   <mapID target="org.netbeans.modules.vcs.cmdline.diff.DiffComponent" url="pending.html"/>
    <mapID target="org.netbeans.core.ui.LookupNode" url="pending.html" />
 <!--for Filesystems Settings in customizer and in Options window-->
    <mapID target="org.netbeans.core.ui.MountNode" url="filesystems/filesystems_settings.html" />
