@@ -99,17 +99,7 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
         TreeModel original,
         Object node
     ) throws UnknownTypeException {
-        int j = original.getChildrenCount (node);
-        Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
-            getBreakpoints ();
-        int i, k = bs.length;
-        for (i = 0; i < k; i++) {
-            if ( (!verbose) &&
-                 (bs [i] instanceof JPDABreakpoint) &&
-                 ((JPDABreakpoint) bs [i]).isHidden ()
-            ) j--;
-        }
-        return j;
+        return getChildren(original, node, 0, Integer.MAX_VALUE).length;
     }
     
     /**

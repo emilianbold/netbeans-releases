@@ -310,4 +310,13 @@ public class JspLineBreakpoint extends Breakpoint {
         this.javalb = javalb;
     }
     
+    /**
+     * Sets group name of this JSP breakpoint and also sets the same group name for underlying Java breakpoint.
+     * 
+     * @param newGroupName name of the group
+     */ 
+    public void setGroupName(String newGroupName) {
+        super.setGroupName(newGroupName);
+        javalb.setGroupName(newGroupName);
+    }
 }
