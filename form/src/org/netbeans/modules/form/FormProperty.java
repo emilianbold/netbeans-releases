@@ -171,6 +171,16 @@ public abstract class FormProperty extends Node.Property {
     public void setValue(Object value) throws IllegalAccessException,
                                               IllegalArgumentException,
                                               InvocationTargetException {
+
+        // NO_VALUE is returned from FormCustomEditor when value wasn't set before and
+        // default value is NO_VALUE (cannot be set into editor) e.g. write-only properties
+        if (value == BeanSupport.NO_VALUE) {
+            setChanged(false);
+            propertyValue = value;
+            lastRealValue = null;
+            return;
+        }
+
 //        if (!canWrite())
 //            throw new IllegalAccessException("Not a writeable property: "+getName());
         Object oldValue = null;
@@ -517,7 +527,8 @@ public abstract class FormProperty extends Node.Property {
 //                ed = (PropertyEditor)ed.getClass().newInstance();
 //            propertyContext.initPropertyEditor(ed);
 
-            ed.setValue(value);
+            if (ed.getValue() != value)
+                ed.setValue(value);
             return ed.getJavaInitializationString();
         }
         catch (Exception e) {

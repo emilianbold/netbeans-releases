@@ -48,6 +48,7 @@ public class FormCustomEditor extends JPanel
     private FormPropertyEditor editor;
     private PropertyEditor[] allEditors;
     private Component[] allCustomEditors;
+    private boolean[] valueSet;
 
     private String preCode;
     private String postCode;
@@ -100,6 +101,7 @@ public class FormCustomEditor extends JPanel
         }
 
         allCustomEditors = new Component[allEditors.length];
+        valueSet = new boolean[allEditors.length];
 
         Object currentValue = editor.getValue();
 
@@ -111,13 +113,13 @@ public class FormCustomEditor extends JPanel
                 prEd.setValue(currentValue);
             }
             else {
-                boolean valueSet = false;
+                valueSet[i] = false;
                 if (currentValue != null) {
                     if (editor.getPropertyType().isAssignableFrom(
                                                    currentValue.getClass())) {
                         // currentValue contains a real property value
                         prEd.setValue(currentValue);
-                        valueSet = true;
+                        valueSet[i] = true;
                     }
                     else if (currentValue instanceof FormDesignValue) {
                         Object realValue =
@@ -125,15 +127,17 @@ public class FormCustomEditor extends JPanel
                         if (realValue != FormDesignValue.IGNORED_VALUE) {
                             // current value is FormDesignValue with known real value
                             prEd.setValue(realValue); 
-                            valueSet = true;
+                            valueSet[i] = true;
                         }
                     }
                 }
-                if (!valueSet) {
+                if (!valueSet[i]) {
                     Object defaultValue = editor.getProperty().getDefaultValue();
                     // we want to pass null e.g. because FontEditor threw NPE
-                    if (defaultValue != BeanSupport.NO_VALUE)
+                    if (defaultValue != BeanSupport.NO_VALUE) {
                         prEd.setValue(defaultValue);
+                        valueSet[i] = true;
+                    }
                 }
             }
 
@@ -284,15 +288,22 @@ public class FormCustomEditor extends JPanel
         if (currentCustomEditor instanceof EnhancedCustomPropertyEditor)
             value = ((EnhancedCustomPropertyEditor) currentCustomEditor)
                                                         .getPropertyValue();
-        else if (currentEditor != null)
-            value = currentEditor.getValue();
+        else if (currentEditor != null) {
+            int j = editorsCombo.getSelectedIndex();
+
+            if (!valueSet[j])
+                value = BeanSupport.NO_VALUE;
+            else
+                value = currentEditor.getValue();
+        }
         else
             value = editor.getValue(); 
 
         Node[] nodes = ComponentInspector.getInstance().getSelectedNodes();
         for(int i=0; i<nodes.length; i++) {
-            RADProperty[] props = ((RADComponentNode)nodes[i]).getRADComponent().getAllBeanProperties();
-            PropertyEditor pe = getPropertyEditorFromSelectedNode(props, (RADProperty)(editor.getProperty()));
+            PropertyEditor pe = (nodes.length == 1) ? editor : 
+                                 getPropertyEditorFromSelectedNode(((RADComponentNode)nodes[i]).getRADComponent(), 
+                                            ((RADProperty)editor.getProperty()).getName());
             
             if (pe != null && pe instanceof FormPropertyEditor) {
                 FormPropertyEditor fpe = (FormPropertyEditor)pe;
@@ -323,16 +334,16 @@ public class FormCustomEditor extends JPanel
     }
 
 
-    private PropertyEditor getPropertyEditorFromSelectedNode(RADProperty[] props, RADProperty prop) {
-        if (props == null || prop == null)
+    private PropertyEditor getPropertyEditorFromSelectedNode(RADComponent selectedComponent, String propertyName) {
+        if (selectedComponent == null || propertyName == null)
             return null;
         
-        String propName = prop.getName();
+        RADProperty property = selectedComponent.getPropertyByName(propertyName);
         
-        for (int i=0; i<props.length; i++)
-            if (props[i].getName().equals(propName)) 
-                return props[i].getPropertyEditor();
-        return null;
+        if (property != null)
+            return property.getPropertyEditor();
+        else
+            return null;
     }
 
 }
