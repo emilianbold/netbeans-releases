@@ -5,6 +5,9 @@ import org.netbeans.jemmy.EventDispatcher;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 
+import org.netbeans.jemmy.accessibility.AccessibleDescriptionChooser;
+import org.netbeans.jemmy.accessibility.AccessibleNameChooser;
+
 import org.netbeans.jemmy.demo.Demonstrator;
 
 import org.netbeans.jemmy.operators.AbstractButtonOperator;
@@ -46,8 +49,8 @@ public class jemmy_003 extends JemmyTest {
 
 	    JLabelOperator lbo = new JLabelOperator(wino, "Button has not been pushed yet");
 
-	    for(int i = 0; i < 4; i++) {
-		for(int j = 0; j < 4; j++) {
+	    for(int i = 1; i < 4; i++) {
+		for(int j = 1; j < 4; j++) {
 		    String bText = Integer.toString(i) + "-" + Integer.toString(j);
 		    Demonstrator.nextStep("Push button " + bText);
 		    JButtonOperator bo = new JButtonOperator((JButton)JButtonOperator.findJComponent(win, bText, false, true));
@@ -78,12 +81,28 @@ public class jemmy_003 extends JemmyTest {
 		    public void run() {
 			try {
 			    Thread.sleep(1000);
+                            bbo.getAccessibleContext().
+                                setAccessibleDescription("A button to check different finding approaches");
 			    bbo.setText("New Text");
 			} catch(InterruptedException e) {
 			}
 		    }
 		}).start();
 	    bbo.waitText("New Text");
+            if(bbo.getSource() != wino.
+               findSubComponent(new AbstractButtonOperator.
+                                AbstractButtonByLabelFinder("New Text")) ||
+               bbo.getSource() != wino.
+               findSubComponent(new AccessibleNameChooser("New Text")) ||
+               bbo.getSource() != wino.
+               waitSubComponent(new AccessibleNameChooser("New Text")) ||
+               bbo.getSource() != 
+               new JButtonOperator(wino, 
+                                   new AccessibleDescriptionChooser("A button to check different finding approaches")).getSource()) {
+                getOutput().printLine("Wrong button found");
+                finalize();
+                return(1);
+            }
 
 
 	    Demonstrator.showFinalComment("Test passed");

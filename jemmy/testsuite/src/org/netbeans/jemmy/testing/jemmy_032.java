@@ -179,7 +179,7 @@ public class jemmy_032 extends JemmyTest {
 	    JFrameOperator lstFrameOper = new JFrameOperator("sts");
 	    JComboBoxOperator cbo = new JComboBoxOperator(lstFrameOper, "0");
 	    JListOperator lo = new JListOperator(lstFrameOper, "1");
-	    JTableOperator tblo = new JTableOperator(lstFrameOper, null);
+	    JTableOperator tblo = new JTableOperator(lstFrameOper, (String)null);
 	    JTreeOperator tro = new JTreeOperator(lstFrameOper, "00");
 	    getOutput().printLine("Combo : " +  cbo.getSource().toString());
 	    getOutput().printLine("List  : " +   lo.getSource().toString());

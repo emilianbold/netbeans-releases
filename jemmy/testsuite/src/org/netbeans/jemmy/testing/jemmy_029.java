@@ -2,6 +2,8 @@ package org.netbeans.jemmy.testing;
 
 import org.netbeans.jemmy.*;
 
+import org.netbeans.jemmy.accessibility.*;
+
 import org.netbeans.jemmy.demo.Demonstrator;
 
 import org.netbeans.jemmy.operators.*;
@@ -31,6 +33,7 @@ public class jemmy_029 extends JemmyTest {
 	    (new ClassReference("org.netbeans.jemmy.testing.Application_029")).startApplication();
 
 	    win =JFrameOperator.waitJFrame("Right one", true, true);
+            JFrameOperator wino = new JFrameOperator(win);
 
 	    if(JDialogOperator.getTopModalDialog() != null) {
 		output.printLine(JDialogOperator.getTopModalDialog().toString());
@@ -48,13 +51,22 @@ public class jemmy_029 extends JemmyTest {
 	    new JButtonOperator(new ContainerOperator(win), "Show").pushNoBlock();	    
 	    
 	    JDialog d = JDialogOperator.waitJDialog("Modal dialog", true, true);
+            JDialog d1 = (JDialog)wino.findSubWindow(new DialogOperator.
+                                                     DialogByTitleFinder("Modal dialog"));
+            JDialog d2 = (JDialog)wino.waitSubWindow(new AccessibleNameChooser("Modal dialog"));
 	    JDialogOperator do1 = new JDialogOperator("Modal dialog");
-	    JDialogOperator do2 = new JDialogOperator(new JFrameOperator(win), "Modal dialog");
-	    getOutput().printLine("By find  : " +               d.toString());
-	    getOutput().printLine("As single: " + do1.getSource().toString());
-	    getOutput().printLine("As child : " + do2.getSource().toString());
-	    if(do1.getSource() != do2.getSource() ||
-	       do1.getSource() != d) {
+	    JDialogOperator do2 = new JDialogOperator(wino, "Modal dialog");
+            JDialogOperator do3 = new JDialogOperator(new AccessibleNameChooser("Modal dialog"));
+	    getOutput().printLine("By find    : " +               d.toString());
+	    getOutput().printLine("By subfind : " +              d1.toString());
+	    getOutput().printLine("By subwait : " +              d2.toString());
+	    getOutput().printLine("As single  : " + do1.getSource().toString());
+	    getOutput().printLine("As child   : " + do2.getSource().toString());
+	    getOutput().printLine("by a11y    : " + do2.getSource().toString());
+	    if(d != d1 ||
+               d != d2 ||
+               d != do1.getSource() ||
+               d != do2.getSource()) {
 		getOutput().printErrLine("Should be the same!");
 		finalize();
 		return(1);

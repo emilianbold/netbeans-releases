@@ -85,6 +85,23 @@ public class jemmy_027 extends JemmyTest {
 	    JTableOperator tabOper = new JTableOperator(JTableOperator.
 							findJTable(win, null, false, false, -1, -1));
 
+            tabOper.getHeaderOperator().moveColumn(0, 1);
+            if(tabOper.findCellRow("04", 1, 0) != 4 ||
+               tabOper.findCell("04", 0).x != 1 ||
+               tabOper.findCellColumn("04", 4, 0) != 1 ||
+               tabOper.findColumn("1") != 0) {
+		getOutput().printError("Column was not moved");
+		return(1);
+            }
+            tabOper.getHeaderOperator().moveColumn(1, 0);
+            if(tabOper.findCellRow("14", 1, 0) != 4 ||
+               tabOper.findCell("14", 0).x != 1 ||
+               tabOper.findCellColumn("14", 4, 0) != 1 ||
+               tabOper.findColumn("0") != 0) {
+		getOutput().printError("Column was not moved");
+		return(1);
+            }
+
 	    tabOper.clickOnCell(0, 0);
 
 	    doSleep(100);
