@@ -26,6 +26,7 @@ All Rights Reserved.
     <property name="jnlp.signjar.password" value="netbeans" />
     
     <target name="compile">
+        <delete file="src/META-INF/netbeans-location.properties"/>
         <ant dir="../external"/>
         <javac debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" destdir="src" srcdir="src">
             <classpath refid="cp"/>
@@ -118,6 +119,7 @@ All Rights Reserved.
                 <include name="**/*.jar"/>
             </fileset>
         </copy>
+
         <!-- now they can be signed -->
         <signjar alias="${jnlp.signjar.alias}" keystore="${jnlp.signjar.keystore}" storepass="${jnlp.signjar.password}">
             <fileset dir=".">
@@ -142,6 +144,7 @@ All Rights Reserved.
         <delete dir="release"/>
         <delete dir="jars"/>
         <delete file="${netbeans.dest}.war"/>
+        <delete file="src/META-INF/netbeans-location.properties"/>
     </target>
 
     <target depends="clean" name="real-clean">
@@ -151,14 +154,12 @@ All Rights Reserved.
     <path id="cp">
         <pathelement location="${core.dir}/core/core.jar"/>
         <pathelement location="${jnlp-api.file.location}"/>
-        <pathelement location="${nb_all}/web/external/servlet-2.3.jar"/>
     </path>
     
     <target name="jars" depends="compile">
         <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         
         <repeat values="${allmodules}" name="maindir" target="buildjar"/>
-
         <mkdir dir="jars"/>
         <jar compress="false"
              jarfile="jars/nbjnlpinstaller.jar">
@@ -210,12 +211,18 @@ All Rights Reserved.
         <fileset dir="../../${maindir}" id="modules-eager-ext">
             <include name="netbeans/modules/eager/ext/*.jar"/>
         </fileset>
-        
-        <copy flatten="true" todir="jars/${maindir}">
-            <fileset dir="../../${maindir}" id="without-repackaging">
-                <include name="netbeans/lib/**/*.jar"/>
-            </fileset>
-        </copy>
+
+        <fileset dir="../../${maindir}" id="lib">
+            <include name="netbeans/lib/*.jar"/>
+        </fileset>
+
+        <fileset dir="../../${maindir}" id="lib-ext">
+            <include name="netbeans/lib/ext/*.jar"/>
+        </fileset>
+
+        <fileset dir="../../${maindir}" id="lib-locale">
+            <include name="netbeans/lib/locale/*.jar"/>
+        </fileset> 
 
         <pathconvert pathsep="," property="f1" refid="modules" setonempty="false"/>
         <antcall target="repackage-all">
@@ -270,6 +277,24 @@ All Rights Reserved.
             <param name="subdir" value="modules/autoload/locale"/>
             <param name="forconversion" value="${f9}"/>
         </antcall>
+
+        <pathconvert pathsep="," property="fa" refid="lib" setonempty="false"/>
+        <antcall target="repackage-all">
+            <param name="subdir" value="lib"/>
+            <param name="forconversion" value="${fa}"/>
+        </antcall>
+
+        <pathconvert pathsep="," property="fb" refid="lib-ext" setonempty="false"/>
+        <antcall target="repackage-all">
+            <param name="subdir" value="lib/ext"/>
+            <param name="forconversion" value="${fb}"/>
+        </antcall>
+
+        <pathconvert pathsep="," property="fc" refid="lib-locale" setonempty="false"/>
+        <antcall target="repackage-all">
+            <param name="subdir" value="lib/locale"/>
+            <param name="forconversion" value="${fc}"/>
+        </antcall>
     </target>
     
     <target name="repackage-all">
@@ -303,18 +328,11 @@ All Rights Reserved.
         directory structure
     -->
     <target name="repackage2" unless="jaruptodate">
-        <mkdir dir="jars/${maindir}/tmp/${fname}"/>
-        <unjar src="${filetoconvert}" dest="jars/${maindir}/tmp/${fname}"/>
-        <echo file="jars/${maindir}/${fname}-manifest.mf"><![CDATA[Manifest-Version: 1.0
-NetBeans-Location: ${subdir}
-NetBeans-Prefix: ${fname}
-
+        <mkdir dir="jars/${maindir}"/>
+        <mkdir dir="src/META-INF"/>
+        <copy file="${filetoconvert}" tofile="jars/${maindir}/${fname}.jar"/>
+        <echo file="src/META-INF/netbeans-location.properties" append="true"><![CDATA[${fname}.jar=${subdir}
 ]]></echo>
-        <jar jarfile="jars/${maindir}/${fname}.jar" 
-             basedir="jars/${maindir}/tmp"
-             manifest="jars/${maindir}/${fname}-manifest.mf"
-        />
-        <delete dir="jars/${maindir}/tmp"/>
     </target>
 
     <available file="${jnlp.signjar.keystore}" property="do.not.generate.keystore" />

@@ -27,6 +27,7 @@ All Rights Reserved.
         <property name="netbeans.user" value="memory"/>
         <property name="netbeans.security.nocheck" value="true"/>
         <property name="netbeans.ps.useCheckbox" value="true"/>
+        <property name="netbeans.useprefix" value="true"/>
 
         <!-- Debugging:
         <property name="netbeans.logger.console" value="true"/>
