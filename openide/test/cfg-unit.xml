@@ -57,6 +57,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/awt/*Test.class"/>
                 <include name="org/openide/execution/*Test.class"/>
                 <include name="org/openide/explorer/*Test.class"/>
+                <!-- Under development: -->
+                <exclude name="org/openide/explorer/ExplorerPanelTest.class/testSelectedNodesInDeserializedPanel"/>
                 <!-- testGlobalStateInExplorerActionsIsImportant sometimes fails, have to be investigated -->
                 <exclude name="org/openide/explorer/ExplorerActionsTest.class/testGlobalStateInExplorerActionsIsImportant"/>
                 <!-- following test was excluded because of issue #22629 --> 
@@ -70,6 +72,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/loaders/*.class"/>                
                 <!-- #28118 in faling testbag yet -->
                 <exclude name="org/openide/loaders/InstanceDataObjectTest.class/testFiringEventWhenDeleted"/>
+                <!-- Under development: -->
+                <exclude name="org/openide/loaders/CreateFromTemplate.class"/>
                 <!-- Don't worry about these, cannot be fixed currently: -->
 		<exclude name="org/openide/loaders/DataFolderTest.class/testSortMode"/> <!-- failing in cont. test -->
 		<exclude name="org/openide/loaders/DataFolderTest.class/testMove"/> <!-- failing in cont. test -->
@@ -139,7 +143,6 @@ Microsystems, Inc. All Rights Reserved.
 		<!-- excluded, a problem in infrastructure, the component is not showed -->
                 <exclude name="org/openide/explorer/view/DefaultActionTest.class"/>
                 <include name="org/openide/explorer/view/TTVTest.class"/>               
-                <exclude name="org/openide/explorer/view/ExplorerPanelTest.class/testSelectedNodesInDeserializedPanel"/>
             </patternset>
         </testset>        
     </testbag>
@@ -177,7 +180,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/nodes/ChildrenArrayTest.class/testNodeEventsFiredAtOnce"/>
                 <!-- Implementation was apparently killed during a refactoring (see #16430): -->
                 <include name="org/openide/explorer/propertysheet/FindHelpTest.class/testFindHelpOnPropertySheetRow"/>
-                <include name="org/openide/explorer/view/ExplorerPanelTest.class/testSelectedNodesInDeserializedPanel"/>
+                <include name="org/openide/explorer/ExplorerPanelTest.class/testSelectedNodesInDeserializedPanel"/>
             </patternset>
         </testset>      
     </testbag>
@@ -185,6 +188,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="failing" executor="ide" name="testbag_4" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
+                <include name="org/openide/loaders/CreateFromTemplate.class"/>
             </patternset>
         </testset>      
     </testbag>
