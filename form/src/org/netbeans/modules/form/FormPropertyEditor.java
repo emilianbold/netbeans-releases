@@ -101,6 +101,21 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
      *     modified value.
      */
     public void setValue(Object newValue) {
+        // if the value is not a FormDesignValue, other property editor 
+        // than RADConnectionPropertyEditor is used
+        if (modifiedEditor instanceof RADConnectionPropertyEditor
+              && (newValue == null || !(newValue instanceof FormDesignValue)
+                                      && propertyType.isAssignableFrom(newValue.getClass()))) {
+
+            PropertyEditor[] editors = getAllEditors();
+            for (int i=0; i < allEditors.length; i++)
+                if (!(editors[i] instanceof RADConnectionPropertyEditor)) {
+                    modifiedEditor = editors[i];
+                    commitModifiedEditor();
+                    break;
+                }
+        }
+
         Object oldValue = value;
         value = newValue;
         modifiedEditor.setValue(value);
