@@ -1,7 +1,14 @@
 /*
- * MakeListOfNBM.java
- *
- * Created on July 31, 2001, 10:19 AM
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.nbbuild;
@@ -46,7 +53,7 @@ public class MakeListOfNBM extends Task {
         log ("Generating information about the NBMs");
         
         Task nbms[] = ((Target) this.getProject().getTargets().get(targetName)).getTasks();
-        UpdateTracking track = new UpdateTracking( outputFile );
+        UpdateTracking track = new UpdateTracking( (new File( this.getProject().getBaseDir(), outputFile )).getAbsolutePath() );
         for( int i=0; i < nbms.length; i++) {
             if (nbms[i].getClass().getName().endsWith("MakeNBM")) {
                 
@@ -82,8 +89,10 @@ public class MakeListOfNBM extends Task {
                     throw new BuildException ("invalid manifest, does not contain OpenIDE-Module", location);
                 
 		String versionSpecNum = attr.getValue ("OpenIDE-Module-Specification-Version");
-		if (versionSpecNum == null)
-                    throw new BuildException ("invalid manifest, does not contain OpenIDE-Module-Specification-Version", location);
+		if (versionSpecNum == null) {
+                    log ("manifest does not contain OpenIDE-Module-Specification-Version");
+                    return;
+                }
                 
                 UpdateTracking.Version version = track.addNewModuleVersion( codenamebase, versionSpecNum );
                 
