@@ -126,6 +126,9 @@ public class JspContextInfoImpl extends JspContextInfo {
     }
     
     public FileObject guessWebModuleRoot (Document doc, FileObject fo) {
-        return WebModule.getWebModule (fo).getDocumentBase ();
+        WebModule wm =  WebModule.getWebModule (fo);
+        if (wm != null)
+            return wm.getDocumentBase ();
+        return null;
     }
 }
