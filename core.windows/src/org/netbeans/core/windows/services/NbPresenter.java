@@ -77,13 +77,13 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
     
     protected NotifyDescriptor descriptor;
     
-    private final JButton stdYesButton = new JButton(NbBundle.getBundle(NbPresenter.class).getString("YES_OPTION_CAPTION"));
-    private final JButton stdNoButton = new JButton(NbBundle.getBundle(NbPresenter.class).getString("NO_OPTION_CAPTION"));
-    private final JButton stdOKButton = new JButton(NbBundle.getBundle(NbPresenter.class).getString("OK_OPTION_CAPTION"));
-    private final JButton stdCancelButton = new JButton(NbBundle.getBundle(NbPresenter.class).getString("CANCEL_OPTION_CAPTION"));
-    private final JButton stdClosedButton = new JButton(NbBundle.getBundle(NbPresenter.class).getString("CLOSED_OPTION_CAPTION"));
-    private final JButton stdHelpButton = new JButton(NbBundle.getBundle(NbPresenter.class).getString("HELP_OPTION_CAPTION"));
-    private final JButton stdDetailButton = new JButton(NbBundle.getBundle(NbPresenter.class).getString("HELP_OPTION_CAPTION"));
+    private final JButton stdYesButton = new JButton(NbBundle.getBundle(NbPresenter.class).getString("YES_OPTION_CAPTION")); // NOI18N
+    private final JButton stdNoButton = new JButton(NbBundle.getBundle(NbPresenter.class).getString("NO_OPTION_CAPTION")); // NOI18N
+    private final JButton stdOKButton = new JButton(NbBundle.getBundle(NbPresenter.class).getString("OK_OPTION_CAPTION")); // NOI18N
+    private final JButton stdCancelButton = new JButton(NbBundle.getBundle(NbPresenter.class).getString("CANCEL_OPTION_CAPTION")); // NOI18N
+    private final JButton stdClosedButton = new JButton(NbBundle.getBundle(NbPresenter.class).getString("CLOSED_OPTION_CAPTION")); // NOI18N
+    private final JButton stdHelpButton = new JButton(NbBundle.getBundle(NbPresenter.class).getString("HELP_OPTION_CAPTION")); // NOI18N
+    private final JButton stdDetailButton = new JButton(NbBundle.getBundle(NbPresenter.class).getString("HELP_OPTION_CAPTION")); // NOI18N
     {
         stdYesButton.setDefaultCapable(true);
         stdOKButton.setDefaultCapable(true);
@@ -93,8 +93,8 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
         stdClosedButton.setDefaultCapable(false);
         stdHelpButton.setDefaultCapable(false);
         stdDetailButton.setDefaultCapable(false);
-        stdNoButton.setMnemonic(NbBundle.getBundle(NbPresenter.class).getString("NO_OPTION_CAPTION_MNEMONIC").charAt(0));
-        stdHelpButton.setMnemonic(NbBundle.getBundle(NbPresenter.class).getString("HELP_OPTION_CAPTION_MNEMONIC").charAt(0));
+        stdNoButton.setMnemonic(NbBundle.getBundle(NbPresenter.class).getString("NO_OPTION_CAPTION_MNEMONIC").charAt(0)); // NOI18N
+        stdHelpButton.setMnemonic(NbBundle.getBundle(NbPresenter.class).getString("HELP_OPTION_CAPTION_MNEMONIC").charAt(0)); // NOI18N
         
         /** Initilizes accessible contexts */
         initAccessibility();
@@ -142,26 +142,26 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
         ResourceBundle bundle;
         bundle = NbBundle.getBundle(NbPresenter.class);
         
-        stdYesButton.getAccessibleContext().setAccessibleName(bundle.getString("ACS_YES_OPTION_NAME"));
-        stdYesButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_YES_OPTION_DESC"));
+        stdYesButton.getAccessibleContext().setAccessibleName(bundle.getString("ACS_YES_OPTION_NAME")); // NOI18N
+        stdYesButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_YES_OPTION_DESC")); // NOI18N
         
-        stdNoButton.getAccessibleContext().setAccessibleName(bundle.getString("ACS_NO_OPTION_NAME"));
-        stdNoButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_NO_OPTION_DESC"));
+        stdNoButton.getAccessibleContext().setAccessibleName(bundle.getString("ACS_NO_OPTION_NAME")); // NOI18N
+        stdNoButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_NO_OPTION_DESC")); // NOI18N
         
-        stdOKButton.getAccessibleContext().setAccessibleName(bundle.getString("ACS_OK_OPTION_NAME"));
-        stdOKButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_OK_OPTION_DESC"));
+        stdOKButton.getAccessibleContext().setAccessibleName(bundle.getString("ACS_OK_OPTION_NAME")); // NOI18N
+        stdOKButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_OK_OPTION_DESC")); // NOI18N
         
-        stdCancelButton.getAccessibleContext().setAccessibleName(bundle.getString("ACS_CANCEL_OPTION_NAME"));
-        stdCancelButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CANCEL_OPTION_DESC"));
+        stdCancelButton.getAccessibleContext().setAccessibleName(bundle.getString("ACS_CANCEL_OPTION_NAME")); // NOI18N
+        stdCancelButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CANCEL_OPTION_DESC")); // NOI18N
         
-        stdClosedButton.getAccessibleContext().setAccessibleName(bundle.getString("ACS_CLOSED_OPTION_NAME"));
-        stdClosedButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CLOSED_OPTION_DESC"));
+        stdClosedButton.getAccessibleContext().setAccessibleName(bundle.getString("ACS_CLOSED_OPTION_NAME")); // NOI18N
+        stdClosedButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CLOSED_OPTION_DESC")); // NOI18N
         
-        stdHelpButton.getAccessibleContext().setAccessibleName(bundle.getString("ACS_HELP_OPTION_NAME"));
-        stdHelpButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_HELP_OPTION_DESC"));
+        stdHelpButton.getAccessibleContext().setAccessibleName(bundle.getString("ACS_HELP_OPTION_NAME")); // NOI18N
+        stdHelpButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_HELP_OPTION_DESC")); // NOI18N
         
-        stdDetailButton.getAccessibleContext().setAccessibleName(bundle.getString("ACS_HELP_OPTION_NAME"));
-        stdDetailButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_HELP_OPTION_DESC"));
+        stdDetailButton.getAccessibleContext().setAccessibleName(bundle.getString("ACS_HELP_OPTION_NAME")); // NOI18N
+        stdDetailButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_HELP_OPTION_DESC")); // NOI18N
     }
     
     private void initialize(NotifyDescriptor d) {
@@ -254,11 +254,11 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
             } else {
                 currentMessage = createOptionPane();
             }
-            Dimension minSize = currentMessage.getMinimumSize();
+            Dimension prefSize = currentMessage.getPreferredSize();
             final Rectangle screenBounds = Utilities.getUsableScreenBounds();
             
-            if (minSize.width > screenBounds.width - 100
-                || minSize.height > screenBounds.height- 100
+            if (prefSize.width > screenBounds.width - 100
+                || prefSize.height > screenBounds.height- 100
                 ) {
                 currentScrollPane = new JScrollPane() {
                     public Dimension getPreferredSize() {
@@ -786,10 +786,10 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
         
         if (update) {
             Dimension sz = getSize();
-            Dimension minsz = getMinimumSize();
-            if (minsz.width > sz.width || minsz.height > sz.height) {
-                setSize(Math.max(minsz.width, sz.width),
-                        Math.max(minsz.height, sz.height));
+            Dimension prefSize = getPreferredSize();
+            if (prefSize.width > sz.width || prefSize.height > sz.height) {
+                setSize(Math.max(prefSize.width, sz.width),
+                        Math.max(prefSize.height, sz.height));
             }
 
             validate();
@@ -998,15 +998,15 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
     private static String getMessageTypeDescription(int messageType) {
         switch(messageType) {
         case NotifyDescriptor.ERROR_MESSAGE:
-            return NbBundle.getBundle(NbPresenter.class).getString("ACSD_ErrorMessage");
+            return NbBundle.getBundle(NbPresenter.class).getString("ACSD_ErrorMessage"); // NOI18N
         case NotifyDescriptor.WARNING_MESSAGE:
-            return NbBundle.getBundle(NbPresenter.class).getString("ACSD_WarningMessage");
+            return NbBundle.getBundle(NbPresenter.class).getString("ACSD_WarningMessage"); // NOI18N
         case NotifyDescriptor.QUESTION_MESSAGE:
-            return NbBundle.getBundle(NbPresenter.class).getString("ACSD_QuestionMessage");
+            return NbBundle.getBundle(NbPresenter.class).getString("ACSD_QuestionMessage"); // NOI18N
         case NotifyDescriptor.INFORMATION_MESSAGE:
-            return NbBundle.getBundle(NbPresenter.class).getString("ACSD_InformationMessage");
+            return NbBundle.getBundle(NbPresenter.class).getString("ACSD_InformationMessage"); // NOI18N
         case NotifyDescriptor.PLAIN_MESSAGE:
-            return NbBundle.getBundle(NbPresenter.class).getString("ACSD_PlainMessage");
+            return NbBundle.getBundle(NbPresenter.class).getString("ACSD_PlainMessage"); // NOI18N
         }
         return ""; // NOI18N
     }
