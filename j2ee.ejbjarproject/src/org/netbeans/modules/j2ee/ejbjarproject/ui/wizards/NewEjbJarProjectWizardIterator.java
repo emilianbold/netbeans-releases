@@ -24,6 +24,11 @@ import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.j2ee.api.ejbjar.Ear;
+import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -67,6 +72,18 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Instanti
         
         EjbJarProjectGenerator.createProject(dirF, name, j2eeLevel, serverInstanceID);
         FileObject dir = FileUtil.toFileObject(dirF);
+        
+        Project earProject = (Project) wiz.getProperty(WizardProperties.EAR_APPLICATION);
+        EjbJarProject createdEjbJarProject = (EjbJarProject) ProjectManager.getDefault().findProject(dir);
+//        System.out.println("### earProject=" + earProject);
+//        System.out.println("### createdEjbJarProject=" + createdEjbJarProject);
+        if (earProject != null && createdEjbJarProject != null) {
+            Ear ear = Ear.getEar(earProject.getProjectDirectory());
+//            System.out.println("### ear=" + ear);
+            if (ear != null) {
+                ear.addEjbJarModule(createdEjbJarProject.getAPIEjbJar());
+            }
+        }
         
         resultSet.add(dir);
         

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.*;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -32,6 +33,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -46,18 +48,20 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  pb97924
+ * @author  pb97924, Martin Adamek
  */
-public class ImportLocationVisual extends javax.swing.JPanel implements DocumentListener {
+public class ImportLocationVisual extends javax.swing.JPanel /*implements DocumentListener */{
     
     private ImportLocation panel;
-    private Document moduleDocument;
-    private Document locationDocument;
-    private Document nameDocument;
-    private boolean contextModified = false;
     private String buildfileName = GeneratedFilesHelper.BUILD_XML_PATH;
     private java.util.List serverInstanceIDs;
     private static final String J2EE_SPEC_14_LABEL = NbBundle.getMessage(ImportLocationVisual.class, "J2EESpecLevel_14"); //NOI18N
+    private ChangeListener listener;
+    private DocumentListener documentListener;
+    /** Was projectFolder property edited by user? */
+    private boolean projectFolderTouched = false;
+    /** Was projectName property edited by user? */
+    private boolean projectNameTouched = false;
         
     /** Creates new form TestPanel */
     public ImportLocationVisual (/*ImportEjbJarProjectWizardIterator.ThePanel*/ImportLocation panel) {
@@ -65,27 +69,28 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         initComponents ();
         initServerInstances();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_NWP1_NamePanel_A11YDesc"));  // NOI18N
-
         setName(NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_ImportTitle")); //NOI18N
-        
-        locationDocument = projectLocationTextField.getDocument ();
-        locationDocument.addDocumentListener (this);
-        projectNameTextField.getDocument ().addDocumentListener (this);
-        nameDocument = projectNameTextField.getDocument();
-        nameDocument.addDocumentListener(this);
+        this.listener = panel;
+        this.projectName.setText("");
+        documentListener = new DocumentListener() {           
+            public void insertUpdate(DocumentEvent e) {
+                update(e);
+            }
 
-        jTextFieldLibraries.getDocument().addDocumentListener(this);
-        jTextFieldConfigFiles.getDocument().addDocumentListener(this);
+            public void removeUpdate(DocumentEvent e) {
+                update(e);
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                update(e);
+            }
+        };
+        this.projectLocation.getDocument().addDocumentListener(documentListener);
+        this.projectName.getDocument().addDocumentListener(documentListener);
+        this.projectFolder.getDocument().addDocumentListener(documentListener);
+        
     }
     
-    public void initValues(String configFiles, String libraries) {
-        //set the locations only if they weren't set before
-        if (jTextFieldConfigFiles.getText().trim().equals(""))
-            jTextFieldConfigFiles.setText(configFiles);
-        if (jTextFieldLibraries.getText().trim().equals(""))
-            jTextFieldLibraries.setText(libraries);
-    }
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -96,30 +101,22 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
 
         jLabelSrcLocationDesc = new javax.swing.JLabel();
         jLabelSrcLocation = new javax.swing.JLabel();
-        moduleLocationTextField = new javax.swing.JTextField();
-        jButtonSrcLocation = new javax.swing.JButton();
+        projectLocation = new javax.swing.JTextField();
+        browseProjectLocation = new javax.swing.JButton();
         jLabelPrjLocationDesc = new javax.swing.JLabel();
         jLabelPrjName = new javax.swing.JLabel();
-        projectNameTextField = new javax.swing.JTextField();
+        projectName = new javax.swing.JTextField();
         jLabelPrjLocation = new javax.swing.JLabel();
-        projectLocationTextField = new javax.swing.JTextField();
-        jButtonPrjLocation = new javax.swing.JButton();
-        createdFolderLabel = new javax.swing.JLabel();
-        createdFolderTextField = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
-        jTextFieldConfigFiles = new javax.swing.JTextField();
-        jButtonConfigFilesLocation = new javax.swing.JButton();
+        projectFolder = new javax.swing.JTextField();
+        browseProjectFolder = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
         jCheckBox1 = new javax.swing.JCheckBox();
-        jLabel2 = new javax.swing.JLabel();
-        jTextFieldLibraries = new javax.swing.JTextField();
-        jButtonLibraries = new javax.swing.JButton();
         serverInstanceLabel = new javax.swing.JLabel();
         serverInstanceComboBox = new javax.swing.JComboBox();
         jLabel7 = new javax.swing.JLabel();
         j2eeSpecComboBox = new javax.swing.JComboBox();
-        jLabel6 = new javax.swing.JLabel();
-        jTextAreaDescription = new javax.swing.JTextArea();
+        addToAppCheckBox = new javax.swing.JCheckBox();
+        addToAppComboBox = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -132,7 +129,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
 
         jLabelSrcLocation.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_ImportLocation_LabelMnemonic").charAt(0));
         jLabelSrcLocation.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabelSrcLocation.setLabelFor(moduleLocationTextField);
+        jLabelSrcLocation.setLabelFor(projectLocation);
         jLabelSrcLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_LocationSrc_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -141,9 +138,9 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jLabelSrcLocation, gridBagConstraints);
 
-        moduleLocationTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+        projectLocation.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
-                moduleLocationTextFieldFocusLost(evt);
+                projectLocationFocusLost(evt);
             }
         });
 
@@ -153,13 +150,13 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(moduleLocationTextField, gridBagConstraints);
-        moduleLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_IW_ImportLocation_A11YDesc"));
+        add(projectLocation, gridBagConstraints);
+        projectLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_IW_ImportLocation_A11YDesc"));
 
-        jButtonSrcLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
-        jButtonSrcLocation.addActionListener(new java.awt.event.ActionListener() {
+        browseProjectLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
+        browseProjectLocation.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonSrcLocationActionPerformed(evt);
+                browseProjectLocationActionPerformed(evt);
             }
         });
 
@@ -167,25 +164,25 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(jButtonSrcLocation, gridBagConstraints);
-        jButtonSrcLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_IW_ImportLocationBrowse_A11YDesc"));
+        add(browseProjectLocation, gridBagConstraints);
+        browseProjectLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_IW_ImportLocationBrowse_A11YDesc"));
 
         jLabelPrjLocationDesc.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_LocationPrjDesc"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 11, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jLabelPrjLocationDesc, gridBagConstraints);
 
         jLabelPrjName.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ProjectName_LabelMnemonic").charAt(0));
         jLabelPrjName.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabelPrjName.setLabelFor(projectNameTextField);
+        jLabelPrjName.setLabelFor(projectName);
         jLabelPrjName.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ProjectName_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
@@ -193,98 +190,48 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(projectNameTextField, gridBagConstraints);
-        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_ProjectName_A11YDesc"));
+        add(projectName, gridBagConstraints);
+        projectName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_ProjectName_A11YDesc"));
 
         jLabelPrjLocation.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ProjectLocation_LabelMnemonic").charAt(0));
         jLabelPrjLocation.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabelPrjLocation.setLabelFor(projectLocationTextField);
-        jLabelPrjLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ProjectLocation_Label"));
+        jLabelPrjLocation.setLabelFor(projectFolder);
+        jLabelPrjLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Lablel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jLabelPrjLocation, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(projectLocationTextField, gridBagConstraints);
-        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NPW1_ProjectLocation_A11YDesc"));
+        add(projectFolder, gridBagConstraints);
+        projectFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NPW1_ProjectLocation_A11YDesc"));
 
-        jButtonPrjLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
-        jButtonPrjLocation.addActionListener(new java.awt.event.ActionListener() {
+        browseProjectFolder.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
+        browseProjectFolder.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonPrjLocationActionPerformed(evt);
+                browseProjectFolderActionPerformed(evt);
             }
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(jButtonPrjLocation, gridBagConstraints);
-        jButtonPrjLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_BrowseLocation_A11YDesc"));
+        add(browseProjectFolder, gridBagConstraints);
+        browseProjectFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_BrowseLocation_A11YDesc"));
 
-        createdFolderLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_LablelMnemonic").charAt(0));
-        createdFolderLabel.setLabelFor(createdFolderTextField);
-        createdFolderLabel.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Lablel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(createdFolderLabel, gridBagConstraints);
-
-        createdFolderTextField.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(createdFolderTextField, gridBagConstraints);
-        createdFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_CreatedProjectFolder_A11YDesc"));
-
-        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_ConfigFilesFolder_LabelMnemonic").charAt(0));
-        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_ConfigFilesFolder_Label"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(jLabel1, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(jTextFieldConfigFiles, gridBagConstraints);
-
-        jButtonConfigFilesLocation.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_BrowseLocation_Button"));
-        jButtonConfigFilesLocation.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonConfigFilesLocationActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(jButtonConfigFilesLocation, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
@@ -295,47 +242,18 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         jCheckBox1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_SetAsMainProject_CheckBox"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jCheckBox1, gridBagConstraints);
 
-        jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_LibrariesLocation_Label"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(jLabel2, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(jTextFieldLibraries, gridBagConstraints);
-
-        jButtonLibraries.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_BrowseLocation_Button"));
-        jButtonLibraries.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonLibrariesActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(jButtonLibraries, gridBagConstraints);
-
         serverInstanceLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_Server_LabelMnemonic").charAt(0));
         serverInstanceLabel.setText(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_Server"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(serverInstanceLabel, gridBagConstraints);
@@ -350,7 +268,8 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
@@ -360,7 +279,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         jLabel7.setText(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_J2EESpecLevel_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jLabel7, gridBagConstraints);
@@ -380,36 +299,33 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(j2eeSpecComboBox, gridBagConstraints);
 
-        jLabel6.setText(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_J2EESpecLevelDesc_Label"));
+        addToAppCheckBox.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_AddToEApp_CheckBox"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 11, 0);
-        add(jLabel6, gridBagConstraints);
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        add(addToAppCheckBox, gridBagConstraints);
 
-        jTextAreaDescription.setEditable(false);
-        jTextAreaDescription.setBorder(new javax.swing.border.BevelBorder(javax.swing.border.BevelBorder.LOWERED));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weighty = 1.0;
-        add(jTextAreaDescription, gridBagConstraints);
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        add(addToAppComboBox, gridBagConstraints);
 
     }//GEN-END:initComponents
 
-    private void moduleLocationTextFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_moduleLocationTextFieldFocusLost
-        updateTexts(moduleDocument);
-    }//GEN-LAST:event_moduleLocationTextFieldFocusLost
+    private void projectLocationFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_projectLocationFocusLost
+    }//GEN-LAST:event_projectLocationFocusLost
 
     private void serverInstanceComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverInstanceComboBoxActionPerformed
         String prevSelectedItem = (String)j2eeSpecComboBox.getSelectedItem();
@@ -424,58 +340,52 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
     }//GEN-LAST:event_serverInstanceComboBoxActionPerformed
 
     private void j2eeSpecComboBoxFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_j2eeSpecComboBoxFocusGained
-        setJ2eeSpecVerDesc();
     }//GEN-LAST:event_j2eeSpecComboBoxFocusGained
 
     private void j2eeSpecComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_j2eeSpecComboBoxActionPerformed
-        setJ2eeSpecVerDesc();
     }//GEN-LAST:event_j2eeSpecComboBoxActionPerformed
 
-    private void jButtonLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLibrariesActionPerformed
-        JFileChooser chooser = createChooser(jTextFieldLibraries.getText());    
-        if (chooser.APPROVE_OPTION == chooser.showDialog(this, NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_SelectLibrariesLocation"))) { //NOI18N
-            File libDir = chooser.getSelectedFile();
-            jTextFieldLibraries.setText(libDir.getAbsolutePath());
-        }            
-    }//GEN-LAST:event_jButtonLibrariesActionPerformed
+    private void browseProjectFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseProjectFolderActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
+        if (projectFolder.getText().length() > 0 && getProjectFolder().exists()) {
+            chooser.setSelectedFile(getProjectFolder());
+        } else if (projectLocation.getText().length() > 0 && getProjectLocation().exists()) {
+            chooser.setSelectedFile(getProjectLocation());
+        } else {
+            chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
+        }
+        chooser.setDialogTitle("XXX 111");
+        if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+            File projectDir = FileUtil.normalizeFile(chooser.getSelectedFile());
+            projectFolder.setText(projectDir.getAbsolutePath());
+        }                    
+    }//GEN-LAST:event_browseProjectFolderActionPerformed
 
-    private void jButtonConfigFilesLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonConfigFilesLocationActionPerformed
-        JFileChooser chooser = createChooser(jTextFieldConfigFiles.getText());    
-        if (chooser.APPROVE_OPTION == chooser.showDialog(this, NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_SelectConfigFilesLocation"))) { //NOI18N
-            File configFilesDir = chooser.getSelectedFile();
-            jTextFieldConfigFiles.setText(configFilesDir.getAbsolutePath());
-        }            
-    }//GEN-LAST:event_jButtonConfigFilesLocationActionPerformed
-
-    private void jButtonPrjLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPrjLocationActionPerformed
-        JFileChooser chooser = createChooser();    
-        if (chooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-            File projectDir = chooser.getSelectedFile();
-            projectLocationTextField.setText( projectDir.getAbsolutePath());
-        }            
-    }//GEN-LAST:event_jButtonPrjLocationActionPerformed
-
-    private void jButtonSrcLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSrcLocationActionPerformed
-        JFileChooser chooser = createChooser();    
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-            File projectDir = chooser.getSelectedFile();
-            moduleLocationTextField.setText( projectDir.getAbsolutePath());
-            updateTexts(moduleDocument);
-        }            
-    }//GEN-LAST:event_jButtonSrcLocationActionPerformed
+    private void browseProjectLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseProjectLocationActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
+        if (projectLocation.getText().length() > 0 && getProjectLocation().exists()) {
+            chooser.setSelectedFile(getProjectLocation());
+        } else {
+            chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
+        }
+        chooser.setDialogTitle("XXX 222");
+        if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+            File projectLoc = FileUtil.normalizeFile(chooser.getSelectedFile());
+            projectLocation.setText(projectLoc.getAbsolutePath());
+        }
+    }//GEN-LAST:event_browseProjectLocationActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel createdFolderLabel;
-    public javax.swing.JTextField createdFolderTextField;
+    private javax.swing.JCheckBox addToAppCheckBox;
+    private javax.swing.JComboBox addToAppComboBox;
+    private javax.swing.JButton browseProjectFolder;
+    private javax.swing.JButton browseProjectLocation;
     private javax.swing.JComboBox j2eeSpecComboBox;
-    private javax.swing.JButton jButtonConfigFilesLocation;
-    private javax.swing.JButton jButtonLibraries;
-    private javax.swing.JButton jButtonPrjLocation;
-    private javax.swing.JButton jButtonSrcLocation;
     private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabelPrjLocation;
     private javax.swing.JLabel jLabelPrjLocationDesc;
@@ -483,12 +393,9 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
     private javax.swing.JLabel jLabelSrcLocation;
     private javax.swing.JLabel jLabelSrcLocationDesc;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JTextArea jTextAreaDescription;
-    private javax.swing.JTextField jTextFieldConfigFiles;
-    private javax.swing.JTextField jTextFieldLibraries;
-    public javax.swing.JTextField moduleLocationTextField;
-    public javax.swing.JTextField projectLocationTextField;
-    public javax.swing.JTextField projectNameTextField;
+    public javax.swing.JTextField projectFolder;
+    public javax.swing.JTextField projectLocation;
+    public javax.swing.JTextField projectName;
     private javax.swing.JComboBox serverInstanceComboBox;
     private javax.swing.JLabel serverInstanceLabel;
     // End of variables declaration//GEN-END:variables
@@ -509,70 +416,68 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         return chooser;
     }
     
-    // Implementation of DocumentListener --------------------------------------
-    public void changedUpdate(DocumentEvent e) {
-        updateTexts(e.getDocument());
-    }
-    
-    public void insertUpdate(DocumentEvent e) {
-        updateTexts(e.getDocument());
-    }
-    
-    public void removeUpdate(DocumentEvent e) {
-        updateTexts(e.getDocument());
-    }
-    // End if implementation of DocumentListener -------------------------------
-    
-    /** Handles changes in the project name and project directory
-     */
-    private void updateTexts(Document doc) {
-        if (doc == moduleDocument) {
-            String moduleFolder = moduleLocationTextField.getText().trim();
-            FileObject fo;
-            try {
-                fo= FileUtil.toFileObject(new File(moduleFolder));
-            } catch (IllegalArgumentException exc) {
-                return;
-            }
-            String configFilesFolder = "";
-            String librariesFolder = "";
-            String projectName = "";
-            String projectLocation = "";
-            if (fo != null && isSuitableProjectRoot(fo)) {
-                projectLocation = FileUtil.toFile(fo.getParent()).getAbsolutePath();
-                createdFolderTextField.setText (moduleFolder);
-                configFilesFolder = FileUtil.toFile(guessConfigFilesPath(fo)).getAbsolutePath();
-                FileObject libFolderFO = guessLibrariesFolder(fo);
-                if (libFolderFO != null) {
-                    librariesFolder = FileUtil.toFile(libFolderFO).getAbsolutePath();
-                }
-                projectName = fo.getName();
-            }
-            projectLocationTextField.setText(projectLocation);
-            jTextFieldConfigFiles.setText(configFilesFolder);
-            jTextFieldLibraries.setText(librariesFolder);
-            projectNameTextField.setText(projectName);
+    private boolean ignoreEvent = false;
 
-            jTextFieldLibraries.setText(librariesFolder);
-        } else if (doc == locationDocument || !projectLocationTextField.getText ().equals (moduleLocationTextField.getText ())) {
-            StringBuffer folder = new StringBuffer(projectLocationTextField.getText().trim());
-            if (!folder.toString ().endsWith(File.separator))
-                folder.append(File.separatorChar);
-            folder.append(projectNameTextField.getText().trim());
-            createdFolderTextField.setText (folder.toString());
+    private void update(DocumentEvent e) {
+        if (ignoreEvent) {
+            // side-effect of changes done in this handler
+            return;
         }
 
-        panel.fireChangeEvent ();
+        // start ignoring events
+        ignoreEvent = true;
+
+        if (projectLocation.getDocument() == e.getDocument()) {
+            updateProjectName();
+            updateProjectFolder();
+        }
+
+        // stop ignoring events
+        ignoreEvent = false;
+
+        if (projectFolder.getDocument() == e.getDocument()) {
+            projectFolderTouched = !"".equals(projectFolder.getText());
+        }
+        if (projectName.getDocument() == e.getDocument()) {
+            projectNameTouched = !"".equals(projectName.getText());
+        }
+        listener.stateChanged(null);
     }
-    
+
+    private void updateProjectName() {
+        if (projectNameTouched) {
+            return;
+        }
+        FileObject fo = FileUtil.toFileObject(getProjectLocation());
+        if (fo != null) {
+            projectName.setText(fo.getName()); // NOI18N
+        }
+    }
+
+    private void updateProjectFolder() {
+        if (projectFolderTouched) {
+            return;                                                                
+        }
+        if (isValidProjectLocation()) {
+            projectFolder.setText(getProjectLocation().getAbsolutePath());
+        } else {
+            projectFolder.setText(""); // NOI18N
+        }
+    }
+
+    private boolean isValidProjectLocation() {
+        return (getProjectLocation().exists() && getProjectLocation().isDirectory() &&
+                projectLocation.getText().length() > 0 && (!projectLocation.getText().endsWith(":"))); // NOI18N
+    }
+
     private boolean isEjbJarModule(FileObject dir) {
         return guessConfigFilesPath(dir) != null && guessJavaRoots(dir) != null;
     }
     
     public boolean valid(WizardDescriptor wizardDescriptor) {
-        File f = new File(moduleLocationTextField.getText().trim());
-        File prjFolder = new File(projectLocationTextField.getText().trim());
-        String prjName = projectNameTextField.getText().trim();
+        File f = new File(projectLocation.getText().trim());
+        File prjFolder = new File(projectFolder.getText().trim());
+        String prjName = projectName.getText().trim();
         
         if (getSelectedServerInstanceID() == null) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class,"MSG_NoServer")); //NOI18N
@@ -609,20 +514,17 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
     }
     
     void store( WizardDescriptor d ) {
-        String name = projectNameTextField.getText().trim();
-        String moduleLoc = moduleLocationTextField.getText().trim();
-        String createdFolder = createdFolderTextField.getText();
+        String name = projectName.getText().trim();
+        String moduleLoc = projectLocation.getText().trim();
 
-        if (name.equals("") || moduleLoc.equals("") || createdFolder.equals("")) {
+        if (name.equals("") || moduleLoc.equals("")) {
             return;
         }
         
-        d.putProperty(WizardProperties.PROJECT_DIR, new File(createdFolder));
+        d.putProperty(WizardProperties.PROJECT_DIR, new File(projectFolder.getText().trim()));
         File moduleLocFile =  new File(moduleLoc);
         d.putProperty(WizardProperties.SOURCE_ROOT, moduleLocFile);
         d.putProperty(WizardProperties.NAME, name);
-        d.putProperty(WizardProperties.CONFIG_FILES_FOLDER, new File(jTextFieldConfigFiles.getText()));
-        d.putProperty(WizardProperties.LIB_FOLDER, new File(jTextFieldLibraries.getText()));
         d.putProperty(WizardProperties.JAVA_ROOT, guessJavaRootsAsFiles(FileUtil.toFileObject(moduleLocFile)));
         d.putProperty(WizardProperties.SERVER_INSTANCE_ID, getSelectedServerInstanceID());
         d.putProperty(WizardProperties.J2EE_LEVEL, getSelectedJ2eeSpec());
@@ -633,7 +535,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
     private Dialog dialog;
     
     void validate (WizardDescriptor d) throws WizardValidationException {
-        File dirF = new File(createdFolderTextField.getText());
+        File dirF = new File(projectFolder.getText());
         JButton ok = new JButton(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_Buildfile_OK")); //NOI18N
         ok.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "ACS_IW_BuildFileDialog_OKButton_LabelMnemonic")); //NOI18N
         ok.setMnemonic(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_BuildFileDialog_OK_LabelMnemonic").charAt(0)); //NOI18N
@@ -790,30 +692,6 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         return null;
     }
 
-    private FileObject guessLibrariesFolder (FileObject dir) {
-        if (dir != null) {
-            FileObject lib = dir.getFileObject ("lib"); //NOI18N
-            if (lib != null) {
-                return lib;
-            }
-        }
-        Enumeration ch = dir.getChildren (true);
-        while (ch.hasMoreElements ()) {
-            FileObject f = (FileObject) ch.nextElement ();
-            if (f.getExt ().equals ("jar")) { //NOI18N
-                return f.getParent ();
-            }
-        }
-        return null;
-    }
-    
-    private void setJ2eeSpecVerDesc() {
-        Object specVer = j2eeSpecComboBox.getSelectedItem();
-        if (specVer != null && specVer.equals(J2EE_SPEC_14_LABEL)) {
-            jTextAreaDescription.setText(NbBundle.getMessage(ImportLocationVisual.class, "J2EESpecLevel_Desc_14")); //NOI18N
-        }
-    }
-    
     private void initServerInstances() {
         String[] servInstIDs = Deployment.getDefault().getServerInstanceIDs();
         serverInstanceIDs = new ArrayList();
@@ -845,4 +723,21 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         return item == null ? null
                             : item.equals(J2EE_SPEC_14_LABEL) ? J2eeModule.J2EE_14 : J2eeModule.J2EE_13;
     }
+
+    private File getAsFile(String filename) {
+        return FileUtil.normalizeFile(new File(filename));
+    }
+
+    public File getProjectLocation() {
+        return getAsFile(projectLocation.getText());
+    }
+
+    public File getProjectFolder() {
+        return getAsFile(projectFolder.getText());
+    }
+
+    public String getProjectName() {
+        return projectName.getText();
+    }
+
 }

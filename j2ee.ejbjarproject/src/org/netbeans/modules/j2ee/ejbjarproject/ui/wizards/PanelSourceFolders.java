@@ -21,6 +21,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
+import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.DialogDisplayer;
@@ -29,10 +30,12 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 //XXX There should be a way how to add nonexistent test dir
 
@@ -57,6 +60,46 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         this.testsPanel.addPropertyChangeListener(this);
     }
 
+    public void initValues(FileObject fo) {
+        String configFiles = FileUtil.toFile(guessConfigFilesPath(fo)).getAbsolutePath();
+        String libraries = FileUtil.toFile(guessLibrariesFolder(fo)).getAbsolutePath();
+        jTextFieldConfigFiles.setText(configFiles);
+        jTextFieldLibraries.setText(libraries);
+    }
+
+    private FileObject guessConfigFilesPath (FileObject dir) {
+        Enumeration ch = dir.getChildren (true);
+        try {
+            while (ch.hasMoreElements ()) {
+                FileObject f = (FileObject) ch.nextElement ();
+                if (f.getNameExt().equals ("ejb-jar.xml")) { //NOI18N
+                    String rootName = f.getParent ().getPath ();
+                    return f.getFileSystem ().findResource (rootName);
+                }
+            }
+        } catch (FileStateInvalidException fsie) {
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, fsie);
+        }
+        return null;
+    }
+
+    private FileObject guessLibrariesFolder (FileObject dir) {
+        if (dir != null) {
+            FileObject lib = dir.getFileObject ("lib"); //NOI18N
+            if (lib != null) {
+                return lib;
+            }
+        }
+        Enumeration ch = dir.getChildren (true);
+        while (ch.hasMoreElements ()) {
+            FileObject f = (FileObject) ch.nextElement ();
+            if (f.getExt ().equals ("jar")) { //NOI18N
+                return f.getParent ();
+            }
+        }
+        return null;
+    }
+    
     public void propertyChange(PropertyChangeEvent evt) {
         if (FolderList.PROP_FILES.equals(evt.getPropertyName())) {
             this.dataChanged();
@@ -78,6 +121,8 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         if (testRoot != null) {
             ((FolderList)this.testsPanel).setFiles (testRoot);
         }
+        File projectLocation = (File) settings.getProperty(WizardProperties.SOURCE_ROOT);
+        initValues(FileUtil.toFileObject(projectLocation));
     }
 
     void store (WizardDescriptor settings) {
@@ -85,6 +130,8 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         File[] testRoots = ((FolderList)this.testsPanel).getFiles();
         settings.putProperty (WizardProperties.JAVA_ROOT,sourceRoots);    //NOI18N
         settings.putProperty(WizardProperties.TEST_ROOT,testRoots);      //NOI18N
+        settings.putProperty(WizardProperties.CONFIG_FILES_FOLDER, new File(jTextFieldConfigFiles.getText().trim()));
+        settings.putProperty(WizardProperties.LIB_FOLDER, new File(jTextFieldLibraries.getText().trim()));
     }
     
     boolean valid (WizardDescriptor settings) {
@@ -215,6 +262,12 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
             NbBundle.getMessage(PanelSourceFolders.class,"MNE_AddSourceFolder").charAt(0), NbBundle.getMessage(PanelSourceFolders.class,"AD_AddSourceFolder"),NbBundle.getMessage(PanelSourceFolders.class,"MNE_RemoveSourceFolder").charAt(0), NbBundle.getMessage(PanelSourceFolders.class,"AD_RemoveSourceFolder"));
         testsPanel = new FolderList (NbBundle.getMessage(PanelSourceFolders.class,"CTL_TestRoots"), NbBundle.getMessage(PanelSourceFolders.class,"MNE_TestRoots").charAt(0),NbBundle.getMessage(PanelSourceFolders.class,"AD_TestRoots"), NbBundle.getMessage(PanelSourceFolders.class,"CTL_AddTestRoot"),
             NbBundle.getMessage(PanelSourceFolders.class,"MNE_AddTestFolder").charAt(0), NbBundle.getMessage(PanelSourceFolders.class,"AD_AddTestFolder"),NbBundle.getMessage(PanelSourceFolders.class,"MNE_RemoveTestFolder").charAt(0), NbBundle.getMessage(PanelSourceFolders.class,"AD_RemoveTestFolder"));
+        jLabel1 = new javax.swing.JLabel();
+        jTextFieldConfigFiles = new javax.swing.JTextField();
+        jButtonConfigFilesLocation = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        jTextFieldLibraries = new javax.swing.JTextField();
+        jButtonLibraries = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -222,15 +275,18 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_PanelSourceFolders"));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_SourceDirectoriesLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jLabel3, gridBagConstraints);
         jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelSourceFolders.class).getString("ACSN_jLabel3"));
         jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelSourceFolders.class).getString("ACSD_jLabel3"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -239,6 +295,8 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         add(sourcePanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -246,12 +304,108 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(testsPanel, gridBagConstraints);
 
+        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_ConfigFilesFolder_Label"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        add(jLabel1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        add(jTextFieldConfigFiles, gridBagConstraints);
+
+        jButtonConfigFilesLocation.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_BrowseLocation_Button"));
+        jButtonConfigFilesLocation.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonConfigFilesLocationActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        add(jButtonConfigFilesLocation, gridBagConstraints);
+
+        jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_LibrariesLocation_Label"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        add(jLabel2, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        add(jTextFieldLibraries, gridBagConstraints);
+
+        jButtonLibraries.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_BrowseLocation_Button"));
+        jButtonLibraries.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonLibrariesActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        add(jButtonLibraries, gridBagConstraints);
+
     }//GEN-END:initComponents
+
+    private void jButtonLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLibrariesActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
+        if (jTextFieldLibraries.getText().length() > 0 && getLibraries().exists()) {
+            chooser.setSelectedFile(getLibraries());
+        } else {
+            chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
+        }
+        chooser.setDialogTitle("XXX 333");
+        if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+            File configFilesDir = FileUtil.normalizeFile(chooser.getSelectedFile());
+            jTextFieldLibraries.setText(configFilesDir.getAbsolutePath());
+        }
+    }//GEN-LAST:event_jButtonLibrariesActionPerformed
+
+    private void jButtonConfigFilesLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonConfigFilesLocationActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
+        if (jTextFieldConfigFiles.getText().length() > 0 && getConfigFiles().exists()) {
+            chooser.setSelectedFile(getConfigFiles());
+        } else {
+            chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
+        }
+        chooser.setDialogTitle("XXX 333");
+        if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+            File configFilesDir = FileUtil.normalizeFile(chooser.getSelectedFile());
+            jTextFieldConfigFiles.setText(configFilesDir.getAbsolutePath());
+        }
+    }//GEN-LAST:event_jButtonConfigFilesLocationActionPerformed
 
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButtonConfigFilesLocation;
+    private javax.swing.JButton jButtonLibraries;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JTextField jTextFieldConfigFiles;
+    private javax.swing.JTextField jTextFieldLibraries;
     private javax.swing.JPanel sourcePanel;
     private javax.swing.JPanel testsPanel;
     // End of variables declaration//GEN-END:variables
@@ -325,6 +479,18 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
            }
         }
                 
+    }
+
+    private File getAsFile(String filename) {
+        return FileUtil.normalizeFile(new File(filename));
+    }
+
+    public File getConfigFiles() {
+        return getAsFile(jTextFieldConfigFiles.getText());
+    }
+
+    public File getLibraries() {
+        return getAsFile(jTextFieldLibraries.getText());
     }
 
 }

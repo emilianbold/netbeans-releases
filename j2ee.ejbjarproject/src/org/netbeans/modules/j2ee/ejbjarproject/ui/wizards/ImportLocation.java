@@ -41,7 +41,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-final class ImportLocation implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
+final class ImportLocation implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel, ChangeListener {
     
     private WizardDescriptor wizardDescriptor;
     private ImportLocationVisual component;
@@ -104,6 +104,9 @@ final class ImportLocation implements WizardDescriptor.Panel, WizardDescriptor.V
     public void validate() throws WizardValidationException {
     }
     
+    public void stateChanged(ChangeEvent e) {
+        fireChangeEvent();
+    }
 }
 
 
