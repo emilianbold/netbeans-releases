@@ -127,8 +127,15 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="build-windows" depends="init, clean-build, compile, create-statefile">
-    <copy file="scripts/as-win-install.template" tofile="build/scripts/_uninst/as-win-install.template"/>
-    <copy file="scripts/as-win-uninstall.template" tofile="build/scripts/_uninst/as-win-uninstall.template"/>
+    <mkdir dir="build/scripts/as_setup"/>
+    <copy file="scripts/as-win-install.template" tofile="build/scripts/as_setup/as-win-install.template"/>
+    <copy file="scripts/as-win-uninstall.template" tofile="build/scripts/as-win-uninstall.template"/>
+    <move file="build/scripts/statefile" todir="build/scripts/as_setup"/>
+    <exec os="Linux SunOS" executable="unzip">
+      <arg line="${as.installer} -d build/scripts/as_setup"/>
+    </exec>
+    <!-- Ant 'uunzip' task does not work from unknown reason on AS Installer exe file so we use 'exec' task. -->
+    <!-- <unzip src="${as.installer}" dest="build/scripts/as_setup"/> -->
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="as-windows.xml" />
       <arg value="-build" />
@@ -136,8 +143,6 @@ Microsystems, Inc. All Rights Reserved.
       <arg value="basedir=${basedir}"/>
       <arg value="-alias"/>
       <arg value="nb.dir=${nb.dir}"/>
-      <arg value="-alias"/>
-      <arg value="as.installer=${as.installer}"/>
       <arg value="-alias"/>
       <arg value="scripts.dir=build/scripts"/>
       <classpath>

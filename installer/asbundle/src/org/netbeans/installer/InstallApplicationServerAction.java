@@ -59,7 +59,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     private static final String UNINSTALL_BAT = "custom-uninstall.bat";
     private static final String AS8_LICENSE   = "appserv.lic";
     private static final String PERM_LICENSE  = "plf";
-    private static final String J2EESDK_PROP_FILE = "/enterprise1/config/J2EE/InstalledServers/J2EESDK.properties";
+    private static final String J2EESDK_PROP_FILE = "enterprise1/config/J2EE/InstalledServers/J2EESDK.properties";
     
     protected static int installMode = 0;
     private static final int INSTALL = 0;
@@ -309,7 +309,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 	    }
 
             runCommand(cmdArray, support);
-
+            
              //for debugging purposes, remove imageDirPath
             boolean cleanImageDir = Boolean.getBoolean("remove.as_image");
             logEvent(this, Log.DBG,"cleanImageDir -> " + cleanImageDir);
@@ -817,7 +817,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         return list[0].getAbsolutePath();
     }
     
-    /** Appends the location of the pointbase jar to the ide.cfg file*/
+    /** Appends the location of the pointbase jar to the ide.cfg file. Not used now. */
     static void updateIDECfgFile(String pathToPointbase) {
         try {
             String xpFlags = null;
@@ -982,7 +982,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         String installerName = findASInstaller();
 	// Replace the script variables with real values
 	if (Util.isWindowsOS()) {
-	    winScriptSetup(reader, writer, logfile, installerName, scriptType);
+	    winScriptSetup(reader, writer, logfile, scriptType);
 	} else {
 	    unixScriptSetup(reader, writer, logfile, installerName);
 	}
@@ -1004,12 +1004,10 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     }
 
     private void winScriptSetup(BufferedReader reader, BufferedWriter writer, 
-        String logfileName, String installerName, int type) throws Exception {
+        String logfileName, int type) throws Exception {
         String line;
         while ((line = reader.readLine()) != null) {
-            if (line.startsWith("SET EXECNAME")) {
-                line = "SET EXECNAME=" + installerName;
-            } else if (line.startsWith("SET APPSERVERDIR")) {
+            if (line.startsWith("SET APPSERVERDIR")) {
                 line = "SET APPSERVERDIR=\"" + imageDirPath + "\"";
             } else if (line.startsWith("SET INSTDIR")) {
 		if (type == INSTALL) {
