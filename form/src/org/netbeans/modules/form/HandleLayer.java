@@ -772,7 +772,7 @@ class HandleLayer extends JPanel
                 Point point = SwingUtilities.convertPoint(
                         HandleLayer.this, p, cont);
                 LayoutSupport.ConstraintsDesc cd =
-                        layoutSupp.getNewConstraints(cont, p, null, null);
+                        layoutSupp.getNewConstraints(cont, point, null, null);
                 if (cd != null) {
                     setStatusText("FMT_MSG_AddComponent",
                                   new Object[] {
@@ -780,6 +780,9 @@ class HandleLayer extends JPanel
                                       metacont.getName(),
                                       item.getItemClass().getName()
                                   });
+                }
+                else {
+                    TopManager.getDefault().setStatusText("");
                 }
             }
         }
