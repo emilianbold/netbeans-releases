@@ -87,12 +87,12 @@ public class JPDAConnect extends Task {
         final DebuggerException[] exc = new DebuggerException[1];
         final AbstractDebugger d = Register.getCoreDebugger();
         assert d != null;
-        ClassPath cp_ = (classpath == null) ? null : JPDAStart.createSourceClassPath(classpath);
+        ClassPath cp_ = (classpath == null) ? null : JPDAStart.createSourceClassPath(getProject(), classpath);
         if (sourcepath != null) {
-            cp_ = JPDAStart.appendPath(cp_, sourcepath);
+            cp_ = JPDAStart.appendPath(getProject(), cp_, sourcepath);
         }
         final ClassPath cp = cp_;
-        final ClassPath bootcp = (bootclasspath == null) ? null : JPDAStart.createSourceClassPath(bootclasspath);
+        final ClassPath bootcp = (bootclasspath == null) ? null : JPDAStart.createSourceClassPath(getProject(), bootclasspath);
         // XXX using RemoteDebuggerInfo is not quite right because it assumes that
         // the remote process *must* already be running. By comparison, o.n.m.d.j.Launcher
         // seems to use server=n and com.sun.jdi.VirtualMachine.accept, which is surely

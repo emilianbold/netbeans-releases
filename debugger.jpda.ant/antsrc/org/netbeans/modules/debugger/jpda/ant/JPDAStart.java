@@ -147,12 +147,12 @@ public class JPDAStart extends Task {
         final List SYNCH = new ArrayList();
         final String trans = getTransport();
         final String nm = getName();
-        ClassPath cp_ = (classpath == null) ? null : createSourceClassPath(classpath);
+        ClassPath cp_ = (classpath == null) ? null : createSourceClassPath(getProject(), classpath);
         if (sourcepath != null) {
-            cp_ = appendPath(cp_, sourcepath);
+            cp_ = appendPath(getProject(), cp_, sourcepath);
         }
         final ClassPath cp = cp_;
-        final ClassPath bootcp = (bootclasspath == null) ? null : createSourceClassPath(bootclasspath);
+        final ClassPath bootcp = (bootclasspath == null) ? null : createSourceClassPath(getProject(), bootclasspath);
         
         synchronized (SYNCH) {
             try {
@@ -217,14 +217,17 @@ public class JPDAStart extends Task {
      * the sources were not found are omitted.
      *
      */
-    public static ClassPath createSourceClassPath(Path path) {
+    public static ClassPath createSourceClassPath(Project project, Path path) {
         String[] paths = path.list();
         List l = new ArrayList();
         List exist = new ArrayList();
         for (int i=0; i<paths.length; i++) {
             URL u = null;
             try {
-                File f = FileUtil.normalizeFile(new File(paths[i]));
+                File f = FileUtil.normalizeFile(project.resolveFile(paths[i]));
+                if (!isValid(f, project)) {
+                    continue;
+                }
                 if (paths[i].toLowerCase().endsWith(".jar")) {
                     u = new URL("jar:" + f.toURI() + "!/");
                 } else {
@@ -256,14 +259,18 @@ public class JPDAStart extends Task {
      *
      * @param cp classpath; can be null
      */
-    public static ClassPath appendPath(ClassPath cp, Path path) {
+    public static ClassPath appendPath(Project project, ClassPath cp, Path path) {
         String[] paths = path.list();
         List l = new ArrayList();
         List exist = new ArrayList();
         for (int i=0; i<paths.length; i++) {
             URL u = null;
             try {
-                u = FileUtil.normalizeFile(new File(paths[i])).toURI().toURL();
+                File f = FileUtil.normalizeFile(project.resolveFile(paths[i]));
+                if (!isValid(f, project)) {
+                    continue;
+                }
+                u = f.toURI().toURL();
             } catch (MalformedURLException e) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
                 continue;
@@ -275,6 +282,15 @@ public class JPDAStart extends Task {
         } else {
             return ClassPathSupport.createClassPath(l);
         }
+    }
+
+    private static boolean isValid(File f, Project project) {
+        // check that file does not contain ${something}
+        if (f.getPath().indexOf("${") != -1 && !f.exists()) { // NOI18N
+            project.log("Classpath item "+f+" will be ignored.", Project.MSG_DEBUG); // NOI18N
+            return false;
+        }
+        return true;
     }
     
 }
