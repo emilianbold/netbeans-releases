@@ -1,0 +1,90 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.ant.freeform.ui;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import org.netbeans.modules.ant.freeform.FreeformProject;
+import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
+import org.netbeans.modules.ant.freeform.FreeformProjectType;
+import org.netbeans.modules.ant.freeform.TestBase;
+import org.netbeans.modules.ant.freeform.spi.support.Util;
+import org.w3c.dom.Element;
+
+/**
+ * Test non-GUI functionality of the unbound target alert: binding creation etc.
+ * @author Jesse Glick
+ */
+public class UnboundTargetAlertTest extends TestBase {
+    
+    public UnboundTargetAlertTest(String name) {
+        super(name);
+    }
+
+    private FreeformProject prj;
+    private UnboundTargetAlert uta;
+    
+    protected void setUp() throws Exception {
+        super.setUp();
+        prj = copyProject(simple);
+        uta = new UnboundTargetAlert(prj, "debug");
+    }
+    
+    public void testGenerateBindingAndAddContextMenuItem() throws Exception {
+        uta.simulateTargetSelection("twiddle-this");
+        uta.generateBindingAndAddContextMenuItem();
+        List/*<FreeformProjectGenerator.TargetMapping>*/ mappings = FreeformProjectGenerator.getTargetMappings(prj.helper());
+        // Will add it to the end, so just look there.
+        FreeformProjectGenerator.TargetMapping lastMapping = (FreeformProjectGenerator.TargetMapping) mappings.get(mappings.size() - 1);
+        assertEquals("debug", lastMapping.name);
+        assertEquals(null, lastMapping.script);
+        assertEquals(Collections.singletonList("twiddle-this"), lastMapping.targets);
+        assertEquals(null, lastMapping.properties);
+        assertEquals(null, lastMapping.context);
+        // Check also making a binding for multiple targets, which is permitted.
+        mappings.remove(lastMapping);
+        FreeformProjectGenerator.putTargetMappings(prj.helper(), mappings);
+        uta.simulateTargetSelection("  twiddle-this extra-step ");
+        uta.generateBindingAndAddContextMenuItem();
+        mappings = FreeformProjectGenerator.getTargetMappings(prj.helper());
+        lastMapping = (FreeformProjectGenerator.TargetMapping) mappings.get(mappings.size() - 1);
+        assertEquals("debug", lastMapping.name);
+        assertEquals(null, lastMapping.script);
+        assertEquals(Arrays.asList(new String[] {"twiddle-this", "extra-step"}), lastMapping.targets);
+        assertEquals(null, lastMapping.properties);
+        assertEquals(null, lastMapping.context);
+        // Also check the context menu.
+        Element data = prj.helper().getPrimaryConfigurationData(true);
+        Element view = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL);
+        assertNotNull(view);
+        Element contextMenu = Util.findElement(view, "context-menu", FreeformProjectType.NS_GENERAL);
+        assertNotNull(contextMenu);
+        Set/*<String>*/ actionNames = new TreeSet();
+        Iterator/*<Element>*/ actions = Util.findSubElements(contextMenu).iterator();
+        while (actions.hasNext()) {
+            Element action = (Element) actions.next();
+            if (action.getLocalName().equals("ide-action")) {
+                actionNames.add(action.getAttribute("name"));
+            }
+        }
+        assertEquals("Correct context menu IDE actions",
+            new TreeSet(Arrays.asList(new String[] {"build", "clean", "rebuild", "run", "javadoc", /*added*/ "debug"})),
+            actionNames);
+    }
+    
+}

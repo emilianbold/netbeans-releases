@@ -23,5 +23,17 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </java>
     </target>
+    <target name="try-UnboundTargetAlert" depends="compile" description="Check appearance of UnboundTargetAlert.">
+        <java fork="true" classname="org.netbeans.modules.ant.freeform.ui.UnboundTargetAlert">
+            <classpath>
+                <path refid="cp"/>
+                <pathelement location="${build.classes.dir}"/>
+                <!-- Need real DialogDisplayer, not just openide version: -->
+                <pathelement location="${core/windows.dir}/${nb.modules.dir}/org-netbeans-core-windows.jar"/>
+                <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
+                <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
+            </classpath>
+        </java>
+    </target>
     
 </project>

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,14 +17,15 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -33,6 +34,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
+import org.netbeans.modules.ant.freeform.ui.UnboundTargetAlert;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -53,6 +55,32 @@ import org.w3c.dom.Element;
  * @author Jesse Glick
  */
 public final class Actions implements ActionProvider {
+
+    /**
+     * Some routine global actions for which we can supply a display name.
+     * These are IDE-specific.
+     */
+    private static final Set/*<String>*/ COMMON_IDE_GLOBAL_ACTIONS = new HashSet(Arrays.asList(new String[] {
+        ActionProvider.COMMAND_DEBUG,
+    }));
+    /**
+     * Similar to {@link #COMMON_IDE_GLOBAL_ACTIONS}, but these are not IDE-specific.
+     * We also mark all of these as bound in the project; if the user
+     * does not really have a binding, they are prompted for one when
+     * the action is "run".
+     */
+    private static final Set/*<String>*/ COMMON_NON_IDE_GLOBAL_ACTIONS = new HashSet(Arrays.asList(new String[] {
+        ActionProvider.COMMAND_BUILD,
+        ActionProvider.COMMAND_CLEAN,
+        ActionProvider.COMMAND_REBUILD,
+        ActionProvider.COMMAND_RUN,
+        ActionProvider.COMMAND_TEST,
+        // XXX JavaProjectConstants.COMMAND_JAVADOC
+        "javadoc", // NOI18N
+        // XXX WebProjectConstants.COMMAND_REDEPLOY
+        // XXX should this really be here? perhaps not, once web part of #46886 is implemented...
+        "redeploy", // NOI18N
+    }));
     
     private final FreeformProject project;
     
@@ -74,6 +102,8 @@ public final class Actions implements ActionProvider {
             Element actionEl = (Element)it.next();
             names.add(actionEl.getAttribute("name")); // NOI18N
         }
+        // #46886: also always enable all common global actions, in case they should be selected:
+        names.addAll(COMMON_NON_IDE_GLOBAL_ACTIONS);
         return (String[])names.toArray(new String[names.size()]);
     }
     
@@ -114,6 +144,10 @@ public final class Actions implements ActionProvider {
                 }
             }
         }
+        if (COMMON_NON_IDE_GLOBAL_ACTIONS.contains(command)) {
+            // #46886: these are always enabled if they are not specifically bound.
+            return true;
+        }
         if (foundAction) {
             // Was at least one context-aware variant but did not match.
             return false;
@@ -139,7 +173,15 @@ public final class Actions implements ActionProvider {
             }
         }
         if (!foundAction) {
-            throw new IllegalArgumentException("Unrecognized command: " + command); // NOI18N
+            if (COMMON_NON_IDE_GLOBAL_ACTIONS.contains(command)) {
+                // #46886: try to bind it.
+                if (addGlobalBinding(command)) {
+                    // If bound, run it immediately.
+                    invokeAction(command, context);
+                }
+            } else {
+                throw new IllegalArgumentException("Unrecognized command: " + command); // NOI18N
+            }
         }
     }
     
@@ -351,9 +393,9 @@ public final class Actions implements ActionProvider {
                     if (actionEl.getLocalName().equals("ide-action")) { // NOI18N
                         String cmd = actionEl.getAttribute("name");
                         String displayName;
-                        try {
+                        if (COMMON_IDE_GLOBAL_ACTIONS.contains(cmd) || COMMON_NON_IDE_GLOBAL_ACTIONS.contains(cmd)) {
                             displayName = NbBundle.getMessage(Actions.class, "CMD_" + cmd);
-                        } catch (MissingResourceException e) {
+                        } else {
                             // OK, fall back to raw name.
                             displayName = cmd;
                         }
@@ -429,6 +471,25 @@ public final class Actions implements ActionProvider {
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
+        }
+    }
+    
+    /**
+     * Prompt the user to make a binding for a common global command.
+     * Available targets are shown. If one is selected, it is bound
+     * (and also added to the context menu of the project), as if the user
+     * had picked it in {@link TargetMappingPanel}.
+     * @param command the command name as in {@link ActionProvider}
+     * @return true if a binding was successfully created, false if it was cancelled
+     * @see "#46886"
+     */
+    private boolean addGlobalBinding(String command) {
+        try {
+            return new UnboundTargetAlert(project, command).accepted();
+        } catch (IOException e) {
+            // Problem generating bindings - so skip it.
+            ErrorManager.getDefault().notify(e);
+            return false;
         }
     }
     

@@ -107,14 +107,30 @@ public class TargetMappingPanel extends javax.swing.JPanel implements java.awt.e
             setTargetNames(l, false);
             initAntTargetEditor(l);
         }
-        antScript = evaluator.getProperty(ProjectConstants.PROP_ANT_SCRIPT);
-        antScript = (antScript == null ? null : "${" + ProjectConstants.PROP_ANT_SCRIPT + "}"); // NOI18N
+        antScript = defaultAntScript(evaluator);
         initMappings(FreeformProjectGenerator.getTargetMappings(helper), antScript);
 
         custTargets = FreeformProjectGenerator.getCustomContextMenuActions(helper);
         customTargetsModel.fireTableDataChanged();
 
         updateButtons();
+    }
+    
+    /**
+     * Get the default name of a project's Ant script, as for project.xml usage.
+     * @param evaluator a property evaluator for the project
+     * @return the script name to use, or null for the default
+     * @see FreeformProjectGenerator.TargetMapping#script
+     */
+    static String defaultAntScript(PropertyEvaluator evaluator) {
+        String antScript = evaluator.getProperty(ProjectConstants.PROP_ANT_SCRIPT);
+        if (antScript == null) {
+            // Default, i.e. build.xml.
+            return null;
+        } else {
+            // Set to something specific; refer to it symbolically.
+            return "${" + ProjectConstants.PROP_ANT_SCRIPT + "}"; // NOI18N
+        }
     }
 
     
@@ -289,7 +305,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements java.awt.e
         while (it.hasNext()) {
             sb.append((String)it.next());
             if (it.hasNext()) {
-                sb.append(", "); // NOI18N
+                sb.append(" "); // NOI18N
             }
         }
         return sb.toString();
@@ -297,7 +313,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements java.awt.e
 
     static List getStringAsList(String str) {
         ArrayList l = new ArrayList(2);
-        StringTokenizer tok = new StringTokenizer(str, ","); // NOI18N
+        StringTokenizer tok = new StringTokenizer(str, " "); // NOI18N
         while (tok.hasMoreTokens()) {
             String target = tok.nextToken().trim();
             if (target.length() == 0) {
@@ -365,7 +381,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements java.awt.e
                 buildCombo.getModel().getSelectedItem() != null &&
                 ((String)buildCombo.getModel().getSelectedItem()).length() > 0) {
             FreeformProjectGenerator.TargetMapping tm = getTargetMapping(REBUILD_ACTION);
-            String val = (String)cleanCombo.getModel().getSelectedItem()+","+(String)buildCombo.getModel().getSelectedItem(); // NOI18N
+            String val = (String)cleanCombo.getModel().getSelectedItem() + " " + (String)buildCombo.getModel().getSelectedItem(); // NOI18N
             tm.targets = getStringAsList(val);
         } else {
             removeTargetMapping(REBUILD_ACTION);
