@@ -101,7 +101,7 @@
 			{
 				name = "Oracle";
 				driver = "oracle.jdbc.driver.OracleDriver";
-				prefix = "jdbc:oracle:@<SID>";
+				prefix = "jdbc:oracle:oci8:@<SID>";
 			},
 			{
 				name = "Oracle thin";
