@@ -36,6 +36,7 @@ import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import java.util.MissingResourceException;
 import java.awt.Toolkit;
+import org.openide.filesystems.FileObject;
 
 /**
 * Various utilities
@@ -51,6 +52,18 @@ public class NbEditorUtilities {
         Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
         if (sdp instanceof DataObject) {
             return (DataObject)sdp;
+        }
+        return null;
+    }
+    
+    /** Get the fileobject from the document's StreamDescriptionProperty property. */
+    public static FileObject getFileObject(Document doc) {
+        Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
+        if (sdp instanceof FileObject) {
+            return (FileObject)sdp;
+        }
+        if (sdp instanceof DataObject) {
+            return ((DataObject)sdp).getPrimaryFile();
         }
         return null;
     }
