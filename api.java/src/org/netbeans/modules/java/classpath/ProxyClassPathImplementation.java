@@ -71,6 +71,16 @@ public class ProxyClassPathImplementation implements ClassPathImplementation {
             return;
         this.listeners.remove (listener);
     }
+    
+    public String toString () {
+        StringBuffer builder = new StringBuffer("[");   //NOI18N
+        for (int i = 0; i< this.classPaths.length; i++) {
+            builder.append (classPaths[i].toString());
+            builder.append(", ");   //NOI18N
+        }
+        builder.append ("]");   //NOI18N
+        return builder.toString ();
+    }
 
 
     private class DelegatesListener implements PropertyChangeListener {

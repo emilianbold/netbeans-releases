@@ -14,8 +14,12 @@ package org.netbeans.modules.java.classpath;
 
 import java.util.List;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
+
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 
@@ -44,4 +48,17 @@ public class SimpleClassPathImplementation implements ClassPathImplementation {
         // XXX TBD
     }
     
+    public String toString () {
+        StringBuffer builder = new StringBuffer ("SimpleClassPathImplementation["); //NOI18N
+        for (Iterator it = this.entries.iterator(); it.hasNext();) {
+            PathResourceImplementation impl = (PathResourceImplementation) it.next();
+            URL[] roots = impl.getRoots();
+            for (int i=0; i< roots.length; i++) {
+                builder.append (roots[i].toExternalForm());
+                builder.append (", ");  //NOI18N
+            }
+        }
+        builder.append ("]");   //NOI18N
+        return builder.toString ();
+    }    
 }

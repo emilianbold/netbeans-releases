@@ -51,6 +51,9 @@ public final class ClassPathFactory {
                 if (FileUtil.isArchiveFile(roots[i])) {
                     return false;
                 }
+                if (!roots[i].toExternalForm().endsWith("/")) {
+                    return false;
+                }
             }
         }
         return true;
