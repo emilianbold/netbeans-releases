@@ -1616,6 +1616,10 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
 		    r_value = getContentLanguageSyntaxSupport().findMatchingBlock(offset, simpleSearch);
 		}
 		else {
+                    //do we need to match jsp comment?
+                    if (token.getTokenID() == JspTagTokenContext.COMMENT) {
+			  return findMatchingJspComment (token, offset);
+		    }
                     // Is it matching of scriptlet delimiters?
                     if (token.getTokenContextPath().contains(JspTagTokenContext.contextPath)
                         && token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL2_ID){
@@ -1640,6 +1644,40 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
 	    return r_value;
     }
     
+    private int[] findMatchingJspComment(TokenItem token, int offset) {
+        String tokenImage = token.getImage();
+        if(tokenImage.startsWith("<%--") && (offset < (token.getOffset()) + "<%--".length())) { //NOI18N
+            //start html token - we need to find the end token of the html comment
+            while(token != null) {
+                if((token.getTokenID() == JspTagTokenContext.COMMENT)
+                    || (token.getTokenID() == JspTagTokenContext.EOL)) {
+                    if(token.getImage().endsWith("--%>")) { //NOI18N
+                        //found end token
+                        int start = token.getOffset() + token.getImage().length() - "--%>".length(); //NOI18N
+                        int end = token.getOffset() + token.getImage().length();
+                        return new int[] {start, end};
+                    }
+                } else break;
+                token = token.getNext();
+            }
+        } else if(tokenImage.endsWith("--%>") && (offset >= (token.getOffset()) + token.getImage().length() - "--%>".length())) { //NOI18N
+            //end html token - we need to find the start token of the html comment
+            while(token != null) {
+                if((token.getTokenID() == JspTagTokenContext.COMMENT)
+                    || (token.getTokenID() == JspTagTokenContext.EOL)) {
+                    if(token.getImage().startsWith("<%--")) { //NOI18N
+                        //found end token
+                        int start = token.getOffset();
+                        int end = token.getOffset() + "<%--".length(); //NOI18N
+                        return new int[] {start, end};
+                    }
+                } else break;
+                token = token.getPrevious();
+            }
+        }
+        return null;
+    }
+
     private int [] findMatchingScripletDelimiter(TokenItem token){
 	if (token.getImage().charAt(0) == '<'){
 	    do{
