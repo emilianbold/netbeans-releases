@@ -42,7 +42,7 @@ public class RADComponent implements FormDesignValue {
     public static final String PROP_NAME = "Name"; // NOI18N
 
     static final NewType[] NO_NEW_TYPES = {};
-    static final Node.Property[] NO_PROPERTIES = {};
+    static final FormProperty[] NO_PROPERTIES = {};
 
     // -----------------------------------------------------------------------------
     // Private variables
@@ -112,8 +112,10 @@ public class RADComponent implements FormDesignValue {
         parentComponent = parentComp;
     }
 
-    /** Initializes the bean instance represented by this RADComponent.
+    /** Initializes the bean instance represented by this meta component.
      * A default instance is created for the given bean class.
+     * The meta component is fully initialized after this method returns.
+     * @param beanClass the bean class to be represented by this meta component
      */
     public Object initInstance(Class beanClass) throws Exception {
 //    throws InstantiationException, IllegalAccessException
@@ -123,48 +125,17 @@ public class RADComponent implements FormDesignValue {
         if (this.beanClass == null || this.beanClass != beanClass)
             beanInfo = null;
         this.beanClass = beanClass;
+
+        Object bean = createBeanInstance();
         createCodeExpression();
-        setBeanInstance(createBeanInstance());
+        setBeanInstance(bean);
 
         return beanInstance;
     }
 
-    /** Called to set the bean to be represented by this RADComponent.
-     * This method creates a new instance of the bean. This RADComponent class
-     * is fully initialized after this method returns. Can be called only once
-     * and is mutually exclusive with setInstance().
-     * @param beanClass the class of the bean to be represented by this class
-     * @see #setInstance
-     */
-    // This method is to be canceled, because it doesn't throw exceptions...
-    public void setComponent(Class beanClass) {
-        if (this.beanClass != null) {
-            throw new IllegalStateException("Component already initialized; current: "+this.beanClass +", new: "+beanClass);// NOI18N
-        }
-
-        // properties and events will be created on first request
-        clearProperties();
-
-        if (this.beanClass == null || this.beanClass != beanClass)
-            beanInfo = null;
-        this.beanClass = beanClass;
-        createCodeExpression();
-
-        try {
-            setBeanInstance(createBeanInstance());
-        }
-        catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    /**
-     * Called to set the bean to be represented by this RADComponent.  This
-     * method uses the instance provided. This RADComponent class is fully
-     * initialized after this method returns.  Can be called only once and is
-     * mutually exclusive with setComponent()
-     * @param beanInstance the bean to be represented by this class
-     * @see #setComponent
+    /** Sets the bean instance represented by this meta component.
+     * The meta component is fully initialized after this method returns.
+     * @param beanInstance the bean to be represented by this meta component
      */
     public void setInstance(Object beanInstance) {
         // properties and events will be created on first request
@@ -173,6 +144,7 @@ public class RADComponent implements FormDesignValue {
         if (beanClass == null || beanClass != beanInstance.getClass())
             beanInfo = null;
         beanClass = beanInstance.getClass();
+
         createCodeExpression();
         setBeanInstance(beanInstance);
 
@@ -204,13 +176,9 @@ public class RADComponent implements FormDesignValue {
     }
 
     /**
-     * Called to create the instance of the bean. Default implementation
-     * simply creates instance of the bean's class using the default
-     * constructor.  Top-level container (the form object itself) will redefine
-     * this to use FormInfo to create the instance, as e.g. Dialogs cannot be
-     * created using the default constructor.  Note: this method is called only
-     * if the setComponent method is used, if setInstance is used, no new
-     * instance is created.
+     * Called to create the instance of the bean. This method is called if the
+     * initInstance method is used; using the setInstance method, the bean
+     * instance is set directly.
      * @return the instance of the bean that will be used during design time 
      */
     protected Object createBeanInstance() throws Exception {
@@ -218,13 +186,12 @@ public class RADComponent implements FormDesignValue {
         return CreationFactory.createDefaultInstance(beanClass);
     }
 
-    /** Sets directly the bean instance. Can be overriden - e.g. when some
-     * other instance of another metacomponent needs to be modified too.
+    /** Sets directly the bean instance. Can be overriden.
      */
     protected void setBeanInstance(Object beanInstance) {
-        if (beanClass == null) {
+        if (beanClass == null) { // bean class not set yet
             beanClass = beanInstance.getClass();
-            createCodeExpression();
+//            createCodeExpression();
         }
         this.beanInstance = beanInstance;
     }
@@ -403,7 +370,7 @@ public class RADComponent implements FormDesignValue {
             IllegalArgumentException iae =
                 new IllegalArgumentException("Component name already in use: "+name); // NOI18N
             TopManager.getDefault ().getErrorManager().annotate(
-                iae, ErrorManager.USER, null, 
+                iae, ErrorManager.USER, null,
                 FormEditor.getFormBundle().getString("ERR_COMPONENT_NAME_ALREADY_IN_USE"),
                 null, null);
             throw iae;

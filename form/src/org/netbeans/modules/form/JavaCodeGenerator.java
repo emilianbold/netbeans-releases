@@ -101,6 +101,7 @@ class JavaCodeGenerator extends CodeGenerator {
     private JavaEditor.SimpleSection initComponentsSection;
     private JavaEditor.SimpleSection variablesSection;
 
+    private Map constructorProperties;
     private Map containerDependentProperties;
 
     /** Creates new JavaCodeGenerator */
@@ -469,7 +470,10 @@ class JavaCodeGenerator extends CodeGenerator {
         else
             initCodeWriter = initCodeBuffer;
 
-        containerDependentProperties = null;
+        if (constructorProperties != null)
+            constructorProperties.clear();
+        if (containerDependentProperties != null)
+            containerDependentProperties.clear();
 
         try {
             initCodeWriter.write(INIT_COMPONENTS_HEADER);
@@ -540,7 +544,10 @@ class JavaCodeGenerator extends CodeGenerator {
                 initCodeWriter.write(sizeText);
             }
 
-            containerDependentProperties = null;
+            if (constructorProperties != null)
+                constructorProperties.clear();
+            if (containerDependentProperties != null)
+                containerDependentProperties.clear();
 
             initCodeWriter.write(INIT_COMPONENTS_FOOTER);
             initCodeWriter.close();
@@ -679,23 +686,30 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     private void generateComponentCreate(RADComponent comp,
-                                         Writer initCodeWriter) throws IOException {
-        if ((comp instanceof RADMenuItemComponent) &&(((RADMenuItemComponent)comp).getMenuItemType() == RADMenuItemComponent.T_SEPARATOR)) {
-            // do noty generate init for AWT separator as it is not a real component
+                                         Writer initCodeWriter)
+        throws IOException
+    {
+        if (comp instanceof RADMenuItemComponent
+            && ((RADMenuItemComponent)comp).getMenuItemType()
+                   == RADMenuItemComponent.T_SEPARATOR)
+        { // do not generate init for AWT separator as it is not a real component
             return;
         }
 
-        String preCode =(String) comp.getAuxValue(AUX_CREATE_CODE_PRE);
-        String postCode =(String) comp.getAuxValue(AUX_CREATE_CODE_POST);
-        String customCreateCode =(String) comp.getAuxValue(AUX_CREATE_CODE_CUSTOM);
-        if ((preCode != null) &&(!preCode.equals(""))) { // NOI18N
+        String preCode = (String) comp.getAuxValue(AUX_CREATE_CODE_PRE);
+        String postCode = (String) comp.getAuxValue(AUX_CREATE_CODE_POST);
+        String customCreateCode = (String) comp.getAuxValue(AUX_CREATE_CODE_CUSTOM);
+        if (preCode != null && !preCode.equals("")) { // NOI18N
             initCodeWriter.write(preCode);
             initCodeWriter.write("\n"); // NOI18N
         }
-        Integer generationType =(Integer)comp.getAuxValue(AUX_CODE_GENERATION);
+
+        Integer generationType = (Integer)comp.getAuxValue(AUX_CODE_GENERATION);
         if (comp.hasHiddenState()
-                || (generationType != null && generationType.equals(VALUE_SERIALIZE))) {
-            String serializeTo =(String)comp.getAuxValue(AUX_SERIALIZE_TO);
+                || (generationType != null
+                    && generationType.equals(VALUE_SERIALIZE)))
+        {
+            String serializeTo = (String)comp.getAuxValue(AUX_SERIALIZE_TO);
             if (serializeTo == null) {
                 serializeTo = getDefaultSerializedName(comp);
                 comp.setAuxValue(AUX_SERIALIZE_TO, serializeTo);
@@ -719,31 +733,55 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write("} catch (java.io.IOException e) {\n"); // NOI18N
             initCodeWriter.write("e.printStackTrace();\n"); // NOI18N
             initCodeWriter.write("}\n"); // NOI18N
-        } else {
-            Class[] exceptions=null;
-            try {
-                exceptions = comp.getBeanClass().getConstructor(new Class [0]).getExceptionTypes();
-            } catch (NoSuchMethodException e) {
-                //PENDING  -announce this !!
-                e.printStackTrace();
-            }
-            if (!generateTryCode(exceptions, initCodeWriter))
-                exceptions = null;
-
-            if ((customCreateCode != null) &&(!customCreateCode.equals(""))) { // NOI18N
-                initCodeWriter.write(comp.getName() + " = "); // NOI18N
-                initCodeWriter.write(customCreateCode);
-            } else {
-                initCodeWriter.write(comp.getName() + " = "); // NOI18N
-                initCodeWriter.write("new "); // NOI18N
-                initCodeWriter.write(comp.getBeanClass().getName() + "();"); // NOI18N
-            }
-            initCodeWriter.write("\n"); // NOI18N
-
-            if (exceptions != null)
-                generateCatchCode(exceptions, initCodeWriter);
         }
-        if ((postCode != null) &&(!postCode.equals(""))) { // NOI18N
+        else {
+            CreationDescriptor desc = CreationFactory.getDescriptor(
+                                                          comp.getBeanClass());
+            if (desc == null)
+                desc = new ConstructorsDescriptor(comp.getBeanClass());
+
+            CodeVariable var = comp.getCodeExpression().getVariable();
+            initCodeWriter.write(var.getName());
+            initCodeWriter.write(" = "); // NOI18N
+
+            if (customCreateCode != null && !customCreateCode.equals("")) { // NOI18N
+                initCodeWriter.write(customCreateCode);
+                initCodeWriter.write("\n"); // NOI18N
+            }
+            else {
+                CreationDescriptor.Creator creator =
+                    desc.findBestCreator(comp.getAllBeanProperties(),
+                                         CreationDescriptor.CHANGED_ONLY);
+
+                Class[] exceptions = creator.getExceptionTypes();
+                if (!generateTryCode(exceptions, initCodeWriter))
+                    exceptions = null;
+
+                String[] propNames = creator.getPropertyNames();
+                FormProperty[] props;
+                if (propNames.length > 0) {
+                    if (constructorProperties == null)
+                        constructorProperties = new HashMap();
+
+                    props = new FormProperty[propNames.length];
+
+                    for (int i=0; i < propNames.length; i++) {
+                        FormProperty prop = comp.getPropertyByName(propNames[i]);
+                        props[i] = prop;
+                        constructorProperties.put(prop, prop);
+                    }
+                }
+                else props = RADComponent.NO_PROPERTIES;
+
+                initCodeWriter.write(creator.getJavaCreationCode(props));
+                initCodeWriter.write(";\n"); // NOI18N
+
+                if (exceptions != null)
+                    generateCatchCode(exceptions, initCodeWriter);
+            }
+        }
+
+        if (postCode != null && !postCode.equals("")) { // NOI18N
             initCodeWriter.write(postCode);
             initCodeWriter.write("\n"); // NOI18N
         }
@@ -770,21 +808,24 @@ class JavaCodeGenerator extends CodeGenerator {
         }
 
         Object genType = comp.getAuxValue(AUX_CODE_GENERATION);
-        String preCode =(String) comp.getAuxValue(AUX_INIT_CODE_PRE);
-        String postCode =(String) comp.getAuxValue(AUX_INIT_CODE_POST);
-        if ((preCode != null) &&(!preCode.equals(""))) { // NOI18N
+        String preCode = (String) comp.getAuxValue(AUX_INIT_CODE_PRE);
+        String postCode = (String) comp.getAuxValue(AUX_INIT_CODE_POST);
+        if (preCode != null && !preCode.equals("")) { // NOI18N
             initCodeWriter.write(preCode);
             initCodeWriter.write("\n"); // NOI18N
         }
+
         if (!comp.hasHiddenState() 
-                && (genType == null || VALUE_GENERATE_CODE.equals(genType))) {
-            // not serialized
+                && (genType == null || VALUE_GENERATE_CODE.equals(genType)))
+        {   // not serialized
             RADProperty[] props = comp.getAllBeanProperties();
             for (int i = 0; i < props.length; i++) {
                 RADProperty prop = props[i];
-                if (prop.isChanged()
-                        || prop.getPreCode() != null
-                        || prop.getPostCode() != null)
+                if ((prop.isChanged()
+                     && (constructorProperties == null
+                         || constructorProperties.get(prop) == null))
+                    || prop.getPreCode() != null
+                    || prop.getPostCode() != null)
                 {
                     if (!FormUtils.isContainerContentDependentProperty(
                                     comp.getBeanClass(), prop.getName()))
@@ -816,8 +857,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
-    // This method generates all layout and add code in one block.
-    // Currently not used.
+    // This method generates all layout code in one block. Currently not used.
     private void generateVisualCode(RADVisualContainer container,
                                     Writer initCodeWriter)
         throws IOException

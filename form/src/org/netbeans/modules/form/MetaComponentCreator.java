@@ -20,7 +20,7 @@ import java.text.MessageFormat;
 
 import org.openide.cookies.InstanceCookie;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
+import org.openide.*;
 
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.compat2.border.BorderInfo;
@@ -201,14 +201,15 @@ public class MetaComponentCreator {
             newComp.initInstance(sourceComp.getBeanClass());
         }
         catch (Exception ex) { // this is rather unlikely to fail
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
-            
-            String message = MessageFormat.format(
-                FormEditor.getFormBundle().getString("FMT_ERR_CannotCopyInstance"), // NOI18N
-                new Object [] { ex.getClass().getName(), ex.getMessage() });
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                message, NotifyDescriptor.ERROR_MESSAGE));
+            ErrorManager em = TopManager.getDefault ().getErrorManager();
+            em.annotate(
+                ex,
+                ErrorManager.EXCEPTION,
+                null, 
+                FormEditor.getFormBundle().getString("MSG_ERR_CannotCopyInstance"), // NOI18N
+                null,
+                null);
+            em.notify(ex);
 
             return null;
         }
@@ -562,14 +563,15 @@ public class MetaComponentCreator {
     // --------
 
     private static void showInstErrorMessage(Throwable ex) {
-        if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-            ex.printStackTrace();
-
-        String message = MessageFormat.format(
-            FormEditor.getFormBundle().getString("FMT_ERR_CannotInstantiate"), // NOI18N
-            new Object [] { ex.getClass().getName(), ex.getMessage() });
-        TopManager.getDefault().notify(new NotifyDescriptor.Message(
-            message, NotifyDescriptor.ERROR_MESSAGE));
+        ErrorManager em = TopManager.getDefault ().getErrorManager();
+        em.annotate(
+            ex,
+            ErrorManager.EXCEPTION,
+            null, 
+            FormEditor.getFormBundle().getString("MSG_ERR_CannotInstantiate"), // NOI18N
+            null,
+            null);
+        em.notify(ex);
     }
 
     private static Class getBeanClass(InstanceCookie ic) {

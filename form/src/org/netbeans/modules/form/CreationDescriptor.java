@@ -46,6 +46,8 @@ public interface CreationDescriptor {
 
         public Class[] getParameterTypes();
 
+        public Class[] getExceptionTypes();
+
         public String[] getPropertyNames();
 
         public Object createInstance(FormProperty[] props)
