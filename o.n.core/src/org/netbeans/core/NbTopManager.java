@@ -434,7 +434,11 @@ public abstract class NbTopManager extends TopManager {
       old = debugger;
       
       if (old != null && d != null) {
-        throw new SecurityException ();
+        throw new SecurityException ("only one debugger") { // NOI18N
+          public String getLocalizedMessage () {
+            return Main.getString ("EXC_only_one_debugger_simultaneously");
+          }
+        };
       }
       
       debugger = d;
