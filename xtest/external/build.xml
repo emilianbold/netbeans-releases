@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="xtest/external" default="unscramble" basedir=".">
@@ -30,10 +30,7 @@ Microsystems, Inc. All Rights Reserved.
         </scramble>
     </target>
     <target name="clean">
-        <delete file="xalan-2.3.1.jar"/>
-        <delete file="xerces-2.0.1.jar"/>
-        <delete file="xml-apis-1.0b2.jar"/>
         <delete file="ant-1.4.1.jar"/>
-        <delete file="junit-3.7.jar"/>
+        <delete file="junit-3.8.1.jar"/>
     </target>
 </project>
