@@ -16,6 +16,7 @@ package org.netbeans.modules.editor;
 import java.beans.*;
 import java.awt.Image;
 import java.lang.reflect.Method;
+import org.netbeans.editor.LocaleSupport;
 import java.util.ResourceBundle;
 
 import org.openide.util.HelpCtx;
@@ -198,7 +199,7 @@ public abstract class FormatterIndentEngineBeanInfo extends SimpleBeanInfo {
      * @return localized string
      */
     protected String getString(String key) {
-        return NbBundle.getBundle(FormatterIndentEngineBeanInfo.class).getString(key);
+        return LocaleSupport.getString( key );
     }
 
 }

@@ -17,6 +17,7 @@ import java.beans.BeanDescriptor;
 import java.util.MissingResourceException;
 import org.netbeans.modules.editor.FormatterIndentEngineBeanInfo;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.editor.LocaleSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -47,11 +48,11 @@ public class SimpleIndentEngineBeanInfo extends FormatterIndentEngineBeanInfo {
     }
 
     protected String getString(String key) {
-        try {
-            return NbBundle.getBundle(SimpleIndentEngineBeanInfo.class).getString(key);
-        } catch (MissingResourceException e) {
-            return super.getString(key);
-        }
+        String retVal = LocaleSupport.getString(key);
+	if( retVal == null ) {
+	    retVal = super.getString(key);
+	}
+        return retVal;
     }
 
 }
