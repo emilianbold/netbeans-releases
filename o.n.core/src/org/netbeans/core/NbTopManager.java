@@ -51,9 +51,9 @@ import org.openide.util.io.*;
 import org.openide.nodes.*;
 import org.openide.execution.ExecutionEngine;
 import org.openide.compiler.CompilationEngine;
+import org.openide.util.lookup.*;
 
 import org.netbeans.core.actions.*;
-import org.netbeans.core.lookup.InstanceLookup;
 import org.netbeans.core.output.OutputTab;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.compiler.CompilationEngineImpl;
@@ -96,8 +96,10 @@ public abstract class NbTopManager extends TopManager {
     /** stores main shortcut context*/
     private Keymap shortcutContext;
 
+    /** inner access to dynamic lookup service for this top mangager */
+    private InstanceContent instanceContent;
     /** dynamic lookup service for this top mangager */
-    private org.netbeans.core.lookup.InstanceLookup instanceLookup;
+    private Lookup instanceLookup;
 
     /** default repository */
     private Repository repository;
@@ -196,6 +198,8 @@ public abstract class NbTopManager extends TopManager {
     /** Constructs a new manager.
     */
     public NbTopManager() {
+        instanceContent = new InstanceContent ();
+        instanceLookup = new AbstractLookup (instanceContent);
     }
 
     /** Getter for instance of this manager.
@@ -236,43 +240,32 @@ public abstract class NbTopManager extends TopManager {
     /** Register new instance.
      */
     public final void register (Object obj) {
-        register(obj, null);
+        instanceContent.add (obj);
     }
     
     /** Register new instance.
      * @param obj source
      * @param conv convertor which postponing an instantiation
      */
-    public final void register(Object obj, InstanceLookup.Convertor conv) {
-        getInstanceLookup().add(obj, conv);
+    public final void register(Object obj, InstanceContent.Convertor conv) {
+        instanceContent.add(obj, conv);
     }
     
     /** Unregisters the service.
      */
     public final void unregister (Object obj) {
-        unregister(obj, null);
+        instanceContent.remove (obj);
     }
     /** Unregisters the service registered with a convertor.
      */
-    public final void unregister (Object obj, InstanceLookup.Convertor conv) {
-        getInstanceLookup ().remove (obj, conv);
+    public final void unregister (Object obj, InstanceContent.Convertor conv) {
+        instanceContent.remove (obj, conv);
     }
     
     /** Private get instance lookup.
      */
-    protected final org.netbeans.core.lookup.InstanceLookup getInstanceLookup () {
-        if (instanceLookup != null) {
-            return instanceLookup;
-        }
-        
-        synchronized (this) {
-            if (instanceLookup != null) {
-                return instanceLookup;
-            }
-            
-            instanceLookup = new org.netbeans.core.lookup.InstanceLookup ();
-            return instanceLookup;
-        }
+    private final Lookup getInstanceLookup () {
+        return instanceLookup;
     }
     
     

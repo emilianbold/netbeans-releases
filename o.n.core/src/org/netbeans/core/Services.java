@@ -34,12 +34,13 @@ import org.openide.util.LookupListener;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Lookup.Template;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.AbstractLookup;
 
 import org.netbeans.beaninfo.editors.ExecutorEditor;
 import org.netbeans.beaninfo.editors.CompilerTypeEditor;
 import org.netbeans.beaninfo.editors.DebuggerTypeEditor;
 
-import org.netbeans.core.lookup.InstanceLookup;
 import org.netbeans.core.modules.ManifestSection;
 
 /** Works with all service types.
@@ -56,10 +57,14 @@ public final class Services extends ServiceType.Registry implements LookupListen
     /** instance */
     private static final Services INSTANCE = new Services ();
     
-    /** Lookup containing all current non-default services. */
-    private InstanceLookup lookup = new InstanceLookup();
-    /** Lookup containing all current default services. */
-    private InstanceLookup lookupDefTypes = new InstanceLookup();
+    /** Inner Lookup containing all current non-default services. */
+    private InstanceContent lookup = new InstanceContent ();
+    /** lookup */
+    private Lookup realLookup = new AbstractLookup (lookup);
+    /** Inner Lookup containing all current default services. */
+    private InstanceContent lookupDefTypes = new InstanceContent ();
+    /** lookup */
+    private Lookup realLookupDefTypes = new AbstractLookup (lookupDefTypes);
     /** Lookup containing all current services. */
     private PL proxyLookup;
     /** Result containing all current services. */
@@ -143,13 +148,13 @@ public final class Services extends ServiceType.Registry implements LookupListen
     /** Unregisters all instances wich class is same like obj.getClass.
      */
     public void unregister (ServiceType obj) {
-        tryUnregister(lookup, obj);
-        tryUnregister(lookupDefTypes, obj);
+        tryUnregister(realLookup, lookup, obj);
+        tryUnregister(realLookupDefTypes, lookupDefTypes, obj);
     }
     
-    private void tryUnregister (InstanceLookup lk, ServiceType obj) {
+    private void tryUnregister (Lookup lookup, InstanceContent lk, ServiceType obj) {
         String clazzName = obj.getClass().getName();
-        Iterator it = lk.lookup(new Lookup.Template(obj.getClass())).allInstances().iterator();
+        Iterator it = lookup.lookup(new Lookup.Template(obj.getClass())).allInstances().iterator();
         Object st;
         while (it.hasNext()) {
             st = it.next();
@@ -161,7 +166,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
     
     /** Lookup containing all current services. */
     public Lookup getLookup() {
-        proxyLookup = new PL (new Lookup[] {lookupDefTypes, lookup});
+        proxyLookup = new PL (new Lookup[] {realLookupDefTypes, realLookup});
         return proxyLookup;
     }
     
@@ -530,6 +535,9 @@ public final class Services extends ServiceType.Registry implements LookupListen
 
 /*
 * $Log$
+* Revision 1.52  2001/07/19 14:23:22  jtulach
+* AbstractLookup enhanced with constructor that takes AbstractLookup.Content and allows any creator of the lookup to control its content. InstanceContent created to provide simple way how to create lookup with plain object instances.
+*
 * Revision 1.51  2001/07/16 00:10:59  jglick
 * New module installer.
 *
