@@ -50,7 +50,10 @@ public class Actions implements ActionsFactory {
     private static Action NEW_FILE;
             
     public synchronized Action setAsMainProjectAction() {
-        return org.openide.util.actions.SystemAction.get(SetAsMainProject.class); // XXX
+        if ( SET_AS_MAIN_PROJECT == null ) {
+            SET_AS_MAIN_PROJECT = new SetMainProject();
+        }
+        return SET_AS_MAIN_PROJECT;
     }
     
     public synchronized Action customizeProjectAction() {

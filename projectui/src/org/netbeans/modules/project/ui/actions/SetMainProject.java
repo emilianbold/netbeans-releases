@@ -18,7 +18,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
-import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -27,33 +27,63 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.api.project.ProjectInformation;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 
-public class SetMainProject extends AbstractAction implements Presenter.Menu, PropertyChangeListener {
+public class SetMainProject extends ProjectAction implements Presenter.Menu, PropertyChangeListener {
     
     private static final String ICON = "org/netbeans/modules/project/ui/resources/empty.gif"; //NOI18N    
     
+    private static final String namePattern = NbBundle.getMessage( SetMainProject.class, "LBL_SetAsMainProjectAction_Name" ); // NOI18N
+        
     /** Key for remembering project in JMenuItem
      */
     private static final String PROJECT_KEY = "org.netbeans.modules.project.ui.MainProjectItem"; // NOI18N
     
     private JMenu subMenu;
     
-    /** Creates a new instance of BrowserAction */
+    // private PropertyChangeListener wpcl;
+    
     public SetMainProject() {
-        super( NbBundle.getMessage( SetMainProject.class, "LBL_SetMainProjectAction_Name" ),   // NOI18N
-               null );
-        OpenProjectList.getDefault().addPropertyChangeListener( this );
+        this( null );
     }
     
+    public SetMainProject( Lookup context ) {
+        super( (String)null, namePattern, null, context );
+        // wpcl = WeakListeners.propertyChange( this, OpenProjectList.getDefault() );
+        // OpenProjectList.getDefault().addPropertyChangeListener( wpcl );
+        if ( context == null ) { 
+            OpenProjectList.getDefault().addPropertyChangeListener( this );
+        }
+        refresh( getLookup() );
+    }
+
+    protected void actionPerformed( Lookup context ) {
+        Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );        
         
-    /** Perform the action. Tries the performer and then scans the ActionMap
-     * of selected topcomponent.
-     */
-    public void actionPerformed(java.awt.event.ActionEvent ev) {
-        // no operation
+        if ( projects != null && projects.length > 0 ) 
+        OpenProjectList.getDefault().setMainProject( projects[0] );
+        
+    }
+    
+    public void refresh( Lookup context ) {
+        
+        super.refresh( context );
+        
+        Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );
+        if ( projects.length != 1 /* Some projects have to be open !OpenProjectList.getDefault().isOpen( projects[0] ) */ ) {
+            setEnabled( false );
+        }
+        else {
+            setEnabled( true );
+        }        
+    }
+    
+    public Action createContextAwareInstance( Lookup actionContext ) {
+        return new SetMainProject( actionContext );
     }
     
     public JMenuItem getMenuPresenter() {
@@ -128,7 +158,7 @@ public class SetMainProject extends AbstractAction implements Presenter.Menu, Pr
         if ( OpenProjectList.PROPERTY_OPEN_PROJECTS.equals( e.getPropertyName() ) ) {
             createSubMenu();
         }
-        else if ( OpenProjectList.PROPERTY_MAIN_PROJECT.equals( e.getPropertyName() ) ) {
+        else if ( OpenProjectList.PROPERTY_MAIN_PROJECT.equals( e.getPropertyName() ) && subMenu != null ) {
             selectMainProject();
         }
         
