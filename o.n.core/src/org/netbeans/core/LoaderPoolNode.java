@@ -209,11 +209,17 @@ public final class LoaderPoolNode extends AbstractNode {
     loadersArray = null;
     
     if (loaderPool != null && notifications == 0) {
-      loaderPool.superFireChangeEvent(
-        new ChangeEvent(loaderPool)
-      );
+      Thread t = new Thread ("Loader Pool Change Notification") {
+        public void run () {
+          loaderPool.superFireChangeEvent(
+            new ChangeEvent(loaderPool)
+          );
       
-      myChildren.update ();
+          myChildren.update ();
+        }
+      };
+      t.setPriority (Thread.MIN_PRIORITY);
+      t.start ();
     } else {
       // remember that there should be notifications
       notifications++;
@@ -567,6 +573,8 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  24   Gandalf   1.23        8/30/99  Jaroslav Tulach Notification of change of
+*       loaders in different thread.
 *  23   Gandalf   1.22        7/8/99   Jesse Glick     Context help.
 *  22   Gandalf   1.21        6/9/99   Ian Formanek    ToolsAction
 *  21   Gandalf   1.20        6/8/99   Ian Formanek    ---- Package Change To 
