@@ -1,5 +1,6 @@
 OpenIDE-Module: org.netbeans.modules.i18n/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/i18n/Bundle.properties
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.properties/1
 OpenIDE-Module-Specification-Version: 1.9
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
