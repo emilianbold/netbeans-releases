@@ -19,8 +19,9 @@ import org.netbeans.modules.xml.spi.model.*;
 import org.netbeans.modules.xml.text.syntax.dom.*;
 
 /**
- * Mutable delegator to passed <code>CompletionContext</code> delegee.
- * Can be reinitialized to avoid extra memory allocation.
+ * Mutable delegator to passed <code>HintContext</code> delegee.
+ * Can be reinitialized to avoid extra memory allocation by init
+ * methods.
  *
  * @author  Petr Kuzel
  */
@@ -28,6 +29,11 @@ class DefaultContext implements HintContext, Attr {
 
     private Node peer;
     private String text;
+
+    // virtual context has lisnk to surrounding world
+    private Node parent, previous, next;
+    private boolean virtual;
+    private short type;
     
     /** 
      * Creates new DefaultContext. 
@@ -36,14 +42,47 @@ class DefaultContext implements HintContext, Attr {
     public DefaultContext() {
     }
 
+    /**
+     * Turn ordinary node into a virtual one returning from its hiearchy calls:
+     * <ul>
+     * <li>getParentNode() - parent
+     * <li>getPreviousSibling() - previous node
+     * <li>getNextSibling() - next node
+     * </ul>
+     */
+    public void initVirtualElement(Node parent, Node previous, Node next) {
+        this.parent = parent;
+        this.previous = previous;
+        this.next = next;
+        this.type = Node.ELEMENT_NODE;        
+        virtual = true;
+    }
+
+    /**
+     * Turn ordinary node into a virtual one returning from its hiearchy calls:
+     * <ul>
+     * <li>getOwnerElement() - parent
+     * <li>getName(), getNodeName() - text
+     * </ul>
+     */    
+    public void initVirtualAttr(Element parent, String text) {
+        this.parent = parent;
+        this.next = null;
+        this.previous = null;
+        this.text = text;
+        this.type = Node.ATTRIBUTE_NODE;
+        virtual = true;
+    }
     
     /**
+     * Init ordinary node.
      * @param node DOM node, must not be <code>null</code>
      * @param preText hint known prefix
      */
     public void init(Node node, String preText) {
         peer = node;
-        text = preText;   
+        text = preText;
+        virtual = false;
 //        System.err.println("DUMP:" + dump());
     }
    
@@ -175,13 +214,18 @@ class DefaultContext implements HintContext, Attr {
      * this returns <code>null</code>.
      */
     public Node getPreviousSibling() {
-        return peer.getPreviousSibling();
+        if (virtual) {
+            return previous;
+        } else {
+            return peer.getPreviousSibling();
+        }
     }
     
     /**
      * A code representing the type of the underlying object, as defined above.
      */
     public short getNodeType() {
+        if (virtual) return type;
         return peer.getNodeType();
     }
     
@@ -263,7 +307,11 @@ class DefaultContext implements HintContext, Attr {
      * this returns <code>null</code>.
      */
     public Node getNextSibling() {
-        return peer.getNextSibling();
+        if (virtual) {
+            return next;
+        } else {
+            return peer.getNextSibling();
+        }
     }
     
     /**
@@ -384,7 +432,11 @@ class DefaultContext implements HintContext, Attr {
      * <code>null</code>.
      */
     public Node getParentNode() {
-        return peer.getParentNode();
+        if (virtual) {
+            return parent;
+        } else {
+            return peer.getParentNode();
+        }
     }
     
     public void setNodeValue(String nodeValue) throws DOMException {
@@ -476,6 +528,7 @@ class DefaultContext implements HintContext, Attr {
     }
     
     public String getName() {
+        if (virtual) return text;
         if (peer instanceof Attr) {
             return ((Attr)peer).getName();
         } else {
@@ -484,6 +537,8 @@ class DefaultContext implements HintContext, Attr {
     }
     
     public Element getOwnerElement() {
+        if (virtual) return (Element) parent;
+        
         if (peer instanceof Attr) {
             return ((Attr)peer).getOwnerElement();
         } else {

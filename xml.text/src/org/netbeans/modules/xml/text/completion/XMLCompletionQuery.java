@@ -394,7 +394,7 @@ class XMLCompletionQuery implements CompletionQuery {
             case XMLDefaultTokenContext.WS_ID:
                 if (StartTag.class.equals(element.getClass()) 
                 || EmptyTag.class.equals(element.getClass())) {
-                    ctx.init(element, "");
+                    ctx.initVirtualAttr((Element)element, "");
                     return queryAttributes();
                 } else {
                     // end tag no WS and no attributes
@@ -405,7 +405,7 @@ class XMLCompletionQuery implements CompletionQuery {
             case XMLDefaultTokenContext.ARGUMENT_ID:
                 if (StartTag.class.equals(element.getClass()) 
                 || EmptyTag.class.equals(element.getClass())) {
-                    ctx.init(element, text);
+                    ctx.initVirtualAttr((Element)element, text);
                     return queryAttributes();
                 }
                 break;
@@ -680,8 +680,8 @@ class XMLCompletionQuery implements CompletionQuery {
         }
         
         public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
-            super.substituteText( c, 0, 0, shift );  //???
-            return false; // always refresh
+            super.substituteText( c, offset, len, shift );
+            return false; //??? always refresh
         }
     }
     
