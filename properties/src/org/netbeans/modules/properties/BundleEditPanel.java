@@ -234,7 +234,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
         
         if(columnWidth < totalWidth/5)
             columnWidth = totalWidth/5;
-        
+
         // set the column widths
         for (int i = 0; i < theTable.getColumnModel().getColumnCount(); i++) {
             TableColumn column = theTable.getColumnModel().getColumn(i);
@@ -287,9 +287,12 @@ public class BundleEditPanel extends javax.swing.JPanel {
                                                            columnSelections.getMinSelectionIndex());*/
             }
 
-            // the selection is ok - edit, if not already editing this field
-            if (theTable.getEditingRow()    != rowSelections.getMinSelectionIndex() ||
-                    theTable.getEditingColumn() != columnSelections.getMinSelectionIndex()) {
+            // the selection is ok - set cell editable if:
+            // 1) it is not going to be edited as a search result (client property TABLE_SEARCH_RESULT)
+            // 2) and if it is not already editing this field
+            if (theTable.getClientProperty(FindPerformer.TABLE_SEARCH_RESULT) == null &&
+                    (theTable.getEditingRow() != rowSelections.getMinSelectionIndex() ||
+                    theTable.getEditingColumn() != columnSelections.getMinSelectionIndex()) ) {
                 SwingUtilities.invokeLater(new Runnable() {
                                                public void run() {
                                                    theTable.editCellAt(rowSelections.getMinSelectionIndex(),
