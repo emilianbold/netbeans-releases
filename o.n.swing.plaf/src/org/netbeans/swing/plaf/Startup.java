@@ -69,8 +69,6 @@ public final class Startup {
 
     private static URL themeURL = null;
     private static Class uiClass = null;
-    
-    private int customFontSize = 0;
 
     private boolean installed = false;
 
@@ -187,23 +185,15 @@ public final class Startup {
         assert curCustoms == null;
         curCustoms = findCustoms();
         if (curCustoms != null) {
-            if(customFontSize > 0) {
-                Integer fs = new Integer (customFontSize);
-                UIManager.put ("customFontSize", fs); //NOI18N
-            }            
             installLFCustoms (curCustoms);
             curCustoms.disposeValues();
 
             Integer in = (Integer) UIManager.get(LFCustoms.CUSTOM_FONT_SIZE); //NOI18N
-            if (UIManager.getLookAndFeel().getClass() == MetalLookAndFeel.class && customFontSize == 0) {
-                customFontSize = 11;
+            if (UIManager.getLookAndFeel().getClass() == MetalLookAndFeel.class) {
+                in = new Integer (11);
             }
-            
-            if (customFontSize > 0) {
-                if (UIManager.get("customFontSize") == null) {
-                    //Some L&Fs may clobber it
-                    UIManager.put ("customFontSize", new Integer(customFontSize));
-                }
+
+            if (in != null) {
                 AllLFCustoms.initCustomFontSize (in.intValue());
             }
         }
@@ -284,10 +274,13 @@ public final class Startup {
     public static void run (Class uiClass, int uiFontSize, URL themeURL) {
         if (instance == null) {
           // Modify default font size to the font size passed as a command-line parameter
+            if(uiFontSize>0) {
+                Integer customFontSize = new Integer (uiFontSize);
+                UIManager.put ("customFontSize", customFontSize);
+            }
             Startup.uiClass = uiClass;
             Startup.themeURL = themeURL;
             instance = new Startup();
-            instance.customFontSize = uiFontSize;
             instance.install();
         }
     }
