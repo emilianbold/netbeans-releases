@@ -28,7 +28,7 @@ import threaddemo.model.*;
  * A look which wraps phadhails.
  * @author Jesse Glick
  */
-final class PhadhailLook extends DefaultLook implements PhadhailListener, PhadhailEditorSupport.Saver {
+final class PhadhailLook extends Look implements PhadhailListener, PhadhailEditorSupport.Saver {
     
     PhadhailLook() {
         super("PhadhailLook");
