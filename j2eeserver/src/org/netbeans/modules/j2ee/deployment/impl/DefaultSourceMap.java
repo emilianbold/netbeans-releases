@@ -16,6 +16,7 @@ package org.netbeans.modules.j2ee.deployment.impl;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -92,17 +93,11 @@ public class DefaultSourceMap extends SourceFileMap {
     }
     
     public File getDistributionPath(FileObject sourceFile) {
-        File relative = null;
-        File absolute = FileUtil.toFile(sourceFile);
-        while (absolute.getParentFile() != null) {
-            if (relative == null) {
-                relative = new File(absolute.getName());
-            } else {
-                relative = new File(relative, absolute.getName());
-            }
-            absolute = absolute.getParentFile();
-            if (rootFiles.contains(absolute)) {
-                return relative;
+        for (Iterator i=rootFiles.iterator(); i.hasNext();) {
+            FileObject root = (FileObject) i.next();
+            String relative = FileUtil.getRelativePath(root, sourceFile);
+            if (relative != null && ! relative.trim().equals("")) { //NOI18N
+                return new File(relative);
             }
         }
         return null;
