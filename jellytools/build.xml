@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+ 
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="jellytools" default="all" basedir=".">
+
+    <target name="all" depends="jars" description="Build everything.">
+    </target>
+
+    <target name="compile" depends="jemmy">
+        <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+          <classpath>
+            <pathelement location="../openide/netbeans/lib/openide.jar"/>
+            <pathelement location="../core/netbeans/lib/core.jar"/>
+            <pathelement location="../core/netbeans/lib/ext/terminalemulator.jar"/>
+            <pathelement location="../jemmy/jemmy.jar"/>
+          </classpath>
+        </javac>
+    </target>
+
+    <target name="jemmy" description="Build jemmy.jar">
+        <ant dir="../jemmy" target="jar"/>
+    </target>
+    
+    <target name="jars" depends="compile" description="Create jars">
+      <jar basedir="src" compress="false" jarfile="jelly-nb.jar">
+	  <!-- These would come from standard-jar-excludes -->
+	  <exclude name="**/*.java"/>
+	  <exclude name="**/*.orig"/>
+	  <exclude name="**/*.rej"/>
+	  <exclude name="**/*.form"/>
+	  <exclude name="**/*.jar.MAKEME"/>
+	  <exclude name="**/filesystem.attributes"/>
+          <exclude name="**/.nbattrs"/>
+          <exclude name="**/.#*"/>
+        </jar>
+      </target>
+    
+    <!-- only to enable call both 'ant jar' and 'ant jars' -->
+    <target name="jar" depends="jars">
+    </target>
+
+    <target name="zipsrc" description="Create zip containing only sources">
+        <zip zipfile="jelly-nb.zip" basedir="src" includes="**/*.java"/>
+    </target>
+  
+    <target name="javadoc" description="Javadoc for jellytools">
+        <mkdir dir="apidoc"/>
+        <javadoc destdir="apidoc" packagenames="org.netbeans.test.oo.*" Windowtitle="Jellytools API">
+            <sourcepath>
+                <pathelement location="src"/>
+            </sourcepath>
+        </javadoc>
+    </target>
+
+    <target  name="clean" description="Clean all build products">
+        <delete>
+            <fileset dir=".">
+                <include name="**/*.class"/>
+            </fileset>
+        </delete>
+        <delete file="jelly-nb.jar"/>
+        <delete file="jelly-nb.zip"/>
+        <delete dir="apidoc"/>
+    </target>
+
+</project>
