@@ -19,6 +19,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import org.openide.DialogDescriptor;
+import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
 
@@ -167,8 +168,15 @@ public class AddIndexDialog {
                             }
                             result = true;
                         } catch (CommandNotSupportedException e) {
+                            //PENDING
                         } catch (DDLException e) {
-                        } catch (Exception e) {
+                            TopManager.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
+                        } catch (ClassNotFoundException e) {
+                            //PENDING
+                        } catch (IllegalAccessException e) {
+                            //PENDING
+                        } catch (InstantiationException e) {
+                            //PENDING
                         }
                     }
                 }
