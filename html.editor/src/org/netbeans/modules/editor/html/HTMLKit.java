@@ -288,7 +288,7 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
                 for (int i = 0; i < flavors.length; i++) {
                     String mime = flavors[i].getMimeType();
                     if (mime.startsWith(((JEditorPane)c).getEditorKit().getContentType())) {
-                        //return flavors[i];
+                        //return flavors[i]; [REWRITE_PLACE]
                     } else if (plainFlavor == null && mime.startsWith("text/plain")) {
                         plainFlavor = flavors[i];
                     } else if (refFlavor == null && mime.startsWith("application/x-java-jvm-local-objectref")
