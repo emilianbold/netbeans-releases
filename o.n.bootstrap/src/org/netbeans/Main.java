@@ -14,8 +14,10 @@
 package org.netbeans;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.lang.reflect.Method;
+import java.net.URLConnection;
 import java.util.jar.JarFile;
 import java.security.*;
 
@@ -71,6 +73,13 @@ public class Main extends Object {
         java.io.OutputStream writer,
         java.lang.reflect.Method[] methodToCall
     ) throws Exception {     
+        // #42431: turn off jar: caches, they are evil
+        // Note that setDefaultUseCaches changes a static field
+        // yet for some reason it is an instance method!
+        new URLConnection(Main.class.getResource("Main.class")) { // NOI18N
+            public void connect() throws IOException {}
+        }.setDefaultUseCaches(false);
+        
         ArrayList list = new ArrayList ();
 
         HashSet processedDirs = new HashSet ();

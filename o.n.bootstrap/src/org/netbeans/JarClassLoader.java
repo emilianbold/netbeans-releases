@@ -24,8 +24,6 @@ import java.net.MalformedURLException;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.util.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 
 /**
  * A ProxyClassLoader capable of loading classes from a set of jar files
@@ -213,7 +211,6 @@ public class JarClassLoader extends ProxyClassLoader {
                     // Can cause real problems under 1.4; see Module.java.
                     JarFile tempJar = new JarFile(temp);
                     origJar.close();
-                    forceRelease(orig);
                     deadJars.add(tempJar);
                     sources[i] = new JarSource(tempJar);
                     log("#21114: replacing " + orig + " with " + temp);
@@ -221,20 +218,6 @@ public class JarClassLoader extends ProxyClassLoader {
             }
         } catch (IOException ioe) {
             JarClassLoader.notify(0, ioe);
-        }
-    }
-    
-    /** Release jar: locks when the classloader is shut down.
-     * Should help reloading modules with changed resources.
-     */
-    public void destroy() {
-        super.destroy();
-        for (int i = 0; i < sources.length; i++) {
-            if (sources[i] instanceof JarSource) {
-                JarFile j = ((JarSource)sources[i]).getJarFile();
-                File f = new File(j.getName());
-                forceRelease(f);
-            }
         }
     }
     
@@ -248,7 +231,6 @@ public class JarClassLoader extends ProxyClassLoader {
                 JarFile j = ((JarSource)sources[i]).getJarFile();
                 File f = new File(j.getName());
                 j.close();
-                forceRelease(f);
                 if (deadJars != null && deadJars.contains(j)) {
                     log("#21114: closing and deleting temporary JAR " + f);
                     if (f.isFile() && !f.delete()) {
@@ -256,49 +238,6 @@ public class JarClassLoader extends ProxyClassLoader {
                     }
                 }
             }
-        }
-    }
-    
-    /** Make sure the Java runtime's jar: URL cache is not holding
-     * onto the specified file.
-     * Workaround for JDK bug #4646668.
-     */
-    private static void forceRelease(File f) {
-        if (fileCache == null || factory == null) return;
-        try {
-            synchronized (factory) {
-                Iterator it = fileCache.values().iterator();
-                while (it.hasNext()) {
-                    JarFile j = (JarFile)it.next();
-                    if (f.equals(new File(j.getName()))) {
-                        j.close();
-                        it.remove();
-                        log("Removing jar: cache for " + f + " as workaround for JDK #4646668");
-                    }
-                }
-            }
-        } catch (Exception e) {
-            JarClassLoader.annotate(e, 0, "Could not remove jar: cache for " + f, null, null, null);
-            JarClassLoader.notify(0, e);
-        }
-    }
-    private static Object factory = null;
-    private static HashMap fileCache = null;
-    static {
-        try {
-            Class juc = Class.forName("sun.net.www.protocol.jar.JarURLConnection"); // NOI18N
-            Field factoryF = juc.getDeclaredField("factory"); // NOI18N
-            factoryF.setAccessible(true);
-            factory = factoryF.get(null);
-            Class jff = Class.forName("sun.net.www.protocol.jar.JarFileFactory"); // NOI18N
-            if (!jff.isInstance(factory)) throw new ClassCastException(factory.getClass().getName());
-            Field fileCacheF = jff.getDeclaredField("fileCache"); // NOI18N
-            fileCacheF.setAccessible(true);
-            fileCache = (HashMap)fileCacheF.get(null);
-            log("Workaround for JDK #4646668 active as part of IZ #21114");
-        } catch (Exception e) {
-            JarClassLoader.annotate(e, 0, "Workaround for JDK #4646668 as part of IZ #21114 failed", null, null, null);
-            JarClassLoader.notify(0, e);
         }
     }
 
