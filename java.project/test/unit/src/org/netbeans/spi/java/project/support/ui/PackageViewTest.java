@@ -338,7 +338,13 @@ public class PackageViewTest extends NbTestCase {
         FileUtil.createData( srcRoot, "a/some.java" );
         group = new SimpleSourceGroup( srcRoot );
         rootNode = PackageView.createPackageView( group );
-
+        // Compute the nodes
+        assertNodes( rootNode.getChildren(), 
+                     new String[] { "a", "a.aa" },
+                     new int[] { 1, 0 }, 
+                     true ); // Needs to compute the nodes first
+        
+        
         n = PackageView.findPath( rootNode, toDelete );
         n.destroy();        
         assertFileObjects( srcRoot, new String[]{ "a" } );
@@ -352,6 +358,12 @@ public class PackageViewTest extends NbTestCase {
         toDelete = FileUtil.createFolder( srcRoot, "a/b" );
         group = new SimpleSourceGroup( srcRoot );
         rootNode = PackageView.createPackageView( group );
+        // Compute the nodes
+        assertNodes( rootNode.getChildren(), 
+                     new String[] { "a.aa", "a.b" },
+                     new int[] { 1, 0 }, 
+                     true ); // Needs to compute the nodes first
+        
         
         n = PackageView.findPath( rootNode, toDelete );
         n.destroy();        
@@ -365,6 +377,11 @@ public class PackageViewTest extends NbTestCase {
         toDelete = FileUtil.createFolder( srcRoot, "a/b" );
         group = new SimpleSourceGroup( srcRoot );
         rootNode = PackageView.createPackageView( group );
+        // Compute the nodes
+        assertNodes( rootNode.getChildren(), 
+                     new String[] { "a.aa", "a.b" },
+                     new int[] { 0, 0 }, 
+                     true ); // Needs to compute the nodes first
         
         n = PackageView.findPath( rootNode, toDelete );
         n.destroy();        
@@ -381,6 +398,11 @@ public class PackageViewTest extends NbTestCase {
         toDelete = a;
         group = new SimpleSourceGroup( srcRoot );
         rootNode = PackageView.createPackageView( group );
+        // Compute the nodes
+        assertNodes( rootNode.getChildren(), 
+                     new String[] { "a", "a.aa", },
+                     new int[] { 1, 1 }, 
+                     true ); // Needs to compute the nodes first
         
         n = PackageView.findPath( rootNode, toDelete );
         n.destroy();        
@@ -402,7 +424,11 @@ public class PackageViewTest extends NbTestCase {
 	// Create children        
         SourceGroup group = new SimpleSourceGroup( FileUtil.createFolder( root, "src" ) );
         Node sourceRoot = PackageView.createPackageView( group );
-        Children ch = sourceRoot.getChildren();
+        // Compute the nodes
+        assertNodes( sourceRoot.getChildren(), 
+                     new String[] { "<default package>" },
+                     new int[] { 0 }, 
+                     true ); // Needs to compute the nodes first
         
         FileObject a_b_c = FileUtil.createFolder( root, "src/a/b/c" );
         FileObject a_b = root.getFileObject( "src/a/b" );
@@ -626,12 +652,12 @@ public class PackageViewTest extends NbTestCase {
         SourceGroup group = new SimpleSourceGroup( FileUtil.createFolder( root, "src" ) );
         Children ch = PackageView.createPackageView( group ).getChildren();
         
-        
         // Create folder
 	FileUtil.createFolder( root, "src/a" );
         assertNodes( ch, 
                      new String[] { "a", },
-                     new int[] { 0, } );
+                     new int[] { 0, },
+                     true );
         
         Node n = ch.findChild( "a" );                     
         n.setName( "b" );        
