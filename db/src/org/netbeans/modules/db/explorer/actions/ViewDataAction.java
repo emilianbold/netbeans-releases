@@ -13,16 +13,22 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.sql.*;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Enumeration;
 
-import org.openide.*;
-import org.openide.nodes.*;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
-import org.netbeans.modules.db.explorer.nodes.*;
-import org.netbeans.modules.db.explorer.infos.*;
-import org.netbeans.modules.db.explorer.dataview.*;
+import org.netbeans.modules.db.explorer.dataview.DataViewWindow;
+import org.netbeans.modules.db.explorer.infos.ColumnNodeInfo;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.infos.TableNodeInfo;
+import org.netbeans.modules.db.explorer.infos.ViewColumnNodeInfo;
+import org.netbeans.modules.db.explorer.infos.ViewNodeInfo;
 
 public class ViewDataAction extends DatabaseAction {
     static final long serialVersionUID =-894644054833609687L;
@@ -114,9 +120,13 @@ public class ViewDataAction extends DatabaseAction {
 
                 }
 
-                DataViewWindow win = new DataViewWindow(info, expression);
+                final DataViewWindow win = new DataViewWindow(info, expression);
                 win.open();
-                win.executeCommand();
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run () {
+                        win.executeCommand();
+                    }
+                }, 0);
             } catch (SQLException exc) {
                 //PENDING
             } catch(Exception exc) {

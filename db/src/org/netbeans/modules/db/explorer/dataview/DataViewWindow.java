@@ -13,46 +13,69 @@
 
 package org.netbeans.modules.db.explorer.dataview;
 
-import java.awt.*;
-import java.awt.datatransfer.*;
-import java.awt.dnd.*;
-import java.awt.event.*;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import java.io.ObjectStreamException;
-import java.sql.*;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+
 import java.text.MessageFormat;
-import java.util.*;
+
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 import javax.swing.*;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.ListDataEvent;
 import javax.swing.table.AbstractTableModel;
 
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.SplittedPanel;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.util.NbBundle;
-import org.openide.util.datatransfer.*;
+import org.openide.util.RequestProcessor;
+import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.windows.TopComponent;
 
 import org.netbeans.modules.db.DatabaseException;
-import org.netbeans.lib.ddl.DBConnection;
-import org.netbeans.modules.db.explorer.infos.*;
-import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.infos.ColumnNodeInfo;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.nodes.ConnectionNode;
+import org.netbeans.modules.db.explorer.nodes.RootNode;
 
 public class DataViewWindow extends TopComponent {
     private JTextArea queryarea;
     private JTable jtable;
     private DataModel dbadaptor;
     private JComboBox rcmdscombo;
+    private JLabel status;
     private String schema;
     private ResourceBundle bundle;
     private Node node;
-
-    static final long serialVersionUID =6855188441469780252L;
+    
+    static final long serialVersionUID = 6855188441469780252L;
 
     public DataViewWindow(DatabaseNodeInfo info, String query) throws SQLException {
         schema = info.getUser();
@@ -61,14 +84,12 @@ public class DataViewWindow extends TopComponent {
         try {
             bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
-            this.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewWindowA11yDesc"));
+            this.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewWindowA11yDesc")); //NOI18N
 
             Node tempNode = node;
             while(!(tempNode instanceof ConnectionNode))
                 tempNode = tempNode.getParentNode();
-            setName(bundle.getString("CommandEditorTitle")+ //NOI18N
-                " " + tempNode.getDisplayName()); //NOI18N
-            setBorder(new EmptyBorder(new Insets(5,5,5,5)));
+            setName(bundle.getString("CommandEditorTitle") + " " + tempNode.getDisplayName()); //NOI18N
             GridBagLayout layout = new GridBagLayout();
             GridBagConstraints con = new GridBagConstraints ();
             setLayout (layout);
@@ -81,38 +102,72 @@ public class DataViewWindow extends TopComponent {
             GridBagLayout sublayout = new GridBagLayout();
             GridBagConstraints subcon = new GridBagConstraints ();
             subpane.setLayout(sublayout);
-
+            
+            // query label
+            subcon.fill = GridBagConstraints.HORIZONTAL;
+            subcon.weightx = 0.0;
+            subcon.weighty = 0.0;
+            subcon.gridx = 0;
+            subcon.gridy = 0;
+            subcon.gridwidth = 3;
+            subcon.insets = new Insets (0, 0, 5, 0);
+            subcon.anchor = GridBagConstraints.SOUTH;
+            JLabel queryLabel = new JLabel(bundle.getString("QueryLabel")); //NOI18N
+            queryLabel.setDisplayedMnemonic(bundle.getString("QueryLabel_Mnemonic").charAt(0)); //NOI18N
+            queryLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewQueryLabelA11yDesc")); //NOI18N
+            sublayout.setConstraints(queryLabel, subcon);
+            subpane.add(queryLabel);
+            
+            // query area
             subcon.fill = GridBagConstraints.BOTH;
             subcon.weightx = 1.0;
             subcon.weighty = 1.0;
             subcon.gridx = 0;
-            subcon.gridwidth = 2;
-            subcon.gridy = 0;
-            subcon.insets = new java.awt.Insets (0, 0, 5, 0);
+            subcon.gridwidth = 3;
+            subcon.gridy = 1;
             queryarea = new JTextArea(query, 3, 70);
             queryarea.setLineWrap(true);
             queryarea.setWrapStyleWord(true);
             queryarea.setDropTarget(new DropTarget(queryarea, new ViewDropTarget()));
-            queryarea.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewTextAreaA11yName"));
-            queryarea.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewTextAreaA11yDesc"));
-            queryarea.setToolTipText(bundle.getString("ACS_DataViewTextAreaA11yDesc"));
+            queryarea.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewTextAreaA11yName")); //NOI18N
+            queryarea.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewTextAreaA11yDesc")); //NOI18N
+            queryarea.setToolTipText(bundle.getString("ACS_DataViewTextAreaA11yDesc")); //NOI18N
+            queryLabel.setLabelFor(queryarea);
+
             JScrollPane scrollpane = new JScrollPane(queryarea);
+            subcon.insets = new Insets (0, 0, 5, 0);
             sublayout.setConstraints(scrollpane, subcon);
             subpane.add(scrollpane);
 
+            // combo label
+            subcon.fill = GridBagConstraints.HORIZONTAL;
+            subcon.weightx = 0.0;
+            subcon.weighty = 0.0;
+            subcon.gridx = 0;
+            subcon.gridy = 2;
+            subcon.gridwidth = 1;
+            subcon.insets = new Insets (0, 0, 5, 5);
+            subcon.anchor = GridBagConstraints.CENTER;
+            JLabel comboLabel = new JLabel(bundle.getString("HistoryLabel")); //NOI18N
+            comboLabel.setDisplayedMnemonic(bundle.getString("HistoryLabel_Mnemonic").charAt(0)); //NOI18N
+            comboLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewHistoryLabelA11yDesc")); //NOI18N
+            sublayout.setConstraints(comboLabel, subcon);
+            subpane.add(comboLabel);
+            
             // Combo recent commands
             subcon.fill = GridBagConstraints.HORIZONTAL;
             subcon.weightx = 1.0;
             subcon.weighty = 0.0;
-            subcon.gridx = 0;
-            subcon.gridy = 1;
+            subcon.gridx = 1;
+            subcon.gridy = 2;
             subcon.gridwidth = 1;
-            subcon.insets = new java.awt.Insets (0, 0, 5, 5);
+            subcon.insets = new Insets (0, 0, 5, 5);
             subcon.anchor = GridBagConstraints.SOUTH;
             rcmdscombo = new JComboBox(new ComboModel());
-            rcmdscombo.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewComboBoxA11yName"));
-            rcmdscombo.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewComboBoxA11yDesc"));
-            rcmdscombo.setToolTipText(bundle.getString("ACS_DataViewComboBoxA11yDesc"));
+            rcmdscombo.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewComboBoxA11yName")); //NOI18N
+            rcmdscombo.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewComboBoxA11yDesc")); //NOI18N
+            rcmdscombo.setToolTipText(bundle.getString("ACS_DataViewComboBoxA11yDesc")); //NOI18N
+            comboLabel.setLabelFor(rcmdscombo);
             sublayout.setConstraints(rcmdscombo, subcon);
             subpane.add(rcmdscombo);
             rcmdscombo.addActionListener(new ActionListener() {
@@ -124,35 +179,83 @@ public class DataViewWindow extends TopComponent {
                 }
             });
 
-
             // Button Execute
-            subcon.gridx = 1;
-            subcon.gridy = 1;
+            subcon.gridx = 2;
+            subcon.gridy = 2;
             subcon.weightx = 0.0;
             subcon.weighty = 0.0;
-            subcon.insets = new java.awt.Insets (0, 0, 5, 0);
+            subcon.insets = new Insets (0, 0, 5, 0);
             subcon.fill = GridBagConstraints.HORIZONTAL;
             subcon.anchor = GridBagConstraints.SOUTH;
             JButton fetchbtn = new JButton(bundle.getString("ExecuteButton")); //NOI18N
-            fetchbtn.setToolTipText(bundle.getString("ACS_ExecuteButtonA11yDesc"));
-            fetchbtn.setMnemonic(bundle.getString("ExecuteButton_Mnemonic").charAt(0));
+            fetchbtn.setToolTipText(bundle.getString("ACS_ExecuteButtonA11yDesc")); //NOI18N
+            fetchbtn.setMnemonic(bundle.getString("ExecuteButton_Mnemonic").charAt(0)); //NOI18N
             sublayout.setConstraints(fetchbtn, subcon);
             subpane.add(fetchbtn);
             fetchbtn.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    executeCommand();
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run () {
+                            executeCommand();
+                        }
+                    }, 0);
                 }
             });
+
+            // status line
+            subcon.fill = GridBagConstraints.HORIZONTAL;
+            subcon.weightx = 1.0;
+            subcon.weighty = 0.0;
+            subcon.gridx = 0;
+            subcon.gridy = 3;
+            subcon.gridwidth = 3;
+            subcon.insets = new Insets (0, 0, 5, 0);
+            subcon.anchor = GridBagConstraints.SOUTH;
+            status = new JLabel(" "); //NOI18N
+            status.setBorder(new javax.swing.border.LineBorder(java.awt.Color.gray));
+            status.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewStatusLabelA11yDesc")); //NOI18N
+            sublayout.setConstraints(status, subcon);
+            subpane.add(status);
+            
+            JPanel subpane2 = new JPanel();
+            GridBagLayout sublayout2 = new GridBagLayout();
+            GridBagConstraints subcon2 = new GridBagConstraints ();
+            subpane2.setLayout(sublayout2);
+            
+            // table label
+            subcon2.fill = GridBagConstraints.HORIZONTAL;
+            subcon2.weightx = 0.0;
+            subcon2.weighty = 0.0;
+            subcon2.gridx = 0;
+            subcon2.gridy = 0;
+            subcon2.gridwidth = 1;
+            subcon2.insets = new Insets (5, 0, 0, 0);
+            subcon2.anchor = GridBagConstraints.SOUTH;
+            JLabel tableLabel = new JLabel(bundle.getString("ResultsLabel")); //NOI18N
+            tableLabel.setDisplayedMnemonic(bundle.getString("ResultsLabel_Mnemonic").charAt(0)); //NOI18N
+            tableLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewResultsLabelA11yDesc")); //NOI18N
+            sublayout2.setConstraints(tableLabel, subcon2);
+            subpane2.add(tableLabel);
 
             // Table with results
             //      TableSorter sorter = new TableSorter();
             jtable = new JTable(dbadaptor/*sorter*/);
-            jtable.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewTableA11yName"));
-            jtable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewTableA11yDesc"));
-            jtable.setToolTipText(bundle.getString("ACS_DataViewTableA11yDesc"));
+            jtable.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewTableA11yName")); //NOI18N
+            jtable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewTableA11yDesc")); //NOI18N
+            jtable.setToolTipText(bundle.getString("ACS_DataViewTableA11yDesc")); //NOI18N
             jtable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             //    	sorter.addMouseListenerToHeaderInTable(table);
+            tableLabel.setLabelFor(jtable);
+            
             scrollpane = new JScrollPane(jtable);
+            subcon2.fill = GridBagConstraints.BOTH;
+            subcon2.weightx = 1.0;
+            subcon2.weighty = 1.0;
+            subcon2.gridx = 0;
+            subcon2.gridy = 1;
+            subcon2.gridwidth = 1;
+            sublayout2.setConstraints(scrollpane, subcon2);
+            subpane2.add(scrollpane);
 
             // Add it into splitview
             con.weightx = 1.0;
@@ -161,14 +264,15 @@ public class DataViewWindow extends TopComponent {
             con.gridx = 0;
             con.gridwidth = 1;
             con.gridy = 1;
+            con.insets = new Insets (12, 12, 11, 11);
 
             SplittedPanel split = new SplittedPanel();
             split.setSplitType(SplittedPanel.VERTICAL);
             split.setSplitTypeChangeEnabled(false);
             split.setSplitAbsolute(false);
-            split.setSplitPosition(20);
+            split.setSplitPosition(26);
             split.add(subpane, SplittedPanel.ADD_LEFT);
-            split.add(scrollpane, SplittedPanel.ADD_RIGHT);
+            split.add(subpane2, SplittedPanel.ADD_RIGHT);
             layout.setConstraints(split, con);
             add(split);
         } catch (MissingResourceException e) {
@@ -189,17 +293,23 @@ public class DataViewWindow extends TopComponent {
     }
 
     public boolean executeCommand() {
+        String command = queryarea.getText().trim();
+        boolean ret;
+        
         try {
-            String command = queryarea.getText().trim();
+            status.setText(bundle.getString("CommandRunning")); //NOI18N
             dbadaptor.execute(command);
+
             RecentCommand rcmd = new RecentCommand(command);
             ((ComboModel)rcmdscombo.getModel()).addElement(rcmd);
-            return true;
-        } catch (Exception e) {
-//            e.printStackTrace();
-            org.openide.DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DataViewFetchErrorPrefix") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
-            return false;
+            ret = true;
+        } catch (Exception exc) {
+            ret = false;
+            status.setText(bundle.getString("CommandFailed")); //NOI18N
+            org.openide.DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DataViewFetchErrorPrefix") + exc.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
         }
+        
+        return ret;
     }
 
     class ColDef {
@@ -379,7 +489,6 @@ public class DataViewWindow extends TopComponent {
         /** Performs the drop action */
         public void drop (DropTargetDropEvent dtde) {
             String query = null;
-            Object obj = null;
             Transferable t = dtde.getTransferable();
             StringBuffer buff = new StringBuffer();
 
@@ -444,8 +553,9 @@ public class DataViewWindow extends TopComponent {
         /** Executes command
         * @param command SQL Expression
         */
-        public void execute(String command) throws Exception {
-            if (command.length() == 0) return;
+        synchronized public void execute(String command) throws Exception {
+            if (command.length() == 0)
+                return;
 
             Connection con;
             Statement stat;
@@ -463,7 +573,6 @@ public class DataViewWindow extends TopComponent {
                 rs = stat.executeQuery(command);
 
                 ResultSetMetaData mdata = rs.getMetaData();
-                String gschema = null;
 
                 int cols = mdata.getColumnCount();
                 coldef = new Vector(cols);
@@ -482,7 +591,8 @@ public class DataViewWindow extends TopComponent {
 
                 // Get all rows.
                 // In future implementations should be more careful
-                int rcounter = 0, limit = RootNode.getOption().getFetchLimit();
+                int rcounter = 0;
+                int limit = RootNode.getOption().getFetchLimit();
                 int step = RootNode.getOption().getFetchStep();
                 data = new Vector();
                 while (rs.next()) {
@@ -494,9 +604,9 @@ public class DataViewWindow extends TopComponent {
                     // Catch row count
                     if (++rcounter >= limit) {
                         String[] arr = new String[] {
-                                           (new Integer(rcounter)).toString(),
-                                           (new Integer(step)).toString()
-                                       };
+                            (new Integer(rcounter)).toString(),
+                            (new Integer(step)).toString()
+                        };
                         String cancel = bundle.getString("DataViewCancelButton"); //NOI18N
                         String nextset = bundle.getString("DataViewNextFetchButton"); //NOI18N
                         String allset = bundle.getString("DataViewAllFetchButton"); //NOI18N
@@ -543,16 +653,15 @@ public class DataViewWindow extends TopComponent {
                     while (nodes.hasMoreElements())
                         ((DatabaseNodeInfo)((Node)nodes.nextElement()).getCookie(DatabaseNodeInfo.class)).refreshChildren();
                 }
-
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CommandExecuted"), NotifyDescriptor.INFORMATION_MESSAGE)); //NOI18N
             }
+            status.setText(bundle.getString("CommandExecuted")); //NOI18N
             stat.close();
         }
 
         /** Returns column name
         * @param column Column index
         */
-        public String getColumnName(int column) {
+        synchronized public String getColumnName(int column) {
             if (column < coldef.size()) {
                 String cname = ((ColDef)coldef.elementAt(column)).getName();
                 return cname;
@@ -564,21 +673,21 @@ public class DataViewWindow extends TopComponent {
         /** Returns column renderer/editor class
         * @param column Column index
         */
-        public Class getColumnClass(int column) {
+        synchronized public Class getColumnClass(int column) {
             if (column < coldef.size()) {
                 int coltype = ((ColDef)coldef.elementAt(column)).getDataType();
                 switch (coltype) {
-                case Types.CHAR:
-                case Types.VARCHAR:
-                case Types.LONGVARCHAR: return String.class;
-                case Types.BIT: return Boolean.class;
-                case Types.TINYINT:
-                case Types.SMALLINT:
-                case Types.INTEGER: return Integer.class;
-                case Types.BIGINT: return Long.class;
-                case Types.FLOAT:
-                case Types.DOUBLE: return Double.class;
-                case Types.DATE: return java.sql.Date.class;
+                    case Types.CHAR:
+                    case Types.VARCHAR:
+                    case Types.LONGVARCHAR: return String.class;
+                    case Types.BIT: return Boolean.class;
+                    case Types.TINYINT:
+                    case Types.SMALLINT:
+                    case Types.INTEGER: return Integer.class;
+                    case Types.BIGINT: return Long.class;
+                    case Types.FLOAT:
+                    case Types.DOUBLE: return Double.class;
+                    case Types.DATE: return java.sql.Date.class;
                 }
             }
 
@@ -587,7 +696,7 @@ public class DataViewWindow extends TopComponent {
 
         /** Returns true, if cell is editable
         */
-        public boolean isCellEditable(int row, int column) {
+        synchronized public boolean isCellEditable(int row, int column) {
             if (!editable)
                 return false;
             
@@ -599,7 +708,7 @@ public class DataViewWindow extends TopComponent {
 
         /** Returns colun count
         */
-        public int getColumnCount() {
+        synchronized public int getColumnCount() {
             if (coldef == null)
                 return 0;
             
@@ -608,7 +717,7 @@ public class DataViewWindow extends TopComponent {
 
         /** Returns row count
         */
-        public int getRowCount() {
+        synchronized public int getRowCount() {
             if (data == null)
                 return 0;
             
@@ -617,7 +726,7 @@ public class DataViewWindow extends TopComponent {
 
         /** Returns value at specified position
         */
-        public Object getValueAt(int aRow, int aColumn) {
+        synchronized public Object getValueAt(int aRow, int aColumn) {
             Vector row = null;
             if (aRow < data.size())
                 row = (Vector)data.elementAt(aRow);
@@ -641,17 +750,17 @@ public class DataViewWindow extends TopComponent {
             }
         }
 
-        public void setValueAt(Object value, int row, int column) {
+        synchronized public void setValueAt(Object value, int row, int column) {
             int enucol = 0;
             StringBuffer where = new StringBuffer();
-            HashMap map = new HashMap();
             Enumeration enu = coldef.elements();
             while (enu.hasMoreElements()) {
                 ColDef cd = (ColDef)enu.nextElement();
                 if (cd.isBestRowIdentifierColumn()) {
                     String key = cd.getName();
                     String val = format(getValueAt(row,enucol), cd.getDataType());
-                    if (where.length()>0) where.append(" and "); //NOI18N
+                    if (where.length()>0)
+                        where.append(" and "); //NOI18N
                     where.append(key+" = "+val); //NOI18N
                 }
                 enucol++;
