@@ -516,6 +516,23 @@ SystemFileSystem
         </folder> <!-- Services -->
     </folder>  <!-- UI -->
 
+    <!-- registers all roots of all filesystems -->
+    <folder name="Mount">
+        <file name="AllRoots.instance">
+            <attr name="instanceClass" stringvalue="[Lorg.openide.filesystems.FileSystem;" /> <!-- array of FileSystem-->
+            <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UIUtils.allRoots" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.layer" />
+        </file>
+        <file name="Home.instance">
+            <attr name="instanceClass" stringvalue="[Lorg.openide.filesystems.FileSystem;" /> <!-- array of FileSystem-->
+            <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UIUtils.allRoots" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.layer" />
+            
+            <!-- uses value of System.getProperty ("user.home") to find the location of the file -->
+            <attr name="property" stringvalue="user.home" />
+        </file>
+    </folder>
+    
     <folder name="Windows">
         <!--
         <attr name="SystemFileSystem.layer" stringvalue="project"/>
