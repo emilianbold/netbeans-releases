@@ -141,9 +141,6 @@ public final class SlideBarContainer extends AbstractModeContainer {
             this.modeContainer = modeContainer;
             // To be able to activate on mouse click.
             enableEvents(java.awt.AWTEvent.MOUSE_EVENT_MASK);
-            // have minimum size, to avoid gridbag layout to place the empty component at [0,0] location.
-            // clashes with the dnd
-            setMinimumSize(new Dimension(1,1));
         }
         
         public ModeView getModeView() {
@@ -186,6 +183,17 @@ public final class SlideBarContainer extends AbstractModeContainer {
             return (isNonEditor == thisIsNonEditor);
         }
         // TopComponentDroppable<<
+
+        public Dimension getMinimumSize() {
+            if (modeContainer.getTopComponents().length == 0) {
+                // have minimum size, to avoid gridbag layout to place the empty component at [0,0] location.
+                // clashes with the dnd
+                return new Dimension(1,1);
+            }
+            Dimension retValue;
+            retValue = super.getMinimumSize();
+            return retValue;
+        }
         
     } // End of VisualPanel
     
