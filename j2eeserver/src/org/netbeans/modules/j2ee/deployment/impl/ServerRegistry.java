@@ -220,8 +220,7 @@ public final class ServerRegistry implements java.io.Serializable {
         }
         
         try {
-            if (addInstanceImpl(url,username,password)) 
-                writeInstanceToFile(url,username,password);
+            addInstanceImpl(url,username,password);
         } catch(java.io.IOException e) {
             String msg = NbBundle.getMessage(ServerRegistry.class, "MSG_ErrorCreateInstance", url);
             InstanceCreationException ice = new InstanceCreationException(msg);
@@ -262,6 +261,7 @@ public final class ServerRegistry implements java.io.Serializable {
                         // PENDING persist url/password in ServerString as well
                         instances.put(url,instance);
                         ServerString str = new ServerString(server.getShortName(),url,null);
+                        writeInstanceToFile(url,username,password);
                         fireInstanceListeners(str,true);
                         return true;
                     }
