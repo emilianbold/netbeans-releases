@@ -29,6 +29,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.VisualClassPathItem;
+import org.netbeans.modules.java.j2seproject.UpdateHelper;
 import org.netbeans.modules.java.project.ProjectClassPathExtender;
 
 
@@ -38,11 +39,11 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
     private static final String CP_CLASS_PATH = "javac.classpath"; //NOI18N
 
     private Project project;
-    private AntProjectHelper helper;
+    private UpdateHelper helper;
     private ReferenceHelper refHelper;
     private PropertyEvaluator eval;
 
-    public J2SEProjectClassPathExtender (Project project, AntProjectHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper) {
+    public J2SEProjectClassPathExtender (Project project, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper) {
         this.project = project;
         this.helper = helper;
         this.eval = eval;
@@ -58,11 +59,11 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty(CP_CLASS_PATH);
                             J2SEProjectProperties.PathParser parser = new J2SEProjectProperties.PathParser ();
-                            List resources = (List) parser.decode(raw, project, helper, eval, refHelper);
+                            List resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
                             VisualClassPathItem item = VisualClassPathItem.create (library);
                             if (!resources.contains(item)) {
                                 resources.add (item);
-                                raw = parser.encode (resources, project, helper, refHelper);
+                                raw = parser.encode (resources, project, helper.getAntProjectHelper(), refHelper);
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties
                                 props.put (CP_CLASS_PATH, raw);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
@@ -93,7 +94,7 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty(CP_CLASS_PATH);
                             J2SEProjectProperties.PathParser parser = new J2SEProjectProperties.PathParser ();
-                            List resources = (List) parser.decode(raw, project, helper, eval, refHelper);
+                            List resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
                             File f = FileUtil.toFile (archiveFile);
                             if (f == null ) {
                                 throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
@@ -101,7 +102,7 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
                             VisualClassPathItem item = VisualClassPathItem.create (f);
                             if (!resources.contains(item)) {
                                 resources.add (item);
-                                raw = parser.encode (resources, project, helper, refHelper);
+                                raw = parser.encode (resources, project, helper.getAntProjectHelper(), refHelper);
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
                                 props.put (CP_CLASS_PATH, raw);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
@@ -132,11 +133,11 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);                            
                             String raw = props.getProperty(CP_CLASS_PATH);
                             J2SEProjectProperties.PathParser parser = new J2SEProjectProperties.PathParser ();
-                            List resources = (List) parser.decode(raw, project, helper, eval, refHelper);
+                            List resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
                             VisualClassPathItem item = VisualClassPathItem.create (artifact);
                             if (!resources.contains(item)) {
                                 resources.add (item);
-                                raw = parser.encode (resources, project, helper, refHelper);                                
+                                raw = parser.encode (resources, project, helper.getAntProjectHelper(), refHelper);
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                                 props.put (CP_CLASS_PATH, raw);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);                                

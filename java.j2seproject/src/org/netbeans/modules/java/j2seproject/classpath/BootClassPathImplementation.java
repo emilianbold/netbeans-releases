@@ -39,7 +39,6 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private static final String ANT_NAME = "platform.ant.name";             //NOI18N
     private static final String J2SE = "j2se";                              //NOI18N
 
-    private AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private JavaPlatformManager platformManager;
     //name of project active platform
@@ -49,9 +48,8 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private List resourcesCache;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-    public BootClassPathImplementation(AntProjectHelper helper, PropertyEvaluator evaluator) {
-        assert helper != null;
-        this.helper = helper;
+    public BootClassPathImplementation(PropertyEvaluator evaluator) {
+        assert evaluator != null;
         this.evaluator = evaluator;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }

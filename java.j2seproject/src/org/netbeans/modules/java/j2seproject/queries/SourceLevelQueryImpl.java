@@ -28,11 +28,9 @@ import org.openide.filesystems.FileObject;
  */
 public class SourceLevelQueryImpl implements SourceLevelQueryImplementation {
 
-    private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
 
-    public SourceLevelQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator) {
-        this.helper = helper;
+    public SourceLevelQueryImpl(PropertyEvaluator evaluator) {
         this.evaluator = evaluator;
     }
 

@@ -79,6 +79,7 @@ public final class J2SEProject implements Project, AntProjectListener {
     private final ReferenceHelper refHelper;
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
+    private final UpdateHelper updateHelper;
     private MainClassUpdater mainClassUpdater;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
@@ -89,19 +90,10 @@ public final class J2SEProject implements Project, AntProjectListener {
         aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, eval);
         genFilesHelper = new GeneratedFilesHelper(helper);
+        this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper,
+            UpdateHelper.createDefaultNotifier());
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
-        ProjectManager.mutex().postWriteRequest(
-                new Runnable () {
-                    public void run() {
-                        try {
-                            updateProjectXML ();
-                        } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-                        }
-                    }
-                }
-        );
     }
 
     /**
@@ -118,7 +110,7 @@ public final class J2SEProject implements Project, AntProjectListener {
     
     private PropertyEvaluator createEvaluator() {
         // XXX might need to use a custom evaluator to handle active platform substitutions... TBD
-        return helper.getStandardPropertyEvaluator();
+        return helper.getStandardPropertyEvaluator(); //It is save not to use the UpdateHelper for PropertyEvaluator, UH.getProperties() delegates to APH
     }
     
     PropertyEvaluator evaluator() {
@@ -140,18 +132,18 @@ public final class J2SEProject implements Project, AntProjectListener {
             aux,
             helper.createCacheDirectoryProvider(),
             spp,
-            new J2SEActionProvider( this, helper ),
-            new J2SEPhysicalViewProvider(this, helper, evaluator(), spp, refHelper),
-            new J2SECustomizerProvider(this, helper, evaluator(), refHelper),
-            new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(),getTestSourceRoots()),
-            new CompiledSourceForBinaryQuery(helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
-            new JavadocForBinaryQueryImpl(helper, evaluator()),
+            new J2SEActionProvider( this, this.updateHelper ),
+            new J2SEPhysicalViewProvider(this, this.updateHelper, evaluator(), spp, refHelper),
+            new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
+            new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
+            new CompiledSourceForBinaryQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
+            new JavadocForBinaryQueryImpl(this.helper, evaluator()), //Does not use APH to get/put properties/cfgdata
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
             new UnitTestForSourceQueryImpl(getSourceRoots(),getTestSourceRoots()),
-            new SourceLevelQueryImpl(helper, evaluator()),
-            new J2SESources (helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+            new SourceLevelQueryImpl(evaluator()),
+            new J2SESources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             helper.createSharabilityQuery(evaluator(), new String[] {
                 "${" + J2SEProjectProperties.SRC_DIR + "}", // NOI18N
                 "${" + J2SEProjectProperties.TEST_SRC_DIR + "}", // NOI18N
@@ -159,9 +151,9 @@ public final class J2SEProject implements Project, AntProjectListener {
                 "${" + J2SEProjectProperties.DIST_DIR + "}", // NOI18N
                 "${" + J2SEProjectProperties.BUILD_DIR + "}", // NOI18N
             }),
-            new J2SEFileBuiltQuery (helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
-            new RecommendedTemplatesImpl (helper),
-            new J2SEProjectClassPathExtender(this, helper, eval,refHelper),
+            new J2SEFileBuiltQuery (this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
+            new RecommendedTemplatesImpl (this.updateHelper),
+            new J2SEProjectClassPathExtender(this, this.updateHelper, eval,refHelper),
             this, // never cast an externally obtained Project to J2SEProject - use lookup instead
         });
     }
@@ -187,14 +179,14 @@ public final class J2SEProject implements Project, AntProjectListener {
      */
     public synchronized SourceRoots getSourceRoots() {        
         if (this.sourceRoots == null) { //Local caching, no project metadata access
-            this.sourceRoots = new SourceRoots(helper, evaluator(), getReferenceHelper(), "source-roots", "src.dir{0}"); //NOI18N
+            this.sourceRoots = new SourceRoots(this.updateHelper, evaluator(), getReferenceHelper(), "source-roots", "src.dir{0}"); //NOI18N
         }
         return this.sourceRoots;
     }
     
     public synchronized SourceRoots getTestSourceRoots() {
         if (this.testRoots == null) { //Local caching, no project metadata access
-            this.testRoots = new SourceRoots(helper, evaluator(), getReferenceHelper(), "test-roots", "test.src.dir{0}"); //NOI18N
+            this.testRoots = new SourceRoots(this.updateHelper, evaluator(), getReferenceHelper(), "test-roots", "test.src.dir{0}"); //NOI18N
         }
         return this.testRoots;
     }
@@ -234,54 +226,7 @@ public final class J2SEProject implements Project, AntProjectListener {
     }
      */
 
-    private void updateProjectXML () throws IOException {
-        Element element = aux.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/1",true);    //NOI18N
-        if (element != null) {
-            Document doc = element.getOwnerDocument();
-            Element newRoot = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
-            copyDocument (doc, element, newRoot);
-            Element sourceRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
-            Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-            root.setAttribute ("id","src.dir");   //NOI18N
-            sourceRoots.appendChild(root);
-            newRoot.appendChild (sourceRoots);
-            Element testRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
-            root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-            root.setAttribute ("id","test.src.dir");   //NOI18N
-            testRoots.appendChild (root);
-            newRoot.appendChild (testRoots);
-            helper.putPrimaryConfigurationData (newRoot, true);
-            ProjectManager.getDefault().saveProject(this);
-        }
-    }
 
-    // XXX should we rather be using XSLT?
-    private static void copyDocument (Document doc, Element from, Element to) {
-        NodeList nl = from.getChildNodes();
-        int length = nl.getLength();
-        for (int i=0; i< length; i++) {
-            Node node = nl.item (i);
-            Node newNode = null;
-            switch (node.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                    Element oldElement = (Element) node;
-                    newNode = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,oldElement.getTagName());
-                    copyDocument(doc,oldElement,(Element)newNode);
-                    break;
-                case Node.TEXT_NODE:
-                    Text oldText = (Text) node;
-                    newNode = doc.createTextNode(oldText.getData());
-                    break;
-                case Node.COMMENT_NODE:
-                    Comment oldComment = (Comment) node;
-                    newNode = doc.createComment(oldComment.getData());
-                    break;
-            }
-            if (newNode != null) {
-                to.appendChild (newNode);
-            }
-        }
-    }
 
 
     // Private innerclasses ----------------------------------------------------
@@ -303,7 +248,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         public String getDisplayName() {
             return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
                 public Object run() {
-                    Element data = helper.getPrimaryConfigurationData(true);
+                    Element data = updateHelper.getPrimaryConfigurationData(true);
                     // XXX replace by XMLUtil when that has findElement, findText, etc.
                     NodeList nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
                     if (nl.getLength() == 1) {
@@ -359,10 +304,13 @@ public final class J2SEProject implements Project, AntProjectListener {
         protected void projectOpened() {
             // Check up on build scripts.
             try {
-                genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                    J2SEProject.class.getResource("resources/build-impl.xsl"),
-                    true);
+                if (updateHelper.isCurrent()) {
+                    //Refresh build-impl.xml only for j2seproject/2
+                    genFilesHelper.refreshBuildScript(
+                        GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                        J2SEProject.class.getResource("resources/build-impl.xsl"),
+                        true);
+                }
                 genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_XML_PATH,
                     J2SEProject.class.getResource("resources/build.xsl"),
@@ -379,16 +327,16 @@ public final class J2SEProject implements Project, AntProjectListener {
 
             //register updater of main.class
             //the updater is active only on the opened projects
-            mainClassUpdater = new MainClassUpdater (J2SEProject.this, eval, helper,
+            mainClassUpdater = new MainClassUpdater (J2SEProject.this, eval, updateHelper,
                     cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0], J2SEProjectProperties.MAIN_CLASS);
 
             // Make it easier to run headless builds on the same machine at least.
             ProjectManager.mutex().writeAccess(new Mutex.Action() {
                 public Object run() {
-                    EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                    EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                     File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
                     ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
-                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                    updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                     try {
                         ProjectManager.getDefault().saveProject(J2SEProject.this);
                     } catch (IOException e) {
@@ -397,7 +345,7 @@ public final class J2SEProject implements Project, AntProjectListener {
                     return null;
                 }
             });
-            if (J2SEPhysicalViewProvider.hasBrokenLinks(helper, refHelper)) {
+            if (J2SEPhysicalViewProvider.hasBrokenLinks(updateHelper, refHelper)) {   //XXX Don't konw if it needs to use updateHelper
                 BrokenReferencesSupport.showAlert();
             }
         }
@@ -438,11 +386,11 @@ public final class J2SEProject implements Project, AntProjectListener {
     }
     
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
-        RecommendedTemplatesImpl (AntProjectHelper helper) {
+        RecommendedTemplatesImpl (UpdateHelper helper) {
             this.helper = helper;
         }
         
-        private AntProjectHelper helper;
+        private UpdateHelper helper;
         
         // List of primarily supported templates
         

@@ -62,7 +62,7 @@ public class J2SEFileBuiltQuery implements FileBuiltQueryImplementation, Propert
             from[srcRoots.length+i] = "${" + tstRoots[i] + "}/*.java"; // NOI18N
             to[srcRoots.length+i] = "${" + J2SEProjectProperties.BUILD_TEST_CLASSES_DIR + "}/*.class"; // NOI18N
         }
-        return helper.createGlobFileBuiltQuery(evaluator, from, to);
+        return helper.createGlobFileBuiltQuery(evaluator, from, to);    //Safe to pass APH
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

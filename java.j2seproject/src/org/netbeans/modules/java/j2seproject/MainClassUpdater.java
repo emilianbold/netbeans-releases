@@ -52,12 +52,12 @@ class MainClassUpdater implements PropertyChangeListener, MDRChangeListener {
 
     private final Project project;
     private final PropertyEvaluator eval;
-    private final AntProjectHelper helper;
+    private final UpdateHelper helper;
     private final ClassPath sourcePath;
     private final String mainClassPropName;
     private JavaClass mainClass;
 
-    public MainClassUpdater (Project project, PropertyEvaluator eval, AntProjectHelper helper, ClassPath sourcePath, String mainClassPropName) {
+    public MainClassUpdater (Project project, PropertyEvaluator eval, UpdateHelper helper, ClassPath sourcePath, String mainClassPropName) {
         this.project = project;
         this.eval = eval;
         this.helper = helper;
@@ -84,9 +84,12 @@ class MainClassUpdater implements PropertyChangeListener, MDRChangeListener {
                         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction () {
                             public Object run() throws Exception {
                                 EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                props.put(mainClassPropName, newMainClassName);          //NOI18N
-                                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
-                                ProjectManager.getDefault().saveProject (project);
+                                String oldMainClass = props.getProperty(mainClassPropName);
+                                if (!newMainClassName.equals(oldMainClass)) {
+                                    props.put(mainClassPropName, newMainClassName);          //NOI18N
+                                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
+                                    ProjectManager.getDefault().saveProject (project);
+                                }
                                 return null;
                             }
                         });

@@ -54,7 +54,7 @@ public final class SourceRoots {
     public static final String PROP_ROOT_PROPERTIES = "rootProperties";    //NOI18N
     public static final String PROP_ROOTS = "roots";   //NOI18N
 
-    private final AntProjectHelper helper;
+    private final UpdateHelper helper;
     private final PropertyEvaluator evaluator;
     private final ReferenceHelper refHelper;
     private final String elementName;
@@ -73,7 +73,7 @@ public final class SourceRoots {
      * @param evaluator
      * @param elementName the name of XML element under which are declared the roots
      */
-    SourceRoots (AntProjectHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper, String elementName, String newRootNameTemplate) {
+    SourceRoots (UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper, String elementName, String newRootNameTemplate) {
         assert helper != null && evaluator != null && refHelper != null && elementName != null && newRootNameTemplate != null;
         this.helper = helper;
         this.evaluator = evaluator;
@@ -83,7 +83,7 @@ public final class SourceRoots {
         this.support = new PropertyChangeSupport(this);
         this.listener = new ProjectMetadataListener();
         this.evaluator.addPropertyChangeListener (WeakListeners.propertyChange(this.listener,this.evaluator));
-        this.helper.addAntProjectListener ((AntProjectListener)WeakListeners.create(AntProjectListener.class, this.listener,this.helper));
+        this.helper.getAntProjectHelper().addAntProjectListener ((AntProjectListener)WeakListeners.create(AntProjectListener.class, this.listener,this.helper));
     }
 
 
@@ -138,7 +138,7 @@ public final class SourceRoots {
                             for (int i = 0; i<srcProps.length; i++) {
                                 String prop = evaluator.getProperty(srcProps[i]);
                                 if (prop != null) {
-                                    FileObject f = helper.resolveFileObject(prop);
+                                    FileObject f = helper.getAntProjectHelper().resolveFileObject(prop);
                                     if (f == null) {
                                         continue;
                                     }
@@ -171,7 +171,7 @@ public final class SourceRoots {
                         for (int i = 0; i<srcProps.length; i++) {
                             String prop = evaluator.getProperty(srcProps[i]);
                             if (prop != null) {
-                                File f = helper.resolveFile(prop);
+                                File f = helper.getAntProjectHelper().resolveFile(prop);
                                 try {
                                     URL url = f.toURI().toURL();
                                     if (FileUtil.isArchiveFile(url)) {
@@ -264,7 +264,7 @@ public final class SourceRoots {
                                     rootName = MessageFormat.format(newRootNameTemplate, new Object[]{new Integer(rootIndex)});
                                 }
                                 File f = FileUtil.normalizeFile(new File(URI.create(newRoot.toExternalForm())));
-                                File projDir = FileUtil.toFile(helper.getProjectDirectory());
+                                File projDir = FileUtil.toFile(helper.getAntProjectHelper().getProjectDirectory());
                                 String path = f.getAbsolutePath();
                                 String prjPath = projDir.getAbsolutePath()+File.separatorChar;
                                 if (path.startsWith(prjPath)) {

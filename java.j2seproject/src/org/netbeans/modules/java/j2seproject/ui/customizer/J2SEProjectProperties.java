@@ -33,6 +33,7 @@ import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
+import org.netbeans.modules.java.j2seproject.UpdateHelper;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -176,14 +177,14 @@ public class J2SEProjectProperties {
     
     private Project project;
     private HashMap properties;    
-    private AntProjectHelper antProjectHelper;
+    private UpdateHelper updateHelper;
     private PropertyEvaluator evaluator;
     private ReferenceHelper refHelper;
     
-    public J2SEProjectProperties( Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper ) {
+    public J2SEProjectProperties( Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper ) {
         this.project = project;
         this.properties = new HashMap();
-        this.antProjectHelper = antProjectHelper;
+        this.updateHelper = updateHelper;
         this.evaluator = evaluator;
         this.refHelper = refHelper;
         read();                                
@@ -272,8 +273,8 @@ public class J2SEProjectProperties {
         
         // Read the properties from the project             
         HashMap eProps = new HashMap( 2 );
-        eProps.put( PROJECT, antProjectHelper.getProperties( PROJECT ) ); 
-        eProps.put( PRIVATE, antProjectHelper.getProperties( PRIVATE ) );        
+        eProps.put( PROJECT, updateHelper.getProperties( PROJECT ) );
+        eProps.put( PRIVATE, updateHelper.getProperties( PRIVATE ) );
         
         // Initialize the property map with objects
         for ( int i = 0; i < PROPERTY_DESCRIPTORS.length; i++ ) {
@@ -315,7 +316,8 @@ public class J2SEProjectProperties {
                     Boolean defaultPlatform = null;
                     
                     // Some properties need special handling e.g. if the 
-                    // property changes the project.xml files                   
+                    // property changes the project.xml files
+                    updateHelper.requestSave();
                     for( Iterator it = properties.values().iterator(); it.hasNext(); ) {
                         PropertyInfo pi = (PropertyInfo)it.next();
                         PropertyDescriptor pd = pi.getPropertyDescriptor();
@@ -358,8 +360,8 @@ public class J2SEProjectProperties {
                     // Reread the properties. It may have changed when
                     // e.g. when setting references to another projects
                     HashMap eProps = new HashMap( 2 );
-                    eProps.put( PROJECT, antProjectHelper.getProperties( PROJECT ) ); 
-                    eProps.put( PRIVATE, antProjectHelper.getProperties( PRIVATE ) );
+                    eProps.put( PROJECT, updateHelper.getProperties( PROJECT ) );
+                    eProps.put( PRIVATE, updateHelper.getProperties( PRIVATE ) );
                     
                     // Set the changed properties
                     for( Iterator it = properties.values().iterator(); it.hasNext(); ) {
@@ -404,8 +406,8 @@ public class J2SEProjectProperties {
                     }
                     
                     // Store the property changes into the project
-                    antProjectHelper.putProperties( PROJECT, (EditableProperties)eProps.get( PROJECT ) );
-                    antProjectHelper.putProperties( PRIVATE, (EditableProperties)eProps.get( PRIVATE ) );
+                    updateHelper.putProperties( PROJECT, (EditableProperties)eProps.get( PROJECT ) );
+                    updateHelper.putProperties( PRIVATE, (EditableProperties)eProps.get( PRIVATE ) );
                     
                     return null;
                 }
@@ -443,7 +445,7 @@ public class J2SEProjectProperties {
     private final SpecificationVersion JDKSpec13 = new SpecificationVersion("1.3"); // NOI18N
     
     private void setPlatform(boolean isDefault, String platformAntID) {
-        Element pcd = antProjectHelper.getPrimaryConfigurationData( true );
+        Element pcd = updateHelper.getPrimaryConfigurationData( true );
         NodeList sps = pcd.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); // NOI18N
         if (isDefault && sps.getLength() > 0) {
             pcd.removeChild(sps.item(0));
@@ -462,7 +464,7 @@ public class J2SEProjectProperties {
             }
             el.setAttribute("explicit-source-supported", explicitSource ? "true" : "false"); // NOI18N
         }
-        antProjectHelper.putPrimaryConfigurationData(pcd, true);
+        updateHelper.putPrimaryConfigurationData(pcd, true);
     }
     
     /** Finds out what are new and removed project dependencies and 
@@ -510,7 +512,7 @@ public class J2SEProjectProperties {
         }
         
         // 2. now read project.properties and modify rest
-        EditableProperties ep = antProjectHelper.getProperties( PROJECT );
+        EditableProperties ep = updateHelper.getProperties( PROJECT );
         boolean changed = false;
         
         for( Iterator it = removed.iterator(); it.hasNext(); ) {
@@ -523,7 +525,7 @@ public class J2SEProjectProperties {
                 changed = true;
             }
         }
-        File projDir = FileUtil.toFile(antProjectHelper.getProjectDirectory());
+        File projDir = FileUtil.toFile(updateHelper.getAntProjectHelper().getProjectDirectory());
         for( Iterator it = added.iterator(); it.hasNext(); ) {
             VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
             if (vcpi.getType() == VisualClassPathItem.TYPE_LIBRARY) {
@@ -543,7 +545,7 @@ public class J2SEProjectProperties {
             }
         }
         if (changed) {
-            antProjectHelper.putProperties(PROJECT, ep);
+            updateHelper.putProperties(PROJECT, ep);
         }
     }
     
@@ -562,7 +564,7 @@ public class J2SEProjectProperties {
         String[] paths = PropertyUtils.tokenizePath(value);
         StringBuffer sb = new StringBuffer();
         for (int i=0; i<paths.length; i++) {
-            File f = antProjectHelper.resolveFile(paths[i]);
+            File f = updateHelper.getAntProjectHelper().resolveFile(paths[i]);
             if (CollocationQuery.areCollocated(f, projectDir)) {
                 sb.append(PropertyUtils.relativizeFile(projectDir, f));
             } else {
@@ -592,7 +594,7 @@ public class J2SEProjectProperties {
             this.propertyDesciptor = propertyDesciptor;
             this.rawValue = rawValue;
             this.evaluatedValue = evaluatedValue;
-            this.value = propertyDesciptor.parser.decode( rawValue, project, antProjectHelper, evaluator, refHelper );
+            this.value = propertyDesciptor.parser.decode( rawValue, project, updateHelper.getAntProjectHelper(), evaluator, refHelper );
             this.newValue = null;
         }
         
@@ -602,7 +604,7 @@ public class J2SEProjectProperties {
         
         public void encode() {            
             if ( isModified() ) {
-                newValueEncoded = propertyDesciptor.parser.encode( newValue, project, antProjectHelper, refHelper);
+                newValueEncoded = propertyDesciptor.parser.encode( newValue, project, updateHelper.getAntProjectHelper(), refHelper);
             }
             else {
                 newValueEncoded = null;

@@ -80,13 +80,13 @@ class J2SEActionProvider implements ActionProvider {
     J2SEProject project;
     
     // Ant project helper of the project
-    private AntProjectHelper antProjectHelper;
+    private UpdateHelper updateHelper;
     
         
     /** Map from commands to ant targets */
     Map/*<String,String[]>*/ commands;
     
-    public J2SEActionProvider( J2SEProject project, AntProjectHelper antProjectHelper ) {
+    public J2SEActionProvider( J2SEProject project, UpdateHelper updateHelper ) {
         
         commands = new HashMap();
             commands.put(COMMAND_BUILD, new String[] {"jar"}); // NOI18N
@@ -105,7 +105,7 @@ class J2SEActionProvider implements ActionProvider {
             commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
             commands.put(COMMAND_DEBUG_STEP_INTO, new String[] {"debug-stepinto"}); // NOI18N
         
-        this.antProjectHelper = antProjectHelper;
+        this.updateHelper = updateHelper;
         this.project = project;
     }
     
@@ -184,7 +184,7 @@ class J2SEActionProvider implements ActionProvider {
             p.setProperty("fix.includes", path); // NOI18N
         }
         else if (command.equals (COMMAND_RUN) || command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
-            EditableProperties ep = antProjectHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            EditableProperties ep = updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
             // check project's main class
             String mainClass = (String)ep.get ("main.class"); // NOI18N
@@ -195,7 +195,7 @@ class J2SEActionProvider implements ActionProvider {
                     return null;
                 }
                 mainClass = (String)ep.get ("main.class"); // NOI18N
-                antProjectHelper.putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                updateHelper.putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
             }
 
             p.setProperty("main.class", mainClass); // NOI18N
@@ -533,8 +533,8 @@ class J2SEActionProvider implements ActionProvider {
         try {
             String buildDirProp = project.evaluator().getProperty("build.dir"); //NOI18N
             String classesDirProp = project.evaluator().getProperty("build.classes.dir"); //NOI18N
-            FileObject buildDir = antProjectHelper.resolveFileObject(buildDirProp);
-            FileObject classesDir = antProjectHelper.resolveFileObject(classesDirProp);
+            FileObject buildDir = this.updateHelper.getAntProjectHelper().resolveFileObject(buildDirProp);
+            FileObject classesDir = this.updateHelper.getAntProjectHelper().resolveFileObject(classesDirProp);
 
             if (buildDir == null) {
                 buildDir = FileUtil.createFolder(project.getProjectDirectory(), buildDirProp);
@@ -558,7 +558,7 @@ class J2SEActionProvider implements ActionProvider {
         URL url = null;
         try {
             String buildDirProp = project.evaluator().getProperty("build.dir"); //NOI18N
-            FileObject buildDir = antProjectHelper.resolveFileObject(buildDirProp);
+            FileObject buildDir = updateHelper.getAntProjectHelper().resolveFileObject(buildDirProp);
 
             if (buildDir == null) {
                 buildDir = FileUtil.createFolder(project.getProjectDirectory(), buildDirProp);

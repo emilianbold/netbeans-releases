@@ -66,7 +66,7 @@ public class J2SESources implements Sources, PropertyChangeListener  {
     }
 
     private Sources initSources() {
-        final SourcesHelper h = new SourcesHelper(helper, evaluator);
+        final SourcesHelper h = new SourcesHelper(helper, evaluator);   //Safe to pass APH
         File projectDir = FileUtil.toFile(this.helper.getProjectDirectory());
         String[] propNames = sourceRoots.getRootProperties();
         String[] rootNames = sourceRoots.getRootNames();
