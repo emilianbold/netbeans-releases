@@ -46,6 +46,9 @@ public class UnitTestForSourceQuery {
      *     when mapping from source to unit test is not known.
      */
     public static URL findUnitTest(FileObject source) {
+        if (source == null) {
+            throw new IllegalArgumentException("Parameter source cannot be null"); // NOI18N
+        }
         Iterator it = implementations.allInstances().iterator();
         while (it.hasNext()) {
             UnitTestForSourceQueryImplementation query = (UnitTestForSourceQueryImplementation)it.next();
@@ -65,6 +68,9 @@ public class UnitTestForSourceQuery {
      *     when mapping from unit test to source is not known.
      */
     public static URL findSource(FileObject unitTest) {
+        if (unitTest == null) {
+            throw new IllegalArgumentException("Parameter unitTest cannot be null"); // NOI18N
+        }
         Iterator it = implementations.allInstances().iterator();
         while (it.hasNext()) {
             UnitTestForSourceQueryImplementation query = (UnitTestForSourceQueryImplementation)it.next();
