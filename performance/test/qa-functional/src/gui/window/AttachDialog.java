@@ -48,7 +48,7 @@ public class AttachDialog extends testUtilities.PerformanceTestCase {
     
     public ComponentOperator open() {
         // invoke Debug / Start Session / Attach from the main menu
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Run|Attach...","|");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Run|Attach Debugger ...","|");
         return new NbDialogOperator("Attach");
     }
     

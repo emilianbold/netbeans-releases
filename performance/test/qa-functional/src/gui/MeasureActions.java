@@ -72,10 +72,10 @@ public class MeasureActions  {
         
         suite.addTest(new SaveModifiedFile("testSaveModifiedJavaFile", "Save modified Java file"));
 
-        suite.addTest(new ExpandNodesInNewFile("testExpandJavaClasses","Expand node Java Classes in New File"));
+//TODO List of tempaltes is divided to two panels        suite.addTest(new ExpandNodesInNewFile("testExpandJavaClasses","Expand node Java Classes in New File"));
         suite.addTest(new ExpandNodesInNewFile("testExpandGUIForms","Expand node GUI Forms in New File"));
-        suite.addTest(new ExpandNodesInNewFile("testExpandXML","Expand node XML in New File"));
-        suite.addTest(new ExpandNodesInNewFile("testExpandOther","Expand node Other in New File"));
+//TODO List of tempaltes is divided to two panels        suite.addTest(new ExpandNodesInNewFile("testExpandXML","Expand node XML in New File"));
+//TODO List of tempaltes is divided to two panels        suite.addTest(new ExpandNodesInNewFile("testExpandOther","Expand node Other in New File"));
 
         suite.addTest(new ExpandNodesInOptions("testExpandEditorSettings", "Expand node Editor Settings in Tools | Options"));
         

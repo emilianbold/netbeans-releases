@@ -47,7 +47,7 @@ public class JavaPlatformManager extends testUtilities.PerformanceTestCase {
    }
     
     public ComponentOperator open() {
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Tools|Java Platforms Manager...","|");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Tools|Java Platform Manager","|");
         return new NbDialogOperator("Java Platform Manager");
     }
     
