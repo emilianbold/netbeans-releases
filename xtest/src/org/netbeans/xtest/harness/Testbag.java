@@ -336,9 +336,11 @@ public class Testbag implements XMLSerializable {
                    }
                }
            }
+           /*
            System.out.println("include Parent"+getParent());
            System.out.println("include grand Parent"+getParent().getParent());
            System.out.println("include grand Parent additional includes"+getParent().getParent().getAdditionalIncludes());
+            */
            if (getParent().getParent().getAdditionalIncludes() != null)
              for (int i=0; i<getParent().getParent().getAdditionalIncludes().length; i++) 
                vector.add(new String[] { getParent().getParent().getAdditionalIncludes()[i], null});
