@@ -38,18 +38,25 @@ public class Deploy extends Task {
      */
     private boolean debugMode = false;
     
-    private boolean alsoStartTargets = true; //TODO - make it a property? is it really needed?
+    private boolean alsoStartTargets = true;
+    
+    /**
+     * Holds value of property clientUrl.
+     */
+    private String clientUrl;
+    
+ //TODO - make it a property? is it really needed?
     
     public void execute() throws BuildException { 
 
-        log("basedir: " + getProject().getBaseDir());
         J2eeDeploymentLookup jdl = null;
+        
         try {
             FileObject[] fobs = FileUtil.fromFile(getProject().getBaseDir());
-            fobs[0].refresh(); // without this the "build" direcetory is not found in filesystems
+            fobs[0].refresh(); // without this the "build" directory is not found in filesystems
             jdl = (J2eeDeploymentLookup) FileOwnerQuery.getOwner(fobs[0]).getLookup().lookup(J2eeDeploymentLookup.class);
         } catch (Exception e) {
-            log("exception: " + e);
+            throw new BuildException(e);
         }
 
         J2eeProfileSettings settings = jdl.getJ2eeProfileSettings();
@@ -81,14 +88,12 @@ public class Deploy extends Task {
             } else { //PENDING: how do we know whether target does not need to start when deploy only
                 serverReady = server.getServerInstance().start(progress);
             }
-            log("NOT FAILED YET");
             if (! serverReady) {
                 progress.addError(/*NbBundle.getMessage(ServerExecutor.class, "MSG_StartServerFailed", server)*/"Start server failed");//TODO
                 throw new BuildException("Start server failed.");
             }
             
             progress.recordWork(2);
-            log("GONNA DEPLOY");
             modules = targetserver.deploy(progress);
             progress.recordWork(MAX_DEPLOY_PROGRESS-1);
             
@@ -102,13 +107,8 @@ public class Deploy extends Task {
         } else {
             throw new BuildException("Some other error.");
         }
-        
-//        URLCookie urlCookie = (URLCookie) obj.getCookie(URLCookie.class);
-//        String url = "";
-//        if (urlCookie != null){
-//            url = urlCookie.getURL();
-//        }
-        
+System.err.println("TAKEN URL:  " + getClientUrl());
+        target.startClient(getClientUrl());
     }
 
     /**
@@ -127,6 +127,22 @@ public class Deploy extends Task {
         this.debugMode = debugMode;
     }
         
+    /**
+     * Getter for property clientUrl.
+     * @return Value of property clientUrl.
+     */
+    public String getClientUrl() {
+        return this.clientUrl;
+    }
+    
+    /**
+     * Setter for property clientUrl.
+     * @param clientUrl New value of property clientUrl.
+     */
+    public void setClientUrl(String clientUrl) {
+        this.clientUrl = clientUrl;
+    }
+    
 //    public ExecutorTask execute(final DeploymentTarget target, final String uri) {
 //        Task t = RequestProcessor.getDefault().post(new Runnable() {
 //            public void run() {
