@@ -25,6 +25,9 @@ import java.util.*;
 import java.io.*;
 import javax.swing.*;
 import javax.swing.text.*;
+import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.api.editor.fold.FoldUtilities;
+import org.openide.ErrorManager;
 
 import org.openide.util.HelpCtx;
 import org.openide.text.CloneableEditorSupport;
@@ -383,6 +386,7 @@ public class DiffPanel extends javax.swing.JPanel {
     protected void openPostProcess() {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                expandFolds();
                 initGlobalSizes();
                 //showLine(1, 0);
                 addChangeListeners();
@@ -400,6 +404,13 @@ public class DiffPanel extends javax.swing.JPanel {
  */
             }
         });
+    }
+    
+    private void expandFolds() {
+        FoldHierarchy fh = FoldHierarchy.get(jEditorPane1);
+        FoldUtilities.expandAll(fh);
+        fh = FoldHierarchy.get(jEditorPane2);
+        FoldUtilities.expandAll(fh);
     }
 
     /*
