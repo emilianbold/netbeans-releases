@@ -36,7 +36,7 @@ import org.netbeans.api.xml.cookies.*;
  * @author Petr Kuzel
  * @deprecated XML tools SPI candidate
  */
-public class ValidateXMLSupport extends TestXMLSupport implements ValidateXMLCookie {
+public class ValidateXMLSupport extends SharedXMLSupport implements ValidateXMLCookie {
             
     /** 
      * Create new ValidateXMLSupport for given data object. 

@@ -35,7 +35,7 @@ import org.netbeans.api.xml.cookies.*;
  * @author Petr Kuzel
  * @deprecated XML tools SPI candidate
  */
-public class CheckXMLSupport extends TestXMLSupport implements CheckXMLCookie {
+public class CheckXMLSupport extends SharedXMLSupport implements CheckXMLCookie {
         
     /**
      * General parsed entity strategy. This strategy works well only for
