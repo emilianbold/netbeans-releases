@@ -34,7 +34,11 @@ Microsystems, Inc. All Rights Reserved.
           <file name="OpenAction.instance">
             <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />
           </file>
-          <attr boolvalue="true" name="OpenAction.instance/html-project-separator-1.instance" />
+          <attr boolvalue="true" name="OpenAction.instance/ViewAction.instance" />
+          <file name="ViewAction.instance">
+            <attr name="instanceClass" stringvalue="org.openide.actions.ViewAction" />
+          </file>
+          <attr boolvalue="true" name="ViewAction.instance/html-project-separator-1.instance" />
           <file name="html-project-separator-1.instance">
             <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
           </file>
@@ -62,11 +66,7 @@ Microsystems, Inc. All Rights Reserved.
           <file name="html-project-separator-4.instance">
             <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
           </file>
-          <attr boolvalue="true" name="html-project-separator-4.instance/NewAction.instance" />
-          <file name="NewAction.instance">
-            <attr name="instanceClass" stringvalue="org.openide.actions.NewAction" />
-          </file>
-          <attr boolvalue="true" name="NewAction.instance/DeleteAction.instance" />
+          <attr boolvalue="true" name="html-project-separator-4.instance/DeleteAction.instance" />
           <file name="DeleteAction.instance">
             <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
           </file>
