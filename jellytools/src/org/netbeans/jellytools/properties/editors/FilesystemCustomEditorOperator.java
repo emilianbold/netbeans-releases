@@ -58,7 +58,9 @@ public class FilesystemCustomEditorOperator extends NbDialogOperator {
      */
     public JRadioButtonOperator rbAddLocalDirectory() {
         if (_rbAddLocalDirectory==null) {
-            _rbAddLocalDirectory = new JRadioButtonOperator(this, Bundle.getString("org.netbeans.beaninfo.editors.Bundle", "CTL_FileSystemPanel.dirRadioButton.text"));
+            _rbAddLocalDirectory = new JRadioButtonOperator(this, 
+                        Bundle.getString("org.netbeans.beaninfo.editors.Bundle",
+                                         "CTL_FileSystemPanel.dirRadioButton.text"));
         }
         return _rbAddLocalDirectory;
     }
@@ -78,7 +80,9 @@ public class FilesystemCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btBrowse() {
         if (_btBrowse==null) {
-            _btBrowse = new JButtonOperator(this, Bundle.getString("org.netbeans.beaninfo.editors.Bundle", "CTL_FileSystemPanel.browse"));
+            _btBrowse = new JButtonOperator(this, 
+                        Bundle.getString("org.netbeans.beaninfo.editors.Bundle",
+                                         "CTL_FileSystemPanel.browseDirButton.text"));
         }
         return _btBrowse;
     }
@@ -88,7 +92,9 @@ public class FilesystemCustomEditorOperator extends NbDialogOperator {
      */
     public JRadioButtonOperator rbAddJARFile() {
         if (_rbAddJARFile==null) {
-            _rbAddJARFile = new JRadioButtonOperator(this, Bundle.getString("org.netbeans.beaninfo.editors.Bundle", "CTL_FileSystemPanel.jarRadioButton.text"));
+            _rbAddJARFile = new JRadioButtonOperator(this, 
+                        Bundle.getString("org.netbeans.beaninfo.editors.Bundle", 
+                                         "CTL_FileSystemPanel.jarRadioButton.text"));
         }
         return _rbAddJARFile;
     }
@@ -108,7 +114,10 @@ public class FilesystemCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btBrowse2() {
         if (_btBrowse2==null) {
-            _btBrowse2 = new JButtonOperator(this, Bundle.getString("org.netbeans.beaninfo.editors.Bundle", "CTL_FileSystemPanel.browse"), 1);
+            _btBrowse2 = new JButtonOperator(this, 
+                         Bundle.getString("org.netbeans.beaninfo.editors.Bundle", 
+                                          "CTL_FileSystemPanel.browseJarButton.text"),
+                                          1);
         }
         return _btBrowse2;
     }
@@ -118,7 +127,9 @@ public class FilesystemCustomEditorOperator extends NbDialogOperator {
      */
     public JRadioButtonOperator rbAddOtherFileSystemType() {
         if (_rbAddOtherFileSystemType==null) {
-            _rbAddOtherFileSystemType = new JRadioButtonOperator(this, Bundle.getString("org.netbeans.beaninfo.editors.Bundle", "CTL_FileSystemPanel.otherRadioButton.text"));
+            _rbAddOtherFileSystemType = new JRadioButtonOperator(this, 
+                        Bundle.getString("org.netbeans.beaninfo.editors.Bundle",
+                                         "CTL_FileSystemPanel.otherRadioButton.text"));
         }
         return _rbAddOtherFileSystemType;
     }
