@@ -12,27 +12,20 @@
 <BODY>
 
 <h2>Accessing Local Files Through a Proxy</h2>
-<p>If you want to use the Update Center or access the Internet through the IDE 
-  but your system is behind a firewall or you use a proxy server, you need to 
-  configure the IDE with your proxy settings. When you set the IDE to use a proxy, 
-  however, your Internet browser may attempt to route all files through the proxy, 
+<p>When you set the IDE to use a proxy, your Internet browser may attempt to route all files through the proxy, 
   including local files. This results in a File Not Found error when you try to 
-  open HTML files or applets in your external browser from the IDE. </p>
-<p>To resolve this problem, add <tt>localhost</tt> and your machine name to the 
-  list of bypassed hosts in your browser's settings. </p>
-<p>For Netscape, choose Edit <img src="../images/arrow.gif" alt="and choose">&nbsp;Preferences, 
-  expand the Advanced Node, and select Proxies. Then click the View button and 
-  add the information to the Exceptions field.</p>
-<p>For Internet Explorer, choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Internet 
-  Options, click the Connections tab, </p>
+  open an HTML file or applet in the IDE's external browser.
+To resolve this problem, add <tt>localhost</tt> and your machine name to the 
+  list of bypassed hosts in your browser's settings.
+</p>
     
 <p><b>To set the bypassed hosts for Netscape Communicator:</b></p>
 <ol>
   <li>Open the Netscape browser and choose Edit <img src="../images/arrow.gif" alt="and choose">&nbsp;Preferences 
     from its main window.</li>
   <li>Expand the Advanced Node and select Proxies. </li>
-  <li>Click the View button next to Manual Proxy Configuration.</li>
-  <li>Type <tt>localhost</tt> and your machine name in the Exceptions field.</li>
+  <li>Select Manual Proxy Configuration and click the View button.</li>
+  <li>Type <tt>localhost</tt> and your machine name in the exceptions area.</li>
   <li>Click OK to apply the changes to your browser settings.</li>
 </ol>
 
