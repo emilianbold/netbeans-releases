@@ -104,7 +104,7 @@ public class Actions implements ActionsFactory {
         return new ProjectAction (
             "javadoc", // XXX Define standard
             NbBundle.getMessage(Actions.class, "LBL_JavadocProjectAction_Name" ), // NOI18N
-            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/javadocProject.gif" ) ), //NOI18N
+            null, 
             null ); 
     }
     
@@ -112,7 +112,7 @@ public class Actions implements ActionsFactory {
         return new ProjectAction (
             "test", // XXX Define standard
             NbBundle.getMessage(Actions.class, "LBL_TestProjectAction_Name" ), // NOI18N
-            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/testProject.gif" ) ), //NOI18N
+            null,
             null ); 
     }
     
@@ -122,7 +122,7 @@ public class Actions implements ActionsFactory {
         return new FileCommandAction (
             "compile.single", // XXX Define standard
             NbBundle.getMessage(Actions.class, "LBL_CompileSingleAction_Name" ),// NOI18N
-            "org/netbeans/modules/project/ui/resources/compileSingle.gif", // NOI18N
+            (Icon)null,
             null ); //NOI18N
     }
     
@@ -130,7 +130,7 @@ public class Actions implements ActionsFactory {
         return new FileCommandAction (
             "run.single", // XXX Define standard
             NbBundle.getMessage(Actions.class, "LBL_RunSingleAction_Name"), // NOI18N
-            "org/netbeans/modules/project/ui/resources/runSingle.gif", // NOI18N
+            (Icon)null,
             null);
     }
     
@@ -138,7 +138,7 @@ public class Actions implements ActionsFactory {
         return new FileCommandAction (
             "debug.single", // XXX Define standard
             NbBundle.getMessage(Actions.class, "LBL_DebugSingleAction_Name"), // NOI18N
-            "org/netbeans/modules/project/ui/resources/debugSingle.gif", // NOI18N
+            (Icon)null,
             null);
     }
     
@@ -146,7 +146,7 @@ public class Actions implements ActionsFactory {
         return new FileCommandAction (
             "test.single", // XXX Define standard
             NbBundle.getMessage(Actions.class, "LBL_TestSingleAction_Name" ),// NOI18N
-            "org/netbeans/modules/project/ui/resources/testSingle.gif",
+            (Icon)null,
             null ); //NOI18N
     }
     
@@ -154,7 +154,7 @@ public class Actions implements ActionsFactory {
         return new FileCommandAction (
             "debug.test.single", // XXX Define standard
             NbBundle.getMessage(Actions.class, "LBL_DebugTestSingleAction_Name" ),// NOI18N
-            "org/netbeans/modules/project/ui/resources/testDebugSingle.gif",
+            (Icon)null,
             null ); //NOI18N
     }
         
@@ -204,7 +204,7 @@ public class Actions implements ActionsFactory {
     public static Action stopBuilding() {
         return new UnimplementedAction (        
             NbBundle.getMessage(Actions.class, "LBL_StopBuildingAction_Name"), // NOI18N
-            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/stopBuild.gif" ) ) ); // NOI18N
+            (Icon)null );
     }
     
     

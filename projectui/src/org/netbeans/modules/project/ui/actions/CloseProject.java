@@ -31,8 +31,6 @@ import org.openide.util.actions.Presenter;
  */
 public class CloseProject extends ProjectAction implements PropertyChangeListener, Presenter.Popup {
     
-    private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/closeProject.gif" ) ); //NOI18N
-    
     private static final String namePattern = NbBundle.getMessage( CloseProject.class, "LBL_CloseProjectAction_Name" ); // NOI18N
     private static final String namePatternPopup = NbBundle.getMessage( CloseProject.class, "LBL_CloseProjectAction_Popup_Name" ); // NOI18N
     
@@ -44,7 +42,7 @@ public class CloseProject extends ProjectAction implements PropertyChangeListene
     }
     
     public CloseProject( Lookup context ) {
-        super( (String)null, namePattern, ICON, context );        
+        super( (String)null, namePattern, null, context );        
         OpenProjectList.getDefault().addPropertyChangeListener( this );        
         popupPresenter = new JMenuItem( this );
         popupPresenter.setIcon( null );

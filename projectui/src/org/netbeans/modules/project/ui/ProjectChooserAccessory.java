@@ -112,6 +112,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(jTextFieldProjectName, gridBagConstraints);
 
+        jCheckBoxMain.setText(org.openide.util.NbBundle.getMessage(ProjectChooserAccessory.class, "LBL_PrjChooser_Main_CheckBox"));
         jCheckBoxMain.setMargin(new java.awt.Insets(2, 0, 2, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;

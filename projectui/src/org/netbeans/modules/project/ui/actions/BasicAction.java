@@ -41,11 +41,15 @@ abstract class BasicAction extends AbstractAction {
     }
     
     protected final void setSmallIcon( Icon icon ) {
-        putValue( SMALL_ICON, icon );
+        if ( icon != null ) {
+            putValue( SMALL_ICON, icon );
+        }
     }
     
     protected final void setSmallIcon( String iconResource ) {
-        putValue( SMALL_ICON, new ImageIcon( Utilities.loadImage( iconResource ) ) );
+        if ( iconResource != null ) {
+            putValue( SMALL_ICON, new ImageIcon( Utilities.loadImage( iconResource ) ) );
+        }
     }
         
 }

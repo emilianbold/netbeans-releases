@@ -28,8 +28,6 @@ import org.openide.util.actions.Presenter;
  */
 public class CustomizeProject extends ProjectAction implements Presenter.Popup {
     
-    private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/customizeProject.gif" ) ); //NOI18N
-    
     private static final String namePattern = NbBundle.getMessage( CustomizeProject.class, "LBL_CustomizeProjectAction_Name" ); // NOI18N
     private static final String namePatternPopup = NbBundle.getMessage( CustomizeProject.class, "LBL_CustomizeProjectAction_Popup_Name" ); // NOI18N
     
@@ -40,7 +38,7 @@ public class CustomizeProject extends ProjectAction implements Presenter.Popup {
     }
     
     public CustomizeProject( Lookup context ) {
-        super( (String)null, namePattern, ICON, context );
+        super( (String)null, namePattern, null, context );
         refresh( getLookup() );
         popupPresenter = new JMenuItem( this );
         popupPresenter.setText( namePatternPopup );

@@ -284,12 +284,12 @@ public class ProjectsRootNode extends AbstractNode {
 
         public Image getIcon( int type ) {
             Image original = super.getIcon( type );                
-            return isMain() ? Utilities.mergeImages( original, mainProjectBadge, 5, 10 ) : original;
+            return isMain() ? Utilities.mergeImages( original, mainProjectBadge, 7, 7 ) : original;
         }
 
         public Image getOpenedIcon( int type ) {
             Image original = super.getOpenedIcon(type);                
-            return isMain() ? Utilities.mergeImages( original, mainProjectBadge, 5, 10 ) : original;            
+            return isMain() ? Utilities.mergeImages( original, mainProjectBadge, 7, 7 ) : original;            
         }            
 
         public void propertyChange( PropertyChangeEvent e ) {

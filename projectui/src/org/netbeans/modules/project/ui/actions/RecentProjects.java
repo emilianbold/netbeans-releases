@@ -34,7 +34,7 @@ import org.openide.filesystems.FileObject;
 
 public class RecentProjects extends AbstractAction implements Presenter.Menu, PropertyChangeListener {
     
-    private static final String ICON = "org/netbeans/modules/project/ui/resources/closeProject.gif"; //NOI18N    
+    private static final String ICON = "org/netbeans/modules/project/ui/resources/empty.gif"; //NOI18N    
     
     /** Key for remembering project in JMenuItem
      */
@@ -44,7 +44,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     private JMenu subMenu;
     
     public RecentProjects() {
-        super(NbBundle.getMessage(RecentProjects.class, "LBL_RecentProjectsAction_Name"), // NOI18N
+        super( NbBundle.getMessage(RecentProjects.class, "LBL_RecentProjectsAction_Name"), // NOI18N
               new ImageIcon(Utilities.loadImage(ICON)));
         OpenProjectList.getDefault().addPropertyChangeListener( this );
     }
