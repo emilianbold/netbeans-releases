@@ -15,26 +15,20 @@ package org.netbeans.modules.web.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.io.File;
-import java.lang.ref.WeakReference;
 import java.util.*;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.*;
 import org.netbeans.api.web.dd.DDProvider;
 import org.netbeans.api.web.dd.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.openide.filesystems.FileUtil;
-import org.xml.sax.SAXException;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -56,7 +50,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
     private AntProjectHelper helper;
     private Set versionListeners = null;
     private String fakeServerInstId = null; // used to get access to properties of other servers
-    
+
     ProjectWebModule (WebProject project, AntProjectHelper helper) {
         this.project = project;
         this.helper = helper;
@@ -98,7 +92,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
     public FileObject getDocumentBase () {
         return getFileObject("web.docbase.dir"); // NOI18N
     }
-    
+
     public ClassPath getJavaSources () {
         ClassPathProvider cpp = (ClassPathProvider) project.getLookup ().lookup (ClassPathProvider.class);
         if (cpp != null) {
@@ -108,7 +102,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     public FileObject getWebInf () {
-        return getDocumentBase ().getFileObject (FOLDER_WEB_INF);
+        FileObject documentBase = getDocumentBase();
+        return documentBase == null ? null : documentBase.getFileObject (FOLDER_WEB_INF);
     }
     
     public ClassPathProvider getClassPathProvider () {
