@@ -13,10 +13,13 @@
 
 package com.netbeans.developer.modules.utilities;
 
+import java.io.IOException;
+
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.*;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.NbBundle;
@@ -24,6 +27,8 @@ import org.openide.util.NbBundle;
 import org.openidex.util.Utilities2;
 
 import com.netbeans.developer.modules.loaders.url.*;
+
+import com.netbeans.developer.modules.openfile.*;
 
 /** ModuleInstall class for Utilities module
 *
@@ -46,15 +51,23 @@ public class Installer extends ModuleInstall {
   // 3. install Bookmarks action
     installActions ();
 
+    // OpenFile:
+    Settings.DEFAULT.setRunning (true);
   }
   
   public void uninstalled () {
   // -----------------------------------------------------------------------------
   // 1. uninstall Bookmarks action
     uninstallActions ();
+  
+    // OpenFile:
+    Server.shutdown ();
   }
 
   public boolean closing () {
+    // OpenFile:
+    Server.shutdown ();
+    
     return true;
   }
 
@@ -63,47 +76,57 @@ public class Installer extends ModuleInstall {
   
   private void copyURLTemplates () {
     try {
-      org.openide.filesystems.FileUtil.extractJar (
-        org.openide.TopManager.getDefault ().getPlaces ().folders().templates ().getPrimaryFile (),
+      FileUtil.extractJar (
+        TopManager.getDefault ().getPlaces ().folders().templates ().getPrimaryFile (),
         getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/developer/modules/loaders/url/templates.jar") /* NO I18N */
       );
-    } catch (java.io.IOException e) {
-      org.openide.TopManager.getDefault ().notifyException (e);
+    } catch (IOException e) {
+      TopManager.getDefault ().notifyException (e);
     }
   }
 
   private void copyGroupTemplates () {
     try {
-      org.openide.filesystems.FileUtil.extractJar (
-        org.openide.TopManager.getDefault ().getPlaces ().folders().templates ().getPrimaryFile (),
+      FileUtil.extractJar (
+        TopManager.getDefault ().getPlaces ().folders().templates ().getPrimaryFile (),
         getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/enterprise/modules/group/toinstall/templates.jar") /* NO I18N */
       );
-    } catch (java.io.IOException e) {
-      org.openide.TopManager.getDefault ().notifyException (e);
+    } catch (IOException e) {
+      TopManager.getDefault ().notifyException (e);
     }
   }
 
   private void copyBookmarks () {
     try {
-      org.openide.filesystems.FileUtil.extractJar (
-        org.openide.TopManager.getDefault ().getPlaces ().folders().bookmarks ().getPrimaryFile (),
+      FileUtil.extractJar (
+        TopManager.getDefault ().getPlaces ().folders().bookmarks ().getPrimaryFile (),
         getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/developer/modules/loaders/url/bookmarks.jar") /* NO I18N */
       );
-    } catch (java.io.IOException e) {
-      org.openide.TopManager.getDefault ().notifyException (e);
+    } catch (IOException e) {
+      TopManager.getDefault ().notifyException (e);
     }
   }
 
   private void installActions () {
     try {
       // install into actions pool
-      Utilities2.createAction (BookmarksAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); /* NO I18N */
+      Utilities2.createAction (BookmarksAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); /* NO I18N */
 
       // install into menu
       Utilities2.createAction (BookmarksAction.class, 
-        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help"), /* NO I18N */
+        DataFolder.create (TopManager.getDefault ().getPlaces ().folders().menus (), "Help"), /* NO I18N */
         "TipOfTheDayAction", false, true, true, false /* NO I18N */
       );
+      
+      // OpenFile:
+      Utilities2.createAction (OpenFileAction.class,
+        DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().menus (), "File"),
+        "ShowBrowserAction", true, false, false, false);
+      Utilities2.createAction (OpenFileAction.class,
+        DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().toolbars (), "System"),
+        "ShowBrowserAction", true, false, false, false);
+      Utilities2.createAction (OpenFileAction.class,
+        DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "System"));
 
     } catch (Exception e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) { /* NO I18N */
@@ -116,8 +139,12 @@ public class Installer extends ModuleInstall {
   private void uninstallActions () {
     try {
       // remove from actions pool and menu
-      Utilities2.removeAction (BookmarksAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); /* NO I18N */
-      Utilities2.removeAction (BookmarksAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help")); /* NO I18N */
+      Utilities2.removeAction (BookmarksAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); /* NO I18N */
+      Utilities2.removeAction (BookmarksAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders().menus (), "Help")); /* NO I18N */
+      // OpenFile:
+      Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().menus (), "File"));
+      Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().toolbars (), "System"));
+      Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "System"));
     } catch (Exception e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) { /* NO I18N */
         e.printStackTrace ();
@@ -129,6 +156,8 @@ public class Installer extends ModuleInstall {
 
 /*
  * Log
+ *  4    Gandalf   1.3         1/4/00   Jesse Glick     OpenFile module 
+ *       installation.
  *  3    Gandalf   1.2         1/4/00   Ian Formanek    Uses Utilities2 to 
  *       create/remove actions
  *  2    Gandalf   1.1         1/4/00   Ian Formanek    Group and URL 
