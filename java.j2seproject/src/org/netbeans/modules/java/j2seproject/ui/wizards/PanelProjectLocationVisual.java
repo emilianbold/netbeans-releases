@@ -233,7 +233,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     
     void read (WizardDescriptor settings) {
         File projectLocation = (File) settings.getProperty ("projdir");  //NOI18N
-        if (projectLocation == null) {
+        if (projectLocation == null || !projectLocation.isDirectory ()) {
             projectLocation = ProjectChooser.getProjectsFolder();
         }
         else {
