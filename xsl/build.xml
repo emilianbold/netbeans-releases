@@ -22,6 +22,8 @@ Microsystems, Inc. All Rights Reserved.
     <property name="core_root" location="${xml_root}/core"/>
 
     <property name="libs_root" location="${nbroot}/libs"/>
+    
+    <property name="build.compiler.debug" value="on"/>
 
     <target name="init" depends="default.init">
         <ant dir="${nb_all}/xml/external" target="unscramble"/>

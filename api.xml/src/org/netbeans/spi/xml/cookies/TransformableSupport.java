@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
+import java.security.ProtectionDomain;
+import java.security.CodeSource;
 
 import org.xml.sax.EntityResolver;
 import org.xml.sax.XMLReader;
@@ -93,6 +95,18 @@ public final class TransformableSupport implements TransformableCookie {
             
             // transform
             if (notifier != null) {
+
+                // inform user about used implementation
+
+                ProtectionDomain domain = transformer.getClass().getProtectionDomain();
+                CodeSource codeSource = domain.getCodeSource();
+                if (codeSource == null) {
+                    notifier.receive(new CookieMessage(Util.THIS.getString("BK000")));
+                } else {
+                    URL location = codeSource.getLocation();
+                    notifier.receive(new CookieMessage(Util.THIS.getString("BK001", location)));
+                }
+
                 Proxy proxy = new Proxy (notifier);
                 transformer.setErrorListener (proxy);
             }
