@@ -25,7 +25,6 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-	<pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
 	<pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
 	<pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
 	<pathelement location="${binroot}/core/release/lib/ext/${xmlparser}"/>
@@ -40,11 +39,8 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-	<pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
-	<pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
 	<pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
 	<pathelement location="${binroot}/core/release/lib/ext/${xmlparser}"/>
-	<pathelement location="${binroot}/core/release/lib/ext/jh.jar"/>
       </classpath>
     </javac>
   </target>

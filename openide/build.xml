@@ -463,7 +463,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-        <pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
+        <pathelement location="../openidex/netbeans/modules/openidex.jar"/>
       </classpath>
     </javac>
     <mkdir dir="examplemodules"/>

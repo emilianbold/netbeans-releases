@@ -83,18 +83,18 @@ workspaceswitcher
     <!-- Override this with the Ant command, e.g. -Dmoduleconfig=superslim -->
     <property name="moduleconfig" value="stable"/>
     <!-- You can also explicitly set a particular list of modules if you prefer: -->
-    <!-- -Dmodules=foo,bar,... (do not include core or openide or openidex) -->
+    <!-- -Dmodules=foo,bar,... (do not include core or openide) -->
     <configmods property="modules" selectedconfig="${moduleconfig}">
-      <config name="superslim" modules="clazz,editor,html,icebrowser,image,java,projects,text,utilities"/>
-      <config name="slim" modules="autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,icebrowser,image,java,objectbrowser,projects,text,utilities"/>
+      <config name="superslim" modules="clazz,editor,html,icebrowser,image,java,openidex,projects,text,utilities"/>
+      <config name="slim" modules="autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,icebrowser,image,java,objectbrowser,openidex,projects,text,utilities"/>
       <!-- [PENDING] A poor name; 'standard' would be more in line with the CVS pseudomodule. -->
-      <config name="stable" modules="ant,apisupport/lite,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javacvs,javadoc,objectbrowser,projects,properties,scripting,text,usersguide,utilities,vcscore,vcscvs,web"/>
-      <config name="stable-with-apisupport" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javacvs,javadoc,objectbrowser,projects,properties,scripting,text,usersguide,utilities,vcscore,vcscvs,web"/>
-      <config name="ide-hacker" modules="ant,apisupport,apisupport/lite,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,i18n,icebrowser,image,jarpackager,java,javacvs,javadoc,objectbrowser,projects,properties,scripting,serialversion,sysprops,text,utilities,vcscore,vcscvs"/>
-      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,cpplite,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javacvs,javadoc,javaembeddedserver,logger,makefile,multicompile,objectbrowser,projects,properties,remotefs,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,web"/>
-      <config name="sandwich" modules="apisupport,apisupport/lite,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javacvs,javadoc,objectbrowser,projects,properties,text,utilities,vcscore,vcscvs,web"/>
+      <config name="stable" modules="ant,apisupport/lite,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javacvs,javadoc,objectbrowser,openidex,projects,properties,scripting,text,usersguide,utilities,vcscore,vcscvs,web"/>
+      <config name="stable-with-apisupport" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javacvs,javadoc,objectbrowser,openidex,projects,properties,scripting,text,usersguide,utilities,vcscore,vcscvs,web"/>
+      <config name="ide-hacker" modules="ant,apisupport,apisupport/lite,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,i18n,icebrowser,image,jarpackager,java,javacvs,javadoc,objectbrowser,openidex,projects,properties,scripting,serialversion,sysprops,text,utilities,vcscore,vcscvs"/>
+      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,cpplite,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javacvs,javadoc,javaembeddedserver,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,web"/>
+      <config name="sandwich" modules="apisupport,apisupport/lite,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javacvs,javadoc,objectbrowser,openidex,projects,properties,text,utilities,vcscore,vcscvs,web"/>
       <!-- You are on your own for getting the binaries for some of these: -->
-      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,cpplite,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javacvs,javadoc,javaembeddedserver,jini,makefile,multicompile,objectbrowser,projects,properties,remotefs,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,web"/>
+      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,cpplite,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javacvs,javadoc,javaembeddedserver,jini,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,web"/>
     </configmods>
   </target>
 
@@ -112,7 +112,7 @@ workspaceswitcher
     <echo message="Building pending API extensions..."/>
     <ant dir="../openidex" target="netbeans"/>
   </target>
-  <target name="all-core" depends="all-openide,all-openidex">
+  <target name="all-core" depends="all-openide">
     <echo message="Building IDE core implementation..."/>
     <ant dir="../core" target="netbeans"/>
   </target>
@@ -240,7 +240,7 @@ workspaceswitcher
     <echo message="Building module objectbrowser..."/>
     <ant dir="../objectbrowser" target="netbeans"/>
   </target>
-  <target name="all-projects" depends="all-openide,all-openidex">
+  <target name="all-projects" depends="all-openide">
     <echo message="Building module projects..."/>
     <ant dir="../projects" target="netbeans"/>
   </target>
@@ -329,7 +329,7 @@ workspaceswitcher
 
   <target name="firststart-merge" depends="init,build-messaging">
     <mkdir dir="netbeans"/>
-    <nbmerge dest="netbeans" topdir=".." modules="openide,openidex,core,${modules}" targetprefix="all-">
+    <nbmerge dest="netbeans" topdir=".." modules="openide,core,${modules}" targetprefix="all-">
       <suppress locale="ja" unless="netbeans.japanese"/>
     </nbmerge>
     <chmod perm="ugo+x">
@@ -580,7 +580,6 @@ the nbbuild/netbeans/bin/ directory.
     />
   </target>
 
-  <!-- XXX should this run `clean' target with moduleconfig=bloated?? -->
   <target name="real-clean" depends="clean"
           description="Clean everything possible.">
     <echo message="Cleaning old builds..."/>
@@ -606,11 +605,11 @@ the nbbuild/netbeans/bin/ directory.
 
   <target name="clean" depends="init,localclean"
           description="Clean out (almost) all build products.">
-    <cleanall topdir=".." modules="openide,openidex,core,${modules}" targetname="clean"/>
+    <cleanall topdir=".." modules="openide,core,${modules}" targetname="clean"/>
     <echo message="Run `ant real-clean' if desired."/>
   </target>
 
   <target name="print-selected-modules" depends="init" description="Prints list of modules to build in selected moduleconfig.">
-    <echo message="modules=openide,openidex,core,${modules}"/>
+    <echo message="modules=openide,core,${modules}"/>
   </target>
 </project>

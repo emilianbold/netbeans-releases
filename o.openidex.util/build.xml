@@ -38,16 +38,8 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <!-- Dummy empty JAR (manifest only). -->
-    <jar jarfile="netbeans/modules/openidex.jar"
-         manifest="manifest-subst.mf"
-	 basedir="src">
-      <exclude name="**"/>
-    </jar>
-    <!-- Now the real thing. -->
-    <mkdir dir="netbeans/lib/ext"/>
-    <!-- #9708: do not use a manifest with OpenIDE-Module here -->
-    <locjar jarfile="netbeans/lib/ext/openidex.jar"
+    <locjar jarfile="netbeans/modules/openidex.jar"
+            manifest="manifest-subst.mf"
             basedir="src"
 	    excludesfile="../nbbuild/standard-jar-excludes.txt"
 	    compress="false">

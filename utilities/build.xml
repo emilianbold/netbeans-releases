@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-        <pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
+        <pathelement location="../openidex/netbeans/modules/openidex.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
       </classpath>
     </javac>
