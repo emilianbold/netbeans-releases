@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -66,9 +66,9 @@ public class ProjectUtilities {
     static final String OPEN_FILES_ELEMENT = "open-files"; // NOI18N
     static final String FILE_ELEMENT = "file"; // NOI18N
     
-    /** Creates a new instance of ProjectUtilities */
-    private ProjectUtilities () {
-    }
+    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(ProjectUtilities.class.getName());
+    
+    private ProjectUtilities() {}
     
     /** Invokes the preferred action on given object and tries to select it in
      * corresponding view, e.g. in logical view if possible otherwise
@@ -307,45 +307,58 @@ public class ProjectUtilities {
      * @param p project
      */
     public static void openProjectFiles (Project p) {
+        boolean dolog = ERR.isLoggable(ErrorManager.INFORMATIONAL);
+        if (dolog) ERR.log("Trying to open files from " + p + "...");
+        
         AuxiliaryConfiguration aux = (AuxiliaryConfiguration) p.getLookup ().lookup (AuxiliaryConfiguration.class);
         
         if (aux == null) {
+            if (dolog) ERR.log("No AuxiliaryConfiguration in " + p);
             return ;
         }
         
         Element openFiles = aux.getConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
         if (openFiles == null) {
+            if (dolog) ERR.log("No " + OPEN_FILES_ELEMENT + " in private.xml");
             return;
         }
 
+        // XXX should this be using getElementsByTagNameNS?
         NodeList list = openFiles.getElementsByTagName (FILE_ELEMENT);
         if (list == null) {
+            if (dolog) ERR.log("No " + FILE_ELEMENT + " in " + OPEN_FILES_ELEMENT);
             return ;
         }
         
-        FileObject fo = null;
-        DataObject dobj;
-        String url;
         for (int i = 0; i < list.getLength (); i++) {
-            url = list.item (i).getChildNodes ().item (0).getNodeValue ();
+            String url = list.item (i).getChildNodes ().item (0).getNodeValue ();
+            if (dolog) ERR.log("Will try to open " + url);
+            FileObject fo;
             try {
                 fo = URLMapper.findFileObject (new URL (url));
-                if (fo == null) {
-                    continue;
-                }
-                dobj = DataObject.find (fo);
-                EditCookie ec = (EditCookie) dobj.getCookie (EditCookie.class);
-                OpenCookie oc = (OpenCookie) dobj.getCookie (OpenCookie.class);
-                if (ec != null) {
-                    ((EditCookie) ec).edit ();
-                } else if (oc != null) {
-                    ((OpenCookie) oc).open ();
-
-                }
             } catch (MalformedURLException mue) {
                 assert false : "MalformedURLException in " + url;
+                continue;
+            }
+            if (fo == null) {
+                if (dolog) ERR.log("Could not find " + url);
+                continue;
+            }
+            DataObject dobj;
+            try {
+                dobj = DataObject.find (fo);
             } catch (DataObjectNotFoundException donfo) {
                 assert false : "DataObject must exist for " + fo;
+                continue;
+            }
+            EditCookie ec = (EditCookie) dobj.getCookie (EditCookie.class);
+            OpenCookie oc = (OpenCookie) dobj.getCookie (OpenCookie.class);
+            if (ec != null) {
+                ((EditCookie) ec).edit ();
+            } else if (oc != null) {
+                ((OpenCookie) oc).open ();
+            } else {
+                if (dolog) ERR.log("No EditCookie nor OpenCookie for " + dobj);
             }
         }
         
