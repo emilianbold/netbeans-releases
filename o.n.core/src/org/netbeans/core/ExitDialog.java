@@ -494,8 +494,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
     private static Collection getPendingTasks() {
         
         ArrayList pendingTasks = new ArrayList( 10 );
-        
-        pendingTasks.addAll( ModuleActions.INSTANCE.getRunningActions() );
+        pendingTasks.addAll(ModuleActions.getDefault().getRunningActions());
         
         if ( !Boolean.getBoolean( "netbeans.full.hack" ) ) { // NOI18N
             // Avoid showing the tasks in the dialog when running internal tests
@@ -519,7 +518,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         // ans implement ModuleActions.killRunningActions, but be aware
         // for some specialities, e.g. not to stop task with 
         // unmounting FS action when actually doing the unmounting.
-        ModuleActions.killRunningActions();
+        ModuleActions.getDefault().killRunningActions();
         killRunningExecutors();
         
         // [PENDING] When it'll be added another types of tasks (locks etc.)
@@ -561,8 +560,8 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
                 }
             };
 
-            ModuleActions.INSTANCE.addPropertyChangeListener(
-                WeakListener.propertyChange(propertyListener, ModuleActions.INSTANCE)
+            ModuleActions.getDefault().addPropertyChangeListener(
+                WeakListener.propertyChange(propertyListener, ModuleActions.getDefault())
             );
             
             ExecutionEngine ee = ExecutionEngine.getExecutionEngine();

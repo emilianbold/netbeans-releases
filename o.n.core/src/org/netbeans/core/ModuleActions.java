@@ -58,9 +58,6 @@ public class ModuleActions extends ActionManager
     /** Map of currently running actions, (maps action event to action) */
     private Map runningActions = new HashMap(4);
     
-    /** instance */
-    static final ModuleActions INSTANCE = new ModuleActions ();
-
     static {
         module = PROP_RUNNING_ACTIONS;
     }
@@ -85,7 +82,6 @@ public class ModuleActions extends ActionManager
      * actions.
      */
     public void invokeAction(final Action a, final ActionEvent e) {
-        //System.err.println ("invokeAction: " + a);
         Runnable r = new Runnable () {
                 public void run () {
                     // [PENDING] Ugly, but see e.g. TemplateWizard.DefaultIterator.instantiate:
@@ -104,12 +100,11 @@ public class ModuleActions extends ActionManager
                             a.actionPerformed (e);
                         } finally {
                             removeRunningAction(e);
-                            INSTANCE.firePropertyChange(PROP_RUNNING_ACTIONS, null, null);
+                            firePropertyChange(PROP_RUNNING_ACTIONS, null, null);
                         }
                     } else {
                         Toolkit.getDefaultToolkit ().beep ();
                     }
-                    //System.err.println ("invokeAction -> run done: " + a);
                 }
             };
         rp.post (r);
@@ -118,8 +113,8 @@ public class ModuleActions extends ActionManager
     /** Listens on change of modules and if changed,
     * fires change to all listeners.
     */
-    private static void fireChange () {
-        INSTANCE.firePropertyChange(PROP_CONTEXT_ACTIONS, null, null);
+    private void fireChange () {
+        firePropertyChange(PROP_CONTEXT_ACTIONS, null, null);
     }
 
     /** Adds action to <code>runningAction</code> map using event as a key.
@@ -133,7 +128,6 @@ public class ModuleActions extends ActionManager
         if(action.getValue("ModuleActions.ignore") != null) { // NOI18N
             return;
         }
-        
         synchronized(runningActions) {
             runningActions.put(evt, action);
         }
@@ -148,16 +142,16 @@ public class ModuleActions extends ActionManager
     }
 
     /** Gets collection of currently running actions. */
-    static Collection getRunningActions() {
-        synchronized(INSTANCE.runningActions) {
-            return new ArrayList(INSTANCE.runningActions.values());
+    Collection getRunningActions() {
+        synchronized(runningActions) {
+            return new ArrayList(runningActions.values());
         }
     }
     
     /** Tries to stop all processors executing currently running
      * action tasks. */
-    static void killRunningActions() {
-	INSTANCE.rp.stop();
+    void killRunningActions() {
+	rp.stop();
     }
     
     /** Change enabled property of an action
@@ -195,7 +189,7 @@ public class ModuleActions extends ActionManager
         //a.addPropertyChangeListener (INSTANCE);
 
         array = null;
-        fireChange (); // PENDING this is too often
+        getDefault().fireChange (); // PENDING this is too often
     }
 
     /** Removes new action from the list.
@@ -213,7 +207,7 @@ public class ModuleActions extends ActionManager
         }
 
         array = null;
-        fireChange (); // PENDING this is too often
+        getDefault().fireChange (); // PENDING this is too often
     }
 
     /** Creates the actions.
