@@ -165,9 +165,9 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="dist" depends="init,compile">
-        <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
+        <dirname property="dist.jar.dir" file="${{dist.war}}"/>
         <mkdir dir="${{dist.jar.dir}}"/>
-        <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
+        <jar jarfile="${{dist.war}}" compress="${{jar.compress}}">
             <fileset dir="${{build.dir}}"/>
         </jar>
     </target>
