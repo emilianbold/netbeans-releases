@@ -262,12 +262,17 @@ public class ShortcutsFolderTest extends NbTestCase {
     }
     
     public static class LKP extends Lookup {
+        private javax.swing.text.Keymap keymap = new NbKeymap ();
+        
         public Object lookup (Class clazz) {
             if (Repository.class == clazz) {
                 return repository;
             }
             if (ErrorManager.class == clazz) {
                 return new EM();
+            }
+            if (javax.swing.text.Keymap.class == clazz) {
+                return keymap;
             }
             return null;
         }
