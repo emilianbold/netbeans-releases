@@ -2727,7 +2727,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
 
   <target name="build-nozip" depends="clean-cluster-flags,build-clusters" description="Build the IDE but do not create a final ZIP file.">
-    <loadproperties srcFile="cluster.properties" />
+    <loadproperties srcFile="${clusters.list.file}" />
     <repeat target="create-module-xmls-for-one-cluster" name="one.cluster.name" values="${nb.clusters.list}" /> 
      
     <loadproperties srcfile="${netbeans.dest.dir}/moduleCluster.properties" />
@@ -2927,9 +2927,9 @@ the ${netbeans.dest}/bin/ directory.
   <target name="zip-one-cluster">
     <taskdef name="setclusterpatternset" classname="org.netbeans.nbbuild.SetClusterPatternSet" classpath="nbantext.jar"/>
     <taskdef name="setcluster" classname="org.netbeans.nbbuild.SetCluster" classpath="nbantext.jar"/>
-    <loadproperties srcFile="cluster.properties" />
+    <loadproperties srcFile="${clusters.list.file}" />
     <loadproperties srcFile="cluster-description.properties" />
-    <loadproperties srcFile="directories.properties" />
+    <loadproperties srcFile="${directoryList.file}" />
     <setcluster cluster="${one.cluster.name}" name="one.cluster.dir" />
     
     <setclusterpatternset cluster="${one.cluster.name}" name="${one.cluster.name}.files" trackingpath="${netbeans.dest.dir}" clusterdir="${one.cluster.dir}"/>
