@@ -135,7 +135,7 @@
    <tocitem text="Building Web Applications"> 
 	    <tocitem text="About Building Web Applications" target="about_build"  />
             <tocitem text="Building a WAR File" target="build_warfile" />
-            <tocitem text="Adding a External Resources to a WAR File" target="build_externalresources" />
+            <tocitem text="Adding an External Resource to a WAR File" target="build_externalresources" />
             <tocitem text="Removing a WAR File" target="build_remove"/>        
     </tocitem>
 
