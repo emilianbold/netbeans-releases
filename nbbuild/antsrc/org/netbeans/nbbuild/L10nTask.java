@@ -62,7 +62,7 @@ import org.netbeans.nbbuild.utils.cvsutils.CvsEntries;
  *		(must use keyword "exclude " followed by the pattern.)
  * 2) add ability to embed reading of additional files 
  *		(must use the keyword "read " followed by the path to the file)
- *		The special case "read global" will read the file set by the property globalFileQ
+ *		The special case "read global" will read the file set by the property globalFile
  * 3) add the ability to embed properties in the patterns. i
  *		The special case "l10n-module" property will be set from within L10nTask
  *
@@ -87,7 +87,7 @@ public class L10nTask extends MatchingTask {
 	private Hashtable cvsEntriesCache=new Hashtable();
 	private Hashtable changed = new Hashtable();
 	private Hashtable generatedFileHash = new Hashtable();
-	private Hashtable fullPropHash=new Hashtable();
+	private Hashtable fullPropHash = null ;
 
 	private Project p;
 	private boolean readGlobalFile=false; //have we already read globalFile?
@@ -126,9 +126,6 @@ public class L10nTask extends MatchingTask {
 		if (buildNumber == null ) {
 			throw new BuildException("Required variable not set.  Set 'buildNumber' in the calling .xml file");
 		}
-		globalsbholder[0]= new StringBuffer();
-		globalsbholder[1]= new StringBuffer();
-
 
 		//if the dir doesn't exist, make it.
 		// if the dir still doesn't exist, fail.
@@ -159,25 +156,22 @@ public class L10nTask extends MatchingTask {
 		CvsEntries ce;
 
 		p=this.getProject();
-		fullPropHash = p.getProperties();
 
 		for (int i=0; i<topdirs.length; i++) {
 			// if (DEBUG)  System.out.println("STARTING TOPDIR "+topdirs[i]); 
 			for(int j=0; j<modules.length; j++) {
 				if (modules[j] != null && ! modules[j].equals("")) {
-				fullPropHash.put("l10n-module", modules[j]);
+ 				fullPropHash = p.getProperties();
 
 				// if (DEBUG) System.out.println("IN FOR MODULES "+modules[j]);
 				// if (DEBUG) System.out.println("\tSTARTING MODULE "+modules[j]); 
 
-				File f = new File(topdirs[i]+"/"+modules[j]+"/"+localizableFile);
+				File f = new File(topdirs[i]+File.separator+modules[j]+File.separator+localizableFile);
 				
 				if ( f.exists() ) {
-					// if (DEBUG) System.out.println("\t\tFILE exists"+topdirs[i]+"/"+modules[j]+"/"+localizableFile);
+					// if (DEBUG) System.out.println("\t\tFILE exists"+topdirs[i]+File.separator+modules[j]+File.separator+localizableFile);
 					File topDir = new File(topdirs[i]);
-					File modDir = new File(topdirs[i]+"/"+modules[j]);
-
-					localizableFiles=null;
+					File modDir = new File(topdirs[i]+File.separator+modules[j]);
 
 					// moved getGeneratedFiles from here to only getGeneratedFiles 
 					// if there are localizableFiles.
@@ -185,7 +179,7 @@ public class L10nTask extends MatchingTask {
 					localizableFiles = getLocalizableFiles(topDir, modules[j]);
 					if (localizableFiles == null ) { 
 						if (DEBUG) {
-							System.out.println("\t\tNo Localizable Files for this module."+topDir+"/"+modules[j]); 
+							System.out.println("\t\tNo Localizable Files for this module."+topDir+File.separator+modules[j]); 
 						}
 					} else {
 
@@ -204,7 +198,7 @@ public class L10nTask extends MatchingTask {
 					// DO SOME PRE-PROCESSING HERE. CACHE DIR REACTION (don't check for existance of same dir over & over again).  
 					
 
-						int lastSlashIndex = localizableFiles[k].lastIndexOf("/");
+						int lastSlashIndex = localizableFiles[k].lastIndexOf(File.separator);
 						String parentDirFullPath = localizableFiles[k].substring(0, lastSlashIndex);
 						
 						// Check that the CVS/ dir exists.  
@@ -214,7 +208,7 @@ public class L10nTask extends MatchingTask {
 							//System.out.println("CVSDIR doesn't exist ["+parentDirFullPath+"/CVS ]");
 							// skip to the end of this loop
 							//HEY!  there must be a cleaner way!! 
-							System.out.println("This dir is a generated dir with no CVS dir"+parentDirFullPath);
+							System.out.println("This dir is a generated dir with no CVS dir "+parentDirFullPath);
 
 						} else {
 
@@ -237,7 +231,7 @@ public class L10nTask extends MatchingTask {
 							}
 
 
-							String localizableFileOnly = localizableFiles[k].substring(localizableFiles[k].lastIndexOf("/")+1);
+							String localizableFileOnly = localizableFiles[k].substring(localizableFiles[k].lastIndexOf(File.separator)+1);
 							if (localizableFileOnly == null) { System.out.println("NULL LOCALIZABLE FILE"); } 
 						
 							String ceRev = ce.getRevnoByFileName(localizableFileOnly);
@@ -284,8 +278,8 @@ public class L10nTask extends MatchingTask {
 					// toDir should be build/topDir
 					// baseDir should be fullpathtoTopDir
 					// if (DEBUG) System.out.println("BUILDDIR "+buildDir);
-					File tDir = new File(buildDir+"/"+topdirs[i]);
-					int lio = topdirs[i].lastIndexOf("/");
+					File tDir = new File(buildDir+File.separator+topdirs[i]);
+					int lio = topdirs[i].lastIndexOf(File.separator);
 					String shortTopdir = topdirs[i].substring(lio+1);
 
 
@@ -294,12 +288,12 @@ public class L10nTask extends MatchingTask {
 						// file module.l10n.list.all.
 						// THEN delete files.
 
-						mkTars(topdirs[i]+"/", buildDir+"/"+shortTopdir+"/"+modules[j]+".tar", topdirs[i]+"/"+modules[j]+"/"+modules[j]+"."+changedFile, modules[j]); 
+						mkTars(topdirs[i]+File.separator, buildDir+File.separator+shortTopdir+File.separator+modules[j]+".tar", topdirs[i]+File.separator+modules[j]+File.separator+modules[j]+"."+changedFile, modules[j]); 
 					// if (! changed.isEmpty() ) {
 						Delete delete = (Delete)p.createTask("delete");
-						delete.setDir(new File(topdirs[i]+"/"+modules[j]));
+						delete.setDir(new File(topdirs[i]+File.separator+modules[j]));
 						FileSet fs = new FileSet();
-						fs.setDir(new File(topdirs[i]+"/"+modules[j]));
+						fs.setDir(new File(topdirs[i]+File.separator+modules[j]));
 						String includes = modules[j]+"."+generatedFile+","+ modules[j]+"."+changedFile+","+ modules[j]+"."+allFile;
 						fs.setIncludes(includes);
 						delete.addFileset(fs);
@@ -359,7 +353,7 @@ public class L10nTask extends MatchingTask {
 	} // execute()
 
 	public void mkTars(String srcDir, String fullTarfilePath, String fullIncludesFilePath, String module) {
-		//String td = srcDir.substring(srcDir.lastIndexOf("/")+1);
+		//String td = srcDir.substring(srcDir.lastIndexOf(File.separator)+1);
 		if (DEBUG) {
 			// System.out.println("SRCDIR = "+srcDir);
 			//System.out.println("FULL TARFILE PATH = "+fullTarfilePath);
@@ -373,9 +367,9 @@ public class L10nTask extends MatchingTask {
 		File incFile = new File(fullIncludesFilePath); 
 
 		if (incFile.exists() ) { 
-			tar.setIncludes(module+"/"+module+"."+allFile);
-			tar.setIncludes(module+"/"+module+"."+generatedFile);
-			tar.setIncludes(module+"/"+module+"."+changedFile);
+			tar.setIncludes(module+File.separator+module+"."+allFile);
+			tar.setIncludes(module+File.separator+module+"."+generatedFile);
+			tar.setIncludes(module+File.separator+module+"."+changedFile);
 			tar.setIncludesfile(incFile);
 			tar.setLongfile("gnu");
 			tar.execute();
@@ -385,13 +379,13 @@ public class L10nTask extends MatchingTask {
 
 	public boolean printToAllFile(String fullTopDir, String module, String[] localizableFiles) {
 		try {
-			int lastSlashIndex = fullTopDir.lastIndexOf("/");
+			int lastSlashIndex = fullTopDir.lastIndexOf(File.separator);
 			String topDir= fullTopDir.substring(lastSlashIndex+1);
 
-			File f = new File(buildDir+ "/" +topDir );
+			File f = new File(buildDir+ File.separator +topDir );
 			f.mkdirs();
 
-			FileWriter allWrite = new FileWriter(fullTopDir+"/"+module+"/"+module+"."+allFile);
+			FileWriter allWrite = new FileWriter(fullTopDir+File.separator+module+File.separator+module+"."+allFile);
 
 			if ( localizableFiles != null ) {
 				for (int i=0; i<localizableFiles.length; i++) {
@@ -420,16 +414,16 @@ public class L10nTask extends MatchingTask {
 			
 		try {
 
-			int lastSlashIndex = fullTopDir.lastIndexOf("/");
+			int lastSlashIndex = fullTopDir.lastIndexOf(File.separator);
 			String topDir= fullTopDir.substring(lastSlashIndex+1);
 
 		/*  No need to mkdirs now - printToAllFile is making them.
-			File f = new File(buildDir+ "/" +topDir );
+			File f = new File(buildDir+ File.separator +topDir );
 			f.mkdirs();
 		*/
 
-			FileWriter genWrite = new FileWriter(fullTopDir+"/"+module+"/"+module+"."+generatedFile);
-			FileWriter changedWrite = new FileWriter(fullTopDir+"/"+module+"/"+module+"."+changedFile);
+			FileWriter genWrite = new FileWriter(fullTopDir+File.separator+module+File.separator+module+"."+generatedFile);
+			FileWriter changedWrite = new FileWriter(fullTopDir+File.separator+module+File.separator+module+"."+changedFile);
 
 
 			if ( generatedFileHash == null ) {
@@ -449,11 +443,11 @@ public class L10nTask extends MatchingTask {
 				for (Enumeration c = changed.keys() ; c.hasMoreElements() ;) {
 					String changedFileKey = (String)c.nextElement();
 
-					int lio = changedFileKey.lastIndexOf(topDir+"/"+module);
+					int lio = changedFileKey.lastIndexOf(topDir+File.separator+module);
 					String moduleFileName;
 					if (lio >= 0) {
 				
-						moduleFileName=changedFileKey.substring(changedFileKey.lastIndexOf(topDir+"/"+module)+topDir.length()+1);
+						moduleFileName=changedFileKey.substring(changedFileKey.lastIndexOf(topDir+File.separator+module)+topDir.length()+1);
 						changedWrite.write(moduleFileName+"\n");
 					} else {
 						// If we get here, the cache is probobly not really being cleared.  
@@ -461,7 +455,7 @@ public class L10nTask extends MatchingTask {
 						//The cache is not being cleared 
 						// OR we have wild-card characters
 						System.out.println("WARNING: L10n.list file error. Each item in your list should reference the current module.  If this is a global l10n file used over several modules use the property ${l10n-module} as a place-holder.  This error occurred in "+module+".");
-						// Contact program administrator.\r\t"+ changedFileKey+ "\r\tTD "+topDir+"/"+module +" LIO "+lio);	
+						// Contact program administrator.\r\t"+ changedFileKey+ "\r\tTD "+topDir+File.separator+module +" LIO "+lio);	
 					}
 
 					//changedWrite.write(changedFileKey+"\n");
@@ -470,7 +464,7 @@ public class L10nTask extends MatchingTask {
 			}
 
 			if (! error.isEmpty() ) {
-				FileWriter errorWrite = new FileWriter(buildDir+"/"+"l10n-errors.txt", true);
+				FileWriter errorWrite = new FileWriter(buildDir+File.separator+"l10n-errors.txt", true);
 				for (Enumeration e = error.elements(); e.hasMoreElements();) {
 					String ee = (String)e.nextElement();
 					errorWrite.write(ee+"\n");
@@ -491,6 +485,12 @@ public class L10nTask extends MatchingTask {
 		return true;
 	}
 
+        /** You can use this function independently of "execute()", but
+         * you have to set these attributes: localizableFile,
+         * globalFile (if "read global" is used in any l10n.list
+         * files), excludePattern (if desired), includePattern (if
+         * desired)
+         */
 	public String[] getLocalizableFiles(File topRoot, String module) {
 		String[] lfs = null;
 		StringBuffer[] sbholder=new StringBuffer[2];
@@ -500,8 +500,14 @@ public class L10nTask extends MatchingTask {
 		String excludeS="";
 		// if (DEBUG) System.out.println("\t\tIN getLocalizableFiles(File "+topRoot.getName()+", " + module+")");
 
+		if( fullPropHash == null) {
+		  p = getProject() ;
+		  fullPropHash = p.getProperties();
+		}
+		fullPropHash.put("l10n-module", module);
+
 		try {
-			File includes = new File(topRoot.getCanonicalPath() + "/" + module + "/" + localizableFile);
+			File includes = new File(topRoot.getCanonicalPath() + File.separator + module + File.separator + localizableFile);
 			if ( ! includes.exists() || includes.length() <= 0 ) {
 				//if (DEBUG) System.out.println("FILE IS too short to mess with "+ module);
 				return lfs;
@@ -547,8 +553,8 @@ public class L10nTask extends MatchingTask {
 
 			for (int k=0; k<lfs.length; k++) {
 				// if (DEBUG) System.out.println("\t\t\tLFS "+lfs[k]);
-				lfs[k] = topRoot+"/"+lfs[k].trim();
-				//lfs[k] = topRoot+"/"+lfs[k];
+				lfs[k] = topRoot+File.separator+lfs[k].trim();
+				//lfs[k] = topRoot+File.separator+lfs[k];
 			}
 
 			// if (DEBUG) System.out.println("THERE ARE "+lfs.length + " FILES in INCL FILES");
@@ -571,7 +577,7 @@ public class L10nTask extends MatchingTask {
 			String topDirFullPath = topDir.getCanonicalPath();
 			// if (DEBUG) System.out.println("\t\ttopDirFullPath: "+topDirFullPath);
 
-			BufferedReader inBuff = new BufferedReader(new FileReader(new File(topDir+"/"+mod,generatedFile)));
+			BufferedReader inBuff = new BufferedReader(new FileReader(new File(topDir+File.separator+mod,generatedFile)));
 			boolean eof = false;
 			while (! eof) {
                 String line = inBuff.readLine();
@@ -584,7 +590,7 @@ public class L10nTask extends MatchingTask {
 					if (tabIndex > 0) {
 						String filename = line.substring(0,tabIndex);
 						String revision = line.substring(tabIndex+1);
-						h.put(topDirFullPath+"/"+filename, revision);
+						h.put(topDirFullPath+File.separator+filename, revision);
 					} else {
 						System.out.println("There's no tab in this line"+"["+line+"]");
 					
@@ -595,7 +601,7 @@ public class L10nTask extends MatchingTask {
             } //while
 		} catch(java.io.FileNotFoundException e) {
 			// Warning: Generated File: "+generatedFile+" in "+
-			// topDir+"/"+mod+" not found.  
+			// topDir+File.separator+mod+" not found.  
 			// Adding all files to changed list."
 			return(null);
 		} catch(java.io.IOException e) {
@@ -636,7 +642,7 @@ public class L10nTask extends MatchingTask {
 
 			// if (DEBUG) System.out.println("ITEM IN MODLIST: "+fullMod);
 
-			int index = fullMod.indexOf("/");
+			int index = fullMod.indexOf(File.separator);
 			if (index >= 0) {
 				//Check that the mod doesn't have a slash
 				// (if it does, keep only what is to the left of the slash)
@@ -667,7 +673,7 @@ public class L10nTask extends MatchingTask {
 	}
 
 	public StringBuffer[] processListFile(File inc,String module) throws java.io.IOException {
-		System.out.println("process List file: "+inc.toString());
+		System.out.println("Reading list file: "+inc.toString());
 		StringBuffer[] sbholder=new StringBuffer[2];
 		StringBuffer sbi = new StringBuffer();
 		StringBuffer sbe = new StringBuffer();
@@ -716,6 +722,8 @@ public class L10nTask extends MatchingTask {
 								sbi.append(" "+globalsbholder[0]);
 								sbe.append(" "+globalsbholder[1]);
 							} else {
+							        globalsbholder[0]= new StringBuffer();
+								globalsbholder[1]= new StringBuffer();
 								StringBuffer[] globalarray = processListFile(new File(globalFile),module);
 								if (globalarray[0] != null) {
 									sbi.append(" "+globalarray[0]);

@@ -14,18 +14,19 @@
 package org.netbeans.nbbuild;
 
 import org.apache.tools.ant.*;
+import org.apache.tools.ant.util.*;
 import org.apache.tools.ant.taskdefs.*;
 import org.apache.tools.ant.types.FileSet;
 import java.io.*;
 import java.util.*;
 
 /** This task copies the localizable files to a directory.
- * This task uses the L10nTask, but it discards the generated
- * files and the tar files.
+ * This task uses the L10nTask's getLocalizableFiles() function
+ * to get the list of localizable files for each module.
  */
 public class GetL9eFiles extends Task {
 
-  /** The name of file that contains the localizable file 
+  /** The name of file that contains the localizable file
    * regular expressions.
    * <p>Default: <samp>l10n.list</samp>
    */
@@ -36,7 +37,7 @@ public class GetL9eFiles extends Task {
    */
   protected String baseDir = "..";
   protected File grandParent = null ;
-  
+
   /** The target directory to copy all translatable files to.
    * <p>Default: <samp>src-todo</samp>
    */
@@ -46,6 +47,9 @@ public class GetL9eFiles extends Task {
    * <p>Default: Ja localized files
    */
   protected String excludes = "**/ja/,**/*_ja.*" ;
+
+  /** Used internally. */
+  protected FileUtils fileUtils = null ;
 
   public void setBaseDir(String s) {
     File f ;
@@ -85,85 +89,116 @@ public class GetL9eFiles extends Task {
   }
 
   public void execute() throws BuildException {
-    String modules ;
-    L10nTask l10nTask ;
-    Delete delTask ;
-    FileSet fileSet ;
-    Copy copyTask ;
-    File tmp ;
-    File[] files ;
-    int i ;
-    Untar untar ;
+    File module ;
+    LinkedList modules ;
+    ListIterator iter ;
 
-    // Get the list of modules with listFiles. //
-    modules = getModulesWithListFiles() ;
-
-    // Run the l10n task. //
-    project.addTaskDefinition( "l10nTask", L10nTask.class) ;
-    l10nTask = (L10nTask) project.createTask( "l10nTask") ;    
-    l10nTask.init() ;
-    l10nTask.setTopdirs( grandParent.getPath()) ;
-    l10nTask.setModules( modules) ;
-    l10nTask.setLocalizableFile( listFile) ;
-    l10nTask.setGeneratedFile( "l10n.list.translated") ;
-    l10nTask.setDistDir( "tmp-l10n-dist") ;
-    l10nTask.setChangedFile( "l10n.list.changed") ;
-    l10nTask.setBuildDir( "tmp-l10n-build") ;
-    l10nTask.setBuildNumber( "0") ;
-    l10nTask.setExcludePattern( excludes) ;
-    l10nTask.execute() ;
-
-    // Un-tar the bundles. //
-    tmp = new File( "tmp-l10n-build/" + grandParent.getName()) ;
-    files = tmp.listFiles( new TarFileFilter()) ;
-    for( i = 0; i < files.length; i++) {
-      untar = (Untar) project.createTask( "untar") ;
-      untar.init() ;
-      untar.setSrc( files[ i]) ;
-      untar.setDest( files[ i].getParentFile()) ;
-      untar.execute() ;
+    // If needed, setup the grandParent variable. //
+    if( grandParent == null) {
+      setBaseDir( baseDir) ;
     }
 
-    // Copy the files except the ones we don't want to the final target dir. //
-    copyTask = (Copy) project.createTask( "copy") ;
-    copyTask.init() ;
-    copyTask.setTodir( targetDir) ;
-    fileSet = new FileSet() ;
-    fileSet.setDir( new File( "tmp-l10n-build/" + grandParent.getName())) ;
-    fileSet.setExcludes( "*.tar,*/*.l10n.list.*") ;
-    copyTask.addFileset( fileSet) ;
-    copyTask.execute() ;
+    // For each module with a list file. //
+    modules = getModulesWithListFiles() ;
+    iter = modules.listIterator() ;
+    while( iter.hasNext()) {
+      module = (File) iter.next() ;
 
-    // Cleanup. //
-    delTask = (Delete) project.createTask( "delete") ;
-    delTask.init() ;
-    delTask.setDir( new File( "tmp-l10n-build")) ;
-    delTask.execute() ;
-    delTask = (Delete) project.createTask( "delete") ;
-    delTask.init() ;
-    delTask.setDir( new File( "tmp-l10n-dist")) ;
-    delTask.execute() ;
+      // Copy the module's localizable files. //
+      copyL9eFiles( module) ;
+    }
   }
 
-  protected String getModulesWithListFiles() {
+  protected void copyL9eFiles( File module) {
+    String[] l9eFiles, changedFiles ;
+    int i ;
+    File fromFile, toFile ;
+    L10nTask l10nTask ;
+
+    // Setup the file utils. //
+    if( fileUtils == null) {
+      fileUtils = FileUtils.newFileUtils() ;
+    }
+
+    // Use the l10n task to read the list file and get a list of the //
+    // localizable files.					     //
+    project.addTaskDefinition( "l10nTask", L10nTask.class) ;
+    l10nTask = (L10nTask) project.createTask( "l10nTask") ;
+    l10nTask.init() ;
+    l10nTask.setLocalizableFile( listFile) ;
+    l10nTask.setExcludePattern( excludes) ;
+    l9eFiles = l10nTask.getLocalizableFiles( grandParent, module.getName()) ;
+    if( l9eFiles != null) {
+
+      // Get a list of the files that have changed. //
+      changedFiles = getChangedFiles( l9eFiles) ;
+
+      // Copy the localizable files that have changed. //
+      if( changedFiles != null && changedFiles.length > 0) {
+	log( "Copying " + changedFiles.length + " files to " + targetDir.getPath()) ;
+	for( i = 0; i < changedFiles.length; i++) {
+	  fromFile = new File( changedFiles[i]) ;
+	  toFile = new File( mapL9eFile( changedFiles[i],
+					 targetDir.getPath(),
+					 grandParent.getPath())) ;
+	  try {
+	    //log("Copying " + fromFile.getPath() + " to " + toFile.getPath()) ;
+	    fileUtils.copyFile( fromFile, toFile) ;
+	  } catch (IOException ioe) {
+	    String msg = "Failed to copy " + fromFile.getPath() + " to " +
+	      toFile.getPath() + " due to " + ioe.getMessage();
+	    throw new BuildException(msg, ioe, location);
+	  }
+	}
+      }
+    }
+  }
+
+  protected String[] getChangedFiles( String[] files) {
+    L9eMapper mapper = new L9eMapper() ;
+    mapper.setFrom( grandParent.getPath()) ;
+    mapper.setTo( targetDir.getPath()) ;
+
+    SourceFileScanner ds = new SourceFileScanner( this);
+    return( ds.restrict( files, null, null, mapper)) ;
+  }
+
+  protected class L9eMapper implements FileNameMapper {
+
+    protected String m_grandParent ;
+    protected String m_toDir ;
+
+    public void setFrom(String from) {
+      m_grandParent = from ;
+    }
+
+    public void setTo(String to) {
+      m_toDir = to ;
+    }
+
+    // Returns an one-element array containing the destination file //
+    // name.							    //
+    public String[] mapFileName(String file) {
+      return new String[] { GetL9eFiles.mapL9eFile( file, m_toDir, m_grandParent) } ;
+    }
+  }
+
+  protected static String mapL9eFile( String file, String toDir, String grandParentName) {
+    return toDir + file.substring( grandParentName.length()) ;
+  }
+
+  protected LinkedList getModulesWithListFiles() {
     File module, list ;
     File[] parents ;
-    String modules = new String() ;
+    LinkedList modules = new LinkedList() ;
     int i ;
-    boolean firstTime = true ;
 
     parents = grandParent.listFiles( new DirectoryFilter()) ;
     for( i = 0; i < parents.length; i++) {
       module = parents[ i] ;
-      list = new File( module.getPath() + "/" + listFile) ;
+      list = new File( module.getPath() + File.separator + listFile) ;
       if( list.exists()) {
-	if( firstTime) {
-	  modules += module.getName() ;
-	}
-	else {
-	  modules += "," + module.getName() ;
-	}
-	firstTime = false ;
+	modules.add( module) ;
       }
     }
     return( modules) ;
