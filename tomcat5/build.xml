@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${tomcat5_dir}/config"/>
         <uptodate property="dd.generation.uptodate" targetfile="${tomcat5_dir}/config/Parameter.java">
           <srcfiles dir="${tomcat5_dir}/resources"
-                    includes="tomcat5_config.*"/>
+                    includes="tomcat5_server.*"/>
         </uptodate>
   </target>
 
@@ -50,8 +50,8 @@ Microsystems, Inc. All Rights Reserved.
             <include name="netbeans/lib/openide*.jar"/>
           </fileset>
         </classpath>
-        <arg line= "-f ${tomcat5_dir}/resources/tomcat5_config.dtd" />
-        <!--<arg line= "-mdd ${tomcat5_dir}/resources/tomcat5_config.mdd" />-->
+        <arg line= "-f ${tomcat5_dir}/resources/tomcat5_server.dtd" />
+        <arg line= "-mdd tomcat5.mdd" />
         <arg line= "-p org.netbeans.modules.tomcat5.config" />
         <arg line= "-r src" />
       </java>
