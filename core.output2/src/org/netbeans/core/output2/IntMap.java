@@ -21,6 +21,7 @@ package org.netbeans.core.output2;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.openide.ErrorManager;
 
 /**
  * Sparse array integer keyed map.  Similar to a standard Collections map,
@@ -82,9 +83,35 @@ final class IntMap {
     }
 
     public int[] getKeys () {
+        if (last == 0) {
+            return new int[] { 0 };
+        }
         int[] result = new int[last+1];
-        System.arraycopy (keys, 0, result, 0, last+1);
-        return result;
+        try {
+            System.arraycopy (keys, 0, result, 0, last+1);
+            return result;
+        } catch (ArrayIndexOutOfBoundsException aioobe) { //XXX temp diagnostics
+            ArrayIndexOutOfBoundsException e = new ArrayIndexOutOfBoundsException (
+                "AIOOBE in IntMap.getKeys() - last = " + last + " keys: " + 
+                i2s(keys) + " vals: " + Arrays.asList(vals) + " result length "
+                + result.length);
+            ErrorManager.getDefault().notify(e);
+            return new int[0];
+        }
+    }
+
+    /** Some temporary diagnostics re issue 48608 */
+    private static String i2s (int[] arr) {
+        StringBuffer sb = new StringBuffer(arr.length * 3);
+        sb.append ('[');
+        for (int i=0; i < arr.length; i++) {
+            if (arr[i] != Integer.MAX_VALUE) {
+                sb.append (arr[i]);
+                sb.append (',');
+            }
+        }
+        sb.append (']');
+        return sb.toString();
     }
     
     public Object get (int key) {
