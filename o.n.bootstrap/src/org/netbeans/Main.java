@@ -89,7 +89,7 @@ public class Main extends Object {
         HashSet processedDirs = new HashSet ();
         String home = System.getProperty ("netbeans.home"); // NOI18N
         if (home != null) {
-            build_cp (new File (home), list, false, processedDirs);
+            build_cp (new File (home), list, processedDirs);
         }
         // #34069: need to do the same for nbdirs.
         String nbdirs = System.getProperty("netbeans.dirs"); // NOI18N
@@ -97,7 +97,7 @@ public class Main extends Object {
             StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
             while (tok.hasMoreTokens()) {
                 // passing false as last argument as we need to initialize openfile-cli.jar
-                build_cp(new File(tok.nextToken()), list, false, processedDirs);
+                build_cp(new File(tok.nextToken()), list, processedDirs);
             }
         }
         
@@ -208,7 +208,7 @@ public class Main extends Object {
             String user = System.getProperty ("netbeans.user"); // NOI18N
             try {
                 if (user != null) {
-                    build_cp (new File (user), toAdd, false, new HashSet ());
+                    build_cp (new File (user), toAdd, new HashSet ());
                     // JarClassLoader treats a File as a dir; for a ZIP/JAR, needs JarFile
                     ListIterator it2 = toAdd.listIterator();
                     while (it2.hasNext()) {
@@ -331,7 +331,7 @@ public class Main extends Object {
     }
         
     
-    private static void build_cp(File base, Collection toAdd, boolean localeOnly, Set processedDirs) 
+    private static void build_cp(File base, Collection toAdd, Set processedDirs) 
     throws java.io.IOException {
         base = base.getCanonicalFile ();
         if (!processedDirs.add (base)) {
@@ -339,10 +339,8 @@ public class Main extends Object {
             return;
         }
         
-        if (!localeOnly) {
-            append_jars_to_cp(new File(base, "core/patches"), toAdd); // NOI18N
-            append_jars_to_cp(new File(base, "core"), toAdd); // NOI18N
-        }
+        append_jars_to_cp(new File(base, "core/patches"), toAdd); // NOI18N
+        append_jars_to_cp(new File(base, "core"), toAdd); // NOI18N
         // XXX a minor optimization: exclude any unused locale JARs
         // For example, lib/locale/ might contain:
         // core_ja.jar
