@@ -51,15 +51,20 @@ public class InstanceDataObjectModule38420Test extends InstanceDataObjectModuleT
         twiddle(m1, TWIDDLE_ENABLE);
         try {
             twiddle(m2, TWIDDLE_ENABLE);
+            StringBuffer foundLog = new StringBuffer ();
             try {
                 java.util.Iterator it = res.allInstances ().iterator ();
                 while (it.hasNext ()) {
                     Action a = (Action)it.next ();
                     if ("test1.SomeAction".equals (a.getClass ().getName ())) {
                         found = a;
+                    } else {
+                        foundLog.append ("Found: ");
+                        foundLog.append (a.getClass ().getName ());
+                        foundLog.append ("\n");
                     }
                 }
-                assertNotNull ("Action from module m1 has been found", found);
+                assertNotNull ("Action from module m1 has been found. Only found:\n" + foundLog, found);
 
             } finally {
                 twiddle (m2, TWIDDLE_DISABLE);
