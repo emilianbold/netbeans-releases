@@ -214,18 +214,21 @@ public class NbEditorKit extends ExtKit {
 
         static final long serialVersionUID =-8623762627678464181L;
 
-        protected JPopupMenu buildPopupMenu(JTextComponent target) {        
+        protected JPopupMenu createPopupMenu(JTextComponent component) {
             // to make keyboard navigation (Up/Down keys) inside popup work, we
             // must use JPopupMenuPlus instead of JPopupMenu
-//            JPopupMenu popup = super.buildPopupMenu(target);
-            JPopupMenu pm = new JPopupMenu();
+            return new org.openide.awt.JPopupMenuPlus();
+        }
+
+        protected JPopupMenu buildPopupMenu(JTextComponent component) {        
+            JPopupMenu pm = createPopupMenu(component);
             List l;
-            EditorUI ui = Utilities.getEditorUI(target);            
+            EditorUI ui = Utilities.getEditorUI(component);            
             BaseOptions bo = BaseOptions.getOptions(NbEditorKit.this.getClass());
             if (bo != null){
                 l = OptionUtilities.getPopupStrings(bo.getOrderedMultiPropertyFolderFiles("Popup"), true); // NOI18N
             }else{
-                l = (List)Settings.getValue(Utilities.getKitClass(target),
+                l = (List)Settings.getValue(Utilities.getKitClass(component),
                     (ui == null || ui.hasExtComponent())
                         ? ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST
                         : ExtSettingsNames.DIALOG_POPUP_MENU_ACTION_NAME_LIST
@@ -238,28 +241,17 @@ public class NbEditorKit extends ExtKit {
                     Object obj = i.next();
                     if (obj == null) continue;
                     if (obj instanceof Action){
-                        addAction(target, pm, (Action)obj);
+                        addAction(component, pm, (Action)obj);
                     }else if (obj instanceof javax.swing.JSeparator){
-                        addAction(target, pm, (String)null);
+                        addAction(component, pm, (String)null);
                     }else{
-                        String an = (String)obj;
-                        addAction(target, pm, an);
+                        String actionName = (String)obj;
+                        addAction(component, pm, actionName);
                     }
                 }
             }
-            //return pm;
             
-            if (pm instanceof org.openide.awt.JPopupMenuPlus)
-                return pm;
-
-            java.awt.Component[] comps = pm.getComponents();
-            pm.removeAll();
-
-            org.openide.awt.JPopupMenuPlus popupPlus = new org.openide.awt.JPopupMenuPlus();
-            for (int i = 0; i < comps.length; i++) {
-                popupPlus.add(comps[i]);
-            }
-            return popupPlus;
+            return pm;
         }
 
         private Lookup getContextLookup(java.awt.Component component){
@@ -275,130 +267,114 @@ public class NbEditorKit extends ExtKit {
             return lookup;
         }
         
-        protected void addAction(JTextComponent target, JPopupMenu popupMenu, Action a){
-
-            Lookup lookup = getContextLookup(target);
-            if (a instanceof ContextAwareAction && lookup!=null){
-                a = ((org.openide.util.ContextAwareAction)a)
-                        .createContextAwareInstance(lookup);
+        private Action translateContextLookupAction(Lookup contextLookup, Action action) {
+            if (action instanceof ContextAwareAction && contextLookup != null){
+                action = ((org.openide.util.ContextAwareAction)action)
+                .createContextAwareInstance(contextLookup);
             }
-            
-            String itemText = (String) a.getValue(Action.NAME);
-            JMenuItem item = null;
-            
-            if (itemText != null) {
-                item = new JMenuItem();
-                Mnemonics.setLocalizedText(item, itemText);
-                item.addActionListener(a);
-                // Try to get the accelerator
-                Keymap km = target.getKeymap();
-                if (km != null) {
-                    KeyStroke[] keys = km.getKeyStrokesForAction(a);
-                    if (keys != null && keys.length > 0) {
-                        item.setAccelerator(keys[0]);
+            return action;
+        }
+        
+        private JMenuItem createLocalizedMenuItem(Action action) {
+            JMenuItem item;
+            if (action instanceof Presenter.Popup) {
+                item = ((Presenter.Popup)action).getPopupPresenter();
+            } else {
+                item = new JMenuItem(action);
+                Mnemonics.setLocalizedText(item, item.getText());
+            }
+            return item;
+        }
+        
+        private void assignAccelerator(Keymap km, Action action, JMenuItem item) {
+            if (item.getAccelerator() == null){
+                KeyStroke ks = (KeyStroke)action.getValue(Action.ACCELERATOR_KEY);
+                if (ks!=null) {
+                    item.setAccelerator(ks);
+                } else {
+                    // Try to get the accelerator from keymap
+                    if (km != null) {
+                        KeyStroke[] keys = km.getKeyStrokesForAction(action);
+                        if (keys != null && keys.length > 0) {
+                            item.setAccelerator(keys[0]);
+                        }
                     }
                 }
-                item.setEnabled(a.isEnabled());
-                Object helpID = a.getValue ("helpID"); // NOI18N
-                if (helpID != null && (helpID instanceof String))
-                    item.putClientProperty ("HelpID", helpID); // NOI18N
             }
-            if (item != null) {
-                if (item.getAccelerator() == null){
-                    KeyStroke ks = (KeyStroke)a.getValue(Action.ACCELERATOR_KEY);
-                    if (ks!=null) item.setAccelerator(ks);
+        }
+        
+        protected void addAction(JTextComponent component, JPopupMenu popupMenu, Action action) {
+            Lookup contextLookup = getContextLookup(component);
+            action = translateContextLookupAction(contextLookup, action);
+
+            if (action != null) {
+                JMenuItem item = createLocalizedMenuItem(action);
+                item.setEnabled(action.isEnabled());
+                Object helpID = action.getValue ("helpID"); // NOI18N
+                if (helpID != null && (helpID instanceof String)) {
+                    item.putClientProperty ("HelpID", helpID); // NOI18N
                 }
+                assignAccelerator(component.getKeymap(), action, item);
                 popupMenu.add(item);
             }
         }
         
-        protected void addAction(JTextComponent target, JPopupMenu popupMenu,
+        private void addTopComponentActions(JTextComponent component, JPopupMenu popupMenu) {
+            Lookup contextLookup = getContextLookup(component);
+            // Get the cloneable-editor instance
+            TopComponent tc = NbEditorUtilities.getTopComponent(component);
+            if (tc != null) {
+                // Add all the actions
+                Action[] actions = tc.getActions();
+                for (int i = 0; i < actions.length; i++) {
+                    Action action = actions[i];
+                    action = translateContextLookupAction(contextLookup, action);
+                    
+                    if (action != null){
+                        JMenuItem item = createLocalizedMenuItem(action);
+                        assignAccelerator(
+                            (Keymap)Lookup.getDefault().lookup(Keymap.class),
+                            action,
+                            item
+                        );
+
+                        popupMenu.add(item);
+                    }
+                }
+            }
+        }
+
+        protected void addAction(JTextComponent component, JPopupMenu popupMenu,
         String actionName) {
             if (actionName != null) { // try if it's an action class name
                 // Check for the TopComponent actions
                 if (TopComponent.class.getName().equals(actionName)) {
-                    // Get the cloneable-editor instance
-                    TopComponent tc = NbEditorUtilities.getTopComponent(target);
-                    if (tc != null) {
-                        // Add all the actions
-                        Action[] actions = tc.getActions();
-                        for (int i = 0; i < actions.length; i++) {
-                            Action action = actions[i];
-                            if(action instanceof org.openide.util.ContextAwareAction) {
-                                action = ((org.openide.util.ContextAwareAction)action)
-                                        .createContextAwareInstance(tc.getLookup());
-                            }
-
-                            if (action != null){
-                                JMenuItem item;
-                                if (action instanceof Presenter.Popup) {
-                                    item = ((Presenter.Popup)action).getPopupPresenter();
-                                } else {
-                                    item = new JMenuItem (action);
-                                    Mnemonics.setLocalizedText(item, item.getText());
-                                }
-
-                                if (item != null && !(item instanceof JMenu)) {
-                                    Keymap km = (Keymap)Lookup.getDefault().lookup(Keymap.class);
-                                    if (km!=null){
-                                        KeyStroke[] keys
-                                            = km.getKeyStrokesForAction(action);
-                                        if (keys != null && keys.length > 0) {
-                                            item.setAccelerator(keys[0]);
-                                        }
-                                    }
-                                }
-
-                                if (item != null) {
-                                    popupMenu.add(item);
-                                }
-                            } else {
-                                popupMenu.addSeparator();
-                            }
-                        }
-                    }
-
+                    addTopComponentActions(component, popupMenu);
                     return;
 
                 } else { // not cloneable-editor actions
+
+                    // Try to load the action class
                     Class saClass = null;
                     try {
                         ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
                         saClass = Class.forName(actionName, false, loader);
                     } catch (Throwable t) {
                     }
-
-
-                    
                     
                     if (saClass != null && SystemAction.class.isAssignableFrom(saClass)) {
-                        Action a = SystemAction.get(saClass);
-                        Lookup lookup = getContextLookup(target);
-                        if (a instanceof ContextAwareAction && lookup!=null){
-                            a = ((ContextAwareAction)a).createContextAwareInstance(
-                                lookup
-                            );
-                        }
+                        Lookup contextLookup = getContextLookup(component);
+                        Action action = SystemAction.get(saClass);
+                        translateContextLookupAction(contextLookup, action);
                         
-                        if (a instanceof Presenter.Popup) {
-                            JMenuItem item = ((Presenter.Popup)a).getPopupPresenter();
-                            if (item != null && !(item instanceof JMenu)) {
-                                Keymap km = (Keymap)Lookup.getDefault().lookup(Keymap.class);
-                                if (km!=null){
-                                    KeyStroke[] keys = km.getKeyStrokesForAction(a);
-                                    if (keys != null && keys.length > 0) {
-                                        item.setAccelerator(keys[0]);
-                                    }
-                                }
-                            }
-
-                            if (item != null) {
-                                if (item.getAccelerator() == null){
-                                    KeyStroke ks = (KeyStroke)a.getValue(Action.ACCELERATOR_KEY);
-                                    if (ks!=null) item.setAccelerator(ks);
-                                }
-                                popupMenu.add(item);
-                            }
+                        JMenuItem item = createLocalizedMenuItem(action);
+                        if (item != null) { // && !(item instanceof JMenu))
+                            assignAccelerator(
+                                 (Keymap)Lookup.getDefault().lookup(Keymap.class),
+                                 action,
+                                 item
+                            );
+                            popupMenu.add(item);
                         }
 
                         return;
@@ -407,7 +383,7 @@ public class NbEditorKit extends ExtKit {
 
             }
 
-            super.addAction(target, popupMenu, actionName);
+            super.addAction(component, popupMenu, actionName);
 
         }
 
