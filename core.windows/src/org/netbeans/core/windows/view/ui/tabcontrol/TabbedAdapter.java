@@ -161,6 +161,8 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
     }
 
     public void setTopComponents(TopComponent[] tcs, TopComponent selected) {
+        assert selected != null : "Null passed as component to select";
+        
         TabData[] data = new TabData[tcs.length];
         int toSelect=-1;
         for(int i = 0; i < tcs.length; i++) {
@@ -177,13 +179,26 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
             }
         }
 
-        if(toSelect == -1) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-                new IllegalArgumentException("Setting array=" + Arrays.asList(tcs) + ",\nselected=" + selected)); // NOI18N
-        }
+        //DO NOT DELETE THIS ASSERTION AGAIN!
+        //If it triggered, it means there is a problem in the state of the
+        //window system's model.  If it is just diagnostic logging, there
+        //*will* be an exception later, it just won't contain any useful
+        //information. See issue 39914 for what happens if it is deleted.
+        assert toSelect != -1 : "Tried to set a selected component that was " +
+            " in the array of open components. ToSelect: " + selected + 
+            " open components: " + Arrays.asList(tcs);
         
         getModel().setTabs(data);
-        getSelectionModel().setSelectedIndex(toSelect);
+        
+        if (toSelect != -1) {
+            getSelectionModel().setSelectedIndex(toSelect);
+        } else {
+            //Assertions are off
+            ErrorManager.getDefault().log (ErrorManager.WARNING, "Tried to" +
+            "set a selected component that was not in the array of open " +
+            "components.  ToSelect: " + selected + " components: " + 
+            Arrays.asList(tcs));
+        }
     }
     
     // DnD>>
