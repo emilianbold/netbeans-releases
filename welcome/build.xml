@@ -18,7 +18,8 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="init" depends="default.init">
     <patternset id="ui/welcome.files">
-      <include name="${nb.modules.dir}/welcome.jar"/>
+      <include name="${nb.modules.dir}/org-netbeans-modules-welcome.jar"/>
+      <include name="${nb.system.dir}/Modules/org-netbeans-modules-welcome.xml"/>
     </patternset>
     <path id="cp">
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
@@ -38,9 +39,10 @@ Microsystems, Inc. All Rights Reserved.
       
   <target name="jars" depends="compile">
     <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
+    
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/welcome.jar"
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-modules-welcome.jar"
          manifest="manifest-subst.mf"
          basedir="src"
 	 excludesfile="../../nbbuild/standard-jar-excludes.txt"
@@ -48,7 +50,16 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="netbeans" depends="jars">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/welcome.jar">
+    <taskdef name="createmodulexml" classname="org.netbeans.nbbuild.CreateModuleXML" classpath="../../nbbuild/nbantext.jar"/>
+
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules"/>
+    <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules">
+      <autoload dir="${netbeans.dest.dir}/${cluster.dir}">
+        <include name="${nb.modules.dir}/org-netbeans-modules-welcome.jar"/>
+      </autoload>
+    </createmodulexml>
+        
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/org-netbeans-modules-welcome.jar">
        <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
          <patternset refID="ui/welcome.files"/>
        </fileset>
@@ -58,7 +69,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="netbeans">
     <makenbm file="welcome.nbm"
              productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${nb.modules.dir}/welcome.jar"
+             module="${nb.modules.dir}/org-netbeans-modules-welcome.jar"
 	     homepage="http://welcome.${homepage.base}/"
 	     distribution="http://${dist.base}/welcome.nbm">
       <license file="${license.file}"/>

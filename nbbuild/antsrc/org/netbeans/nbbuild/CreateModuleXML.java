@@ -75,6 +75,9 @@ public class CreateModuleXML extends Task {
     
     public void execute() throws BuildException {
         if (xmldir == null) throw new BuildException("Must set xmldir", location);
+        if (!xmldir.exists ()) {
+            if (!xmldir.mkdirs ()) throw new BuildException ("Cannot create directory " + xmldir, location);
+        }
         if (enabled.isEmpty() && disabled.isEmpty() && autoload.isEmpty() && eager.isEmpty()) {
             log("Warning: <createmodulexml> with no modules listed", Project.MSG_WARN);
         }

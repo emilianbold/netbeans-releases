@@ -1046,6 +1046,26 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
      <ant dir="../core/swing/tabcontrol" target="netbeans"/>
   </target>
 
+  <target name="all-ide/features/basic" depends="init">
+    <echo message="Building module features/basic..."/>
+    <ant dir="../ide/features/basic" target="netbeans"/>
+  </target>
+
+  <target name="all-ide/features/desktop" depends="init">
+    <echo message="Building module features/desktop..."/>
+    <ant dir="../ide/features/desktop" target="netbeans"/>
+  </target>
+
+  <target name="all-ide/features/ideplugin" depends="init">
+    <echo message="Building module features/ideplugin..."/>
+    <ant dir="../ide/features/ideplugin" target="netbeans"/>
+  </target>
+
+  <target name="all-ide/features/web" depends="init">
+    <echo message="Building module features/web..."/>
+    <ant dir="../ide/features/web" target="netbeans"/>
+  </target>
+
   <!-- #27098: MakeParserDB requires several modules to have been successfully built. -->
   <!-- Target all/mmm should depend on makeparserdb-modules if mmm/build.xml uses <makeparserdb>. -->
   <target name="makeparserdb-modules" depends="all-openide,all-openide/loaders,all-openide/execution,all-openide/io,all-core,all-classfile,all-java/api,all-java/srcmodel,all-java,all-editor,all-debuggercore/oldapi,all-core/execution,all-core/output,all-core/term"/>
@@ -1138,6 +1158,27 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </createmodulexml>
   </target>
 
+  <!-- Iterates over all modules in one specific cluster and creates their configuration
+    files as part of nb4.0 cluster. Makes all modules autoloads. Used for implementation of
+    NetBeans feature packs - super modules with dependencies on there regular ones
+    -->
+  <target name="mask-module-xmls-for-one-cluster" >
+    <taskdef name="createmodulexml" classname="org.netbeans.nbbuild.CreateModuleXML" classpath="nbantext.jar"/>
+    <taskdef name="setcluster" classname="org.netbeans.nbbuild.SetCluster" classpath="nbantext.jar"/>
+    <loadproperties srcFile="cluster.properties" />
+    <loadproperties srcFile="directories.properties" />
+    <setcluster cluster="${one.cluster.name}" name="one.cluster.dir" />
+    
+    <mkdir dir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.system.dir}/Modules"/>
+    <createmodulexml xmldir="${netbeans.dest.dir}/${nb.pkg.nb.dir}/${nb.system.dir}/Modules">
+      <autoload dir="${netbeans.dest.dir}/${one.cluster.dir}">
+        <include name="${nb.modules/autoload.dir}/*.jar"/>
+        <include name="${nb.modules.dir}/*.jar"/>
+        <include name="${nb.modules/eager.dir}/*.jar"/>
+      </autoload>
+    </createmodulexml>
+  </target>
+  
   <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
   <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
 
@@ -1145,6 +1186,9 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
     <loadproperties srcFile="cluster.properties" />
     <repeat target="create-module-xmls-for-one-cluster" name="one.cluster.name" values="${clusters.list}" /> 
+     
+    <!-- all ide4 modules are going to be autoloads in nb4.0 -->     
+    <repeat target="mask-module-xmls-for-one-cluster" name="one.cluster.name" values="${clusters.ide.list}" /> 
 
     <loadproperties srcfile="${netbeans.dest.dir}/moduleCluster.properties" />
         
