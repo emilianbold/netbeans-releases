@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -462,7 +462,8 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
         currentPrimaryButtons = null;
         currentSecondaryButtons = null;
         
-        boolean isAqua = "Aqua".equals (UIManager.getLookAndFeel().getID()); //NOI18N
+        boolean isAqua = "Aqua".equals (UIManager.getLookAndFeel().getID()) || //NOI18N
+                        "true".equalsIgnoreCase (System.getProperty ("xtest.looks_as_mac"));
         if (isAqua) {
             //No mac dialogs with buttons on side
             currentAlign = DialogDescriptor.BOTTOM_ALIGN;
@@ -1050,6 +1051,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
                     pressedOption = NotifyDescriptor.OK_OPTION;
                 }
             }
+
             descriptor.setValue(pressedOption);
             
             ActionListener al = getButtonListener();
