@@ -18,8 +18,7 @@
 <mapID target="gs.tour" url="getstart/idetour.html" />
 <mapID target="gs.key" url="getstart/keyconcepts.html" />
 <mapID target="gs.howto" url="getstart/howto.html" />
-<!-- disabling, need to rewrite to point to tutorials on web
-<mapID target="gs.gstutor" url="getstart/tutorials.html" /> -->
+<mapID target="gs.gstutor" url="getstart/tutorials.html" />
 
 <mapID target="modules.manage" url="modules/managingmods.html" />
 <mapID target="ide.autoupdate" url="modules/autoupdate.html" />
