@@ -374,29 +374,8 @@
 
 <tocitem text="Creating Web Components">
   <tocitem text="About Web Components" target="introwebcomps" />	
-  <tocitem text="Applets" >
-	  <tocitem text="Creating an Applet" target="webmod_addapplet"/>
-          <tocitem text="Adding an Applet to a WAR File" target="webmod_addcompapplet"/>
-	  <tocitem text="Deploying an Applet" target="webmod_runapplet"/>
-  </tocitem> <!-- Working With Applets -->
 
-  <tocitem text="Filters"> 
-     <tocitem text="About Filters" target="concepts_filter"  />
-     <tocitem text="Creating a Filter" target="filter_create"/>
-     <tocitem text="Registering a Filter" target="filter_addtodd"/>
-  </tocitem> <!-- Working With Filters -->
-  
-  <tocitem text="HTML and XML Files" >      
-      <tocitem text="Creating an HTML File" target="concepts_html" />          
-      <tocitem text="Working With XML Files" target="webmod_xml" />		
-  </tocitem> <!-- Introduction to Web Applications-->
-  
-  <!--  <tocitem text="JAR Files" target="concepts_jar" >
-	    <tocitem text="About JAR Files in Web Applications" target="concepts_jar"  />   
-	    <tocitem text="Adding JAR Files to a Web Application" target="webmod_addjar" /> 
-    </tocitem>--> <!-- Working With JAR Files --> 
-  
-  <tocitem text="JSP"> 
+ <tocitem text="JSP"> 
       <tocitem text="About JavaServer Pages Technology" target="concepts_jsp" />
       <tocitem text="About JSP Syntax" target="concepts_jspsyn" />
       <tocitem text="Creating a JSP File" target="jsp_create" />
@@ -407,7 +386,7 @@
       <tocitem text="Compiling a JSP File" target="jsp_validate" />
       <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
   </tocitem> <!-- Working With JSP Pages -->
-
+ 
   <tocitem text="Servlets">
      <tocitem text="About Servlets" target="concepts_servlet" />
      <tocitem text="Adding a Servlet to a WAR File" target="webmod_addservlet" />
@@ -417,6 +396,18 @@
      <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
   </tocitem> <!-- Working With Servlets -->
 
+  <tocitem text="Filters"> 
+     <tocitem text="About Filters" target="concepts_filter"  />
+     <tocitem text="Creating a Filter" target="filter_create"/>
+     <tocitem text="Registering a Filter" target="filter_addtodd"/>
+  </tocitem> <!-- Working With Filters -->
+
+ <tocitem text="Web Application Listeners">
+     <tocitem text="About Web Application Listeners" target="concepts_listener"  />       					
+     <tocitem text="Creating a Web Application Listener" target="listen_create"/>
+     <tocitem text="Registering a Web Application Listener" target="listen_addtodd"/>
+  </tocitem> <!-- Working With Listeners --> 
+  
   <tocitem text="Tags">
 	  
       <tocitem text="About Tag Libraries" target="webmod_addtglb"/>
@@ -446,11 +437,21 @@
       </tocitem>
   </tocitem> <!-- Developing Tag Libraries and Tag Files -->
 
-  <tocitem text="Web Application Listeners">
-     <tocitem text="About Web Application Listeners" target="concepts_listener"  />       					
-     <tocitem text="Creating a Web Application Listener" target="listen_create"/>
-     <tocitem text="Registering a Web Application Listener" target="listen_addtodd"/>
-  </tocitem> <!-- Working With Listeners --> 
+   <tocitem text="HTML and XML Files" >      
+      <tocitem text="Creating an HTML File" target="concepts_html" />          
+      <tocitem text="Working With XML Files" target="webmod_xml" />		
+  </tocitem> <!-- Introduction to Web Applications-->
+  
+  <!--  <tocitem text="JAR Files" target="concepts_jar" >
+	    <tocitem text="About JAR Files in Web Applications" target="concepts_jar"  />   
+	    <tocitem text="Adding JAR Files to a Web Application" target="webmod_addjar" /> 
+    </tocitem>--> <!-- Working With JAR Files --> 
+  
+   <tocitem text="Applets" >
+	  <tocitem text="Creating an Applet" target="webmod_addapplet"/>
+          <tocitem text="Adding an Applet to a WAR File" target="webmod_addcompapplet"/>
+	  <tocitem text="Deploying an Applet" target="webmod_runapplet"/>
+  </tocitem> <!-- Working With Applets -->
   
     </tocitem> <!-- Developing Web Applications -->
 <!--
