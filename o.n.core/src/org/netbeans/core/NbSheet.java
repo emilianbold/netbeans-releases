@@ -147,11 +147,44 @@ public final class NbSheet extends TopComponent {
 
         updateGlobalListening();
     }
-
-    /** Provides the shared instance of SheetFrame */
+    
+    /* Singleton accessor. As NbSheet is persistent singleton this
+     * accessor makes sure that NbSheet is deserialized by window system.
+     * Uses known unique TopComponent ID "properties" to get NbSheet instance
+     * from window system. "properties" is name of settings file defined in module layer.
+     */
+    public static NbSheet findDefault () {
+        if (sharedSheet == null) {
+            TopComponent tc = WindowManager.getDefault().findTopComponent("properties"); // NOI18N
+            if (tc != null) {
+                if (tc instanceof NbSheet) {
+                    sharedSheet = (NbSheet) tc;
+                } else {
+                    //Incorrect settings file?
+                    IllegalStateException exc = new IllegalStateException
+                    ("Incorrect settings file. Unexpected class returned." // NOI18N
+                    + " Expected:" + NbSheet.class.getName() // NOI18N
+                    + " Returned:" + tc.getClass().getName()); // NOI18N
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                    //Fallback to accessor reserved for window system.
+                    NbSheet.getDefault();
+                }
+            } else {
+                //OutputView cannot be deserialized
+                //Fallback to accessor reserved for window system.
+                NbSheet.getDefault();
+            }
+        }
+        return sharedSheet;
+    }
+    
+    /* Singleton accessor reserved for window system ONLY. Used by window system to create
+     * NbSheet instance from settings file when method is given. Use <code>findDefault</code>
+     * to get correctly deserialized instance of NbSheet. */
     public static NbSheet getDefault () {
-        if (sharedSheet == null)
-            sharedSheet = new NbSheet (true);
+        if (sharedSheet == null) {
+            sharedSheet = new NbSheet(true);
+        }
         return sharedSheet;
     }
 

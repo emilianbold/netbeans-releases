@@ -28,7 +28,7 @@ import org.netbeans.core.NbSheet;
 public final class GlobalPropertiesAction extends CallableSystemAction {
 
     public void performAction() {
-        TopComponent c = NbSheet.getDefault ();
+        TopComponent c = NbSheet.findDefault();
         c.open ();
         c.requestFocus();
     }
