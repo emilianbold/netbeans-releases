@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -78,7 +78,6 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
             assert false : u;
             return null;
         }
-        // XXX: usage of provisional API
         return URLMapper.findFileObject(url);
     }
     
@@ -88,6 +87,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         assert u.getQuery() == null : u;
         // XXX isn't there any easier way to do this?
         // Using getPath in the new path does not work; nbfs: URLs break. (#39613)
+        // On the other hand, nbfs: URLs are not really used any more, so do we care?
         String path = u.getPath();
         if (path == null || path.equals("/")) { // NOI18N
             return null;

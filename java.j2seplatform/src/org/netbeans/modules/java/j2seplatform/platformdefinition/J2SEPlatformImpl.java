@@ -152,9 +152,10 @@ public class J2SEPlatformImpl extends JavaPlatform {
             while (tk.hasMoreTokens()) {
                 String path = tk.nextToken();
                 File f = new File (path);
-                FileObject[] fos = FileUtil.fromFile (f);
-                if (fos.length > 0)
-                    result.add (fos[0]);
+                FileObject fo = FileUtil.toFileObject(f);
+                if (fo != null) {
+                    result.add(fo);
+                }
             }
         }
         return result;

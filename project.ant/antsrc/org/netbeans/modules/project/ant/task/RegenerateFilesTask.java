@@ -75,7 +75,7 @@ public final class RegenerateFilesTask extends Task {
         }
         try {
             // Might be running inside IDE, in which case already have a mount...
-            FileObject projectFO = URLMapper.findFileObject(projectDir.toURI().toURL());
+            FileObject projectFO = FileUtil.toFileObject(projectDir);
             if (projectFO == null) {
                 // Probably not running inside IDE, so mount it.
                 LocalFileSystem lfs = new LocalFileSystem();

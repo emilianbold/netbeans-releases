@@ -113,7 +113,8 @@ public abstract class AntArtifact {
             : artifactLocation;
         URL artifact;
         try {
-            artifact = getScriptLocation().toURI().resolve(getArtifactLocation()).toURL();
+            // XXX this should probably use something in PropertyUtils?
+            artifact = getScriptLocation().toURI().resolve(getArtifactLocation()).normalize().toURL();
         } catch (MalformedURLException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             return null;
@@ -135,14 +136,9 @@ public abstract class AntArtifact {
      * @return the Ant build script file, or null if it could not be found
      */
     public final FileObject getScriptFile() {
-        FileObject[] fos = FileUtil.fromFile(getScriptLocation());
-        if (fos.length > 0) {
-            FileObject fo = fos[0];
-            assert FileUtil.toFile(fo) != null : fo;
-            return fo;
-        } else {
-            return null;
-        }
+        FileObject fo = FileUtil.toFileObject(getScriptLocation());
+        assert fo == null || FileUtil.toFile(fo) != null : fo;
+        return fo;
     }
     
     /**
