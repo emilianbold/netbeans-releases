@@ -614,7 +614,7 @@ ToDo:
         <include name="*.jar"/>
       </eager>
     </createmodulexml>
-    <echo file="${netbeans.dest}/build_info">NetBeans dev build
+    <echo file="${netbeans.dest}/build_info">NetBeans 3.4 beta build
 ------------------
 Number:   ${buildnumber}
 Date:     ${TODAY}
