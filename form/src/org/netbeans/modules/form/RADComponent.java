@@ -503,8 +503,9 @@ public class RADComponent {
             }
             Hashtable handlersByName = new Hashtable ();
             Vector handlers = event.getHandlers ();
-            for (int k=0, n=handlers.size(); k<n; k++) {
-              EventsManager.EventHandler h = (EventsManager.EventHandler) handlers.get(k);
+            
+            for (Iterator it = handlers.iterator (); it.hasNext (); ) {
+              EventsManager.EventHandler h = (EventsManager.EventHandler) it.next ();
               handlersByName.put(h.getName (), h);
             }
             
@@ -540,7 +541,10 @@ public class RADComponent {
                 formManager.fireEventRemoved (RADComponent.this, handler);
               }
             }
-            getNodeReference ().firePropertyChangeHelper (this.getName (), lastSelectedHandler, ((EventsManager.EventHandler) event.getHandlers ().get (0)).getName ());
+            String newSelectedHandler = "";
+            if (event.getHandlers ().size () >0)
+              newSelectedHandler = ((EventsManager.EventHandler) event.getHandlers ().get (0)).getName ();
+            getNodeReference ().firePropertyChangeHelper (this.getName (), lastSelectedHandler, newSelectedHandler);
             ((java.beans.PropertyEditorSupport)getPropertyEditor()).firePropertyChange ();
           } 
         };
@@ -1414,6 +1418,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  63   Gandalf   1.62        12/16/99 Pavel Buzek     
  *  62   Gandalf   1.61        12/13/99 Pavel Buzek     
  *  61   Gandalf   1.60        11/26/99 Pavel Buzek     
  *  60   Gandalf   1.59        11/26/99 Pavel Buzek     EventCustomEditor 
