@@ -12,16 +12,23 @@
  */
 package org.netbeans.jellytools.properties;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyEditor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
 import org.netbeans.jellytools.JellyVersion;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 
 /**
@@ -47,7 +54,8 @@ import org.openide.nodes.Node;
  * @see PropertySheetOperator
  */
 public class Property {
-    
+
+    // DEPRECATED>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     /** Container to find property in */
     protected ContainerOperator contOper;
     /** Display name of the property */
@@ -56,7 +64,18 @@ public class Property {
     private SheetButtonOperator nameButtonOperator;
     /** Operator of value button */
     private SheetButtonOperator valueButtonOperator;
-    
+    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<DEPRECATED
+
+    /** Class name of string renderer. */
+    public static final String STRING_RENDERER = "org.openide.explorer.propertysheet.SheetCellRenderer$StringRenderer";  // NOI18N
+    /** Class name of check box renderer. */
+    public static final String CHECKBOX_RENDERER = "org.openide.explorer.propertysheet.SheetCellRenderer$CheckboxRenderer";  // NOI18N
+    /** Class name of combo box renderer. */
+    public static final String COMBOBOX_RENDERER = "org.openide.explorer.propertysheet.SheetCellRenderer$ComboboxRenderer";  // NOI18N
+    /** Class name of radio button renderer. */
+    public static final String RADIOBUTTON_RENDERER = "org.openide.explorer.propertysheet.SheetCellRenderer$RadioButtonRenderer";  // NOI18N
+    /** Class name of set renderer. */
+    public static final String SET_RENDERER = "org.openide.explorer.propertysheet.SheetCellRenderer$SetRenderer";  // NOI18N
     
     /** Instance of Node.Property. */
     protected Node.Property property;
@@ -247,20 +266,27 @@ public class Property {
         return pe.getAsText();
     }
     
-    /** Sets value of this property to specified text.
+    /** Sets value of this property to specified text. If a new value is
+     * not accepted, an information or error dialog is displayed by IDE.
      * @param textValue text to be set in property (e.g. "a new value",
      * "a new item from list", "false", "TRUE")
      */
     public void setValue(String textValue) {
         PropertyEditor pe = property.getPropertyEditor();
-        pe.setAsText(textValue);
         try {
+            pe.setAsText(textValue);
             property.setValue(pe.getValue());
+        } catch (IllegalAccessException iae) {
+            ErrorManager.getDefault().notify(iae);
+        } catch (IllegalArgumentException iare) {
+            ErrorManager.getDefault().notify(iare);
+        } catch (InvocationTargetException ite) {
+            ErrorManager.getDefault().notify(ite);
         } catch (Exception e) {
             throw new JemmyException("Exception while setting value of property.", e);
         }
     }
-
+    
     /** Sets value of this property by given index.
      * It is applicable for properties which can be changed by combo box.
      * If property doesn't support changing value by index JemmyException
@@ -381,5 +407,106 @@ public class Property {
         // need to wait until value button is changed
         new EventTool().waitNoEvent(100);
          */
+    }
+
+    /** Returns true if this property is enabled in property sheet, that means
+     * it is possible to change its value by inplace editor.
+     * @return true if this property is enabled, false otherwise
+     */
+    public boolean isEnabled() {
+        return getRenderer().isEnabled();
+    }
+    
+    /** Returns true if this property can be edited as text by inplace text field.
+     * It can be both for string renderer or combo box renderer.
+     * @return true if this property can be edited, false otherwise
+     */
+    public boolean canEditAsText() {
+        // if not enabled, it cannot be edited
+        if(!isEnabled()) {
+            return false;
+        }
+        final JTableOperator table = propertySheetOper.tblSheet();
+        for(int row=0;row<table.getRowCount();row++) {
+            if(table.getValueAt(row, 1) instanceof Node.Property) {
+                if(property == (Node.Property)table.getValueAt(row, 1)) {
+                    table.clickForEdit(row, 1);
+                    long oldTimeout = propertySheetOper.getTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout");
+                    propertySheetOper.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+                    try {
+                        new JTextFieldOperator(propertySheetOper);
+                        return true;
+                    } catch (JemmyException e) {
+                        // property cannot be edited as text by inplace editor
+                        return false;
+                    } finally {
+                        // push ESC to stop editing
+                        table.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+                        // reset timeout
+                        propertySheetOper.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", oldTimeout);
+                    }
+                }
+            }
+        }
+        // never should happen
+        throw new JemmyException("Property "+getName()+" not found in this sheet:\n"+propertySheetOper.getSource().toString());
+    }
+    
+    /** Returns class name of renderer used to render this property. It can
+     * be used to determine whether correct renderer is used. Possible values
+     * are defined in constants {@link #STRING_RENDERER}, {@link #CHECKBOX_RENDERER},
+     * {@link #COMBOBOX_RENDERER}, {@link #RADIOBUTTON_RENDERER}, {@link #SET_RENDERER}.
+     * @return class name of renderer used to render this property:
+     * <UL>
+     * <LI>org.openide.explorer.propertysheet.SheetCellRenderer$StringRenderer</LI>
+     * <LI>org.openide.explorer.propertysheet.SheetCellRenderer$CheckboxRenderer</LI>
+     * <LI>org.openide.explorer.propertysheet.SheetCellRenderer$ComboboxRenderer</LI>
+     * <LI>org.openide.explorer.propertysheet.SheetCellRenderer$RadioButtonRenderer</LI>
+     * <LI>org.openide.explorer.propertysheet.SheetCellRenderer$SetRenderer</LI>
+     * </UL>
+     * @see #STRING_RENDERER
+     * @see #CHECKBOX_RENDERER
+     * @see #COMBOBOX_RENDERER
+     * @see #RADIOBUTTON_RENDERER
+     * @see #SET_RENDERER
+     */
+    public String getRendererName() {
+        return getRenderer().getClass().getName();
+    }
+    
+    /** Returns component which represents renderer for this property. */
+    private Component getRenderer() {
+        final JTableOperator table = propertySheetOper.tblSheet();
+        for(int row=0;row<table.getRowCount();row++) {
+            if(table.getValueAt(row, 1) instanceof Node.Property) {
+                if(property == (Node.Property)table.getValueAt(row, 1)) {
+                    // gets component used to render a value
+                    TableCellRenderer renderer = table.getCellRenderer(row,1);
+                    Component comp = renderer.getTableCellRendererComponent(
+                                                        (JTable)table.getSource(), 
+                                                        table.getValueAt(row, 1), 
+                                                        false, 
+                                                        false, 
+                                                        row, 
+                                                        1
+                    );
+                    // if real renderer is compound with ... button we need to get real renderer
+                    if(comp.getClass().getName().endsWith("ButtonPanel")) {
+                        try {
+                            Class clazz = Class.forName(
+                                                "org.openide.explorer.propertysheet.ButtonPanel");
+                            Method getComponentMethod = clazz.getDeclaredMethod("getComponent", null);
+                            getComponentMethod.setAccessible(true);
+                            comp = (Component)getComponentMethod.invoke(comp, null);
+                        } catch (Exception e) {
+                            throw new JemmyException("ButtonPanel.getComponent() by reflection failed.", e);
+                        }
+                    }
+                    return comp;
+                }
+            }
+        }
+        // never should happen
+        throw new JemmyException("Property "+getName()+" not found in this sheet:\n"+propertySheetOper.getSource().toString());
     }
 }
