@@ -44,11 +44,7 @@ static final long serialVersionUID =-3424129228987962529L;
     chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
     if (currDir != null) chooser.setCurrentDirectory (currDir);
     if (chooser.showOpenDialog (null) == JFileChooser.APPROVE_OPTION) {
-      try {
-        OpenFile.open (chooser.getSelectedFile (), false, null, 0);
-      } catch (IOException e) {
-        TopManager.getDefault ().notifyException (e);
-      }
+      OpenFile.open (chooser.getSelectedFile (), false, null, 0);
     }
     currDir = chooser.getCurrentDirectory ();
   }
