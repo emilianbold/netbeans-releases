@@ -26,6 +26,8 @@ import org.netbeans.editor.ext.ToolTipSupport;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.editor.Annotations;
+import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtUtilities;
 import java.beans.PropertyChangeListener;
@@ -186,7 +188,11 @@ public class NbToolTip extends FileChangeAdapter {
                                                 if (l != null) {
                                                     Line.Part lp = l.createPart(col, 0);
                                                     if (lp != null) {
-                                                        new Request(annos, lp, tts).run();
+                                                        AnnotationDesc annoDesc = doc.getAnnotations().getActiveAnnotation(line);
+                                                        if (annoDesc != null && ((offset < annoDesc.getOffset() || offset >= annoDesc.getOffset() + annoDesc.getLength()))) {
+                                                            annoDesc = null;
+                                                        }
+                                                        new Request(annoDesc, annos, lp, tts).run();
                                                     }
                                                 }
                                             }
@@ -209,8 +215,10 @@ public class NbToolTip extends FileChangeAdapter {
         private ToolTipSupport tts;
         
         private Annotation[] annos;
-        
-        Request(Annotation[] annos, Line.Part lp, ToolTipSupport tts) {
+        private AnnotationDesc annoDesc;
+
+        Request(AnnotationDesc annoDesc, Annotation[] annos, Line.Part lp, ToolTipSupport tts) {
+            this.annoDesc = annoDesc;
             this.annos = annos;
             this.tts = tts;
             
@@ -223,12 +231,17 @@ public class NbToolTip extends FileChangeAdapter {
         }
         
         public void run() {
-            for (int i = 0; i < annos.length; i++) {
-                String desc = annos[i].getShortDescription();
-                if (desc != null) {
-                    tts.setToolTipText(desc);
+            if (annoDesc != null) {
+                tts.setToolTipText(annoDesc.getShortDescription());
+                annoDesc.addPropertyChangeListener(this);
+            } else {
+                for (int i = 0; i < annos.length; i++) {
+                    String desc = annos[i].getShortDescription();
+                    if (desc != null) {
+                        tts.setToolTipText(desc);
+                    }
+                    annos[i].addPropertyChangeListener(this);
                 }
-                annos[i].addPropertyChangeListener(this);
             }
         }
         
@@ -236,15 +249,19 @@ public class NbToolTip extends FileChangeAdapter {
             tts.removePropertyChangeListener(this);
             tts = null; // signal that support no longer valid
 
-            for (int i = 0; i < annos.length; i++) {
-                annos[i].removePropertyChangeListener(this);
-                annos[i].detach();
+            if (annoDesc != null) {
+                annoDesc.removePropertyChangeListener(this);
+            } else {
+                for (int i = 0; i < annos.length; i++) {
+                    annos[i].removePropertyChangeListener(this);
+                    annos[i].detach();
+                }
             }
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
-            if (Annotation.PROP_SHORT_DESCRIPTION.equals(propName)) {
+            if (Annotation.PROP_SHORT_DESCRIPTION.equals(propName) || AnnotationDesc.PROP_SHORT_DESCRIPTION.equals(propName)) {
                 if (evt.getNewValue() != null) {
                     final String tipText = (String)evt.getNewValue();
                     Utilities.runInEventDispatchThread( // ensure to run in AWT thread
