@@ -79,7 +79,7 @@ public class FormCustomEditor extends JPanel
         PropertyEditor currentEditor = editor.getModifiedEditor();
         if (currentEditor == null) {
             currentEditor = allEditors[0];
-            editor.setModifiedEditor(currentEditor);
+//            editor.setModifiedEditor(currentEditor);
         }
       
         int currentIndex = -1;
@@ -161,7 +161,7 @@ public class FormCustomEditor extends JPanel
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 CardLayout cl2 = (CardLayout) cardPanel.getLayout();
                 cl2.show(cardPanel, (String) editorsCombo.getSelectedItem());
-                FormCustomEditor.this.editor.setModifiedEditor(getCurrentPropertyEditor());
+//                FormCustomEditor.this.editor.setModifiedEditor(getCurrentPropertyEditor());
 
                 int i = editorsCombo.getSelectedIndex();
                 HelpCtx helpCtx = i < 0 ? null :
@@ -277,22 +277,25 @@ public class FormCustomEditor extends JPanel
     public Object getPropertyValue() throws IllegalStateException {
         Component currentCustomEditor = getCurrentCustomPropertyEditor();
         PropertyEditor currentEditor = getCurrentPropertyEditor();
+        Object value;
+
+        if (currentCustomEditor instanceof EnhancedCustomPropertyEditor)
+            value = ((EnhancedCustomPropertyEditor) currentCustomEditor)
+                                                        .getPropertyValue();
+        else if (currentEditor != null)
+            value = currentEditor.getValue();
+        else
+            value = editor.getValue(); 
+
+        editor.getProperty().setPreCode(preCode);
+        editor.getProperty().setPostCode(postCode);
 
         if (currentEditor != null) {
+            editor.setModifiedEditor(currentEditor);
             editor.commitModifiedEditor();
         }
 
-        editor.getProperty().setPreCode(preCode); // [PENDING - change only if modified]
-        editor.getProperty().setPostCode(postCode);
-
-        if (currentCustomEditor instanceof EnhancedCustomPropertyEditor) {
-            return((EnhancedCustomPropertyEditor)currentCustomEditor).getPropertyValue();
-        }
-        if (currentEditor != null) {
-            return currentEditor.getValue();
-        }
-
-        return editor.getValue(); 
+        return value;
     }
 
     public PropertyEditor getCurrentPropertyEditor() {
