@@ -13,19 +13,25 @@
 
 package org.netbeans.modules.java.editor;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsChangeListener;
 import org.netbeans.editor.ext.java.JavaSettingsInitializer;
 import org.netbeans.editor.ext.java.JavaSettingsNames;
+import org.netbeans.modules.editor.java.JavaIndentEngine;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.java.NbJavaSettingsInitializer;
 import org.netbeans.modules.editor.NbLocalizer;
 import org.netbeans.modules.java.editor.options.JavaPrintOptions;
 import org.netbeans.modules.java.editor.options.JavaOptions;
+import org.netbeans.modules.javacore.IndentationSettingsProvider;
 import org.netbeans.modules.javacore.JMManager;
 import org.openide.modules.ModuleInstall;
 import org.openide.options.SystemOption;
+import org.openide.text.IndentEngine;
 import org.openide.text.PrintSettings;
 import org.openide.util.SharedClassObject;
 
@@ -38,6 +44,8 @@ public class JavaEditorModule extends ModuleInstall {
 
     private NbLocalizer settingsNamesLocalizer;
     private NbLocalizer optionsLocalizer;
+    private IndentationSettingsProvider isProvider = null;
+    private static JavaIndentEngine indentEng = null;
 
     /** Module installed again. */
     public void restored () {
@@ -54,11 +62,21 @@ public class JavaEditorModule extends ModuleInstall {
         optionsLocalizer = new NbLocalizer(JavaOptions.class);
         LocaleSupport.addLocalizer(settingsNamesLocalizer);
         LocaleSupport.addLocalizer(optionsLocalizer);
+        if (isProvider == null) {
+            isProvider = new JavaIndentationSettingsProvider();
+        }
+        JMManager.setIndentationSettingsProvider(isProvider);
 
     }
 
     /** Called when module is uninstalled. Overrides superclass method. */
     public void uninstalled() {
+        
+        JMManager.setIndentationSettingsProvider(null);
+        if (indentEng != null && isProvider != null){
+            indentEng.removePropertyChangeListener((PropertyChangeListener)isProvider);
+        }
+        
         // Options
         PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
         ps.removeOption((SystemOption)SharedClassObject.findObject(JavaPrintOptions.class, true));
@@ -73,6 +91,47 @@ public class JavaEditorModule extends ModuleInstall {
         settingsNamesLocalizer = null;
         LocaleSupport.removeLocalizer(optionsLocalizer);
         optionsLocalizer = null;
+        
     }
     
+    private static class JavaIndentationSettingsProvider implements IndentationSettingsProvider, PropertyChangeListener{
+        
+        PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        
+        public JavaIndentationSettingsProvider(){
+            java.util.Enumeration enum = IndentEngine.indentEngines();
+            while (enum.hasMoreElements()){
+                Object indent = enum.nextElement();
+                if (indent instanceof JavaIndentEngine){
+                    indentEng = (JavaIndentEngine) indent;
+                    break;
+                }
+            }
+            if (indentEng != null){
+                indentEng.addPropertyChangeListener(this);
+            }
+        }
+
+        public Object getPropertyValue(String propertyName) {
+            if (indentEng!=null){
+                return indentEng.getValue(propertyName);
+            }else{
+                return null;
+            }
+        }
+
+        public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+            pcs.removePropertyChangeListener(l);
+        }
+
+        public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+            pcs.addPropertyChangeListener(l);
+        }
+
+        public void propertyChange(java.beans.PropertyChangeEvent evt) {
+            if (evt == null) return;
+            pcs.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+        }
+        
+    }
 }
