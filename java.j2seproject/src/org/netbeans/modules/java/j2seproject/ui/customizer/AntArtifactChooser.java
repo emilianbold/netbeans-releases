@@ -72,7 +72,8 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabelName.setText(org.openide.util.NbBundle.getMessage(AntArtifactChooser.class, "LBL_AACH_ProjectName_JLabel"));
+        jLabelName.setLabelFor(jTextFieldName);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelName, org.openide.util.NbBundle.getMessage(AntArtifactChooser.class, "LBL_AACH_ProjectName_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -87,8 +88,10 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 6, 0);
         add(jTextFieldName, gridBagConstraints);
+        jTextFieldName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_AACH_ProjectName_JLabel"));
 
-        jLabelJarFiles.setText(org.openide.util.NbBundle.getMessage(AntArtifactChooser.class, "LBL_AACH_ProjectJarFiles_JLabel"));
+        jLabelJarFiles.setLabelFor(jListArtifacts);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelJarFiles, org.openide.util.NbBundle.getMessage(AntArtifactChooser.class, "LBL_AACH_ProjectJarFiles_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -96,6 +99,7 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
         add(jLabelJarFiles, gridBagConstraints);
 
         jScrollPane1.setViewportView(jListArtifacts);
+        jListArtifacts.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_AACH_ProjectJarFiles_JLabel"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -182,7 +186,7 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
         JFileChooser chooser = ProjectChooser.projectChooser();
         chooser.setDialogTitle( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_Title" ) ); // NOI18N
         chooser.setApproveButtonText( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_SelectProject" ) ); // NOI18N
-        
+        chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AntArtifactChooser.class,"AD_AACH_SelectProject"));
         AntArtifactChooser accessory = new AntArtifactChooser( artifactType, chooser );
         chooser.setAccessory( accessory );
         chooser.setPreferredSize( new Dimension( 650, 380 ) );
