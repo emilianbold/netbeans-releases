@@ -16,6 +16,9 @@ package com.netbeans.enterprise.modules.db.explorer.infos;
 import java.sql.*;
 import java.util.*;
 import com.netbeans.ddl.*;
+
+import com.netbeans.ddl.adaptors.*;
+
 import com.netbeans.ddl.impl.*;
 import org.openide.nodes.Node;
 import com.netbeans.enterprise.modules.db.DatabaseException;
@@ -32,26 +35,21 @@ implements TableOwnerOperations
 	throws DatabaseException
 	{
  		try {
-//			DatabaseMetaData dmd = getConnection().getMetaData();
 			DatabaseMetaData dmd = getSpecification().getMetaData();
-			String[] filter = new String[] {"TABLE"};
-			String catalog = (String)get(DatabaseNode.CATALOG);
-//			ResultSet rs = dmd.getTables(catalog, getUser(), null, filter);
+			String catalog = (String) get(DatabaseNode.CATALOG);
+			String[] types = new String[] {"TABLE"};
+      ResultSet rs = getDriverSpecification().getTables(catalog, dmd, null, types);
 
-//je to BARBARSTVI, po beta 6 rozumne prepsat
-ResultSet rs;
-if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
-	rs = dmd.getTables(catalog, null, null, filter);
-else
-	rs = dmd.getTables(catalog, dmd.getUserName(), null, filter);
-	
-			while (rs.next()) {
-				DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, rs);
-				if (info != null) {
-					info.put(DatabaseNode.TABLE, info.getName());
-					children.add(info);
-				} else throw new Exception("unable to create node information for table");
-			}
+      if (rs != null) {
+        while (rs.next()) {
+          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, rs);
+          if (info != null) {
+            info.put(DatabaseNode.TABLE, info.getName());
+            children.add(info);
+          } else throw new Exception("unable to create node information for table");
+        }
+        rs.close();
+      }
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	
 		}
@@ -64,28 +62,26 @@ else
 	throws DatabaseException
 	{
 		try {
-//			DatabaseMetaData dmd = getConnection().getMetaData();
-			DatabaseMetaData dmd = getSpecification().getMetaData();
-			String[] filter = new String[] {"TABLE","BASE"};
-			String catalog = (String)get(DatabaseNode.CATALOG);
+      DatabaseMetaData dmd = getSpecification().getMetaData();
+			String catalog = (String) get(DatabaseNode.CATALOG);
 			boolean uc = dmd.storesUpperCaseIdentifiers();
-			String cname = (uc ? tname.toUpperCase() : tname.toLowerCase());
-//			ResultSet rs = dmd.getTables(catalog, getUser(), cname, filter);
+			String tableNamePattern = (uc ? tname.toUpperCase() : tname.toLowerCase());
+			String[] types = new String[] {"TABLE","BASE"};
+      ResultSet rs = getDriverSpecification().getTables(catalog, dmd, tableNamePattern, types);
 
-//je to BARBARSTVI, po beta 6 rozumne prepsat
-ResultSet rs;
-if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
-	rs = dmd.getTables(catalog, null, cname, filter);
-else
-	rs = dmd.getTables(catalog, dmd.getUserName(), cname, filter);
-	
-			rs.next();
-			DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, rs);
-			rs.close();
-			if (info != null) info.put(DatabaseNode.TABLE, info.getName());
-			else throw new Exception("unable to create node information for table");
-			DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();		
-			chld.createSubnode(info, true);
+      if (rs != null) {
+        rs.next();
+        DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, rs);
+        rs.close();
+        
+        if (info != null)
+          info.put(DatabaseNode.TABLE, info.getName());
+        else
+          throw new Exception("unable to create node information for table");
+
+        DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();		
+        chld.createSubnode(info, true);
+      }
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());
 		}
@@ -145,6 +141,7 @@ else
 }
 /*
  * <<Log>>
+ *  13   Gandalf   1.12        12/15/99 Radko Najman    driver adaptor
  *  12   Gandalf   1.11        11/27/99 Patrik Knakal   
  *  11   Gandalf   1.10        11/15/99 Radko Najman    MS ACCESS
  *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

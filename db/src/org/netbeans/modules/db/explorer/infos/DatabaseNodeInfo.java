@@ -37,6 +37,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 {
 	public static final String SPECIFICATION_FACTORY = "specfactory";
 	public static final String SPECIFICATION = "spec";
+	public static final String DRIVER_SPECIFICATION = "drvspec";
 	public static final String DBPRODUCT = "dbproduct";
 	public static final String DBVERSION = "dbversion";	
 	public static final String SUPPORTED_DBS = "suppdbs";
@@ -656,9 +657,24 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 	{
 		put(READONLY, new Boolean(flag));
 	}
+  
+  /** Getter for property driverSpecification.
+   *@return Value of property driverSpecification.
+   */
+  public DriverSpecification getDriverSpecification() {
+		return (DriverSpecification) get(DRIVER_SPECIFICATION);
+  }
+  
+  /** Setter for property driverSpecification.
+   *@param driverSpecification New value of property driverSpecification.
+   */
+  public void setDriverSpecification(DriverSpecification driverSpecification) {
+		put(DRIVER_SPECIFICATION, driverSpecification);
+  }
 }
 /*
  * <<Log>>
+ *  21   Gandalf   1.20        12/15/99 Radko Najman    driver adaptor
  *  20   Gandalf   1.19        11/27/99 Patrik Knakal   
  *  19   Gandalf   1.18        11/15/99 Radko Najman    
  *  18   Gandalf   1.17        11/15/99 Radko Najman    

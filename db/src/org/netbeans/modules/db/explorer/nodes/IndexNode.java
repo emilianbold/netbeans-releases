@@ -99,61 +99,50 @@ public class IndexNode extends DatabaseNode
 
 				try {
 					con = info.getConnection();
-//					dmd = con.getMetaData();
 					dmd = info.getSpecification().getMetaData();
 					spec = (Specification)info.getSpecification();
 					catalog = (String)info.get(DatabaseNode.CATALOG);
 
-					String index = destinfo.getName();
-					HashSet ixrm = new HashSet();
-//					ResultSet rs = dmd.getIndexInfo(catalog,info.getUser(),info.getTable(), true, false);
+          ResultSet rs = info.getDriverSpecification().getIndexInfo(catalog, dmd, info.getTable(), true, false);
+					if (rs != null) {
+            String index = destinfo.getName();
+            HashSet ixrm = new HashSet();
 
-//je to BARBARSTVI, po beta 6 rozumne prepsat
-ResultSet rs;
-if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
-	rs = dmd.getIndexInfo(catalog, null,info.getTable(), true, false);
-else
-	rs = dmd.getIndexInfo(catalog, dmd.getUserName(),info.getTable(), true, false);
-					
-					while (rs.next()) {
-						String ixname = rs.getString("INDEX_NAME");
-						String colname = rs.getString("COLUMN_NAME");
-						if (ixname.equals(index)) ixrm.add(colname);
-					}
-					rs.close();
-					if (ixrm.contains(info.getName())) throw new IOException("index "+index+" already contains column "+info.getName());
+            while (rs.next()) {
+              String ixname = rs.getString("INDEX_NAME");
+              String colname = rs.getString("COLUMN_NAME");
+              if (ixname.equals(index)) ixrm.add(colname);
+            }
+            rs.close();
+            
+            if (ixrm.contains(info.getName())) throw new IOException("index "+index+" already contains column "+info.getName());
 
-					CreateIndex icmd = spec.createCommandCreateIndex(info.getTable());
-					icmd.setIndexName(destinfo.getName());
-					Iterator enu = ixrm.iterator();
-					while (enu.hasNext()) {
-						icmd.specifyColumn((String)enu.next());
-					}
-					
-					icmd.specifyColumn(info.getName());
-					spec.createCommandDropIndex(index).execute();
-					icmd.execute();
-					
-//					rs = dmd.getIndexInfo(catalog,destinfo.getUser(),destinfo.getTable(), true, false);
+            CreateIndex icmd = spec.createCommandCreateIndex(info.getTable());
+            icmd.setIndexName(destinfo.getName());
+            Iterator enu = ixrm.iterator();
+            while (enu.hasNext()) {
+              icmd.specifyColumn((String)enu.next());
+            }
 
-//je to BARBARSTVI, po beta 6 rozumne prepsat
-if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
-	rs = dmd.getIndexInfo(catalog, null, destinfo.getTable(), true, false);
-else
-	rs = dmd.getIndexInfo(catalog, dmd.getUserName(), destinfo.getTable(), true, false);
-					
-					while (rs.next()) {
-						String ixname = rs.getString("INDEX_NAME");
-						String colname = rs.getString("COLUMN_NAME");
-						if (ixname.equals(index) && colname.equals(info.getName())) {
-							IndexNodeInfo ixinfo = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(destinfo, DatabaseNode.INDEX, rs);
-							if (ixinfo != null) {
-								((DatabaseNodeChildren)destinfo.getNode().getChildren()).createSubnode(ixinfo,true);
-							} else throw new Exception("unable to create node information for index");
-						}
-					}
-					rs.close();
-					
+            icmd.specifyColumn(info.getName());
+            spec.createCommandDropIndex(index).execute();
+            icmd.execute();
+
+            rs = info.getDriverSpecification().getIndexInfo(catalog, dmd, destinfo.getTable(), true, false);
+            if (rs != null) {
+              while (rs.next()) {
+                String ixname = rs.getString("INDEX_NAME");
+                String colname = rs.getString("COLUMN_NAME");
+                if (ixname.equals(index) && colname.equals(info.getName())) {
+                  IndexNodeInfo ixinfo = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(destinfo, DatabaseNode.INDEX, rs);
+                  if (ixinfo != null) {
+                    ((DatabaseNodeChildren)destinfo.getNode().getChildren()).createSubnode(ixinfo,true);
+                  } else throw new Exception("unable to create node information for index");
+                }
+              }
+              rs.close();
+            }
+          }
 				} catch (Exception e) { 
 					throw new IOException(e.getMessage());
 				}
@@ -165,6 +154,7 @@ else
 }
 /*
  * <<Log>>
+ *  11   Gandalf   1.10        12/15/99 Radko Najman    driver adaptor
  *  10   Gandalf   1.9         11/15/99 Radko Najman    MS ACCESS
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

@@ -31,33 +31,28 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 	throws DatabaseException
 	{
  		try {
-//			DatabaseMetaData dmd = getConnection().getMetaData();
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
-//			ResultSet rs = dmd.getIndexInfo(catalog,getUser(),table, true, false);
 
-//je to BARBARSTVI, po beta 6 rozumne prepsat
-ResultSet rs;
-if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
-	rs = dmd.getIndexInfo(catalog, null, table, true, false);
-else
-	rs = dmd.getIndexInfo(catalog, dmd.getUserName(), table, true, false);
+      ResultSet rs = getDriverSpecification().getIndexInfo(catalog, dmd, table, true, false);
 			
-			Set ixmap = new HashSet();
-			while (rs.next()) {
-				if (rs.getString("INDEX_NAME") != null) {
-					IndexNodeInfo info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, rs);
-					if (info != null) {
-						if (!ixmap.contains(info.getName())) {
-							ixmap.add(info.getName());
-							info.put("index", info.getName());
-							children.add(info);
-						}
-					} else throw new Exception("unable to create node information for index");
-				}
-			}
-			rs.close();
+      if (rs != null) {
+  			Set ixmap = new HashSet();
+        while (rs.next()) {
+          if (rs.getString("INDEX_NAME") != null) {
+            IndexNodeInfo info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, rs);
+            if (info != null) {
+              if (!ixmap.contains(info.getName())) {
+                ixmap.add(info.getName());
+                info.put("index", info.getName());
+                children.add(info);
+              }
+            } else throw new Exception("unable to create node information for index");
+          }
+        }
+        rs.close();
+      }
  		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	
 		}
@@ -70,25 +65,20 @@ else
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
-//			ResultSet rs = dmd.getIndexInfo(catalog,getUser(),table, true, false);
 
-//je to BARBARSTVI, po beta 6 rozumne prepsat
-ResultSet rs;
-if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
-	rs = dmd.getIndexInfo(catalog, null, table, true, false);
-else
-	rs = dmd.getIndexInfo(catalog, dmd.getUserName(), table, true, false);
-			
-			while (rs.next()) {
-				String findex = rs.getString("INDEX_NAME");
-				if (findex != null) {
-					if (findex.equals(name)) {
-						IndexNodeInfo info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, rs);
-						if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
-					} 
-				}
-			}
-			rs.close();
+      ResultSet rs = getDriverSpecification().getIndexInfo(catalog, dmd, table, true, false);
+			if (rs != null) {
+        while (rs.next()) {
+          String findex = rs.getString("INDEX_NAME");
+          if (findex != null) {
+            if (findex.equals(name)) {
+              IndexNodeInfo info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, rs);
+              if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
+            } 
+          }
+        }
+        rs.close();
+      }
  		} catch (Exception e) {
  			e.printStackTrace();
 			throw new DatabaseException(e.getMessage());	
@@ -98,6 +88,7 @@ else
 
 /*
  * <<Log>>
+ *  12   Gandalf   1.11        12/15/99 Radko Najman    driver adaptor
  *  11   Gandalf   1.10        11/27/99 Patrik Knakal   
  *  10   Gandalf   1.9         11/15/99 Radko Najman    MS ACCESS
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

@@ -32,31 +32,19 @@ public class ViewNodeInfo extends DatabaseNodeInfo
 	throws DatabaseException
 	{				
  		try {
- 			
-			ResultSet rs;
-//			DatabaseMetaData dmd = getConnection().getMetaData();
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
-//			String user = getUser();
-
-//je to BARBARSTVI, po beta 6 rozumne prepsat
-String user;
-if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
-	user = null;
-else
-	user = dmd.getUserName();
-
 			String view = (String)get(DatabaseNode.VIEW);
                 
 			// Columns
-
-			rs = dmd.getColumns(catalog, user, view, null);
-			while (rs.next()) {
-				DatabaseNodeInfo nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEWCOLUMN, rs);
-				if (nfo != null) children.add(nfo);
-			}
-			rs.close();
-
+			ResultSet rs = getDriverSpecification().getColumns(catalog, dmd, view, null);
+      if (rs != null) {
+        while (rs.next()) {
+          DatabaseNodeInfo nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEWCOLUMN, rs);
+          if (nfo != null) children.add(nfo);
+        }
+        rs.close();
+      }
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	
 		}
@@ -101,6 +89,7 @@ else
 }
 /*
  * <<Log>>
+ *  11   Gandalf   1.10        12/15/99 Radko Najman    driver adaptor
  *  10   Gandalf   1.9         11/27/99 Patrik Knakal   
  *  9    Gandalf   1.8         11/15/99 Radko Najman    MS ACCESS
  *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

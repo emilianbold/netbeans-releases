@@ -30,28 +30,19 @@ public class RefTableListNodeInfo extends DatabaseNodeInfo
 	throws DatabaseException
 	{
  		try {
-			ResultSet rs;
-//			DatabaseMetaData dmd = getConnection().getMetaData();
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
-//			String user = getUser();
-
-//je to BARBARSTVI, po beta 6 rozumne prepsat
-String user;
-if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
-	user = null;
-else
-	user = dmd.getUserName();
-			
 			String table = (String)get(DatabaseNode.TABLE);
 
-			rs = dmd.getExportedKeys(catalog, user, table);
-			while (rs.next()) {
-				DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.EXPORTED_KEY, rs);
-				if (info != null) children.add(info);
-				else throw new Exception("unable to create node information for exported key");
-			}
-			rs.close();
+			ResultSet rs = getDriverSpecification().getExportedKeys(catalog, dmd, table);
+      if (rs != null) {
+        while (rs.next()) {
+          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.EXPORTED_KEY, rs);
+          if (info != null) children.add(info);
+          else throw new Exception("unable to create node information for exported key");
+        }
+        rs.close();
+      }
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	
 		}
@@ -60,6 +51,7 @@ else
 
 /*
  * <<Log>>
+ *  12   Gandalf   1.11        12/15/99 Radko Najman    driver adaptor
  *  11   Gandalf   1.10        11/27/99 Patrik Knakal   
  *  10   Gandalf   1.9         11/15/99 Radko Najman    MS ACCESS
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

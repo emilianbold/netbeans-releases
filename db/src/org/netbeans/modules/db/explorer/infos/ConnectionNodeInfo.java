@@ -45,11 +45,16 @@ implements ConnectionOperations
 			Connection connection = con.createJDBCConnection();
 			SpecificationFactory factory = (SpecificationFactory)getSpecificationFactory();
 			Specification spec;
-			
+			DrvSpecification drvSpec;
+      
 			if (dbsys != null) {
 				spec = (Specification)factory.createSpecification(con, dbsys, connection);
 			} else spec = (Specification)factory.createSpecification(con, connection);
 			setSpecification(spec);
+      
+      drvSpec = (DrvSpecification) factory.createDriverSpecification(spec.getMetaData().getDriverName().trim());
+			setDriverSpecification(drvSpec);
+      
 			setConnection(connection); // fires change
 		} catch (DatabaseProductNotFoundException e) {
 			
@@ -111,6 +116,7 @@ implements ConnectionOperations
 }
 /*
  * <<Log>>
+ *  15   Gandalf   1.14        12/15/99 Radko Najman    driver adaptor
  *  14   Gandalf   1.13        11/27/99 Patrik Knakal   
  *  13   Gandalf   1.12        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

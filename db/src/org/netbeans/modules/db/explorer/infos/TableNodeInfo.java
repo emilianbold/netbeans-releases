@@ -39,48 +39,38 @@ public class TableNodeInfo extends DatabaseNodeInfo
 	throws DatabaseException
 	{				
  		try {
- 			
 			ResultSet rs;
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
-//			String user = getUser();
-
-//je to BARBARSTVI, po beta 6 rozumne prepsat
-String user;
-if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
-	user = null;
-else
-	user = dmd.getUserName();
-
 			String table = (String)get(DatabaseNode.TABLE);
-        
+      DriverSpecification drvSpec = getDriverSpecification();
+      
 			// Primary keys
-				
-//BARBARSTVI podruhe
 			Hashtable ihash = new Hashtable(); 		
-if (! dmd.getDatabaseProductName().trim().equals("ACCESS")) {
-			rs = dmd.getPrimaryKeys(catalog,user,table);
-			while (rs.next()) {
-				DatabaseNodeInfo iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PRIMARY_KEY, rs);
-				String iname = (String)iinfo.get("name");
-				ihash.put(iname,iinfo);
-			}
-			rs.close();
-}
+			rs = drvSpec.getPrimaryKeys(catalog, dmd, table);
+      if (rs != null) {
+        while (rs.next()) {
+          DatabaseNodeInfo iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PRIMARY_KEY, rs);
+          String iname = (String)iinfo.get("name");
+          ihash.put(iname,iinfo);
+        }
+  			rs.close();
+      }
 
 			// Indexes
-				
 			Hashtable ixhash = new Hashtable(); 		
-			rs = dmd.getIndexInfo(catalog,user,table, true, false);
-			while (rs.next()) {
-				DatabaseNodeInfo iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXED_COLUMN, rs);
-				String iname = (String)iinfo.get("name");
-				ixhash.put(iname,iinfo);
-			}
-			rs.close();
+			rs = drvSpec.getIndexInfo(catalog, dmd, table, true, false);
+      if (rs != null) {
+        while (rs.next()) {
+          DatabaseNodeInfo iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXED_COLUMN, rs);
+          String iname = (String)iinfo.get("name");
+          ixhash.put(iname,iinfo);
+        }
+        rs.close();
+      }
         
-			// Foreign keys
 /*        
+			// Foreign keys
 			Hashtable fhash = new Hashtable(); 	
 			rs = dmd.getImportedKeys(catalog,user,table);
 			while (rs.next()) {
@@ -90,33 +80,35 @@ if (! dmd.getDatabaseProductName().trim().equals("ACCESS")) {
 			}
 			rs.close();
 */        
+      
 			// Columns
-
-			rs = dmd.getColumns(catalog, user, table, columnname);
-			while (rs.next()) {
-				DatabaseNodeInfo nfo;
+			rs = drvSpec.getColumns(catalog, dmd, table, columnname);
+      if (rs != null) {
+        while (rs.next()) {
+          DatabaseNodeInfo nfo;
 				
-//BARBARSTVI potreti - nemuzu zavolat 2x getObject na stejny index (druhe volani je v createNodeInfo())
-if (! dmd.getDatabaseProductName().trim().equals("ACCESS")) {
-				String cname = (String)rs.getObject(4);
+          //MS ACCESS exception - when asked for the object from ResultSet, the object is removed
+          //from that and at next getXXX() method call is thrown "No data found" exception
+          if (!dmd.getDatabaseProductName().trim().equals("ACCESS")) {
+            String cname = rs.getString("COLUMN_NAME");
 
-  			if (ihash.containsKey(cname))
-				  nfo = (DatabaseNodeInfo)ihash.get(cname);
-			  else
-  			  if (ixhash.containsKey(cname))
-				    nfo = (DatabaseNodeInfo)ixhash.get(cname);
-//				} else if (fhash.containsKey(cname)) {
-//					nfo = (DatabaseNodeInfo)fhash.get(cname);
-			    else
-  			    nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, rs);
-} else
-  nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, rs);
+            if (ihash.containsKey(cname))
+              nfo = (DatabaseNodeInfo)ihash.get(cname);
+            else
+              if (ixhash.containsKey(cname))
+                nfo = (DatabaseNodeInfo)ixhash.get(cname);
+//              else
+//                if (fhash.containsKey(cname)) {
+//                  nfo = (DatabaseNodeInfo)fhash.get(cname);
+                else
+                  nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, rs);                
+          } else
+            nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, rs);
   			    
-			  children.add(nfo);
-
-			}
-			rs.close();
-
+			    children.add(nfo);
+        }
+        rs.close();
+      }
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new DatabaseException(e.getMessage());	
@@ -199,20 +191,13 @@ if (! dmd.getDatabaseProductName().trim().equals("ACCESS")) {
 	{
 		try {
 			Vector chvec = new Vector(1);
-			ResultSet rs;
-//			DatabaseMetaData dmd = getConnection().getMetaData();
-			DatabaseMetaData dmd = getSpecification().getMetaData();
-			String catalog = (String)get(DatabaseNode.CATALOG);
-//			String user = getUser();
-
-//je to BARBARSTVI, po beta 6 rozumne prepsat
-String user;
-if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
-	user = null;
-else
-	user = dmd.getUserName();
-
-			String table = (String)get(DatabaseNode.TABLE);
+      
+// !!! TADY JE ASI PROBLEM S REFRESHEM TABULEK PO PRIDANI !!!
+      
+//			ResultSet rs;
+//			DatabaseMetaData dmd = getSpecification().getMetaData();
+//			String catalog = (String)get(DatabaseNode.CATALOG);
+//			String table = (String)get(DatabaseNode.TABLE);
 			
 			initChildren(chvec, tname);
 			if (chvec.size() == 1) {
@@ -228,6 +213,7 @@ else
 }
 /*
  * <<Log>>
+ *  15   Gandalf   1.14        12/15/99 Radko Najman    driver adaptor
  *  14   Gandalf   1.13        11/27/99 Patrik Knakal   
  *  13   Gandalf   1.12        11/15/99 Radko Najman    MS ACCESS
  *  12   Gandalf   1.11        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

@@ -47,52 +47,47 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo
 	throws DatabaseException
 	{
  		try {
-//			DatabaseMetaData dmd = getConnection().getMetaData();
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String name = (String)get(DatabaseNode.PROCEDURE);
-//			ResultSet rs = dmd.getProcedureColumns(catalog, getUser(), name, null);
-
-//je to BARBARSTVI, po beta 6 rozumne prepsat
-ResultSet rs;
-if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
-	rs = dmd.getProcedureColumns(catalog, null, name, null);
-else
-	rs = dmd.getProcedureColumns(catalog, dmd.getUserName(), name, null);
-			
-			while (rs.next()) {
-				DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE_COLUMN, rs);
-				if (info != null) {
-					Object ibase = null;
-					String itype = "unknown";
-					int type = ((Integer)info.get("type")).intValue();
-					switch (type) {
-						case DatabaseMetaData.procedureColumnIn: 
-							ibase = info.get("iconbase_in"); 
-							itype = "in";
-							break;
-						case DatabaseMetaData.procedureColumnOut: 
-							ibase = info.get("iconbase_out"); 
-							itype = "out";
-							break;
-						case DatabaseMetaData.procedureColumnInOut: 
-							ibase = info.get("iconbase_inout"); 
-							itype = "in/out";
-							break;
-						case DatabaseMetaData.procedureColumnReturn: 
-							ibase = info.get("iconbase_return"); 
-							itype = "return";
-							break;
-						case DatabaseMetaData.procedureColumnResult: 
-							ibase = info.get("iconbase_result"); 
-							itype = "result";
-							break;
-					}
-					if (ibase != null) info.put("iconbase", ibase);
-					info.put("type", itype);
-					children.add(info);
-				} else throw new Exception("unable to create node information for procedure column");
-			}
+      
+      ResultSet rs = getDriverSpecification().getProcedureColumns(catalog, dmd, name, null);
+			if (rs != null) {
+        while (rs.next()) {
+          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE_COLUMN, rs);
+          if (info != null) {
+            Object ibase = null;
+            String itype = "unknown";
+            int type = ((Integer)info.get("type")).intValue();
+            switch (type) {
+              case DatabaseMetaData.procedureColumnIn: 
+                ibase = info.get("iconbase_in"); 
+                itype = "in";
+                break;
+              case DatabaseMetaData.procedureColumnOut: 
+                ibase = info.get("iconbase_out"); 
+                itype = "out";
+                break;
+              case DatabaseMetaData.procedureColumnInOut: 
+                ibase = info.get("iconbase_inout"); 
+                itype = "in/out";
+                break;
+              case DatabaseMetaData.procedureColumnReturn: 
+                ibase = info.get("iconbase_return"); 
+                itype = "return";
+                break;
+              case DatabaseMetaData.procedureColumnResult: 
+                ibase = info.get("iconbase_result"); 
+                itype = "result";
+                break;
+            }
+            if (ibase != null) info.put("iconbase", ibase);
+            info.put("type", itype);
+            children.add(info);
+          } else throw new Exception("unable to create node information for procedure column");
+        }
+        rs.close();
+      }
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	
 		}
@@ -101,6 +96,7 @@ else
 
 /*
  * <<Log>>
+ *  11   Gandalf   1.10        12/15/99 Radko Najman    driver adaptor
  *  10   Gandalf   1.9         11/27/99 Patrik Knakal   
  *  9    Gandalf   1.8         11/15/99 Radko Najman    MS ACCESS
  *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
