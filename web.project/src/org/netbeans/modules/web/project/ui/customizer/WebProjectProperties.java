@@ -60,6 +60,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.modules.web.project.WebProjectUtil;
 import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.modules.web.project.Utils;
@@ -629,21 +630,9 @@ public class WebProjectProperties {
         URL[] rootURLs = new URL[data.size()];
         String []rootLabels = new String[data.size()];
         for (int i=0; i<data.size();i++) {
-            // AB: hotfix for #54058: ensure that source URLs end with a '/'
-            // waiting for the proper fix in the j2se project (# 54979)
             File f = ((File)((Vector)data.elementAt(i)).elementAt(0));
-            try {
-                URL url = f.toURI().toURL();
-                if (FileUtil.isArchiveFile(url)) {
-                    url = FileUtil.getArchiveRoot(url);
-                } else if (!f.exists()) {
-                    url = new URL(url.toExternalForm() + "/"); // NOI18N
-                }
-                rootURLs[i] = url;
-                rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
-            } catch (MalformedURLException e) {
-                ErrorManager.getDefault().notify(e);
-            }
+            rootURLs[i] = WebProjectUtil.getRootURL(f,null);
+            rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
         }
         roots.putRoots(rootURLs,rootLabels);
     }

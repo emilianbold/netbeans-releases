@@ -179,13 +179,7 @@ public final class SourceRoots {
                             if (prop != null) {
                                 File f = helper.getAntProjectHelper().resolveFile(prop);
                                 try {
-                                    URL url = f.toURI().toURL();
-                                    if (FileUtil.isArchiveFile(url)) {
-                                        url = FileUtil.getArchiveRoot(url);
-                                    } else if (!f.exists()) {
-                                        url = new URL(url.toExternalForm() + "/"); // NOI18N
-                                    }
-                                    result.add(url);
+                                    result.add(WebProjectUtil.getRootURL(f,null));
                                 } catch (MalformedURLException e) {
                                     ErrorManager.getDefault().notify(e);
                                 }
