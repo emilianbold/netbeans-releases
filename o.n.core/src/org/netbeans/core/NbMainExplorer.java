@@ -761,7 +761,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
                         Node.PROP_NAME.equals(propName)) {
                     // Fix #39275 start - posted to awt thread.
                     if (SwingUtilities.isEventDispatchThread()) {
-                        close();
+                        setName(n.getDisplayName());
                     }
                     else {
                         SwingUtilities.invokeLater(new Runnable() {
@@ -774,7 +774,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
                 } else if (Node.PROP_ICON.equals(propName)) {
                     // Fix #39275 start - posted to awt thread.
                     if (SwingUtilities.isEventDispatchThread()) {
-                        close();
+                        setIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
                     }
                     else {
                         SwingUtilities.invokeLater(new Runnable() {
