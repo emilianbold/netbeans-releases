@@ -33,7 +33,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.form.*;
-import org.netbeans.modules.form.compat2.border.*;
 import org.netbeans.modules.form.palette.*;
 
 /**
@@ -109,8 +108,6 @@ public final class BorderEditor extends PropertyEditorSupport
             if (!(value instanceof javax.swing.plaf.UIResource))
                 borderSupport = new BorderDesignSupport((Border)value);
         }
-        else if (value instanceof BorderInfo)
-            borderSupport = new BorderDesignSupport((BorderInfo)value);
 
         if (borderSupport != null) {
             borderSupport.setPropertyContext(propertyContext);
@@ -400,9 +397,6 @@ public final class BorderEditor extends PropertyEditorSupport
             for (int i=0; i < props.length; i++) {
                 if (props[i] instanceof FormProperty)
                     ((FormProperty)props[i]).addPropertyChangeListener(this);
-                else // compatibility with BorderInfo borders etc.
-                    if (props[i] instanceof BorderInfoSupport.BorderProp)
-                        ((BorderInfoSupport.BorderProp)props[i]).setPropertyChangeListener(this);
             }
 
             return sheet;
@@ -464,43 +458,33 @@ public final class BorderEditor extends PropertyEditorSupport
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
         Object value = getValue();
         if ((value instanceof BorderDesignSupport || value instanceof Border)
-                 && borderSupport != null) {
+             && borderSupport != null)
+        {
             org.w3c.dom.Node storedNode = null;
-            BorderInfo bInfo = borderSupport.getBorderInfo();
 
-            if (bInfo != null) {
-                org.w3c.dom.Node mainNode = createBorderInfoNode(doc,
-                                              bInfo.getClass().getName());
-                org.w3c.dom.Node borderNode = bInfo.storeToXML(doc);
-                if (borderNode != null) {
-                    mainNode.appendChild(borderNode);
-                    storedNode = mainNode;
-                }
-            }
-            else {
-                // we must preserve backward compatibility of storing standard
-                // swing borders (for which BorderInfo classes were used sooner)
-                Class borderClass = borderSupport.getBorderClass();
+            // we must preserve backward compatibility of storing standard
+            // swing borders (for which BorderInfo classes were used sooner)
+            Class borderClass = borderSupport.getBorderClass();
 
-                if (borderClass.isAssignableFrom(TitledBorder.class))
-                    storedNode = storeTitledBorder(doc);
-                else if (borderClass.isAssignableFrom(EtchedBorder.class))
-                    storedNode = storeEtchedBorder(doc);
-                else if (borderClass.isAssignableFrom(LineBorder.class))
-                    storedNode = storeLineBorder(doc);
-                else if (borderClass.isAssignableFrom(EmptyBorder.class))
-                    storedNode = storeEmptyBorder(doc);
-                else if (borderClass.isAssignableFrom(CompoundBorder.class))
-                    storedNode = storeCompoundBorder(doc);
-                else if (SoftBevelBorder.class.isAssignableFrom(borderClass))
-                    storedNode = storeBevelBorder(doc, ID_BI_SOFTBEVEL);
-                else if (BevelBorder.class.isAssignableFrom(borderClass))
-                    storedNode = storeBevelBorder(doc, ID_BI_BEVEL);
-                else if (borderClass.isAssignableFrom(MatteBorder.class))
-                    storedNode = storeMatteBorder(doc);
+            if (borderClass.isAssignableFrom(TitledBorder.class))
+                storedNode = storeTitledBorder(doc);
+            else if (borderClass.isAssignableFrom(EtchedBorder.class))
+                storedNode = storeEtchedBorder(doc);
+            else if (borderClass.isAssignableFrom(LineBorder.class))
+                storedNode = storeLineBorder(doc);
+            else if (borderClass.isAssignableFrom(EmptyBorder.class))
+                storedNode = storeEmptyBorder(doc);
+            else if (borderClass.isAssignableFrom(CompoundBorder.class))
+                storedNode = storeCompoundBorder(doc);
+            else if (SoftBevelBorder.class.isAssignableFrom(borderClass))
+                storedNode = storeBevelBorder(doc, ID_BI_SOFTBEVEL);
+            else if (BevelBorder.class.isAssignableFrom(borderClass))
+                storedNode = storeBevelBorder(doc, ID_BI_BEVEL);
+            else if (borderClass.isAssignableFrom(MatteBorder.class))
+                storedNode = storeMatteBorder(doc);
 
-                // no other way of storing to XML ...
-            }
+            // no other way of storing to XML ...
+            // [PENDING: store border as a bean]
 
             return storedNode;
         }
@@ -568,21 +552,8 @@ public final class BorderEditor extends PropertyEditorSupport
         else if (ID_BI_NULL_BORDER.equals(infoName)) { // no border
             borderSupport = null;
         }
-        else { // read as BorderInfo
-            try {
-                BorderInfo bInfo = (BorderInfo)PersistenceObjectRegistry
-                                                  .createInstance(infoName);
-                bInfo.readFromXML(readNode);
-                borderSupport = new BorderDesignSupport(bInfo);
-            }
-            catch (Exception ex) {
-                IOException ioex = new IOException(
-                    "Cannot read border using "+infoName+" support object."); // NOI18N
-                ErrorManager.getDefault().annotate(ioex, ex);
-                throw ioex;
-            }
-        }
         // no other way of reading from XML
+        // [PENDING: read border as a bean]
 
         current = borderSupport;
     }

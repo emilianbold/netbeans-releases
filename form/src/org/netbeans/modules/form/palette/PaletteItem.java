@@ -27,7 +27,6 @@ import org.openide.loaders.DataShadow;
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.CreationDescriptor;
 import org.netbeans.modules.form.CreationFactory;
-import org.netbeans.modules.form.compat2.border.BorderInfo;
 
 import java.lang.ref.WeakReference;
 
@@ -171,8 +170,7 @@ public class PaletteItem {
         if (beanClass == null)
             return false;
 
-        return BorderInfo.class.isAssignableFrom(beanClass)
-               || Border.class.isAssignableFrom(beanClass);
+        return Border.class.isAssignableFrom(beanClass);
     }
 
     public boolean isVisual() {

@@ -26,7 +26,7 @@ import org.openide.nodes.Node;
 import org.openide.cookies.InstanceCookie;
 
 import org.netbeans.modules.form.layoutsupport.*;
-import org.netbeans.modules.form.compat2.border.*;
+import org.netbeans.modules.form.editors2.BorderDesignSupport;
 import org.netbeans.modules.form.codestructure.CodeStructure;
 
 /**
@@ -320,9 +320,7 @@ public class MetaComponentCreator {
                 TARGET_LAYOUT : NO_TARGET;
         }
 
-        if (BorderInfo.class.isAssignableFrom(beanClass)
-              || Border.class.isAssignableFrom(beanClass))
-        {   // border
+        if (Border.class.isAssignableFrom(beanClass)) { // border
             if (targetComp == null)
                 return TARGET_OTHER;
 

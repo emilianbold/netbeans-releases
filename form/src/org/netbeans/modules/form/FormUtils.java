@@ -29,7 +29,7 @@ import org.openide.nodes.Node;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.TopManager;
 
-import org.netbeans.modules.form.compat2.border.BorderDesignSupport;
+import org.netbeans.modules.form.editors2.BorderDesignSupport;
 
 /**
  * A class that contains utility methods for the formeditor.
