@@ -303,7 +303,7 @@ is divided into following sections:
     =================
     -->
     <target name="-debug-start-debugger" if="netbeans.home" depends="init">
-        <j2seproject:nbjpdastart xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
+        <j2seproject:nbjpdastart xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" name="${debug.class}"/>
     </target>
     <target name="-debug-start-debuggee" depends="init,compile">
         <j2seproject:debug xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
