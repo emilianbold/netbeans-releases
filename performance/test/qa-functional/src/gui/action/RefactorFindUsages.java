@@ -41,13 +41,13 @@ public class RefactorFindUsages extends testUtilities.PerformanceTestCase {
     /** Creates a new instance of RefactorFindUsagesDialog */
     public RefactorFindUsages(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;
+        expectedTime = 120000; // the action has progress indication and it is expected it will last
     }
     
     /** Creates a new instance of RefactorFindUsagesDialog */
     public RefactorFindUsages(String testName, String performanceDataName) {
         super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;
+        expectedTime = 120000; // the action has progress indication and it is expected it will last
     }
     
     public void initialize() {
