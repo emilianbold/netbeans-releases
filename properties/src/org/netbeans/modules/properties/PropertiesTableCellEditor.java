@@ -80,7 +80,8 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
         if(!c.hasFocus()) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    c.requestFocus();
+                    if(c.isShowing())
+                        c.requestFocus();
                 }            
             });
         }
