@@ -486,11 +486,12 @@ public abstract class NbTopManager {
                         } catch (IOException ioe) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
                         }
-                        // save window system, [PENDING] remove this after the winsys will
-                        // persist its state automaticaly
-                        if (windowSystem != null) {
-                            windowSystem.save();
-                        }
+//#46940 -saving just once..                        
+//                        // save window system, [PENDING] remove this after the winsys will
+//                        // persist its state automaticaly
+//                        if (windowSystem != null) {
+//                            windowSystem.save();
+//                        }
                         try {
                             ((Lkp)Lookup.getDefault()).storeCache();
                         } catch (IOException ioe) {
