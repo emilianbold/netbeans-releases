@@ -63,7 +63,7 @@ public class MethodPicker extends javax.swing.JPanel {
         componentsCombo.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_CW_Component"));
         methodList.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_CW_MethodList"));
         getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_MethodPicker"));
-        HelpCtx.setHelpIDString(this, "gui.connecting.code"); // NOI18N
+//        HelpCtx.setHelpIDString(this, "gui.connecting.code"); // NOI18N
     }
 
     public boolean isPickerValid() {

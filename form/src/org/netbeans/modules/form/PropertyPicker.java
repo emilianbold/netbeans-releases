@@ -66,7 +66,7 @@ public class PropertyPicker extends javax.swing.JPanel {
         propertyList.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_CW_PropertyList"));
         getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_PropertyPicker"));
 
-        HelpCtx.setHelpIDString(this, "gui.connecting.code"); // NOI18N
+//        HelpCtx.setHelpIDString(this, "gui.connecting.code"); // NOI18N
     }
 
     public boolean isPickerValid() {
