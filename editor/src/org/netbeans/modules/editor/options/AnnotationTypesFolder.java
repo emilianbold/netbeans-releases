@@ -141,16 +141,19 @@ public class AnnotationTypesFolder extends FolderInstance{
         if (type.getProp(AnnotationType.PROP_DESCRIPTION_KEY) != null)
             typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_DESCRIPTION_KEY, (String)type.getProp(AnnotationType.PROP_DESCRIPTION_KEY));
         typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_VISIBLE, type.isVisible() ? "true" : "false"); // NOI18N
+        typeElem.setAttribute(AnnotationTypeProcessor.ATTR_USE_HIHGLIGHT_COLOR, type.isUseHighlightColor() ? "true" : "false"); // NOI18N
+        typeElem.setAttribute(AnnotationTypeProcessor.ATTR_USE_WAVE_UNDERLINE_COLOR, type.isUseWaveUnderlineColor() ? "true" : "false"); // NOI18N
+        typeElem.setAttribute(AnnotationTypeProcessor.ATTR_INHERIT_FOREGROUND_COLOR, type.isInheritForegroundColor() ? "true" : "false"); // NOI18N
         typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_TYPE, type.isWholeLine() ? "line" : "linepart"); // NOI18N
         if (type.getProp(AnnotationType.PROP_GLYPH_URL) != null)
             typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_GLYPH, type.getGlyph().toExternalForm());
-        if (type.getProp(AnnotationType.PROP_HIGHLIGHT_COLOR) != null && type.isUseHighlightColor())
+        if (type.getProp(AnnotationType.PROP_HIGHLIGHT_COLOR) != null)// && type.isUseHighlightColor())
             typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_HIGHLIGHT, "0x"+Integer.toHexString(type.getHighlight().getRGB() & 0x00FFFFFF)); // NOI18N
 
-        if (type.getProp(AnnotationType.PROP_WAVEUNDERLINE_COLOR) != null && type.isUseWaveUnderlineColor())
+        if (type.getProp(AnnotationType.PROP_WAVEUNDERLINE_COLOR) != null)// && type.isUseWaveUnderlineColor())
             typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_WAVEUNDERLINE, "0x"+Integer.toHexString(type.getWaveUnderlineColor().getRGB() & 0x00FFFFFF)); // NOI18N
 
-        if (type.getProp(AnnotationType.PROP_FOREGROUND_COLOR) != null && !type.isInheritForegroundColor())
+        if (type.getProp(AnnotationType.PROP_FOREGROUND_COLOR) != null)// && !type.isInheritForegroundColor())
             typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_FOREGROUND, "0x"+Integer.toHexString(type.getForegroundColor().getRGB() & 0x00FFFFFF)); // NOI18N
         if (type.getProp(AnnotationType.PROP_ACTIONS_FOLDER) != null)
             typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_ACTIONS, (String)type.getProp(AnnotationType.PROP_ACTIONS_FOLDER));

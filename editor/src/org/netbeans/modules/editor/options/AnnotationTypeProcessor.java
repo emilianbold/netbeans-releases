@@ -63,7 +63,10 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
     static final String ATTR_COMBINE_ABSORBALL  = "absorb_all"; // NOI18N
     static final String ATTR_COMBINE_OPTIONAL  = "optional"; // NOI18N
     static final String ATTR_COMBINE_MIN  = "min"; // NOI18N
-
+    static final String ATTR_USE_HIHGLIGHT_COLOR = "use_highlight_color"; //NOI18N
+    static final String ATTR_USE_WAVE_UNDERLINE_COLOR = "use_wave_underline_color"; //NOI18N
+    static final String ATTR_INHERIT_FOREGROUND_COLOR = "inherit_foreground_color"; //NOI18N
+    
     /** XML data object. */
     private XMLDataObject xmlDataObject;
     
@@ -179,30 +182,38 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
                         at.putProp(AnnotationType.PROP_DESCRIPTION_KEY, key);
                     }
 
+                    // boolean checkboxes
+                    String useHighlightString = amap.getValue(ATTR_USE_HIHGLIGHT_COLOR);
+                    String useWaveUnderlineString = amap.getValue(ATTR_USE_WAVE_UNDERLINE_COLOR);
+                    String inheritForeString = amap.getValue(ATTR_INHERIT_FOREGROUND_COLOR);
+                    at.setUseHighlightColor(Boolean.valueOf(useHighlightString).booleanValue());
+                    at.setUseWaveUnderlineColor(Boolean.valueOf(useWaveUnderlineString).booleanValue());
+                    at.setInheritForegroundColor(Boolean.valueOf(inheritForeString).booleanValue());
+                    
                     // colors
                     try {
                         String color = amap.getValue(ATTR_TYPE_HIGHLIGHT);
                         if (color != null) {
                             at.setHighlight(Color.decode(color));
-                            at.setUseHighlightColor(true);
+                            if (useHighlightString == null) at.setUseHighlightColor(true);
                         } else {
-                            at.setUseHighlightColor(false);
+                            if (useHighlightString == null) at.setUseHighlightColor(false);
                         }
 
                         color = amap.getValue(ATTR_TYPE_FOREGROUND);
                         if (color != null) {
                             at.setForegroundColor(Color.decode(color));
-                            at.setInheritForegroundColor(false);
+                            if (inheritForeString == null) at.setInheritForegroundColor(false);
                         } else {
-                            at.setInheritForegroundColor(true);
+                            if (inheritForeString == null) at.setInheritForegroundColor(true);
                         }
 
                         color = amap.getValue(ATTR_TYPE_WAVEUNDERLINE);
                         if (color != null) {
                             at.setWaveUnderlineColor(Color.decode(color));
-                            at.setUseWaveUnderlineColor(true);
+                            if (useWaveUnderlineString == null) at.setUseWaveUnderlineColor(true);
                         } else {
-                            at.setUseWaveUnderlineColor(false);
+                            if (useWaveUnderlineString == null) at.setUseWaveUnderlineColor(false);
                         }
                     } catch (NumberFormatException ex) {
                         rethrow(ex);
