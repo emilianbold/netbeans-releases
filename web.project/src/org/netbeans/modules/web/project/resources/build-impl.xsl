@@ -731,7 +731,7 @@ is divided into following sections:
             </target>
 
             <target name="run-deploy">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-do-compile-single-jsp</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,compile-jsps,-do-compile-single-jsp,dist</xsl:attribute>
                 <nbdeploy debugmode="false" clientUrlPart="${{client.urlPart}}" forceRedeploy="${{forceRedeploy}}"/>
             </target>
 
