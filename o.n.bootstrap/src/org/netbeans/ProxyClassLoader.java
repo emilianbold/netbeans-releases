@@ -382,28 +382,33 @@ public class ProxyClassLoader extends ClassLoader {
      * <code>ClassLoader</code>
      */
     protected synchronized Package[] getPackages() {
+        return getPackages(new HashSet());
+    }
+    
+    /**
+     * Returns all of the Packages defined by this class loader and its parents.
+     * Do not recurse to parents in addedParents set. It speeds up execution
+     * time significantly.
+     * @return the array of <code>Package</code> objects defined by this
+     * <code>ClassLoader</code>
+     */
+    private synchronized Package[] getPackages(Set addedParents) {
         zombieCheck(null);
         Map all = new HashMap(); // Map<String,Package>
         // XXX call shouldDelegateResource on each?
         addPackages(all, super.getPackages());
         for (int i = 0; i < parents.length; i++) {
             ClassLoader par = parents[i];
-            if (par instanceof ProxyClassLoader) {
+            if (par instanceof ProxyClassLoader && addedParents.add(par)) {
                 // XXX should ideally use shouldDelegateResource here...
-                addPackages(all, ((ProxyClassLoader)par).getPackages());
+                addPackages(all, ((ProxyClassLoader)par).getPackages(addedParents));
             }
         }
         synchronized (packages) {
-            Iterator it = all.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry)it.next();
-                Object name = entry.getKey();
-                if (! packages.containsKey(name)) {
-                    packages.put(name, entry.getValue());
-                }
-            }
+            all.keySet().removeAll(packages.keySet());
+            packages.putAll(all);
         }
-        return (Package[])all.values().toArray(new Package[all.size()]);
+        return (Package[])packages.values().toArray(new Package[packages.size()]);
     }
     
     public Package getPackageAccessibly(String name) {
