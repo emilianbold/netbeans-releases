@@ -16,6 +16,7 @@ package org.netbeans.modules.form;
 import java.beans.*;
 import java.io.IOException;
 import java.util.*;
+import javax.swing.RepaintManager;
 
 import org.openide.*;
 import org.openide.nodes.*;
@@ -96,18 +97,26 @@ public class FormEditorSupport extends JavaEditor
     // ----------
     // opening & saving interface methods
 
-    /** Opens the form (loads it first if needed) - and also the java source.
+    /** Opens the form (loads it first if not loaded yet).
      * @see OpenCookie#open
      */
     public void openForm() {
-        // set status text "Opening Form..."
-        TopManager.getDefault().setStatusText(
-            FormUtils.getFormattedBundleString(
-                "FMT_OpeningForm", // NOI18N
-                new Object[] { formDataObject.getName() }));
+        // switch to GUI workspace
+        final boolean openGui = activateWorkspace();
+
+        // open java editor
+        open();
 
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
+                // set status text "Loading form..."
+                TopManager.getDefault().setStatusText(
+                    FormUtils.getFormattedBundleString(
+                        "FMT_OpeningForm", // NOI18N
+                        new Object[] { formDataObject.getName() }));
+                RepaintManager.currentManager(WindowManager.getDefault().getMainWindow())
+                    .paintDirtyRegions();
+
                 // load form data and report errors
                 try {
                     loadFormData();
@@ -116,14 +125,8 @@ public class FormEditorSupport extends JavaEditor
                     logPersistenceError(ex, 0);
                 }
 
-                // ensure GUI workspace is active (if form loading successful)
-                boolean openGui = formLoaded && activateWorkspace();
-
-                // open java editor (even if form loading failed)
-                FormEditorSupport.this.superOpen();
-
                 // open form designer (if loading successful and workspace active)
-                if (openGui)
+                if (openGui && formLoaded)
                     openGUI();
 
                 // clear status text
