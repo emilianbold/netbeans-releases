@@ -67,6 +67,8 @@ final class FileSearchUtility {
 
     static FileObject[] guessJavaRoots(final FileObject dir) {
         List foundRoots = new ArrayList();
+        if (null == dir)
+            return null;
         Enumeration ch = FileSearchUtility.getChildrenToDepth(dir, 10, true); // .getChildren(true);
         try {
             // digging through 10 levels exhaustively is WAY TOO EXPENSIVE
@@ -99,6 +101,8 @@ final class FileSearchUtility {
     }
     
     static   FileObject guessConfigFilesPath(final FileObject dir) {
+        if (null == dir)
+            return null;
         Enumeration ch = FileSearchUtility.getChildrenToDepth(dir, 3, true); //getChildren(true);
         try {
             while (ch.hasMoreElements()) {

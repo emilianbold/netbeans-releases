@@ -180,7 +180,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         add(projectLocation, gridBagConstraints);
         projectLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_IW_ImportLocation_A11YDesc"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseProjectLocation,NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
+        org.openide.awt.Mnemonics.setLocalizedText(browseProjectLocation, NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
         browseProjectLocation.setNextFocusableComponent(projectName);
         browseProjectLocation.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -392,9 +392,20 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     // </editor-fold>//GEN-END:initComponents
 
     private void projectLocationFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_projectLocationFocusLost
+        if (projectLocation.getText().trim().length() > 0) {
             updateProjectName();
             updateProjectFolder();
-            listener.stateChanged(null);
+            File f = new File(projectLocation.getText().trim());
+            FileObject fo = FileUtil.toFileObject(f);
+            if (fo != null) {
+                FileObject configFilesPath = FileSearchUtility.guessConfigFilesPath(fo);
+                if (configFilesPath != null) {
+                    FileObject ejbJarXml = configFilesPath.getFileObject("ejb-jar.xml"); // NOI18N
+                    checkEjbJarXmlJ2eeVersion(ejbJarXml);
+                }
+                listener.stateChanged(null);
+            }
+        }
     }//GEN-LAST:event_projectLocationFocusLost
 
     private void j2eeSpecComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_j2eeSpecComboBoxActionPerformed
@@ -464,6 +475,10 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
                 checkEjbJarXmlJ2eeVersion(ejbJarXml);
             }
             projectLocation.setText(projectLoc.getAbsolutePath());
+            updateProjectName();
+            updateProjectFolder();
+            listener.stateChanged(null);
+
         }
     }//GEN-LAST:event_browseProjectLocationActionPerformed
     
