@@ -304,6 +304,7 @@ final class CommandManager implements ActionListener {
                 String slidedText = slidedModel.getTab(0).getText();
                 if (slidedText == null || !slidedText.equals(freshText)) {
                     slidedModel.setText(0, freshText);
+                    slideBar.repaint();
                 }
             }
         }
