@@ -14,11 +14,13 @@
 package org.netbeans.modules.merge.builtin.visualizer;
 
 import java.awt.Component;
+import java.awt.event.ActionListener;
 //import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 //import java.beans.VetoableChangeSupport;
-//import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 //import java.util.ArrayList;
 
 import org.openide.windows.TopComponent;
@@ -34,6 +36,8 @@ public class MergeDialogComponent extends TopComponent {
     public static final String PROP_PANEL_CLOSING = "panelClosing"; // NOI18N
     public static final String PROP_ALL_CLOSED = "allPanelsClosed"; // NOI18N
     
+    private Map actionListenerMap = new HashMap();
+
     //private List mergePanels;
     //private VetoableChangeSupport chSupport;
     
@@ -157,8 +161,9 @@ public class MergeDialogComponent extends TopComponent {
     // End of variables declaration//GEN-END:variables
     
     
-    public synchronized void addMergePanel(MergePanel panel) {
+    public synchronized void addMergePanel(MergePanel panel, ActionListener actionL) {
         mergeTabbedPane.addTab(panel.getName(), panel);
+        actionListenerMap.put(panel, actionL);
     }
     
 }

@@ -81,10 +81,10 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
     public MergePanel() {
 //        this.diff = diff;
         initComponents ();
-        //prevConflictButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/prev.gif")));
-        //nextConflictButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/next.gif")));
-        prevConflictButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/diff/builtin/visualizer/prev.gif")));
-        nextConflictButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/diff/builtin/visualizer/next.gif")));
+        prevConflictButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/prev.gif")));
+        nextConflictButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/next.gif")));
+        //prevConflictButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/diff/builtin/visualizer/prev.gif")));
+        //nextConflictButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/diff/builtin/visualizer/next.gif")));
         prevConflictButton.setMnemonic (org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.prevButton.mnemonic").charAt (0));
         nextConflictButton.setMnemonic (org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.nextButton.mnemonic").charAt (0));
         //setTitle(org.openide.util.NbBundle.getBundle(DiffComponent.class).getString("DiffComponent.title"));
@@ -946,10 +946,14 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
     /** Copies a part of one document into another. */
     private void copy(StyledDocument doc1, int line1, int line2, StyledDocument doc2, int line3) throws BadLocationException {
         int offset1 = org.openide.text.NbDocument.findLineOffset(doc1, line1);
-        int offset2 = org.openide.text.NbDocument.findLineOffset(doc1, line2);
+        int offset2 = (line2 >= 0) ? org.openide.text.NbDocument.findLineOffset(doc1, line2)
+                                   : (doc1.getLength() - 1);
         int offset3 = org.openide.text.NbDocument.findLineOffset(doc2, line3);
-        String text = doc1.getText(offset1, offset2 - offset1 + 1);
-        doc1.insertString(offset3, text, null);
+        int length = offset2 - offset1;
+        if (line2 < 0) length++;
+        String text = doc1.getText(offset1, length);
+        //System.out.println(">> copy text: at "+offset3+" <<\n"+text+">>  <<");
+        doc2.insertString(offset3, text, null);
     }
     
     public void setSource1Title(String title) {
@@ -1129,7 +1133,7 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
     
     public void addEmptyLines3(int line, int numLines) {
         StyledDocument doc = (StyledDocument) jEditorPane3.getDocument();
-        //System.out.println("addEmptyLines2: line = "+line+", numLines = "+numLines); // NOI18N
+        //System.out.println("addEmptyLines3: line = "+line+", numLines = "+numLines); // NOI18N
         addEmptyLines(doc, line, numLines);
         linesComp3.addEmptyLines(line, numLines);
     }

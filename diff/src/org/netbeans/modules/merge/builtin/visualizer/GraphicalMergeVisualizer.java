@@ -66,7 +66,8 @@ public class GraphicalMergeVisualizer implements Serializable {
      */
     public Component createView(Difference[] diffs, String name1, String title1, Reader r1,
                                 String name2, String title2, Reader r2,
-                                String name3, String title3, Writer w3, String MIMEType) {
+                                String name3, String title3, Writer w3,
+                                String MIMEType, ActionListener actionL) {
         /*
         merge = new MergeDialogDescriptor(diffs, name1+" <> "+name2, MIMEType,
             name1, name2, name3, title1, title2, title3, r1, r2, w3,
@@ -79,9 +80,12 @@ public class GraphicalMergeVisualizer implements Serializable {
                 merge.open();
             }
         }
-        MergeControl control = new MergeControl(merge, new MergePanel());
+        MergePanel panel = new MergePanel();
+        MergeControl control = new MergeControl(/*merge, */panel);
         control.initialize(diffs, name1, title1, r1, name2, title2, r2,
                            name3, title3, w3, MIMEType, colorAdded, colorChanged, colorMissing);
+        merge.addMergePanel(panel, actionL);
+        //control.addActionListener(actionL);
         return merge;
     }
     

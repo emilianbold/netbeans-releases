@@ -31,15 +31,15 @@ public class MergeControl extends Object {
     private Color colorMissing;
     private Color colorChanged;
     
-    private MergeDialogComponent component;
+    //private MergeDialogComponent component;
     private MergePanel panel;
     private Difference[] diffs;
     /** The shift of differences */
     private int[][] diffShifts;
     
     /** Creates a new instance of MergeControl */
-    public MergeControl(MergeDialogComponent component, MergePanel panel) {
-        this.component = component;
+    public MergeControl(/*MergeDialogComponent component, */MergePanel panel) {
+        //this.component = component;
         this.panel = panel;
     }
     
@@ -58,7 +58,7 @@ public class MergeControl extends Object {
         try {
             panel.setSource1(r1);
             panel.setSource2(r2);
-            //panel.setResultSource(w3);
+            panel.setResultSource(new java.io.StringReader(""));
         } catch (IOException ioex) {
             org.openide.TopManager.getDefault().notifyException(ioex);
         }
@@ -156,14 +156,17 @@ public class MergeControl extends Object {
             int n2 = action.getFirstEnd() + diffShifts[i][0];
             int n3 = action.getSecondStart() + diffShifts[i][1];
             int n4 = action.getSecondEnd() + diffShifts[i][1];
-            panel.copySource1ToResult(line1, n1 - 1, line3);
+            //System.out.println("diff = "+n1+", "+n2+", "+n3+", "+n4+"; copy("+(line1 - 1)+", "+(n1-1)+", "+line3+")");
+            if (n1 >= line1) panel.copySource1ToResult(line1 - 1, n1 - 1, line3);
             line3 += n1 - line1;
             int length = Math.max(n2 - n1, n4 - n3);
-            panel.addEmptyLines3(line3, length);
+            panel.addEmptyLines3(line3, length + 1);
             panel.highlightRegion3(line3, line3 + length, colorMissing);
-            line3 += length;
+            line3 += length + 1;
             line1 = n2 + 1;
         }
+        //System.out.println("copy("+(line1 - 1)+", -1, "+line3+")");
+        panel.copySource1ToResult(line1 - 1, -1, line3);
     }
 
 }
