@@ -26,7 +26,7 @@ import com.netbeans.ide.util.NbBundle;
 public class DocumentationSettings extends ContextSystemOption //implements ViewerConstants 
   {
   /** generated Serialized Version UID */
-  //static final long serialVersionUID = 605615362662343329L;
+  //static final long serialVersionUID = -60561536266234354L;
 
   /** generation */
   private static boolean externalJavadoc = false;
@@ -61,13 +61,13 @@ public class DocumentationSettings extends ContextSystemOption //implements View
 
   /** getter for type of generation 
   */
-  /*
+  
   public boolean isExternalJavadoc () {
     return externalJavadoc;
   }
-  */
+  
   /** setter for viewer */
- 
+   
   public void setExternalJavadoc(boolean b) {
     externalJavadoc = b;
     /*
@@ -78,12 +78,14 @@ public class DocumentationSettings extends ContextSystemOption //implements View
   
   /** Getter for documentation search path
   */
+  
   public String[] getSearchPath() {
     return searchPath;
   }
- 
+  
   /** Setter for documentation search path
   */
+  
   public void setSearchPath(String[] s) {
     searchPath = s;
   }
@@ -92,6 +94,7 @@ public class DocumentationSettings extends ContextSystemOption //implements View
 
 /*
  * Log
+ *  3    Gandalf   1.2         5/17/99  Petr Hrebejk    
  *  2    Gandalf   1.1         5/14/99  Petr Hrebejk    
  *  1    Gandalf   1.0         4/23/99  Petr Hrebejk    
  * $
