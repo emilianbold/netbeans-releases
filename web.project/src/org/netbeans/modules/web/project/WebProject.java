@@ -22,6 +22,8 @@ import java.lang.ref.SoftReference;
 import java.util.*;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -345,6 +347,13 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
                 sysName = sysName.replace (' ', '_'); //NOI18N
                 webModule.setContextPath (sysName);
             }
+            
+            // register project's classpaths to GlobalPathRegistry
+            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
+            GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
+            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+            GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
+            
         }
         
         protected void projectClosed() {
@@ -354,6 +363,12 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
+            
+            // unregister project's classpaths to GlobalPathRegistry
+            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
+            GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
+            GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+            GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
         }
         
     }
