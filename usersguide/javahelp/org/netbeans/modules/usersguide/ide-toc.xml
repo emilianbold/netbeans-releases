@@ -208,13 +208,13 @@
       <tocitem text="Customizing the Output Window" target="configure.output" />
     </tocitem>
     <tocitem text="Configuring the Compiler" >
-      <tocitem text="About" target="compile.options.jump"/>
-      <tocitem text="External Compiler" target="compile.external"/>
-      <tocitem text="Internal Compiler" target="compile.internal"/>
-      <tocitem text="Jikes Compiler" target="compile.jikes"/>
+      <tocitem text="Compiler Types in the IDE" target="compile.options.jump"/>
+      <tocitem text="External Compilation" target="compile.external"/>
+      <tocitem text="Internal Compilation" target="compile.internal"/>
+      <tocitem text="Jikes Compilation" target="compile.jikes"/>
       <tocitem text="Indirect Ant Compilation" target="ant.indantcomp"/>
       <tocitem text="Ant Script Compilation" target="ant.antscriptcomp"/>
-      <tocitem text="Specifying the Default Compiler" target="compile.default"/>
+      <tocitem text="Specifying the Default Compiler Type" target="compile.default"/>
       <tocitem text="Defining a New Compiler Type" target="compile.new"/>
       <tocitem text="Setting a Compiler Type in a Template" target="compile.template" />
       <tocitem text="Removing a Compiler Type" target="compile.remove"/>

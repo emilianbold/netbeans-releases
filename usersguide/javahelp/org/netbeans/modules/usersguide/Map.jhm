@@ -269,14 +269,11 @@
 <!-- could use a more specific page for this. -->
 <mapID target="org.netbeans.modules.java.settings.JavaSynchronizationSettings" url="java/synchronizing/properties.html" />
 
-<mapID target="compile.run.jump" url="compile/compile_run.html" />
 
-<mapID target="compile.jump" url="compile/compile_jump.html" />
 <mapID target="compile.program" url="compile/compile.html" />
 <mapID target="compile.error" url="compile/error.html" />
 <mapID target="compile.stop" url="compile/stop.html" />
 <mapID target="compile.output" url="compile/output.html" />
-<mapID target="compile.outputwindow.jump" url="compile/compile_output_jump.html" />
 <mapID target="compile.messages" url="compile/messages.html" />
 <mapID target="compile.memory.error" url="compile/out_of_memory.html" />
 <mapID target="compile.disable" url="compile/disable.html" />
