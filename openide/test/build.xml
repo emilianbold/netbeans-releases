@@ -345,12 +345,10 @@ Microsystems, Inc. All Rights Reserved.
  	      --> 
              <fileset dir="${netbeans.home}/lib">
             		<include name="core.jar"/>
+            		<include name="core-windows.jar"/>
                         <include name="openide.jar"/>
             		<include name="ext/*.jar"/>
              </fileset>             
-                <fileset dir="../../core/windows/netbeans/lib">
-            		<include name="core-windows.jar"/>
-                </fileset>             
 
         </path>
     </target>
