@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
             <include name="${module.jar}"/>
             <include name="${nb.lib.dir}/ide.ks"/>
             <include name="${nb.bin.dir}/nbexec*"/>
-            <include name="${nb.system.dir}/ModuleAutoDeps/${code-name-base-dashes}.xml"/>
+            <include name="${nb.system.dir}/ModuleAutoDeps/${code.name.base.dashes}.xml"/>
             <include name="CREDITS.html"/>
         </patternset>
         <patternset id="module.files">
