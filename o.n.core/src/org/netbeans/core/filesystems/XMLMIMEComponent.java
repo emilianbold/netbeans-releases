@@ -352,6 +352,8 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
          * Any of constructs must match.
          */
         public boolean match(Smell t) {
+
+            if (t == null) return false;
             
             // try if a doctype public-id matches
             
