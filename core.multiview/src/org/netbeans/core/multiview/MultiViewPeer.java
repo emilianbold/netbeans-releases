@@ -263,7 +263,6 @@ public final class MultiViewPeer  {
             }
         }
         return acts;
-//        return acts;
     }
     
     MultiViewHandlerDelegate getMultiViewHandlerDelegate() {

@@ -147,7 +147,6 @@ public final class MultiViewTopComponent
         Action[] superActions = super.getActions();
         Action[] acts = peer.peerGetActions(superActions);
         return acts;
-//        return acts;
     }
     
     public MultiViewHandlerDelegate getMultiViewHandlerDelegate() {
