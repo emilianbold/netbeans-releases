@@ -209,16 +209,19 @@ public class BridgeImpl implements BridgeInterface {
                 defs.put("task", p2.getTaskDefinitions());
                 defs.put("type", p2.getDataTypeDefinitions());
                 custom.scanProject(defs);
-                // #8993: also try to refresh FS that script was on...
-                // (actually refresh them all since we don't really know
-                // what is needed, and the script might be in SFS)
-                Enumeration e = Repository.getDefault().fileSystems();
-                while (e.hasMoreElements()) {
-                    // Do not restrict to just visible filesystems; hidden ones
-                    // may be important too for various reasons.
-                    FileSystem fs = (FileSystem)e.nextElement();
-                    fs.refresh(false);
+                // #8993: also try to refresh masterfs...this is hackish...
+                // cf. also RefreshAllFilesystemsAction
+                File[] roots = File.listRoots();
+                assert roots != null && roots.length > 0 : "Could not list file roots to refresh";
+                FileObject random = FileUtil.toFileObject(roots[0]);
+                assert random != null : "Could not get a represent file object from masterfs";
+                FileSystem fs;
+                try {
+                    fs = random.getFileSystem();
+                } catch (FileStateInvalidException e) {
+                    throw new AssertionError(e);
                 }
+                fs.refresh(false);
                 gutProject(p2);
             }
         }, 1000); // a bit later; the target can finish first!
