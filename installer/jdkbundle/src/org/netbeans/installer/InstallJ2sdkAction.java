@@ -532,12 +532,6 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                     break;
                 }
             }
-            if (installerName != null) {
-                logEvent(this, Log.DBG, "createInstallScript JDK installer found: " + installerName);
-            } else {
-                logEvent(this, Log.DBG, "createInstallScript JDK installer NOT found. JDK cannot be installed.");
-                installerName = "jdk-installer-not-found";
-            }
 	} else if (Util.isSunOS()) {
 	    if (arch.startsWith("sparc")) {
                 //Try to locate Solaris Sparc JDK installer
@@ -548,12 +542,6 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                         break;
                     }
                 }
-                if (installerName != null) {
-                    logEvent(this, Log.DBG, "createInstallScript JDK installer found: " + installerName);
-                } else {
-                    logEvent(this, Log.DBG, "createInstallScript JDK installer NOT found. JDK cannot be installed.");
-                    installerName = "jdk-installer-not-found";
-                }
 	    } else {
                 //Try to locate Solaris X86 JDK installer
                 for (int i = 0; i < children.length; i++) {
@@ -563,14 +551,14 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                         break;
                     }
                 }
-                if (installerName != null) {
-                    logEvent(this, Log.DBG, "createInstallScript JDK installer found: " + installerName);
-                } else {
-                    logEvent(this, Log.DBG, "createInstallScript JDK installer NOT found. JDK cannot be installed.");
-                    installerName = "jdk-installer-not-found";
-                }
 	    }
 	}
+        if (installerName != null) {
+            logEvent(this, Log.DBG, "createInstallScript JDK installer found: " + installerName);
+        } else {
+            logEvent(this, Log.DBG, "createInstallScript JDK installer NOT found. JDK cannot be installed.");
+            installerName = "jdk-installer-not-found";
+        }
 
         String line;
         while ((line = reader.readLine()) != null) {
