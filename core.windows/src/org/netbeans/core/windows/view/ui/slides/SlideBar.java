@@ -218,14 +218,15 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         int bottom = 0, left = 0, right = 0, top = 0;
         switch (orientation) {
             case SlideBarDataModel.WEST:
-                top = 10; left = 1; bottom = 5; right = 1; 
+                top = 1; left = 1; bottom = 5; right = 1; 
                 break;
-            case SlideBarDataModel.SOUTH:
-                // XXX - left and right should be width of appropriate slidebar + 5
-                top = 1; left = 25; bottom = 2; right = 25; 
-                break;
+                // DesktopImpl.redefineBorderForSouthBar() is the place to set dynamic border for south component.
+//            case SlideBarDataModel.SOUTH:
+//                // XXX - left and right should be width of appropriate slidebar + 5
+//                top = 1; left = 26; bottom = 2; right = 26; 
+//                break;
             case SlideBarDataModel.EAST:
-                top = 10; left = 1; bottom = 5; right = 1; 
+                top = 1; left = 1; bottom = 5; right = 1; 
                 break;
         }
         return new EmptyBorder(top, left, bottom, right);

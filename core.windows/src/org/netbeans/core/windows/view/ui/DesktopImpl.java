@@ -30,6 +30,7 @@ import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.view.EditorView;
 import org.netbeans.core.windows.view.SlidingView;
@@ -200,6 +201,9 @@ public final class DesktopImpl {
         slidingViews.add(view);
         String constraint = convertSide(view.getSide());
         desktop.add(view.getComponent(), constraint);
+        if (constraint == BorderLayout.WEST || constraint == BorderLayout.SOUTH) {
+            redefineBorderForSouthBar();
+        }
         layeredPane.revalidate();
     }
     
@@ -209,7 +213,11 @@ public final class DesktopImpl {
             return;
         }
         slidingViews.remove(view);
+        String constraint = convertSide(view.getSide());
         desktop.remove(view.getComponent());
+        if (constraint == BorderLayout.WEST || constraint == BorderLayout.SOUTH) {
+            redefineBorderForSouthBar();
+        }
         checkCurSlide();
         layeredPane.revalidate();
     }
@@ -226,6 +234,28 @@ public final class DesktopImpl {
             }
             // currently slided component not found in view data, so remove
             layeredPane.remove(curSlideComp);
+        }
+    }
+    
+    private void redefineBorderForSouthBar() {
+        SlidingView south = null;
+        SlidingView west = null;
+        Iterator it = slidingViews.iterator();
+        while (it.hasNext()) {
+            SlidingView view = (SlidingView)it.next();
+            if (Constants.LEFT.equals(view.getSide())) {
+                west = view;
+            }
+            if (Constants.BOTTOM.equals(view.getSide())) {
+                south = view;
+            }
+        }
+        if (south != null) {
+            if (west != null) {
+                ((JComponent)south.getComponent()).setBorder(new EmptyBorder(1, 26, 2, 26));
+            } else {
+                ((JComponent)south.getComponent()).setBorder(new EmptyBorder(1, 2, 2, 26));
+            }
         }
     }
     
