@@ -116,6 +116,7 @@
         c -> /WEB-INF/META-INF/c.tld
         fmt -> /WEB-INF/META-INF/fmt.tld
         tf -> urn:jsptagdir:/WEB-INF/tags/
+      approxXmlPrefixMapper :
       language            : java
       xtends              : org.apache.jasper.runtime.HttpJspBase
       contentType         : text/html;charset=UTF-8

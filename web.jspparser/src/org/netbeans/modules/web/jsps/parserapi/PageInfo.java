@@ -45,6 +45,8 @@ public abstract class PageInfo {
     private Map taglibsMap;
     private Map jspPrefixMapper;
     private Map xmlPrefixMapper;
+    /** Approximate XML prefix mapper. Same as xmlPrefixMapper, but does not "forget" mappings (by popping them). */
+    private Map approxXmlPrefixMapper;
     private String defaultLanguage = "java";
     private String language;
     private String defaultExtends = JSP_SERVLET_BASE;
@@ -89,6 +91,7 @@ public abstract class PageInfo {
             Map taglibsMap,
             Map jspPrefixMapper,
             Map xmlPrefixMapper,
+            Map approxXmlPrefixMapper,
             List imports,
             List dependants,
             List includePrelude,
@@ -100,6 +103,7 @@ public abstract class PageInfo {
 	this.taglibsMap = taglibsMap;
 	this.jspPrefixMapper = jspPrefixMapper;
 	this.xmlPrefixMapper = xmlPrefixMapper;
+        this.approxXmlPrefixMapper = approxXmlPrefixMapper;
 	this.imports = imports;
         this.dependants = dependants;
 	this.includePrelude = includePrelude;
@@ -631,6 +635,10 @@ public abstract class PageInfo {
         return xmlPrefixMapper;
     }
     
+    public Map getApproxXmlPrefixMapper() {
+        return approxXmlPrefixMapper;
+    }
+    
     public BeanData[] getBeans() {
         return beans;
     }
@@ -662,6 +670,7 @@ public abstract class PageInfo {
         sb.append(indent).append("prefixMapper:\n").append(mapToString(jspPrefixMapper, indent + "  "));  // NOI18N
         // PENDING -xmlPrefixMapper
         // sb.append(indent).append("xmlprefixMapper:\n").append(mapToString(xmlPrefixMapper, indent + "  "));
+        sb.append(indent).append("approxXmlPrefixMapper :\n").append(mapToString(approxXmlPrefixMapper, indent + "  "));  // NOI18N
         sb.append(indent).append("language            : ").append(language).append("\n");  // NOI18N
         sb.append(indent).append("xtends              : ").append(xtends).append("\n");  // NOI18N
         sb.append(indent).append("contentType         : ").append(contentType).append("\n");  // NOI18N

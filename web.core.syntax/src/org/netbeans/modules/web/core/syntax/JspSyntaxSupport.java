@@ -132,13 +132,18 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     /** Returns a map of prefix -> URI that maps tag libraries on prefixes.
      * For the XML syntax this mapping may only be approximate.
      */
-    private Map getJspPrefixMapper() {
+    private Map getPrefixMapper() {
         // PENDING - must also take xmlPrefixMapper into account
         JspParserAPI.ParseResult result = getParseResult();
         if (result != null) {
             if (result.isParsingSuccess()) {
                 // PENDING - can we somehow get incomplete parsed information ?
-                return result.getPageInfo().getJspPrefixMapper();
+                if (result.getPageInfo().getXMLPrefixMapper().size() > 0) {
+                    return result.getPageInfo().getApproxXmlPrefixMapper();
+                }
+                else {
+                    return result.getPageInfo().getJspPrefixMapper();
+                }
             }
         }
         return null;
@@ -153,7 +158,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     }
     
     private TagLibraryInfo getTagLibrary(String prefix) {
-        Map mapper = getJspPrefixMapper();
+        Map mapper = getPrefixMapper();
         if (mapper != null) {
             Object uri = mapper.get(prefix);
             if (uri != null) {
@@ -358,7 +363,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         // jsp: prefix
         items.add(STANDARD_JSP_PREFIX);
         
-        Map mapper = getJspPrefixMapper();
+        Map mapper = getPrefixMapper();
         if (mapper != null) {
             // sort it
             TreeSet ts = new TreeSet();

@@ -39,7 +39,7 @@ public final class JSPColoringData extends PropertyChangeSupport {
     private Map taglibs;
     
     /** Prefix -> Taglib id */
-    private Map jspPrefixMapper;
+    private Map prefixMapper;
     
     private boolean elIgnored = false;
     
@@ -50,9 +50,9 @@ public final class JSPColoringData extends PropertyChangeSupport {
     
     public String toString() {
         return "JSPColoringData, taglibMap:\n" +
-          (jspPrefixMapper == null ?
+          (prefixMapper == null ?
             "null" :
-            mapToString(jspPrefixMapper, "  ")
+            mapToString(prefixMapper, "  ")
           );
     }
     
@@ -69,10 +69,10 @@ public final class JSPColoringData extends PropertyChangeSupport {
     /** Returns true if the given tag library prefix is known in this page.
      */
     public boolean isTagLibRegistered(String prefix) {
-        if ((taglibs == null) || (jspPrefixMapper == null)) {
+        if ((taglibs == null) || (prefixMapper == null)) {
             return false;
         }
-        return jspPrefixMapper.containsKey(prefix);
+        return prefixMapper.containsKey(prefix);
     }
     
     /** Returns true if the EL is ignored in this page.
@@ -89,9 +89,9 @@ public final class JSPColoringData extends PropertyChangeSupport {
      * @param newPrefixMapper the new map of (prefix, uri)
      * @param parseSuccessful wherher parsing was successful. If false, then the new information is partial only
      */
-    public void applyParsedData(Map newTaglibs, Map newJspPrefixMapper, boolean newELIgnored, boolean parseSuccessful) {
+    public void applyParsedData(Map newTaglibs, Map newPrefixMapper, boolean newELIgnored, boolean parseSuccessful) {
         // check whether coloring has not changed
-        boolean coloringSame = equalsColoringInformation(taglibs, jspPrefixMapper, newTaglibs, newJspPrefixMapper);
+        boolean coloringSame = equalsColoringInformation(taglibs, prefixMapper, newTaglibs, newPrefixMapper);
         
         // check and apply EL data
         if (parseSuccessful) {
@@ -100,23 +100,23 @@ public final class JSPColoringData extends PropertyChangeSupport {
         }
         
         // appy taglib data
-        if (parseSuccessful || (taglibs == null) || (jspPrefixMapper == null)) {
+        if (parseSuccessful || (taglibs == null) || (prefixMapper == null)) {
             // overwrite
             taglibs = newTaglibs;
-            jspPrefixMapper = newJspPrefixMapper;
+            prefixMapper = newPrefixMapper;
         }
         else {
             // merge
-            Iterator it = newJspPrefixMapper.keySet().iterator();
+            Iterator it = newPrefixMapper.keySet().iterator();
             while (it.hasNext()) {
                 Object prefix = it.next();
-                Object uri = newJspPrefixMapper.get(prefix);
-                Object uriOld = jspPrefixMapper.get(prefix);
+                Object uri = newPrefixMapper.get(prefix);
+                Object uriOld = prefixMapper.get(prefix);
                 if ((uriOld == null) || !uri.equals(uriOld)) {
                     Object newTaglib = newTaglibs.get(uri);
                     if (newTaglib != null) {
                         // change - merge it
-                        jspPrefixMapper.put(prefix, uri);
+                        prefixMapper.put(prefix, uri);
                         taglibs.put(uri, newTaglib);
                     }
                 }
@@ -128,22 +128,22 @@ public final class JSPColoringData extends PropertyChangeSupport {
         }
     }
 
-    private static boolean equalsColoringInformation(Map taglibs1, Map jspPrefixMapper1, Map taglibs2, Map jspPrefixMapper2) {
+    private static boolean equalsColoringInformation(Map taglibs1, Map prefixMapper1, Map taglibs2, Map prefixMapper2) {
         if ((taglibs1 == null) != (taglibs2 == null)) {
             return false;
         }
-        if ((jspPrefixMapper1 == null) != (jspPrefixMapper2 == null)) {
+        if ((prefixMapper1 == null) != (prefixMapper2 == null)) {
             return false;
         }
-        if (jspPrefixMapper1.size() != jspPrefixMapper2.size()) {
+        if (prefixMapper1.size() != prefixMapper2.size()) {
             return false;
         }
         else {
-            Iterator it = jspPrefixMapper1.keySet().iterator();
+            Iterator it = prefixMapper1.keySet().iterator();
             while (it.hasNext()) {
                 Object prefix = it.next();
-                Object key1 = jspPrefixMapper1.get(prefix);
-                Object key2 = jspPrefixMapper2.get(prefix);
+                Object key1 = prefixMapper1.get(prefix);
+                Object key2 = prefixMapper2.get(prefix);
                 if ((key1 == null) || (key2 == null)) {
                     return false;
                 }

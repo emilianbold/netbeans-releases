@@ -44,6 +44,7 @@
                        signature: java.lang.String numVowels( java.lang.String )
       prefixMapper:
         my -> http://jakarta.apache.org/tomcat/jsp2-example-taglib
+      approxXmlPrefixMapper :
       language            : java
       xtends              : org.apache.jasper.runtime.HttpJspBase
       contentType         : text/html

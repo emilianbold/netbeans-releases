@@ -8,6 +8,7 @@
       dependants:
       taglibsMap:
       prefixMapper:
+      approxXmlPrefixMapper :
       language            : java
       xtends              : org.apache.jasper.runtime.HttpJspBase
       contentType         : text/html

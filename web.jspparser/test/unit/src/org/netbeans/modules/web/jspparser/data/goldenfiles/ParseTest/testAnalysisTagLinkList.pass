@@ -53,6 +53,7 @@
                   attribs  : [value, type, dateStyle, timeStyle, pattern, timeZone, parseLocale, var, scope]
       prefixMapper:
         fmt -> /WEB-INF/META-INF/fmt.tld
+      approxXmlPrefixMapper :
       language            : java
       xtends              : org.apache.jasper.runtime.HttpJspBase
       contentType         : text/html
