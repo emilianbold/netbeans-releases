@@ -125,8 +125,16 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             ((GridBagLayout)this.getLayout()).setConstraints(spane,c);
             this.add (spane);
             label.setLabelFor (spane);
-            if (type == SOURCES || type == JAVADOC) {
-                this.addButton = new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_Add"));
+            if (type == SOURCES || type == JAVADOC) {                
+                this.addButton = new JButton ();
+                String text;
+                if (type == SOURCES) {
+                    text = NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_Add");
+                }
+                else {
+                    text = NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_AddZip");
+                }
+                this.addButton.setText(text);
                 addButton.addActionListener( new ActionListener () {
                     public void actionPerformed(ActionEvent e) {
                         addPathElement ();
@@ -210,23 +218,53 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
         }
 
         private void addURLElement() {
-            DialogDescriptor.InputLine input = new DialogDescriptor.InputLine (
-                NbBundle.getMessage(J2SEPlatformCustomizer.class,"CTL_AddJavadocURLMessage"),
-                NbBundle.getMessage(J2SEPlatformCustomizer.class,"CTL_AddJavadocURLTitle"));
-        if (DialogDisplayer.getDefault().notify(input) == DialogDescriptor.OK_OPTION) {
-            try {
-                String value = input.getInputText();
-                URL url = new URL (value);
-                ((PathModel)this.resources.getModel()).addPath(url);
-                this.resources.setSelectedIndex (this.resources.getModel().getSize()-1);
-            } catch (MalformedURLException mue) {
-                DialogDescriptor.Message message = new DialogDescriptor.Message (
+            JPanel p = new JPanel ();
+            GridBagLayout lm = new GridBagLayout();
+            p.setLayout (lm);
+            GridBagConstraints c = new GridBagConstraints ();
+            c.gridx = c.gridy = GridBagConstraints.RELATIVE;
+            c.insets = new Insets (12,12,12,6);
+            c.anchor = GridBagConstraints.NORTHWEST;
+            JLabel label = new JLabel (NbBundle.getMessage(J2SEPlatformCustomizer.class,"CTL_AddJavadocURLMessage"));
+            label.setDisplayedMnemonic ('U');
+            lm.setConstraints(label,c);
+            p.add (label);
+            c = new GridBagConstraints ();
+            c.gridx = c.gridy = GridBagConstraints.RELATIVE;
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.insets = new Insets (12,0,12,6);
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.anchor = GridBagConstraints.NORTHWEST;
+            JTextField text = new JTextField ();
+            text.setColumns(30);
+            text.setText (NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_DefaultProtocol"));
+            text.selectAll();
+            label.setLabelFor(text);
+            lm.setConstraints(text,c);
+            p.add (text);            
+            JButton[] options = new JButton[] {
+                new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class,"CTL_AddJavadocURLTitle")),
+                new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class,"CTL_Cancel"))
+            };
+            options[0].setMnemonic(NbBundle.getMessage(J2SEPlatformCustomizer.class,"MNE_Add").charAt(0));
+            options[1].setMnemonic(NbBundle.getMessage(J2SEPlatformCustomizer.class,"MNE_Cancel").charAt(0));
+            DialogDescriptor input = new DialogDescriptor (
+                p,
+                NbBundle.getMessage(J2SEPlatformCustomizer.class,"CTL_AddJavadocURLTitle"),
+                true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);            
+            if (DialogDisplayer.getDefault().notify(input) == options[0]) {
+                try {
+                    String value = text.getText();
+                    URL url = new URL (value);
+                    ((PathModel)this.resources.getModel()).addPath(url);
+                    this.resources.setSelectedIndex (this.resources.getModel().getSize()-1);
+                } catch (MalformedURLException mue) {
+                    DialogDescriptor.Message message = new DialogDescriptor.Message (
                         NbBundle.getMessage(J2SEPlatformCustomizer.class,"CTL_InvalidURLFormat"),
-                        DialogDescriptor.ERROR_MESSAGE
-                );
-                DialogDisplayer.getDefault().notify(message);
+                        DialogDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(message);
+                }
             }
-        }
         }
 
         private void addPathElement () {
@@ -234,15 +272,20 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             chooser.setMultiSelectionEnabled (true);
             String title = null;
             String message = null;
+            String approveButtonName = null;
             if (this.type == SOURCES) {
                 title = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenSources");
                 message = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_Sources");
+                approveButtonName = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenSources");
             }
             else if (this.type == JAVADOC) {
                 title = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenJavadoc");
                 message = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_Javadoc");
+                approveButtonName = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenJavadoc");
             }
             chooser.setDialogTitle(title);
+            chooser.setApproveButtonText(approveButtonName);
+            chooser.setApproveButtonMnemonic (NbBundle.getMessage (J2SEPlatformCustomizer.class,"MNE_Add").charAt(0));
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             chooser.setFileFilter (new SimpleFileFilter(message,new String[] {"ZIP","JAR"}));   //NOI18N
             if (chooser.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
@@ -290,7 +333,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             }
             PathModel model = (PathModel) this.resources.getModel();
             model.moveUpPath (index);
-            this.resources.setSelectedIndex (index+1);
+            this.resources.setSelectedIndex (index-1);
         }
 
         private void selectionChanged () {
