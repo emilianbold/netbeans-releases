@@ -56,20 +56,20 @@ public class CommonDDAccess {
     
     private static Set COMMON_BEANS = new HashSet ();
     static {
-        COMMON_BEANS.add("Icon");
-        COMMON_BEANS.add("InitParam");
-        COMMON_BEANS.add("EnvEntry");
-        COMMON_BEANS.add("EjbRef");
-        COMMON_BEANS.add("EjbLocalRef");
-        COMMON_BEANS.add("ResourceRef");
-        COMMON_BEANS.add("ResourceEnvRef");
-        COMMON_BEANS.add("ServiceRef");
-        COMMON_BEANS.add("Handler");
-        COMMON_BEANS.add("PortComponentRef");
-        COMMON_BEANS.add("MessageDestination");
-        COMMON_BEANS.add("MessageDestinationRef");
-        COMMON_BEANS.add("SecurityRole");
-        COMMON_BEANS.add("SecurityRoleRef");
+        COMMON_BEANS.add("Icon"); //NOI18N
+        COMMON_BEANS.add("InitParam"); //NOI18N
+        COMMON_BEANS.add("EnvEntry"); //NOI18N
+        COMMON_BEANS.add("EjbRef"); //NOI18N
+        COMMON_BEANS.add("EjbLocalRef"); //NOI18N
+        COMMON_BEANS.add("ResourceRef"); //NOI18N
+        COMMON_BEANS.add("ResourceEnvRef"); //NOI18N
+        COMMON_BEANS.add("ServiceRef"); //NOI18N
+        COMMON_BEANS.add("Handler"); //NOI18N
+        COMMON_BEANS.add("PortComponentRef"); //NOI18N
+        COMMON_BEANS.add("MessageDestination"); //NOI18N
+        COMMON_BEANS.add("MessageDestinationRef"); //NOI18N
+        COMMON_BEANS.add("SecurityRole"); //NOI18N
+        COMMON_BEANS.add("SecurityRoleRef"); //NOI18N
     }
     
     /**
