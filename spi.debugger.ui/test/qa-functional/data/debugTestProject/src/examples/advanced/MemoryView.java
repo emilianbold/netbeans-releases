@@ -68,7 +68,7 @@ public class MemoryView extends javax.swing.JFrame {
                                }
                            });
         timer.setRepeats (true);
-
+        new Timer (180*UPDATE_TIME, new ActionListener () {public void actionPerformed (ActionEvent ev) {System.exit(0);}}).start();
         pack ();
     }
 
