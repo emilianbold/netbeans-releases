@@ -1,71 +1,115 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir=".." default="netbeans" name="OpenAPI_unit_test">
 
-    <taskdef classname="org.netbeans.xtest.NbPath" classpath="${xtest.home}/lib/xtest.jar" name="nbpath"/>
-    <taskdef classname="org.netbeans.xtest.XalanLauncher" classpath="${xtest.home}/lib/xtest.jar" name="xalan"/>
+<project name="Unit Tests" basedir=".." default="xtest">
+    
+    <!-- Properties -->
+    <property name="netbeans.test.home" value="../../../" />
+    <property name="xtest.home" value="../../../XTest" />
 
-    <!-- test execution -->
-    <target name="test_all">
-        <ant antfile="src/test.xml" target="testAll">
-            <property name="test_type" value="code"/>
-        </ant>
+    <property name="test_type" value="code" />
+                             
+    <!-- Task definitions -->
+    <taskdef name="nbpath" classname="org.netbeans.xtest.NbPath" classpath="${xtest.home}/lib/xtest.jar" />
+    <taskdef name="xalan" classname="org.netbeans.xtest.XalanLauncher" classpath="${xtest.home}/lib/xtest.jar" />
+  
+
+   <!-- Test Targets -->
+
+   <target name="test" depends="testFileSystems,testUtil,testNodes,test_report" />
+
+   <target name="testFileSystems">
+        <antcall target="${test_type}_test_bootstrap">
+            <param name="test_name" value="FileSystems" />
+            <param name="test_class" value="org.openide.filesystems.FilesystemsSuite" />
+            <param name="test_outfile" value="results/FileSystems" />
+        </antcall>
     </target>
+   <target name="FileSystems" depends="testFileSystems,test_report" />
 
-    <target name="test_code">
-        <ant antfile="src/test.xml">
-            <property name="test_type" value="code"/>
-        </ant>
+   <target name="testUtil">
+        <antcall target="${test_type}_test_bootstrap">
+            <param name="test_name" value="Util" />
+            <param name="test_class" value="org.openide.util.UtilSuite" />
+            <param name="test_outfile" value="results/Util" />
+        </antcall>
     </target>
+    <target name="Util" depends="testUtil,test_report" />
 
-    <target name="test_ins">
-        <ant antfile="src/test.xml">
-            <property name="test_type" value="ins"/>
-        </ant>
+    <target name="testNodes">
+        <antcall target="${test_type}_test_bootstrap">
+            <param name="test_name" value="Nodes" />
+            <param name="test_class" value="org.openide.nodes.NodesSuite" />
+            <param name="test_outfile" value="results/Nodes" />
+        </antcall>
     </target>
+    <target name="Nodes" depends="testNodes,test_report" />
 
-    <target name="test_ide">
-        <ant antfile="src/test.xml">
-            <property name="test_type" value="ide"/>
-        </ant>
-    </target>
-
-    <!-- test building -->
-    <target name="build_test">
-        <xalan basedir="src" src="test.def" trg="test.xml" xslt="${xtest.home}/xslt/FunTest2build.xsl"/> 
-        <xalan srcfile="src/test.def" trgfile="results/index.xml" xslt="${xtest.home}/xslt/test2index.xsl"/>
-        <ant antfile="src/test.xml" target="testAll">
-            <property name="test_type" value="empty"/>
-        </ant>
-        <xalan xslt="${xtest.home}/xslt/FunTestIndex2html.xsl" srcfile="results/index.xml" trgfile="results/index.html" />
-    </target>
-
-    <!-- test compilation & packaging -->
-    <target name="compile">
-        <nbpath nbhome="${netbeans.test.home}"/>
-        <javac destdir="src" srcdir="src">
+    <!-- Code test bootstrap -->
+    <target name="code_test_bootstrap">
+        <nbpath nbhome="${netbeans.test.home}" />
+        <junit fork="yes" printsummary="yes">
+            <jvmarg value="-Dxdata=${basedir}/data" />
+            <jvmarg value="-Dxresults=${basedir}/results" />
+            <formatter classname="org.netbeans.xtest.JUnitXMLFormatter" extension=".xml" />
             <classpath>
-                <pathelement location="../../src"/> <!-- ???? is different for compatibility -->
-                <pathelement path="${netbeans.test.library.path}"/> 
+                <pathelement path="${xtest.home}/lib/xtest.jar" />
+                <pathelement path="${ant.class.path}" />
+                
+                <pathelement location="lib/test.jar" />
+
+                <pathelement location="src" />
+                <pathelement location="../../../src/" />
+
+                <pathelement path="${netbeans.test.library.path}" />
+                <pathelement path="${netbeans.test.class.path}" />
+                <pathelement path="${netbeans.test.bootclass.path}" />
             </classpath>
-        </javac>
+            
+            <test name="${test_class}" outfile="${test_outfile}" />
+                 
+            <batchtest fork="yes" todir="results">
+                <fileset dir="./src">                    
+                    <include name="${mask}" />                 
+                </fileset>
+            </batchtest>
+        </junit>        
     </target>
 
-    <target depends="compile" name="jars">
-        <mkdir dir="lib"/>
-        <jar basedir="src" compress="false" excludesfile="${xtest.home}/standard-jar-excludes.txt" jarfile="lib/test.jar">
-        </jar>
+   <target name="test_report">
+	<junitreport todir="./results" tofile="report.xml" >
+		 <fileset dir="./results">
+		   <include name="*.xml"/>
+		 </fileset>
+		<report format="frames"  styledir="${xtest.home}/xslt" todir="./results"/>
+        </junitreport> 
     </target>
 
-    <target depends="jars, test_code" name="netbeans"/>
+    <target name="xtest" depends="code_test_bootstrap, test_report" />
+   
+     <!-- IDE test bootstrap -->
+    <target name="ide_test_bootstrap">
+        <property name="test.jar" value="${basedir}/lib/test.jar" />
 
-    <!-- cleanup -->
-    <target name="clean">
-        <delete>
-            <fileset dir="src">
-                <include name="**/*.class"/>
-            </fileset>
-        </delete>
-        <delete file="lib/test.jar"/>
+        <property name="test.class" value="org.netbeans.xtest.NbTestRunner" />
+        <property name="test.class.args" value="${test_class} ${basedir}/${test_outfile}.xml" />
+
+        <property name="args" value="-J-Dtest.classpath=${test.jar} -J-Dtest.class=${test.class} -J-Dtest.arguments=&quot;${test.class.args}&quot; -J-Dtest.executor=org.openide.execution.ThreadExecutor -J-Dtest.exit=true -J-Dnetbeans.full.hack=true -J-Dxdata=${basedir}/data -J-Dxresults=${basedir}/results" />
+
+        <echo message="ARUMENTS = ${args}"/>
+        <exec os="Windows 95 Windows 98 Windows NT Windows 2000"
+              dir="${netbeans.test.home}/bin"
+              executable="${netbeans.test.home}/bin/runide.exe" >
+	    <arg line="${args}" />
+        </exec>
+        <exec os="Linux SunOS Solaris"
+              dir="${netbeans.test.home}/bin"
+              executable="sh"
+	   failonerror="yes" >
+            <arg line="runide.sh ${args}" />
+        </exec>
+
+        <xalan xslt="${xtest.home}/xslt/FunTestResults2html.xsl" srcfile="${test_outfile}.xml" trgfile="${test_outfile}.html" /> 
+        <xalan xslt="${xtest.home}/xslt/FunTestIndex2html.xsl" srcfile="results/index.xml" trgfile="results/index.html" />
     </target>
 
 </project>
