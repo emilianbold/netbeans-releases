@@ -35,6 +35,10 @@ for dir in catalog core css tax text-edit tools tree-edit; do
     ICONS=$WWW/$dir/images/icons
     mkdir -p $ICONS
 
+    touch $ICONS/description.properties
+
+    . $ICONS/description.properties
+
     if [ "$GENERATE" == "true" ]; then
         DESC_FILE=$ICONS/description.properties
         echo "# 
@@ -51,8 +55,6 @@ for dir in catalog core css tax text-edit tools tree-edit; do
 # 
 " > $DESC_FILE
     fi
-
-    . $ICONS/description.properties
 
     DATA=$WWW/$dir/data/icons.xml    
         echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
@@ -121,7 +123,10 @@ Microsystems, Inc. All Rights Reserved.
 
 
         if [ "$GENERATE" == "true" ]; then
-            echo "$KEY=\"This icon is used with ... for ...\"" >> $DESC_FILE
+            if [ "$DESC" == "" ]; then
+                DESC="This icon is used with ... for ..."
+            fi
+            echo "$KEY=\"$DESC\"" >> $DESC_FILE
         fi
 
     done
