@@ -13,7 +13,6 @@
 
 package org.netbeans.core.windows.view.ui.slides;
 
-import com.sun.rsasign.b;
 import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
