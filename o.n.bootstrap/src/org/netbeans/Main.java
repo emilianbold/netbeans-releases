@@ -67,7 +67,7 @@ public class Main extends Object {
         }
         
         // XXX separate openide.jar and core*.jar into different classloaders
-        ClassLoader loader = new JarClassLoader (list, new ClassLoader[] {
+        ClassLoader loader = new BootClassLoader(list, new ClassLoader[] {
             Main.class.getClassLoader()
         });
         
@@ -85,6 +85,12 @@ public class Main extends Object {
         Thread.currentThread().setContextClassLoader (loader);
 
         m.invoke (null, new Object[] { args });
+    }
+    
+    private static final class BootClassLoader extends JarClassLoader {
+        public BootClassLoader(List cp, ClassLoader[] parents) {
+            super(cp, parents);
+        }
     }
     
     
