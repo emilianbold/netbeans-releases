@@ -72,8 +72,24 @@ public class WebSampleProjectIterator implements TemplateWizard.Iterator {
     
     public java.util.Set instantiate (org.openide.loaders.TemplateWizard templateWizard) throws java.io.IOException {
         File projectLocation = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
-        String name = (String) wiz.getProperty(WizardProperties.NAME);                                                                                
-        FileObject prjLoc = WebSampleProjectGenerator.createProjectFromTemplate(templateWizard.getTemplate().getPrimaryFile(), projectLocation, name);
+        String name = (String) wiz.getProperty(WizardProperties.NAME);
+        
+        String projectType = null;
+        DataObject dao = templateWizard.getTemplate ();
+        if (dao != null) {
+            FileObject fo = dao.getPrimaryFile ();
+            if (fo != null) {
+                projectType = (String) fo.getAttribute (WizardProperties.PROJECT_TYPE); // NOI18N
+            }
+        }   
+                
+        FileObject prjLoc = null;
+        if (projectType.equals(WizardProperties.PROJECT_FREEFORMTYPE)) {
+            prjLoc = WebSampleProjectGenerator.createFreeformProjectFromTemplate(templateWizard.getTemplate().getPrimaryFile(), projectLocation, name);
+        } else {
+            prjLoc = WebSampleProjectGenerator.createProjectFromTemplate(templateWizard.getTemplate().getPrimaryFile(), projectLocation, name);
+        }
+        
         return Collections.singleton(DataObject.find(prjLoc));
     }
     

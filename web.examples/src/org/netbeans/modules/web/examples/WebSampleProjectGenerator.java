@@ -19,20 +19,23 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.filesystems.FileLock;
-import org.openide.xml.XMLUtil;
-
-import org.w3c.dom.*;
-import org.xml.sax.InputSource;
 
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.filesystems.FileLock;
+
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.xml.sax.InputSource;
 
 /**
  * Create a sample web project by unzipping a template into some directory
@@ -44,6 +47,7 @@ public class WebSampleProjectGenerator {
     private WebSampleProjectGenerator() {}
 
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/web-project/1";    //NOI18N
+    public static final String PROJECT_FREEFORM_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/freeform-project/1";    //NOI18N
     public static final String JSPC_CLASSPATH = "jspc.classpath";
 
     public static FileObject createProjectFromTemplate(final FileObject template, File projectLocation, final String name) throws IOException {
@@ -107,7 +111,76 @@ public class WebSampleProjectGenerator {
             prjLoc.refresh(false);
         }
         return prjLoc;
-    }     
+    }
+    
+    public static FileObject createFreeformProjectFromTemplate(final FileObject template, File projectLocation, final String name) throws IOException {
+        FileObject prjLoc = null;
+        if (template.getExt().endsWith("zip")) {  //NOI18N
+            unzip(template.getInputStream(), projectLocation);
+            // update project.xml
+            try {
+                prjLoc = FileUtil.toFileObject(projectLocation);
+                File projXml = FileUtil.toFile(prjLoc.getFileObject(AntProjectHelper.PROJECT_XML_PATH));
+                Document doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
+                // replace project name
+                NodeList nlist = doc.getElementsByTagNameNS(PROJECT_FREEFORM_CONFIGURATION_NAMESPACE, "name");       //NOI18N
+                if (nlist != null) {
+                    for (int i=0; i < nlist.getLength(); i++) {
+                        Node n = nlist.item(i);
+                        if (n.getNodeType() != Node.ELEMENT_NODE) {
+                            continue;
+                        }
+                        Element e = (Element)n;
+                        replaceText(e, name);
+                    }
+                }
+                
+                //replace project.location property
+                nlist = doc.getElementsByTagNameNS(PROJECT_FREEFORM_CONFIGURATION_NAMESPACE, "property");       //NOI18N
+                if (nlist != null) {
+                    for (int i=0; i < nlist.getLength(); i++) {
+                        Node n = nlist.item(i);
+                        if (n.getNodeType() != Node.ELEMENT_NODE) {
+                            continue;
+                        }
+                        Element e = (Element)n;
+                        String attr = e.getAttribute("name");
+                        if ((attr == null) || (!attr.equals("project.location"))) {
+                            continue;
+                        }
+                        replaceText(e, projectLocation.getAbsolutePath());
+                        break;
+                    }
+                }
+                saveXml(doc, prjLoc, AntProjectHelper.PROJECT_XML_PATH);
+            
+            } catch (Exception e) {
+                throw new IOException(e.toString());
+            }
+            
+            //create build.properties
+            try {
+                File props = FileUtil.toFile(prjLoc.getFileObject("build.properties")); //NOI18N
+                InputStream is = new FileInputStream(props);
+                EditableProperties ep = new EditableProperties();
+                ep.load(is);
+                
+                ep.setProperty("manager.url", "http://localhost:8084/manager/");    //NOI18N
+                ep.setProperty("manager.username", "ide_manager");  //NOI18N
+                ep.setProperty("manager.password", "");     //NOI18N
+                ep.setProperty("catalina.home", InstalledFileLocator.getDefault().locate("jakarta-tomcat-5.0.25", null, false).getAbsolutePath());        //NOI18N
+
+                OutputStream os = new FileOutputStream(props);
+                ep.store(os);
+                
+            } catch (Exception e) {
+                throw new IOException(e.toString());
+            }
+
+            prjLoc.refresh(false);
+        }
+        return prjLoc;
+    }
     
     private static void unzip(InputStream source, File targetFolder) throws IOException {
         //installation
@@ -139,7 +212,7 @@ public class WebSampleProjectGenerator {
      * @param parent a parent element
      * @return the nested text, or null if none was found
      */
-    public static void replaceText(Element parent, String name) {
+    private static void replaceText(Element parent, String name) {
         NodeList l = parent.getChildNodes();
         for (int i = 0; i < l.getLength(); i++) {
             if (l.item(i).getNodeType() == Node.TEXT_NODE) {
@@ -167,5 +240,5 @@ public class WebSampleProjectGenerator {
         } finally {
             lock.releaseLock();
         }
-    }    
+    }        
 }

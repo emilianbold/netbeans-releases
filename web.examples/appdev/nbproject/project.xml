@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.ant.freeform</type>
+    <configuration>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
+            <name>AntBasedWebProject</name>
+            <properties>
+                <property name="project.location">/local/arena/appdev</property>
+                <property name="ant.script">${project.location}/build.xml</property>
+            </properties>
+            <folders>
+                <source-folder>
+                    <label>src</label>
+                    <type>java</type>
+                    <location>${project.location}/src</location>
+                </source-folder>
+                <source-folder>
+                    <label>web</label>
+                    <type>doc_root</type>
+                    <location>${project.location}/web</location>
+                </source-folder>
+            </folders>
+            <ide-actions>
+                <action name="build">
+                    <target>compile</target>
+                </action>
+                <action name="clean">
+                    <target>clean</target>
+                </action>
+                <action name="rebuild">
+                    <target>clean</target>
+                    <target>compile</target>
+                </action>
+                <action name="run">
+                    <target>install</target>
+                </action>
+                <action name="javadoc">
+                    <target>javadoc</target>
+                </action>
+                <action name="redeploy">
+                    <target>reload</target>
+                </action>
+            </ide-actions>
+            <view>
+                <items>
+                    <source-folder style="packages">
+                        <label>src</label>
+                        <location>${project.location}/src</location>
+                    </source-folder>
+                    <source-folder style="tree">
+                        <label>web</label>
+                        <location>${project.location}/web</location>
+                    </source-folder>
+                    <source-file>
+                        <location>build.xml</location>
+                    </source-file>
+                </items>
+                <context-menu>
+                    <ide-action name="build"/>
+                    <ide-action name="clean"/>
+                    <ide-action name="rebuild"/>
+                    <ide-action name="run"/>
+                    <ide-action name="javadoc"/>
+                    <ide-action name="redeploy"/>
+                </context-menu>
+            </view>
+        </general-data>
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
+            <compilation-unit>
+                <package-root>${project.location}/src</package-root>
+                <source-level>1.4</source-level>
+            </compilation-unit>
+        </java-data>
+        <web-data xmlns="http://www.netbeans.org/ns/freeform-project-web/1">
+            <web-module>
+                <doc-root>${project.location}/web</doc-root>
+                <classpath>${project.location}/src</classpath>
+                <context-path>/myprj</context-path>
+                <j2ee-spec-level>1.4</j2ee-spec-level>
+            </web-module>
+        </web-data>
+    </configuration>
+</project>

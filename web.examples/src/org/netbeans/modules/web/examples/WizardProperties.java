@@ -14,6 +14,10 @@
 package org.netbeans.modules.web.examples;
 
 public class WizardProperties {
+    public static final String PROJECT_TYPE = "prjType"; //NOI18N
+    public static final String PROJECT_WEBTYPE = "web"; //NOI18N
+    public static final String PROJECT_FREEFORMTYPE = "freeform"; //NOI18N
+    
     public static final String PROJECT_DIR = "projdir"; //NOI18N
     public static final String NAME = "name"; //NOI18N
     public static final String SOURCE_ROOT = "sourceRoot"; //NOI18N

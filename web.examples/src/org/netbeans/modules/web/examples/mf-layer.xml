@@ -14,6 +14,7 @@
                       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.examples.Bundle"/>
                       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
                       <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.examples.WebSampleProjectIterator"/>
+                      <attr name="prjType" stringvalue="web"/>
                     </file>
                     <file name="servlets.zip" url="servlets.zip">
                       <attr name="template" boolvalue="true"/>
@@ -21,6 +22,7 @@
                       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.examples.Bundle"/>
                       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
                       <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.examples.WebSampleProjectIterator"/>
+                      <attr name="prjType" stringvalue="web"/>
                     </file>
                     <file name="jsp.zip" url="jsp.zip">
                       <attr name="template" boolvalue="true"/>
@@ -28,9 +30,19 @@
                       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.examples.Bundle"/>
                       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
                       <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.examples.WebSampleProjectIterator"/>
+                      <attr name="prjType" stringvalue="web"/>
+                    </file>
+                    <file name="appdev.zip" url="appdev.zip">
+                      <attr name="template" boolvalue="true"/>
+                      <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/examples/descriptions/appdev.html"/>
+                      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.examples.Bundle"/>
+                      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/ant/freeform/resources/AntIcon.gif"/>
+                      <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.examples.WebSampleProjectIterator"/>
+                      <attr name="prjType" stringvalue="freeform"/>
                     </file>
                     <attr boolvalue="true" name="jstl.zip/jsp.zip"/>
                     <attr boolvalue="true" name="jsp.zip/servlets.zip"/>
+                    <attr boolvalue="true" name="servlets.zip/appdev.zip"/>
                 </folder>
             </folder>
         </folder>

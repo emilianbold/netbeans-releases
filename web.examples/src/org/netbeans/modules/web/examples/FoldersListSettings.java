@@ -18,13 +18,13 @@ import org.openide.util.NbBundle;
 
 public class FoldersListSettings extends SystemOption {
 
-    static final long serialVersionUID = -4905094097265543014L;
+    static final long serialVersionUID = -5L;
     
     private static final String LAST_EXTERNAL_SOURCE_ROOT = "srcRoot";  //NOI18N
 
     private static final String NEW_PROJECT_COUNT = "newProjectCount"; //NOI18N
     
-    private static final String SHOW_AGAIN_BROKEN_REF_ALERT = "showAgainBrokenRefAlert"; //NOI18N
+//    private static final String SHOW_AGAIN_BROKEN_REF_ALERT = "showAgainBrokenRefAlert"; //NOI18N
 
     public String displayName() {
         return NbBundle.getMessage (FoldersListSettings.class, "TXT_WebProjectFolderList"); //NOI18N
@@ -47,14 +47,14 @@ public class FoldersListSettings extends SystemOption {
         this.putProperty(NEW_PROJECT_COUNT, new Integer(count),true);
     }
     
-    public boolean isShowAgainBrokenRefAlert() {
-        Boolean b = (Boolean)getProperty(SHOW_AGAIN_BROKEN_REF_ALERT);
-        return b == null ? true : b.booleanValue();
-    }
-    
-    public void setShowAgainBrokenRefAlert(boolean again) {
-        this.putProperty(SHOW_AGAIN_BROKEN_REF_ALERT, Boolean.valueOf(again), true);
-    }
+//    public boolean isShowAgainBrokenRefAlert() {
+//        Boolean b = (Boolean)getProperty(SHOW_AGAIN_BROKEN_REF_ALERT);
+//        return b == null ? true : b.booleanValue();
+//    }
+//    
+//    public void setShowAgainBrokenRefAlert(boolean again) {
+//        this.putProperty(SHOW_AGAIN_BROKEN_REF_ALERT, Boolean.valueOf(again), true);
+//    }
 
     public static FoldersListSettings getDefault () {
         return (FoldersListSettings) SystemOption.findObject (FoldersListSettings.class, true);

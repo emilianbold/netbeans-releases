@@ -23,6 +23,7 @@ Microsystems, Inc. All Rights Reserved.
         <zip basedir="jstl" excludes="CVS" destfile="${examples}/jstl.zip"/>
         <zip basedir="servlets" excludes="CVS" destfile="${examples}/servlets.zip"/>
         <zip basedir="jsp" excludes="CVS" destfile="${examples}/jsp.zip"/>
+        <zip basedir="appdev" excludes="CVS" destfile="${examples}/appdev.zip"/>
     </target>    
     
 </project>
