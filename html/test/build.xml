@@ -46,15 +46,15 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.excludes" value=""/>   
     
     <property name="xtest.general.antfile" location="${xtest.home}/lib/module_harness.xml"/>
+        
     
-    <!-- =========== -->
-    <!-- Init target -->
-    <!-- =========== -->
     
+    <!-- should not be required at all, please delete if this is true 
     <target name="init">
         <taskdef name="nbpath" classname="org.netbeans.xtest.NbPath" classpath="${xtest.home}/lib/xtest.jar"/>
-        <nbpath nbhome="${netbeans.test.home}" xthome="${xtest.home}" xtexhome="${xtest.home}"/>
+        <nbpath xtesthome="${xtest.home}"/>
     </target>
+    -->
     
     <!-- ============ -->
     <!-- Main targets -->
@@ -159,7 +159,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="prepare-compile-classpath"
          depends="jarcompile-classpath,srccompile-classpath,idecompile-classpath"/>
     
-    <target name="jarcompile-classpath" depends="init,which-classpath" if="jarcode.classpath">
+    <target name="jarcompile-classpath" depends="which-classpath" if="jarcode.classpath">
         <echo message="Using jars classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against jars -->
 	<path id="compiletest.classpath">        
@@ -167,12 +167,16 @@ Microsystems, Inc. All Rights Reserved.
 	        <fileset dir="../../openide/netbeans/lib">
                     <include name="openide*.jar"/>
                 </fileset>
+             <!-- there should be no reason to add the junit.path - xtest should do it automatically 
 	    <pathelement path="${junit.path}"/>
+            -->
+            <!-- XTest no longer contains xerces - so if you need xerces, you need to find it elsewhere 
 	    <pathelement path="${xerces.path}"/>
+            -->            
 	</path>
     </target>
         
-    <target name="srccompile-classpath" depends="init,which-classpath" if="srccode.classpath">
+    <target name="srccompile-classpath" depends="which-classpath" if="srccode.classpath">
         <echo message="Using srcs classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against sources -->
     	<path id="compiletest.classpath">        
@@ -180,12 +184,16 @@ Microsystems, Inc. All Rights Reserved.
 	        <fileset dir="../../openide/netbeans/lib">
                     <include name="openide*.jar"/>
                 </fileset>
-	        <pathelement path="${junit.path}"/>
-		<pathelement path="${xerces.path}"/>
+            <!-- there should be no reason to add the junit.path - xtest should do it automatically 
+	    <pathelement path="${junit.path}"/>
+            -->
+            <!-- XTest no longer contains xerces - so if you need xerces, you need to find it elsewhere 
+	    <pathelement path="${xerces.path}"/>
+            -->
 	</path>
     </target>
     
-    <target name="idecompile-classpath" depends="init,which-classpath" if="idecode.classpath">
+    <target name="idecompile-classpath" depends="which-classpath" if="idecode.classpath">
         <echo message="Using IDE classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against installed IDE -->
     	<path id="compiletest.classpath">        
@@ -193,8 +201,12 @@ Microsystems, Inc. All Rights Reserved.
 	        <fileset dir="${netbeans.home}/lib">
                     <include name="openide*.jar"/>
                 </fileset>
-	        <pathelement path="${junit.path}"/>
-		<pathelement path="${xerces.path}"/>
+            <!-- there should be no reason to add the junit.path - xtest should do it automatically 
+	    <pathelement path="${junit.path}"/>
+            -->
+            <!-- XTest no longer contains xerces - so if you need xerces, you need to find it elsewhere 
+	    <pathelement path="${xerces.path}"/>
+            -->
   	</path>
     </target>
     
