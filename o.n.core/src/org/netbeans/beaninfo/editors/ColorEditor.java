@@ -295,7 +295,10 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
             String msg = MessageFormat.format (
                 NbBundle.getMessage (ColorEditor.class, "FMT_IllegalEntry"), 
                 new Object[]{text});
-            throw new IllegalArgumentException(msg);
+            IllegalArgumentException iae = new IllegalArgumentException (text);
+            ErrorManager em = ErrorManager.getDefault();
+            em.annotate(iae, ErrorManager.USER, text, msg, null, null);
+            throw iae;
         }
 
         setValue(new SuperColor(text, palette, color));
