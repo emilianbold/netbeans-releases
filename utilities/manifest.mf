@@ -14,21 +14,6 @@ OpenIDE-Module-Long-Description: The User Utilities module provides miscellaneou
   which helps you open a file in a previously unmounted filesystem.
 Main-Class: org.netbeans.modules.openfile.Main
 
-Name: org/netbeans/modules/search/types/FullTextType.class
-OpenIDE-Module-Class: Service
-
-Name: org/netbeans/modules/search/types/ObjectNameType.class
-OpenIDE-Module-Class: Service
-
-Name: org/netbeans/modules/search/types/ModificationDateType.class
-OpenIDE-Module-Class: Service
-
-Name: org/netbeans/modules/search/types/ObjectTypeType.class
-OpenIDE-Module-Class: Service
-
-Name: org/netbeans/modules/openfile/Settings.class
-OpenIDE-Module-Class: Option
-
 Name: org/netbeans/modules/group/GroupShadowLoader.class
 OpenIDE-Module-Class: Loader
 Install-Before: org.netbeans.modules.text.TXTDataObject
@@ -45,9 +30,6 @@ Install-After: org.netbeans.modules.java.JavaDataObject
 Name: org/netbeans/modules/url/BookmarksNode.class
 OpenIDE-Module-Class: Node
 Type: Session
-
-Name: org/netbeans/modules/pdf/PDFSettings.class
-OpenIDE-Module-Class: Option
 
 Name: org/netbeans/modules/pdf/PDFDataLoader.class
 OpenIDE-Module-Class: Loader

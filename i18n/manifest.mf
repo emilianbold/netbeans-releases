@@ -12,12 +12,6 @@ OpenIDE-Module-Long-Description: The Internationalization module, combined with 
     enables you to internationalize all of your Java at once, a test tool, which reports any missing key-value pairs, and an execution service, which enables you to
     set the locale in which the application is to run.
 
-Name: org/netbeans/modules/i18n/LocaleExecutor.class
-OpenIDE-Module-Class: Service
-
-Name: org/netbeans/modules/i18n/I18nOptions.class
-OpenIDE-Module-Class: Option
-
 Name: org/netbeans/modules/i18n/I18nGroupMenuAction.class
 OpenIDE-Module-Class: Action
 

@@ -19,13 +19,75 @@ Microsystems, Inc. All Rights Reserved.
         <file name="A-I[org.netbeans.modules.i18n.InsertI18nStringAction].instance" />
     </folder>
 
-  <folder name="Actions">
-    <folder name="Tools">
-      <file name="org-netbeans-modules-i18n-I18nGroupMenuAction.instance" />
-      <file name="org-netbeans-modules-i18n-wizard-I18nWizardAction.instance" />
-      <file name="org-netbeans-modules-i18n-wizard-I18nTestWizardAction.instance" />
+    <folder name="Actions">
+        <folder name="Tools">
+            <file name="org-netbeans-modules-i18n-I18nGroupMenuAction.instance" />
+            <file name="org-netbeans-modules-i18n-wizard-I18nWizardAction.instance" />
+            <file name="org-netbeans-modules-i18n-wizard-I18nTestWizardAction.instance" />
+        </folder>
     </folder>
-  </folder>
+  
+    <folder name="Services">
+        <!-- I18N Settings -->
+        <file name="i18n_settings.settings">
+            <![CDATA[
+                <?xml version="1.0"?>
+                <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+                <settings version="1.0">
+                    <module name="org.netbeans.modules.i18n" spec="1.8"/>
+                    <instanceof class="java.lang.Object"/>
+                    <instanceof class="java.io.Serializable"/>
+                    <instanceof class="java.io.Externalizable"/>
+                    <instanceof class="org.openide.util.SharedClassObject"/>
+                    <instanceof class="org.openide.options.SystemOption"/>
+                    <instanceof class="org.netbeans.modules.i18n.I18nOptions"/>
+                    <instance class="org.netbeans.modules.i18n.I18nOptions"/>
+                </settings>
+            ]]>
+        </file>
+        
+        <!-- Locale External Execution -->
+        <folder name="Executor">
+            <file name="locale_external_execution.settings">
+                <![CDATA[<?xml version="1.0"?>
+                    <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+                    <settings version="1.0">
+                        <module name="org.netbeans.modules.i18n" spec="1.8"/>
+                        <instanceof class="java.lang.Object"/>
+                        <instanceof class="java.io.Serializable"/>
+                        <instanceof class="org.openide.ServiceType"/>
+                        <instanceof class="org.openide.execution.Executor"/>
+                        <instanceof class="org.openide.execution.ProcessExecutor"/>
+                        <instanceof class="org.netbeans.modules.i18n.LocaleExecutor"/>
+                        <instance class="org.netbeans.modules.i18n.LocaleExecutor"/>
+                    </settings>
+                ]]>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="Templates">
+        <folder name="Services">
+            <folder name="Executor">
+                <file name="locale_external_execution.xml">
+                    <![CDATA[<?xml version="1.0"?>
+                        <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+                        <settings version="1.0">
+                            <module name="org.netbeans.modules.i18n" spec="1.8"/>
+                            <instanceof class="java.lang.Object"/>
+                            <instanceof class="java.io.Serializable"/>
+                            <instanceof class="org.openide.ServiceType"/>
+                            <instanceof class="org.openide.execution.Executor"/>
+                            <instanceof class="org.openide.execution.ProcessExecutor"/>
+                            <instanceof class="org.netbeans.modules.i18n.LocaleExecutor"/>
+                            <instance class="org.netbeans.modules.i18n.LocaleExecutor"/>
+                        </settings>
+                    ]]>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
 
 </filesystem>
 
