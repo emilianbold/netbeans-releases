@@ -17,6 +17,8 @@ package org.apache.tools.ant.module;
 
 import java.util.Properties;
 
+import org.openide.execution.NbClassPath;
+import org.openide.filesystems.FileSystemCapability;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -30,6 +32,11 @@ public class AntSettings extends SystemOption {
     public static final String PROP_SAVE_ALL = "saveAll";
     public static final String PROP_CUSTOM_DEFS = "customDefs";
 
+    private static final String DEF_CLASS_PATH = "netbeans.class.path";
+    private static final String DEF_BOOTCLASS_PATH = "netbeans.bootclass.path";
+    private static final String DEF_LIBRARY_PATH = "netbeans.library.path";
+    private static final String DEF_FILESYSTEMS_PATH = "netbeans.filesystems.path";
+
     private static final long serialVersionUID = -4457782585534082966L;
     
     protected void initialize () {
@@ -37,6 +44,11 @@ public class AntSettings extends SystemOption {
         Properties p = new Properties ();
         // Enable hyperlinking for Jikes:
         p.setProperty ("build.compiler.emacs", "true"); // NOI18N
+        String dummy = "irrelevant"; // NOI18N
+        p.setProperty (DEF_CLASS_PATH, dummy);
+        p.setProperty (DEF_BOOTCLASS_PATH, dummy);
+        p.setProperty (DEF_LIBRARY_PATH, dummy);
+        p.setProperty (DEF_FILESYSTEMS_PATH, dummy);
         setProperties (p);
         setSaveAll (true);
         setCustomDefs (new IntrospectedInfo ());
@@ -63,7 +75,20 @@ public class AntSettings extends SystemOption {
     }
 
     public Properties getProperties () {
-        return (Properties) getProperty (PROP_PROPERTIES);
+        Properties p = (Properties) getProperty (PROP_PROPERTIES);
+        if (p.containsKey (DEF_CLASS_PATH)) {
+            p.setProperty (DEF_CLASS_PATH, NbClassPath.createClassPath ().getClassPath ());
+        }
+        if (p.containsKey (DEF_BOOTCLASS_PATH)) {
+            p.setProperty (DEF_BOOTCLASS_PATH, NbClassPath.createBootClassPath ().getClassPath ());
+        }
+        if (p.containsKey (DEF_LIBRARY_PATH)) {
+            p.setProperty (DEF_LIBRARY_PATH, NbClassPath.createLibraryPath ().getClassPath ());
+        }
+        if (p.containsKey (DEF_FILESYSTEMS_PATH)) {
+            p.setProperty (DEF_FILESYSTEMS_PATH, NbClassPath.createRepositoryPath (FileSystemCapability.EXECUTE).getClassPath ());
+        }
+        return p;
     }
 
     public void setProperties (Properties p) {
