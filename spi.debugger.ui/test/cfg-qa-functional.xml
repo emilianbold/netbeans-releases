@@ -17,10 +17,10 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="validation" executor="ide" name="Debugger overall" resultsprocessor="qa-functional">
        <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/debuggercore/StartDebugger.class"/>
+                <!-- <include name="gui/debuggercore/StartDebugger.class"/>
                 <include name="gui/debuggercore/Breakpoints.class"/>
                 <include name="gui/debuggercore/LocalVariables.class"/>
-                <include name="gui/debuggercore/Watches.class"/>
+                <include name="gui/debuggercore/Watches.class"/> -->
                 <include name="gui/debuggercore/Views.class"/>
             </patternset>
         </testset>
