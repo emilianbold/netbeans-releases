@@ -237,7 +237,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
      *
      */
     private String getPassword() {
-        return "*****";
+        return NbBundle.getMessage(TomcatInstanceNode.class, "LBL_password");
     }
     
     /** Setter for property password.
