@@ -155,7 +155,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             Context ctx = Context.createGraph (in);
             this.tmId = new TomcatModule (t, ctx.getAttributeValue ("path")); //NOI18N
             String docBaseURI = dir.getAbsoluteFile().toURI().toASCIIString();
-            String docBase = docBaseURI.substring (docBaseURI.indexOf (':') + 1);
+            String docBase = dir.getAbsolutePath ();
             if (!docBase.equals (ctx.getAttributeValue ("docBase"))) { //NOI18N
                 ctx.setAttributeValue ("docBase", docBase); //NOI18N
                 FileOutputStream fos = new FileOutputStream (contextXml);
