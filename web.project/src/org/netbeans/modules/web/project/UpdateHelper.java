@@ -56,7 +56,8 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
  */
 public class UpdateHelper {
 
-    private static final boolean TRANSPARENT_UPDATE = Boolean.getBoolean("webproject.transparentUpdate");
+    private static final boolean TRANSPARENT_UPDATE = Boolean.getBoolean("webproject.transparentUpdate"); //NOI18N
+    private static final String BUILD_NUMBER = System.getProperty("netbeans.buildnumber"); // NOI18N
 
     private final Project project;
     private final AntProjectHelper helper;
@@ -386,7 +387,7 @@ public class UpdateHelper {
             public boolean canUpdate() {
                 JButton updateOption = new JButton (NbBundle.getMessage(UpdateHelper.class, "CTL_UpdateOption"));
                 return DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor (NbBundle.getMessage(UpdateHelper.class,"TXT_ProjectUpdate"),
+                    new NotifyDescriptor (NbBundle.getMessage(UpdateHelper.class,"TXT_ProjectUpdate", BUILD_NUMBER),
                         NbBundle.getMessage(UpdateHelper.class,"TXT_ProjectUpdateTitle"),
                         NotifyDescriptor.DEFAULT_OPTION,
                         NotifyDescriptor.WARNING_MESSAGE,
