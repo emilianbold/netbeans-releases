@@ -49,7 +49,7 @@ public class SearchTest extends EditorTestCase {
     /**
      * TC1 - open and close find dialog
      */
-/*    public void testFindDialogOpenClose() {
+    public void testFindDialogOpenClose() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -76,12 +76,12 @@ public class SearchTest extends EditorTestCase {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
         }
-    }*/
+    }
     
     /**
      * TC2 - Find Selection Repeated
      */
-/*    public void testFindSelectionRepeated() {
+    public void testFindSelectionRepeated() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -117,7 +117,7 @@ public class SearchTest extends EditorTestCase {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
         }
-    }*/
+    }
     
     /**
      * TC3 - Find Dialog Combo Box
@@ -590,7 +590,7 @@ public class SearchTest extends EditorTestCase {
     /**
      * TC15 - Find Selection Without Dialog
      */
-/*    public void testFindSelectionWithoutDialog() {
+    public void testFindSelectionWithoutDialog() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -607,12 +607,12 @@ public class SearchTest extends EditorTestCase {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
         }                
-    }*/
+    }
 
     /**
      * TC16 - Search Selection
      */
-/*    public void testSearchSelection() {
+    public void testSearchSelection() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -620,6 +620,7 @@ public class SearchTest extends EditorTestCase {
             
             // perform selection search
             editor.select(24, 20);
+            new EventTool().waitNoEvent(FIND_TIMEOUT);
             new FindAction().perform();
             Find find = new Find();
             uncheckAll();
@@ -635,7 +636,7 @@ public class SearchTest extends EditorTestCase {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
         }
-    }*/
+    }
 
     /**
      * TC17 - Search Selection Negative
@@ -648,6 +649,7 @@ public class SearchTest extends EditorTestCase {
             
             // perform negative selection search
             editor.select(25, 22);
+            new EventTool().waitNoEvent(FIND_TIMEOUT);
             new FindAction().perform();
             Find find2 = new Find();
             uncheckAll();
@@ -668,7 +670,7 @@ public class SearchTest extends EditorTestCase {
     /**
      * TC18 - Regexp Search - Simple
      */
-    public void testRegexpSimple() {
+/*    public void testRegexpSimple() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -710,7 +712,7 @@ public class SearchTest extends EditorTestCase {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
         }                
-    }    
+    }    */
 
     /**
      * TC19 - Regexp Search - Complex

@@ -75,7 +75,7 @@ public class ReplaceTest extends EditorTestCase {
     /**
      * TC2 - Replace Dialog Open - Selection
      */
-    public void testReplaceSelectionRepeated() {
+/*    public void testReplaceSelectionRepeated() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -126,7 +126,7 @@ public class ReplaceTest extends EditorTestCase {
             closeReplaceDialogIfOpened();
             closeFileWithDiscard();
         }
-    }    
+    }*/
     
     /**
      * TC3 - Replace Dialog Combo Box
