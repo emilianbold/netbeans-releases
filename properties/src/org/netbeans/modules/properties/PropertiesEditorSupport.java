@@ -35,7 +35,9 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 
 import org.openide.awt.UndoRedo;
+import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileChangeAdapter;
@@ -65,7 +67,7 @@ import org.openide.windows.CloneableTopComponent;
  * @see org.openide.text.CloneableEditorSupport
  */
 public class PropertiesEditorSupport extends CloneableEditorSupport 
-implements EditCookie, PrintCookie, Serializable {
+implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
     
     /** New lines in this file was delimited by '\n'. */
     private static final byte NEW_LINE_N = 0;

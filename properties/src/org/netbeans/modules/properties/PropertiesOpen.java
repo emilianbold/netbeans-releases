@@ -35,6 +35,7 @@ import javax.swing.undo.CannotUndoException;
 
 import org.openide.actions.FindAction;
 import org.openide.awt.UndoRedo;
+import org.openide.cookies.CloseCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -57,7 +58,7 @@ import org.openide.windows.*;
  * 
  * @author Petr Jiricka, Peter Zavadsky
  */
-public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
+public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, CloseCookie {
 
     /** Main properties dataobject */
     PropertiesDataObject propDataObject;
