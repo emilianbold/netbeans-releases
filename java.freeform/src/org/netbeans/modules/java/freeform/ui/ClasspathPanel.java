@@ -21,10 +21,11 @@ import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.java.freeform.JavaProjectGenerator;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
@@ -83,6 +84,14 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         // enable/disable "Separate Classpath" checkbox
         boolean sepClasspath = model.canHaveSeparateClasspath();
         separateClasspath.setEnabled(sepClasspath);
+        if (sepClasspath) {
+            // in case there are separate comp units for sources and tests
+            // then disable "Separate Classpath" checkbox because at the
+            // moment it is not possible to create single compilation unit for them
+            if (isSeparateClasspath && !model.canCreateSingleCompilationUnit()) {
+                separateClasspath.setEnabled(false);
+            }
+        }
         jLabel2.setEnabled(sepClasspath && isSeparateClasspath);
         sourceFolder.setEnabled(sepClasspath && isSeparateClasspath);
         // set initial value of the checkbox
@@ -390,7 +399,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
      * store it in compilaiton unit identified by the index.*/
     private void saveClasspath(int index) {
         ProjectModel.CompilationUnitKey key = (ProjectModel.CompilationUnitKey)compUnitsKeys.get(index);
-        JavaProjectGenerator.JavaCompilationUnit cu = model.getCompilationUnit(key);
+        JavaProjectGenerator.JavaCompilationUnit cu = model.getCompilationUnit(key, model.isTestSourceFolder(index));
         updateCompilationUnitCompileClasspath(cu);
     }
 
@@ -407,7 +416,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
             index = 0;
         }
         ProjectModel.CompilationUnitKey key = (ProjectModel.CompilationUnitKey)compUnitsKeys.get(index);
-        JavaProjectGenerator.JavaCompilationUnit cu = model.getCompilationUnit(key);
+        JavaProjectGenerator.JavaCompilationUnit cu = model.getCompilationUnit(key, model.isTestSourceFolder(index));
         updateJListClassPath(cu.classpath);
     }
 
@@ -527,7 +536,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
     }
 
-    public static class Panel implements ProjectPropertiesPanel {
+    public static class Panel implements ProjectPropertiesPanel, ChangeListener {
         
         private ClasspathPanel panel;
         private ProjectModel model;
@@ -547,8 +556,13 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
             if (panel == null) {
                 panel = new ClasspathPanel(false);
                 panel.setModel(model);
+                model.addChangeListener(this);
             }
             return panel;
+        }
+        
+        public void stateChanged(ChangeEvent e) {
+            panel.updateControls();
         }
 
         public int getPreferredPosition() {

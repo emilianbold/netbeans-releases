@@ -126,7 +126,7 @@ public class SourceFoldersWizardPanel implements WizardDescriptor.Panel, ChangeL
                 sf.label = label;
                 sf.type = JavaProjectConstants.SOURCES_TYPE_JAVA;
                 sf.style = JavaProjectNature.STYLE_PACKAGES;
-                pm.addSourceFolder(sf);
+                pm.addSourceFolder(sf, false);
             }
         }
         

@@ -21,6 +21,8 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ant.freeform.spi.ProjectConstants;
@@ -79,6 +81,33 @@ public class ProjectModel  {
             setSourceLevel(getDefaultSourceLevel());
         }
         resetState();
+    }
+    
+    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    public final void addChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.add(l);
+        }
+    }
+    
+    public final void removeChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
+    }
+
+    /**
+     * Notifies only about change in source folders and compilation units.
+     */
+    protected final void fireChangeEvent() {
+        Iterator it;
+        synchronized (listeners) {
+            it = new HashSet(listeners).iterator();
+        }
+        ChangeEvent ev = new ChangeEvent(this);
+        while (it.hasNext()) {
+            ((ChangeListener)it.next()).stateChanged(ev);
+        }
     }
     
     private void resetState() {
@@ -288,9 +317,23 @@ public class ProjectModel  {
         return (JavaProjectGenerator.SourceFolder)sourceFolders.get(index);
     }
     
-    public void addSourceFolder(JavaProjectGenerator.SourceFolder sf) {
+    public void moveSourceFolder(int fromIndex, int toIndex) {
+        JavaProjectGenerator.SourceFolder sf = (JavaProjectGenerator.SourceFolder)sourceFolders.remove(fromIndex);
+        sourceFolders.add(toIndex, sf);
+    }
+    
+    public void addSourceFolder(JavaProjectGenerator.SourceFolder sf, boolean isTests) {
         List keys = createCompilationUnitKeys();
         boolean singleCU = isSingleCompilationUnit(keys);
+        if (singleCU) {
+            // Check that source being added is part of the compilation unit.
+            // If it is not then switch to multiple compilation unit mode.
+            JavaProjectGenerator.JavaCompilationUnit cu = (JavaProjectGenerator.JavaCompilationUnit)javaCompilationUnitsList.get(0);
+            if (cu.isTests != isTests) {
+                updateCompilationUnits(true);
+                singleCU = false;
+            }
+        }
         sourceFolders.add(sf);
         if (singleCU) {
             if (TYPE_JAVA.equals(sf.type)) {
@@ -303,7 +346,7 @@ public class ProjectModel  {
             Iterator it = createCompilationUnitKeys().iterator();
             while (it.hasNext()) {
                 CompilationUnitKey key = (CompilationUnitKey)it.next();
-                getCompilationUnit(key);
+                getCompilationUnit(key, isTests);
             }
         }
         // remember all added locations
@@ -312,6 +355,7 @@ public class ProjectModel  {
         } else {
             addedSourceFolders.add(sf.location);
         }
+        fireChangeEvent();
     }
 
     public void removeSourceFolder(int index) {
@@ -326,11 +370,13 @@ public class ProjectModel  {
         } else {
             removedSourceFolders.add(sf.location);
         }
+        fireChangeEvent();
     }
     
     public void clearSourceFolders() {
         sourceFolders.clear();
         javaCompilationUnitsList.clear();
+        fireChangeEvent();
     }
     
     public String getSourceLevel() {
@@ -354,6 +400,23 @@ public class ProjectModel  {
         // if there is more than one source root or more than one
         // compilation unit then enable checkbox "Separate Classpath".
         return (sourceFolders.size() > 1 || javaCompilationUnitsList.size() > 1);
+    }
+
+    public boolean canCreateSingleCompilationUnit() {
+        // if there are sources and test sources I cannot create
+        // single compilation unit for them:
+        boolean testCU = false;
+        boolean sourceCU = false;
+        Iterator it = javaCompilationUnitsList.iterator();
+        while (it.hasNext()) {
+            JavaProjectGenerator.JavaCompilationUnit cu = (JavaProjectGenerator.JavaCompilationUnit)it.next();
+            if (cu.isTests) {
+                testCU = true;
+            } else {
+                sourceCU = true;
+            }
+        }
+        return !(testCU && sourceCU);
     }
 
     public static boolean isSingleCompilationUnit(List/*<ProjectModel.CompilationUnitKey>*/ compilationUnitKeys) {
@@ -524,11 +587,14 @@ public class ProjectModel  {
             cu.sourceLevel = sourceLevel;
             javaCompilationUnitsList.add(cu);
         }
+        fireChangeEvent();
     }
 
     /** Retrieve compilation unit or create empty one if it does not exist yet for the given 
-     * key which is source package path(s).*/
-    public JavaProjectGenerator.JavaCompilationUnit getCompilationUnit(CompilationUnitKey key) {
+     * key which is source package path(s).
+     * The isTests is used only to initialize newly created compilation unit.
+     */
+    public JavaProjectGenerator.JavaCompilationUnit getCompilationUnit(CompilationUnitKey key, boolean isTests) {
         Iterator it = javaCompilationUnitsList.iterator();
         while (it.hasNext()) {
             JavaProjectGenerator.JavaCompilationUnit cu = (JavaProjectGenerator.JavaCompilationUnit)it.next();
@@ -539,6 +605,7 @@ public class ProjectModel  {
         JavaProjectGenerator.JavaCompilationUnit cu = new JavaProjectGenerator.JavaCompilationUnit();
         cu.packageRoots = key.locations;
         cu.sourceLevel = sourceLevel;
+        cu.isTests = isTests;
         javaCompilationUnitsList.add(cu);
         return cu;
     }
@@ -593,6 +660,21 @@ public class ProjectModel  {
     public static String getDefaultSourceLevel() {
         JavaPlatform platform = JavaPlatform.getDefault();
         return platform.getSpecification().getVersion().toString();
+    }
+    
+    public boolean isTestSourceFolder(int index) {
+        return isTestSourceFolder(getSourceFolder(index));
+    }
+    
+    public boolean isTestSourceFolder(JavaProjectGenerator.SourceFolder sf) {
+        Iterator it = javaCompilationUnitsList.iterator();
+        while (it.hasNext()) {
+            JavaProjectGenerator.JavaCompilationUnit cu = (JavaProjectGenerator.JavaCompilationUnit)it.next();
+            if (cu.packageRoots.contains(sf.location)) {
+                return cu.isTests;
+            }
+        }
+        return false;
     }
     
     static class CompilationUnitKey {

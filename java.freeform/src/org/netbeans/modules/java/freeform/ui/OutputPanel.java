@@ -22,11 +22,11 @@ import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.java.freeform.JavaProjectGenerator;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -247,7 +247,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
      * store it in compilaiton unit identified by the index.*/
     private void saveOutput(int index) {
         ProjectModel.CompilationUnitKey key = (ProjectModel.CompilationUnitKey)compUnitsKeys.get(index);
-        JavaProjectGenerator.JavaCompilationUnit cu = model.getCompilationUnit(key);
+        JavaProjectGenerator.JavaCompilationUnit cu = model.getCompilationUnit(key, model.isTestSourceFolder(index));
         updateCompilationUnitOutput(cu);
     }
 
@@ -264,7 +264,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
             index = 0;
         }
         ProjectModel.CompilationUnitKey key = (ProjectModel.CompilationUnitKey)compUnitsKeys.get(index);
-        JavaProjectGenerator.JavaCompilationUnit cu = model.getCompilationUnit(key);
+        JavaProjectGenerator.JavaCompilationUnit cu = model.getCompilationUnit(key, model.isTestSourceFolder(index));
         updateJListOutput(cu.output);
     }
 
@@ -350,7 +350,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         }
     }
     
-    public static class Panel implements ProjectPropertiesPanel {
+    public static class Panel implements ProjectPropertiesPanel, ChangeListener {
         
         private OutputPanel panel;
         private ProjectModel model;
@@ -370,8 +370,13 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
             if (panel == null) {
                 panel = new OutputPanel();
                 panel.setModel(model);
+                model.addChangeListener(this);
             }
             return panel;
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            panel.updateControls();
         }
 
         public int getPreferredPosition() {

@@ -18,6 +18,8 @@ import java.io.File;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -38,9 +40,10 @@ import org.openide.util.NbBundle;
  *
  * @author  David Konecny
  */
-public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Provider {
+public class SourceFoldersPanel extends javax.swing.JPanel implements org.openide.util.HelpCtx.Provider, ListSelectionListener {
     
     private SourcesModel sourceFoldersModel;
+    private SourcesModel testFoldersModel;
     private ChangeListener listener;
     private boolean isWizard;
     private PropertyEvaluator evaluator;
@@ -55,8 +58,12 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
     public SourceFoldersPanel(boolean isWizard) {
         this.isWizard = isWizard;
         initComponents();
-        sourceFoldersModel = new SourcesModel();
+        sourceFoldersModel = new SourcesModel(false);
         sourceFolders.setModel(sourceFoldersModel);
+        sourceFolders.getSelectionModel().addListSelectionListener(this);
+        testFoldersModel = new SourcesModel(true);
+        testFolders.setModel(testFoldersModel);
+        testFolders.getSelectionModel().addListSelectionListener(this);
         initSourceLevel();
         updateColumnWidths();
         jLabel1.setVisible(!isWizard);
@@ -80,6 +87,18 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
     
     private void updateButtons() {
         removeFolder.setEnabled(model.getSourceFoldersCount() > 0);
+        updateUpDownButtons();
+    }
+    
+    public void valueChanged(ListSelectionEvent e) {
+        updateUpDownButtons();
+    }
+
+    private void updateUpDownButtons() {
+        upFolder.setEnabled(sourceFolders.getSelectedRow() > 0);
+        downFolder.setEnabled(sourceFolders.getSelectedRow() > -1 && sourceFolders.getSelectedRow() < sourceFoldersModel.getRowCount()-1);
+        upTestFolder.setEnabled(testFolders.getSelectedRow() > 0);
+        downTestFolder.setEnabled(testFolders.getSelectedRow() > -1 && testFolders.getSelectedRow() < testFoldersModel.getRowCount()-1);
     }
     
     private void updateSourceLevelCombo(String sourceLevelValue) {
@@ -121,6 +140,15 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
         removeFolder = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         sourceFolders = new javax.swing.JTable();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        testFolders = new javax.swing.JTable();
+        jLabel4 = new javax.swing.JLabel();
+        addTestFolder = new javax.swing.JButton();
+        removeTestFolder = new javax.swing.JButton();
+        upFolder = new javax.swing.JButton();
+        downFolder = new javax.swing.JButton();
+        downTestFolder = new javax.swing.JButton();
+        upTestFolder = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -151,7 +179,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_jLabel3"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(jLabel3, gridBagConstraints);
@@ -165,7 +193,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
@@ -216,7 +244,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.gridheight = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -224,7 +252,170 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
         add(jScrollPane1, gridBagConstraints);
         jScrollPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_SourceFoldersPanel_jScrollPanel1"));
 
+        testFolders.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+        jScrollPane2.setViewportView(testFolders);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridheight = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 12);
+        add(jScrollPane2, gridBagConstraints);
+
+        jLabel4.setLabelFor(testFolders);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_TestSourceFoldersPanel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(jLabel4, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(addTestFolder, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "BTN_SourceFoldersPanel_addTestFolder"));
+        addTestFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addTestFolderActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        add(addTestFolder, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(removeTestFolder, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "BTN_SourceFoldersPanel_removeTestFolder"));
+        removeTestFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeTestFolderActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        add(removeTestFolder, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(upFolder, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "BTN_SourceFoldersPanel_upFolder"));
+        upFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                upFolderActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        add(upFolder, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(downFolder, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "BTN_SourceFoldersPanel_downFolder"));
+        downFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                downFolderActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        add(downFolder, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(downTestFolder, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "BTN_SourceFoldersPanel_downTestFolder"));
+        downTestFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                downTestFolderActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        add(downTestFolder, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(upTestFolder, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "BTN_SourceFoldersPanel_upTestFolder"));
+        upTestFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                upTestFolderActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        add(upTestFolder, gridBagConstraints);
+
     }//GEN-END:initComponents
+
+    private void downTestFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downTestFolderActionPerformed
+        int i = testFolders.getSelectedRow();
+        int fromIndex = calcRealSourceIndex(i, true);
+        model.moveSourceFolder(fromIndex, fromIndex+1);
+        testFoldersModel.fireTableDataChanged();
+        testFolders.getSelectionModel().setSelectionInterval(i+1, i+1);
+    }//GEN-LAST:event_downTestFolderActionPerformed
+
+    private void upTestFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_upTestFolderActionPerformed
+        int i = testFolders.getSelectedRow();
+        int fromIndex = calcRealSourceIndex(i, true);
+        model.moveSourceFolder(fromIndex, fromIndex-1);
+        testFoldersModel.fireTableDataChanged();
+        testFolders.getSelectionModel().setSelectionInterval(i-1, i-1);
+    }//GEN-LAST:event_upTestFolderActionPerformed
+
+    private void downFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downFolderActionPerformed
+        int i = sourceFolders.getSelectedRow();
+        int fromIndex = calcRealSourceIndex(i, false);
+        model.moveSourceFolder(fromIndex, fromIndex+1);
+        sourceFoldersModel.fireTableDataChanged();
+        sourceFolders.setRowSelectionInterval(i+1, i+1);
+    }//GEN-LAST:event_downFolderActionPerformed
+
+    private void upFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_upFolderActionPerformed
+        int i = sourceFolders.getSelectedRow();
+        int fromIndex = calcRealSourceIndex(i, false);
+        model.moveSourceFolder(fromIndex, fromIndex-1);
+        sourceFoldersModel.fireTableDataChanged();
+        sourceFolders.getSelectionModel().setSelectionInterval(i-1, i-1);
+    }//GEN-LAST:event_upFolderActionPerformed
+
+    private void removeTestFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeTestFolderActionPerformed
+        int index = testFolders.getSelectedRow();
+        if (index == -1) {
+            return;
+        }
+        String location = getItem(index, true).location;
+        model.removeSourceFolder(calcRealSourceIndex(index, true));
+        testFoldersModel.fireTableDataChanged();
+        if (listener != null) {
+            listener.stateChanged(null);
+        }
+        updateButtons();
+    }//GEN-LAST:event_removeTestFolderActionPerformed
+
+    private void addTestFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addTestFolderActionPerformed
+        doAddFolderActionPerformed(evt, true);
+    }//GEN-LAST:event_addTestFolderActionPerformed
 
     private void jScrollPane1ComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_jScrollPane1ComponentResized
         updateColumnWidths();
@@ -245,9 +436,9 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
         if (index == -1) {
             return;
         }
-        String location = getItem(index).location;
-        model.removeSourceFolder(index);
-        sourceFoldersModel.fireTableDataChanged();        
+        String location = getItem(index, false).location;
+        model.removeSourceFolder(calcRealSourceIndex(index, false));
+        sourceFoldersModel.fireTableDataChanged();
         if (listener != null) {
             listener.stateChanged(null);
         }
@@ -255,6 +446,10 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
     }//GEN-LAST:event_removeFolderActionPerformed
 
     private void addFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFolderActionPerformed
+        doAddFolderActionPerformed(evt, false);
+    }//GEN-LAST:event_addFolderActionPerformed
+
+    private void doAddFolderActionPerformed(java.awt.event.ActionEvent evt, boolean isTests) {                                          
         JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
@@ -266,7 +461,11 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
                 chooser.setSelectedFile(model.getBaseFolder());
             }
         }
-        chooser.setDialogTitle(NbBundle.getMessage(SourceFoldersPanel.class, "LBL_Browse_Source_Folder"));
+        if (isTests) {
+            chooser.setDialogTitle(NbBundle.getMessage(SourceFoldersPanel.class, "LBL_Browse_Test_Folder"));
+        } else {
+            chooser.setDialogTitle(NbBundle.getMessage(SourceFoldersPanel.class, "LBL_Browse_Source_Folder"));
+        }
         chooser.setMultiSelectionEnabled(true);
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File files[] = chooser.getSelectedFiles();
@@ -277,16 +476,20 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
                 sf.type = ProjectModel.TYPE_JAVA;
                 sf.style = JavaProjectNature.STYLE_PACKAGES;
                 sf.label = getDefaultLabel(sf.location);
-                model.addSourceFolder(sf);
+                model.addSourceFolder(sf, isTests);
             }
-            sourceFoldersModel.fireTableDataChanged();
+            if (isTests) {
+                testFoldersModel.fireTableDataChanged();
+            } else {
+                sourceFoldersModel.fireTableDataChanged();
+            }
             if (listener != null) {
                 listener.stateChanged(null);
             }
             updateColumnWidths();
             updateButtons();
         }
-    }//GEN-LAST:event_addFolderActionPerformed
+    }                                         
     
     private String getDefaultLabel(String location) {
         // #47386 - remove "${project.dir}/" from label
@@ -313,10 +516,30 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
         return location;
     }
     
-    private JavaProjectGenerator.SourceFolder getItem(int index) {
-        return (JavaProjectGenerator.SourceFolder)model.getSourceFolder(index);
+    private JavaProjectGenerator.SourceFolder getItem(int index, boolean tests) {
+        return (JavaProjectGenerator.SourceFolder)model.getSourceFolder(calcRealSourceIndex(index, tests));
     }
 
+    private int calcRealSourceIndex(int index, boolean tests) {
+        int realIndex = 0;
+        for (int i=0; i<model.getSourceFoldersCount(); i++) {
+            JavaProjectGenerator.SourceFolder sf = (JavaProjectGenerator.SourceFolder)model.getSourceFolder(i);
+            boolean isTest = model.isTestSourceFolder(sf);
+            if (tests && !isTest) {
+                continue;
+            }
+            if (!tests && isTest) {
+                continue;
+            }
+            if (index == realIndex) {
+                return i;
+            }
+            realIndex++;
+        }
+        throw new ArrayIndexOutOfBoundsException("index="+index+" tests="+tests+" realIndex="+realIndex);
+    }
+
+    
     public boolean hasSomeSourceFolder() {
         return model.getSourceFoldersCount() > 0;
     }
@@ -358,13 +581,22 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addFolder;
+    private javax.swing.JButton addTestFolder;
+    private javax.swing.JButton downFolder;
+    private javax.swing.JButton downTestFolder;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JButton removeFolder;
+    private javax.swing.JButton removeTestFolder;
     private javax.swing.JTable sourceFolders;
     private javax.swing.JComboBox sourceLevel;
+    private javax.swing.JTable testFolders;
+    private javax.swing.JButton upFolder;
+    private javax.swing.JButton upTestFolder;
     // End of variables declaration//GEN-END:variables
 
     public void setModel(ProjectModel model, AntProjectHelper projectHelper) {
@@ -378,7 +610,6 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
     private void updateColumnWidths() {
         FontMetrics fm = sourceFolders.getFontMetrics(sourceFolders.getFont());
-        TableColumnModel tcm = sourceFolders.getColumnModel();
         
         // calc the size so that columns take whole horizontal area
         int preferedWidthLabel = (int)(0.2f * jScrollPane1.getWidth());
@@ -389,8 +620,13 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
         // XXX: shorten it a bit to prevent horizontal scrollbar.
         preferedWidthFolder -= 5;
         
+        TableColumnModel tcm = sourceFolders.getColumnModel();
         if (updateColumnWidth(tcm, 0, preferedWidthFolder, fm) || updateColumnWidth(tcm, 1, preferedWidthLabel, fm)) {
             sourceFolders.doLayout();
+        }
+        tcm = testFolders.getColumnModel();
+        if (updateColumnWidth(tcm, 0, preferedWidthFolder, fm) || updateColumnWidth(tcm, 1, preferedWidthLabel, fm)) {
+            testFolders.doLayout();
         }
     }
     
@@ -417,7 +653,10 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
     private class SourcesModel extends AbstractTableModel {
         
-        public SourcesModel() {
+        private boolean tests;
+        
+        public SourcesModel(boolean tests) {
+            this.tests = tests;
         }
         
         public int getColumnCount() {
@@ -432,16 +671,29 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
         }
         
         public int getRowCount() {
-            return model == null ? 0 : model.getSourceFoldersCount();
+            if (model == null)
+                return 0;
+            int count = 0;
+            for (int i=0; i<model.getSourceFoldersCount(); i++) {
+                JavaProjectGenerator.SourceFolder sf = (JavaProjectGenerator.SourceFolder)model.getSourceFolder(i);
+                boolean isTest = model.isTestSourceFolder(sf);
+                if (tests && isTest) {
+                    count++;
+                }
+                if (!tests && !isTest) {
+                    count++;
+                }
+            }
+            return count;
         }
         
         public Object getValueAt(int rowIndex, int columnIndex) {
             if (columnIndex == 0) {
-                String loc = getItem(rowIndex).location;
+                String loc = getItem(rowIndex, tests).location;
                 loc = getLocationDisplayName(model.getEvaluator(), model.getNBProjectFolder(), loc);
                 return loc;
             } else {
-                return getItem(rowIndex).label;
+                return getItem(rowIndex, tests).label;
             }
         }
         
@@ -458,7 +710,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
         }
         
         public void setValueAt(Object val, int rowIndex, int columnIndex) {
-            JavaProjectGenerator.SourceFolder sf = getItem(rowIndex);
+            JavaProjectGenerator.SourceFolder sf = getItem(rowIndex, tests);
             sf.label = (String)val;
             if (sf.label.length() == 0) {
                 sf.label = getDefaultLabel(sf.location);
