@@ -462,12 +462,24 @@ public abstract class NbTopManager /*extends TopManager*/ {
     
     private boolean doingExit=false;
     public void exit ( ) {
-        synchronized (this) {
-            if (doingExit) {
-                return ;
-            }
-            doingExit = true;
+        // #37160 So there is avoided potential clash between hiding GUI in AWT
+        // and accessing AWTTreeLock from saving routines (winsys).
+        if(SwingUtilities.isEventDispatchThread()) {
+            doExit();
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    doExit();
+                }
+            });
         }
+    }
+    
+    private void doExit() {
+        if (doingExit) {
+            return ;
+        }
+        doingExit = true;
         // save all open files
         try {
             if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog(null) ) {
@@ -534,9 +546,7 @@ public abstract class NbTopManager /*extends TopManager*/ {
                 }
             }
         } finally {
-            synchronized (this) {
-                doingExit = false; 
-            }
+            doingExit = false; 
         }
     }
     
