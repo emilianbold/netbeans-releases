@@ -96,7 +96,7 @@ public class LocalFSTest extends FSTest {
      */
     private static StringResult load(InputStream is, int foCount) throws Exception {
         try {
-            int paddingSize = expPaddingSize(foCount);
+            int paddingSize = Utilities.expPaddingSize(foCount);
             StringResult ret = new StringResult(paddingSize);
             Reader reader = new BufferedReader(new InputStreamReader(is));
             
@@ -114,17 +114,6 @@ public class LocalFSTest extends FSTest {
         } finally {
             is.close();
         }
-    }
-    
-    /** Counts padding size from given size, i.e. 1 for less than 10, 3 for 100 - 999, etc. */
-    private static int expPaddingSize(int size) {
-        int ret = 0;
-        
-        while (size > 0) {
-            size /= 10;
-            ret++;
-        }
-        return ret;
     }
     
     /** Simple evaluator of regular expressions */
@@ -213,14 +202,7 @@ public class LocalFSTest extends FSTest {
         
         String getVersionString() {
             StringBuffer vbuffer = new StringBuffer(patternLength);
-            int localLength = patternLength - 1;
-            int exp[] = new int[] { 0, 10, 100, 1000, 10000, 100000, 1000000 };
-            
-            while (version < exp[localLength--]) {
-                vbuffer.append('0');
-            }
-            
-            vbuffer.append(String.valueOf(version));
+            Utilities.appendNDigits(version, patternLength, vbuffer);
             return vbuffer.toString();
         }
         

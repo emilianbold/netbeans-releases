@@ -57,6 +57,7 @@ public class SerialData extends Object implements Serializable {
     /**
     * @param args the command line arguments
     */
+    /*
     public static void main(String args[]) throws Exception {
         ByteArrayOutputStream barros = new ByteArrayOutputStream();
         ObjectOutputStream obos = new ObjectOutputStream(barros);
@@ -66,7 +67,7 @@ public class SerialData extends Object implements Serializable {
         
         byte[] bytes = barros.toByteArray();
         System.out.println(bytes2String(bytes));
-    }
+    }*/
     
     private static String bytes2String (byte[] bytes) {
         StringBuffer buffer = new StringBuffer(2 * bytes.length);

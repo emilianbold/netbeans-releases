@@ -25,11 +25,11 @@ import org.openide.filesystems.data.SerialData;
  */
 public class XMLFSTest extends ReadOnlyFSTest {
     
-    public static final String PACKAGE = "org/openide/filesystem/data/";
+    public static final String PACKAGE = "org/openide/filesystems/data/";
     private static final String MF_NAME = "mf-layer";
     private static final String HEADER = "<?xml version=\"1.0\"?>";//\n<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.0//EN\" \"http://www.netbeans.org/dtds/filesystem-1_0.dtd\">";
-    private static final String FOLDER_START = "  <folder name=\"org\">\n    <folder name=\"openide\">\n      <folder name=\"filesystems\">\n        <folder name=\"data\">\n          <folder name=\"java\">";
-    private static final String FOLDER_END = "          </folder>\n        </folder>\n      </folder>\n    </folder>\n  </folder>\n";
+    private static final String FOLDER_START = "  <folder name=\"org\">\n    <folder name=\"openide\">\n      <folder name=\"filesystems\">\n        <folder name=\"data\">";
+    private static final String FOLDER_END = "        </folder>\n      </folder>\n    </folder>\n  </folder>\n";
     private static final int FOLDER_INDENT  = FOLDER_END.indexOf('<') / 2;
     private static final String INDENT_STEP  = "  ";
     
@@ -89,7 +89,7 @@ public class XMLFSTest extends ReadOnlyFSTest {
      */
     public static String generate(int fileNo, int base) throws Exception {
         StringBuffer buffer = new StringBuffer(50000);
-        buffer.append(HEADER);
+        buffer.append(HEADER).append('\n');
         buffer.append("<filesystem>").append('\n');
         generateFolder(buffer, fileNo, base);
         buffer.append("</filesystem>").append('\n');
@@ -114,21 +114,10 @@ public class XMLFSTest extends ReadOnlyFSTest {
      * @param base
      */
     private static final void generateFiles(StringBuffer buffer, final int fileNo, final int base) throws Exception {
-        int paddingSize = expPaddingSize(fileNo);
+        int paddingSize = Utilities.expPaddingSize(fileNo);
         for (int i = 0; i < fileNo; i++) {
             generateOneFile(buffer, paddingSize, base + i);
         }
-    }
-    
-    /** Counts padding size from given size, i.e. 1 for less than 10, 3 for 100 - 999, etc. */
-    private static int expPaddingSize(int size) {
-        int ret = 0;
-        
-        while (size > 0) {
-            size /= 10;
-            ret++;
-        }
-        return ret;
     }
     
     /** Generates an XML description of a file inside a folder structure.
@@ -170,9 +159,9 @@ public class XMLFSTest extends ReadOnlyFSTest {
     private static void generateStringAttr(StringBuffer buffer, int i, int paddingSize) {
         addIndent(buffer, FOLDER_INDENT + 2);
         buffer.append("<attr name=\"key_");
-        appendNDigits(i, paddingSize, buffer);
+        Utilities.appendNDigits(i, paddingSize, buffer);
         buffer.append("\" stringvalue=\"val_");
-        appendNDigits(i, paddingSize, buffer);
+        Utilities.appendNDigits(i, paddingSize, buffer);
         buffer.append("\"/>");
         buffer.append('\n');
     }
@@ -208,23 +197,11 @@ public class XMLFSTest extends ReadOnlyFSTest {
     private static String generateOneFileString(int paddingSize, int base) {
         StringBuffer sbuffer = new StringBuffer(20);
         sbuffer.append(LocalFSTest.RES_NAME);
-        appendNDigits(base, paddingSize, sbuffer);
+        Utilities.appendNDigits(base, paddingSize, sbuffer);
         sbuffer.append(LocalFSTest.RES_EXT);
         return sbuffer.toString();
     }
 
-    /** Appends paddingSize number of digits e.g. 00digit */
-    private static void appendNDigits(int digit, int paddingSize, StringBuffer buffer) {
-        int localLength = paddingSize - 1;
-        int exp[] = new int[] { 0, 10, 100, 1000, 10000, 100000, 1000000 };
-
-        while (digit < exp[localLength--]) {
-            buffer.append('0');
-        }
-
-        buffer.append(String.valueOf(digit));
-    }
-    
     /*
      public static void main(String[] args) throws Exception {
         XMLFSTest xmlfstest = new XMLFSTest("first test");
