@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,13 +16,19 @@ package org.netbeans.jellytools.nodes;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyVersion;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jemmy.*;
-import org.netbeans.jemmy.operators.*;
+import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jemmy.operators.Operator;
 import org.openide.explorer.view.Visualizer;
 
 /** Ancestor class for all nodes.<p>
@@ -58,7 +64,7 @@ public class Node {
      * @param treeOperator JTreeOperator of tree where node lives
      * @param treePath String tree path of node */
     public Node(JTreeOperator treeOperator, String treePath) {
-        this(treeOperator, treeOperator.findPath(treePath, "|"));
+        this(treeOperator, new NodesJTreeOperator(treeOperator).findPath(treePath, "|"));
     }
     
     /** creates new Node instance
@@ -66,7 +72,7 @@ public class Node {
      * @param treePath String tree path of node
      * @param indexes String list of indexes of nodes in each level */
     public Node(JTreeOperator treeOperator, String treePath, String indexes) {
-        this(treeOperator, treeOperator.findPath(treePath, indexes, "|"));
+        this(treeOperator, new NodesJTreeOperator(treeOperator).findPath(treePath, indexes, "|"));
     }
     
     /** creates new Node instance
@@ -87,7 +93,11 @@ public class Node {
      * @param treeOperator JTreeOperator of tree where node lives
      * @param path TreePath of node */
     public Node(JTreeOperator treeOperator, TreePath path) {
-        this.treeOperator=treeOperator;
+        if(treeOperator instanceof NodesJTreeOperator) {
+            this.treeOperator = treeOperator;
+        } else {
+            this.treeOperator = new NodesJTreeOperator(treeOperator);
+        }
         this.treePath=path;
     }
     
@@ -115,7 +125,7 @@ public class Node {
     /** getter for JTreeOperator of tree where node lives
      * @return JTreeOperator of tree where node lives */
     public JTreeOperator tree() {
-        return(treeOperator);
+        return treeOperator;
     }
     
     /** Getter for TreePath of node.
@@ -355,12 +365,15 @@ public class Node {
     }
     
     TreePath findSubPath(String subPath, String indexes, String delimiter) {
-        JTreeOperator o=tree();
-        String indexStr[]=o.parseString(indexes, delimiter);
+        String indexStr[] = tree().parseString(indexes, delimiter);
         int indexInt[]= new int[indexStr.length];
-        for (int i=0; i<indexStr.length; i++)
+        for (int i=0; i<indexStr.length; i++) {
             indexInt[i]=Integer.parseInt(indexStr[i]);
-        return o.findPath(new Node.StringArraySubPathChooser(treePath, o.parseString(subPath, delimiter), indexInt, getComparator()));
+        }
+        return tree().findPath(new Node.StringArraySubPathChooser(treePath, 
+                                                                  tree().parseString(subPath, delimiter), 
+                                                                  indexInt, 
+                                                                  getComparator()));
     }
     
     /** Expands current node to see children */
@@ -475,6 +488,31 @@ public class Node {
             }).waitAction(null);
         } catch (InterruptedException e) {
             throw new JemmyException("Interrupted.", e);
+        }
+    }
+
+    /** For IDE nodes we need to call openideNode.getChildren().getNodes(true);
+     * which should satisfy that all children are correctly initialized. In
+     * fact it skips 'Please, wait..." node and final tree should not be
+     * regenerated anymore.
+     */
+    private static class NodesJTreeOperator extends JTreeOperator {
+       
+        /** Creates new instance of NodesJTreeOperator from given JTreeOperator.
+         * @param origOperator original JTreeOperator
+         */
+        public NodesJTreeOperator(JTreeOperator origOperator) {
+            super((JTree)origOperator.getSource());
+            copyEnvironment(origOperator);
+        }
+        
+        /** Expands path and waits until all children are ready. This method
+         * is used in JTreeOperator.findPathPrimitive, so we need it override here.
+         * @param treePath tree path to be expanded
+         */
+        public void expandPath(final TreePath treePath) {
+            super.expandPath(treePath);
+            Visualizer.findNode(treePath.getLastPathComponent()).getChildren().getNodes(true);
         }
     }
 }
