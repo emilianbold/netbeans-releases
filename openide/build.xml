@@ -612,7 +612,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
           description="Create Open API documentation.">
     <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4/docs/api"/>
     <tstamp/>
-    <property name="open-apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2001 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
+    <property name="open-apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2002 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
     <echo message="Build Open API documentation..."/>
     <mkdir dir="OpenAPIs"/>
     <javadoc destdir="OpenAPIs"
