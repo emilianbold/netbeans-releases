@@ -52,7 +52,7 @@ H1 {
   font-size: 16px;
   font-weight:bold;
   margin:0px;
- padding:0px;
+  padding:0px;
   color:#D20005;
 }
 
@@ -66,9 +66,19 @@ H2 {
   color:#D20005;
 }
 
+H3.tutorial {
+	  font-family: Arial, "Arial CE", "Lucida Grande CE", lucida, "Helvetica CE", sans-serif;
+	  font-size: 13px;
+	  font-weight:bold;
+	  padding-bottom:0px;
+	  margin-bottom:0px;
+	  border-bottom:1px solid #AFAFAF;
+	  color:#0E1B55;
+	  clear:both;
+}
+
 H3 {
   font-family: Arial, "Arial CE", "Lucida Grande CE", lucida, "Helvetica CE", sans-serif;
-  clear:both;
   font-size: 13px;
   font-weight:bold;
   margin:0px;
@@ -366,36 +376,14 @@ FORM {
   text-decoration:none;
 }
 
-#newstickerxml A:Visited {
-  color: #ffffff;
-  text-decoration:none;
-}
-
-#newstickerxml A:Link {
-  color: #ffffff;
-  text-decoration:none;
-}
-
-#newstickerxml A:Active {
-  color: #ffffff;
-  text-decoration:none;
-}
-
-#newstickerxml A:Hover {
-  color: #ffffff;
-  text-decoration:underline;
-}
-
 #promo {
   background-color:#ffffff;
-  height:180px;
-  margin-bottom:20px;
-  clear:both;
+  height:80px;
+  margin-bottom:5px;
 }
 
 #promotext {
   padding-top:0px;
-  padding-left:200px;
   padding-right:20px;
   font-size: 11px;
   font-family: Verdana, "Verdana CE",  Arial, "Arial CE", "Lucida Grande CE", lucida, "Helvetica CE", sans-serif;
@@ -404,14 +392,12 @@ FORM {
   line-height:15px;
 }
 
+/*  padding-left:180px; */
+
 #promourl {
   padding-top:10px;
   padding-left:20px;
   font-size: 11px;
-}
-
-#promourll {
-  float:left;
 }
 
 #promourl A {
@@ -419,29 +405,13 @@ FORM {
   color:#045491;
   text-decoration:none;
   #height:25px;
-  width:240px;
+  width:260px;
   margin-bottom:6px;
-  margin-right:18px;
+  margin-right:10px;
 }
 
-#promourl A:Visited {
-  color:#045491;
-  text-decoration:none;
-}
-
-#promourl A:Active {
-  color:#045491;
-  text-decoration:none;
-}
-
-#promourl A:Link {
-  color:#045491;
-  text-decoration:none;
-}
-
-#promourl A:Hover {
-  color:#045491;
-  text-decoration:underline;
+#promourll {
+  float:left;
 }
 
 .titlehead {
@@ -449,10 +419,13 @@ FORM {
   clear:both;
 }
 
-#mainart {
-  margin-top:1px;
-  background-image:url("images/v4/ill_articles.jpg");
+/*
+  background-image:url("images/v4/banner_beta2_tall.png");
   background-repeat:no-repeat;
+*/
+
+#mainart {
+  margin-top:5px;
   background-color:#ffffff;
   margin-bottom:20px;
   min-height:255px;
@@ -862,8 +835,8 @@ DOWNLOAD SPECIFIC
 */
 
 .tblheader {
-  background-color:#B2B2B2;
-  color:#ffffff;
+  background-color:#CAD7F0;
+  color:#000000;
   font-weight:bold;
   padding:3px;
 }
@@ -983,6 +956,7 @@ OTHER STYLES
 .examplecode {
   font-family: "Courier New", monospace;
   background-color: #ffffcc;
+ 
 }
 
 
@@ -993,8 +967,16 @@ OTHER STYLES
   line-height: 1.2em;
 }
 
-pre,samp,code,tt {
+samp,code,tt {
   font-family: "Courier New", monospace;
+ 
+  
+}
+
+pre
+{
+	 background-color: #ffffcc;
+	 padding:5px 5px 5px 5px;
 }
 
 .titlec {
@@ -1008,3 +990,10 @@ pre,samp,code,tt {
   color:#D20005;
 }
 
+/*style for tutorials*/
+.indent {
+	margin-left:15px;
+}
+
+li {margin-bottom:5px;}
+	
