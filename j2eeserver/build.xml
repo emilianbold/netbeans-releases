@@ -65,7 +65,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="compile" depends="privatedtds, projectized.compile"/>
   
-  <target name="clean" depends="projectized.build-init, clean-ddgen-src, projectized.clean"/>
+  <target name="clean" depends="clean-ddgen-src, projectized.clean"/>
 
   <target name="clean-ddgen-src">
     <delete dir="src/org/netbeans/modules/j2ee/deployment/impl/gen"/>
