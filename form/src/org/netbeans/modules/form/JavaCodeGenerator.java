@@ -111,132 +111,121 @@ public class JavaCodeGenerator extends CodeGenerator {
   * @param component The RADComponent for which the properties are to be obtained
   */
   public Node.Property[] getSyntheticProperties (final RADComponent component) {
-    return new Node.Property[] {
-      new PropertySupport.ReadWrite ("variableName", String.class, "Variable Name", // [PENDING - localize]
-                                     "The name of the global variable generated for this component") {
-        public void setValue (Object value) {
-          if (!(value instanceof String)) {
-            throw new IllegalArgumentException ();
-          }
-          component.setName ((String)value);
+    Node.Property variableProperty = new PropertySupport.ReadWrite ("variableName", String.class, "Variable Name", // [PENDING - localize]
+                                   "The name of the global variable generated for this component") {
+      public void setValue (Object value) {
+        if (!(value instanceof String)) {
+          throw new IllegalArgumentException ();
         }
+        component.setName ((String)value);
+      }
 
-        public Object getValue () {
-          return component.getName ();
-        }
-      },
-      new PropertySupport.ReadWrite ("useDefaultModifiers", Boolean.TYPE, "Use Default Modifiers",  // [PENDING - localize]
-                                     "If true, the global modifiers from Control Panel | Form Settings are used") {
-        public void setValue (Object value) {
-          if (!(value instanceof Boolean)) {
-            throw new IllegalArgumentException ();
-          }
-          boolean useDefaultModifiers = ((Boolean)value).booleanValue ();
-          if (useDefaultModifiers) {
-            component.setAuxValue (AUX_VARIABLE_MODIFIER, null);
-          } else {
-            component.setAuxValue (AUX_VARIABLE_MODIFIER, FormEditor.getFormSettings ().getVariablesModifier ());
-          }
-          regenerateVariables ();
-        }
-
-        public Object getValue () {
-          return new Boolean (component.getAuxValue (AUX_VARIABLE_MODIFIER) == null);
-        }
-        
-      },
-      new PropertySupport.ReadWrite ("modifiers", ConstrainedModifiers.class, "Variable Modifiers",  // [PENDING - localize]
-                                     "The modifiers of the global variable generated for this component") {
-        public void setValue (Object value) {
-          if (!(value instanceof ConstrainedModifiers)) {
-            throw new IllegalArgumentException ();
-          }
-          component.setAuxValue (AUX_VARIABLE_MODIFIER, value);
-          regenerateVariables ();
-        }
-
-        public Object getValue () {
-          return component.getAuxValue (AUX_VARIABLE_MODIFIER);
-        }
-        
-        public boolean canWrite () {
-          return (component.getAuxValue (AUX_VARIABLE_MODIFIER) != null);
-        }
-
-        public PropertyEditor getPropertyEditor () {
-          return new ConstrainedModifiersEditor ();
-        }
-        
-      },
-      new PropertySupport.ReadWrite ("codeGeneration", Integer.TYPE, "Code Generation",  // [PENDING - localize]
-                                     "Type of code generation for this component") {
-        public void setValue (Object value) {
-          if (!(value instanceof Integer)) {
-            throw new IllegalArgumentException ();
-          }
-          component.setAuxValue (AUX_CODE_GENERATION, value);
-          if (value.equals (VALUE_SERIALIZE)) {
-            if (component.getAuxValue (AUX_SERIALIZE_TO) == null) {
-              component.setAuxValue (AUX_SERIALIZE_TO, getDefaultSerializedName (component));
-            }
-          }
-          regenerateInitializer ();
-        }
-
-        public Object getValue () {
-          Object value = component.getAuxValue (AUX_CODE_GENERATION);
-          if (value == null) {
-            if (component.hasHiddenState ()) {
-              value = VALUE_SERIALIZE;
-            } else {
-              value = VALUE_GENERATE_CODE;
-            }
-          }
-          return value;
-        }
-        
-        public PropertyEditor getPropertyEditor () {
-          return new CodeGenerateEditor (component);
-        }
-        
-      },
-      new PropertySupport.ReadWrite ("serializeTo", String.class, "Serialize To",  // [PENDING - localize]
-                                     "The file into which this component is serialized") {
-        public void setValue (Object value) {
-          if (!(value instanceof String)) {
-            throw new IllegalArgumentException ();
-          }
-          component.setAuxValue (AUX_SERIALIZE_TO, value);
-          regenerateInitializer ();
-        }
-
-        public Object getValue () {
-          Object value = component.getAuxValue (AUX_SERIALIZE_TO);
-          if (value == null) {
-            value = getDefaultSerializedName (component);
-          }
-/*            // construct default file name for the serialized prototype
-            try {
-              FileObject formFile = formManager.getFormObject ().getFormFile ();
-              if (formFile.getFileSystem () instanceof LocalFileSystem) {
-                value = new File (
-                  ((LocalFileSystem)formFile.getFileSystem ()).getRootDirectory ().getName () + 
-                  File.separator + 
-                  formFile.getPackageName (File.separatorChar) + 
-                  "_" + 
-                  component.getName () + 
-                  ".ser"
-                );
-              }
-            } catch (FileStateInvalidException e) {
-              // ignore -> keep null
-            }
-          } */
-          return value;
-        }
-        
-      },
+      public Object getValue () {
+        return component.getName ();
+      }
     };
+
+    if (!component.getFormManager ().getFormEditorSupport ().supportsAdvancedFeatures ()) {
+      return new Node.Property[] { variableProperty };
+    } else {
+      return new Node.Property[] {
+        variableProperty,
+        new PropertySupport.ReadWrite ("useDefaultModifiers", Boolean.TYPE, "Use Default Modifiers",  // [PENDING - localize]
+                                       "If true, the global modifiers from Control Panel | Form Settings are used") {
+          public void setValue (Object value) {
+            if (!(value instanceof Boolean)) {
+              throw new IllegalArgumentException ();
+            }
+            boolean useDefaultModifiers = ((Boolean)value).booleanValue ();
+            if (useDefaultModifiers) {
+              component.setAuxValue (AUX_VARIABLE_MODIFIER, null);
+            } else {
+              component.setAuxValue (AUX_VARIABLE_MODIFIER, FormEditor.getFormSettings ().getVariablesModifier ());
+            }
+            regenerateVariables ();
+          }
+  
+          public Object getValue () {
+            return new Boolean (component.getAuxValue (AUX_VARIABLE_MODIFIER) == null);
+          }
+          
+        },
+        new PropertySupport.ReadWrite ("modifiers", ConstrainedModifiers.class, "Variable Modifiers",  // [PENDING - localize]
+                                       "The modifiers of the global variable generated for this component") {
+          public void setValue (Object value) {
+            if (!(value instanceof ConstrainedModifiers)) {
+              throw new IllegalArgumentException ();
+            }
+            component.setAuxValue (AUX_VARIABLE_MODIFIER, value);
+            regenerateVariables ();
+          }
+  
+          public Object getValue () {
+            return component.getAuxValue (AUX_VARIABLE_MODIFIER);
+          }
+          
+          public boolean canWrite () {
+            return (component.getAuxValue (AUX_VARIABLE_MODIFIER) != null);
+          }
+  
+          public PropertyEditor getPropertyEditor () {
+            return new ConstrainedModifiersEditor ();
+          }
+          
+        },
+        new PropertySupport.ReadWrite ("codeGeneration", Integer.TYPE, "Code Generation",  // [PENDING - localize]
+                                       "Type of code generation for this component") {
+          public void setValue (Object value) {
+            if (!(value instanceof Integer)) {
+              throw new IllegalArgumentException ();
+            }
+            component.setAuxValue (AUX_CODE_GENERATION, value);
+            if (value.equals (VALUE_SERIALIZE)) {
+              if (component.getAuxValue (AUX_SERIALIZE_TO) == null) {
+                component.setAuxValue (AUX_SERIALIZE_TO, getDefaultSerializedName (component));
+              }
+            }
+            regenerateInitializer ();
+          }
+  
+          public Object getValue () {
+            Object value = component.getAuxValue (AUX_CODE_GENERATION);
+            if (value == null) {
+              if (component.hasHiddenState ()) {
+                value = VALUE_SERIALIZE;
+              } else {
+                value = VALUE_GENERATE_CODE;
+              }
+            }
+            return value;
+          }
+          
+          public PropertyEditor getPropertyEditor () {
+            return new CodeGenerateEditor (component);
+          }
+          
+        },
+        new PropertySupport.ReadWrite ("serializeTo", String.class, "Serialize To",  // [PENDING - localize]
+                                       "The file into which this component is serialized") {
+          public void setValue (Object value) {
+            if (!(value instanceof String)) {
+              throw new IllegalArgumentException ();
+            }
+            component.setAuxValue (AUX_SERIALIZE_TO, value);
+            regenerateInitializer ();
+          }
+  
+          public Object getValue () {
+            Object value = component.getAuxValue (AUX_SERIALIZE_TO);
+            if (value == null) {
+              value = getDefaultSerializedName (component);
+            }
+            return value;
+          }
+          
+        },
+      };
+    }
   }
 
 // -----------------------------------------------------------------------------------------------
@@ -1130,6 +1119,9 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  36   Gandalf   1.35        7/11/99  Ian Formanek    Some synthetic 
+ *       properties on RADComponents are available only if 
+ *       supportsAdvancedFeatures of current persistence manager returns true
  *  35   Gandalf   1.34        7/9/99   Ian Formanek    menu editor improvements
  *  34   Gandalf   1.33        7/8/99   Ian Formanek    Fixed closing code 
  *       generation writers
