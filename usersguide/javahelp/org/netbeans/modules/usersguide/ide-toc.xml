@@ -323,17 +323,17 @@
   </tocitem>
 </tocitem>
 
-<tocitem text="Web Module Basics">
+<tocitem text="Web Application Basics">
 
-<tocitem text="About Web Modules">
-   <tocitem text="About Web Modules" target="intro" />
-   <tocitem text="Working with Web Modules" target="mod_process" />
+<tocitem text="About Web Applications">
+   <tocitem text="About Web Applications" target="intro" />
+   <tocitem text="Working with Web Applications" target="mod_process" />
    <tocitem text="Project Tasks: Quick Reference" target="proj_quickref"/>
-   <tocitem text="How the IDE Supports Web Module Development" target="webmod_idesupport" />
+   <tocitem text="How the IDE Supports Web Application Development" target="webmod_idesupport" />
    <tocitem text="Which Technology Versions Are Supported" target="webmod_techsupport" />
-   <tocitem text="How to Structure Web Modules" target="webmod_struct" />
-   <tocitem text="Where to Put Web Module Files" target="webmod_placefiles" />
-</tocitem> <!-- About Web Modules -->
+   <tocitem text="How to Structure Web Applications" target="webmod_struct" />
+   <tocitem text="Where to Put Web Application Files" target="webmod_placefiles" />
+</tocitem> <!-- About Web Applications -->
 
 <tocitem text="Creating Web Projects">
     <tocitem text="Creating a Web Project" target="proj_creating"/>
@@ -359,7 +359,7 @@
     </tocitem>
 </tocitem>
 
-<tocitem text="Developing Web Modules"> 	
+<tocitem text="Developing Web Applications"> 	
   <tocitem text="Applets" >
           <tocitem text="Adding an Existing Applet" target="webmod_addcompapplet"/>
 	  <tocitem text="Creating an Applet" target="webmod_addapplet"/>
@@ -375,11 +375,11 @@
   <tocitem text="HTML and XML Files" >      
       <tocitem text="Creating an HTML File" target="concepts_html" />          
       <tocitem text="Working With XML Files" target="webmod_xml" />		
-  </tocitem> <!-- Introduction to Web Modules-->
+  </tocitem> <!-- Introduction to Web Applications-->
   
   <!--  <tocitem text="JAR Files" target="concepts_jar" >
-	    <tocitem text="About JAR Files in Web Modules" target="concepts_jar"  />   
-	    <tocitem text="Adding JAR Files to a Web Module" target="webmod_addjar" /> 
+	    <tocitem text="About JAR Files in Web Applications" target="concepts_jar"  />   
+	    <tocitem text="Adding JAR Files to a Web Application" target="webmod_addjar" /> 
     </tocitem>--> <!-- Working With JAR Files --> 
   
   <tocitem text="JSP"> 
@@ -438,49 +438,49 @@
      <tocitem text="Registering a Web Application Listener" target="listen_addtodd"/>
   </tocitem> <!-- Working With Listeners --> 
   
-    </tocitem> <!-- Developing Web Modules -->
+    </tocitem> <!-- Developing Web Applications -->
 <!--
-    <tocitem text="Compiling Web Modules" > 
-    </tocitem>  Compiling Web Modules -->
+    <tocitem text="Compiling Web Applications" > 
+    </tocitem>  Compiling Web Applications -->
 
-    <tocitem text="Running and Testing Web Modules"> 
-        <tocitem text="About Running Web Modules" target="webmod_servconfig" />
-        <tocitem text="Changing Web Browsers for Running Web Modules" target="webmod_browser" />
+    <tocitem text="Running Web Applications"> 
+        <tocitem text="About Running Web Applications" target="webmod_servconfig" />
+        <tocitem text="Changing Web Browsers for Running Web Applications" target="webmod_browser" />
         <tocitem text="Changing Web Servers" target="webmod_server_set" />
         <tocitem text="Passing Parameters to a JSP Page" target="jsp_queryparams"/>									
-    </tocitem> <!-- Running and Testing Web Modules -->
+    </tocitem> <!-- Running and Testing Web Applications -->
 
-    <tocitem text="Debugging Web Modules"> 
-        <tocitem text="About Debugging Web Modules" target="jsp_debug"/>
+    <tocitem text="Debugging Web Applications"> 
+        <tocitem text="About Debugging Web Applications" target="jsp_debug"/>
 <!--    <tocitem text="Validating JSP Syntax" target="jsp_validate" />  -->
         <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
         <tocitem text="Writing A Debug Target for a Web Freeform Project" target="proj_webfree_debug" />
-    </tocitem> <!-- Debugging Web Modules-->
+    </tocitem> <!-- Debugging Web Applications-->
     
-    <tocitem text="Packaging Web Modules"> 
-        <tocitem text="About Packaging Web Modules" target="concepts_war"  />
+    <tocitem text="Packaging Web Applications"> 
+        <tocitem text="About Packaging Web Applications" target="concepts_war"  />
 <!--    <tocitem text="Unpacking and Mounting WAR Files" target="war_unpack" /> -->	
-        <tocitem text="Packaging Web Modules" target="webmod_packagewar" />
+        <tocitem text="Packaging Web Applications" target="webmod_packagewar" />
         <tocitem text="Packaging External Resources" target="war_xtrafiles" />	
 <!--	<tocitem text="Viewing the Contents of a WAR File" target="war_viewcont" />  -->
-        <tocitem text="Removing Packaged Web Modules" target="war_delete"/>        
-    </tocitem> <!-- Packaging Web Modules -->
+        <tocitem text="Removing Packaged Web Applications" target="war_delete"/>        
+    </tocitem> <!-- Packaging Web Applications -->
     
-    <tocitem text="Deploying Web Modules"> 
-        <tocitem text="About Deploying Web Modules" target="webmod_deploy"/>
+    <tocitem text="Deploying Web Applications"> 
+        <tocitem text="About Deploying Web Applications" target="webmod_deploy"/>
 	<tocitem text="Deploying a Tag Library"  target="taglib_packlib"/>
 	<tocitem text="Deployment Descriptors"> 
 	   <tocitem text="About Deployment Descriptors" target="webmod_editdd" />  
 	   <tocitem text="Editing Deployment Descriptors" target="concepts_deploydes" />  
 	   <tocitem text="Registering a Filter" target="filter_addtodd"/>
-           <tocitem text="Registering a Web Module Listener" target="listen_addtodd"/>
-        </tocitem> <!-- Deploying Web Modules-->
-    </tocitem> <!-- Deploying Web Modules-->
+           <tocitem text="Registering a Web Application Listener" target="listen_addtodd"/>
+        </tocitem> <!-- Deploying Web Applications-->
+    </tocitem> <!-- Deploying Web Applications-->
 
    
     <!-- Detritus - Removed from TOC, Index, and JHM
-    <tocitem text="DELETEd Adding Items to a Web Module" target="webmod_additems" />  
-    <tocitem text="DELETEdCreating a Web Module Group" target="webmod_multipletest" />         
+    <tocitem text="DELETEd Adding Items to a Web Application" target="webmod_additems" />  
+    <tocitem text="DELETEdCreating a Web Application Group" target="webmod_multipletest" />         
     <tocitem text="DELETEd Working with Dreamweaver Files" target="jsp_dwt" />
     <tocitem text="DELETEdCompiling a JSP Source File" target="jsp_compile" />    
     <tocitem text="DELETEdViewing Both JSP and Servlet Files" target="jsp_togglebreakpt"/>
@@ -513,14 +513,14 @@
 
 
     Not part of core product 
-    <tocitem text="NOTOCEditing Web Module Deployment Properties" target="dd_properties" />
-    <tocitem text="NOTOCEditing Web Module Reference Properties" target="dd_references" />
-    <tocitem text="NOTOCEditing Web Module Security Properties" target="dd_security" />
+    <tocitem text="NOTOCEditing Web Application Deployment Properties" target="dd_properties" />
+    <tocitem text="NOTOCEditing Web Application Reference Properties" target="dd_references" />
+    <tocitem text="NOTOCEditing Web Application Security Properties" target="dd_security" />
 
 
 
 
-    <tocitem text="NOTOCEditing Web Module Archive Properties" target="war_editprop" />
+    <tocitem text="NOTOCEditing Web Application Archive Properties" target="war_editprop" />
 
     -->
 
