@@ -32,6 +32,8 @@ import org.openide.util.NbBundle;
 */
 public class OptionSupport extends SystemOption {
   
+  static final long serialVersionUID = 2002899758839584077L;
+
   static final String OPTIONS_PREFIX = "OPTIONS_";
 
   private static ResourceBundle bundle;
@@ -143,6 +145,8 @@ public class OptionSupport extends SystemOption {
 
 /*
  * Log
+ *  9    Gandalf   1.8         11/11/99 Miloslav Metelka SVUID explicitly 
+ *       specified
  *  8    Gandalf   1.7         11/11/99 Miloslav Metelka 
  *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
