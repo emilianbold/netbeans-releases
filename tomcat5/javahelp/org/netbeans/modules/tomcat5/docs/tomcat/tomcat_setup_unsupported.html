@@ -9,13 +9,13 @@
 <meta name="lastupdated" content="4Feb04">
 <!-- p1 -->
 
-<title>Deploying to a Tomcat 4 Web Server</title>
+<title>Writing Ant Targets to Deploy to Tomcat Web Server 4</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
-<h2>Deploying to a Tomcat 4 Web Server</h2>
+<h2>Writing Ant Targets to Deploy to Tomcat Web Server 4</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
@@ -26,7 +26,7 @@ installations of supported versions of the Tomcat Web Server. These versions nee
 Web Server cannot be registered with the IDE. Instead, for these versions you can create 
 Ant targets for starting and stopping the Tomcat Web Server
   and for the deployment of web applications, JSP pages, and servlets.</p>
-<p><b>To deploy to a Tomcat 4 Web Server:</b></p>
+<p><b>To write Ant targets to deploy to Tomcat Web Server 4:</b></p>
 <ol>
 	<li>Create a web application project.</li>
 	<li>In the Files window (Ctrl-2), expand the project node, expand the
@@ -66,21 +66,26 @@ and add the following targets right above the closing &lt;<tt>/project</tt>&gt; 
 
 In the targets above, make sure that all the values are correct
 for your environment and Tomcat Web Server installation. In the Run target,
- replace <i>MyWebAppProjectName</i> with the name of your web application project.</li>
+replace <i>MyWebAppProjectName</i> with the name of your web application project.</li></ol>
+<p><b>To integrate the Ant targets with the IDE:</b></p>
+<ol>
 <li>In the Files window, expand the build.xml node, find the <tt>startcat4</tt>
  target node, right-click it, and choose Create Shortcut. You can add a menu
  item, toolbar button, or keyboard shortcut for each of your new targets.</li>
 <li>Right-click the project node, choose Properties, and click Run.
 Use the Relative URL field to define the <tt>client.urlPart</tt>, which you
  specified in the Run target above. For example, type <tt>index.jsp</tt> (without
- a slash, because the slash is defined in the Run target) in the field.</li>
+ a slash, because the slash is defined in the Run target).</li>
  <li>In the projects window, right-click the project node and choose Build Project.
-  Check that the project is built to the folder that you specified in step 1 above.</li>
-  <li>Now use the shortcut you defined to start the Tomcat Web Server. Then
-  use the shortcut you defined to deploy the web application, JSP page, or servlet.
+ Check that the project is built to the folder that you specified in step 1 above.</li>
+</ol>
+<p><b>To deploy the web application:</b></p>
+<ol>
+	<li>Click the shortcut you defined to start the Tomcat Web Server.</li>
+	<li>Click the shortcut you defined to deploy the web application, JSP page, or servlet.</li></ol>
   The JSP page or servlet specified by the <tt>client.urlPart</tt> property is
   displayed in the browser that you defined in the <tt>Run</tt> target.</li>
-</ol>
+
 
 <table>
 
