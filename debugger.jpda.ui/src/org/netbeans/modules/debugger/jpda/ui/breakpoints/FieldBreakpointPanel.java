@@ -12,6 +12,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.Context;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -25,13 +26,23 @@ public class FieldBreakpointPanel extends JPanel implements Controller {
     private boolean                     createBreakpoint = false;
     
     
-    /** Creates new form LineBreakpointPanel */
-    public FieldBreakpointPanel () {
-        this (FieldBreakpoint.create (
+    private static FieldBreakpoint creteBreakpoint () {
+        FieldBreakpoint mb = FieldBreakpoint.create (
             Context.getCurrentClassName (),
             Context.getCurrentFieldName (), 
             FieldBreakpoint.TYPE_ACCESS
-        ));
+        );
+        mb.setPrintText (
+            NbBundle.getBundle (FieldBreakpointPanel.class).getString 
+                ("CTL_Field_Breakpoint_Print_Text")
+        );
+        return mb;
+    }
+    
+    
+    /** Creates new form LineBreakpointPanel */
+    public FieldBreakpointPanel () {
+        this (creteBreakpoint ());
         createBreakpoint = true;
     }
     

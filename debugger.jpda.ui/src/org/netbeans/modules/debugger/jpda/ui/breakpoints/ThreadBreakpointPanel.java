@@ -12,6 +12,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.Context;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -25,9 +26,19 @@ public class ThreadBreakpointPanel extends JPanel implements Controller {
     private boolean                     createBreakpoint = false;
     
     
+    private static ThreadBreakpoint creteBreakpoint () {
+        ThreadBreakpoint mb = ThreadBreakpoint.create ();
+        mb.setPrintText (
+            NbBundle.getBundle (ThreadBreakpointPanel.class).getString 
+                ("CTL_Thread_Breakpoint_Print_Text")
+        );
+        return mb;
+    }
+    
+    
     /** Creates new form LineBreakpointPanel */
     public ThreadBreakpointPanel () {
-        this (ThreadBreakpoint.create ());
+        this (creteBreakpoint ());
         createBreakpoint = true;
     }
     

@@ -181,13 +181,18 @@ PropertyChangeListener {
             int lineNumber = t.getLineNumber (language);
             try {
                 String sourceName = t.getSourceName (language);
-                CallStackFrame f = t.getCallStack () [0];
-                String sourceName1 = Context.getRelativePath
-                    (f, language);
+                CallStackFrame f = t.getStackDepth () > 0 ?
+                    t.getCallStack () [0] : null;
+                String sourceName1 = f != null ? 
+                    Context.getRelativePath (f, language) : null;
                 IOManager.Line line = null;
-                if (lineNumber > 0)
-                    line = new IOManager.Line (DebuggerManager.getDebuggerManager().
-                getCurrentSession(), sourceName1, lineNumber);
+                if (lineNumber > 0 && sourceName1 != null)
+                    line = new IOManager.Line (
+                        DebuggerManager.getDebuggerManager().
+                            getCurrentSession (), 
+                        sourceName1, 
+                        lineNumber 
+                    );
 
                 if (lineNumber > 0)
                     print (

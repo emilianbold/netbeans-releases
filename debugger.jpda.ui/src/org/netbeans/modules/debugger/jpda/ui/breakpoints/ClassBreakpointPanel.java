@@ -12,6 +12,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.Context;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -25,13 +26,23 @@ public class ClassBreakpointPanel extends JPanel implements Controller {
     private boolean                     createBreakpoint = false;
     
     
-    /** Creates new form LineBreakpointPanel */
-    public ClassBreakpointPanel () {
-        this (ClassLoadUnloadBreakpoint.create (
+    private static ClassLoadUnloadBreakpoint creteBreakpoint () {
+        ClassLoadUnloadBreakpoint mb = ClassLoadUnloadBreakpoint.create (
             Context.getCurrentClassName (),
             false, 
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED_UNLOADED
-        ));
+        );
+        mb.setPrintText (
+            NbBundle.getBundle (ClassBreakpointPanel.class).getString 
+                ("CTL_Class_Breakpoint_Print_Text")
+        );
+        return mb;
+    }
+    
+    
+    /** Creates new form LineBreakpointPanel */
+    public ClassBreakpointPanel () {
+        this (creteBreakpoint ());
         createBreakpoint = true;
     }
     

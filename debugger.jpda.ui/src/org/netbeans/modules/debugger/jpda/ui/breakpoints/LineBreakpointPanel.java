@@ -21,6 +21,7 @@ import org.netbeans.modules.debugger.jpda.ui.Context;
 import org.netbeans.spi.debugger.ui.Controller;
 
 import java.net.URI;
+import org.openide.util.NbBundle;
 
 /**
  * Panel for customizing line breakpoints.
@@ -34,9 +35,22 @@ public class LineBreakpointPanel extends JPanel implements Controller {
     private boolean                     createBreakpoint = false;
     
     
+    private static LineBreakpoint creteBreakpoint () {
+        LineBreakpoint mb = LineBreakpoint.create (
+            Context.getCurrentURL (),
+            Context.getCurrentLineNumber ()
+        );
+        mb.setPrintText (
+            NbBundle.getBundle (LineBreakpointPanel.class).getString 
+                ("CTL_Line_Breakpoint_Print_Text")
+        );
+        return mb;
+    }
+    
+    
     /** Creates new form LineBreakpointPanel */
-    public LineBreakpointPanel() {
-        this (LineBreakpoint.create(Context.getCurrentURL(), Context.getCurrentLineNumber()));
+    public LineBreakpointPanel () {
+        this (creteBreakpoint ());
         createBreakpoint = true;
     }
     

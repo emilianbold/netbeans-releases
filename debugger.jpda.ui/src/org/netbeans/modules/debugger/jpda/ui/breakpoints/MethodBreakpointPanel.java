@@ -12,6 +12,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.Context;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -25,12 +26,22 @@ public class MethodBreakpointPanel extends JPanel implements Controller {
     private boolean                     createBreakpoint = false;
     
     
-    /** Creates new form LineBreakpointPanel */
-    public MethodBreakpointPanel() {
-        this (MethodBreakpoint.create (
+    private static MethodBreakpoint creteBreakpoint () {
+        MethodBreakpoint mb = MethodBreakpoint.create (
             Context.getCurrentClassName (),
             Context.getCurrentMethodName ()
-        ));
+        );
+        mb.setPrintText (
+            NbBundle.getBundle (MethodBreakpointPanel.class).getString 
+                ("CTL_Method_Breakpoint_Print_Text")
+        );
+        return mb;
+    }
+    
+    
+    /** Creates new form LineBreakpointPanel */
+    public MethodBreakpointPanel () {
+        this (creteBreakpoint ());
         createBreakpoint = true;
     }
     

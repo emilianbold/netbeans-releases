@@ -57,7 +57,6 @@ public class JPDABreakpoint extends Breakpoint {
     
    
     JPDABreakpoint () {
-        printText = NbBundle.getBundle(JPDABreakpoint.class).getString("CTL_Default_Print_Text");
     }
     
 

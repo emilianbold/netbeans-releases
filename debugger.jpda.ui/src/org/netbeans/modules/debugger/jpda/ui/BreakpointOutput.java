@@ -95,12 +95,37 @@ public class BreakpointOutput extends LazyActionsManagerListener
      * @param printText
      * @return
      */
-    private String substitute(String printText, JPDABreakpointEvent event) throws NoInformationException {
-        CallStackFrame sf = event.getThread().getCallStack()[0];
-        printText = threadNamePattern.matcher(printText).replaceAll(event.getThread().getName());
-        printText = classNamePattern.matcher(printText).replaceAll(sf.getClassName());
-        printText = methodNamePattern.matcher(printText).replaceAll(sf.getMethodName());
-        printText = lineNumberPattern.matcher(printText).replaceAll(String.valueOf(sf.getLineNumber(null)));
+    private String substitute(String printText, JPDABreakpointEvent event) 
+    throws NoInformationException {
+        JPDAThread t = event.getThread ();
+        if (t != null)
+            printText = threadNamePattern.matcher (printText).replaceAll 
+                (t.getName ());
+        else
+            printText = threadNamePattern.matcher (printText).replaceAll ("?");
+        
+        if (event.getReferenceType () != null)
+            printText = classNamePattern.matcher (printText).replaceAll 
+                (event.getReferenceType ().name ());
+        else
+            printText = classNamePattern.matcher (printText).replaceAll ("?");
+
+        CallStackFrame sf = null;
+        if ( (t != null) && (t.getStackDepth () > 0))
+            sf = t.getCallStack () [0]; 
+        String language = DebuggerManager.getDebuggerManager ().
+            getCurrentSession ().getCurrentLanguage ();
+        
+        if (sf != null) {
+            printText = methodNamePattern.matcher (printText).replaceAll 
+                (sf.getMethodName ());
+            printText = lineNumberPattern.matcher (printText).replaceAll 
+                (String.valueOf (sf.getLineNumber (language)));
+        } else {
+            printText = methodNamePattern.matcher (printText).replaceAll ("?");
+            printText = lineNumberPattern.matcher (printText).replaceAll ("?");
+        }
+             
         for (;;) {
             Matcher m = expressionPattern.matcher(printText);
             if (!m.find()) break;

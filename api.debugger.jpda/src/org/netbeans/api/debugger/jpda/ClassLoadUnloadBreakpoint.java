@@ -71,9 +71,9 @@ public final class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
     ) {
         ClassLoadUnloadBreakpoint b = new ClassLoadUnloadBreakpoint ();
         if (isExclusionFilter)
-            b.setClassFilters (new String[] {classNameFilter});
-        else
             b.setClassExclusionFilters (new String[] {classNameFilter});
+        else
+            b.setClassFilters (new String[] {classNameFilter});
         b.setBreakpointType (breakpointType);
         return b;
     }
