@@ -19,8 +19,8 @@ import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -307,8 +307,8 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
     public void showDialog()  {
         dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setModal(true);
-        dialog.addComponentListener(new ComponentAdapter() {
-            public void componentShown(ComponentEvent evt) {
+        tabbedPane.addFocusListener(new FocusAdapter() {
+            public void focusGained(FocusEvent e) {
                 int selectedIndex = tabbedPane.getSelectedIndex();
                 if (selectedIndex < 0) {
                     selectedIndex = 0;
@@ -317,7 +317,7 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
                 if (component != null) {
                     component.requestFocus();
                 }
-                dialog.removeComponentListener(this);
+                tabbedPane.removeFocusListener(this);
             }
         });
         
