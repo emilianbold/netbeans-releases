@@ -36,6 +36,9 @@ public class NativeKill {
     private static final String UNIX = "unix";
     private static final String WINDOWS = "windows";
     private static final String UNKNOWN = "unknown";
+    private static final int SIGKILL = 9;
+    private static final int SIGQUIT = 3;
+   
     
     private static final String [][] SUPPORTED_PLATFORMS = { 
         {"Linux,i386",UNIX},
@@ -83,23 +86,23 @@ public class NativeKill {
     }
     
     // call kill -9 pid on unixes
-    private static boolean killOnUnix(long pid) throws IOException {
+    private static boolean killOnUnix(long pid, int signal) throws IOException {
         // need to do !!!
         // should be kill on a default path ?
         // yes - otherwise it will not work
-        String killCommand = "kill -9 "+pid;
+        String killCommand = "kill -"+signal+" "+pid;
         return executeKillCommand(killCommand);
     }
     
     // call kill.exe pid utilitity supplied with xtest on windows
-    private static boolean killOnWindows(long pid) throws IOException {
+    private static boolean killOnWindows(long pid, int signal) throws IOException {
         // need to do !!!
         String xtestHome = System.getProperty("xtest.home");
         if (xtestHome != null) {
             File killFile = new File(xtestHome,"lib/kill.exe");
             //if (killFile.isFile()) {
                 String killPath = killFile.getAbsolutePath();
-                String killCommand = killPath+" "+pid;
+                String killCommand = killPath+" -"+signal+" "+pid;
                 return executeKillCommand(killCommand);
             //}
         } else {
@@ -110,14 +113,14 @@ public class NativeKill {
     /*
      * kills process with given pid 
      */
-    public static boolean killProcess(long pid) {
+    private static boolean killProcess(long pid, int signal) {
         String platform = getPlatform();
         try {
             if (platform.equals(UNIX)) {
-                return killOnUnix(pid);
+                return killOnUnix(pid, signal);
                 } else {
                 if (platform.equals(WINDOWS)) {
-                    return killOnWindows(pid);
+                    return killOnWindows(pid, signal);
                 }
             }
         } catch (IOException ioe) {
@@ -128,6 +131,19 @@ public class NativeKill {
         // but I should evaluate throwing an Exception !!!
         return false;
         
+    }   
+    /*
+     * kills process with given pid 
+     */
+    public static boolean killProcess(long pid) {
+        return killProcess(pid, SIGKILL);
+    }    
+    
+    /*
+     * thread dump process with given pid 
+     */
+    public static boolean dumpProcess(long pid) {
+        return killProcess(pid, SIGQUIT);
     }   
 
 }

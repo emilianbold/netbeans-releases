@@ -63,4 +63,58 @@ JNIEXPORT jlong JNICALL Java_org_netbeans_xtest_util_JNIKill_getMyPID__
 
 }
 
+static DWORD tid=~0;
+
+void dumper(void *param) {
+	char event[30];
+	HANDLE hEvent;
+	sprintf(event, "ThreadDumpEvent%d", GetCurrentProcessId());
+    hEvent = CreateEvent(NULL, TRUE, FALSE, event);
+    while (TRUE) {
+        if (WaitForSingleObject(hEvent, INFINITE) == WAIT_OBJECT_0) {
+            GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, 0);
+        }
+    }
+}
+
+/*
+ * Class:     org_netbeans_xtest_util_JNIKill
+ * Method:    startDumpThread
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_netbeans_xtest_util_JNIKill_startDumpThread
+  (JNIEnv *environment, jobject instance)
+{
+    if (tid!=~0) return FALSE;
+    return CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)dumper, NULL, 0, &tid)!=NULL;
+}
+
+/*
+ * Class:     org_netbeans_xtest_util_JNIKill
+ * Method:    dumpMe
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_netbeans_xtest_util_JNIKill_dumpMe
+  (JNIEnv *environment, jobject instance)
+{
+    return GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, 0);
+}
+
+/*
+ * Class:     org_netbeans_xtest_util_JNIKill
+ * Method:    requestDump
+ * Signature: (J)Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_netbeans_xtest_util_JNIKill_requestDump
+  (JNIEnv *environment, jobject instance, jlong pid)
+{
+	char event[30];
+	HANDLE hEvent;
+	sprintf(event, "ThreadDumpEvent%d", pid);
+	hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE,  event);
+	if (hEvent == NULL) return FALSE;
+	return PulseEvent(hEvent);
+}
+
+
 /*JNI function definitions end*/

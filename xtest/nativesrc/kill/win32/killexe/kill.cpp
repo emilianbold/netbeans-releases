@@ -18,52 +18,47 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <Windows.h>
+#include "killproc.h"
 
-#define KILL_EXIT_CODE 9
+#define KILL_EXIT_CODE 768
 
 #define KILL_OK 0
 #define KILL_ERROR 1
 
-int kill_process(long pid) {
-
-    DWORD wpid = (DWORD) pid;
-    BOOL result;
-    HANDLE w_process;
-	
-	/*
-    printf("Trying to kill %d\n",wpid);
-	*/
-
-	w_process = OpenProcess(PROCESS_TERMINATE, FALSE, wpid);
-	if (w_process == NULL) {
-		return -1;
+int dump_process(long pid) {
+	char event[30];
+	HANDLE hEvent;
+	BOOL result;
+	sprintf(event, "ThreadDumpEvent%d", pid);
+	hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE,  event);
+	if (hEvent == NULL) {
+		return KILL_ERROR; 
+	} else {
+		result = PulseEvent(hEvent);
+		if (result != 0) {
+			return KILL_OK;
+		} else {
+			return KILL_ERROR;
+		}
 	}
-	
-	result = TerminateProcess(w_process,KILL_EXIT_CODE);
-
-    if (result != 0) {
-        return KILL_OK;
-    } else {
-        return KILL_ERROR;
-    }
 }
 
 
 void printUsage() {
 	printf("kill usage:\n");
-	printf("kill.exe <PID>\n");
-	printf("where <PID> is PID of process to be killed\n");		
+	printf("kill.exe [-3|-9] <PID>\n");
+	printf("where <PID> is PID of process to be killed or dumped\n");		
 }
 
 int main(int argc, char* argv[])
 {
 	char *pidString;
 	long pid;
-	if (argc != 2) {
+	if (argc != 2 && (argc !=3 || (strcmp(argv[1], "-3") && strcmp(argv[1], "-9")))) {
 		printUsage();
 		return -1;
 	}
-	pidString = argv[1];
+	pidString = argv[argc-1];
 	pid = atol(pidString);
 
 	if (pid < 1) {
@@ -71,7 +66,7 @@ int main(int argc, char* argv[])
 		return KILL_ERROR;
 	}
 	/*printf("Killing process with pid = %d\n",pid);*/
-	return kill_process(pid);
-
+	if (argc == 3 && strcmp(argv[2], "-3")) return dump_process(pid);
+	else return KillProcessEx(pid, TRUE);
 }
 

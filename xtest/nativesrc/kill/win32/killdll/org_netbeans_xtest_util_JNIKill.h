@@ -37,6 +37,30 @@ JNIEXPORT jboolean JNICALL Java_org_netbeans_xtest_util_JNIKill_killProcess
 JNIEXPORT jlong JNICALL Java_org_netbeans_xtest_util_JNIKill_getMyPID
   (JNIEnv *, jobject);
 
+/*
+ * Class:     org_netbeans_xtest_util_JNIKill
+ * Method:    startDumpThread
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_netbeans_xtest_util_JNIKill_startDumpThread
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     org_netbeans_xtest_util_JNIKill
+ * Method:    dumpMe
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_netbeans_xtest_util_JNIKill_dumpMe
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     org_netbeans_xtest_util_JNIKill
+ * Method:    requestDump
+ * Signature: (J)Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_netbeans_xtest_util_JNIKill_requestDump
+  (JNIEnv *, jobject, jlong);
+
 #ifdef __cplusplus
 }
 #endif

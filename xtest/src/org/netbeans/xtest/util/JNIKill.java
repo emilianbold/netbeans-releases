@@ -131,6 +131,15 @@ public class JNIKill  {
     public native boolean killProcess(long pid);
     
     // native function for gettin pid of this process
-    public native long getMyPID();        
+    public native long getMyPID();  
+    
+    // native function creates thread performing thread dump by signals
+    public native boolean startDumpThread();
+    
+    // native function performs immediate thread dump
+    public native boolean dumpMe();
+    
+    // native function requesting thread dump on JVM with given pid
+    public native boolean requestDump(long pid);
     
 }
