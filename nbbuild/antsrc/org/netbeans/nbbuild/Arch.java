@@ -66,22 +66,41 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
             throw new BuildException ("output file must be specified");
         }
 
+        boolean generateTemplate = !questionsFile.exists();
         org.w3c.dom.Document q;
         try {
             javax.xml.parsers.DocumentBuilder builder = javax.xml.parsers.DocumentBuilderFactory.newInstance ().newDocumentBuilder();
             builder.setEntityResolver(this);
-            
-            q = builder.parse (questionsFile);
+
+            if (generateTemplate) {
+                q = builder.parse(getClass().getResourceAsStream("Arch-api-questions.xml"));
+            } else {
+                q = builder.parse (questionsFile);
+            }
         } catch (Exception ex) {
             throw new BuildException (ex);
         }
-        
-        answers = readElements (q, "answer");
+
         questions = readElements (q, "question");
         
         if (questions.size () == 0) {
             throw new BuildException ("There are no <question> elements in the file!");
         }
+        
+        if (generateTemplate) {
+            log ("Output file " + questionsFile + " does not exists. Generating it with skeleton answers");
+            try {
+                TreeSet s = new TreeSet (questions.keySet ());
+                generateTemplateFile (s);
+            } catch (IOException ex) {
+                throw new BuildException (ex);
+            }
+            
+            return;
+        }
+        
+        answers = readElements (q, "answer");
+        
         
         {
             //System.out.println("doc:\n" + q.getDocumentElement());
@@ -156,6 +175,13 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
         Writer w = new OutputStreamWriter (new FileOutputStream (questionsFile.toString (), true));
         
         w.write("<!-- Copy this above the </api-answers> tag! -->\n\n");
+        
+        writeQuestions (w, missing);
+        
+        w.close();
+    }
+
+    private void writeQuestions (Writer w, Set missing) throws IOException {
         java.util.Iterator it = missing.iterator();
         while (it.hasNext()) {
             String s = (String)it.next ();
@@ -166,7 +192,29 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
             w.write("\n-->\n");
             w.write("<answer id=\"" + s + "\">\nNo answer\n</answer>\n\n");
         }
-        w.close();
+    }
+    
+    private void generateTemplateFile (Set missing) throws IOException {
+        Writer w = new FileWriter (questionsFile);
+        
+        w.write ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        w.write ("<!DOCTYPE api-answers [\n");
+        w.write ("  <!ENTITY api-questions SYSTEM \"api-questions.xml\">\n");
+        w.write ("]>\n");
+        w.write ("\n");
+        w.write ("<api-answers\n");
+        w.write ("  version=\"$Revision$\" date=\"$date$\"\n");
+        w.write ("  question-version=\"1.1\"\n");
+        w.write ("  module=\"name of your module\"\n");
+        w.write ("  author=\"yourname@netbeans.org\"\n");
+        w.write (">\n\n");
+        w.write ("  &api-questions;\n");        
+        
+        writeQuestions (w, missing);
+        
+        w.write ("</api-answers>\n");
+        
+        w.close ();
     }
 
     private static String removeRevisionTags (String s) {

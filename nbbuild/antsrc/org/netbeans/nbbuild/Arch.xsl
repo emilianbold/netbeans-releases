@@ -18,7 +18,7 @@
             </head>
             <body>
             
-                <H1>API Answers for <xsl:value-of select="api-answers/@module" /></H1>
+                <H1>API Answers for <xsl:value-of select="api-answers/@module" /><xsl:text> module</xsl:text></H1>
                 
                 <xsl:variable name="qver" select="substring-before(substring-after(api-answers/api-questions/@version,'Revision: '),' $')" />
                 <xsl:variable name="aver" select="substring-before(substring-after(api-answers/@version,'Revision:'),' $')" />
