@@ -148,7 +148,8 @@ Microsystems, Inc. All Rights Reserved.
 	    <!-- If you need e.g. openide.jar, write this:
 	           <pathelement location="../netbeans/lib/openide.jar"/>
  	      -->
-	    <pathelement location="../mymodule.jar"/>
+	     <pathelement location="gensrc"/>
+	     <pathelement location="../../netbeans/lib/openide.jar"/>
 	</path>
     </target>
         
@@ -177,7 +178,8 @@ Microsystems, Inc. All Rights Reserved.
 	         If you need e.g. your tested module, write this:
 	           <pathelement location="${netbeans.home}/modules/somemodule.jar"/>
  	      -->
-	    <pathelement location="../mymodule.jar"/>     
+	     <pathelement location="gensrc"/>
+	     <pathelement location="${netbeans.home}/lib/openide.jar"/>
    	</path>
     </target>
     
@@ -198,7 +200,6 @@ Microsystems, Inc. All Rights Reserved.
 	         If you need e.g. your tested module, write this:
 	           <pathelement location="${netbeans.home}/modules/somemodule.jar"/>
  	      --> 
-	     <pathelement location="../mymodule.jar"/>
     	</path>
     </target>
     
