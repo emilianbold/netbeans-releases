@@ -2525,7 +2525,7 @@ the ${netbeans.dest}/bin/ directory.
              mergedependentmodules="${merge.dependent.modules}" >
     </nbmerge>
     <chmod perm="ugo+x">
-      <fileset dir="${netbeans.dest}">
+      <fileset dir="${netbeans.dest.dir}">
         <include name="bin/netbeans"/>
         <include name="bin/**/*.pl"/>
         <include name="bin/fastjavac/fastjavac.linux"/>
@@ -2584,7 +2584,7 @@ the ${netbeans.dest}/bin/ directory.
     <echo>Cluster ${one.cluster.name} is :${test1.prop}:</echo>
   </target>
 
-  <target name="build-one-cluster" unless="${one.cluster.name}-is-built" depends="init,build-one-cluster-check">
+  <target name="build-one-cluster" unless="${one.cluster.name}-is-built" depends="build-one-cluster-check">
     <echo message="Building ${one.cluster.name} modules"/>
     <resolve name="one-cluster-modules" property="${one.cluster.name}"/>
     <resolve name="one-cluster-dependencies" property="${one.cluster.name}.depends"/>
@@ -3187,7 +3187,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
 
   <target name="build-source"
-    depends="bootstrap,set-buildnumber"
+    depends="init,set-buildnumber"
     description="Packages sources needed to compile given by cluster.name (can be specified by -Dcluster.name=nb.cluster.platform"
     if="cluster.name"
   >
