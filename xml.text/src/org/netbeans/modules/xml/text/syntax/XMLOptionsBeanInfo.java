@@ -20,10 +20,10 @@ import java.awt.Image;
  *
  * @author Libor Kramolis
  */
-public class XMLOptionsBeanInfo extends org.netbeans.modules.editor.options.PlainOptionsBeanInfo {
+public class XMLOptionsBeanInfo extends org.netbeans.modules.editor.options.HTMLOptionsBeanInfo {
 
     public XMLOptionsBeanInfo () {
-        super ("/org/netbeans/modules/editor/resources/htmlOptions"); // NOI18N
+        super(); // NOI18N
     }
 
     protected Class getBeanClass() {

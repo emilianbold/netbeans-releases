@@ -13,6 +13,9 @@
 package org.netbeans.modules.xml.text.syntax;
 
 import java.util.*;
+import org.netbeans.editor.ext.ExtSettingsNames;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.editor.options.HTMLOptions;
 
 /**
  * Options for the xml editor kit
@@ -34,6 +37,26 @@ public class XMLOptions extends AbstractBaseOptions {
         super (XMLKit.class, "xml"); // NOI18N
     }
 
+    public boolean getCompletionAutoPopup() {
+        return getSettingBoolean(ExtSettingsNames.COMPLETION_AUTO_POPUP);
+    }
+
+    public void setCompletionAutoPopup(boolean v) {
+        setSettingBoolean(ExtSettingsNames.COMPLETION_AUTO_POPUP, v, HTMLOptions.COMPLETION_AUTO_POPUP_PROP);
+    }
+
+    public int getCompletionAutoPopupDelay() {
+        return getSettingInteger(ExtSettingsNames.COMPLETION_AUTO_POPUP_DELAY);
+    }
+
+    public void setCompletionAutoPopupDelay(int delay) {
+        if (delay < 0) {
+            NbEditorUtilities.invalidArgument("MSG_NegativeValue"); // NOI18N
+            return;
+        }
+        setSettingInteger(ExtSettingsNames.COMPLETION_AUTO_POPUP_DELAY, delay,
+            HTMLOptions.COMPLETION_AUTO_POPUP_DELAY_PROP);
+    }
     
     // remap old XMLTokenContext to new XMLDefaultTokenContext
     // commented out match by name
