@@ -56,7 +56,7 @@ public final class DocumentInputSource extends InputSource {
     /**
      * This <code>InputSource</code> is backended by Swing's <code>Document</code>.
      * Consequently its character stream is read-only, it
-     * always reads content of associted <code>Document</cpde>.
+     * always reads content of associted <code>Document</code>.
      */
     public final void setCharacterStream(Reader reader) {
         // do nothing
