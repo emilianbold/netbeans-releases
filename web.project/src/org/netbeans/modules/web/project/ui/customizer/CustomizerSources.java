@@ -54,24 +54,22 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         jTextFieldWebPages.setDocument(uiProperties.WEB_DOCBASE_DIR_MODEL);
         
         WebSourceRootsUi.EditMediator emSR = WebSourceRootsUi.registerEditMediator(
-            (WebProject) uiProperties.getProject(),
+            (WebProject)uiProperties.getProject(),
+            ((WebProject)uiProperties.getProject()).getSourceRoots(),
             sourceRoots,
             addSourceRoot,
             removeSourceRoot, 
             upSourceRoot, 
-            downSourceRoot,
-            NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), 
-            NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInTests") );
+            downSourceRoot);
         
         WebSourceRootsUi.EditMediator emTSR = WebSourceRootsUi.registerEditMediator(
-            (WebProject) uiProperties.getProject(),
+            (WebProject)uiProperties.getProject(),
+            ((WebProject)uiProperties.getProject()).getTestSourceRoots(),
             testRoots,
             addTestRoot,
             removeTestRoot, 
             upTestRoot, 
-            downTestRoot,
-            NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), 
-            NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInSources"));
+            downTestRoot);
         
         emSR.setRelatedEditMediator( emTSR );
         emTSR.setRelatedEditMediator( emSR );

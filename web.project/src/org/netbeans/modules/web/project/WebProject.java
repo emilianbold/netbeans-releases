@@ -334,20 +334,22 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     /**
      * Returns the source roots of this project
      * @return project's source roots
-     */
+     */    
     public synchronized SourceRoots getSourceRoots() {        
         if (this.sourceRoots == null) { //Local caching, no project metadata access
-            this.sourceRoots = new SourceRoots(this.updateHelper, evaluator(), getReferenceHelper(), "source-roots", "src.dir{0}"); //NOI18N
+            this.sourceRoots = new SourceRoots(this.updateHelper, evaluator(), getReferenceHelper(), "source-roots", false, "src.{0}{1}.dir"); //NOI18N
         }
         return this.sourceRoots;
     }
     
     public synchronized SourceRoots getTestSourceRoots() {
         if (this.testRoots == null) { //Local caching, no project metadata access
-            this.testRoots = new SourceRoots(this.updateHelper, evaluator(), getReferenceHelper(), "test-roots", "test.src.dir{0}"); //NOI18N
+            this.testRoots = new SourceRoots(this.updateHelper, evaluator(), getReferenceHelper(), "test-roots", true, "test.{0}{1}.dir"); //NOI18N
         }
         return this.testRoots;
     }
+
+    
     
     File getTestClassesDirectory() {
         String testClassesDir = evaluator().getProperty(WebProjectProperties.BUILD_TEST_CLASSES_DIR);

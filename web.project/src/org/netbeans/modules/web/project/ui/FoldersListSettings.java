@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.web.project.ui;
@@ -18,6 +18,9 @@ import java.util.Map;
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 
+/**
+ * Misnamed storage of information application to the new webproject wizard.
+ */
 public class FoldersListSettings extends SystemOption {
 
     static final long serialVersionUID = -4905094097265543014L;
@@ -26,13 +29,9 @@ public class FoldersListSettings extends SystemOption {
     
     private static final String NEW_APP_COUNT = "newApplicationCount";  //NOI18N
     
-    private static final String NEW_LIB_COUNT = "newLibraryCount"; //NOI18N
-
     private static final String LAST_USED_CP_FOLDER = "lastUsedClassPathFolder";    //NOI18N
 
     private static final String LAST_USED_ARTIFACT_FOLDER = "lastUsedArtifactFolder"; //NOI18N
-
-    private static final String LAST_USED_SOURCE_ROOT_FOLDER = "lastUsedSourceRootFolder";   //NOI18N
 
     private static final String SHOW_AGAIN_BROKEN_REF_ALERT = "showAgainBrokenRefAlert"; //NOI18N
     
@@ -66,15 +65,6 @@ public class FoldersListSettings extends SystemOption {
         this.putProperty(NEW_APP_COUNT, new Integer(count),true);
     }
     
-    public int getNewLibraryCount () {
-        Integer value = (Integer) getProperty (NEW_LIB_COUNT);
-        return value == null ? 0 : value.intValue();
-    }
-    
-    public void setNewLibraryCount (int count) {
-        this.putProperty(NEW_LIB_COUNT, new Integer(count),true);
-    }
-
     public File getLastUsedClassPathFolder () {
         String lucpr = (String) this.getProperty (LAST_USED_CP_FOLDER);
         if (lucpr == null) {
@@ -103,20 +93,6 @@ public class FoldersListSettings extends SystemOption {
         this.putProperty (LAST_USED_ARTIFACT_FOLDER, path, true);
     }
 
-    public File getLastUsedSourceRootFolder () {
-        String folder = (String) this.getProperty (LAST_USED_SOURCE_ROOT_FOLDER);
-        if (folder == null) {
-            folder = System.getProperty("user.home");    //NOI18N
-        }
-        return new File (folder);
-    }
-
-    public void setLastUsedSourceRootFolder (File folder) {
-        assert folder != null : "Folder can not be null";
-        String path = folder.getAbsolutePath();
-        this.putProperty (LAST_USED_SOURCE_ROOT_FOLDER, path, true);
-    }
-    
     public boolean isShowAgainBrokenRefAlert() {
         Boolean b = (Boolean)getProperty(SHOW_AGAIN_BROKEN_REF_ALERT);
         return b == null ? true : b.booleanValue();
