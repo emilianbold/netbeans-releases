@@ -1339,8 +1339,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   
   <target name="commit-validation" depends="commitValidation,no-commit-validation" description="Runs tests to validate IDE before commit."/>
 
+  <target name="all-commitValidation" description="dummy target for build error recognition facility"/>
+
   <!-- keep this target name at least for a while for backward compat -jglick -->
-  <target name="commitValidation" depends="check-commit-validation" if="run.validation">
+  <target name="commitValidation" depends="all-commitValidation,check-commit-validation" if="run.validation">
     <property name="xtest.home" location="../xtest"/>
     <ant dir="${xtest.home}/instance" target="runtests">
         <property name="xtest.config" value="commit-validation-nb"/>
