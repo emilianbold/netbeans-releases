@@ -365,7 +365,7 @@ public class WebProjectProperties {
 
         //test whether user wants to update his project to newest version
         if(needsUpdate) {
-             //remove servlet24 and jsp20 libraries (they are not used in 4.1)
+            //remove servlet24 and jsp20 libraries (they are not used in 4.1)
             ClassPathUiSupport.ClassPathTableModel cptm = getJavaClassPathModel();
 
             ArrayList cpItemsToRemove = new ArrayList();
@@ -390,9 +390,9 @@ public class WebProjectProperties {
                 //System.out.println("[4.0->4.1 project update] classpath item " + cpti + " removed from ClassPathUiSupport.ClassPathTableModel !");
             }
             
-            needsUpdate = false;
+            //commented out, one more check follows
+            //needsUpdate = false;
         }
-        
         
         // Encode all paths (this may change the project properties)
         String[] javac_cp = cs.encodeToStrings( ClassPathUiSupport.getIterator( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES  );
@@ -412,7 +412,26 @@ public class WebProjectProperties {
         // Standard store of the properties
         projectGroup.store( projectProperties );        
         privateGroup.store( privateProperties );
-                
+
+        //test whether user wants to update his project to newest version
+        if(needsUpdate) {
+            //add items for test classpath (they are not used in 4.1)
+            javac_test_cp = new String[] {
+                "${javac.classpath}:", // NOI18N
+                "${build.classes.dir}:", // NOI18N
+                "${libs.junit.classpath}", // NOI18N
+            };
+            run_test_cp = new String[] {
+                "${javac.test.classpath}:", // NOI18N
+                "${build.test.classes.dir}", // NOI18N
+            };
+            projectProperties.setProperty(DEBUG_TEST_CLASSPATH, new String[] {
+                "${run.test.classpath}", // NOI18N
+            });
+            
+            needsUpdate = false;
+        }
+        
         // Save all paths
         projectProperties.setProperty( JAVAC_CLASSPATH, javac_cp );
         projectProperties.setProperty( JAVAC_TEST_CLASSPATH, javac_test_cp );
@@ -452,7 +471,6 @@ public class WebProjectProperties {
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );        
-        
     }
     
     private void storeAdditionalProperties(EditableProperties projectProperties) {
