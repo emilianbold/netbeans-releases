@@ -1,59 +1,59 @@
 Manifest-version: 1.0
 Main-Class: org.netbeans.jemmy.JemmyProperties
 Jemmy-MajorVersion: 2.2
-Jemmy-MinorVersion: 1
+Jemmy-MinorVersion: 2
 Jemmy-Build: @BUILD_NUMBER@
 
 Name: org/netbeans/jemmy
-Implementation-Version: 03/02/18-16:47:55
+Implementation-Version: 03/04/10-19:50:40 03/03/26-21:44:40
 
 Name: org/netbeans/jemmy/drivers
-Implementation-Version: 03/02/18-16:37:58
+Implementation-Version: 03/02/24-12:37:44
 
 Name: org/netbeans/jemmy/drivers/text
-Implementation-Version: 03/02/04-21:52:58
+Implementation-Version: 03/02/24-12:37:45
 
 Name: org/netbeans/jemmy/drivers/buttons
-Implementation-Version: 03/02/04-21:52:58
+Implementation-Version: 03/02/24-12:37:47
 
 Name: org/netbeans/jemmy/drivers/windows
 Implementation-Version: 03/01/27-18:42:24
 
-Name: org/netbeans/jemmy/drivers/input
-Implementation-Version: 03/02/04-21:53:00
-
 Name: org/netbeans/jemmy/drivers/trees
-Implementation-Version: 03/02/04-21:53:01
+Implementation-Version: 03/02/24-12:37:47
 
 Name: org/netbeans/jemmy/drivers/focus
 Implementation-Version: 03/01/27-18:42:28
 
+Name: org/netbeans/jemmy/drivers/input
+Implementation-Version: 03/02/24-12:37:46
+
 Name: org/netbeans/jemmy/drivers/scrolling
-Implementation-Version: 03/02/18-16:39:20
+Implementation-Version: 03/02/24-12:37:49
 
 Name: org/netbeans/jemmy/drivers/lists
-Implementation-Version: 03/02/04-21:53:06
+Implementation-Version: 03/02/24-12:37:50
 
 Name: org/netbeans/jemmy/drivers/tables
-Implementation-Version: 03/02/04-21:53:06
+Implementation-Version: 03/02/24-12:37:53
 
 Name: org/netbeans/jemmy/drivers/menus
 Implementation-Version: 03/01/27-18:42:42
 
 Name: org/netbeans/jemmy/demo
-Implementation-Version: 03/02/04-21:53:07
+Implementation-Version: 03/02/24-12:37:56
 
 Name: org/netbeans/jemmy/explorer
-Implementation-Version: 03/02/04-21:53:08
+Implementation-Version: 03/02/24-12:37:57
 
 Name: org/netbeans/jemmy/operators
-Implementation-Version: 03/02/18-16:43:28
+Implementation-Version: 03/03/26-20:15:42
 
 Name: org/netbeans/jemmy/util
-Implementation-Version: 03/02/18-16:44:43
+Implementation-Version: 03/02/24-12:38:13
 
 Name: org/netbeans/jemmy/accessibility
 Implementation-Version: 02/07/29-16:41:19
 
 Name: org/netbeans/jemmy/image
-Implementation-Version: 03/02/04-21:53:37
+Implementation-Version: 03/02/24-12:37:55
