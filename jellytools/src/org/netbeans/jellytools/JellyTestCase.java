@@ -104,7 +104,8 @@ public class JellyTestCase extends NbTestCase {
         ComponentChooser chooser = new ComponentChooser() {
             public boolean checkComponent(Component comp) {
                 return(comp instanceof JDialog &&
-                       comp.isShowing());
+                       comp.isShowing() &&
+                       ((JDialog)comp).isModal());
             }
             public String getDescription() {
                 return("Modal dialog");
