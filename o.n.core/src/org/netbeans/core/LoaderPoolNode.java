@@ -66,7 +66,7 @@ public final class LoaderPoolNode extends AbstractNode {
   */
   private LoaderPoolNode () {
     super (myChildren);
-    setName(NbBundle.getBundle(this).
+    setName(NbBundle.getBundle(LoaderPoolNode.class).
                    getString("CTL_LoaderPool"));
     setIconBase(LOADER_POOL_ICON_BASE);
 
@@ -76,7 +76,7 @@ public final class LoaderPoolNode extends AbstractNode {
   /** Method that creates sheet for this node.
   */
   protected Sheet createSheet () {
-    final ResourceBundle bundle = NbBundle.getBundle(this);
+    final ResourceBundle bundle = NbBundle.getBundle(LoaderPoolNode.class);
     // default sheet with "properties" property set
     Sheet sheet = Sheet.createDefault();
     sheet.get(Sheet.PROPERTIES).put(
@@ -407,6 +407,8 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  13   Gandalf   1.12        3/26/99  Ian Formanek    Fixed use of obsoleted 
+*       NbBundle.getBundle (this)
 *  12   Gandalf   1.11        3/25/99  Jaroslav Tulach Loader pool order fixed.
 *  11   Gandalf   1.10        3/24/99  Ian Formanek    
 *  10   Gandalf   1.9         3/24/99  Ian Formanek    

@@ -131,7 +131,7 @@ public class IDESettings extends SystemOption {
     } catch (UnsupportedLookAndFeelException e) {
       TopManager.getDefault().notify(
         new NotifyDescriptor.Exception(e,
-          NbBundle.getBundle(this).getString("MSG_UnsupportedLookAndFeel"))
+          NbBundle.getBundle(IDESettings.class).getString("MSG_UnsupportedLookAndFeel"))
         );
       return; // we do not update UI, nor we fire the property change now
     }
@@ -208,7 +208,7 @@ public class IDESettings extends SystemOption {
   /** This method must be overriden. It returns display name of this options.
   */
   public String displayName () {
-    return NbBundle.getBundle(this).getString("CTL_IDESettings");
+    return NbBundle.getBundle(IDESettings.class).getString("CTL_IDESettings");
   }
 
 
@@ -233,6 +233,8 @@ public class IDESettings extends SystemOption {
 
 /*
  * Log
+ *  2    Gandalf   1.1         3/26/99  Ian Formanek    Fixed use of obsoleted 
+ *       NbBundle.getBundle (this)
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  * Beta Change History:

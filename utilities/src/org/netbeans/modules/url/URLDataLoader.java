@@ -27,7 +27,7 @@ public class URLDataLoader extends UniFileLoader {
   /** Creates new URLDataLoader without the extension. */
   public URLDataLoader() {
     super(URLDataObject.class);
-    setDisplayName(NbBundle.getBundle(this).
+    setDisplayName(NbBundle.getBundle(URLDataLoader.class).
                    getString("PROP_URLLoader_Name"));
     ExtensionList ext = new ExtensionList();
     ext.addExtension("url");
@@ -70,6 +70,8 @@ public class URLDataLoader extends UniFileLoader {
 
 /*
  * Log
+ *  3    Gandalf   1.2         3/26/99  Ian Formanek    Fixed use of obsoleted 
+ *       NbBundle.getBundle (this)
  *  2    Gandalf   1.1         2/25/99  Ian Formanek    
  *  1    Gandalf   1.0         1/22/99  Ian Formanek    
  * $

@@ -37,13 +37,13 @@ public class HTMLViewAction extends CallableSystemAction {
 
   public void performAction() {
     TopManager tm = TopManager.getDefault();
-    tm.setStatusText (NbBundle.getBundle(this).getString("CTL_OpeningBrowser"));
+    tm.setStatusText (NbBundle.getBundle(HTMLViewAction.class).getString("CTL_OpeningBrowser"));
     tm.showUrl (com.netbeans.developer.impl.IDESettings.getRealHomeURL ());
     tm.setStatusText ("");
   }
 
   public String getName() {
-    return NbBundle.getBundle(this).getString("HTMLView");
+    return NbBundle.getBundle(HTMLViewAction.class).getString("HTMLView");
   }
 
   /** @return the action's help context */
@@ -55,6 +55,8 @@ public class HTMLViewAction extends CallableSystemAction {
 
 /*
  * Log
+ *  8    Gandalf   1.7         3/26/99  Ian Formanek    Fixed use of obsoleted 
+ *       NbBundle.getBundle (this)
  *  7    Gandalf   1.6         3/12/99  David Simonek   
  *  6    Gandalf   1.5         3/6/99   David Simonek   
  *  5    Gandalf   1.4         3/2/99   David Simonek   icons repair

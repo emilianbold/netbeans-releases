@@ -39,7 +39,7 @@ public final class PropertiesDataLoader extends UniFileLoader {
   /** Does initialization. Initializes display name,
   * extension list and the actions. */
   private void initialize () {
-    setDisplayName(NbBundle.getBundle(this).
+    setDisplayName(NbBundle.getBundle(PropertiesDataLoader.class).
                    getString("PROP_PropertiesLoader_Name"));
     ExtensionList ext = new ExtensionList();
     ext.addExtension("properties");
@@ -74,6 +74,8 @@ public final class PropertiesDataLoader extends UniFileLoader {
 
 /*
 * <<Log>>
+*  3    Gandalf   1.2         3/26/99  Ian Formanek    Fixed use of obsoleted 
+*       NbBundle.getBundle (this)
 *  2    Gandalf   1.1         3/9/99   Ian Formanek    Moved images to this 
 *       package
 *  1    Gandalf   1.0         1/22/99  Ian Formanek    

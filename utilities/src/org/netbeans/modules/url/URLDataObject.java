@@ -61,7 +61,7 @@ public class URLDataObject extends MultiDataObject {
               if (urlString.length () > 50) { // too long URL
                 TopManager.getDefault ().notify (
                     new NotifyDescriptor.Message (
-                        NbBundle.getBundle(this).getString("MSG_MalformedURLError"),
+                        NbBundle.getBundle (URLDataObject.class).getString("MSG_MalformedURLError"),
                         NotifyDescriptor.ERROR_MESSAGE
                     )
                 );
@@ -69,7 +69,7 @@ public class URLDataObject extends MultiDataObject {
                 TopManager.getDefault ().notify (
                     new NotifyDescriptor.Message (
                         java.text.MessageFormat.format (
-                            NbBundle.getBundle(this).getString("MSG_FMT_MalformedURLError"),
+                            NbBundle.getBundle (URLDataObject.class).getString("MSG_FMT_MalformedURLError"),
                             new Object[] { urlString }
                         ),
                         NotifyDescriptor.ERROR_MESSAGE
@@ -111,7 +111,7 @@ public class URLDataObject extends MultiDataObject {
       TopManager.getDefault ().notify (
           new NotifyDescriptor.Message (
               java.text.MessageFormat.format (
-                  NbBundle.getBundle(this).getString("MSG_FMT_FileNotFoundError"),
+                  NbBundle.getBundle (URLDataObject.class).getString("MSG_FMT_FileNotFoundError"),
                   new Object[] { urlFile.getPackageNameExt (File.separatorChar, '.') }
               ),
               NotifyDescriptor.ERROR_MESSAGE
@@ -122,7 +122,7 @@ public class URLDataObject extends MultiDataObject {
       TopManager.getDefault ().notify (
           new NotifyDescriptor.Message (
               java.text.MessageFormat.format (
-                  NbBundle.getBundle(this).getString("MSG_FMT_IOError"),
+                  NbBundle.getBundle (URLDataObject.class).getString("MSG_FMT_IOError"),
                   new Object[] { urlFile.getPackageNameExt (File.separatorChar, '.'), e.getMessage () }
               ),
               NotifyDescriptor.ERROR_MESSAGE
@@ -191,6 +191,8 @@ public class URLDataObject extends MultiDataObject {
 
 /*
  * Log
+ *  5    Gandalf   1.4         3/26/99  Ian Formanek    Fixed use of obsoleted 
+ *       NbBundle.getBundle (this)
  *  4    Gandalf   1.3         3/9/99   Ian Formanek    
  *  3    Gandalf   1.2         3/9/99   Ian Formanek    
  *  2    Gandalf   1.1         2/25/99  Ian Formanek    

@@ -302,7 +302,7 @@ public class NbTopManager extends TopManager {
         if (sc != null) {
           TopManager.getDefault().setStatusText (
             java.text.MessageFormat.format (
-              NbBundle.getBundle (this).getString ("CTL_FMT_SavingMessage"),
+              NbBundle.getBundle (NbTopManager.class).getString ("CTL_FMT_SavingMessage"),
               new Object[] { dobj.getName () }
             )
           );
@@ -318,7 +318,7 @@ public class NbTopManager extends TopManager {
     while (ee.hasNext ()) {
       descriptor = new NotifyDescriptor.Message(
         MessageFormat.format (
-          NbBundle.getBundle (this).getString("CTL_Cannot_save"),
+          NbBundle.getBundle (NbTopManager.class).getString("CTL_Cannot_save"),
           new Object[] { ((DataObject)ee.next()).getPrimaryFile().getName() }
         )
       );

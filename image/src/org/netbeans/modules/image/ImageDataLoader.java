@@ -27,7 +27,7 @@ public class ImageDataLoader extends UniFileLoader {
   /** Creates new ImageDataLoader without the extension. */
   public ImageDataLoader() {
     super(ImageDataObject.class);
-    setDisplayName(NbBundle.getBundle(this).
+    setDisplayName(NbBundle.getBundle(ImageDataLoader.class).
                    getString("PROP_ImageLoader_Name"));
     ExtensionList ext = new ExtensionList();
     ext.addExtension("jpg");
@@ -70,6 +70,8 @@ public class ImageDataLoader extends UniFileLoader {
 
 /*
  * Log
+ *  5    Gandalf   1.4         3/26/99  Ian Formanek    Fixed use of obsoleted 
+ *       NbBundle.getBundle (this)
  *  4    Gandalf   1.3         1/7/99   Ian Formanek    
  *  3    Gandalf   1.2         1/6/99   Jan Jancura     
  *  2    Gandalf   1.1         1/6/99   Ian Formanek    Updated to new 

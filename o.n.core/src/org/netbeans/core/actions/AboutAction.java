@@ -47,13 +47,15 @@ public class AboutAction extends CallableSystemAction {
   }
 
   public String getName() {
-    return NbBundle.getBundle (this).getString("About");
+    return NbBundle.getBundle (AboutAction.class).getString("About");
   }
 
 }
 
 /*
  * Log
+ *  4    Gandalf   1.3         3/26/99  Ian Formanek    Fixed use of obsoleted 
+ *       NbBundle.getBundle (this)
  *  3    Gandalf   1.2         1/20/99  Jaroslav Tulach 
  *  2    Gandalf   1.1         1/7/99   Ian Formanek    fixed resource names
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    

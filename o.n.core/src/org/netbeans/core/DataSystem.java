@@ -54,7 +54,7 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
     this.filter = filter;
     initialize();
     setIconBase ("/com/netbeans/developer/impl/resources/repository");
-    setName (NbBundle.getBundle (this).getString ("dataSystemName"));
+    setName (NbBundle.getBundle (DataSystem.class).getString ("dataSystemName"));
     setShortDescription (NbBundle.getBundle (DataSystem.this).getString ("CTL_Repository_Hint"));
   }
 
@@ -98,8 +98,8 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
       new PropertySupport.ReadWrite (
         DataSystem.this.PROP_NAME,
         String.class,
-        NbBundle.getBundle(this).getString("PROP_DS_Name"),
-        NbBundle.getBundle(this).getString("HINT_DS_Name")
+        NbBundle.getBundle(DataSystem.class).getString("PROP_DS_Name"),
+        NbBundle.getBundle(DataSystem.class).getString("HINT_DS_Name")
       ) {
 
         public Object getValue() {
@@ -253,6 +253,8 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
 
 /*
  * Log
+ *  11   Gandalf   1.10        3/26/99  Ian Formanek    Fixed use of obsoleted 
+ *       NbBundle.getBundle (this)
  *  10   Gandalf   1.9         3/22/99  Jaroslav Tulach Added new section.
  *  9    Gandalf   1.8         3/21/99  Jaroslav Tulach Repository displayed ok.
  *  8    Gandalf   1.7         3/19/99  Jaroslav Tulach TopManager.getDefault 

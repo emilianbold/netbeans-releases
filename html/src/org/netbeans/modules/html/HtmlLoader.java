@@ -63,7 +63,7 @@ public class HtmlLoader extends UniFileLoader {
 
   public HtmlLoader() {
     super (MultiDataObject.class);
-    setDisplayName(NbBundle.getBundle(this).
+    setDisplayName(NbBundle.getBundle(HtmlLoader.class).
                    getString("PROP_HtmlLoader_Name"));
     getExtensions ().addExtension ("txt");
     getExtensions ().addExtension ("html");
@@ -173,6 +173,8 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  11   Gandalf   1.10        3/26/99  Ian Formanek    Fixed use of obsoleted 
+*       NbBundle.getBundle (this)
 *  10   Gandalf   1.9         3/17/99  Ian Formanek    Made compilable
 *  9    Gandalf   1.8         3/17/99  Jaroslav Tulach No setIconBase
 *  8    Gandalf   1.7         3/14/99  Jaroslav Tulach Change of 
