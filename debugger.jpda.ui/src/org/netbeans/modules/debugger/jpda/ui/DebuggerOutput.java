@@ -50,13 +50,13 @@ import org.openide.util.NbBundle;
 public class DebuggerOutput extends LazyActionsManagerListener implements
 PropertyChangeListener {
 
-    //private static final int    where = IOManager.STATUS_OUT + IOManager.STD_OUT;
 
+    // set of all IOManagers
     private static Set          managers = new HashSet ();
     
     private JPDADebugger        debugger;
     private DebuggerEngine      engine;
-    private SourcePath       engineContext;
+    private SourcePath          engineContext;
     private IOManager           ioManager;
     private ContextProvider     contextProvider;
 

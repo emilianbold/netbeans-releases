@@ -153,6 +153,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         if ((condition == null) || condition.equals ("")) {
             JPDABreakpointEvent e = new JPDABreakpointEvent (
                 getBreakpoint (),
+                debugger,
                 JPDABreakpointEvent.CONDITION_NONE,
                 debugger.getThread (thread), 
                 referenceType, 
@@ -190,6 +191,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                 boolean result = evaluateConditionIn (condition, sf);
                 JPDABreakpointEvent ev = new JPDABreakpointEvent (
                     getBreakpoint (),
+                    debugger,
                     result ? 
                         JPDABreakpointEvent.CONDITION_TRUE : 
                         JPDABreakpointEvent.CONDITION_FALSE,
@@ -210,6 +212,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
             } catch (ParseException ex) {
                 JPDABreakpointEvent ev = new JPDABreakpointEvent (
                     getBreakpoint (),
+                    debugger,
                     ex,
                     debugger.getThread (thread), 
                     referenceType, 
@@ -225,6 +228,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
             } catch (InvalidExpressionException ex) {
                 JPDABreakpointEvent ev = new JPDABreakpointEvent (
                     getBreakpoint (),
+                    debugger,
                     ex,
                     debugger.getThread (thread), 
                     referenceType, 
