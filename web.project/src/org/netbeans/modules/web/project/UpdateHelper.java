@@ -24,6 +24,7 @@ import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.ui.customizer.ClassPathUiSupport;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -260,6 +261,34 @@ public class UpdateHelper {
             if (props.getProperty(WebProjectProperties.LIBRARIES_DIR) == null) {
                 props.setProperty(WebProjectProperties.LIBRARIES_DIR, "${" + WebProjectProperties.WEB_DOCBASE_DIR + "}/WEB-INF/lib"); //NOI18N
             }
+        }
+        
+        if(props != null) {
+            //remove jsp20 and servlet24 libraries
+            ReferenceHelper refHelper = new ReferenceHelper(helper, cfg, helper.getStandardPropertyEvaluator());
+            ClassPathSupport cs = new ClassPathSupport( helper.getStandardPropertyEvaluator(), refHelper, helper, 
+                                        WebProjectProperties.WELL_KNOWN_PATHS, 
+                                        WebProjectProperties.LIBRARY_PREFIX, 
+                                        WebProjectProperties.LIBRARY_SUFFIX, 
+                                        WebProjectProperties.ANT_ARTIFACT_PREFIX );        
+            Iterator items = cs.itemsIterator((String)props.get( WebProjectProperties.JAVAC_CLASSPATH ), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
+            ArrayList cpItems = new ArrayList();
+            while(items.hasNext()) {
+                ClassPathSupport.Item cpti = (ClassPathSupport.Item)items.next();
+                System.out.println("item: " + cpti);
+                String propertyName = cpti.getReference();
+                if(propertyName != null) {
+                    String libname = propertyName.substring("${libs.".length());
+                    if(libname != null && libname.indexOf(".classpath}") != -1) libname = libname.substring(0, libname.indexOf(".classpath}"));
+                    
+                    if(!("servlet24".equals(libname) || "jsp20".equals(libname))) { //NOI18N
+                        System.out.println("left!");
+                        cpItems.add(cpti);
+                    }
+                }
+            }
+            String[] javac_cp = cs.encodeToStrings(cpItems.iterator(), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES );
+            props.setProperty( WebProjectProperties.JAVAC_CLASSPATH, javac_cp );
         }
         
         if (putProps) {
