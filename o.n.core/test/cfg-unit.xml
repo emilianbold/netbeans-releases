@@ -17,13 +17,23 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="ide,stable" executor="ide" name="testbag_1" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/core/windows/**/*.class"/>
+                <include name="org/netbeans/core/windows/*.class"/>
                 <include name="org/netbeans/core/filesystems/*.class"/>
+                <exclude name="org/netbeans/core/filesystems/MIMEResolverImplTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="ide,failing" executor="ide" name="testbag_2" resultsprocessor="unit">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/core/windows/layers/*.class"/>
+                <include name="org/netbeans/core/filesystems/MIMEResolverImplTest.class"/>
             </patternset>
         </testset>
     </testbag>
     
-    <testbag testattribs="code,stable" executor="code" name="testbag_2" resultsprocessor="unit">
+    <testbag testattribs="code,stable" executor="code" name="testbag_3" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/core/modules/ModuleManagerTest.class"/>
@@ -31,6 +41,8 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+
+    <!-- <testbag testattribs="code,empty" executor="code" name="testbag_empty" resultsprocessor="unit"/> -->
 
     <executor name="ide" antfile="build.xml" target="runidetest"/>
     <executor name="code" antfile="build.xml" target="runcodetest"/>
