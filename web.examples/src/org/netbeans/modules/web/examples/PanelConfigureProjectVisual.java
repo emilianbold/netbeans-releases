@@ -16,13 +16,15 @@ package org.netbeans.modules.web.examples;
 import javax.swing.JPanel;
 
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class PanelConfigureProjectVisual extends JPanel {
+public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provider {
 
     private PanelConfigureProject panel;
 
     private PanelProjectLocationVisual projectLocationPanel;
+    private PanelOptionsVisual optionsPanel;
 
     /** Creates new form PanelInitProject */
     public PanelConfigureProjectVisual(PanelConfigureProject panel) {
@@ -33,21 +35,26 @@ public class PanelConfigureProjectVisual extends JPanel {
         projectLocationPanel = new PanelProjectLocationVisual(panel);
         locationContainer.add(projectLocationPanel, java.awt.BorderLayout.NORTH);
 
+        optionsPanel = new PanelOptionsVisual(panel);
+        optionsContainer.add(optionsPanel, java.awt.BorderLayout.NORTH);
+
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "LBL_NWP1_ProjectTitleName")); //NOI18N
         putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewWebApp")); //NOI18N
     }
 
     boolean valid(WizardDescriptor wizardDescriptor) {
-        return projectLocationPanel.valid(wizardDescriptor);
+        return projectLocationPanel.valid(wizardDescriptor) && optionsPanel.valid(wizardDescriptor);
     }
 
     void read (WizardDescriptor d) {
         projectLocationPanel.read(d);
+        optionsPanel.read(d);
     }
 
     void store(WizardDescriptor d) {
         projectLocationPanel.store(d);
+        optionsPanel.store(d);
     }
 
     /** This method is called from within the constructor to
@@ -99,4 +106,10 @@ public class PanelConfigureProjectVisual extends JPanel {
     private javax.swing.JPanel optionsContainer;
     // End of variables declaration//GEN-END:variables
 
+    /** Help context where to find more about the paste type action.
+     * @return the help context for this action
+     */
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(PanelConfigureProjectVisual.class);
+    }    
 }
