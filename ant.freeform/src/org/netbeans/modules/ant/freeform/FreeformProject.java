@@ -29,12 +29,15 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.ant.freeform.ui.ProjectCustomizerProvider;
 import org.netbeans.modules.ant.freeform.ui.View;
@@ -118,7 +121,7 @@ public final class FreeformProject implements Project {
         Classpaths cp = new Classpaths(this);
         return Lookups.fixed(new Object[] {
             new Info(), // ProjectInformation
-            initSources(), // Sources
+            new SourcesProxy(), // Sources
             new Actions(this), // ActionProvider
             new View(this), // LogicalViewProvider
             cp, // ClassPathProvider
@@ -222,6 +225,32 @@ public final class FreeformProject implements Project {
         
         protected void projectClosed() {
             cp.closed();
+        }
+        
+    }
+    
+    /**
+     * XXX Workaround for the fact that SourcesHelper does not yet support
+     * changing its configuration dynamically. Should be done differently.
+     */
+    private final class SourcesProxy implements Sources {
+        
+        private Sources delegate;
+        
+        public synchronized SourceGroup[] getSourceGroups(String str) {
+            if (delegate == null) {
+                delegate = initSources();
+                // XXX listen to changes in project.xml and refire changes
+            }
+            return delegate.getSourceGroups(str);
+        }
+        
+        public void addChangeListener(ChangeListener changeListener) {
+            // XXX
+        }
+        
+        public void removeChangeListener(ChangeListener changeListener) {
+            // XXX
         }
         
     }

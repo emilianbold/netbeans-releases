@@ -133,27 +133,40 @@ public class FreeformProjectGenerator {
     }
 
     private static AntProjectHelper createProject(final FileObject dirFO, final String name, final Map mappings, final List sources, final List compUnits) throws IOException {
-        final AntProjectHelper h = ProjectGenerator.createProject(dirFO, FreeformProjectType.TYPE, name);
+        final AntProjectHelper[] h = new AntProjectHelper[1];
+        final IOException[] ioe = new IOException[1];
         ProjectManager.mutex().writeAccess(new Runnable() {
                 public void run() {
-                    // XXX: is this OK:
-                    AuxiliaryConfiguration aux = h.createAuxiliaryConfiguration();
+                    Project p;
+                    try {
+                        h[0] = ProjectGenerator.createProject(dirFO, FreeformProjectType.TYPE, name);
+                        p = ProjectManager.getDefault().findProject(dirFO);
+                    } catch (IOException e) {
+                        ioe[0] = e;
+                        return;
+                    }
+                    AuxiliaryConfiguration aux = (AuxiliaryConfiguration)p.getLookup().lookup(AuxiliaryConfiguration.class);
+                    assert aux != null;
 
-                    Element data = h.getPrimaryConfigurationData(true);
+                    Element data = h[0].getPrimaryConfigurationData(true);
                     Document doc = data.getOwnerDocument();
 
                     Element nm = doc.createElementNS(FreeformProjectType.NS_GENERAL, "name"); // NOI18N
                     nm.appendChild(doc.createTextNode(name)); // NOI18N
                     data.appendChild(nm);
-                    h.putPrimaryConfigurationData(data, true);
+                    h[0].putPrimaryConfigurationData(data, true);
 
-                    putTargetMappings(h, mappings);
-                    putSourceFolders(h, sources);
-                    putJavaCompilationUnits(h, aux, compUnits);
+                    putTargetMappings(h[0], mappings);
+                    putSourceFolders(h[0], sources);
+                    putJavaCompilationUnits(h[0], aux, compUnits);
                 }
-            });
+            }
+        );
 
-        return h;
+        if (ioe[0] != null) {
+            throw ioe[0];
+        }
+        return h[0];
     }
 
     private static FileObject createProjectDir (File dir) throws IOException {
