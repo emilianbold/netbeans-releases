@@ -1294,6 +1294,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg line="-J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=y,address=${debug.port}" />
     </exec>
   </target>
+  
+  <target name="check-target-dependencies" depends="bootstrap" description="Check that all-* targets are up to date.">
+    <taskdef name="checkbuilddeps" classname="org.netbeans.nbbuild.CheckBuildDependencies" classpath="nbantext.jar"/>
+    <checkbuilddeps nbroot=".."/>
+  </target>
 
   <target name="l10n-kit" depends="init">
     <taskdef name="l10n" classname="org.netbeans.nbbuild.L10nTask"

@@ -14,6 +14,7 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,6 +26,7 @@ import org.apache.tools.ant.Task;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Parse a projectized module's <code>nbproject/project.xml</code> and
@@ -204,9 +206,7 @@ public final class ParseProjectXml extends Task {
                 if (modulesXml == null) {
                     throw new BuildException("You must set 'modulesxml'", getLocation());
                 }
-                Document mDoc = XMLUtil.parse(new InputSource(modulesXml.toURI().toString()),
-                                              false, true, /*XXX*/null, null);
-                String cp = computeClasspath(pDoc, mDoc);
+                String cp = computeClasspath(pDoc, modulesXml);
                 if (cp != null) {
                     define(moduleClassPathProperty, cp);
                 }
@@ -331,38 +331,13 @@ public final class ParseProjectXml extends Task {
         return t;
     }
 
-    private static final class ModuleEntry {
-        public String path;
-        public String cnb;
-        public String jar;
-    }
-
-    private String computeClasspath(Document pDoc, Document mDoc) throws BuildException {
-        // all module entries, indexed by cnb
-        Map/*<String,Entry>*/ entries = new HashMap();
-        List/*<Element>*/ l = XMLUtil.findSubElements(mDoc.getDocumentElement());
-        Iterator it = l.iterator();
-        while (it.hasNext()) {
-            Element el = (Element)it.next();
-            ModuleEntry me = new ModuleEntry();
-            Element pathEl = XMLUtil.findElement(el, "path", null);
-            me.path = XMLUtil.findText(pathEl);
-            Element cnbEl = XMLUtil.findElement(el, "cnb", null);
-            me.cnb = XMLUtil.findText(cnbEl);
-            Element jarEl = XMLUtil.findElement(el, "jar", null);
-            if (jarEl == null) {
-                // Default uses just cnb.
-                me.jar = "modules/" + me.cnb.replace('.', '-') + ".jar";
-            } else {
-                me.jar = XMLUtil.findText(jarEl);
-            }
-            entries.put(me.cnb, me);
-        }
+    private String computeClasspath(Document pDoc, File modulesXml) throws BuildException, IOException, SAXException {
+        ModuleListParser modules = new ModuleListParser(modulesXml);
         Element data = getConfig(pDoc);
         Element moduleDependencies = XMLUtil.findElement(data, "module-dependencies", NBM_NS);
         List/*<Element>*/ deps = XMLUtil.findSubElements(moduleDependencies);
         StringBuffer cp = new StringBuffer();
-        it = deps.iterator();
+        Iterator it = deps.iterator();
         while (it.hasNext()) {
             if (cp.length() > 0) {
                 cp.append(':');
@@ -373,7 +348,7 @@ public final class ParseProjectXml extends Task {
             }
             Element cnbEl = XMLUtil.findElement(dep, "code-name-base", NBM_NS);
             String cnb = XMLUtil.findText(cnbEl);
-            ModuleEntry module = (ModuleEntry)entries.get(cnb);
+            ModuleListParser.Entry module = modules.findByCodeNameBase(cnb);
             if (module == null) {
                 throw new BuildException("No dependent module " + cnb, getLocation());
             }
@@ -382,22 +357,23 @@ public final class ParseProjectXml extends Task {
             // declaring an impl dependency
             // Prototype: ${java/srcmodel.dir}/${nb.modules/autoload.dir}/java-src-model.jar
             // where: path=java/srcmodel jar = modules/autoload/java-src-model.jar
-            String topdirProp = module.path + ".dir"; // "java/srcmodel.dir"
+            String topdirProp = module.getPath() + ".dir"; // "java/srcmodel.dir"
             String topdirVal = getProject().getProperty(topdirProp);
             if (topdirVal == null) {
                 throw new BuildException("Undefined: " + topdirProp + " (usually means you are missing a dependency in nbbuild/build.xml#all-*)", getLocation());
             }
             cp.append(topdirVal);
             cp.append('/');
-            int slash = module.jar.lastIndexOf('/');
-            String jarDir = module.jar.substring(0, slash); // "modules/autoload"
+            String jar = module.getJar();
+            int slash = jar.lastIndexOf('/');
+            String jarDir = jar.substring(0, slash); // "modules/autoload"
             String jarDirProp = "nb." + jarDir + ".dir"; // "nb.modules/autoload.dir"
             String jarDirVal = getProject().getProperty(jarDirProp);
             if (jarDirVal == null) {
                 throw new BuildException("Undefined: " + jarDirProp);
             }
             cp.append(jarDirVal);
-            String slashPlusJar = module.jar.substring(slash); // "/java-src-model.jar"
+            String slashPlusJar = jar.substring(slash); // "/java-src-model.jar"
             cp.append(slashPlusJar);
         }
         return cp.toString();
