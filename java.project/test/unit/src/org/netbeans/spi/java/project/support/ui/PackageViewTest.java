@@ -485,10 +485,11 @@ public class PackageViewTest extends NbTestCase {
         pts = nodes[1].getPasteTypes(t);
         assertEquals ("Multiple files into package",1, pts.length);        
         pts[0].paste();
+        //After change - requires optimalResults
         assertNodes (nodes[1].getChildren(), new String[] {
             fileNodes[0].getDisplayName(),
             fileNodes[1].getDisplayName(),
-        });       
+        }, true);
         resultNodes = nodes[1].getChildren().getNodes(true);
         for (int i=0; i< resultNodes.length; i++) {
             DataObject dobj = (DataObject) resultNodes[i].getCookie(DataObject.class);
@@ -506,13 +507,13 @@ public class PackageViewTest extends NbTestCase {
             defaultPackageName,
             "src1test1",
             "src1test2",
-        });
+        }, true);
         resultNodes = rn1.getChildren().getNodes (true);
         for (int i=0; i< resultNodes.length; i++) {
             if (defaultPackageName.equals (resultNodes[i].getDisplayName())) {
                 assertNodes (resultNodes[i].getChildren(), new String[] {
                     fileNodes[0].getDisplayName(),
-                });
+                }, true);
                 resultNodes = resultNodes[i].getChildren().getNodes(true);
                 for (int j=0; j<resultNodes.length; j++) {
                     DataObject dobj = (DataObject) resultNodes[j].getCookie (DataObject.class);
@@ -533,14 +534,14 @@ public class PackageViewTest extends NbTestCase {
             defaultPackageName,
             "src1test1",
             "src1test2",
-        });
+        }, true);
         resultNodes = rn1.getChildren().getNodes (true);
         for (int i=0; i< resultNodes.length; i++) {
             if (defaultPackageName.equals (resultNodes[i].getDisplayName())) {
                 assertNodes (resultNodes[i].getChildren(), new String[] {
                     fileNodes[0].getDisplayName(),
                     fileNodes[1].getDisplayName()
-                });
+                }, true);
                 resultNodes = resultNodes[i].getChildren().getNodes(true);                
                 for (int j=0; j<resultNodes.length; j++) {
                     DataObject dobj = (DataObject) resultNodes[j].getCookie (DataObject.class);
@@ -557,7 +558,7 @@ public class PackageViewTest extends NbTestCase {
         pts = rn2.getPasteTypes(t);
         assertEquals ("Single package into different source root",1,pts.length);
         pts[0].paste ();
-        assertNodes (rn2.getChildren(), new String[] {"src1test1"});
+        assertNodes (rn2.getChildren(), new String[] {"src1test1"}, true);
         ((DataObject)rn2.getChildren().getNodes(true)[0].getCookie(DataObject.class)).delete();
         
         //Multiple packages into different source root
@@ -566,7 +567,7 @@ public class PackageViewTest extends NbTestCase {
         pts = rn2.getPasteTypes(t);
         assertEquals ("Multiple packages into different source root",1,pts.length);
         pts[0].paste ();
-        assertNodes (rn2.getChildren(), new String[] {"src1test1","src1test2"});
+        assertNodes (rn2.getChildren(), new String[] {"src1test1","src1test2"}, true);
         resultNodes = rn2.getChildren().getNodes(true);
         for (int i=0; i< resultNodes.length; i++) {
             DataObject dobj = (DataObject) resultNodes[i].getCookie(DataObject.class);
@@ -591,7 +592,7 @@ public class PackageViewTest extends NbTestCase {
         pts = rn2.getPasteTypes(t);
         assertEquals ("Multiple packages into different source root",1,pts.length);
         pts[0].paste();
-        assertNodes (rn2.getChildren(), new String[] {defaultPackageName});
+        assertNodes (rn2.getChildren(), new String[] {defaultPackageName}, true);
         defPkgFileRoot1.delete();
         resultNodes = rn2.getChildren().getNodes(true)[0].getChildren().getNodes(true);
         for (int i=0; i< resultNodes.length; i++) {
@@ -706,14 +707,21 @@ public class PackageViewTest extends NbTestCase {
                      new String[] { "c.d", "c.f", "p.me.tools" },
                      new int[] { 0, 0, 0 } );
     }
-        
-    public static void assertNodes( Children children, String[] nodeNames ) {
-        assertNodes( children, nodeNames, null );
+
+    public static void assertNodes( Children children, String[] nodeNames, boolean optimalResult ) {
+        assertNodes( children, nodeNames, null, optimalResult );
     }
-    
-    public static void assertNodes( Children children, String[] nodeNames, int[] childCount ) {
-    
-        Node[] nodes = children.getNodes();
+
+    public static void assertNodes( Children children, String[] nodeNames ) {
+        assertNodes( children, nodeNames, null, false );
+    }
+
+    public static void assertNodes (Children children, String[] nodeNames, int[] childCount) {
+        assertNodes(children, nodeNames, childCount, false);
+    }
+
+    public static void assertNodes( Children children, String[] nodeNames, int[] childCount, boolean optimalResult ) {
+        Node[] nodes = children.getNodes (optimalResult);
         assertEquals( "Wrong number of nodes.", nodeNames.length, nodes.length );
         
         for( int i = 0; i < nodeNames.length; i++ ) {
