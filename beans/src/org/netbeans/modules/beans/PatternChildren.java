@@ -41,6 +41,8 @@ public class PatternChildren extends ClassChildren {
 
     private PropertyChangeListener weakStyleListener = WeakListener.propertyChange( elementListener, PropertyActionSettings.getDefault());
     
+    private RequestProcessor.Task   refreshTask;
+    
     static {
         Integer i = new Integer (PatternFilter.METHOD | PatternFilter.PROPERTY |
                                  PatternFilter.IDXPROPERTY | PatternFilter.EVENT_SET
@@ -102,6 +104,13 @@ public class PatternChildren extends ClassChildren {
     protected void refreshAllKeys () {
         cpl = new Collection [getOrder ().length];
         refreshKeys (PatternFilter.ALL);
+    }
+    
+    private synchronized void scheduleRefresh() {
+        if (refreshTask == null) {
+            refreshTask = RequestProcessor.getDefault().create(elementListener);
+        }
+        refreshTask.schedule(0);
     }
 
     /** Updates all the keys with given filter. Overriden to provide package access tothis method.
