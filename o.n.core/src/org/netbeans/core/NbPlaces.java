@@ -175,6 +175,12 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     return ControlPanelNode.getDefault ();
   }
 
+  /** Project settings.
+  */
+  public Node project () {
+    return ControlPanelNode.getProjectSettings ();
+  }
+  
   /** Node with all workspaces */
   public Node workspaces () {
     return WorkspacePoolContext.getDefault ();
@@ -264,6 +270,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  29   Gandalf   1.28        8/3/99   Jaroslav Tulach Project settings node.
 *  28   Gandalf   1.27        8/1/99   Jaroslav Tulach MainExplorer now listens 
 *       to changes in root elements.
 *  27   Gandalf   1.26        7/30/99  David Simonek   again serialization of 
