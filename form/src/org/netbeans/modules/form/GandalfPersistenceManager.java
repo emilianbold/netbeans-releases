@@ -1121,7 +1121,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       buf.append (" ");
       buf.append (attrNames[i]);
       buf.append ("=\"");
-      buf.append (attrValues[i]);
+      buf.append (encodeToProperXML(attrValues[i]));
       buf.append ("\"");
     }
     buf.append (">\n");
@@ -1134,7 +1134,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       buf.append (" ");
       buf.append (attrNames[i]);
       buf.append ("=\"");
-      buf.append (attrValues[i]);
+      buf.append (encodeToProperXML(attrValues[i]));
       buf.append ("\"");
     }
     buf.append ("/>\n");
@@ -1160,9 +1160,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
         String attrValue = attrNode.getNodeValue (); 
         
         buf.append (" ");
-        buf.append (attrName);
+        buf.append (encodeToProperXML (attrName));
         buf.append ("=\"");
-        buf.append (attrValue);
+        buf.append (encodeToProperXML (attrValue));
         buf.append ("\"");
       }
     }
@@ -1179,7 +1179,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       }
       buf.append (indent);
       buf.append ("</");
-      buf.append (valueNode.getNodeName ());
+      buf.append (encodeToProperXML (valueNode.getNodeName ()));
       buf.append (">\n");
     }
   }
@@ -1206,6 +1206,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
   }
 */
+
+  private String encodeToProperXML (String text) {
+    if (text.indexOf ('&') != -1) text = Utilities.replaceString (text, "&", "&amp;"); // must be the first to prevent changes in the &XX; codes
+
+    if (text.indexOf ('<') != -1) text = Utilities.replaceString (text, "<", "&lt;");
+    if (text.indexOf ('>') != -1) text = Utilities.replaceString (text, ">", "&gt;");
+    if (text.indexOf ('\'') != -1) text = Utilities.replaceString (text, "\'", "&apos;");
+    if (text.indexOf ('\"') != -1) text = Utilities.replaceString (text, "\"", "&quot;");
+    return text;
+  }
+
   /** Finds first subnode of given node with specified name.
   * @param node the node whose subnode we are looking for
   * @param name requested name of the subnode
@@ -1256,6 +1267,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  23   Gandalf   1.22        8/2/99   Ian Formanek    Proper encoding of 
+ *       special characters into XML (<, >, ", ', &)
  *  22   Gandalf   1.21        8/1/99   Ian Formanek    Really does what last 
  *       checkin should have done
  *  21   Gandalf   1.20        8/1/99   Ian Formanek    Improved creation of 
