@@ -67,16 +67,8 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.Annotatable {
     /** Indent engine for the given kitClass. */
     public static final String INDENT_ENGINE = "indentEngine";
 
-    /** Whether formatting debug messages should be displayed */
-    private static final boolean debugFormat
-        = Boolean.getBoolean("netbeans.debug.editor.format"); // NOI18N
-
     /** Formatter being used. */
     private Formatter formatter;
-
-    private IndentEngine lastFoundIndentEngine;
-
-    private Formatter lastFoundFormatter;
 
     /** Map of [Annotation, AnnotationDesc] */
     private HashMap annoMap;
@@ -98,7 +90,7 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.Annotatable {
         super.settingsChange(evt);
 
         // Refresh formatter
-        formatter = (Formatter)Settings.getValue(getKitClass(), FORMATTER);
+        formatter = null;
 
         // Check whether the mimeType is set
         Object o = getProperty(MIME_TYPE_PROP);
@@ -108,15 +100,21 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.Annotatable {
         }
 
         // Fill in the indentEngine property
-        putProperty(INDENT_ENGINE, Settings.getValue(getKitClass(), INDENT_ENGINE));
+        putProperty(INDENT_ENGINE,
+            new BaseDocument.PropertyEvaluator() {
 
-        if (debugFormat) {
-            System.err.println("NbEditorDocument.settingsChange() doc=" + this
-                + ", mimeType=" + getProperty(MIME_TYPE_PROP)
-                + ", indentEngine=" + getProperty(INDENT_ENGINE)
-                + ", formatter=" + formatter
-            );
-        }
+                private Object cached;
+
+                public Object getValue() {
+                    if (cached == null) {
+                        cached = Settings.getValue(getKitClass(), INDENT_ENGINE);
+                    }
+                    
+                    return cached;
+                }
+            }
+        );
+
     }
 
     public void setCharacterAttributes(int offset, int length, AttributeSet s,
@@ -152,19 +150,14 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.Annotatable {
             if (mimeType != null) {
                 IndentEngine eng = IndentEngine.find(this);
                 if (eng != null) {
-                    if (eng == lastFoundIndentEngine) {
-                        f = lastFoundFormatter;
-                    } else {
-                        if (eng instanceof FormatterIndentEngine) {
-                            f = ((FormatterIndentEngine)eng).getFormatter();
+                    if (eng instanceof FormatterIndentEngine) {
+                        f = ((FormatterIndentEngine)eng).getFormatter();
 
-                        } else { // generic indent engine
-                            f = new IndentEngineFormatter(getKitClass(), eng);
-                        }
-
-                        lastFoundIndentEngine = eng;
-                        lastFoundFormatter = f;
+                    } else { // generic indent engine
+                        f = new IndentEngineFormatter(getKitClass(), eng);
                     }
+                    
+                    formatter = f;
                 }
             }
         }
