@@ -410,6 +410,13 @@ public class JSPKit extends NbEditorKit {
                         //set the CC poss on the end of the current token
                         poss = ti.getOffset() + ti.getImage().length();
                         
+                        //check for unclosed tag
+                        //for example if the help is invoken on 
+                        //<table |
+                        // <tr> ...
+                        //the help for <%@include is displayed (first CC item)
+                        if(ti.getImage().startsWith("<")) return ;
+                        
                         //hack for Issue #57172 - [Code completion] do not work at the end of jsp directives
                         if(ti.getTokenID() == JspDirectiveTokenContext.TAG) poss--;
                         
