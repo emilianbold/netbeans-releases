@@ -307,13 +307,10 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
         public void fatalError(SAXParseException exception) throws SAXException {
 
             // it may be caused by wrong user XML documents, notify only in debug mode
+            // also see #16484 if the error message makes no sense
             ErrorManager emgr = ErrorManager.getDefault().getInstance("org.netbeans.core.filesystems.XMLMIMEComponent"); // NOI18N
-            if (emgr.isNotifiable(ErrorManager.UNKNOWN)) {
-           
-                String msg = NbBundle.getMessage(XMLMIMEComponent.class, "W-001", fo, new Integer(exception.getLineNumber())); //NOI18N
-                msg += "\n" + NbBundle.getMessage(XMLMIMEComponent.class, "W-002");  //NOI18N
-                emgr.annotate(exception, msg);
-                emgr.notify(emgr.UNKNOWN, exception);
+            if (emgr.isLoggable(ErrorManager.INFORMATIONAL)) {
+                emgr.log(ErrorManager.INFORMATIONAL, "[while parsing " + fo + "] " + exception.getSystemId() + ":" + exception.getLineNumber() + ":" + exception.getColumnNumber() + ": " + exception.getMessage()); // NOI18N
             }
 
             this.state = ERROR;
