@@ -23,6 +23,14 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
+    <testbag testattribs="libraries,validation" name="Basic" executor="ide">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/test/projects/TestLibraries.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     <compiler name="compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
     
