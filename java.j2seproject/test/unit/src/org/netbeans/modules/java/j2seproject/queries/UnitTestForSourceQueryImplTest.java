@@ -102,6 +102,12 @@ public class UnitTestForSourceQueryImplTest extends NbTestCase {
         result = URLMapper.findURL(sources, URLMapper.EXTERNAL);
         assertNotNull(result);
         assertEquals(result, u);
+        
+        //Test the case when the tests folder does not exist
+        result = tests.getURL();
+        tests.delete();
+        u = UnitTestForSourceQuery.findUnitTest (sources);
+        assertEquals (result, u);
     }
     
 }
