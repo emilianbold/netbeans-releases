@@ -219,14 +219,7 @@ final class Favorites extends FilterNode {
                 DataShadow ds = (DataShadow) getCookie(DataShadow.class);
                 if (ds != null) {
                     String name = ds.getOriginal().getName();
-                    File f = FileUtil.toFile(ds.getOriginal().getPrimaryFile());
-                    String path;
-                    if (f != null) {
-                        path = f.getAbsolutePath();
-                    } else {
-                        path = ds.getOriginal().getPrimaryFile().getPath();
-                        // XXX this should include filesystem display name, too; better to use #37549
-                    }
+                    String path = FileUtil.getFileDisplayName(ds.getOriginal().getPrimaryFile());
                     return NbBundle.getMessage(Favorites.class, "CTL_DisplayNameTemplate", name, path);
                 } else {
                     return super.getDisplayName();
