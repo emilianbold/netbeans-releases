@@ -39,7 +39,9 @@ public final class PropertiesDataObject extends MultiDataObject {
                        throws DataObjectExistsException {
     super(obj, loader);
     // use editor support
-    getCookieSet().add(new EditorSupport(getPrimaryEntry()));
+    EditorSupport es = new EditorSupport(getPrimaryEntry());
+    es.setMIMEType ("text/plain");
+    getCookieSet().add(es);
   }
 
   /** Provides node that should represent this data object. When a node for representation
@@ -93,6 +95,7 @@ public final class PropertiesDataObject extends MultiDataObject {
 
 /*
  * <<Log>>
+ *  2    Gandalf   1.1         1/22/99  Ian Formanek    
  *  1    Gandalf   1.0         1/22/99  Ian Formanek    
  * $
  */
