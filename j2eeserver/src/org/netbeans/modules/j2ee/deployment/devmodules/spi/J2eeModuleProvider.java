@@ -243,9 +243,12 @@ public abstract class J2eeModuleProvider {
 
             if (J2eeModule.WAR.equals(getJ2eeModule().getModuleType())) {
                 String oldCtxPath = getConfigSupportImpl().getWebContextRoot();
+                if (oldCtxPath == null || oldCtxPath.equals("")) { //NOI18N
+                    oldCtxPath = "/"+this.getDeploymentName(); //NOI18N
+                }
                 confSupp = null;
                 String ctx = getConfigSupportImpl().getWebContextRoot ();
-                if (ctx == null || ctx.equals ("")) {
+                if (ctx == null || ctx.equals ("")) { //NOI18N
                     getConfigSupportImpl().setWebContextRoot(oldCtxPath);
                 }
             } else {
@@ -255,7 +258,7 @@ public abstract class J2eeModuleProvider {
             }
         }
     }
-    
+        
     /**
      * Returns all configuration files known to this J2EE Module.
      */
@@ -404,9 +407,10 @@ public abstract class J2eeModuleProvider {
             if (useDefaultServer () && oldInstance == null || ((newInstance != null) && (oldInstance.getPlugin() != newInstance.getPlugin()))) {
                 if (J2eeModule.WAR.equals(getJ2eeModule().getModuleType())) {
                     String oldCtxPath = getConfigSupportImpl().getWebContextRoot();
+                    oldCtxPath = "/"+J2eeModuleProvider.this.getDeploymentName(); //NOI18N
                     J2eeModuleProvider.this.confSupp = null;
                     String ctx = getConfigSupportImpl().getWebContextRoot ();
-                    if (ctx == null || ctx.equals ("")) {
+                    if (ctx == null || ctx.equals ("")) { //NOI18N
                         getConfigSupportImpl().setWebContextRoot(oldCtxPath);
                     }
                 } else {
