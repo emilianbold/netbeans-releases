@@ -33,26 +33,18 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Services">
         <folder name="Hidden">
 
-            <file name="org-netbeans-modules-xml-catalog-CatalogEntityResolver.instance"/>
-<!--                <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.catalog.CatalogEntityResolver" />
-                <attr name="instanceCreate"   newvalue="org.netbeans.modules.xml.catalog.CatalogEntityResolver" />
-                <attr name="instanceOf"    stringvalue="org.xml.sax.EntityResolver, org.netbeans.modules.xml.core.tree.ModuleEntityResolver, org.netbeans.modules.xml.catalog.CatalogEntityResolver" />
-            </file>-->
-            <file name="org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance"/>
-<!--                <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.catalog.impl.SystemCatalogProvider" />
-                <attr name="instanceCreate"   newvalue="org.netbeans.modules.xml.catalog.impl.SystemCatalogProvider" />
-                <attr name="instanceOf"    stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogProvider, org.netbeans.modules.xml.catalog.impl.SystemCatalogProvider" />
-            </file>-->
-            <file name="org-netbeans-modules-xml-catalog-impl-XCatalogProvider.instance"/>
-<!--                <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.catalog.impl.XCatalogProvider" />
-                <attr name="instanceCreate"   newvalue="org.netbeans.modules.xml.catalog.impl.XCatalogProvider" />
-                <attr name="instanceOf"    stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogProvider, org.netbeans.modules.xml.catalog.impl.XCatalogProvider" />
-            </file>-->
-            <file name="org-netbeans-modules-xml-catalog-impl-sun-SunCatalogProvider.instance"/>
-<!--                <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.catalog.impl.sun.SunCatalogProvider" />
-                <attr name="instanceCreate"   newvalue="org.netbeans.modules.xml.catalog.impl.sun.SunCatalogProvider" />
-                <attr name="instanceOf"    stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogProvider, org.netbeans.modules.xml.catalog.impl.sun.SunCatalogProvider" />
-            </file>-->
+            <file name="org-netbeans-modules-xml-catalog-CatalogEntityResolver.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.api.xml.services.UserCatalog"/>
+            </file>
+            <file name="org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogProvider"/>
+            </file>
+            <file name="org-netbeans-modules-xml-catalog-impl-XCatalogProvider.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogProvider"/>
+            </file>
+            <file name="org-netbeans-modules-xml-catalog-impl-sun-SunCatalogProvider.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogProvider"/>
+            </file>
 
             <!-- Store mounted catalogs per project. -->
             <file name="org-netbeans-modules-xml-catalog-settings-CatalogSettings.settings" url="ProjectSettings.xml">

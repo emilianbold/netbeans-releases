@@ -48,11 +48,10 @@ public abstract class AbstractUtil {
      * Just for debugging purposes.
      */
     public final void debug (String message, Throwable ex) {
-//         if ( (Integer.getInteger (this.getPackageName(), -1)).intValue() >= 0 ) {
         if ( isLoggable() ) {
-            System.err.println ("[" + getPackageName() + "] " + message);
+            System.out.println ("[" + getPackageName() + "] " + message);
             if ( ex != null ) {
-                ex.printStackTrace (System.err);
+                ex.printStackTrace (System.out);
             }
         }
     }
