@@ -323,7 +323,7 @@
   </tocitem>
 </tocitem>
 
-<tocitem text="Web Project Basics">
+<tocitem text="Web Application Basics">
 
 <tocitem text="About Web Applications">
    <tocitem text="About Web Applications" target="intro" />
@@ -335,7 +335,7 @@
    <tocitem text="Where to Put Web Application Files" target="webmod_placefiles" />
 </tocitem> <!-- About Web Applications -->
 
-<tocitem text="Creating Web Projects">
+<tocitem text="Creating Web Applications">
     <tocitem text="Creating a Web Project" target="proj_creating"/>
     <tocitem text="Java Project Templates" target="proj_templates" />
     <tocitem text="Setting the Main Project" target="proj_main" />
