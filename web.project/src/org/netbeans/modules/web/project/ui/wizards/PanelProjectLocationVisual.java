@@ -152,7 +152,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if ( "BROWSE".equals( command ) ) { // NOI18N                
             JFileChooser chooser = new JFileChooser ();
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-            chooser.setDialogTitle(NbBundle.getMessage(PanelSourceFolders.class,"LBL_NWP1_SelectProjectLocation"));
+            chooser.setDialogTitle(NbBundle.getMessage(PanelProjectLocationVisual.class,"LBL_NWP1_SelectProjectLocation"));
             chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
             String path = this.projectLocationTextField.getText();
             if (path.length() > 0) {
@@ -247,7 +247,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         String projectName = (String) settings.getProperty ("name"); //NOI18N
         if (projectName == null) {
                 int baseCount = FoldersListSettings.getDefault().getNewProjectCount() + 1;
-                String formater = NbBundle.getMessage(PanelSourceFolders.class,"LBL_NPW1_DefaultProjectName");
+                String formater = NbBundle.getMessage(PanelProjectLocationVisual.class,"LBL_NPW1_DefaultProjectName");
                 while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null)
                     baseCount++;                
                 settings.putProperty (NewWebProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
@@ -278,7 +278,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
         chooser.setAcceptAllFileFilterUsed( false );
-        chooser.setName( "Select Project Directory" ); // XXX // NOI18N
+        chooser.setName(NbBundle.getMessage(PanelProjectLocationVisual.class,"LBL_SelectProjectDirectoryTitle")); // NOI18N
         return chooser;
     }
     
