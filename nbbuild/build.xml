@@ -52,11 +52,7 @@ ToDo:
     <ant dir="../xml/external" target="unscramble"/>
     <property name="ant.jar" value="${ant.home}/lib/ant.jar"/>
     <path id="bootstrap-cp">
-     <!-- cmdline Ant -->
      <pathelement location="${ant.jar}"/>
-     <!-- Ant in NB -->
-     <!-- XXX so delete the following line when NB 3.6 is released: -->
-     <pathelement path="${netbeans.library.path}"/>
      <fileset dir="..">
         <!-- For JavaHelp indexing: -->
         <include name="nbbuild/external/jhall*.jar"/>
@@ -275,6 +271,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="all-ant/docs" depends="build-platform">
     <echo message="Building module ant/docs..."/>
     <ant dir="../ant/docs" target="netbeans"/>
+  </target>
+  <target name="all-ant/freeform" depends="build-platform,all-ant,all-java/project,all-ant/project,all-projects/projectapi,all-projects/projectuiapi">
+    <echo message="Building module ant/freeform..."/>
+    <ant dir="../ant/freeform" target="netbeans"/>
   </target>
   <target name="all-ant/grammar" depends="build-platform,all-ant,all-xml/core">
     <echo message="Building module ant/grammar..."/>
@@ -772,15 +772,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/jspsyntax..."/>
     <ant dir="../web/jspsyntax" target="netbeans"/>
   </target>
-  <target name="all-web/jspdebug" depends="build-platform,all-web/core,all-openide/deprecated,all-java/srcmodel,all-debuggercore/api, all-debuggerjpda/api">
+  <target name="all-web/jspdebug" depends="build-platform,all-web/core,all-java/srcmodel,all-debuggercore/api,all-debuggerjpda/api">
     <echo message="Building module web/jspdebug..."/>
     <ant dir="../web/jspdebug" target="netbeans"/>
   </target>
-  <target name="all-web/taglibed" depends="build-platform,all-web/core,all-jarpackager,all-xml/core,all-openide/deprecated,all-java/srcmodel">
+  <target name="all-web/taglibed" depends="build-platform,all-web/core,all-jarpackager,all-xml/core,all-java/srcmodel">
     <echo message="Building module web/taglibed..."/>
     <ant dir="../web/taglibed" target="netbeans"/>
   </target>
-  <target name="all-web/advanced" depends="build-platform,all-web/core,all-web/jspsyntax,all-jarpackager,all-debuggercore,all-j2eeserver,all-html,all-openidex,all-openide/deprecated,all-java/srcmodel">
+  <target name="all-web/advanced" depends="build-platform,all-web/core,all-web/jspsyntax,all-jarpackager,all-debuggercore,all-j2eeserver,all-html,all-openidex,all-java/srcmodel">
     <echo message="Building module web/advanced..."/>
     <ant dir="../web/advanced" target="netbeans"/>
   </target>
