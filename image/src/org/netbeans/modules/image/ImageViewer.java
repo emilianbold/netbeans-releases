@@ -13,11 +13,16 @@
 
 package org.netbeans.modules.image;
 
-import java.awt.Dimension;
+import java.awt.*;
+import java.beans.*;
 import java.io.*;
+import javax.swing.*;
 
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.text.EditorSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.WeakListener;
 import org.openide.windows.*;
 
 /** Top component providing a viewer for images.
@@ -32,7 +37,11 @@ public class ImageViewer extends CloneableTopComponent {
     private static final int DEFAULT_BORDER_HEIGHT = 40;
 
     private ImageDataObject storedObject;
-    private javax.swing.JLabel label;
+    private JLabel label;
+
+    /** Listens for name changes
+    */
+    private PropertyChangeListener nameChangeL; 
 
     static final long serialVersionUID =6960127954234034486L;
 
@@ -49,12 +58,67 @@ public class ImageViewer extends CloneableTopComponent {
         initialize(obj);
     }
 
+    /** Private constructor, used for cloning
+    */
+    private ImageViewer(ImageDataObject obj, JLabel label) {
+        super(obj);
+        Icon icon = label.getIcon();
+        this.label = (icon != null) ? new JLabel(icon) : new JLabel();
+        initialize(obj);
+    }
+
+    /** Reloads icon, call from event-dispaching thread only ! 
+    */
+    protected void reloadIcon(Icon icon) {
+        label.setIcon(icon);
+        this.repaint();
+    }
+
+    /** Initializes member variables and set listener for name changes on DataObject
+    */
     private void initialize (ImageDataObject obj) {
         storedObject = obj;
-        javax.swing.JScrollPane scroll = new javax.swing.JScrollPane(label = new javax.swing.JLabel(new NBImageIcon(obj)));
-        setLayout(new java.awt.BorderLayout());
+        if(label == null) { // when using deserialization by cloning
+            try {
+              label = new javax.swing.JLabel( new NBImageIcon(obj));
+            } catch (IOException ioe) {
+              label = new javax.swing.JLabel();
+            }
+        }
+        JScrollPane scroll = new JScrollPane(label);
+        setLayout(new BorderLayout());
         add(scroll, "Center"); // NOI18N
+
+        nameChangeL = new PropertyChangeListener() {
+                          public void propertyChange(PropertyChangeEvent evt) {
+                              if (DataObject.PROP_COOKIE.equals(evt.getPropertyName()) ||
+                                      DataObject.PROP_NAME.equals(evt.getPropertyName())) {
+                                  updateName();
+                              }
+                          }
+                      };
+        obj.addPropertyChangeListener(WeakListener.propertyChange(nameChangeL, obj));
     }
+    
+    /** Updates the name and tooltip of this top component according to associated data object.
+    */
+    private void updateName () {
+        // update name
+        String name = storedObject.getNodeDelegate().getDisplayName();
+        setName(name);
+        // update tooltip
+        FileObject fo = storedObject.getPrimaryFile();
+        StringBuffer fullName = new StringBuffer(fo.getPackageName('.'));
+        String extension = fo.getExt();
+        if (extension.length() > 0) {
+            fullName.append(" ["); // NOI18N
+            fullName.append(extension);
+            fullName.append(']');
+        }
+        setToolTipText(fullName.toString());
+    }
+
+
 
     /** Show the component on given workspace. If given workspace is
     * not active, component will be shown only after given workspace
@@ -76,11 +140,15 @@ public class ImageViewer extends CloneableTopComponent {
         super.open (w);
     }
 
+    /** Overrides getPreferredSize.
+    */
     public Dimension getPreferredSize () {
         Dimension pref = label.getPreferredSize ();
         return new Dimension (Math.max (DEFAULT_BORDER_WIDTH + pref.width, MINIMUM_WIDTH), Math.max (DEFAULT_BORDER_HEIGHT + pref.height, MINIMUM_HEIGHT));
     }
 
+    /** Gets HelpContext.
+    */
     public HelpCtx getHelpCtx () {
         return new HelpCtx(ImageViewer.class);
     }
@@ -104,12 +172,15 @@ public class ImageViewer extends CloneableTopComponent {
     throws IOException, ClassNotFoundException {
         super.readExternal(in);
         storedObject = (ImageDataObject)in.readObject();
+        // to reset the listener for FileObject changes
+        ((ImageDataObject.ImageOpenSupport)storedObject.getCookie(ImageDataObject.ImageOpenSupport.class)).prepareViewer(); 
         initialize(storedObject);
     }
 
-    // Cloning the viewer uses the same underlying data object.
+    /** Creates cloned object which uses the same underlying data object.
+    */
     protected CloneableTopComponent createClonedObject () {
-        return new ImageViewer(storedObject);
+        return new ImageViewer(storedObject, label);
     }
 
 }
