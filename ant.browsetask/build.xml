@@ -14,6 +14,9 @@ Microsystems, Inc. All Rights Reserved.
 <project name="ant/browsetask" basedir="." default="netbeans">
 
     <property name="nbm_alias" value="nb_ide"/>
+    <property name="homepage.base" value="netbeans.org"/>
+    <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+    <property name="license.file" value="../../nbbuild/standard-nbm-license.txt"/>
 
     <target name="init">
         <ant dir="../../ant/external"/>
@@ -34,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="netbeans/modules"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <jar jarfile="netbeans/modules/browsetask.jar" manifest="manifest-subst.mf" compress="false">
+        <jar jarfile="netbeans/modules/org-netbeans-modules-ant-browsetask.jar" manifest="manifest-subst.mf" compress="false">
             <fileset dir="src">
                 <excludesfile name="../../nbbuild/standard-jar-excludes.txt"/>
                 <exclude name="**/*.class"/>
@@ -55,14 +58,13 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="nbm" depends="netbeans" description="Prepare the module for distribution via Auto Update.">
         <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar"/>
-        <property file="manifest.mf"/>
-        <makenbm file="browsetask-${OpenIDE-Module-Specification-Version}.nbm"
+        <makenbm file="org-netbeans-modules-ant-browsetask.nbm"
                  topdir="."
-                 module="netbeans/modules/browsetask.jar"
+                 module="netbeans/modules/org-netbeans-modules-ant-browsetask.jar"
                  homepage="http://ant.netbeans.org/"
                  needsrestart="false"
-                 distribution="http://${dist.base}/browsetask.jar">
-            <license file="../../nbbuild/standard-nbm-license.txt"/>
+                 distribution="http://${dist.base}/org-netbeans-modules-ant-browsetask.jar">
+            <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
     </target>
@@ -77,7 +79,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="Info"/>
         <delete>
             <fileset dir=".">
-                <include name="browsetask*.nbm"/>
+                <include name="org-netbeans-modules-ant-browsetask.nbm"/>
             </fileset>
         </delete>
     </target>
