@@ -69,9 +69,12 @@ final class NbModuleProject implements Project {
     private Map/*<String,String>*/ evalPredefs;
     private List/*<Map<String,String>>*/ evalDefs;
     
-    NbModuleProject(AntProjectHelper helper) {
+    NbModuleProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
         Util.err.log("Loading project in " + getProjectDirectory());
+        if (getCodeNameBase() == null) {
+            throw new IOException("Misconfigured project in " + getProjectDirectory() + " has no defined <code-name-base>"); // NOI18N
+        }
         File nbroot = helper.resolveFile(getNbrootRel());
         moduleList = ModuleList.getModuleList(nbroot);
         eval = createEvaluator();
