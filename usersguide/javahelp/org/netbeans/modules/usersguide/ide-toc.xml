@@ -336,7 +336,7 @@
 </tocitem> <!-- About Web Applications -->
 
 <tocitem text="Creating Web Applications">
-    <tocitem text="Creating a Web Project" target="proj_creating"/>
+    <tocitem text="Creating a Project" target="proj_creating"/>
     <tocitem text="Java Project Templates" target="proj_templates" />
     <tocitem text="Setting the Main Project" target="proj_main" />
     <tocitem text="Standard Projects">
