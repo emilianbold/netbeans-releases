@@ -23,7 +23,9 @@ Microsystems, Inc. All Rights Reserved.
       <attr name="Empty.java/Interface.java" boolvalue="true"/>
       <attr name="Interface.java/Exception.java" boolvalue="true"/>
       <attr name="Exception.java/Main.java" boolvalue="true"/>
-      <attr name="Main.java/Package" boolvalue="true"/>
+      <attr name="Main.java/JApplet.java" boolvalue="true"/>
+      <attr name="JApplet.java/Applet.java" boolvalue="true"/>
+      <attr name="Applet.java/Package" boolvalue="true"/>
       
       <!-- XXX Remove the URLs after issue #41716 is fixed -->
       <file name="Applet.java" url="nbres:/org/netbeans/modules/java/resources/templates/Applet.template">
