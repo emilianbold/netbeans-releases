@@ -166,18 +166,29 @@ public class EditorWarmUpTask implements Runnable{
             AbstractDocument doc = (AbstractDocument)pane.getDocument();
             doc.readLock();
             try {
-                View rootView = Utilities.getDocumentView(pane);
+                final View rootView = Utilities.getDocumentView(pane);
                 LockView lockView = LockView.get(rootView);
                 lockView.lock();
                 try {
                     int viewCount = rootView.getViewCount();
 
                     // Force switch the line views from estimated spans to exact measurements
-                    for (int j = 0; j < viewCount; j++) {
-                        View v = rootView.getView(j);
-                        if (v instanceof EstimatedSpanView) {
-                            ((EstimatedSpanView)v).setEstimatedSpan(false);
+                    Runnable resetChildrenEstimatedSpans = new Runnable() {
+                        public void run() {
+                            int cnt = rootView.getViewCount();                            
+                            for (int j = 0; j < cnt; j++) {
+                                View v = rootView.getView(j);
+                                if (v instanceof EstimatedSpanView) {
+                                    ((EstimatedSpanView)v).setEstimatedSpan(false);
+                                }
+                            }
                         }
+                    };
+                    if (rootView instanceof org.netbeans.lib.editor.view.GapDocumentView) {
+                        ((org.netbeans.lib.editor.view.GapDocumentView)rootView).
+                            renderWithUpdateLayout(resetChildrenEstimatedSpans);
+                    } else { // not specialized instance => run normally
+                        resetChildrenEstimatedSpans.run();
                     }
 
                     // Get child allocation for each line
