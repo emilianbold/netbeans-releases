@@ -90,14 +90,29 @@
 				prefix = "jdbc:rmi://<HOST>:<PORT>/jdbc:cloudscape:<DB>";
 			},
 			{
-				name = "IBM DB2";
+				name = "IBM DB2 (local)";
 				driver = "COM.ibm.db2.jdbc.app.DB2Driver";
 				prefix = "jdbc:db2:<DB>";
+			},
+			{
+				name = "IBM DB2 (net)";
+				driver = "COM.ibm.db2.jdbc.net.DB2Driver";
+				prefix = "jdbc:db2://<HOST>:<PORT>/<DB>";
 			},
 			{
 				name = "Hypersonic SQL";
 				driver = "hSql.hDriver";
 				prefix = "jdbc:HypersonicSQL:<DB>";
+			},
+			{
+				name = "Microsoft SQL Server (JTurbo driver)";
+				driver = "com.ashna.jturbo.driver.Driver";
+				prefix = "jdbc:JTurbo://<HOST>:<PORT>/<DB>";
+			},
+			{
+				name = "Microsoft SQL Server (SPRINTA driver)";
+				driver = "com.inet.tds.TdsDriver";
+				prefix = "jdbc:inetdae:<HOST>:<PORT>?database=<DB>";
 			},
 			{
 				name = "ODBC Bridge";
