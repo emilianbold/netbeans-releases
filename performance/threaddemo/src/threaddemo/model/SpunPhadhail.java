@@ -13,6 +13,7 @@
 
 package threaddemo.model;
 
+import java.lang.ref.*;
 import java.lang.reflect.*;
 import java.util.*;
 import org.openide.util.Queue;
@@ -33,15 +34,16 @@ final class SpunPhadhail extends Spin {
         }
     };
     
-    private static final Map instances = new WeakHashMap(); // Map<Phadhail,Phadhail>
+    private static final Map instances = new WeakHashMap(); // Map<Phadhail,Reference<Phadhail>>
     
     /** factory */
     public static Phadhail forPhadhail(Phadhail _ph) {
-        Phadhail ph = (Phadhail)instances.get(_ph);
+        Reference r = (Reference)instances.get(_ph);
+        Phadhail ph = (r != null) ? (Phadhail)r.get() : null;
         if (ph == null) {
             Spin spin = new SpunPhadhail(_ph);
             ph = BufferedPhadhail.forPhadhail((Phadhail)spin.getProxy());
-            instances.put(_ph, ph);
+            instances.put(_ph, new WeakReference(ph));
         }
         return ph;
     }

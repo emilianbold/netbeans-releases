@@ -23,14 +23,15 @@ import java.util.*;
  */
 final class BufferedPhadhail implements Phadhail, PhadhailListener {
     
-    private static final Map instances = new WeakHashMap(); // Map<Phadhail,BufferedPhadhail>
+    private static final Map instances = new WeakHashMap(); // Map<Phadhail,Reference<BufferedPhadhail>>
     
     public static Phadhail forPhadhail(Phadhail ph) {
         if (ph.hasChildren() && !(ph instanceof BufferedPhadhail)) {
-            BufferedPhadhail bph = (BufferedPhadhail)instances.get(ph);
+            Reference r = (Reference)instances.get(ph);
+            BufferedPhadhail bph = (r != null) ? (BufferedPhadhail)r.get() : null;
             if (bph == null) {
                 bph = new BufferedPhadhail(ph);
-                instances.put(ph, bph);
+                instances.put(ph, new WeakReference(bph));
             }
             return bph;
         } else {

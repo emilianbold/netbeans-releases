@@ -14,6 +14,7 @@
 package threaddemo.model;
 
 import java.io.*;
+import java.lang.ref.*;
 import java.util.*;
 import org.openide.util.Mutex;
 
@@ -35,14 +36,15 @@ final class LockedPhadhail implements Phadhail {
      */
     private static final Object LISTENER_LOCK = new String("LP.LL");
     
-    private static final Map instances = new WeakHashMap(); // Map<Phadhail,Phadhail>
+    private static final Map instances = new WeakHashMap(); // Map<Phadhail,Reference<Phadhail>>
     
     /** factory */
     public static Phadhail forPhadhail(Phadhail _ph) {
-        Phadhail ph = (Phadhail)instances.get(_ph);
+        Reference r = (Reference)instances.get(_ph);
+        Phadhail ph = (r != null) ? (Phadhail)r.get() : null;
         if (ph == null) {
             ph = BufferedPhadhail.forPhadhail(new LockedPhadhail(_ph));
-            instances.put(_ph, ph);
+            instances.put(_ph, new WeakReference(ph));
         }
         return ph;
     }
