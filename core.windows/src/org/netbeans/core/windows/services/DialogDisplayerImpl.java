@@ -134,6 +134,12 @@ public class DialogDisplayerImpl extends DialogDisplayer {
                         presenter = new NbPresenter(descriptor, f, true);
                     }
                 }
+                
+                //#47150 - horrible hack for vcs module
+                if ("true".equals(System.getProperty("javahelp.ignore.modality"))) { //NOI18N
+                    presenter.getRootPane().putClientProperty ("javahelp.ignore.modality", "true"); //NOI18N
+                    System.setProperty("javahelp.ignore.modality", "false"); //NOI18N
+                }
 
                 //Bugfix #8551
                 presenter.getRootPane().requestDefaultFocus();

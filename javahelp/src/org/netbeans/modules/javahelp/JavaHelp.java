@@ -389,6 +389,14 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                     //It is the print or print settings dialog for javahelp, do nothing
                     return;
                 }
+                
+                //#47150: Race condition in toolkit if two dialogs are shown in a row
+                if (d instanceof JDialog) {
+                    if ("true".equals(((JDialog)d).getRootPane().getClientProperty("javahelp.ignore.modality"))) { //NOI18N
+                        return;
+                    }
+                }
+                
                 if (Installer.err.isLoggable(ErrorManager.INFORMATIONAL)) {
                     Installer.err.log("modal (or viewer) dialog event: " + ev + " [" + d.getTitle() + "]");
                 }
@@ -410,6 +418,12 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                                 Installer.err.log("2. No viewer open, !rTFL. Top dialog closed. Pop it.");
                             } else if (currentModalDialog() == null) {
                                 Installer.err.log("3. No viewer open, rTFL. Only top dialog closed. Pop it. Create frame viewer.");
+                                //#47150 - reusing the old frame viewer can cause
+                                //re-showing the frame viewer to re-show the dialog
+                                if (frameViewer != null) {
+                                    frameViewer.dispose();
+                                    frameViewer = null;
+                                }
                                 displayHelpInFrame(null);
                             } else {
                                 Installer.err.log("4. No viewer open, rTFL. Some top dialog closed. Pop it. Create dialog viewer.");
