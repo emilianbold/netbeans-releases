@@ -47,6 +47,9 @@ public class MultiXMLFSTest extends FSTest implements DataManager {
     
     protected List ddescs;
     
+    // used for testCreateXMLFS
+    private URL[] resources;
+    
     private static final String getResource(int base) {
         return LocalFSTest.getPackage(base).replace('/', '-').concat(LocalFSTest.RES_NAME);
     }
@@ -78,6 +81,7 @@ public class MultiXMLFSTest extends FSTest implements DataManager {
         int last = wrappers.length;
         FileSystem[] fss = new FileSystem[last];
         int[] bases = new int[last];
+        resources = new URL[last];
         
         for (int i = 0; i < last; i++) {
             if (wrappers[i].isLocal()) {
@@ -91,6 +95,7 @@ public class MultiXMLFSTest extends FSTest implements DataManager {
             } else {
                 URLClassLoader cloader = new URLClassLoader(new URL[] { wrappers[i].getMnt().toURL() });
                 URL res = cloader.findResource(wrappers[i].getXResource());
+                resources[i] = res;
                 XMLFileSystem xmlfs = new XMLFileSystem();
                 xmlfs.setXmlUrl(res, false);
                 fss[i] = xmlfs;
@@ -262,6 +267,20 @@ public class MultiXMLFSTest extends FSTest implements DataManager {
             dd.setFileWrappers(wrappers);
         } else {
             wrappers = fwrappers;
+        }
+    }
+    
+    // test method
+    public void testCreateXMLFS() throws Exception {
+        int iters = iterations;
+        FileWrapper[] wrappers = this.wrappers;
+        int len = wrappers.length;
+        while (iters-- > 0) {
+            // first is LocalFS
+            for (int i = 1; i < len; i++) {
+                XMLFileSystem xmlfs = new XMLFileSystem();
+                xmlfs.setXmlUrl(resources[i], false);
+            }
         }
     }
     
