@@ -5,6 +5,9 @@
  */
 package org.netbeans.jellytools.modules.editor;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import org.netbeans.jemmy.operators.*;
 import java.util.*;
 
@@ -245,6 +248,15 @@ public class KeyBindings extends JDialogOperator {
         btHelp();
     }
     
+    public List listActions() {
+        ListModel model = lstActions().getModel();
+        List ret=new Vector();
+        for (int i=0;i < model.getSize();i++) {
+            ret.add(model.getElementAt(i));
+        }
+        return ret;
+    }
+    
     public List listKeyBindings() {
         ListModel model = lstKeybindings().getModel();
         List ret=new Vector();
@@ -253,7 +265,11 @@ public class KeyBindings extends JDialogOperator {
         }
         return ret;
     }
-        
+    
+    /**
+     * @param editorName
+     * @return
+     */    
     public static KeyBindings invoke(String editorName) {
         OptionsOperator options = OptionsOperator.invoke();
         options.selectOption(ResourceBundle.getBundle("org/netbeans/core/Bundle").getString("UI/Services/Editing")+"|"+ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("OPTIONS_all")+"|" + editorName);
@@ -264,20 +280,28 @@ public class KeyBindings extends JDialogOperator {
         return ret;
     }
     
-    public static List listKeyBindings(String editorName) {
+    public static List listActions(String editorName) {
         KeyBindings instance = invoke(editorName);
-        List          result = instance.listKeyBindings();
+        List          result = instance.listActions();
         instance.oK();
         return result;
-    }    
+    }
     
     /** Performs simple test of KeyBindings
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        List list = KeyBindings.listKeyBindings("Java Editor");
-        for (int i=0;i < list.size();i++) {
-            System.out.println(list.get(i));
+        String name="Plain Editor";
+        List list = KeyBindings.listActions(name);
+        try {
+            File out=new File("/tmp/"+name+" actions.lst");
+            PrintWriter pw=new PrintWriter(new FileWriter(out));
+            for (int i=0;i < list.size();i++) {
+                pw.println(list.get(i));
+            }
+            pw.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 }
