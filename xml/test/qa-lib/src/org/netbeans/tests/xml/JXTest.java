@@ -21,6 +21,7 @@ import org.netbeans.test.oo.gui.jelly.JellyProperties;
  * @author  ms113234
  */
 public class JXTest extends XTest {
+    public static final String DELIM = "|";
     
     /** Creates a new instance of JXMLXtest */
     public JXTest(String name) {
