@@ -602,7 +602,7 @@ public class PropertiesOpen extends CloneableOpenSupport
             // add to CloneableOpenSupport - patch for a bug in deserialization
             // propDataObject.getOpenSupport().setRef(getReference());
 
-            setNameInAwtThread(propDataObject.getNodeDelegate().getDisplayName());
+            setNameInAwtThread(propDataObject.getName());
             setToolTipText(messageToolTip());
 
             // Listen to saving and renaming.
@@ -611,7 +611,7 @@ public class PropertiesOpen extends CloneableOpenSupport
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (!propDataObject.isValid()) return;
                         if (DataObject.PROP_NAME.equals(evt.getPropertyName()) || DataObject.PROP_COOKIE.equals(evt.getPropertyName())) {
-                            setNameInAwtThread(propDataObject.getNodeDelegate().getDisplayName());
+                            setNameInAwtThread(propDataObject.getName());
                             setToolTipText(messageToolTip());
                         }
                     }
