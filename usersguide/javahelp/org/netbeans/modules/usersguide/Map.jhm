@@ -222,6 +222,9 @@
 <mapID target="org.netbeans.core.ExLocalFileSystem" url="filesystems/filesystems_settings.html" />
 <mapID target="org.netbeans.core.LocalFileSystem" url="filesystems/filesystems_settings.html" />
 
+<!--Note: not sure when this ID is called-->
+<mapID target="org.openide.filesystems.JarFileSystem" url="filesystems/filesystems_settings.html" />
+
 
 <!--csh page for Import Management Tool panels-->
 <mapID target="java.import.FqnPanel" url="java/imt/resolve-ids.html" />
@@ -1419,8 +1422,15 @@
 
   <!--Options .... Telnet Server-->  
   <mapID target="org.netbeans.modules.scripting.remote.ServerSettings" url="pending.html" />
-  <!--Options | Source Creation and Management | Templates-->  
+  
+ <!--Options | Source Creation and Management | Templates-->  
   <mapID target="org.netbeans.core.ui.UINodes$TemplatesNode" url="pending.html" />
+  <!--for all subnodes of Templates category-->
+  <mapID target="org.netbeans.core.actions.OptionsAction$TemplatesSubnode" url="pending.html" />
+  <!--for Filesystems node in Templates folder-->
+  <mapID target="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeServices" url="pending.html" />
+  <!--for Services node in Templates folder-->
+  <mapID target="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeFilesystems" url="pending.html" />  
 
   <mapID target="org.netbeans.core.actions.MemoryMeterAction" url="pending.html" />
   <mapID target="org.netbeans.core.actions.MountAction" url="pending.html" />
