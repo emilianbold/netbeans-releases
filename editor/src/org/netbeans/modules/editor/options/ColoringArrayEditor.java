@@ -138,7 +138,7 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
       }
       colorings[index] = ((ColoringBean)val).getColoring();
       Settings.touchValue(Settings.COLORING_MANAGER);
-      System.out.println("setValue(): colorings=" + System.identityHashCode(colorings) + ", coloring=" + colorings[index]);
+//      System.out.println("setValue(): colorings=" + System.identityHashCode(colorings) + ", coloring=" + colorings[index]);
     }
 
     public PropertyEditor getPropertyEditor() {
@@ -151,6 +151,7 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
 
 /*
 * Log
+*  5    Gandalf   1.4         7/30/99  Miloslav Metelka 
 *  4    Gandalf   1.3         7/29/99  Miloslav Metelka 
 *  3    Gandalf   1.2         7/26/99  Miloslav Metelka 
 *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
