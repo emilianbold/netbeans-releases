@@ -90,7 +90,11 @@ public class EditorModule implements ModuleInstall {
     ExtSettings.init();
     NbEditorSettings.init();
     KitSupport.init();
-    JCStorage.init(rootDir.getAbsolutePath() + File.separator + DB_DIR);
+    File dbDir = new File(rootDir.getAbsolutePath() + File.separator + DB_DIR);
+    if (!dbDir.exists()) {
+      dbDir.mkdir();
+    }
+    JCStorage.init(dbDir.getAbsolutePath());
 
     // preload some classes for faster editor opening
     BaseKit.getKit(NbEditorJavaKit.class).createDefaultDocument();
@@ -156,6 +160,8 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  19   Gandalf   1.18        7/20/99  Miloslav Metelka Creation of ParserDB dir
+ *       if necessary
  *  18   Gandalf   1.17        7/20/99  Miloslav Metelka 
  *  17   Gandalf   1.16        7/9/99   Miloslav Metelka 
  *  16   Gandalf   1.15        6/9/99   Miloslav Metelka 
