@@ -52,6 +52,35 @@ public class NbBundleTest extends Benchmark {
         }
     }    
 
+    public void testGetMessageUsingClassFullBrand() throws Exception {
+        int count = getIterationCount();
+        int magnitude = ((Integer)getArgument()).intValue();
+	NbBundle.setBranding("brand1");
+
+        while( count-- > 0 ) {
+            // do the stuff here, 
+            for( int number = 0; number < magnitude; number++ ) {
+                NbBundle.getMessage( UtilClass.class, keys[number] );
+            }
+        }
+	NbBundle.setBranding(null);
+    }    
+
+    public void testGetMessageUsingEmptyBrand() throws Exception {
+        int count = getIterationCount();
+        int magnitude = ((Integer)getArgument()).intValue();
+	NbBundle.setBranding("brand2");
+
+        while( count-- > 0 ) {
+            // do the stuff here, 
+            for( int number = 0; number < magnitude; number++ ) {
+                NbBundle.getMessage( UtilClass.class, keys[number] );
+            }
+        }
+	
+	NbBundle.setBranding(null);
+    }    
+
     private ResourceBundle bundle;
     private synchronized ResourceBundle getBundle() {
         if( bundle == null ) {
@@ -88,5 +117,40 @@ public class NbBundleTest extends Benchmark {
                 bundle.getString( keys[number] );
             }
         }
-    }    
+    }
+
+    public void testGetMessageUsingCachedBundleFullBrand() throws Exception {
+        int count = getIterationCount();
+        int magnitude = ((Integer)getArgument()).intValue();
+	NbBundle.setBranding("brand1");
+
+        while( count-- > 0 ) {
+            ResourceBundle bundle = NbBundle.getBundle( UtilClass.class );
+            // do the stuff here, 
+            for( int number = 0; number < magnitude; number++ ) {
+                bundle.getString( keys[number] );
+            }
+        }
+	NbBundle.setBranding(null);
+    }
+
+
+    public void testGetMessageUsingCachedBundleEmptyBrand() throws Exception {
+        int count = getIterationCount();
+        int magnitude = ((Integer)getArgument()).intValue();
+	NbBundle.setBranding("brand2");
+
+        while( count-- > 0 ) {
+            ResourceBundle bundle = NbBundle.getBundle( UtilClass.class );
+            // do the stuff here, 
+            for( int number = 0; number < magnitude; number++ ) {
+                bundle.getString( keys[number] );
+            }
+        }
+	NbBundle.setBranding(null);
+    }
+    
+    public static void main(String[] args) {
+	simpleRun( NbBundleTest.class );
+    }
 }
