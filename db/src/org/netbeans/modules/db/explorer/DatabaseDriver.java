@@ -94,7 +94,7 @@ public class DatabaseDriver extends Object implements Externalizable
 		if (name == null || name.length() == 0) adaptor = null;
 		else if (name.startsWith("Database.Adaptors.")) adaptor = name;
 		else adaptor = "Database.Adaptors."+name;
-		System.out.println("Metadata adaptor class set = "+adaptor);
+//		System.out.println("Metadata adaptor class set = "+adaptor);
 	}
 	
 	public boolean equals(Object obj)

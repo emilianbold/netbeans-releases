@@ -150,7 +150,7 @@ static final long serialVersionUID =-560515030304320086L;
 			throw new DDLException("unable to format a command "+format+": "+e.getMessage());
 		}
 				
-		System.out.println(fcmd);		
+//		System.out.println(fcmd);		
 		// In case of debug mode, you simply print command and don't execute
 		if (spec.getSpecificationFactory().isDebugMode()) {
 			
@@ -228,6 +228,7 @@ static final long serialVersionUID =-560515030304320086L;
 
 /*
 * <<Log>>
+*  12   Gandalf   1.11        10/12/99 Radko Najman    debug messages removed
 *  11   Gandalf   1.10        9/15/99  Slavek Psenicka 
 *  10   Gandalf   1.9         9/13/99  Slavek Psenicka 
 *  9    Gandalf   1.8         9/10/99  Slavek Psenicka 

@@ -35,17 +35,17 @@ public class DatabaseModule extends ModuleInstall
 	public void installed() 
 	{
 		TopManager tm = TopManager.getDefault();
-   		System.out.println("Installing database module");
+//   	System.out.println("Installing database module");
 		
 		try {
 			FileSystem rfs = tm.getRepository().getDefaultFileSystem();
     		FileObject rootFolder = rfs.getRoot();
     		FileObject databaseFileObject = rootFolder.getFileObject("Database");
-    		System.out.println("databaseFileObject = "+databaseFileObject);
+//    		System.out.println("databaseFileObject = "+databaseFileObject);
     		if (databaseFileObject == null) {
     			databaseFileObject = rootFolder.createFolder("Database");
     			FileObject adaptorsFileObject = databaseFileObject.createFolder("Adaptors");
-	    		System.out.println("adaptorsFileObject created = "+adaptorsFileObject);
+//	    		System.out.println("adaptorsFileObject created = "+adaptorsFileObject);
     			InstanceDataObject.create(DataFolder.findFolder(adaptorsFileObject), "DefaultAdaptor", com.netbeans.ddl.adaptors.DefaultAdaptor.class);
     	    }
 		} catch (LinkageError ex) {
@@ -60,6 +60,7 @@ public class DatabaseModule extends ModuleInstall
 
 /*
 * <<Log>>
+*  7    Gandalf   1.6         10/12/99 Radko Najman    debug messages removed
 *  6    Gandalf   1.5         10/1/99  Petr Hrebejk    org.openide.modules.ModuleInstall
 *        changed to class + some methods added
 *  5    Gandalf   1.4         9/27/99  Slavek Psenicka new Database/Adaptors 

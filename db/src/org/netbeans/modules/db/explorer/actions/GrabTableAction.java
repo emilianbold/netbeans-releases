@@ -52,7 +52,7 @@ public class GrabTableAction extends DatabaseAction
 				} 
 			}
 
-			System.out.println(cmd.getCommand());
+//			System.out.println(cmd.getCommand());
 
 			// Get filename
 

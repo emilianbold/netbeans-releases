@@ -39,7 +39,7 @@ public class IndexNodeInfo extends TableNodeInfo
 			ResultSet rs = dmd.getIndexInfo(catalog, dmd.getUserName(), table, true, false);
 			Hashtable ixmap = new Hashtable();
 			while (rs.next()) {
-				System.out.println("index column "+rs.getString("INDEX_NAME"));
+//				System.out.println("index column "+rs.getString("INDEX_NAME"));
 				String ixname = (String)get("index");
 				DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXCOLUMN, rs);
 				String newixname = (String)info.get("ixname");

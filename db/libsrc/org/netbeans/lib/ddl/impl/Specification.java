@@ -114,9 +114,11 @@ public class Specification implements DatabaseSpecification {
 	
 	public void setMetaDataAdaptorClassName(String name)
 	{
-		if (name.startsWith("Database.Adaptors.")) adaptorClass = name;
-		else adaptorClass = "Database.Adaptors."+name;
-		System.out.println("Metadata adaptor class set = "+adaptorClass);
+		if (name.startsWith("Database.Adaptors."))
+		  adaptorClass = name;
+		else
+		  adaptorClass = "Database.Adaptors."+name;
+//		System.out.println("Metadata adaptor class set = "+adaptorClass);
 		dmdAdaptor = null;
 	}
 
@@ -136,7 +138,7 @@ public class Specification implements DatabaseSpecification {
 							loader = null;
 						}
 						
-						System.out.println("Metadata adaptor class name = "+adc);
+//						System.out.println("Metadata adaptor class name = "+adc);
 						dmdAdaptor = (DatabaseMetaData)Beans.instantiate(loader, adc);
 						if (dmdAdaptor instanceof DatabaseMetaDataAdaptor) {
 							((DatabaseMetaDataAdaptor)dmdAdaptor).setConnection(jdbccon);
@@ -504,6 +506,7 @@ public class Specification implements DatabaseSpecification {
 
 /*
 * <<Log>>
+*  9    Gandalf   1.8         10/12/99 Radko Najman    debug messages removed
 *  8    Gandalf   1.7         9/27/99  Slavek Psenicka setMetaDataAdaptorClassName
 *        changed
 *  7    Gandalf   1.6         9/13/99  Slavek Psenicka 

@@ -236,7 +236,7 @@ public class CreateTableDialog
 										cmdcol = (com.netbeans.ddl.impl.TableColumn)cmd.createUniqueColumn(name);
 									} else cmdcol = (com.netbeans.ddl.impl.TableColumn)cmd.createColumn(name);
 									
-									System.out.println(enuele.getSize());
+//									System.out.println(enuele.getSize());
 									cmdcol.setColumnType(Specification.getType(enuele.getType().getType()));
 									cmdcol.setColumnSize(enuele.getSize());
 									cmdcol.setNullAllowed(enuele.allowsNull());
