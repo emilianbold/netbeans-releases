@@ -10,11 +10,11 @@
 
 
 <api-questions version="$Revision$" date="$date: $" >
-    <category id="arch" name="General Informations">
+    <category id="arch" name="General Information">
         <question id="arch-what">
             What is this project good for?
             <hint>
-            Please provide here few lines describing the the project, 
+            Please provide here a few lines describing the project, 
             what problem it should solve, provide links to documentation, 
             specifications, etc.
             </hint>
@@ -69,8 +69,8 @@
         <question id="deploy-jar">
             Do you deploy just module JAR file(s) or other files as well?
             <hint>
-            If your module consist just from one module JAR file, just confirm that.
-            If it uses more than one JAR, describe where there are located, how
+            If your module consists of just one module JAR file, just confirm that.
+            If it uses more than one JAR, describe where they are located, how
             they refer to each other. 
             If it consist of module JAR(s) and other files, please describe
             what is their purpose, why other files are necessary. Please 
@@ -128,7 +128,7 @@
         </question>
         <question id="compat-version">
             Can your module coexist with earlier and future
-            versions? Can you correctly read all old settings? Will future
+            versions of itself? Can you correctly read all old settings? Will future
             versions be able to read your current settings? Can you read
             or politely ignore settings stored by a future version?
             
@@ -284,7 +284,8 @@
     
     <category id="format" name="Format of files and protocols">
         <question id="format-types">
-            Which file formats (if any) does your code read or write on disk?
+            Which protocols and file formats (if any) does your module read or write on disk,
+            or transmit or receive over the network?
         </question>
         
         <question id="format-dnd">
