@@ -176,34 +176,33 @@
 <mapID target="org.netbeans.modules.refactoring.ui.ChangeParametersUI" url="refactor/changeParameters.html" /> <!--Change Method Parameters-->
 <mapID target="org.netbeans.modules.refactoring.ui.RefactoringPanelContainer" url="refactor/previewWindow.html" /> <!--Preview Refactoring window-->
 
+<!-- begin XML Online Help IDs -->
+<mapID target="xml_createxml"   url="xml/xml_create.html" />
+<mapID target="xml_editxml"     url="xml/xml_edit.html" />
+<mapID target="xml_validatexml"     url="xml/xml_validate.html" />
+<mapID target="xml_checkxml"     url="xml/xml_check.html" />
+<mapID target="xml_settings"     url="xml/xml_settings.html" />
+<!--<mapID target="xml_nodes"   url="xml/xmlnodes.html" />-->
+<!--<mapID target="xml_parsedentities" url="xml/parsedentities.html" />-->
+<mapID target="xml_createdtd"   url="xml/dtd/dtd_create.html" />
+<mapID target="xml_documentdtd"   url="xml/dtd/dtd_document.html" />
+<mapID target="xml_generatedom"     url="xml/dtd/dtd_generatedom.html" />
+<!--<mapID target="xml_aboutdtd" url="xml/dtd/dtd_editview.html" />-->
+<mapID target="xml_catalogs"     url="xml/catalog/xmlcatalog_about.html" />
+<mapID target="xml_editcatalogs"     url="xml/catalog/xmlcatalog_edit.html" />
+<mapID target="xml_mountcatalogs"     url="xml/catalog/xmlcatalog_mount.html" />
+<mapID target="xml_catalogformats"     url="xml/catalog/xmlcatalog_formats.html" />
+<mapID target="xml_Oasis"     url="xml/samples/Oasis_sample.html" />
+<mapID target="xml_XCat"     url="xml/samples/XCat_sample.html" />
+<mapID target="xml_XMLCat"     url="xml/samples/XMLCat_sample.html" />
+<mapID target="xml_aboutsax"     url="xml/sax/sax_about.html" />
+<mapID target="xml_generatesax"     url="xml/sax/sax_generate.html" />
+<mapID target="xml_schemas" url="xml/schema/schemas.html" />
+<!--<mapID target="xml_schemanodes" url="xml/schema/schemanodes.html" />-->
+<mapID target="xml_xslabout"     url="xml/xsl/xsl_about.html" />
+<mapID target="xml_xsltransform"     url="xml/xsl/xsl_transform.html" />
+<!--<mapID target="xml_xslnodes" url="xml/xsl/xslnodes.html" />-->
 
-
-<mapID target="xml_nodes"   url="xml/xmlnodes.html" />
-<mapID target="xml_createxml"   url="xml/createxml.html" />
-<mapID target="xml_editxml"     url="xml/editxml.html" />
-<mapID target="xml_schemanodes" url="xml/schemanodes.html" />
-<mapID target="xml_schemas" url="xml/schemas.html" />
-<mapID target="xml_parsedentities" url="xml/parsedentities.html" />
-<mapID target="xml_xslnodes" url="xml/xslnodes.html" />
-<mapID target="xml_aboutdtd" url="xml/editviewdtd.html" />
-<mapID target="xml_createdtd"   url="xml/createdtd.html" />
-<mapID target="xml_documentdtd"   url="xml/documentdtd.html" />
-<mapID target="xml_catalogs"     url="xml/xmlcatalogs.html" />
-<mapID target="xml_mountcatalogs"     url="xml/mountcatalog.html" />
-<mapID target="xml_editcatalogs"     url="xml/editcatalog.html" />
-<mapID target="xml_catalogformats"     url="xml/xmlcatalog_formats.html" />
-<mapID target="xml_XCat"     url="xml/XCat_sample.html" />
-<mapID target="xml_XMLCat"     url="xml/XMLCat_sample.html" />
-<mapID target="xml_Oasis"     url="xml/Oasis_sample.html" />
-<mapID target="xml_xsltransform"     url="xml/xsl_transform.html" />
-<mapID target="xml_xslabout"     url="xml/xslabout.html" />
-<mapID target="xml_texteditor"     url="xml/editxml.html" />
-<mapID target="xml_generatedom"     url="xml/generatedom.html" />
-<mapID target="xml_generatesax"     url="xml/generatesax.html" />
-<mapID target="xml_aboutsax"     url="xml/aboutsax.html" />
-<mapID target="xml_validatexml"     url="xml/validatexml.html" />
-<mapID target="xml_checkxml"     url="xml/checkxml.html" />
-<mapID target="xml_settings"     url="xml/xmlsettings.html" />
 
 <!-- CSS Help -->
 
@@ -425,7 +424,9 @@
 <!--Open Image dialog available from icon property editors (and other places?)-->
 <mapID target="csh.openimage" url="pending.html" />
 
-<!--CSH-->
+
+
+<!-- ================================ begin CSH IDs ================================ -->
 
 <!-- Projects window -->
 <mapID target="ProjectTab_Projects" url="project/csh/proj_project_window.html" />
