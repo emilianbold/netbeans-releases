@@ -14,16 +14,13 @@
 package org.netbeans.api.java.queries;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.WeakListeners;
 
 /**
  * A query to find Javadoc root for the given classpath root.
@@ -31,6 +28,8 @@ import org.openide.util.WeakListeners;
  * @since org.netbeans.api.java/1 1.4
  */
 public class JavadocForBinaryQuery {
+    
+    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(JavadocForBinaryQuery.class.getName());
     
     private static final Lookup.Result/*<JavadocForBinaryQueryImplementation>*/ implementations =
         Lookup.getDefault().lookup (new Lookup.Template (JavadocForBinaryQueryImplementation.class));
@@ -53,11 +52,14 @@ public class JavadocForBinaryQuery {
             throw new IllegalArgumentException("File URL pointing to " + // NOI18N
                 "JAR is not valid classpath entry. Use jar: URL. Was: "+binary); // NOI18N
         }
-        
+        boolean log = ERR.isLoggable(ErrorManager.INFORMATIONAL);
+        if (log) ERR.log("JFBQ.findJavadoc: " + binary);
         Iterator it = implementations.allInstances().iterator();
         while (it.hasNext()) {
-            Result r = ((JavadocForBinaryQueryImplementation) it.next()).findJavadoc(binary);
+            JavadocForBinaryQueryImplementation impl = (JavadocForBinaryQueryImplementation) it.next();
+            Result r = impl.findJavadoc(binary);
             if (r != null) {
+                if (log) ERR.log("  got result " + Arrays.asList(r.getRoots()) + " from " + impl);
                 return r;
             }
         }

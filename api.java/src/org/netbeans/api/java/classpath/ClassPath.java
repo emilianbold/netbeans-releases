@@ -17,24 +17,35 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-
 import java.io.IOException;
-import java.util.*;
-import java.net.URL;
-import java.net.MalformedURLException;
-import java.text.MessageFormat;
 import java.lang.ref.WeakReference;
-
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.java.classpath.ClassPathAccessor;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
-
-import org.openide.filesystems.*;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
-import org.openide.ErrorManager;
-
 
 /**
  * ClassPath objects should be used to access contents of the ClassPath, searching
@@ -141,6 +152,8 @@ public final class ClassPath {
      * Name of the "entries" property
      */
     public static final String PROP_ENTRIES = "entries";
+    
+    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(ClassPath.class.getName());
     
     private static final Lookup.Result/*<ClassPathProvider>*/ implementations =
         Lookup.getDefault().lookup(new Lookup.Template(ClassPathProvider.class));
@@ -369,19 +382,26 @@ public final class ClassPath {
     }
 
     /**
-     * Retrieves the instance of ClassPath type identified by `id', which is
-     * configured for the FileObject's owner. If <code>null</code> is passed
-     * instead of FileObject, the active project's default ClassPath is retrieved.
-     * The method uses <code>FileObject</code> instead <code>org.openide.loaders.DataObject</code>,
-     * since <code>org.openide.loaders.*</code> contents are going to be deprecated soon.
-     * <p>The method is permitted to return null, if:<ul>
-     * <li>the path type (id parameter) is not know to the system
-     * <li>the path type is not defined for the given FileObject
+     * Find the classpath of a given type, if any, defined for a given file.
+     * <p>This method may return null, if:</p>
+     * <ul>
+     * <li>the path type (<code>id</code> parameter) is not recognized
+     * <li>the path type is not defined for the given file object
      * </ul>
+     * <p>
+     * Generally you may pass either an individual Java file, or the root of
+     * a Java package tree, interchangeably, since in most cases all files
+     * in a given tree will share a single classpath.
+     * </p>
+     * <p class="nonnormative">
+     * Typically classpaths for files are defined by the owning project, but
+     * there may be other ways classpaths are defined. See {@link ClassPathProvider}
+     * for more details.
+     * </p>
      * @param f the file, whose classpath settings should be returned (may <em>not</em> be null as of org.netbeans.api.java/1 1.4)
-     * @param id the type of the ClassPath
-     * @return Path of the desired type for the given FileObject, or <code>null</code>, if
-     * the path type is not supported for that FileObject.
+     * @param id the type of the classpath (e.g. {@link #COMPILE})
+     * @return classpath of the desired type for the given file object, or <code>null</code>, if
+     *         there is no classpath available
      * @see ClassPathProvider
      */
     public static ClassPath getClassPath(FileObject f, String id) {
@@ -390,11 +410,14 @@ public final class ClassPath {
             Thread.dumpStack();
             return null;
         }
+        boolean log = ERR.isLoggable(ErrorManager.INFORMATIONAL);
+        if (log) ERR.log("CP.getClassPath: " + f + " of type " + id);
         Iterator it = implementations.allInstances().iterator();
         while (it.hasNext()) {
             ClassPathProvider impl = (ClassPathProvider)it.next();
             ClassPath cp = impl.findClassPath(f, id);
             if (cp != null) {
+                if (log) ERR.log("  got result " + cp + " from " + impl);
                 return cp;
             }
         }

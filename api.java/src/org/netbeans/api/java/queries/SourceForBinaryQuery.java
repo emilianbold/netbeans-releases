@@ -10,16 +10,18 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.api.java.queries;
 
 import java.net.URL;
-import org.openide.util.Lookup;
-import org.openide.filesystems.*;
-import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
-
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
 import javax.swing.event.ChangeListener;
-
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
 /**
  * The query is used for finding sources for binaries.
@@ -33,6 +35,8 @@ import javax.swing.event.ChangeListener;
  * @since org.netbeans.api.java/1 1.4
  */
 public class SourceForBinaryQuery {
+    
+    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(SourceForBinaryQuery.class.getName());
     
     private static final Lookup.Result/*<SourceForBinaryQueryImplementation>*/ implementations =
         Lookup.getDefault().lookup (new Lookup.Template (SourceForBinaryQueryImplementation.class));
@@ -53,9 +57,13 @@ public class SourceForBinaryQuery {
         if (!binaryRoot.toExternalForm().endsWith("/")) {
             throw new IllegalArgumentException ("Folder URL must end with '/'. Was: "+binaryRoot);
         }
+        boolean log = ERR.isLoggable(ErrorManager.INFORMATIONAL);
+        if (log) ERR.log("SFBQ.findSourceRoots: " + binaryRoot);
         for (Iterator it = implementations.allInstances().iterator(); it.hasNext();) {
-            Result result = ((SourceForBinaryQueryImplementation)it.next()).findSourceRoots (binaryRoot);
+            SourceForBinaryQueryImplementation impl = (SourceForBinaryQueryImplementation) it.next();
+            Result result = impl.findSourceRoots(binaryRoot);
             if (result != null) {
+                if (log) ERR.log("  got result " + Arrays.asList(result.getRoots()) + " from " + impl);
                 return result;
             }
         }
