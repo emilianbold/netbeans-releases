@@ -71,7 +71,8 @@
 
     <!-- actions -->
     <folder name="Actions">
-        <folder name="Unit tests">
+        <folder name="JUnitTests">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/>
             <file name="org-netbeans-modules-junit-CreateTestAction.instance" />
             <file name="org-netbeans-modules-junit-OpenTestAction.instance" />
         </folder>
