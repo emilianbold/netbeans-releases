@@ -28,6 +28,7 @@ import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
+import com.sun.jdi.request.InvalidRequestStateException;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -849,6 +850,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 // see #53163
                 // this can occurre if there is some "old" StepRequest and
                 // thread named in the request has died
+            } catch (InvalidRequestStateException ex) {
+                // workaround for #51176
             }
     }
 
