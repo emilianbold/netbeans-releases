@@ -55,11 +55,6 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
     /** Print support for this image data object **/
     private transient ImagePrintSupport printSupport;
  
-    /** Method from <code>javax.imageio.ImageIO.readImage(..)</code><br>
-     * needs to be reflection until NB is built with JDK1.4
-     **/
-    private static Method readImage;
-    
     /** Constructor.
      * @param pf primary file object for this data object
      * @param loader the data loader creating it
@@ -146,15 +141,7 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
      */
     public Image getImage() {
         try{
-            if( System.getProperty("java.specification.version").equals("1.3") ){
-                return new ImageIcon( getImageData() ).getImage();
-            }else{
-                if( readImage == null ){
-                    Class clazz = Class.forName("javax.imageio.ImageIO");
-                    readImage = clazz.getMethod("read",new Class[]{ java.io.InputStream.class });
-                }
-                return (Image)readImage.invoke(null,new Object[]{ getPrimaryFile().getInputStream() });
-            }
+            return javax.imageio.ImageIO.read(getPrimaryFile().getInputStream());
         }catch(Exception ex){
             ErrorManager.getDefault().notify(ex);
         }
