@@ -164,6 +164,9 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         //System.out.println("setActive = "+active +":"+node.getDisplayName());
         titleButton.setBackground(
                 active ? SectionVisualTheme.getSectionHeaderActiveColor() : SectionVisualTheme.getSectionHeaderColor());
+        if (headerButtons!=null) {
+            for (int i=0;i<headerButtons.length;i++) headerButtons[i].setEnabled(active);
+        }
         if (active && !this.equals(sectionView.getActivePanel())) {
             sectionView.sectionSelected(true);
             sectionView.setActivePanel(this);
@@ -313,18 +316,30 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         return index;
     }
     
-    private javax.swing.JButton[] headerButtons;
+    private HeaderButton[] headerButtons;
     
     public void setHeaderActions(Action[] actions) {
-        headerButtons = new javax.swing.JButton[actions.length];
+        headerButtons = new HeaderButton[actions.length];
         for (int i=0;i<actions.length;i++) {
-            headerButtons[i] = new javax.swing.JButton(actions[i]);
+            headerButtons[i] = new HeaderButton(this,actions[i]);
             actionPanel.add(headerButtons[i]);
         }
     }
     
-    public javax.swing.JButton[] getHeaderButtons(){
+    public HeaderButton[] getHeaderButtons(){
         return headerButtons;
+    }
+    
+    public static class HeaderButton extends javax.swing.JButton {
+        private SectionPanel panel;
+        public HeaderButton(SectionPanel panel, Action action) {
+            super(action);
+            this.panel=panel;
+            setEnabled(false);
+        }     
+        public SectionPanel getSectionPanel() {
+            return panel;
+        }
     }
     
 }

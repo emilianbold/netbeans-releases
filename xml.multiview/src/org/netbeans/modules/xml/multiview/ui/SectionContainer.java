@@ -163,7 +163,7 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         for (int i=0;i<removedPanels.size();i++) {
             NodeSectionPanel pan = (NodeSectionPanel)removedPanels.get(i);
             java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.gridx = 1;
+            gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = pan.getIndex();
             gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
