@@ -54,19 +54,19 @@ public class OptionsOperator extends NbFrameOperator {
      * Constant used for indication of project property definition level
      * (first column after ">>").
      */
-    public static final int PROJECT_LEVEL = -1;
+    public static final int PROJECT_LEVEL = 2;
 
     /** 
      * Constant used for indication of user property definition level
      * (second column after ">>").
      */
-    public static final int USER_LEVEL = 2;
+    public static final int USER_LEVEL = 3;
 
     /** 
      * Constant used for indication of default property definition level
      * (third column after ">>").
      */
-    public static final int DEFAULT_LEVEL = 3;
+    public static final int DEFAULT_LEVEL = 4;
 
     private static final Action invokeAction = new OptionsViewAction();
 
@@ -237,12 +237,6 @@ public class OptionsOperator extends NbFrameOperator {
      */
     public int getLevel(String optionPath) {
         int row = selectOption(optionPath);
-        if       (getValue(row, USER_LEVEL)    == DEFINE_HERE) {
-            return USER_LEVEL;
-        } else if(getValue(row, DEFAULT_LEVEL) == DEFINE_HERE) {
-            return DEFAULT_LEVEL;
-        }
-        /*
         if       (getValue(row, PROJECT_LEVEL) == DEFINE_HERE) {
             return PROJECT_LEVEL;
         } else if(getValue(row, USER_LEVEL)    == DEFINE_HERE) {
@@ -250,10 +244,9 @@ public class OptionsOperator extends NbFrameOperator {
         } else if(getValue(row, DEFAULT_LEVEL) == DEFINE_HERE) {
             return DEFAULT_LEVEL;
         }
-         **/
         return -1;
     }
-
+    
     /** Make an option to be difined on the project level.
      * @param optionPath Path to the option in left (tree-like) column.
      */
