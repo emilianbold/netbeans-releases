@@ -163,10 +163,10 @@ is divided into following sections:
         </macrodef>
     </target>
     <target name="-init-macrodef-debug">
-        <macrodef name="debug" uri="http://www.netbeans.org/ns/j2se-project/1">
+        <macrodef name="debug" uri="http://www.netbeans.org/ns/j2se-project/2">
             <attribute name="classname" default="${main.class}"/>
             <attribute name="classpath" default="${debug.classpath}"/>
-            <attribute name="args" default="${application.args}"/>
+            <element name="customize" optional="true"/>
             <sequential>
                 <java fork="true" classname="@{classname}" dir="${work.dir}">
                     <jvmarg value="-Xdebug"/>
@@ -181,7 +181,7 @@ is divided into following sections:
                         <propertyref prefix="run-sys-prop."/>
                         <mapper type="glob" from="run-sys-prop.*" to="*"/>
                     </syspropertyset>
-                    <arg line="@{args}"/>
+                    <customize/>
                 </java>
             </sequential>
         </macrodef>
@@ -310,7 +310,11 @@ is divided into following sections:
         <j2seproject1:nbjpdastart name="${debug.class}"/>
     </target>
     <target name="-debug-start-debuggee" depends="init,compile">
-        <j2seproject1:debug/>
+        <j2seproject2:debug>
+            <customize>
+                <arg line="${application.args}"/>
+            </customize>
+        </j2seproject2:debug>
     </target>
     <target name="debug" if="netbeans.home" depends="init,compile,-debug-start-debugger,-debug-start-debuggee" description="Debug project in IDE."/>
     <target name="-debug-start-debugger-stepinto" if="netbeans.home" depends="init">
@@ -319,7 +323,7 @@ is divided into following sections:
     <target name="debug-stepinto" if="netbeans.home" depends="init,compile,-debug-start-debugger-stepinto,-debug-start-debuggee"/>
     <target name="-debug-start-debuggee-single" if="netbeans.home" depends="init,compile-single">
         <fail unless="debug.class">Must select one file in the IDE or set debug.class</fail>
-        <j2seproject1:debug classname="${debug.class}"/>
+        <j2seproject2:debug classname="${debug.class}"/>
     </target>
     <target name="debug-single" if="netbeans.home" depends="init,compile-single,-debug-start-debugger,-debug-start-debuggee-single"/>
     <target name="-pre-debug-fix" depends="init">
@@ -426,7 +430,11 @@ is divided into following sections:
     -->
     <target name="-debug-start-debuggee-test" if="have.tests" depends="init,compile-test">
         <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
-        <j2seproject1:debug classname="junit.textui.TestRunner" classpath="${debug.test.classpath}" args="${test.class}"/>
+        <j2seproject2:debug classname="junit.textui.TestRunner" classpath="${debug.test.classpath}">
+            <customize>
+                <arg line="${test.class}"/>
+            </customize>
+        </j2seproject2:debug>
     </target>
     <target name="-debug-start-debugger-test" if="netbeans.home+have.tests" depends="init,compile-test">
         <j2seproject1:nbjpdastart name="${test.class}" classpath="${debug.test.classpath}"/>
@@ -456,7 +464,11 @@ is divided into following sections:
     -->
     <target name="-debug-start-debuggee-applet" if="netbeans.home" depends="init,compile-single">
         <fail unless="applet.url">Must select one file in the IDE or set applet.url</fail>
-        <j2seproject1:debug classname="sun.applet.AppletViewer" args="&quot;${applet.url}&quot;"/>
+        <j2seproject2:debug classname="sun.applet.AppletViewer">
+            <customize>
+                <arg value="${applet.url}"/>
+            </customize>
+        </j2seproject2:debug>
     </target>
     <target name="debug-applet" if="netbeans.home" depends="init,compile-single,-debug-start-debugger,-debug-start-debuggee-applet"/>
     <!--
