@@ -68,6 +68,7 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
         jLabel2 = new javax.swing.JLabel();
         jTextFieldExcludes = new javax.swing.JTextField();
         jCheckBoxCommpress = new javax.swing.JCheckBox();
+        excludeMessage = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -108,7 +109,7 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxCommpress, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_Commpres_JCheckBox"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -116,11 +117,20 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
         add(jCheckBoxCommpress, gridBagConstraints);
         jCheckBoxCommpress.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJar.class).getString("AD_jCheckBoxCompress"));
 
+        org.openide.awt.Mnemonics.setLocalizedText(excludeMessage, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_ExcludeMessage_JLabel"));
+        excludeMessage.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(excludeMessage, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel excludeMessage;
     private javax.swing.JCheckBox jCheckBoxCommpress;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabelDistDir;
