@@ -30,13 +30,14 @@ import org.openide.NotifyDescriptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.sun.web.core.Container;
+/*import com.sun.web.core.Container;
 import com.sun.web.core.Context;
 import com.sun.web.core.HttpServletRequestFacade;
 import com.sun.web.core.SecurityModule;
 import com.sun.web.server.EndpointManager;
 import com.sun.web.server.HttpServer;
 import com.sun.web.server.HttpServerException;
+*/
 
 /**
 * Module installation class for Http Server
@@ -46,7 +47,7 @@ import com.sun.web.server.HttpServerException;
 public class HttpServerModule extends ModuleInstall implements Externalizable {
 
   
-  private static HttpServer server;
+//  private static HttpServer server;
   private static Thread serverThread;
   private static boolean inSetRunning = false;
   
@@ -101,8 +102,9 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
           serverThread = new Thread("HTTPServer") { // NOI18N
             public void run() {
               try {                   
-                server = buildServer();
-                server.start();
+                // PENDING
+                //server = buildServer();
+                //server.start();
                 HttpServerSettings.OPTIONS.runSuccess();
                 // this is not a debug message, this is a server startup message
                 if (HttpServerSettings.OPTIONS.isStartStopMessages())
@@ -147,9 +149,9 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         return;
       inSetRunning = true;
       try {
-        if ((serverThread != null) && (server != null)) {
+        if ((serverThread != null) /*&& (server != null) PENDING */ ) {
           try {
-            server.stop();
+            //server.stop(); PENDING
             serverThread.join();
           }
           catch (InterruptedException e) {
@@ -157,7 +159,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
             /* deprecated, but this really is the last resort,
                only if everything else failed */
           } 
-          catch (HttpServerException e) {
+          catch (/*HttpServer PENDING */Exception e) {
 //e.printStackTrace();
             serverThread.stop(); 
             /* deprecated, but this really is the last resort,
@@ -177,7 +179,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
   }
   
   
-  private static HttpServer buildServer() {
+/*  private static HttpServer buildServer() {
     HttpServerSettings op = HttpServerSettings.OPTIONS;
 
     HttpServer server = new NbHttpServer(op.getPort(), null, null);
@@ -219,7 +221,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         ff.setAccessible(true);
         boolean bb = ff.getBoolean(this);
         
-        getDefaultContext().setWorkDir(wd, bb /*isWorkDirPersistent*/);
+        getDefaultContext().setWorkDir(wd, bb / *isWorkDirPersistent* /);
         getDefaultContext().init();
         EndpointManager endpointmanager = EndpointManager.getManager();
 
@@ -278,17 +280,13 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
       if(i > -1) lookupPath = lookupPath.substring(0, i);
       if(lookupPath.length() < 1) lookupPath = "/"; // NOI18N
       String s = lookupPath.toLowerCase();
-/*System.out.println("s :" + s);
-System.out.println("rep :" + op.getRepositoryBaseURL());*/ // NOI18N
       if(s.startsWith("/servlet/")) { // NOI18N
-//System.out.println("security check OK 1"); // NOI18N
         return true;
       }  
       if(s.startsWith("/web-inf")) { // NOI18N
         httpservletresponse.sendError(403);
         return false;
       } if (s.startsWith(op.getRepositoryBaseURL() + "/") || s.startsWith(op.getClasspathBaseURL() + "/")) { // NOI18N
-//System.out.println("security check OK 2"); // NOI18N
         return true;
       } else {
         httpservletresponse.sendError(404);
@@ -298,12 +296,14 @@ System.out.println("rep :" + op.getRepositoryBaseURL());*/ // NOI18N
     }
 
     private Context context;
-  }
+  }*/
 
 }
 
 /*
  * Log
+ *  39   Jaga      1.37.1.0    3/22/00  Petr Jiricka    Fixed compilation 
+ *       errors.
  *  38   Gandalf   1.37        1/13/00  Petr Jiricka    More i18n
  *  37   Gandalf   1.36        1/12/00  Petr Jiricka    i18n
  *  36   Gandalf   1.35        1/11/00  Petr Jiricka    Cleanup
