@@ -138,7 +138,7 @@ final class Manager {
                 needsReset = false;
             }
             pendingPrintDetailsTask = new PrintDetailsTask(
-                    children,
+                    children.getNodes(),
                     searchGroup,
                     searchDisplayer,
                     needsReset);

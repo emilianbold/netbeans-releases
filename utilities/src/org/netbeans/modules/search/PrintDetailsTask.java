@@ -13,9 +13,11 @@
 
 package org.netbeans.modules.search;
 
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openidex.search.SearchGroup;
 import org.openidex.search.SearchType;
@@ -27,7 +29,9 @@ import org.openidex.search.SearchType;
 public class PrintDetailsTask implements Runnable {
     
     /** */
-    private final ResultTreeChildren children;
+    private static final int BUFFER_SIZE = 8;
+    /** */
+    private final Node[] nodes;
     /** */
     private final SearchGroup searchGroup;
     /** */
@@ -35,12 +39,18 @@ public class PrintDetailsTask implements Runnable {
     /** */
     private final boolean needsReset;
     
+    /** */
+    private final Node[] buffer = new Node[BUFFER_SIZE];
+    /** position of the first free item in the buffer */
+    private int bufPos = 0;
+    
+    
     /** Creates a new instance of PrintDetailsTask */
-    public PrintDetailsTask(final ResultTreeChildren children,
+    public PrintDetailsTask(final Node[] nodes,
                             final SearchGroup searchGroup,
                             final SearchDisplayer displayer,
                             final boolean needsReset) {
-        this.children = children;
+        this.nodes = nodes;
         this.searchGroup = searchGroup;
         this.displayer = displayer;
         this.needsReset = needsReset;
@@ -48,24 +58,104 @@ public class PrintDetailsTask implements Runnable {
     
     /** */
     public void run() {
-        if (needsReset) {
-            displayer.resetOutput();
+        try {
+            EventQueue.invokeAndWait(new Runnable() {
+                public void run() {
+                    displayer.prepareOutput(needsReset);
+                }
+            });
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ex);
         }
         
-        Node[] nodes = children.getNodes();
-        SearchType[] searchTypes = searchGroup.getSearchTypes();        
-        List detailNodes = new ArrayList(nodes.length * searchTypes.length * 3);
+        final SearchType[] searchTypes = searchGroup.getSearchTypes();        
         
-        for (int i = 0; i < searchTypes.length; i++) {
-            for (int j = 0; j < nodes.length; j++) {
-                Node[] details = searchTypes[i].getDetails(nodes[j]);
-                if (details != null) {
-                    detailNodes.addAll(Arrays.asList(details));
+        int freeBufSpace = 0;
+        for (int i = 0; i < nodes.length; i++) {
+
+            /* Collect details about the found node: */
+            Node[] allDetails = null;
+            for (int j = 0; j < searchTypes.length; j++) {
+                Node[] details = searchTypes[j].getDetails(nodes[i]);
+                if (details == null || details.length == 0) {
+                    continue;
+                }
+                if (allDetails == null) {
+                    allDetails = details;
+                } else {
+                    allDetails = concatNodeArrays(allDetails, details);
                 }
             }
+            if (allDetails == null) {
+                continue;
+            }
+
+            /* Print the collected details: */
+            freeBufSpace = addToBuffer(allDetails, 0);
+            while (freeBufSpace < 0) {
+                printBuffer();
+
+                int remainderIndex = allDetails.length + freeBufSpace;
+                freeBufSpace = addToBuffer(allDetails, remainderIndex);
+            }
+            if (freeBufSpace == 0) {
+                printBuffer();
+            }
         }
-        displayer.acceptNodes((Node[])
-                             detailNodes.toArray(new Node[detailNodes.size()]));
+        if (freeBufSpace != 0) {
+            int smallBufSize = BUFFER_SIZE - freeBufSpace;
+            Node[] smallBuffer = new Node[smallBufSize];
+            System.arraycopy(buffer, 0, smallBuffer, 0, smallBufSize);
+            displayer.displayNodes(smallBuffer);
+        }
+    }
+
+    /**
+     * Adds some or all of the given nodes to the buffer.
+     * Nodes at position lesser than the given start index are ignored.
+     * If the nodes to be added do not fit all into the buffer, the remaining
+     * nodes are ignored.
+     *
+     * @param  detailNodes  array containing nodes to be added
+     * @param  firstIndex  index of the first node to be added to the buffer
+     * @return  positive number expressing number of free items in the buffer;
+     *          negative number expressing number of remaining nodes that
+     *                  did not fit into the buffer;
+     *          or <code>0</code> if the nodes exactly filled the buffer
+     */
+    private int addToBuffer(Node[] detailNodes, int firstIndex) {
+        assert firstIndex >=0 && firstIndex <= detailNodes.length;
+
+        int nodesToAddCount = detailNodes.length - firstIndex;
+        int newBufPos = bufPos + nodesToAddCount;
+        int remainingSpace = BUFFER_SIZE - newBufPos;
+        if (remainingSpace <= 0) {
+            nodesToAddCount += remainingSpace;
+            newBufPos = 0;
+        }
+        System.arraycopy(detailNodes, firstIndex, buffer, bufPos, nodesToAddCount);
+        bufPos = newBufPos;
+        return remainingSpace;
+    }
+
+    /**
+     */
+    private void printBuffer() {
+        displayer.displayNodes(buffer);
+    }
+
+    /**
+     */
+    private Node[] concatNodeArrays(Node[] arrA, Node[] arrB) {
+        Node[] result = new Node[arrA.length + arrB.length];
+
+        System.arraycopy(arrA,   0,
+                         result, 0,
+                         arrA.length);
+        System.arraycopy(arrB,   0,
+                         result, arrA.length,
+                         arrB.length);
+        return result;
     }
     
 }

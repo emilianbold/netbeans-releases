@@ -14,11 +14,13 @@
 
 package org.netbeans.modules.search;
 
+import java.awt.EventQueue;
 
 import java.io.IOException;
+import org.openide.ErrorManager;
 
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeAcceptor;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -32,7 +34,7 @@ import org.openide.windows.OutputWriter;
  * @author  Petr Kuzel
  * @author  Marian Petras
  */
-public class SearchDisplayer extends Object implements NodeAcceptor {
+public class SearchDisplayer {
 
     /** name of attribute &quot;text to display in the Output Window&quot; */
     public static final String ATTR_OUTPUT_LINE = "output line";        //NOI18N
@@ -40,70 +42,90 @@ public class SearchDisplayer extends Object implements NodeAcceptor {
     private InputOutput searchIO;
     /** writer to that tab */
     private OutputWriter ow = null;
+    /** */
+    private volatile boolean justPrepared;
 
     /** Creates new SearchDisplayer */
     public SearchDisplayer() {
     }
 
-    private void setOw (String name) {
-        searchIO = IOProvider.getDefault().getIO(name, false);
-        ow = searchIO.getOut();
+    /**
+     * Displays the given nodes.
+     *
+     * @param  nodes  nodes to display
+     */
+    public void displayNodes(final Node[] nodes) {
+
+        /* Prepare the output lines: */
+        final String[] outputLines = new String[nodes.length];
+        final OutputListener[] listeners = new OutputListener[nodes.length];
+
+        for (int i = 0; i < nodes.length; i++) {
+            final Node node = nodes[i];
+            final Object o = node.getValue(ATTR_OUTPUT_LINE);
+            outputLines[i] = o instanceof String ? (String) o
+                                                 : node.getShortDescription();
+            listeners[i] = node instanceof OutputListener ? (OutputListener)node
+                                                          : null;
+        }
+
+        /* Print the output lines: */
+        final boolean requestFocus = justPrepared;
+        try {
+            EventQueue.invokeAndWait(new Runnable() {
+                public void run() {
+                    if (requestFocus) {
+                        searchIO.setFocusTaken(true);
+                    }
+                    try {
+                        for (int i = 0; i < outputLines.length; i++) {
+                            OutputListener listener = listeners[i];
+                            if (listener != null) {
+                                ow.println(outputLines[i], listener);
+                            } else {
+                                ow.println(outputLines[i]);
+                            }
+                        }
+                    } catch (Exception ex) {
+                        ErrorManager.getDefault()
+                        .notify(ErrorManager.EXCEPTION, ex);
+                    }
+                    if (requestFocus) {
+                        searchIO.setFocusTaken(false);
+                    }
+                }
+            });
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+        justPrepared = false;
     }
     
-    private void displayNode(Node node) {
-        String outputLine;
-        
-        Object o = node.getValue(ATTR_OUTPUT_LINE);
-        if (o != null && o instanceof String) {
-            outputLine = (String) o;
-        } else {
-            outputLine = node.getShortDescription();
-        }
-        try {
-            if(node instanceof OutputListener)
-                ow.println(outputLine, (OutputListener) node);
-            else
-                ow.println(outputLine);
-        } catch(IOException ioe) {
-            ioe.printStackTrace();
-        }
-    }
-
-    /** Accepted nodes should be displayed.
-     * @param nodes the nodes to consider
-     * @return <CODE>true</CODE> if so
+    /**
      */
-    public synchronized boolean acceptNodes(Node[] nodes) {
-
-        if (nodes == null) {
-            return false;
+    void prepareOutput(boolean reset) {
+        if (reset) {
+            resetOutput();
         }
-        if (nodes.length == 0) {
-            return true;
-        }
-
         if (ow == null) {
-            setOw(NbBundle.getMessage(ResultView.class,
-                                      "TITLE_SEARCH_RESULTS"));         //NOI18N
+            String name = NbBundle.getMessage(ResultView.class,
+                                            "TITLE_SEARCH_RESULTS");//NOI18N
+            searchIO = IOProvider.getDefault().getIO(name, false);
+            ow = searchIO.getOut();
         }
         searchIO.select();
-        searchIO.setFocusTaken(true);
-        displayNode(nodes[0]);
-        searchIO.setFocusTaken(false);
-        for (int i = 1; i < nodes.length; i++) {
-            displayNode(nodes[i]);
-        }
-        return true;
+        justPrepared = true;
     }
-    
-    public synchronized void resetOutput() {
+        
+    /**
+     */
+    public void resetOutput() {
         if (ow != null) {
             try {
                 ow.reset();
             } catch (IOException ioe) { // it doesn't matter here
                 ioe.printStackTrace();
             }
-            
             ow = null;
         }
     }
