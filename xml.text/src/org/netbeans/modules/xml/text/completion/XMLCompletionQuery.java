@@ -549,12 +549,29 @@ class XMLCompletionQuery implements CompletionQuery {
      * paing start tag.
      */
     private static List findStartTag(SyntaxNode text) {
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("XMLCompletionQuery.findStartTag: text=" + text);
+
         Node parent = text.getParentNode();
-        if (parent == null) return Collections.EMPTY_LIST;
-        List list = new ArrayList(1);
+        if (parent == null) {
+            return Collections.EMPTY_LIST;
+        }
+
         String name = parent.getNodeName();
+        if ( Util.THIS.isLoggable() ) /* then */ {
+            Util.THIS.debug ("    name=" + name);
+        }
+        if ( name == null ) {
+            return Collections.EMPTY_LIST;
+        }
+
         XMLResultItem res = new ElementResultItem(name);
-        list.add(res);
+        if ( Util.THIS.isLoggable() ) /* then */ {
+            Util.THIS.debug ("    result=" + res);
+        }
+
+        List list = new ArrayList(1);
+        list.add (res);
+
         return list;
     }
     
