@@ -14,7 +14,8 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="XML-Catalog config">
 
-    <testbag testattribs="full" compiler="qa-compiler" executor="ide" name="xml_catalog_full" resultsprocessor="qa-reporter">
+    <!-- Validation suite for my module -->
+    <testbag testattribs="validation,full" executor="ide" name="xml_catalog_full">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/modules/xml/catalog/CatalogTest.class"/>
@@ -22,20 +23,18 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
         
-    <testbag testattribs="fail" executor="ide" name="xml_catalog_fail" resultsprocessor="qa-reporter">
+    <testbag testattribs="fail" executor="ide" name="xml_catalog_fail">
         <testset dir="qa-functional/src">
         </testset>
     </testbag>
         
-    <testbag testattribs="dev" executor="ide" name="xml_catalog_dev" resultsprocessor="qa-reporter">
+    <testbag testattribs="dev" executor="ide" name="xml_catalog_dev">
         <testset dir="qa-functional/src">
             <patternset>
            </patternset>
         </testset>
     </testbag>    
 
-    <resultsprocessor name="qa-reporter" antfile="build.xml" target="test_report"/>
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
-    <executor name="code" antfile="build-qa-functional.xml" target="runcodetest"/>
-    <compiler name="qa-compiler" antfile="build-qa-functional.xml" target="qa-compiler" default="true"/>
+    <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
 </mconfig>
