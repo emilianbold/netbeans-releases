@@ -14,17 +14,24 @@
 package org.netbeans.modules.web.project.ui.customizer;
 
 import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.openide.util.NbBundle;
 
-public class CustomizerRun extends JPanel implements WebCustomizer.Panel {
+import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
+import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+
+public class CustomizerRun extends JPanel implements WebCustomizer.Panel, DocumentListener {
     
     // Helper for storing properties
     private WebProjectProperties webProperties;
     
+    private ServerInstance[] si;
+    
     /** Creates new form CustomizerCompile */
     public CustomizerRun() {
-        initComponents();                
+        initComponents();
     }
     
     public void initValues(WebProjectProperties webProperties) {
@@ -32,12 +39,24 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel {
         
         VisualPropertySupport vps = new VisualPropertySupport(webProperties);
         
+        ServerRegistry sr = ServerRegistry.getInstance();
+        si = sr.getServerInstances();
+        String[] serverNames = new String[si.length];
+        String[] serverValues = new String[si.length];
+		for (int i = 0; i < si.length; i++) {
+            serverNames[i] = si[i].getServer().getDisplayName() + ", " + si[i].getDisplayName();
+            serverValues[i] = si[i].getUrl();
+        }
+        
         vps.register(jTextFieldContextPath, WebProjectProperties.CONTEXT_PATH);
         vps.register(jCheckBoxDisplayBrowser, WebProjectProperties.DISPLAY_BROWSER);
         vps.register(jTextFieldRelativeURL, WebProjectProperties.LAUNCH_URL_RELATIVE);
         vps.register(jTextFieldFullURL, WebProjectProperties.LAUNCH_URL_FULL);
-        
+        vps.register(jComboBoxServer, serverNames, serverValues, WebProjectProperties.SERVER);
+
         jTextFieldRelativeURL.setEditable(jCheckBoxDisplayBrowser.isSelected());
+        jTextFieldContextPath.getDocument().addDocumentListener(this);
+        jTextFieldRelativeURL.getDocument().addDocumentListener(this);
     } 
     
     /** This method is called from within the constructor to
@@ -72,8 +91,8 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 11, 11, 11);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 11, 11, 11);
         add(jTextFieldContextPath, gridBagConstraints);
 
         jLabelServer.setLabelFor(jComboBoxServer);
@@ -84,6 +103,12 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
         add(jLabelServer, gridBagConstraints);
+
+        jComboBoxServer.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBoxServerActionPerformed(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -142,9 +167,9 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel {
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 24, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 24, 0, 0);
         add(jLabelFullURL, gridBagConstraints);
 
         jTextFieldFullURL.setEditable(false);
@@ -155,11 +180,15 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 11);
         add(jTextFieldFullURL, gridBagConstraints);
 
     }//GEN-END:initComponents
+
+    private void jComboBoxServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxServerActionPerformed
+        setFullURL();
+    }//GEN-LAST:event_jComboBoxServerActionPerformed
 
     private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxDisplayBrowserActionPerformed
         jTextFieldRelativeURL.setEditable(jCheckBoxDisplayBrowser.isSelected());
@@ -178,4 +207,30 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel {
     private javax.swing.JTextField jTextFieldRelativeURL;
     // End of variables declaration//GEN-END:variables
     
+    // Implementation of DocumentListener --------------------------------------
+    public void changedUpdate(DocumentEvent e) {
+        setFullURL();
+    }
+    
+    public void insertUpdate(DocumentEvent e) {
+        setFullURL();
+    }
+    
+    public void removeUpdate(DocumentEvent e) {
+        setFullURL();
+    }
+    // End if implementation of DocumentListener -------------------------------
+
+    private void setFullURL() {
+        int index = jComboBoxServer.getSelectedIndex();
+        StringBuffer fullURL = new StringBuffer();
+        fullURL.append(si[index].getDisplayName());
+        if (jTextFieldContextPath.getText().startsWith("/")) //NOI18N
+            fullURL.append(jTextFieldContextPath.getText().trim().substring(1));
+        else
+            fullURL.append(jTextFieldContextPath.getText().trim());
+        fullURL.append("/");
+        fullURL.append(jTextFieldRelativeURL.getText().trim());
+        jTextFieldFullURL.setText(fullURL.toString());
+    }
 }

@@ -38,8 +38,15 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
             NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_14"),
             NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_15")
         };
+        String[] jvmValues = new String[] {
+            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_11_Value"),
+            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_12_Value"),
+            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_13_Value"),
+            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_14_Value"),
+            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_JVM_JComboBox_15_Value")
+        };
 
-        vps.register(jvmComboBox, jvm, WebProjectProperties.JAVAC_TARGET);
+        vps.register(jvmComboBox, jvm, jvmValues, WebProjectProperties.JAVAC_TARGET);
         vps.register(jCheckBoxDebugInfo, WebProjectProperties.JAVAC_DEBUG);
         vps.register(jCheckBoxDeprecation, WebProjectProperties.JAVAC_DEPRECATION);
         
