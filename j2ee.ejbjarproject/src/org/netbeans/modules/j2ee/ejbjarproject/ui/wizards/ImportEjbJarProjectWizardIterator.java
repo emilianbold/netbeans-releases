@@ -78,13 +78,6 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Insta
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         
         EjbJarProjectGenerator.importProject(dirF, name, sourceFolders, testFolders, configFilesFolder, libName, j2eeLevel, serverInstanceID);
-        for (int i=0; i<sourceFolders.length; i++) {
-            FileObject srcFo = FileUtil.toFileObject(sourceFolders[i]);
-            if (srcFo != null) {
-                resultSet.add (srcFo);
-            }
-        }
-
         FileObject dir = FileUtil.toFileObject (dirF);
 
         Project earProject = (Project) wiz.getProperty(WizardProperties.EAR_APPLICATION);
