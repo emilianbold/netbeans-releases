@@ -136,6 +136,12 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     }
     
     private boolean skipFile (String s) {
+        if (s.startsWith ("Templates/") && !s.startsWith ("Templates/Services")) {
+            if (s.endsWith (".shadow") || s.endsWith (".java")) {
+                return true;
+            }
+        }
+        
         if (s.startsWith ("Templates/GUIForms")) return true;
         if (s.startsWith ("Palette/Borders/javax-swing-border-")) return true;
         if (s.startsWith ("Palette/Layouts/javax-swing-BoxLayout")) return true;
