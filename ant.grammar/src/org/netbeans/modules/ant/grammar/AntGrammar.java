@@ -21,8 +21,6 @@ import org.apache.tools.ant.module.api.IntrospectedInfo;
 
 import org.w3c.dom.*;
 
-import org.openide.util.enum.*;
-
 import org.netbeans.modules.xml.api.model.*;
 import org.netbeans.modules.xml.spi.dom.*;
 
@@ -34,22 +32,30 @@ import org.netbeans.modules.xml.spi.dom.*;
  */
 class AntGrammar implements GrammarQuery {
         
+    private static Enumeration empty;
+    private static Enumeration empty () {
+        if (empty == null) {
+            empty = Collections.enumeration (Collections.EMPTY_LIST);
+        }
+        return empty;
+    }
+    
     /**
      * Allow to get names of <b>parsed general entities</b>.
      * @return list of <code>CompletionResult</code>s (ENTITY_REFERENCE_NODEs)
      */
     public Enumeration queryEntities(String prefix) {
-        QueueEnumeration list = new QueueEnumeration();
+        ArrayList list = new ArrayList ();
         
         // add well-know build-in entity names
         
-        if ("lt".startsWith(prefix)) list.put(new MyEntityReference("lt"));
-        if ("gt".startsWith(prefix)) list.put(new MyEntityReference("gt"));
-        if ("apos".startsWith(prefix)) list.put(new MyEntityReference("apos"));
-        if ("quot".startsWith(prefix)) list.put(new MyEntityReference("quot"));
-        if ("amp".startsWith(prefix)) list.put(new MyEntityReference("amp"));
+        if ("lt".startsWith(prefix)) list.add(new MyEntityReference("lt"));
+        if ("gt".startsWith(prefix)) list.add(new MyEntityReference("gt"));
+        if ("apos".startsWith(prefix)) list.add(new MyEntityReference("apos"));
+        if ("quot".startsWith(prefix)) list.add(new MyEntityReference("quot"));
+        if ("amp".startsWith(prefix)) list.add(new MyEntityReference("amp"));
         
-        return list;
+        return java.util.Collections.enumeration (list);
     }
 
     /*
@@ -184,13 +190,13 @@ class AntGrammar implements GrammarQuery {
         } else if (ctx.getNodeType() == Node.ELEMENT_NODE) {
             ownerElement = (Element) ctx;
         }
-        if (ownerElement == null) return EmptyEnumeration.EMPTY;
+        if (ownerElement == null) return empty ();
         
         NamedNodeMap existingAttributes = ownerElement.getAttributes();        
         List possibleAttributes;
         String[] typePair = typeOf(ownerElement);
         if (typePair == null) {
-            return EmptyEnumeration.EMPTY;
+            return empty ();
         }
         String kind = typePair[0];
         String clazz = typePair[1];
@@ -208,7 +214,7 @@ class AntGrammar implements GrammarQuery {
             possibleAttributes.add("if");
             possibleAttributes.add("unless");
         } else if (kind == KIND_SPECIAL && clazz == SPECIAL_DESCRIPTION) {
-            return EmptyEnumeration.EMPTY;
+            return empty ();
         } else {
             // task, type, or data; anyway, we have the defining class
             possibleAttributes = new LinkedList();
@@ -232,18 +238,18 @@ class AntGrammar implements GrammarQuery {
         
         String prefix = ctx.getCurrentPrefix();
         
-        QueueEnumeration list = new QueueEnumeration();
+        ArrayList list = new ArrayList ();
         Iterator it = possibleAttributes.iterator();
         while ( it.hasNext()) {
             String next = (String) it.next();
             if (next.startsWith(prefix)) {
                 if (existingAttributes.getNamedItem(next) == null) {
-                    list.put(new MyAttr(next));
+                    list.add(new MyAttr(next));
                 }
             }
         }
         
-        return list;
+        return Collections.enumeration (list);
     }
     
     /**
@@ -258,15 +264,15 @@ class AntGrammar implements GrammarQuery {
     public Enumeration queryElements(HintContext ctx) {
         
         Node parent = ((Node)ctx).getParentNode();
-        if (parent == null) return EmptyEnumeration.EMPTY;
+        if (parent == null) return empty ();
         if (parent.getNodeType() != Node.ELEMENT_NODE) {
-            return EmptyEnumeration.EMPTY;
+            return empty ();
         }
         
         List elements;
         String[] typePair = typeOf((Element)parent);
         if (typePair == null) {
-            return EmptyEnumeration.EMPTY;
+            return empty ();
         }
         String kind = typePair[0];
         String clazz = typePair[1];
@@ -285,7 +291,7 @@ class AntGrammar implements GrammarQuery {
             // targets can have embedded types too, though less common:
             elements.addAll(getSortedDefs("type")); // NOI18N
         } else if (kind == KIND_SPECIAL && clazz == SPECIAL_DESCRIPTION) {
-            return EmptyEnumeration.EMPTY;
+            return empty ();
         } else {
             // some introspectable class
             if (getAntGrammar().isKnown(clazz)) {
@@ -297,16 +303,16 @@ class AntGrammar implements GrammarQuery {
                 
         String prefix = ctx.getCurrentPrefix();
         
-        QueueEnumeration list = new QueueEnumeration();
+        ArrayList list = new ArrayList ();
         Iterator it = elements.iterator();
         while ( it.hasNext()) {
             String next = (String) it.next();
             if (next.startsWith(prefix)) {
-                list.put(new MyElement(next));
+                list.add (new MyElement(next));
             }
         }
         
-        return list;                        
+        return Collections.enumeration (list);                        
     }
     
     private static SortedSet/*<String>*/ getSortedDefs(String kind) {
@@ -320,7 +326,7 @@ class AntGrammar implements GrammarQuery {
      * @return list of <code>CompletionResult</code>s (NOTATION_NODEs)
      */
     public Enumeration queryNotations(String prefix) {
-        return EmptyEnumeration.EMPTY;
+        return empty ();
     }
     
     public Enumeration queryValues(HintContext ctx) {
@@ -332,13 +338,13 @@ class AntGrammar implements GrammarQuery {
         } else if (ctx.getNodeType() == Node.ATTRIBUTE_NODE) {
             ownerAttr = (Attr)ctx;
         } else {
-            return EmptyEnumeration.EMPTY;
+            return empty ();
         }
         Element ownerElement = ownerAttr.getOwnerElement();
         String attrName = ownerAttr.getName();
         String[] typePair = typeOf(ownerElement);
         if (typePair == null) {
-            return EmptyEnumeration.EMPTY;
+            return empty ();
         }
         List/*<String>*/ choices = new ArrayList();
         
@@ -394,15 +400,15 @@ class AntGrammar implements GrammarQuery {
         
         // Create the completion:
         String prefix = ctx.getCurrentPrefix();
-        QueueEnumeration list = new QueueEnumeration();
+        ArrayList list = new ArrayList ();
         Iterator it = choices.iterator();
         while (it.hasNext()) {
             String next = (String)it.next();
             if (next.startsWith(prefix)) {
-                list.put(new MyText(next));
+                list.add (new MyText(next));
             }
         }
-        return list;
+        return Collections.enumeration (list);
     }
     
     /**
@@ -446,7 +452,7 @@ class AntGrammar implements GrammarQuery {
         // completion on text works differently from attrs:
         // the context should not be returned (#38342)
         boolean shortHeader = ctx.getNodeType() == Node.TEXT_NODE;
-        QueueEnumeration list = new QueueEnumeration();
+        ArrayList list = new ArrayList ();
         for (int i = 0; i < props.length; i++) {
             if (props[i].startsWith(propPrefix)) {
                 String text = header + props[i] + '}';;
@@ -454,10 +460,10 @@ class AntGrammar implements GrammarQuery {
                     assert text.startsWith(content) : "text=" + text + " content=" + content;
                     text = text.substring(content.length());
                 }
-                list.put(new MyText(text));
+                list.add (new MyText(text));
             }
         }
-        return list;
+        return Collections.enumeration (list);
     }
     
     /**
