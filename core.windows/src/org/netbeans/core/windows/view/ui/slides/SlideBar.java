@@ -213,6 +213,8 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     
     public void userToggledAutoHide(int tabIndex, boolean enabled) {
         commandMgr.slideIntoDesktop(tabIndex, true);
+        //#47227 - repaint the bar when removing component from bar.
+        repaint();
     }
     
     public void userTriggeredPopup(MouseEvent mouseEvent, Component clickedButton) {
