@@ -64,7 +64,9 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             
             finishConnect(dbsys, con, connection);
         } catch (Exception e) {
-            throw new DatabaseException(e.getMessage());
+            DatabaseException dbe = new DatabaseException(e.getMessage());
+            dbe.initCause(e);
+            throw dbe;
         }
     }
 
