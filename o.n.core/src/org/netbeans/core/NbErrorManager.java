@@ -75,6 +75,12 @@ public final class NbErrorManager extends ErrorManager {
 
     /** maps Throwables to java.util.List (Ann) */
     private static final Map map = new WeakHashMap (11);
+    
+    /** message to print date to */
+    private static final java.text.MessageFormat EXC_HEADER = new java.text.MessageFormat (
+        "{0}*********** Exception occurred ************ at {1,time,short} on {1,date,medium}", // NOI18N
+        java.util.Locale.ENGLISH
+    );
 
     /** The writer to the log file*/
     private PrintStream logWriter;
@@ -213,7 +219,9 @@ public final class NbErrorManager extends ErrorManager {
             if (prefix != null)
                 log.print ("[" + prefix + "] "); // NOI18N        
             String level = ex.getSeverity() == INFORMATIONAL ? "INFORMATIONAL " : "";// NOI18N
-            log.println (level + "*********** Exception occurred ************ at " + ex.getDate()); // NOI18N
+            
+            
+            log.println (EXC_HEADER.format (new Object[] { level, ex.getDate() }));
             ex.printStackTrace(log);
         }
 
