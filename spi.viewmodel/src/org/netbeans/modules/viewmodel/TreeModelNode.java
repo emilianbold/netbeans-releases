@@ -282,7 +282,7 @@ public class TreeModelNode extends AbstractNode {
 
     private void setName (String name, boolean italics) {
         if (name.startsWith ("<html>")) {
-            if ( italics && !name.contains ("<i>")) {
+            if (italics && name.indexOf ("<i>") < 0) {
                 name = "<html><i>" + name.substring (6, name.length () - 7) +
                     "</i></html>";
             }
@@ -500,7 +500,7 @@ public class TreeModelNode extends AbstractNode {
         
         String i (String text) {
             if (text.startsWith ("<html>")) {
-                if (text.contains ("<i>")) return text;
+                if (text.indexOf ("<i>") > 0) return text;
                 text = text.substring (6, text.length () - 7);
             }
             return "<html><i>" + text + "</i></html>";
