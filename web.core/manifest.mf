@@ -54,9 +54,6 @@ OpenIDE-Module-Class: Loader
 Name: org/netbeans/modules/web/context/actions/ConvertToWarAction.class
 OpenIDE-Module-Class: Action
 
-Name: org/netbeans/modules/web/context/actions/AddTagLibAction.class
-OpenIDE-Module-Class: Action
-
 Name: org/netbeans/modules/web/war/WarDataLoader.class
 OpenIDE-Module-Class: Loader
 
