@@ -137,13 +137,12 @@ public class NbSummaryPanel extends TextDisplayPanel
         
         try {
             FileService fileService = (FileService) getService(FileService.NAME);
-            String sep = fileService.getSeparator();
-            String file = nbInstallDir + sep + "_uninst" + sep + "install.log";
-            int ret = fileService.deleteFile(file);
-            file = nbInstallDir + sep + "_uninst";
-            ret = fileService.deleteDirectory(file);
-            ret = fileService.deleteDirectory(nbInstallDir);
+            logEvent(this, Log.DBG, "removeAllFiles Deleting completely: " + nbInstallDir);
+            int ret = fileService.deleteDirectory(nbInstallDir,false,true);
+            logEvent(this, Log.DBG, "removeAllFiles Done. " + nbInstallDir + " deleted.");
+            logEvent(this, Log.DBG, "removeAllFiles Deleting completely :" + j2seInstallDir);
             ret = fileService.deleteDirectory(j2seInstallDir,false,true);
+            logEvent(this, Log.DBG, "removeAllFiles Done. " + j2seInstallDir + " deleted.");
         } catch (ServiceException ex) {
             //Nothing to do. Ignore.
             System.out.println("serviceexception ex:" + ex);
