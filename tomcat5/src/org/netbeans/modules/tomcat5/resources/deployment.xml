@@ -60,4 +60,10 @@ Microsystems, Inc. All Rights Reserved.
     <!--
     incremental-deploy?, inplace-deploy?, start-server?)>
     -->
+    <!--
+    <web-context-root>
+        <xpath>/webapp</xpath>
+        <prop-name>context-param</prop-name>
+    </web-context-root>
+    -->
 </netbeans-deployment>
