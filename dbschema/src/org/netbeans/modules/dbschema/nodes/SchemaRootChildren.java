@@ -17,6 +17,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import java.util.LinkedList;
+import org.openide.ErrorManager;
 
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -110,6 +111,9 @@ public class SchemaRootChildren extends Children.Keys {
         return new Node[] { factory.createWaitNode() };
         
     // never should get here
+    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+            new Exception ("DbSchema: Error node created for object " + key + 
+                " (class " + ((key == null) ? "null" : key.getClass().getName()) + ")"));
     return new Node[] { factory.createErrorNode() };
     }
 
