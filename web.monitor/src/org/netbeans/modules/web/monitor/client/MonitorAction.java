@@ -58,6 +58,10 @@ public class MonitorAction extends CallableSystemAction {
 
     }
 
+    protected boolean asynchronous() {
+        return false;
+    }
+    
     /**
      * Starts a monitor window. This method is used by the menu item,
      * so it should verify that the execution server is running, and

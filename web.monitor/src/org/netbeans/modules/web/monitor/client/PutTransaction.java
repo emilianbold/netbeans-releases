@@ -19,6 +19,7 @@ import java.util.Enumeration;
 import java.util.StringTokenizer;
 import javax.servlet.*;
 import javax.servlet.http.*;
+import javax.swing.SwingUtilities;
 
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
@@ -131,8 +132,15 @@ public class PutTransaction extends HttpServlet {
 	    try { fout.close(); }
 	    catch(Exception ex4) { }
 	}
-	if(success && MonitorAction.tv != null && MonitorAction.tv.isOpened()) 
-	    MonitorAction.getController().addTransaction(id); 
+        final boolean success2 = success;
+        final String id2 = id;
+        // window system code must be run in AWT thread
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run () {
+                if(success2 && MonitorAction.tv != null && MonitorAction.tv.isOpened()) 
+                    MonitorAction.getController().addTransaction(id2); 
+            }
+        });
     }
 
     // PENDING - deal better with this
