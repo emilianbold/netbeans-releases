@@ -52,6 +52,8 @@ public class GrabTableAction extends DatabaseAction
 				} 
 			}
 
+			System.out.println(cmd.getCommand());
+
 			// Get filename
 
 			JFileChooser chooser = new JFileChooser();

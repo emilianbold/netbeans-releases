@@ -146,12 +146,28 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
 		}
 		
 		Sheet.Set set = getSheet().get(Sheet.PROPERTIES);
-		Node.Property dbprop = set.get(DatabaseNodeInfo.DATABASE);
-		Node.Property drvprop = set.get(DatabaseNodeInfo.DRIVER);
-		Node.Property usrprop = set.get(DatabaseNodeInfo.USER);
-		Node.Property rememberprop = set.get(DatabaseNodeInfo.REMEMBER_PWD);
 		
 		try {
+			
+			Node.Property dbprop = set.get(DatabaseNodeInfo.DATABASE);
+			PropertySupport newdbprop = createPropertySupport(dbprop.getName(), dbprop.getValueType(), dbprop.getDisplayName(), dbprop.getShortDescription(), info, !connecting);
+			set.put(newdbprop);
+			firePropertyChange("db",dbprop,newdbprop);
+
+			Node.Property drvprop = set.get(DatabaseNodeInfo.DRIVER);
+			PropertySupport newdrvprop = createPropertySupport(drvprop.getName(), drvprop.getValueType(), drvprop.getDisplayName(), drvprop.getShortDescription(), info, !connecting);
+			set.put(newdrvprop);
+			firePropertyChange("driver",drvprop,newdrvprop);
+
+			Node.Property usrprop = set.get(DatabaseNodeInfo.USER);
+			PropertySupport newusrprop = createPropertySupport(usrprop.getName(), usrprop.getValueType(), usrprop.getDisplayName(), usrprop.getShortDescription(), info, !connecting);
+			set.put(newusrprop);
+			firePropertyChange("user",usrprop,newusrprop);
+
+			Node.Property rememberprop = set.get(DatabaseNodeInfo.REMEMBER_PWD);
+			PropertySupport newrememberprop = createPropertySupport(rememberprop.getName(), rememberprop.getValueType(), rememberprop.getDisplayName(), rememberprop.getShortDescription(), info, connecting);
+			set.put(newrememberprop);
+			firePropertyChange("rememberpassword",rememberprop,newrememberprop);
 
 			if (!connecting) {
 				children.remove(children.getNodes());
@@ -279,19 +295,5 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-/*		
-		PropertySupport newdbprop = createPropertySupport(dbprop.getName(), dbprop.getValueType(), dbprop.getDisplayName(), dbprop.getShortDescription(), info, !connecting);
-		set.put(newdbprop);
-		firePropertyChange("db",dbprop,newdbprop);
-		PropertySupport newdrvprop = createPropertySupport(drvprop.getName(), drvprop.getValueType(), drvprop.getDisplayName(), drvprop.getShortDescription(), info, !connecting);
-		set.put(newdrvprop);
-		firePropertyChange("driver",drvprop,newdrvprop);
-		PropertySupport newusrprop = createPropertySupport(usrprop.getName(), usrprop.getValueType(), usrprop.getDisplayName(), usrprop.getShortDescription(), info, !connecting);
-		set.put(newusrprop);
-		firePropertyChange("user",usrprop,newusrprop);
-		PropertySupport newrememberprop = createPropertySupport(rememberprop.getName(), rememberprop.getValueType(), rememberprop.getDisplayName(), rememberprop.getShortDescription(), info, connecting);
-		set.put(newrememberprop);
-		firePropertyChange("rememberpassword",rememberprop,newrememberprop);
-*/
 	}
 }
