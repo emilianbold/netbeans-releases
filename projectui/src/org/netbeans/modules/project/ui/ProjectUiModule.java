@@ -27,7 +27,6 @@ public class ProjectUiModule extends ModuleInstall {
     public void restored() {
         Hacks.hackFolderActions();
         Hacks.keepCurrentProjectNameUpdated();
-        //Hacks.setDefaultExcludesList();
     }
     
     public void close() {

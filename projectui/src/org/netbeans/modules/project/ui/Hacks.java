@@ -113,22 +113,4 @@ public class Hacks {
         }
     }
     
-    /**
-     * Set the disk roots by default to ignore the same junk files that Ant
-     * itself ignores by default.
-     * CURRENTLY UNUSED: cf #40400, #42050
-     * @author Jesse Glick
-     */
-    static void setDefaultExcludesList() {
-        if (System.getProperty(DEFAULT_EXCLUDES_REGEXP_PROP) == null) {
-            System.setProperty(DEFAULT_EXCLUDES_REGEXP_PROP, DEFAULT_EXCLUDES_REGEXP);
-        }
-    }
-    /** @see org.netbeans.core.ExLocalFileSystem#IGNORED_FILES_PROP */
-    private static final String DEFAULT_EXCLUDES_REGEXP_PROP = "netbeans.ignored.files"; // NOI18N
-    /** @see org.apache.tools.ant.DirectoryScanner#DEFAULTEXCLUDES */
-    private static final String DEFAULT_EXCLUDES_REGEXP =
-        "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store))$|^\\.[#_]|~$"; // NOI18N
-    
-    
 }
