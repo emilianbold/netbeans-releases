@@ -440,6 +440,7 @@ public class JScrollPaneOperator extends JComponentOperator
      * Returns operator used for horizontal scrollbar.
      */
     public JScrollBarOperator getHScrollBarOperator() {
+	initOperators();
 	return(hScrollBarOper);
     }
 
@@ -447,6 +448,7 @@ public class JScrollPaneOperator extends JComponentOperator
      * Returns operator used for vertical scrollbar.
      */
     public JScrollBarOperator getVScrollBarOperator() {
+	initOperators();
 	return(vScrollBarOper);
     }
 
@@ -463,7 +465,7 @@ public class JScrollPaneOperator extends JComponentOperator
 	Point toPoint = SwingUtilities.
 	    convertPoint(comp, x, y, getViewport().getView());
 	initOperators();
-	if(hScrollBarOper.getSource().isVisible()) {
+	if(hScrollBarOper != null && hScrollBarOper.getSource().isVisible()) {
 	    if(toPoint.x < hScrollBarOper.getValue()) {
 		return(false);
 	    }
@@ -474,7 +476,7 @@ public class JScrollPaneOperator extends JComponentOperator
 		       hScrollBarOper.getValue() + view.getWidth());
 	    }
 	}
-	if(vScrollBarOper.getSource().isVisible()) {
+	if(vScrollBarOper != null && vScrollBarOper.getSource().isVisible()) {
 	    if(toPoint.y < vScrollBarOper.getValue()) {
 		return(false);
 	    }
