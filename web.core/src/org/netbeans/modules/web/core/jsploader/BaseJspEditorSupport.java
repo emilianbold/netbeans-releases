@@ -137,7 +137,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
         Reader reader = null;
         try {
-            reader = new InputStreamReader(stream, getObjectEncoding());
+            reader = new InputStreamReader(stream, getObjectEncoding(false));
             kit.read(reader, doc, 0);
         }
         finally {
@@ -201,8 +201,8 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         obj.removeSaveCookie();
     }
     
-    protected String getObjectEncoding() {
-        encoding =  ((JspDataObject)getDataObject()).getFileEncoding( (getDocument().getLength() > 0));
+    protected String getObjectEncoding(boolean useEditor) {
+        encoding =  ((JspDataObject)getDataObject()).getFileEncoding( useEditor);
         return encoding;
     }
     
@@ -228,7 +228,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
      */
     private void saveDocument(boolean parse, boolean forceSave) throws IOException {
         if (forceSave || isModified()) {
-            getObjectEncoding();
+            getObjectEncoding(true);
             super.saveDocument();
             if (parse) {
                 TagLibParseSupport sup = (TagLibParseSupport)getDataObject().getCookie(TagLibParseSupport.class);
