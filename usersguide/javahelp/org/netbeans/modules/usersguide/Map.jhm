@@ -435,6 +435,11 @@ the Options window:-->
 <!-- csh page for Form Editor property Variables Modifier (also for the Java module's "Modifiers" property) :-->
 <mapID target="org.openide.explorer.propertysheet.editors.ModifierEditor" url="gui/gui_modifiers.html" /> 
 
+<!--TODO - map these 4 to appropriate form topics or have removed-->
+<mapID target="gui.modes" url="pending.html" />
+<mapID target="gui.components.inplace-editing" url="pending.html" />
+<mapID target="gui.components.designing" url="pending.html" />
+<mapID target="gui.formeditor" url="pending.html" />
 
 <mapID target="gui.source.modifying.property" url="gui/gui_modifysource.html" />
 
@@ -496,13 +501,36 @@ the Options window:-->
 <!--ID for Java Elements Options window node:-->
     <mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceOptions" url="files/files_elements.html" />
     
-<!--Remove PrintSettings ID:-->
-  <mapID target="org.openide.text.PrintSettings" url="pending.html" />
+<!--remove ID issue 54601:-->
+    <mapID target="org.netbeans.core.output.OutputTab" url="pending.html" />
 
-    <!--Remove ID:-->  
-  <mapID target="org.openide.nodes.BeanNode" url="pending.html" />
+    
+  <!--Remove ID:-->
 
+   <!-- QUESTION - reclaim these IDs? they are currently overridden by gui.connecting.code:-->
+   <mapID target="org.netbeans.modules.form.ConnectionWizard1" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.ConnectionWizard2" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.ConnectionWizard3" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.FormCustomEditor.tabbedPane" url="pending.html" />
 
+<!--remove 6 IDs ; issue Issue 54893 filed -->  
+   <mapID target="org.netbeans.editor.ActionFactory$FormatAction" url="pending.html" />
+   <mapID target="org.netbeans.editor.ActionFactory$RemoveSelectionAction" url="pending.html" />
+   <mapID target="org.netbeans.editor.BaseKit$CutAction" url="pending.html" />
+   <mapID target="org.netbeans.editor.BaseKit$CopyAction" url="pending.html" />
+   <mapID target="org.netbeans.editor.BaseKit$PasteAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.editor.options.BasePrintOptions" url="pending.html" />
+   <mapID target="org.netbeans.modules.editor.options.BaseOptions" url="pending.html" />
+
+   <!-- remove id; Issue 54894-->
+      <mapID target="org.netbeans.modules.form.editors2.CustomTableModelEditor" url="pending.html" /> 
+   
+<!--for Modules node in Options window:-->
+   <mapID target="org.netbeans.core.ui.ModuleNode" url="pending.html" />
+   <mapID target="org.netbeans.core.ui.ModuleNode$Item" url="pending.html" />   
+   <mapID target="org.netbeans.core.ui.ModuleNode$CategoryNode" url="pending.html" />   
+      
+   
 <!--OptionsAction is Options window:--> 
    <mapID target="org.netbeans.core.actions.OptionsAction" url="configure/configure_options.html" /> 
 <!--root Options node + category nodes:-->
@@ -514,13 +542,10 @@ the Options window:-->
 <!--nodes in Options | System | Object Types:-->
    <mapID target="org.netbeans.core.LoaderPoolNode$LoaderPoolItemNode" url="files/files_unknown.html" /> 
    <mapID target="objects.object-types" url="files/files_unknown.html" /> 
-
-
-
-      
+     
    <mapID target="org.netbeans.core.MenuFolderNode" url="configure/workspace/menu_customize.html" /> 
+   <mapID target="org.netbeans.core.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
 
-   
    <!--nodes for Diff Settings and Diff and Merge Types:-->
    <mapID target="org.netbeans.modules.diff.DiffSettings" url="files/files_diff.html" />
    <mapID target="org.netbeans.modules.diff.Diff.types" url="files/files_diff.html" />
@@ -536,9 +561,6 @@ the Options window:-->
 <!--possibly remap the following target to configure_options.html :-->
    <mapID target="org.netbeans.core.IDESettings" url="configure/system_settings.html" /> 
 
-   <mapID target="org.netbeans.core.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
-
-
    <mapID target="org.netbeans.core.execution.ProcessNode" url="files/files_runtime.html" /> 
    <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="files/files_runtime.html" /> 
    <mapID target="org.netbeans.core.execution.ProcessNodeItem$TerminateProcessAction" url="files/files_runtime.html" /> 
@@ -547,41 +569,19 @@ the Options window:-->
  <!--TODO: add a CSH topic for these nodes; Look & Feel / Menu Bar; Toobars:-->  
    <mapID target="org.netbeans.core.windows.services.MenuFolderNode" url="configure/workspace/menu_customize.html" /> 
    <mapID target="org.netbeans.core.windows.services.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
-      
-<!--remove ID issue 54601:-->
-    <mapID target="org.netbeans.core.output.OutputTab" url="pending.html" />
 
-  
    <mapID target="org.netbeans.modules.httpserver.HttpServerSettings" url="webbrowser/httpserver-options.html" />
-
   
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.installBean" url="beans/adding.html" />
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.selectPaletteCategory" url="beans/adding.html" />
 
-
-
-<!-- QUESTION - reclaim these IDs? they are currently overridden by gui.connecting.code:-->
-   <mapID target="org.netbeans.modules.form.ConnectionWizard1" url="pending.html" />
-   <mapID target="org.netbeans.modules.form.ConnectionWizard2" url="pending.html" />
-   <mapID target="org.netbeans.modules.form.ConnectionWizard3" url="pending.html" />
-
-   <mapID target="org.netbeans.modules.form.FormCustomEditor.tabbedPane" url="pending.html" />
-
-   
    <mapID target="org.netbeans.modules.javadoc.comments.CorrectJavaDocAction" url="javadoc/accuracy.html" />
 
    <mapID target="javadoc.auto.comment" url="javadoc/auto_comment_window.html" />
 <!--This ID is used for CSH as well for the Javadoc Index Search window:-->
       <mapID target="javadoc.search.window" url="javadoc/show_in_editor.html" />
-  
-
-
-   
-   <mapID target="org.netbeans.modules.editor.options.BaseOptions" url="pending.html" />
-   <mapID target="org.netbeans.modules.editor.options.BasePrintOptions" url="pending.html" />
 
    <mapID target="org.netbeans.modules.vcscore.settings.GeneralVcsSettingsNode" url="vcs-nb/vcs_configure.html" />
-
 
    <!--Begin helpIDs for Versioning Window:-->
    <mapID target="org.netbeans.modules.diff.PatchAction" url="vcs-nb/vcs_diff.html" />
@@ -593,13 +593,6 @@ the Options window:-->
 <!--Help button on synchronize  dialog-->
    <mapID target="java.sync.csh.confirmchanges" url="java/synchronizing/new-interface.html" /> 
 
-<!--remove IDs-->  
-   <mapID target="org.netbeans.editor.ActionFactory$FormatAction" url="pending.html" />
-   <mapID target="org.netbeans.editor.ActionFactory$RemoveSelectionAction" url="pending.html" />
-   <mapID target="org.netbeans.editor.BaseKit$CutAction" url="pending.html" />
-   <mapID target="org.netbeans.editor.BaseKit$CopyAction" url="pending.html" />
-   <mapID target="org.netbeans.editor.BaseKit$PasteAction" url="pending.html" />
-
    <mapID target="org.netbeans.modules.autoupdate.XMLAutoupdateType" url="configure/modules/autoupdate.html" />
    <mapID target="org.netbeans.modules.autoupdate.Settings" url="configure/modules/autoupdate.html" />
    <mapID target="org.netbeans.modules.autoupdate.ModuleAutoUpdater.UpdateAction" url="configure/modules/autoupdate.html" />
@@ -607,7 +600,6 @@ the Options window:-->
 
       <!--TODO - help topic for Actions dialog; if topic is written, close 39369: -->   
    <mapID target="org.netbeans.beaninfo.LoaderActionsPanel" url="pending.html" />
-
    
    <mapID target="org.netbeans.core.actions.ConfigureShortcutsAction" url="shortcuts/kybdshortcuts.html" />
 
@@ -615,13 +607,8 @@ the Options window:-->
 
    <!--ID used for random windows that F1 is clicked on:-->
    <mapID target="org.openide.windows.TopComponent" url="pending.html" /> 
-   
-<!--for Modules node in Options window:-->
-   <mapID target="org.netbeans.core.ui.ModuleNode" url="pending.html" />
-   <mapID target="org.netbeans.core.ui.ModuleNode$Item" url="pending.html" />   
-   <mapID target="org.netbeans.core.ui.ModuleNode$CategoryNode" url="pending.html" />   
 
-<!--from j2eeserver module-->
+   <!--from j2eeserver module-->
   <mapID target="credits_html" url="credits.html" />
   <mapID target="general_about_the_j2eeserver_module_html" url="j2eeserver/general/about_the_j2eeserver_module.html" />
   <mapID target="glossary_deploymentdesc_html" url="j2eeserver/glossary/deploymentdesc.html" />
@@ -641,15 +628,6 @@ the Options window:-->
   <mapID target="org.netbeans.core.actions.OptionsAction$TemplatesSubnode" url="pending.html" />
   <!--for Services node and its subnodes in Templates folder:-->
   <mapID target="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeServices" url="pending.html" />
-
-
-<!--remove 6 IDs below-->
-  <mapID target="org.netbeans.beaninfo.editors.InsetsCustomEditor" url="pending.html" /> 
-   <mapID target="org.netbeans.beaninfo.editors.PointCustomEditor" url="pending.html" /> 
-   <mapID target="org.netbeans.beaninfo.editors.RectangleCustomEditor" url="pending.html" />
-   <mapID target="org.netbeans.beaninfo.editors.StringCustomEditor" url="pending.html" />
-   <mapID target="org.netbeans.beaninfo.editors.CustomTableModelEditor" url="pending.html" /> 
-   <mapID target="org.netbeans.beaninfo.editors.DimensionCustomEditor" url="pending.html" /> 
 
    <!--Write topic to say what you can do with Actions pool?:-->
    <mapID target="org.netbeans.core.ActionsPoolNode" url="pending.html" />
@@ -719,31 +697,7 @@ right now the IDs don't seem towork:-->
 <mapID target="org.netbeans.modules.xml.tools.actions.ValidateAction" url="xml/xml_validate.html" />
 <mapID target="org.netbeans.modules.xml.tools.doclet.DocletAction" url="xml/dtd/dtd_document.html" />
 
-<!--<mapID target="org.openide.loaders.XMLDataObject"           url="xml/xmlnodes.html" />-->
-<!--<mapID target="org.netbeans.modules.xml.core.XMLDataObject" url="xml/xmlnodes.html" />-->
-<!--<mapID target="org.netbeans.modules.xml.core.DTDDataObject" url="xml/editviewdtd.html" />-->
-<!--<mapID target="org.netbeans.modules.css.actions.CopyStyleAction$HTML" url="xml/xmlnodes.html" />-->
-<!--<mapID target="org.netbeans.modules.xsl.XSLDataObject" url="xml/xslnodes.html" />-->
-<!--<mapID target="org.netbeans.modules.xml.schema.SchemaObject" url="xml/schemanodes.html" />-->
-<!--<mapID target="org.netbeans.modules.xml.core.EntityDataObject" url="xml/parsedentities.html" />-->
-<!--TODO redo wizard pages in new style guidelines -->
-
-<!--<mapID target="org.netbeans.modules.css.actions.CopyStyleAction$XML" url="xml/xmlnodes.html" />-->
-<!--<mapID target="org.netbeans.modules.xml.core.actions.CollectDTDAction" url="xml/xmlnodes.html" />-->
-<!--<mapID target="org.netbeans.modules.xml.core.actions.CollectXMLAction" url="xml/xmlnodes.html" />-->
-<!--<mapID target="org.netbeans.modules.xml.tools.actions.CheckAction" url="xml/xmlnodes.html" />-->
-<!--<mapID target="org.netbeans.modules.xml.tools.actions.CheckDTDAction" url="xml/xmlnodes.html" />-->
-<!--<mapID target="org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDOMScannerAction" url="xml/xmlnodes.html" />-->
-<!--<mapID target="org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDTDAction" url="xml/xmlnodes.html" />-->
-<!--<mapID target="org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDocumentHandlerAction" url="xml/xmlnodes.html" />:-->
-
 <mapID target="org.netbeans.modules.xsl.actions.TransformAction" url="xml/xsl/xsl_transform.html" />
-<!--these IDs are turned off :
-<mapID target="org.netbeans.modules.xml.tools.generator.SAXGeneratorVersionPanel"     url="xml/sax/sax_generate.html" />    
-<mapID target="org.netbeans.modules.xml.tools.generator.SAXGeneratorMethodPanel"     url="xml/sax/sax_generate.html" />    
-<mapID target="org.netbeans.modules.xml.tools.generator.SAXGeneratorParsletPanel"     url="xml/sax/sax_generate.html" />    
-<mapID target="org.netbeans.modules.xml.tools.generator.SAXGeneratorFilePanel"     url="xml/sax/sax_generate.html" />    
-<mapID target="org.netbeans.modules.xml.catalog.CatalogMounterPanel"     url="xml/catalog/xmlcatalog_mount.html" />    -->
 
 <mapID target="org.netbeans.modules.xml.core.settings.CoreSettings"     url="xml/xml_settings.html" />    
 <mapID target="org.netbeans.modules.xml.core.settings"     url="xml/xml_settings.html" />    
