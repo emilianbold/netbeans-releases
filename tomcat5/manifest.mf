@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.tomcat5/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/tomcat5/resources/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/tomcat5/resources/layer.xml
-OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Provides: org.netbeans.modules.tomcat5
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.j2eeserver/3,

@@ -4,5 +4,5 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/debugger/Bundle.propertie
 OpenIDE-Module-Install: org/netbeans/modules/debugger/multisession/EnterpriseModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/debugger/resources/mf-layer.xml
 OpenIDE-Module-Requires: org.openide.execution.ExecutionEngine, org.openide.windows.IOProvider
-OpenIDE-Module-Specification-Version: 2.10
+OpenIDE-Module-Specification-Version: 2.11
 

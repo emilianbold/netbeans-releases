@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.image/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/image/Bundle.properties
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.20
-OpenIDE-Module-Specification-Version: 1.11
+OpenIDE-Module-Specification-Version: 1.12
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/image/Layer.xml
 
