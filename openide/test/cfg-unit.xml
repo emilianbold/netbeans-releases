@@ -109,6 +109,9 @@ Microsystems, Inc. All Rights Reserved.
 		
                 <!-- run also window system tests -->
                 <include name="org/openide/windows/*Test.class"/>
+		
+                <!-- run also wizard's tests -->
+                <include name="org/openide/WizardDescTest.class"/>
             </patternset>
         </testset>      
     </testbag>
