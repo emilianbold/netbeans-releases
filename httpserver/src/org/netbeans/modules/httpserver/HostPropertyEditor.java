@@ -77,6 +77,8 @@ public class HostPropertyEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  5    Gandalf   1.4         6/22/99  Petr Jiricka    
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----

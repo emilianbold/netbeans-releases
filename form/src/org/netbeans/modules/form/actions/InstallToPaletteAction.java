@@ -102,6 +102,8 @@ public class InstallToPaletteAction extends CookieAction {
 
 /*
  * Log
+ *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  2    Gandalf   1.1         7/22/99  Ian Formanek    Is enabled only on 
  *       reasonable objects
  *  1    Gandalf   1.0         7/18/99  Ian Formanek    

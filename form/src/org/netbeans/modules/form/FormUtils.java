@@ -388,6 +388,8 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  20   Gandalf   1.19        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  19   Gandalf   1.18        10/5/99  Ian Formanek    cloneObject added
  *  18   Gandalf   1.17        9/17/99  Ian Formanek    Removed obsoleted code, 
  *       findCommonAncestor method added

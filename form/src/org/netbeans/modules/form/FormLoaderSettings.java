@@ -452,6 +452,8 @@ public class FormLoaderSettings extends SystemOption {
 
 /*
  * Log
+ *  16   Gandalf   1.15        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  15   Gandalf   1.14        9/12/99  Ian Formanek    Fixed bug 3530 - We do 
  *       not support having a null layout.
  *  14   Gandalf   1.13        8/1/99   Ian Formanek    Output Details property 

@@ -53,16 +53,16 @@ public class Operator {
               }    
               if ((e instanceof VMStartEvent) && (starter != null)) {
                 starter.run ();
-                System.out.println ("Operator.start VM");          
+                //S ystem.out.println ("Operator.start VM");          
                 continue;
               }
               Executor exec = null;
               if (e.request () == null) {
-                System.out.println ("EVENT: " + e + " REQUEST: null");          
+                //S ystem.out.println ("EVENT: " + e + " REQUEST: null");          
               } else 
                 exec = (Executor) e.request ().getProperty ("executor");
               
-              printEvent (e, exec);
+              //printEvent (e, exec);
 
               // safe invocation of user action
               if (exec != null) 
@@ -74,7 +74,7 @@ public class Operator {
                   ex.printStackTrace ();
                 }
             }
-            System.out.println ("END (" + set.suspendPolicy () + ") ===========================================================================");
+            //S ystem.out.println ("END (" + set.suspendPolicy () + ") ===========================================================================");
             if (resume) {
               resume = false;
               virtualMachine.resume ();
@@ -124,6 +124,9 @@ public class Operator {
 
 /*
  * Log
+ *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  4    Gandalf   1.3         9/28/99  Jan Jancura     
  *  3    Gandalf   1.2         9/28/99  Jan Jancura     
  *  2    Gandalf   1.1         9/2/99   Jan Jancura     
  *  1    Gandalf   1.0         7/13/99  Jan Jancura     

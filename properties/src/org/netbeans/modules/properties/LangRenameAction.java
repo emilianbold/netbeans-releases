@@ -78,3 +78,14 @@ public class LangRenameAction extends RenameAction {
   }
 }
 
+
+/*
+ * <<Log>>
+ *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  3    Gandalf   1.2         6/10/99  Petr Jiricka    
+ *  2    Gandalf   1.1         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
+ *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
+ * $
+ */

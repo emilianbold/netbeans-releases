@@ -67,6 +67,8 @@ public class SearchDocAction extends CallableSystemAction {
 
 /*
  * Log
+ *  13   Gandalf   1.12        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  12   Gandalf   1.11        8/17/99  Petr Hrebejk    IndexSearch window 
  *       serialization
  *  11   Gandalf   1.10        8/13/99  Petr Hrebejk    Exception icopn added & 

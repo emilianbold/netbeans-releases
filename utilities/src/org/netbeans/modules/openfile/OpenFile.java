@@ -422,3 +422,48 @@ class OpenFile extends Object {
   }
   
 }
+
+/*
+ * Log
+ *  23   Gandalf   1.22        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  22   Gandalf   1.21        10/10/99 Petr Hamernik   console debug messages 
+ *       removed.
+ *  21   Gandalf   1.20        8/27/99  Jesse Glick     Fixed #3628--opening a 
+ *       file which was just created on disk can fail.
+ *  20   Gandalf   1.19        8/17/99  Jesse Glick     Changed handling of 
+ *       return status code to be more immediate and simplified. Fixes #2420 and
+ *       #3297.
+ *  19   Gandalf   1.18        7/29/99  Ian Formanek    Improved appearance
+ *  18   Gandalf   1.17        7/19/99  Jesse Glick     Fixed mount dialog to 
+ *       use DialogDescriptor, not WizardDescriptor.
+ *  17   Gandalf   1.16        7/10/99  Jesse Glick     Open File module moved 
+ *       to core.
+ *  16   Gandalf   1.15        7/10/99  Jesse Glick     Tweaks.
+ *  15   Gandalf   1.14        7/10/99  Jesse Glick     Mount-point dialog 
+ *       works.
+ *  14   Gandalf   1.13        7/10/99  Jesse Glick     Changing the mounting 
+ *       algorithm.
+ *  13   Gandalf   1.12        7/10/99  Jesse Glick     Splitting server from 
+ *       opening functionality, etc.
+ *  12   Gandalf   1.11        7/10/99  Jesse Glick     Sundry clean-ups (mostly
+ *       bundle usage).
+ *  11   Gandalf   1.10        6/26/99  Jesse Glick     
+ *  10   Gandalf   1.9         6/25/99  Jesse Glick     Installing Open File 
+ *       menu item in File menu.
+ *  9    Gandalf   1.8         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
+ *  8    Gandalf   1.7         5/25/99  Jesse Glick     Comments.
+ *  7    Gandalf   1.6         5/25/99  Jesse Glick     Added -wait.
+ *  6    Gandalf   1.5         5/25/99  Jaroslav Tulach Waits for notification 
+ *       that the open command succeeded.
+ *  5    Gandalf   1.4         5/22/99  Jesse Glick     Licenses.
+ *  4    Gandalf   1.3         5/22/99  Jesse Glick     Handling options, and 
+ *       doc.
+ *  3    Gandalf   1.2         5/22/99  Jesse Glick     Support for opening 
+ *       archive files, and also better display for root folders.
+ *  2    Gandalf   1.1         5/22/99  Jesse Glick     If Java file does not 
+ *       exist in mounted fs, tries to mount it in the correct package.
+ *  1    Gandalf   1.0         5/19/99  Jesse Glick     
+ * $
+ */

@@ -33,6 +33,8 @@ public interface FormAwareEditor {
 
 /*
  * Log
+ *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  2    Gandalf   1.1         9/12/99  Ian Formanek    FormAwareEditor.setRADComponent
  *        changes
  *  1    Gandalf   1.0         5/23/99  Ian Formanek    

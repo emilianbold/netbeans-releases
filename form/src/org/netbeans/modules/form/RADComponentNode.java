@@ -357,6 +357,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   */
   public Transferable clipboardCut () throws java.io.IOException {
     final RADComponent comp = component;
+    comp.storeName ();
     destroy (); // delete node and component from form
     return new RADTransferable (RAD_COMPONENT_CUT_FLAVOR, component);
   }
@@ -726,6 +727,8 @@ static final long serialVersionUID =3851021533468196849L;
 
 /*
  * Log
+ *  41   Gandalf   1.40        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  40   Gandalf   1.39        10/6/99  Ian Formanek    Implemented copying of 
  *       components (first cut). Fixes bug 2309 - Copy doesn't work over 
  *       Component and Bug 2629 - If you copy and paste some component in 

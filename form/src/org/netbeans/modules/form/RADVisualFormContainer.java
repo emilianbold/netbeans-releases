@@ -459,6 +459,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
 /*
  * Log
+ *  16   Gandalf   1.15        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  15   Gandalf   1.14        10/9/99  Ian Formanek    Fixed bug 4045 - 
  *       Exception while opening form with menus. The form did not open due to 
  *       this exception.

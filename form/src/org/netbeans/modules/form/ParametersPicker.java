@@ -554,6 +554,8 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
 /*
  * Log
+ *  15   Gandalf   1.14        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  14   Gandalf   1.13        10/10/99 Ian Formanek    Removed debug printlns
  *  13   Gandalf   1.12        8/15/99  Ian Formanek    Further finetuned last 
  *       change

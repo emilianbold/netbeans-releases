@@ -54,3 +54,20 @@ static final long serialVersionUID =-3424129228987962529L;
   }
   
 }
+
+/*
+ * Log
+ *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  6    Gandalf   1.5         8/18/99  Jesse Glick     Compilation error.
+ *  5    Gandalf   1.4         8/9/99   Ian Formanek    Generated Serial Version
+ *       UID
+ *  4    Gandalf   1.3         7/10/99  Jesse Glick     Open File module moved 
+ *       to core.
+ *  3    Gandalf   1.2         7/10/99  Jesse Glick     Splitting server from 
+ *       opening functionality, etc.
+ *  2    Gandalf   1.1         7/10/99  Jesse Glick     Sundry clean-ups (mostly
+ *       bundle usage).
+ *  1    Gandalf   1.0         6/25/99  Jesse Glick     
+ * $
+ */

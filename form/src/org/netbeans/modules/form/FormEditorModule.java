@@ -510,6 +510,8 @@ public class FormEditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  34   Gandalf   1.33        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  33   Gandalf   1.32        10/1/99  Petr Hrebejk    org.openide.modules.ModuleInstall
  *        changed to class + some methods added
  *  32   Gandalf   1.31        9/13/99  Ian Formanek    Fixed bug 3182 - 

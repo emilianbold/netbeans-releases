@@ -80,6 +80,8 @@ class GetJavaWord extends Object {
 
 /* 
  * Log
+ *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  6    Gandalf   1.5         7/30/99  Petr Hrebejk    Search uses 
  *       FileSystemCapabilities
  *  5    Gandalf   1.4         7/26/99  Petr Hrebejk    AutoComment tool 

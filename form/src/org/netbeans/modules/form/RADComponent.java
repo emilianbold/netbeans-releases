@@ -74,6 +74,8 @@ public class RADComponent {
   private FormManager2 formManager;
   private EventsList eventsList;
   private String gotoMethod;
+  
+  private String storedName; // component name preserved between Cut and Paste
 
   // FINALIZE DEBUG METHOD
   public void finalize () throws Throwable {
@@ -241,6 +243,16 @@ public class RADComponent {
     if (getNodeReference () != null) {
       getNodeReference ().updateName ();
     }
+  }
+  
+  /** @return component name preserved between Cut and Paste */
+  String getStoredName () {
+    return storedName;
+  }
+  
+  /** Can be called to store the component name into special variable to preserve it between Cut and Paste */
+  void storeName () {
+    storedName = componentName;
   }
   
   /** Allows to add an auxiliary <name, value> pair, which is persistent in Gandalf.
@@ -1264,6 +1276,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  56   Gandalf   1.55        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  55   Gandalf   1.54        9/24/99  Ian Formanek    Fixed bug with 
  *       setChanged flag on properties
  *  54   Gandalf   1.53        9/24/99  Ian Formanek    New system of changed 

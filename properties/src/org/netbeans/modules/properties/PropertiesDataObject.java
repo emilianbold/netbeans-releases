@@ -235,6 +235,8 @@ public final class PropertiesDataObject extends MultiDataObject {
 
 /*
  * <<Log>>
+ *  22   Gandalf   1.21        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  21   Gandalf   1.20        10/12/99 Petr Jiricka    
  *  20   Gandalf   1.19        9/13/99  Petr Jiricka    MIME type changed to a 
  *       constant

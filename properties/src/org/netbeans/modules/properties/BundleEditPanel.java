@@ -408,3 +408,11 @@ private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FI
   // End of variables declaration//GEN-END:variables
 
 }
+/*
+ * <<Log>>
+ *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  2    Gandalf   1.1         10/12/99 Petr Jiricka    
+ *  1    Gandalf   1.0         8/18/99  Petr Jiricka    
+ * $
+ */

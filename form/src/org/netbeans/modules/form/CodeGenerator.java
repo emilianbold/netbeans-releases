@@ -70,6 +70,8 @@ public abstract class CodeGenerator {
 
 /*
  * Log
+ *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  7    Gandalf   1.6         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  6    Gandalf   1.5         5/15/99  Ian Formanek    

@@ -134,6 +134,8 @@ public final class PropertiesDataLoader extends UniFileLoader {
 
 /*
 * <<Log>>
+*  14   Gandalf   1.13        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
+*       Microsystems Copyright in File Comment
 *  13   Gandalf   1.12        10/8/99  Petr Jiricka    Fixed serialization of 
 *       extensions.
 *  12   Gandalf   1.11        10/1/99  Petr Jiricka    Changes in  initialize()

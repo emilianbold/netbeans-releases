@@ -203,6 +203,8 @@ public class SelectLayoutAction extends CookieAction {
 }
 /*
  * Log
+ *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  7    Gandalf   1.6         7/20/99  Jesse Glick     Context help.
  *  6    Gandalf   1.5         6/28/99  Ian Formanek    Fixed positioning 
  *       problems with popup menu

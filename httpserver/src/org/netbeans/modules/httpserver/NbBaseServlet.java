@@ -307,6 +307,8 @@ public abstract class NbBaseServlet extends HttpServlet {
 
 /*
  * Log
+ *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  3    Gandalf   1.2         10/7/99  Petr Jiricka    Removed debug println
  *  2    Gandalf   1.1         10/4/99  Petr Jiricka    
  *  1    Gandalf   1.0         9/30/99  Petr Jiricka    

@@ -250,6 +250,8 @@ public class BeanSupport {
 
 /*
  * Log
+ *  12   Gandalf   1.11        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  11   Gandalf   1.10        9/24/99  Ian Formanek    getDefaultInstance 
  *       method added
  *  10   Gandalf   1.9         9/6/99   Ian Formanek    Defaults for Window and 

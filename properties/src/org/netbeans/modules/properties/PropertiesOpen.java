@@ -418,3 +418,40 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
   } // end of SavingManager inner class
 
 }
+
+/*
+ * <<Log>>
+ *  24   Gandalf   1.23        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  23   Gandalf   1.22        10/13/99 Petr Jiricka    Debug messages removed
+ *  22   Gandalf   1.21        10/12/99 Petr Jiricka    Fixes in modified/save 
+ *       functionality, fix of "allEditors " reference serialization
+ *  21   Gandalf   1.20        10/12/99 Petr Jiricka    Mode changed to editor 
+ *       mode
+ *  20   Gandalf   1.19        10/10/99 Petr Hamernik   console debug messages 
+ *       removed.
+ *  19   Gandalf   1.18        9/23/99  Petr Jiricka    Fixed "==" string 
+ *       comparisons (JLint)
+ *  18   Gandalf   1.17        9/2/99   Petr Jiricka    Modal opener
+ *  17   Gandalf   1.16        8/18/99  Petr Jiricka    Lost of changes about 
+ *       saving
+ *  16   Gandalf   1.15        8/17/99  Petr Jiricka    Changes related to 
+ *       saving
+ *  15   Gandalf   1.14        8/9/99   Petr Jiricka    Removed debug prints
+ *  14   Gandalf   1.13        7/19/99  Jesse Glick     Context help.
+ *  13   Gandalf   1.12        7/13/99  Petr Jiricka    Properties mode added
+ *  12   Gandalf   1.11        7/13/99  Ales Novak      new window system
+ *  11   Gandalf   1.10        7/8/99   Jesse Glick     Context help.
+ *  10   Gandalf   1.9         6/23/99  Petr Jiricka    
+ *  9    Gandalf   1.8         6/22/99  Petr Jiricka    
+ *  8    Gandalf   1.7         6/18/99  Petr Jiricka    
+ *  7    Gandalf   1.6         6/18/99  Petr Jiricka    
+ *  6    Gandalf   1.5         6/16/99  Petr Jiricka    
+ *  5    Gandalf   1.4         6/9/99   Petr Jiricka    
+ *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
+ *  3    Gandalf   1.2         6/8/99   Petr Jiricka    
+ *  2    Gandalf   1.1         6/6/99   Petr Jiricka    
+ *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
+ * $
+ */

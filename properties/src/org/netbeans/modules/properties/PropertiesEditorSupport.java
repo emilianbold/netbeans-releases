@@ -792,3 +792,37 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
   
 
 }
+
+/*
+ * <<Log>>
+ *  22   Gandalf   1.21        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  21   Gandalf   1.20        10/13/99 Petr Jiricka    Debug messages removed
+ *  20   Gandalf   1.19        10/12/99 Petr Jiricka    Fixes in modified/save 
+ *       functionality
+ *  19   Gandalf   1.18        10/12/99 Petr Jiricka    
+ *  18   Gandalf   1.17        9/23/99  Petr Jiricka    Fixed string comparisons
+ *       (JLint)
+ *  17   Gandalf   1.16        9/13/99  Petr Jiricka    Debug println removed
+ *  16   Gandalf   1.15        9/10/99  Petr Jiricka    
+ *  15   Gandalf   1.14        9/2/99   Petr Jiricka    
+ *  14   Gandalf   1.13        8/18/99  Petr Jiricka    Lots of changes 
+ *       concerning saving
+ *  13   Gandalf   1.12        8/17/99  Petr Jiricka    Oops ! Debug prints
+ *  12   Gandalf   1.11        8/17/99  Petr Jiricka    Made serializable
+ *  11   Gandalf   1.10        8/17/99  Petr Jiricka    Changes related to 
+ *       saving
+ *  10   Gandalf   1.9         8/4/99   Petr Jiricka    Corrected content type  
+ *       for properties files
+ *  9    Gandalf   1.8         7/24/99  Petr Jiricka    
+ *  8    Gandalf   1.7         7/16/99  Petr Jiricka    
+ *  7    Gandalf   1.6         6/16/99  Petr Jiricka    
+ *  6    Gandalf   1.5         6/9/99   Petr Jiricka    
+ *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
+ *  4    Gandalf   1.3         6/8/99   Petr Jiricka    
+ *  3    Gandalf   1.2         6/6/99   Petr Jiricka    
+ *  2    Gandalf   1.1         5/13/99  Petr Jiricka    
+ *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
+ * $
+ */

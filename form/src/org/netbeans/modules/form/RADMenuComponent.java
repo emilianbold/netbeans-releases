@@ -305,6 +305,8 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
 
 /*
  * Log
+ *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  6    Gandalf   1.5         10/9/99  Ian Formanek    Fixed bug 4411 - Delete 
  *       of a jMenuItem does not work. (No action is performed.)
  *  5    Gandalf   1.4         9/6/99   Ian Formanek    Correctly works with 

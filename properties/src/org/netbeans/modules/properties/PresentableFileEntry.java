@@ -385,3 +385,14 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
 
 
 }
+/*
+ * <<Log>>
+ *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  4    Gandalf   1.3         8/17/99  Petr Jiricka    Serialization
+ *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
+ *  2    Gandalf   1.1         6/8/99   Petr Jiricka    
+ *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
+ * $
+ */

@@ -335,6 +335,8 @@ public class MethodPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  12   Gandalf   1.11        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  11   Gandalf   1.10        10/9/99  Ian Formanek    Fixed bug 4151 - Menus, 
  *       MenuItems etc. are missing in Component combo box in Form Connection 
  *       (or Connection Wizard).

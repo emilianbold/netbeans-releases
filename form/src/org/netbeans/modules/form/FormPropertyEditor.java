@@ -340,6 +340,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
 
 /*
  * Log
+ *  17   Gandalf   1.16        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  16   Gandalf   1.15        10/6/99  Ian Formanek    Fixed bug 3494 - When 
  *       creating EnhancedPropertyEditor with inplace custom editor 
  *       (JPasswordField), it doesn't lost the focus when enter was pressed.

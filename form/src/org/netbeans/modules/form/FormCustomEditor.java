@@ -245,6 +245,8 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
 
 /*
  * Log
+ *  17   Gandalf   1.16        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  16   Gandalf   1.15        9/12/99  Ian Formanek    FormAwareEditor.setRADComponent
  *        changed, advanced dialog for Pre/Post code invocation
  *  15   Gandalf   1.14        9/6/99   Ian Formanek    Fixed bug 3187 - 

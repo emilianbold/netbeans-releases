@@ -284,6 +284,8 @@ public class JavadocModule extends ModuleInstall {
 
 /* 
  * Log
+ *  18   Gandalf   1.17        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  17   Gandalf   1.16        10/7/99  Petr Hrebejk    Module Externalization 
  *       fix
  *  16   Gandalf   1.15        10/1/99  Petr Hrebejk    org.openide.modules.ModuleInstall

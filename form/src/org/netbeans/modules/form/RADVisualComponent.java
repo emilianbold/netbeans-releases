@@ -117,6 +117,8 @@ public class RADVisualComponent extends RADComponent {
 
 /*
  * Log
+ *  13   Gandalf   1.12        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  12   Gandalf   1.11        7/5/99   Ian Formanek    Fixed last change
  *  11   Gandalf   1.10        7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
  *        getComponentClass->getBeanClass

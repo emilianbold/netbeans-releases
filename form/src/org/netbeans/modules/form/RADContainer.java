@@ -81,6 +81,8 @@ public class RADContainer extends RADComponent implements ComponentContainer {
 
 /*
  * Log
+ *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         8/15/99  Ian Formanek    getContainerGenName 
  *       usage clarified
  *  8    Gandalf   1.7         7/5/99   Ian Formanek    implemented additions to

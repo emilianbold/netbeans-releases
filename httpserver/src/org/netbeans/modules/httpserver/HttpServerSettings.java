@@ -460,6 +460,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  25   Gandalf   1.24        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  24   Gandalf   1.23        10/9/99  Petr Jiricka    Fixed serialization of 
  *       running property in the first startup if the server hasn't been 
  *       launched.

@@ -349,3 +349,26 @@ public class StructHandler extends Element /*implements TaskListener*/ {
 
 
 
+
+/*
+ * <<Log>>
+ *  14   Gandalf   1.13        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  13   Gandalf   1.12        9/23/99  Petr Jiricka    Fixed calling 
+ *       super.finalize() - throws Throwable (JLint)
+ *  12   Gandalf   1.11        9/23/99  Petr Jiricka    Finalize calls 
+ *       super.finalize() (JLint warning)
+ *  11   Gandalf   1.10        9/10/99  Petr Jiricka    
+ *  10   Gandalf   1.9         8/18/99  Petr Jiricka    Debug prints
+ *  9    Gandalf   1.8         8/9/99   Petr Jiricka    Removed debug prints
+ *  8    Gandalf   1.7         7/24/99  Petr Jiricka    
+ *  7    Gandalf   1.6         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
+ *  6    Gandalf   1.5         6/8/99   Petr Jiricka    
+ *  5    Gandalf   1.4         6/6/99   Petr Jiricka    
+ *  4    Gandalf   1.3         5/16/99  Petr Jiricka    
+ *  3    Gandalf   1.2         5/14/99  Petr Jiricka    
+ *  2    Gandalf   1.1         5/13/99  Petr Jiricka    
+ *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
+ * $
+ */

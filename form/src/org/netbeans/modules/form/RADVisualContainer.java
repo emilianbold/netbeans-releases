@@ -191,6 +191,8 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
 /*
  * Log
+ *  24   Gandalf   1.23        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  23   Gandalf   1.22        10/6/99  Ian Formanek    Better handling of 
  *       special state during copy/paste of components
  *  22   Gandalf   1.21        8/15/99  Ian Formanek    Fixed bug 3289 - Wrong 

@@ -82,6 +82,8 @@ public abstract class IndexSearchThread extends Thread  {
 
 /* 
  * Log
+ *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  5    Gandalf   1.4         7/26/99  Petr Hrebejk    
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----

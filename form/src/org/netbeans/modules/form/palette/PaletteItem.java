@@ -176,6 +176,8 @@ public class PaletteItem implements java.io.Serializable {
 
 /*
  * Log
+ *  13   Gandalf   1.12        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  12   Gandalf   1.11        7/23/99  Ian Formanek    isContainer property of 
  *       Palette items
  *  11   Gandalf   1.10        7/16/99  Ian Formanek    Fixed bug 1855 - 

@@ -76,3 +76,19 @@ public class ImageDataLoaderBeanInfo extends SimpleBeanInfo {
   }
 
 }
+
+/*
+ * Log
+ *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  6    Gandalf   1.5         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
+ *  5    Gandalf   1.4         4/13/99  Jesse Glick     Clean-ups of comments 
+ *       and such for public perusal.
+ *  4    Gandalf   1.3         3/22/99  Ian Formanek    Icons moved from 
+ *       modules/resources to this package
+ *  3    Gandalf   1.2         2/16/99  David Simonek   
+ *  2    Gandalf   1.1         1/22/99  Ian Formanek    
+ *  1    Gandalf   1.0         1/5/99   Ian Formanek    
+ * $
+ */

@@ -75,6 +75,8 @@ public class URLDataLoader extends UniFileLoader {
 
 /*
  * Log
+ *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  8    Gandalf   1.7         10/1/99  Jaroslav Tulach Loaders extends 
  *       SharedClassObject
  *  7    Gandalf   1.6         8/31/99  Ian Formanek    Correctly provides 

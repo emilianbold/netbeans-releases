@@ -280,6 +280,8 @@ public class KeyNode extends AbstractNode {
 
 /*
  * <<Log>>
+ *  11   Gandalf   1.10        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  10   Gandalf   1.9         8/9/99   Petr Jiricka    Removed debug prints
  *  9    Gandalf   1.8         7/16/99  Petr Jiricka    
  *  8    Gandalf   1.7         6/16/99  Petr Jiricka    

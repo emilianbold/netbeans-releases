@@ -93,6 +93,8 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  23   Gandalf   1.22        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
+*       Microsystems Copyright in File Comment
 *  22   Gandalf   1.21        9/30/99  Jan Jancura     Bug 3921 & 3392
 *  21   Gandalf   1.20        8/9/99   Ian Formanek    HtmlDataObject is a 
 *       standalone class

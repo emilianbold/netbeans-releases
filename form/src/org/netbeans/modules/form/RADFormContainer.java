@@ -74,6 +74,8 @@ public class RADFormContainer extends RADContainer implements FormContainer {
 
 /*
  * Log
+ *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  5    Gandalf   1.4         8/15/99  Ian Formanek    getContainerGenName 
  *       usage clarified
  *  4    Gandalf   1.3         7/30/99  Ian Formanek    Fixed bugs 2915 - 

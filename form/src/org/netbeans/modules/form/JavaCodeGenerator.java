@@ -1243,6 +1243,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  55   Gandalf   1.54        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  54   Gandalf   1.53        10/6/99  Ian Formanek    Fixed bug 4199 - 
  *       Pre/Post initializer code not added to source code unless property 
  *       editor that spawns Pre/Post code editor has something changed.

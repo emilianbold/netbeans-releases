@@ -62,6 +62,8 @@ class DocSearchIcons extends Object {
 
 /* 
  * Log
+ *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  6    Gandalf   1.5         8/13/99  Petr Hrebejk    Exception icopn added & 
  *       Jdoc repository moved to this package
  *  5    Gandalf   1.4         6/23/99  Petr Hrebejk    HTML doc view & sort 

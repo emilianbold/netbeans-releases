@@ -157,6 +157,8 @@ public class EventsAction extends CookieAction {
 }
 /*
  * Log
+ *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  8    Gandalf   1.7         7/20/99  Jesse Glick     Context help.
  *  7    Gandalf   1.6         6/28/99  Ian Formanek    Fixed positioning 
  *       problems with popup menu

@@ -230,6 +230,8 @@ public class FileEntryNode extends AbstractNode {
 
 /*
  * <<Log>>
+ *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  3    Gandalf   1.2         6/8/99   Petr Jiricka    

@@ -198,6 +198,8 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
 
 /*
  * Log
+ *  30   Gandalf   1.29        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  29   Gandalf   1.28        10/10/99 Petr Hamernik   console debug messages 
  *       removed.
  *  28   Gandalf   1.27        10/7/99  Petr Jiricka    

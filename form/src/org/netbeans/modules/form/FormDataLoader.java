@@ -143,6 +143,8 @@ public class FormDataLoader extends JavaDataLoader {
 
 /*
  * Log
+ *  19   Gandalf   1.18        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  18   Gandalf   1.17        8/31/99  Ian Formanek    Correctly provides 
  *       FileSystemAction on its data objects
  *  17   Gandalf   1.16        8/2/99   Ian Formanek    Fixes potential 

@@ -655,3 +655,37 @@ public class IndexSearch
   
   
 }
+
+/*
+ * Log
+ *  19   Gandalf   1.18        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
+ *  18   Gandalf   1.17        10/1/99  Petr Hrebejk    Serialization of sort 
+ *       mode fixed
+ *  17   Gandalf   1.16        8/17/99  Petr Hrebejk    IndexSearch window 
+ *       serialization
+ *  16   Gandalf   1.15        8/13/99  Petr Hrebejk    Exception icopn added & 
+ *       Jdoc repository moved to this package
+ *  15   Gandalf   1.14        7/29/99  David Simonek   changes concerning 
+ *       window system
+ *  14   Gandalf   1.13        7/26/99  Petr Hrebejk    AutoComment tool 
+ *       implemented
+ *  13   Gandalf   1.12        7/12/99  Petr Hrebejk    New window system
+ *  12   Gandalf   1.11        6/23/99  Petr Hrebejk    HTML doc view & sort 
+ *       modes added
+ *  11   Gandalf   1.10        6/11/99  Petr Hrebejk    
+ *  10   Gandalf   1.9         6/11/99  Petr Hrebejk    Better support for 
+ *       search from editor; Enter for start searching
+ *  9    Gandalf   1.8         6/9/99   Ian Formanek    ---- Package Change To 
+ *       org.openide ----
+ *  8    Gandalf   1.7         6/4/99   Petr Hrebejk    
+ *  7    Gandalf   1.6         5/27/99  Petr Hrebejk    Crtl+F1 documentation 
+ *       search form editor added
+ *  6    Gandalf   1.5         5/16/99  Petr Hrebejk    
+ *  5    Gandalf   1.4         5/16/99  Petr Hrebejk    
+ *  4    Gandalf   1.3         5/14/99  Petr Hrebejk    
+ *  3    Gandalf   1.2         5/14/99  Petr Hrebejk    
+ *  2    Gandalf   1.1         5/14/99  Petr Hrebejk    
+ *  1    Gandalf   1.0         5/13/99  Petr Hrebejk    
+ * $
+ */

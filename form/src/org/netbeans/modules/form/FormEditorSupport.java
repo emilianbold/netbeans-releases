@@ -421,6 +421,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  36   Gandalf   1.35        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  35   Gandalf   1.34        9/29/99  Ian Formanek    Fixed bug 3853 - 
  *       Changing variable Modifier property doesn't force the opened code to be
  *        modified  too.

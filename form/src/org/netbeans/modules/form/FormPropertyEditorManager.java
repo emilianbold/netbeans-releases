@@ -171,6 +171,8 @@ final public class FormPropertyEditorManager extends Object {
 
 /*
  * Log
+ *  11   Gandalf   1.10        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  10   Gandalf   1.9         9/24/99  Ian Formanek    Fixed char primitive 
  *       type not being included in list of primitive types.
  *  9    Gandalf   1.8         8/9/99   Ian Formanek    Used currentClassLoader 

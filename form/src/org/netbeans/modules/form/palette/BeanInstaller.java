@@ -721,6 +721,8 @@ static final long serialVersionUID =-6038414545631774041L;
 
 /*
  * Log
+ *  23   Gandalf   1.22        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
+ *       Microsystems Copyright in File Comment
  *  22   Gandalf   1.21        10/12/99 Ian Formanek    Fixed multi-user 
  *       configuration with no "beans" folder in the shared installation.
  *  21   Gandalf   1.20        10/12/99 Ian Formanek    Fixed problem with 
