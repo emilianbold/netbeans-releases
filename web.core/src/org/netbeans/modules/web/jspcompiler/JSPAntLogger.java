@@ -14,16 +14,13 @@
 package org.netbeans.modules.web.jspcompiler;
 
 import java.io.File;
-import java.io.PrintWriter;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -38,26 +35,15 @@ import org.openide.filesystems.FileUtil;
  */
 public final class JSPAntLogger extends AntLogger {
     
-/*    private static PrintWriter debugwriter = null;
-    private static void debug(String s) {
-        if (debugwriter == null) {
-            try {
-                debugwriter = new PrintWriter(new java.io.FileWriter("c:\\temp\\AntOutputParser.log")); // NOI18N
-            } catch (java.io.IOException ioe) {
-                return;
-            }
-        }
-        debugwriter.println(s);
-        debugwriter.flush();
-    }*/
-    
     /**
      * Regexp matching the compilation error from JspC. Sample message could look like this:
      * org.apache.jasper.JasperException: file:C:/project/AntParseTestProject2/build/web/index.jsp(6,0) Include action: Mandatory attribute page missing
      */
     private static final Pattern JSP_COMPILER_ERROR = Pattern.compile(
-        "(.*)(org.apache.jasper.JasperException: file:)([^\\(]*)\\(([0-9]+),([0-9]+)\\)(.*)"); // NOI18N
+        "(.*)(org.apache.jasper.JasperException: file:)(.*)"); // NOI18N
 
+    private static final Pattern FILE_PATTERN = Pattern.compile(
+        "([^\\(]*)\\(([0-9]+),([0-9]+)\\)"); // NOI18N
 
     private static final String[] TASKS_OF_INTEREST = AntLogger.ALL_TASKS;
     
@@ -69,6 +55,8 @@ public final class JSPAntLogger extends AntLogger {
         AntEvent.LOG_ERR, // XXX is this needed?
     };
     
+    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(JSPAntLogger.class.getName());
+    private static final boolean LOGGABLE = ERR.isLoggable(ErrorManager.INFORMATIONAL);
     
     /** Default constructor for lookup. */
     public JSPAntLogger() {
@@ -108,20 +96,50 @@ public final class JSPAntLogger extends AntLogger {
 
         // XXX only check when the task is correct
         Matcher m = JSP_COMPILER_ERROR.matcher(line);
-        if (m.matches()) {
-//debug ("message matches ->" + line);
-            // We have a JSP error
-            String jspFile  = m.group(3).trim();
-            int lineNumber      = Integer.parseInt(m.group(4))/* - 1*/;
-            int columnNumber    = Integer.parseInt(m.group(5));
-            String jspErrorText = m.group(6).trim();
-            File f = new File(jspFile);
-            FileObject fo = FileUtil.toFileObject(f);
-            // Check to see if this JSP is in the web module.
-            FileObject jspSource = getResourceInSources(fo);
-            if (jspSource != null) {
-                hyperlink(line, session, event, jspSource, messageLevel, sessionLevel, jspErrorText, lineNumber, -1/*columnNumber*/);
+        if (m.matches()) { //it's our error
+            if (LOGGABLE) ERR.log("matched line: " + line);
+            // print the exception and error statement first
+            String jspErrorText = line.substring(line.lastIndexOf(')')+1);
+            session.println(line.substring(0, line.indexOf("file:")) + jspErrorText, true, null);
+            
+            // get the files from the line
+            String filePart = line.substring(line.indexOf("file"), line.lastIndexOf(')')+1);
+            if (LOGGABLE) ERR.log("file part: " + filePart);
+            
+            // now create hyperlinks for all the files
+            int startIndex = 0;
+            while (filePart.indexOf("file:", startIndex) > -1) { 
+                int start = filePart.indexOf("file:", startIndex) + 5;
+                int end = filePart.indexOf(')', startIndex) + 1;
+                startIndex = end;
+                String file = filePart.substring(start, end);
+                if (LOGGABLE) ERR.log("file: " + file);
+
+                // we've got the info for one file extracted, now extract the line/column and actual filename
+                Matcher fileMatcher = FILE_PATTERN.matcher(file);
+                if (fileMatcher.matches()) {
+                    String jspFile      = fileMatcher.group(1).trim();
+                    int lineNumber      = Integer.parseInt(fileMatcher.group(2));
+                    int columnNumber    = Integer.parseInt(fileMatcher.group(3)) + 1;
+                    if (LOGGABLE) ERR.log("linking line: " + lineNumber + ", column: " + columnNumber);
+                    
+                    File f = new File(jspFile);
+                    FileObject fo = FileUtil.toFileObject(f);
+                    // Check to see if this JSP is in the web module.
+                    FileObject jspSource = getResourceInSources(fo);
+                    // and create the hyperlink if needed
+                    if (jspSource != null) {
+                        if (messageLevel <= sessionLevel && !event.isConsumed()) {
+                            try {
+                                session.println(file, true, session.createStandardHyperlink(jspSource.getURL(), jspErrorText, lineNumber, columnNumber, -1, -1));
+                            } catch (FileStateInvalidException e) {
+                                assert false : e;
+                            }
+                        }
+                    }
+                }
             }
+            event.consume();
         }
     }
     
@@ -161,16 +179,5 @@ public final class JSPAntLogger extends AntLogger {
         }
         return null;
     }
-    
-    private static void hyperlink(String line, AntSession session, AntEvent event, FileObject source, int messageLevel, int sessionLevel, String text, int lineNumber, int columnNumber) {
-        if (messageLevel <= sessionLevel && !event.isConsumed()) {
-            event.consume();
-            try {
-                session.println(line, true, session.createStandardHyperlink(source.getURL(), text, lineNumber, columnNumber, -1, -1));
-            } catch (FileStateInvalidException e) {
-                assert false : e;
-            }
-        }
-    }
-    
+   
 }
