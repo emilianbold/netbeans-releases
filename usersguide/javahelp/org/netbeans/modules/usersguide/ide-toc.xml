@@ -404,12 +404,14 @@
      <tocitem text="About Filters" target="concepts_filter"  />
      <tocitem text="Creating a Filter" target="filter_create"/>
      <tocitem text="Registering a Filter" target="filter_addtodd"/>
+     <tocitem text="Running and Debugging a Filter" target="filter_run"/>
   </tocitem> <!-- Working With Filters -->
 
  <tocitem text="Web Application Listeners">
      <tocitem text="About Web Application Listeners" target="concepts_listener"  />       					
      <tocitem text="Creating a Web Application Listener" target="listen_create"/>
      <tocitem text="Registering a Web Application Listener" target="listen_addtodd"/>
+     <tocitem text="Running and Debugging a Web Application Listener" target="listener_run"/>
   </tocitem> <!-- Working With Listeners --> 
   
   <tocitem text="Tags">
@@ -483,6 +485,8 @@
         <tocitem text="Running a Web Application" target="run_webapp_use_tomcat" />
         <tocitem text="Running a JSP File" target="run_jsp_use_tomcat" />
 	<tocitem text="Running a Servlet" target="run_servlet_use_tomcat" />
+	<tocitem text="Running and Debugging a Filter" target="filter_run"/>
+        <tocitem text="Running and Debugging a Listener" target="listener_run"/>
         <tocitem text="Changing Web Servers" target="webmod_server_set" />
 	<tocitem text="Changing Web Browsers" target="webmod_browser" />
 	<tocitem text="Deployment Descriptors"> 
