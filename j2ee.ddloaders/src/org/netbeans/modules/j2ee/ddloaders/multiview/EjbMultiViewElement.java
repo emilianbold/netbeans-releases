@@ -65,7 +65,8 @@ public class EjbMultiViewElement extends ToolBarMultiViewElement {
 
     public CloseOperationState canCloseElement() {
         if (dataObject.isModified()) {
-            return MultiViewFactory.createUnsafeCloseState("Data object modified", null, null);
+            return MultiViewFactory.createUnsafeCloseState(Utils.getBundleMessage("LBL_DataObjectModified"), null,
+                    null);
         } else {
             return CloseOperationState.STATE_OK;
         }

@@ -111,6 +111,10 @@ public class InnerTablePanel extends SectionInnerPanel {
         }
     }
 
+    public InnerTablePanel(SectionNodeView sectionNodeView, final AbstractTableModel model) {
+        this(sectionNodeView, model, null);
+    }
+
     public InnerTablePanel(SectionNodeView sectionNodeView, final AbstractTableModel model,
             TableCellEditor tableCellEditor) {
         super(sectionNodeView);
@@ -144,11 +148,14 @@ public class InnerTablePanel extends SectionInnerPanel {
         table.setPreferredSize(table.getPreferredSize());
         table.setCellSelectionEnabled(true);
         InputMap inputMap = table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        inputMap.put(KeyStroke.getKeyStroke("ENTER"), "selectNextColumnCell");
-        inputMap.put(KeyStroke.getKeyStroke("shift ENTER"), "selectPreviousColumnCell");
+        inputMap.put(KeyStroke.getKeyStroke("ENTER"), "selectNextColumnCell"); //NOI18N
+        inputMap.put(KeyStroke.getKeyStroke("shift ENTER"), "selectPreviousColumnCell");    //NOI18N
         setLayout(new BorderLayout());
         add(tablePanel, BorderLayout.WEST);
         setColumnWidths();
+        if (model instanceof InnerTableModel) {
+            setButtonListeners((InnerTableModel) model);
+        }
     }
 
     public JTable getTable() {
@@ -182,13 +189,6 @@ public class InnerTablePanel extends SectionInnerPanel {
         table.setPreferredSize(size);
     }
 
-    public InnerTablePanel(SectionNodeView sectionNodeView, final AbstractTableModel model) {
-        this(sectionNodeView, model, null);
-        if (model instanceof InnerTableModel) {
-            setButtonListeners((InnerTableModel) model);
-        }
-    }
-
     public void adjustHeight() {
         JTable table = getTable();
         Dimension size = table.getPreferredSize();
@@ -196,6 +196,10 @@ public class InnerTablePanel extends SectionInnerPanel {
         size.height = table.getPreferredSize().height;
         table.setPreferredSize(size);
         Utils.scrollToVisible(InnerTablePanel.this);
+    }
+
+    public void dataFileChanged() {
+        adjustHeight();
     }
 
     protected void editCell(final int row, final int column) {

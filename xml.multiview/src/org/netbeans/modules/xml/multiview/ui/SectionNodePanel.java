@@ -15,6 +15,8 @@ package org.netbeans.modules.xml.multiview.ui;
 
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.openide.nodes.Node;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -37,6 +39,15 @@ public class SectionNodePanel extends SectionPanel {
         } else if(node.isExpanded()) {
             setExpandedViewMode();
         }
+
+        node.getSectionNodeView().getDataObject().getPrimaryFile().addFileChangeListener(new FileChangeAdapter() {
+            public void fileChanged(FileEvent fe) {
+                SectionInnerPanel innerPanel = getInnerPanel();
+                if(innerPanel != null) {
+                    innerPanel.dataFileChanged();
+                }
+            }
+        });
     }
 
     /**

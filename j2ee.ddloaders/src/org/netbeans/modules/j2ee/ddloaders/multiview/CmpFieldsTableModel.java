@@ -15,14 +15,9 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.AddCmpFieldAction;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.CmpFieldHelper;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.EntityHelper;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.src.ClassElement;
 
 import java.util.HashMap;
 
@@ -33,50 +28,39 @@ class CmpFieldsTableModel extends InnerTableModel {
     private final FileObject ejbJarFile;
     private Entity entity;
     private HashMap cmpFieldHelperMap = new HashMap();
-    private static final String[] COLUMN_NAMES = {"Field Name", "Type", "Local Getter", "Local Setter", "Remote Getter",
-                                                  "Remote Setter", "Description"};
+    private static final String[] COLUMN_NAMES = {Utils.getBundleMessage("LBL_FieldName"),
+                                                  Utils.getBundleMessage("LBL_Type"),
+                                                  Utils.getBundleMessage("LBL_LocalGetter"),
+                                                  Utils.getBundleMessage("LBL_LocalSetter"),
+                                                  Utils.getBundleMessage("LBL_RemoteGetter"),
+                                                  Utils.getBundleMessage("LBL_RemoteSetter"),
+                                                  Utils.getBundleMessage("LBL_Description")};
     private static final int[] COLUMN_WIDTHS = new int[]{120, 160, 70, 70, 70, 70, 220};
 
     public CmpFieldsTableModel(FileObject ejbJarFile, Entity entity) {
         super(COLUMN_NAMES, COLUMN_WIDTHS);
         this.ejbJarFile = ejbJarFile;
         this.entity = entity;
-        ejbJarFile.addFileChangeListener(new FileChangeListener() {
-            public void fileFolderCreated(FileEvent fe) {
-            }
-
-            public void fileDataCreated(FileEvent fe) {
-            }
-
-            public void fileChanged(FileEvent fe) {
-                fireTableRowsDeleted(-1, -1); // causes proper resizing of table
-            }
-
-            public void fileDeleted(FileEvent fe) {
-            }
-
-            public void fileRenamed(FileRenameEvent fe) {
-            }
-
-            public void fileAttributeChanged(FileAttributeEvent fe) {
-            }
-        });
     }
 
     public int addRow() {
-        ClassElement beanClass = Utils.getBeanClass(ejbJarFile, entity);
-        if (new AddCmpFieldAction().addCmpField(beanClass, ejbJarFile)) {
-            int n = entity.getCmpField().length - 1;
-            fireTableRowsInserted(n, n);
-            return n;
-        } else {
-            return -1;
-        }
+        new EntityHelper(ejbJarFile, entity).addCmpField();
+        fireTableDataChanged();
+        return getRowCount() - 1;
+// TODO: remove following?
+//        ClassElement beanClass = Utils.getBeanClass(ejbJarFile, entity);
+//        if (new AddCmpFieldAction().addCmpField(beanClass, ejbJarFile)) {
+//            int n = entity.getCmpField().length - 1;
+//            fireTableRowsInserted(n, n);
+//            return n;
+//        } else {
+//            return -1;
+//        }
     }
 
     public void removeRow(int row) {
         CmpField cmpField = entity.getCmpField()[row];
-        if (getCmpFieldHelper(cmpField).deleteKey()) {
+        if (getCmpFieldHelper(cmpField).deleteCmpField()) {
             fireTableRowsDeleted(row, row);
         }
     }
@@ -139,4 +123,5 @@ class CmpFieldsTableModel extends InnerTableModel {
         }
         return super.getColumnClass(columnIndex);
     }
+
 }

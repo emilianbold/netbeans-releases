@@ -21,7 +21,9 @@ import org.netbeans.modules.j2ee.dd.api.ejb.ResourceEnvRef;
  */
 class ResourceEnvironmentReferencesTableModel extends InnerTableModel {
     private Ejb ejb;
-    private static final String[] COLUMN_NAMES = new String[]{"Name", "Resource type", "Description"};
+    private static final String[] COLUMN_NAMES = {Utils.getBundleMessage("LBL_Name"),
+                                                  Utils.getBundleMessage("LBL_ResourceType"),
+                                                  Utils.getBundleMessage("LBL_Description")};
     private static final int[] COLUMN_WIDTHS = new int[]{80, 150, 100};
 
     public ResourceEnvironmentReferencesTableModel(Ejb ejb) {

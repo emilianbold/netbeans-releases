@@ -23,7 +23,8 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  */
 public class SecurityRoleReferencesNode extends SectionNode {
     public SecurityRoleReferencesNode(SectionNodeView sectionNodeView, EntityAndSession ejb) {
-        super(sectionNodeView, ejb, "Security role references", Utils.ICON_BASE_MISC_NODE);
+        super(sectionNodeView, ejb, Utils.getBundleMessage("LBL_SecurityRoleReferences" +
+                ""), Utils.ICON_BASE_MISC_NODE);
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {

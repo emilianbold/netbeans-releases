@@ -23,7 +23,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  */
 public class EnvironmentEntriesNode extends SectionNode {
     public EnvironmentEntriesNode(SectionNodeView sectionNodeView, Ejb ejb) {
-        super(sectionNodeView, ejb, "Environment entries", Utils.ICON_BASE_MISC_NODE);
+        super(sectionNodeView, ejb, Utils.getBundleMessage("LBL_EnvironmentEntries"), Utils.ICON_BASE_MISC_NODE);
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {

@@ -11,20 +11,28 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.j2ee.ejbjarproject;
 
-import java.io.File;
-import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.openide.src.ClassElement;
-import org.openide.filesystems.FileObject;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
+import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.CMPFieldNode;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.EntityNode;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.src.ClassElement;
+
+import java.io.File;
+import java.io.IOException;
 
 public class Utils {
-    
+
     public static String toClasspathString(File[] classpathEntries) {
         if (classpathEntries == null) {
             return "";
@@ -57,5 +65,25 @@ public class Utils {
         ClassPath classPath = enterpriseProject.getEjbModule().getJavaSources();
         FileObject src = classPath.findResource(className.replace('.', '/') + ".java");
         return ClassElement.forName(className, src);
+    }
+
+    public static EntityNode createEntityNode(FileObject ejbJarFile, Entity entity) {
+        EjbJar ejbJar = null;
+        try {
+            ejbJar = DDProvider.getDefault().getDDRoot(ejbJarFile);
+        } catch (IOException e) {
+            notifyError(e);
+            return null;
+        }
+        EjbJarProject enterpriseProject = (EjbJarProject) FileOwnerQuery.getOwner(ejbJarFile);
+        EjbJarProvider ejbModule = enterpriseProject.getEjbModule();
+        ClassPath classPath = ejbModule.getJavaSources();
+        return new EntityNode(entity, ejbJar, classPath, ejbJarFile);
+    }
+
+    public static CMPFieldNode createFieldNode(FileObject ejbJarFile, Entity entity, CmpField field) {
+        ClassElement beanClass = getBeanClass(ejbJarFile, entity);
+        EntityMethodController ec = (EntityMethodController) EntityMethodController.createFromClass(beanClass);
+        return new CMPFieldNode(field, ec, ejbJarFile);
     }
 }

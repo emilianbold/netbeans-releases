@@ -13,20 +13,29 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.openide.filesystems.FileObject;
 
 /**
  * @author pfiala
  */
-public class ResourceReferencesNode extends SectionNode {
-    public ResourceReferencesNode(SectionNodeView sectionNodeView, Ejb ejb) {
-        super(sectionNodeView, ejb, Utils.getBundleMessage("LBL_ResourceReferences"), Utils.ICON_BASE_MISC_NODE);
+class FinderMethodsNode extends SectionNode {
+
+    FinderMethodsNode(SectionNodeView sectionNodeView, Entity entity) {
+        super(sectionNodeView, true, entity, Utils.getBundleMessage("LBL_CmpFinders"), Utils.ICON_BASE_MISC_NODE);
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        return new InnerTablePanel(getSectionNodeView(), new ResourceReferencesTableModel((Ejb) key));
+        Entity entity = (Entity) key;
+        final FileObject ejbJarFile = getSectionNodeView().getDataObject().getPrimaryFile();
+        InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(),
+                new FinderMethodsTableModel(ejbJarFile, entity));
+        innerTablePanel.getEditButton().setVisible(false);
+        innerTablePanel.getRemoveButton().setVisible(false);
+        return innerTablePanel;
+
     }
 }

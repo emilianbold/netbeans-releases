@@ -31,7 +31,7 @@ import java.util.Set;
  */
 public class EjbReferencesNode extends SectionNode {
     public EjbReferencesNode(SectionNodeView sectionNodeView, Ejb ejb) {
-        super(sectionNodeView, ejb, "Enterprise Bean References", Utils.ICON_BASE_MISC_NODE);
+        super(sectionNodeView, ejb, Utils.getBundleMessage("LBL_EjbReferences"), Utils.ICON_BASE_MISC_NODE);
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {

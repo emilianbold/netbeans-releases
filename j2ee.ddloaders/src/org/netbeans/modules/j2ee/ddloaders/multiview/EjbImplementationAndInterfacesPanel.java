@@ -74,8 +74,6 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
 
         final EjbImplementationAndInterfacesForm form = new EjbImplementationAndInterfacesForm(sectionNodeView);
 
-        final EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) sectionNodeView.getDataObject();
-
         String ejbClass = ejb.getEjbClass();
         final String localComponent = ejb.getLocal();
         final String localHome = ejb.getLocalHome();

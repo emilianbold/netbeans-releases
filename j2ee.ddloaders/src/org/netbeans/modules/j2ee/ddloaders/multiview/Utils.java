@@ -18,9 +18,12 @@ import org.netbeans.modules.j2ee.ddloaders.multiview.ui.BrowseFolders;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.src.ClassElement;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.StringTokenizer;
 
 /**
  * @author pfiala
@@ -45,7 +48,7 @@ public class Utils {
 
     private static BrowseFolders.FileObjectFilter imageFileFilter = new BrowseFolders.FileObjectFilter() {
         public boolean accept(FileObject fileObject) {
-            return fileObject.getMIMEType().startsWith("image/");
+            return fileObject.getMIMEType().startsWith("image/"); // NOI18N
         }
     };
 
@@ -90,5 +93,52 @@ public class Utils {
 
     public static void scrollToVisible(JComponent component) {
         org.netbeans.modules.xml.multiview.Utils.scrollToVisible(component);
+    }
+
+    public static String getBundleMessage(String messageId) {
+        return NbBundle.getMessage(Utils.class, messageId);
+    }
+
+    public static String getBundleMessage(String messageId, Object param1) {
+        return NbBundle.getMessage(Utils.class, messageId, param1);
+    }
+
+    public static String getBundleMessage(String messageId, Object param1, Object param2) {
+        return NbBundle.getMessage(Utils.class, messageId, param1, param2);
+    }
+
+    public static boolean isJavaIdentifier(String id) {
+        return Utilities.isJavaIdentifier(id);
+    }
+
+    /**
+     * Returns true, if the passed string can be used as a qualified identifier.
+     * it does not check for semantic, only for syntax.
+     * The function returns true for any sequence of identifiers separated by
+     * dots.
+     */
+    public static boolean isValidPackageName(String packageName) {
+        if (packageName.length() > 0 && packageName.charAt(0) == '.') {
+            return false;
+        }
+        StringTokenizer tokenizer = new StringTokenizer(packageName, "."); // NOI18N
+        while (tokenizer.hasMoreTokens()) {
+            String token = tokenizer.nextToken();
+            if (token.length() == 0) {
+                return false;
+            }
+            if (!isJavaIdentifier(token)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static void removeInterface(ClassElement beanClass, String interfaceName) {
+        org.netbeans.modules.j2ee.ejbjarproject.Utils.removeInterface(beanClass, interfaceName);
+    }
+
+    public static void removeClassFile(FileObject ejbJarFile, String className) {
+        org.netbeans.modules.j2ee.ejbjarproject.Utils.removeClassFile(ejbJarFile, className);
     }
 }

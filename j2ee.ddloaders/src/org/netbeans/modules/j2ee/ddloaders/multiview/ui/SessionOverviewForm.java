@@ -173,14 +173,14 @@ public class SessionOverviewForm extends SectionInnerPanel {
     }
 
     public JComponent getErrorComponent(String errorId) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     public void setValue(JComponent source, Object value) {
-        //To change body of implemented methods use File | Settings | File Templates.
+
     }
 
     public void linkButtonPressed(Object ddBean, String ddProperty) {
-        //To change body of implemented methods use File | Settings | File Templates.
+
     }
 }

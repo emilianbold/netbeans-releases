@@ -16,7 +16,6 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -31,7 +30,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.dd.impl.ejb.EjbJarProxy;
 import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeEvent;
 import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeListener;
-import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangesPanel;
 import org.netbeans.modules.j2ee.ddloaders.ejb.EjbJarDDUtils;
 import org.netbeans.modules.j2ee.ddloaders.ejb.EjbJarDataLoader;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
@@ -39,8 +37,6 @@ import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
@@ -54,18 +50,14 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.xml.sax.InputSource;
 
-import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
@@ -104,7 +96,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     private static final int REMOTE = 20;
     private static final int LOCAL_HOME = 30;
     private static final int LOCAL = 40;
-    private static final String OVERVIEW = "Overview";
+    private static final String OVERVIEW = Utils.getBundleMessage("LBL_Overview");
 
     public EjbJarMultiViewDataObject(FileObject pf, EjbJarDataLoader loader) throws DataObjectExistsException {
         super(pf, loader);
@@ -120,8 +112,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         InputSource in = DataObjectAdapters.inputSource(this);
         ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
         getCookieSet().add(validateCookie);
-
-        new FileObjectObserver(fo);
 
         Project project = getProject();
         if (project != null) {
@@ -676,7 +666,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
                     ((EjbJarMultiViewDataNode) getNodeDelegate()).descriptionChanged(
                             oldError == null ? null : oldError.getMessage(), null);
                 }
-                System.out.println("version:" + ejbJar.getVersion() + " Status:" + ejbJar.getStatus() + " Error:" +
+                System.out.println("version:" + ejbJar.getVersion() + " Status:" + ejbJar.getStatus() + " Error:" + //NOI18N
                         ejbJar.getError());
                 setSaxError(error);
                 return true;
@@ -730,7 +720,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
                     ((EjbJarMultiViewDataNode) getNodeDelegate()).descriptionChanged(
                             oldError == null ? null : oldError.getMessage(), null);
                 }
-                System.out.println("version:" + ejbJar.getVersion() + " Status:" + ejbJar.getStatus() + " Error:" +
+                System.out.println("version:" + ejbJar.getVersion() + " Status:" + ejbJar.getStatus() + " Error:" + //NOI18N
                         ejbJar.getError());
                 setSaxError(error);
             } catch (org.xml.sax.SAXException ex) {
@@ -772,7 +762,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
      * Display Name for MultiView editor
      */
     protected String getDisplayName() {
-        return "ejb-jar.xml";
+        return "ejb-jar.xml"; //NOI18N
     }
 
     /**
@@ -832,35 +822,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
 
         public String preferredID() {
             return "dd_multiview_" + getDisplayName(); //NOI18N
-        }
-
-    }
-
-    /**
-     * WeakListener for accepting external changes to web.xml
-     */
-    private class FileObjectObserver implements FileChangeListener {
-        FileObjectObserver(FileObject fo) {
-            fo.addFileChangeListener((FileChangeListener) org.openide.util.WeakListeners.create(
-                    FileChangeListener.class, this, fo));
-        }
-
-        public void fileAttributeChanged(FileAttributeEvent fileAttributeEvent) {
-        }
-
-        public void fileChanged(FileEvent fileEvent) {
-        }
-
-        public void fileDataCreated(FileEvent fileEvent) {
-        }
-
-        public void fileDeleted(FileEvent fileEvent) {
-        }
-
-        public void fileFolderCreated(FileEvent fileEvent) {
-        }
-
-        public void fileRenamed(FileRenameEvent fileRenameEvent) {
         }
 
     }

@@ -174,6 +174,10 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
         });
     }
 
+    public void dataFileChanged() {
+
+    }
+
     private class TextListener implements javax.swing.event.DocumentListener {
         private JTextComponent tc;
 

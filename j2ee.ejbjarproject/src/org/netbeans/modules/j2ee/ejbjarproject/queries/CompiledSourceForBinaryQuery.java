@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.j2ee.ejbjarproject.SourceRoots;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -62,13 +61,13 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             return res;
         }
         SourceRoots src = null;
-        if (hasSources(binaryRoot, EjbJarProjectProperties.BUILD_CLASSES_DIR)) {   //NOI18N
+        if (hasSources(binaryRoot,"build.classes.dir")) {   //NOI18N
             src = this.sourceRoots;
         }
-        else if (hasSources (binaryRoot, EjbJarProjectProperties.DIST_JAR)) {      //NOI18N
+        else if (hasSources (binaryRoot,"dist.jar")) {      //NOI18N
             src = this.sourceRoots;
         }
-        else if (hasSources (binaryRoot, EjbJarProjectProperties.BUILD_TEST_CLASSES_DIR)) {    //NOI18N
+        else if (hasSources (binaryRoot,"build.test.classes.dir")) {    //NOI18N
             src = this.testRoots;
         }
         if (src == null) {

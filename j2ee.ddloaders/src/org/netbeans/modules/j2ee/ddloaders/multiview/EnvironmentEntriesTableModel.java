@@ -21,7 +21,10 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EnvEntry;
  */
 class EnvironmentEntriesTableModel extends InnerTableModel {
     private Ejb ejb;
-    private static final String[] COLUMN_NAMES = new String[]{"Entry name", "Entry type", "Entry value", "Description"};
+    private static final String[] COLUMN_NAMES = {Utils.getBundleMessage("LBL_EntryName"),
+                                                  Utils.getBundleMessage("LBL_EntryType"),
+                                                  Utils.getBundleMessage("LBL_EntryValue"),
+                                                  Utils.getBundleMessage("LBL_Description")};
     private static final int[] COLUMN_WIDTHS = new int[]{100, 120, 100, 150};
 
     public EnvironmentEntriesTableModel(Ejb ejb) {

@@ -59,6 +59,7 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
+        setOpaque(false);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_BeanClass"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -253,14 +254,14 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
     }
 
     public JComponent getErrorComponent(String errorId) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     public void setValue(JComponent source, Object value) {
-        //To change body of implemented methods use File | Settings | File Templates.
+
     }
 
     public void linkButtonPressed(Object ddBean, String ddProperty) {
-        //To change body of implemented methods use File | Settings | File Templates.
+
     }
 }

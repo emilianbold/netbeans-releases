@@ -25,7 +25,7 @@ import org.openide.filesystems.FileObject;
 class CmpFieldsNode extends SectionNode {
 
     CmpFieldsNode(SectionNodeView sectionNodeView, Entity entity) {
-        super(sectionNodeView, true, entity, "CMP Fields", Utils.ICON_BASE_MISC_NODE);
+        super(sectionNodeView, true, entity, Utils.getBundleMessage("LBL_CmpFields"), Utils.ICON_BASE_MISC_NODE);
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {

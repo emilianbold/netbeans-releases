@@ -61,7 +61,7 @@ class EjbReferencesTableModel extends InnerTableModel {
                 case 1:
                     return ref.getEjbLink();
                 case 2:
-                    return "local";
+                    return "local"; //NOI18N
                 case 3:
                     return ref.getDefaultDescription();
             }
@@ -73,7 +73,7 @@ class EjbReferencesTableModel extends InnerTableModel {
                 case 1:
                     return ref.getEjbLink();
                 case 2:
-                    return "remote";
+                    return "remote"; //NOI18N
                 case 3:
                     return ref.getDefaultDescription();
             }

@@ -31,9 +31,9 @@ import javax.swing.*;
  */
 public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
     private ActivationConfig config;
-    private static final String PROPERTY_MESSAGE_SELECTOR = "messageSelector";
-    private static final String PROPERTY_ACKNOWLEDGE_NAME = "acknowledgeMode";
-    private static final String PROPERTY_SUBSCRIPTION_DURABILITY = "subscriptionDurability";
+    private static final String PROPERTY_MESSAGE_SELECTOR = "messageSelector";  //NOI18N
+    private static final String PROPERTY_ACKNOWLEDGE_NAME = "acknowledgeMode";  //NOI18N
+    private static final String PROPERTY_SUBSCRIPTION_DURABILITY = "subscriptionDurability";    //NOI18N
     private static final String DESTINATION_TYPE_TOPIC = MessageDrivenDestination.DESTINATION_TYPE_TOPIC;
     private static final String DESTINATION_TYPE_QUEUE = MessageDrivenDestination.DESTINATION_TYPE_QUEUE;
     private static final String SUBSCRIPTION_DURABILITY_NONDURABLE = MessageDrivenDestination.SUBSCRIPTION_DURABILITY_NONDURABLE;
@@ -103,7 +103,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
             new ItemOptionHelper(getAcknowledgeModeButtonGroup(), dataObject) {
 
                 public String getItemValue() {
-                    return getConfigProperty(PROPERTY_ACKNOWLEDGE_NAME, "Auto-acknowledge");
+                    return getConfigProperty(PROPERTY_ACKNOWLEDGE_NAME, "Auto-acknowledge");//NOI18N
                 }
 
                 public void setItemValue(String value) {
@@ -214,7 +214,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
         }
 
         public String getItemValue() {
-            return getConfigProperty(PROPERTY_SUBSCRIPTION_DURABILITY, "NonDurable");
+            return getConfigProperty(PROPERTY_SUBSCRIPTION_DURABILITY, "NonDurable");//NOI18N
         }
 
         public void setItemValue(String value) {

@@ -24,7 +24,8 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 class MdbImplementationNode extends SectionNode {
 
     MdbImplementationNode(SectionNodeView sectionNodeView, MessageDriven messageDriven) {
-        super(sectionNodeView, true, messageDriven, "Enterprise Bean Implementation", Utils.ICON_BASE_MISC_NODE);
+        super(sectionNodeView, true, messageDriven, Utils.getBundleMessage("LBL_EjbImplementation"),
+                Utils.ICON_BASE_MISC_NODE);
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {

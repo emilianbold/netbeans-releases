@@ -20,6 +20,8 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 
 import java.util.List;
 import java.util.LinkedList;

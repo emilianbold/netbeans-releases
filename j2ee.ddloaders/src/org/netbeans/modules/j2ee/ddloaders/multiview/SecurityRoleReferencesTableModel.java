@@ -21,7 +21,9 @@ import org.netbeans.modules.j2ee.dd.api.ejb.SecurityRoleRef;
  */
 class SecurityRoleReferencesTableModel extends InnerTableModel {
     private EntityAndSession ejb;
-    private static final String[] COLUMN_NAMES = new String[]{"Reference name", "Linked Role", "Description"};
+    private static final String[] COLUMN_NAMES = {Utils.getBundleMessage("LBL_ReferenceName"),
+                                                  Utils.getBundleMessage("LBL_LinkedRole"),
+                                                  Utils.getBundleMessage("LBL_Description")};
     private static final int[] COLUMN_WIDTHS = new int[]{100, 150, 100};
 
     public SecurityRoleReferencesTableModel(EntityAndSession ejb) {

@@ -14,7 +14,6 @@
 package org.netbeans.modules.xml.multiview;
 
 import org.netbeans.core.spi.multiview.*;
-import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 
 /**
  * CustomMultiViewDesc.java
@@ -22,7 +21,7 @@ import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
  * Created on October 9, 2004, 11:37 AM
  * @author mkuchtiak
  */
-public abstract class DesignMultiViewDesc implements MultiViewDescription {
+public abstract class DesignMultiViewDesc implements MultiViewDescription, java.io.Serializable {
 
     //private static final long serialVersionUID = -3640713597058983397L;
 

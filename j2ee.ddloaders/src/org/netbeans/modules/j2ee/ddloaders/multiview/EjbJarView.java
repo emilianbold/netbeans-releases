@@ -25,7 +25,8 @@ class EjbJarView extends SectionNodeView {
 
     EjbJarView(EjbJarMultiViewDataObject dataObject) {
         super(dataObject);
-        SectionNode rootNode = new SectionNode(this, this, "Overview", Utils.ICON_BASE_DD_VALID);
+        SectionNode rootNode = new SectionNode(this, this, Utils.getBundleMessage("LBL_Overview"),
+                Utils.ICON_BASE_DD_VALID);
         EjbJar ejbJar = dataObject.getEjbJar();
         rootNode.addChild(new EjbJarDetailsNode(this, ejbJar));
         EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();

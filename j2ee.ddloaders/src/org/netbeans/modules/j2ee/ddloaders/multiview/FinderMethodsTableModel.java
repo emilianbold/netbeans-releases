@@ -21,26 +21,27 @@ import org.openide.filesystems.FileObject;
 /**
  * @author pfiala
  */
-class SelectMethodsTableModel extends QueryMethodsTableModel {
+class FinderMethodsTableModel extends QueryMethodsTableModel {
     protected static final String[] COLUMN_NAMES = {Utils.getBundleMessage("LBL_Method"),
-                                                    Utils.getBundleMessage("LBL_ReturnType"),
+                                                    Utils.getBundleMessage("LBL_ReturnsCollection"),
+                                                    Utils.getBundleMessage("LBL_ResultInterface"),
                                                     Utils.getBundleMessage("LBL_Query"),
                                                     Utils.getBundleMessage("LBL_Description")};
-    protected static final int[] COLUMN_WIDTHS = new int[]{200, 100, 200, 100};
+    protected static final int[] COLUMN_WIDTHS = new int[]{200, 100, 120, 200, 100};
 
-    public SelectMethodsTableModel(FileObject ejbJarFile, Entity entity) {
+    public FinderMethodsTableModel(FileObject ejbJarFile, Entity entity) {
         super(COLUMN_NAMES, COLUMN_WIDTHS, ejbJarFile, entity);
     }
 
     public int addRow() {
-        new EntityHelper(ejbJarFile, entity).addSelectMethod();
+        new EntityHelper(ejbJarFile, entity).addFinderMethod();
         initMethods();
         fireTableRowsInserted(-1, -1);
         return getRowCount() - 1;
     }
 
     protected boolean isSupportedMethod(Query query) {
-        return query.getQueryMethod().getMethodName().startsWith("ejbSelectBy"); //NOI18N
+        return query.getQueryMethod().getMethodName().startsWith("findBy");//NOI18N
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
@@ -49,10 +50,12 @@ class SelectMethodsTableModel extends QueryMethodsTableModel {
             case 0:
                 return query.getQueryMethod().getMethodName();
             case 1:
-                return getQueryMethodHelper(query).getReturnType();
+                return new Boolean(getQueryMethodHelper(query).returnsCollection());
             case 2:
-                return query.getEjbQl();
+                return getQueryMethodHelper(query).getResultInterface();
             case 3:
+                return query.getEjbQl();
+            case 4:
                 return query.getDefaultDescription();
         }
         return null;

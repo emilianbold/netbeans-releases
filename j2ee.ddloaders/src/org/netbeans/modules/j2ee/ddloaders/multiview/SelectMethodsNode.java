@@ -17,6 +17,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.openide.filesystems.FileObject;
 
 /**
  * @author pfiala
@@ -24,11 +25,17 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 class SelectMethodsNode extends SectionNode {
 
     SelectMethodsNode(SectionNodeView sectionNodeView, Entity entity) {
-        super(sectionNodeView, true, entity, "CMP Finders and Selects", Utils.ICON_BASE_MISC_NODE);
+        super(sectionNodeView, true, entity, Utils.getBundleMessage("LBL_CmpSelects"), Utils.ICON_BASE_MISC_NODE);
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        return new InnerTablePanel(getSectionNodeView(), new SelectMethodsTableModel((Entity) key));
+        Entity entity = (Entity) key;
+        final FileObject ejbJarFile = getSectionNodeView().getDataObject().getPrimaryFile();
+        InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(),
+                new SelectMethodsTableModel(ejbJarFile, entity));
+        innerTablePanel.getEditButton().setVisible(false);
+        innerTablePanel.getRemoveButton().setVisible(false);
+        return innerTablePanel;
 
     }
 }

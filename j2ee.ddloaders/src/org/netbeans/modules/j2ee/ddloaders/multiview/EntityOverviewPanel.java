@@ -29,7 +29,7 @@ import java.awt.event.ActionListener;
  */
 public class EntityOverviewPanel extends EntityOverviewForm {
     private EjbJarMultiViewDataObject dataObject;
-    private static final String COMPOUND = "compound";
+    private static final String COMPOUND = "compound"; //NOI18N
 
     /**
      * Creates new form EntityOverviewForm
@@ -64,7 +64,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
         persistenceTypeTextField.setEnabled(false);
         String persistenceType = entity.getPersistenceType();
         boolean isCmp = Entity.PERSISTENCE_TYPE_CONTAINER.equals(persistenceType);
-        persistenceTypeTextField.setText(persistenceType + ((isCmp ? " (CMP)" : " (BMP)")));
+        persistenceTypeTextField.setText(persistenceType + ((isCmp ? " (CMP)" : " (BMP)")));    //NOI18N
 
         new ItemEditorHelper(abstractSchemaNameTextField, new TextItemEditorModel(dataObject) {
             protected boolean validate(String value) {
@@ -116,23 +116,23 @@ public class EntityOverviewPanel extends EntityOverviewForm {
             });
             primaryKeyClassComboBox.setEnabled(primaryKeyFieldComboBox.getSelectedIndex() == 0);
 
-            primaryKeyClassComboBox.addItem("boolean");
-            primaryKeyClassComboBox.addItem("byte");
-            primaryKeyClassComboBox.addItem("char");
-            primaryKeyClassComboBox.addItem("double");
-            primaryKeyClassComboBox.addItem("float");
-            primaryKeyClassComboBox.addItem("int");
-            primaryKeyClassComboBox.addItem("long");
-            primaryKeyClassComboBox.addItem("java.lang.Boolean");
-            primaryKeyClassComboBox.addItem("java.lang.Byte");
-            primaryKeyClassComboBox.addItem("java.lang.Character");
-            primaryKeyClassComboBox.addItem("java.lang.Double");
-            primaryKeyClassComboBox.addItem("java.lang.Float");
-            primaryKeyClassComboBox.addItem("java.lang.Integer");
-            primaryKeyClassComboBox.addItem("java.lang.Long");
-            primaryKeyClassComboBox.addItem("java.lang.Object");
-            primaryKeyClassComboBox.addItem("java.lang.String");
-            primaryKeyClassComboBox.addItem("java.math.BigDecimal");
+            primaryKeyClassComboBox.addItem("boolean");             //NOI18N
+            primaryKeyClassComboBox.addItem("byte");                //NOI18N
+            primaryKeyClassComboBox.addItem("char");                //NOI18N
+            primaryKeyClassComboBox.addItem("double");              //NOI18N
+            primaryKeyClassComboBox.addItem("float");               //NOI18N
+            primaryKeyClassComboBox.addItem("int");                 //NOI18N
+            primaryKeyClassComboBox.addItem("long");                //NOI18N
+            primaryKeyClassComboBox.addItem("java.lang.Boolean");   //NOI18N
+            primaryKeyClassComboBox.addItem("java.lang.Byte");      //NOI18N
+            primaryKeyClassComboBox.addItem("java.lang.Character"); //NOI18N
+            primaryKeyClassComboBox.addItem("java.lang.Double");    //NOI18N
+            primaryKeyClassComboBox.addItem("java.lang.Float");     //NOI18N
+            primaryKeyClassComboBox.addItem("java.lang.Integer");   //NOI18N
+            primaryKeyClassComboBox.addItem("java.lang.Long");      //NOI18N
+            primaryKeyClassComboBox.addItem("java.lang.Object");    //NOI18N
+            primaryKeyClassComboBox.addItem("java.lang.String");    //NOI18N
+            primaryKeyClassComboBox.addItem("java.math.BigDecimal");//NOI18N
 
             new ItemComboBoxHelper(primaryKeyClassComboBox, dataObject) {
 

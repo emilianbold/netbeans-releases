@@ -23,7 +23,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  */
 public class MessageDrivenOverviewNode extends SectionNode {
     public MessageDrivenOverviewNode(SectionNodeView sectionNodeView, MessageDriven messageDriven) {
-        super(sectionNodeView, messageDriven, "Overview", Utils.ICON_BASE_MISC_NODE);
+        super(sectionNodeView, messageDriven, Utils.getBundleMessage("LBL_Overview"), Utils.ICON_BASE_MISC_NODE);
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {

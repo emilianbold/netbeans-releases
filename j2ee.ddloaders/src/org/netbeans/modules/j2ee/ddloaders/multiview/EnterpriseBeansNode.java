@@ -26,7 +26,8 @@ import java.util.Comparator;
  */
 public class EnterpriseBeansNode extends SectionNode {
     public EnterpriseBeansNode(SectionNodeView sectionNodeView, EnterpriseBeans enterpriseBeans) {
-        super(sectionNodeView, enterpriseBeans, "Enterprise Bean", Utils.ICON_BASE_ENTERPRISE_JAVA_BEANS_NODE);
+        super(sectionNodeView, enterpriseBeans, Utils.getBundleMessage("LBL_EnterpriseBeans"),
+                Utils.ICON_BASE_ENTERPRISE_JAVA_BEANS_NODE);
         setExpanded(true);
 
         final Ejb[] ejbs = enterpriseBeans.getEjbs();

@@ -314,9 +314,7 @@ is divided into following sections:
             </target>
             
             <target name="init-taskdefs">
-                <taskdef name="copyfiles" classname="org.netbeans.modules.web.project.ant.CopyFiles" classpath="${{copyfiles.classpath}}"/>
             </target>
-
             
             <target name="init">
                 <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-macrodef-javac,init-macrodef-nbjpda,init-macrodef-debug,init-taskdefs</xsl:attribute>
@@ -427,9 +425,9 @@ is divided into following sections:
                     <xsl:variable name="included.prop.name">
                         <xsl:value-of select="."/>
                     </xsl:variable>
-                    <copyfiles todir="${{build.web.dir}}">
-                        <xsl:attribute name="files">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
-                     </copyfiles>
+                    <copy todir="${{build.classes.dir}}">
+                        <xsl:attribute name="file">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
+                     </copy>
                 </xsl:for-each>   
             </target> 
 
@@ -445,9 +443,9 @@ is divided into following sections:
                         <xsl:attribute name="property"><xsl:value-of select="$base.prop.name"/></xsl:attribute>
                         <xsl:attribute name="file">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
                      </basename>
-                     <copyfiles todir="${{dist.ear.dir}}">
-                        <xsl:attribute name="files">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
-                     </copyfiles>
+                     <copy todir="${{dist.ear.dir}}">
+                        <xsl:attribute name="file">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
+                     </copy>
                 </xsl:for-each>   
                 <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
                     <attribute>
