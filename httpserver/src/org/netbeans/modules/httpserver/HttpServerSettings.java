@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.httpserver;
 
+import java.awt.Dialog;
+import java.awt.event.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
@@ -31,6 +33,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import javax.swing.event.EventListenerList;
+import org.openide.DialogDescriptor;
 
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
@@ -79,6 +82,7 @@ public class HttpServerSettings extends SystemOption
 
     private static final String PROP_HOST               = "host"; // NOI18N
     private static final String PROP_GRANTED_ADDRESSES  = "grantedAddresses"; // NOI18N
+    private static final String PROP_SHOW_GRANT_ACCESS  = "showGrantAccess"; // NOI18N
 
     /** port */
     //  private static int port = 8082; //8080
@@ -123,8 +127,6 @@ public class HttpServerSettings extends SystemOption
     private static Object httpLock;
     
     /** Used to remember the state of the running property during the deserialization */
-    private boolean pendingRunning = true;
-
     static final long serialVersionUID =7387407495740535307L;
     
     /**
@@ -220,13 +222,6 @@ public class HttpServerSettings extends SystemOption
         }
     }
 
-    /** Reads from the serialized state */
-    public void readExternal (ObjectInput in)
-    throws IOException, ClassNotFoundException {
-        super.readExternal(in);
-        setRunning(pendingRunning);
-    }
-
     /** Returns a relative directory URL with a leading and a trailing slash */
     private String getCanonicalRelativeURL(String url) {
         String newURL;
@@ -246,7 +241,7 @@ public class HttpServerSettings extends SystemOption
     /** setter for running status */
     public void setRunning(boolean running) {
         if (isReadExternal()) {
-            pendingRunning = running;
+            // just for deserialization, do not start
             return;
         }
         inited = true;
@@ -536,12 +531,28 @@ public class HttpServerSettings extends SystemOption
             }
 
             try {
-                MessageFormat format = new MessageFormat(NbBundle.getBundle(HttpServerSettings.class).getString("MSG_AddAddress"));
-                String msg = format.format(new Object[] { addr.getHostAddress() });
-                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
-                Object ret = TopManager.getDefault().notify(nd);
+                if (!isShowGrantAccessDialog ())
+                    return false;
+                
+                String msg = NbBundle.getMessage (HttpServerSettings.class, "MSG_AddAddress", addr.getHostAddress ());
+                
+                final GrantAccessPanel panel = new GrantAccessPanel (msg);
+                DialogDescriptor descriptor = new DialogDescriptor (
+                    panel,
+                    NbBundle.getMessage (HttpServerSettings.class, "CTL_GrantAccessTitle"),
+                    true,
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.NO_OPTION,
+                    null
+                );
+                descriptor.setMessageType (NotifyDescriptor.QUESTION_MESSAGE);
+                // descriptor.setOptionsAlign (DialogDescriptor.BOTTOM_ALIGN);
+                final Dialog d  = TopManager.getDefault ().createDialog (descriptor);
+                d.setSize (580, 180);
+                d.show ();
 
-                if (NotifyDescriptor.YES_OPTION.equals(ret)) {
+                setShowGrantAccessDialog (panel.getShowDialog ());
+                if (NotifyDescriptor.YES_OPTION.equals(descriptor.getValue ())) {
                     appendAddressToGranted(addr.getHostAddress());
                     return true;
                 }
@@ -667,6 +678,18 @@ public class HttpServerSettings extends SystemOption
             host = hostProperty.getHost ();
             firePropertyChange(PROP_HOST_PROPERTY, null, hostProperty);
         }
+    }
+    
+    public boolean isShowGrantAccessDialog () {
+        Boolean b = (Boolean)getProperty (PROP_SHOW_GRANT_ACCESS);
+        if (b != null) 
+            return b.booleanValue ();
+        else
+            return true;
+    }
+    
+    public void setShowGrantAccessDialog (boolean show) {
+        putProperty (PROP_SHOW_GRANT_ACCESS, new Boolean (show), true);
     }
     
     public void propertyChange (PropertyChangeEvent evt) {

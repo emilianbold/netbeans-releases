@@ -20,8 +20,12 @@ import java.net.URLConnection;
 import javax.servlet.ServletException;
 import javax.servlet.http.*;
 
+import org.openide.execution.NbfsURLConnection;
+import org.openide.filesystems.FileObject;
+// import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
+
 import javax.servlet.ServletOutputStream;
 
 /**
@@ -41,7 +45,7 @@ public class WrapperServlet extends NbBaseServlet {
      * and can be used from outside of IDE
      *
      * @param url original URL
-     * @return translated URL
+     * @return translated URL or null if processing failed
      */ 
     public static URL createHttpURL (URL url) {
         if (url == null)
@@ -52,6 +56,18 @@ public class WrapperServlet extends NbBaseServlet {
             return url;
         
         try {
+            URL newURL;
+            
+            /*
+            if (NbfsURLConnection.PROTOCOL.equals (url.getProtocol ())) {
+                FileObject fo = NbfsURLConnection.decodeURL (url);
+                if (url != null) {
+                    newURL = URLMapper.findURL (fo, URLMapper.EXTERNAL);
+                    if (newURL != null) 
+                        return newURL;
+                }
+            }
+             */
             String orig = url.toString ();
             int slash = orig.indexOf ('/');
             if (slash >= 0 && orig.charAt (slash+1) == '/') {
@@ -65,10 +81,10 @@ public class WrapperServlet extends NbBaseServlet {
 
             HttpServerSettings settings = (HttpServerSettings)SharedClassObject.findObject(HttpServerSettings.class, true);
             settings.setRunning (true);
-            URL newURL = new URL ("http",   // NOI18N
-                                  InetAddress.getLocalHost ().getHostName (), 
-                                  settings.getPort (),
-                                  settings.getWrapperBaseURL () + path);
+            newURL = new URL ("http",   // NOI18N
+                              InetAddress.getLocalHost ().getHostName (), 
+                              settings.getPort (),
+                              settings.getWrapperBaseURL () + path);
             return newURL;
         }
         catch (Exception ex) {

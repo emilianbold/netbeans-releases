@@ -63,25 +63,9 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
 
     static final long serialVersionUID =8562026516563511530L;
 
-    /** Module installed again.
-    */
-    public void restored() {
-        try {
-            org.openide.util.HttpServer.registerServer(httpserverSettings ());
-        }
-        catch (SecurityException e) {}
-    }
-
-
     /** Module is being closed. */
     public void close () {
         // stop the server, don't set the running status
-        try {
-            org.openide.util.HttpServer.deregisterServer(httpserverSettings ());
-        }
-        catch (SecurityException e) {
-            // pending - why do I get SecurityException ?
-        }
         synchronized (HttpServerSettings.httpLock ()) {
             stopHTTPServer();
         }
@@ -289,7 +273,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
     /** 
      * Obtains settings of this module
      */
-    private static HttpServerSettings httpserverSettings () {
+    static HttpServerSettings httpserverSettings () {
         return (HttpServerSettings)SharedClassObject.findObject (HttpServerSettings.class, true);
     }
     
@@ -330,12 +314,10 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
             if (!"systemClassLoader".equals (evt.getPropertyName ()))  // NOI18N
                 return;
             
-            System.out.println ("systemClassLoader changed !!!");
             RequestProcessor.postRequest (this);
         }
         
         public void run () {
-            System.out.println("refreshing context");
             cm.setParentClassLoader (TopManager.getDefault ().systemClassLoader ());
             
             File wd = FileUtil.toFile (
