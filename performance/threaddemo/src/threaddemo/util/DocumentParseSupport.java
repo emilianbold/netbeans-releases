@@ -164,10 +164,10 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
     /**
      * Declare whether the support always requires a document object, even to
      * parse an unmodified file.
-     * <p>If true, {@link #doDerive(Document,List,Object)} is always given a
+     * <p>If true, {@link #doDerive(StyledDocument,List,Object)} is always given a
      * document; if the editor support had never been opened at all, it is
      * nonetheless opened (invisibly) just to provide this document to parse.
-     * <p>If false, {@link #doDerive(Document,List,Object)} may be passed null for
+     * <p>If false, {@link #doDerive(StyledDocument,List,Object)} may be passed null for
      * its <code>document</code> parameter, meaning that the editor support has
      * not yet loaded a document. In this case the support is expected to run the
      * parse from the editor cookie's underlying storage, e.g. a file. This style
