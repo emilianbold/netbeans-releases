@@ -14,6 +14,8 @@
 package org.netbeans.modules.web.core;
 
 import java.io.IOException;
+import org.netbeans.modules.web.core.jsploader.JspLoader;
+import org.netbeans.modules.web.core.jsploader.JspDataObject;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -65,6 +67,24 @@ public class EditQueryStringAction extends CookieAction {
         return MODE_EXACTLY_ONE;
     }
 
+    protected boolean enable (Node[] activatedNodes){
+        for (int i = 0; i < activatedNodes.length; i++){
+            DataObject dObj = (DataObject)(activatedNodes[i]).getCookie(DataObject.class);
+            QueryStringCookie qsc = (QueryStringCookie)activatedNodes[0].getCookie(QueryStringCookie.class);
+
+            if (qsc == null || dObj == null)
+                return false;
+            
+            if (dObj instanceof JspDataObject){
+                String ext = dObj.getPrimaryFile().getExt();
+                if (ext.equals(JspLoader.TAGF_FILE_EXTENSION) 
+                    || ext.equals(JspLoader.TAGX_FILE_EXTENSION)
+                    || ext.equals(JspLoader.TAG_FILE_EXTENSION))
+                        return false;
+            }
+        }
+        return true;
+    }
     /**
     * Returns QueryStringCookie
     */

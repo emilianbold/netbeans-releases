@@ -61,12 +61,8 @@ public class JspNode extends DataNode {
     private void initialize () {
         setIconBase(getIconBase());
         setDefaultAction (SystemAction.get (OpenAction.class));
-        
-        String ext = getExtension();
-        
-        if (ext.equals(JspLoader.TAGF_FILE_EXTENSION) 
-            || ext.equals(JspLoader.TAGX_FILE_EXTENSION)
-            || ext.equals(JspLoader.TAG_FILE_EXTENSION))
+
+        if (isTagFile())
                 setShortDescription (NbBundle.getMessage(JspNode.class, "LBL_tagNodeShortDesc")); //NOI18N
         else
                 setShortDescription (NbBundle.getMessage(JspNode.class, "LBL_jspNodeShortDesc")); //NOI18N
@@ -75,6 +71,13 @@ public class JspNode extends DataNode {
 
     private String getExtension(){
         return getDataObject().getPrimaryFile().getExt();
+    }
+    
+    private boolean isTagFile(){
+        String ext = getExtension();
+        return (ext.equals(JspLoader.TAGF_FILE_EXTENSION) 
+            || ext.equals(JspLoader.TAGX_FILE_EXTENSION)
+            || ext.equals(JspLoader.TAG_FILE_EXTENSION));
     }
     
     public DataObject getDataObject() {
@@ -90,41 +93,43 @@ public class JspNode extends DataNode {
 
         Sheet sheet = super.createSheet();
 
-        ps = new Sheet.Set ();
-        ps.setName(EXECUTION_SET_NAME);
-        ps.setDisplayName(NbBundle.getBundle(JspNode.class).getString("PROP_executionSetName")); //NOI18N
-        ps.setShortDescription(NbBundle.getBundle(JspNode.class).getString("HINT_executionSetName")); //NOI18N
-        
-        ps.put(new PropertySupport.ReadWrite (
-                   PROP_REQUEST_PARAMS,
-                   String.class,
-                   NbBundle.getBundle(JspNode.class).getString("PROP_requestParams"), //NOI18N
-                   NbBundle.getBundle(JspNode.class).getString("HINT_requestParams") //NOI18N
-               ) {
-                   public Object getValue() {
-                       return getRequestParams(((MultiDataObject)getDataObject()).getPrimaryEntry());
-                   }
-                   public void setValue (Object val) throws InvocationTargetException {
-                       if (val instanceof String) {
-                           try {
-                               setRequestParams(((MultiDataObject)getDataObject()).getPrimaryEntry(), (String)val);
-                           } catch(IOException e) {
-                               throw new InvocationTargetException (e);
+        if (!isTagFile()){
+            ps = new Sheet.Set ();
+            ps.setName(EXECUTION_SET_NAME);
+            ps.setDisplayName(NbBundle.getBundle(JspNode.class).getString("PROP_executionSetName")); //NOI18N
+            ps.setShortDescription(NbBundle.getBundle(JspNode.class).getString("HINT_executionSetName")); //NOI18N
+
+            ps.put(new PropertySupport.ReadWrite (
+                       PROP_REQUEST_PARAMS,
+                       String.class,
+                       NbBundle.getBundle(JspNode.class).getString("PROP_requestParams"), //NOI18N
+                       NbBundle.getBundle(JspNode.class).getString("HINT_requestParams") //NOI18N
+                   ) {
+                       public Object getValue() {
+                           return getRequestParams(((MultiDataObject)getDataObject()).getPrimaryEntry());
+                       }
+                       public void setValue (Object val) throws InvocationTargetException {
+                           if (val instanceof String) {
+                               try {
+                                   setRequestParams(((MultiDataObject)getDataObject()).getPrimaryEntry(), (String)val);
+                               } catch(IOException e) {
+                                   throw new InvocationTargetException (e);
+                               }
+                           }
+                           else {
+                               throw new IllegalArgumentException();
                            }
                        }
-                       else {
-                           throw new IllegalArgumentException();
-                       }
                    }
-               }
-              );
-              
+                  );
+                  sheet.put(ps);
+        }
         // remove the params property
         //ps.remove(ExecSupport.PROP_FILE_PARAMS);
         // remove the debugger type property
         //ps.remove(ExecSupport.PROP_DEBUGGER_TYPE);
 
-        sheet.put(ps);
+        
 
         // text sheet
         ps = new Sheet.Set();
@@ -148,9 +153,7 @@ public class JspNode extends DataNode {
 
         Node.PropertySet[] tmp = sheet.toArray();
         String ext = getExtension();
-        if (ext.equals(JspLoader.TAGF_FILE_EXTENSION) 
-            || ext.equals(JspLoader.TAGX_FILE_EXTENSION)
-            || ext.equals(JspLoader.TAG_FILE_EXTENSION))
+        if (isTagFile())
             for(int i = 0; i < tmp.length; i++){
                 tmp[i].setValue("helpID", JspNode.class.getName() + ".Tag.PropertySheet"); // NOI18N
             }
@@ -218,10 +221,7 @@ public class JspNode extends DataNode {
     }
 
     public HelpCtx getHelpCtx() {
-        String ext = getExtension();
-        if (ext.equals(JspLoader.TAGF_FILE_EXTENSION) 
-            || ext.equals(JspLoader.TAGX_FILE_EXTENSION)
-            || ext.equals(JspLoader.TAG_FILE_EXTENSION))
+        if (isTagFile())
             return new HelpCtx(JspNode.class.getName() + ".Tag");//NOI18N
         else    
             return new HelpCtx(JspNode.class.getName());//NOI18N
