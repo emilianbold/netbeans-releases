@@ -41,4 +41,5 @@ core/src/org/netbeans/core/windows/nodes/Bundle.properties
 core/src/org/netbeans/core/windows/toolbars/Bundle.properties
 core/src/org/netbeans/core/windows/util/Bundle.properties
 core/ui/src/org/netbeans/core/ui/resources/Bundle.properties
+core/ui/src/org/netbeans/core/ui/resources/layer.properties
 core/windows/src/org/netbeans/core/windows/resources/Bundle.properties

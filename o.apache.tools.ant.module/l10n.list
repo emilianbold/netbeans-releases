@@ -8,6 +8,7 @@ ant/src/org/apache/tools/ant/module/resources/CustomTaskDescription.html
 ant/src/org/apache/tools/ant/module/resources/ProjectDescription.html
 ant/src/org/apache/tools/ant/module/resources/SampleProjectDescription.html
 ant/src/org/apache/tools/ant/module/run/Bundle.properties
+ant/src/org/apache/tools/ant/module/spi/Bundle.properties
 ant/src/org/apache/tools/ant/module/wizards/properties/Bundle.properties
 ant/src/org/apache/tools/ant/module/wizards/shortcut/Bundle.properties
 ant/docs/src/org/apache/tools/ant/module/docs/Bundle.properties
