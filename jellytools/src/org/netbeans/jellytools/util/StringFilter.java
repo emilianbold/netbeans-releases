@@ -88,20 +88,28 @@ public class StringFilter {
      * @param end the end of substring to be find
      */
     public static String replaceString(String original, String begin, String end, String replace ) {
-        boolean relpaceAll = false;
+        boolean replaceAll = false;
         int from;
         int to;
         int offset = 0;
         
         if (isEmpty(original) || (isEmpty(begin) && isEmpty(end))) return original;
-        if (begin.equals(end)) relpaceAll = true;
+        if (begin.equals(end)) replaceAll = true;
         do {
             from = isEmpty(begin) ? 0 : original.indexOf(begin, offset);
-            to = isEmpty(end) ? original.length() : original.indexOf(end, from) + end.length();
-            if (from < 0 || to < 0) break;
+            if (from < 0)
+                break;
+            if (isEmpty(end)) {
+                to = original.length();
+            } else {
+                to = original.indexOf(end, from);
+                if (to < 0)
+                    break;
+                to += end.length();
+            }
             original = original.substring(0, from) + replace  + original.substring(to, original.length());
-            offset = from + replace .length();
-        } while (relpaceAll);
+            offset = from + replace.length();
+        } while (replaceAll);
         
         return original;
     }
