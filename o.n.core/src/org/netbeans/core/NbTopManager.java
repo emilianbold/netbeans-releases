@@ -59,6 +59,8 @@ import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.compiler.CompilationEngineImpl;
 import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.modules.ModuleSystem;
+import org.openide.modules.Dependency;
+import org.openide.modules.SpecificationVersion;
 
 /** This class is a TopManager for Corona environment.
 *
@@ -153,6 +155,12 @@ public abstract class NbTopManager extends TopManager {
             "org.openide.util.Lookup", // NOI18N
             "org.netbeans.core.NbTopManager$Lkp" // NOI18N
           );
+        }
+        
+        // Enforce JDK 1.3+ since we would not work without it.
+        if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.3")) < 0) {
+            System.err.println("The IDE requires JDK 1.3 or higher to run."); // XXX I18N?
+            System.exit(1);
         }
 
         // System property jdk.home points to the JDK root directory. 
@@ -910,7 +918,8 @@ public abstract class NbTopManager extends TopManager {
                     Lookup[] arr = new org.openide.util.Lookup[] {
                         lkp.getLookups ()[0],
                         NbTopManager.get ().getInstanceLookup (),
-                        folder.getLookup ()
+                        folder.getLookup (),
+                        NbTopManager.get().getModuleSystem().getManager().getModuleLookup(),
                     };
 		    StartLog.logProgress ("prepared other Lookups"); // NOI18N
 

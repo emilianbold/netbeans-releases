@@ -93,17 +93,20 @@ public class Plain extends NbTopManager implements Runnable {
     public void run() {
         XML.init();
         String userDir = System.getProperty("modules.dir");
+        FileSystem fs = getRepository().getDefaultFileSystem();
         try {
-            moduleSystem = new ModuleSystem(getRepository().getDefaultFileSystem(), userDir == null ? null : new File(userDir), null);
+            moduleSystem = new ModuleSystem(fs, userDir == null ? null : new File(userDir), null);
         } catch (IOException ioe) {
             notifyException(ioe);
             return;
         }
         fireSystemClassLoaderChange();
         moduleSystem.loadBootModules();
-        moduleSystem.readList();
-        moduleSystem.scanForNewAndRestore();
-        moduleSystem.installNew();
+        if (! fs.isReadOnly()) {
+            moduleSystem.readList();
+            moduleSystem.scanForNewAndRestore();
+            moduleSystem.installNew();
+        }
     }
   
     /** Get the module subsystem.  */

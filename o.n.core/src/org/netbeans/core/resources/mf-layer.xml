@@ -478,11 +478,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="instanceCreate" methodvalue="org.openide.loaders.XMLDataObject.createEntityCatalog"/>
         </file>
 
-        <!-- Register all ModuleInfo's in the system using lookup. -->
-        <file name="org-netbeans-core-module-lookup-proxy.instance">
-            <attr name="instanceClass" stringvalue="org.openide.util.Lookup"/>
-            <attr name="instanceCreate" methodvalue="org.netbeans.core.modules.ModuleSystem.getModuleLookup"/>
-        </file>
         <!-- Permit test modules to be (re)deployed. -->
         <file name="org-netbeans-core-module-tester.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.core.modules.TestModuleDeployer"/>
