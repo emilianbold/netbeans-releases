@@ -52,7 +52,7 @@ public final class PropertiesDataObject extends MultiDataObject {
 
   /** JTable-based editor */
   protected transient PropertiesOpen opener;
-
+  
   /** Icon base for the PropertiesNode node */
   static final String PROPERTIES_ICON_BASE =
     "com/netbeans/developer/modules/loaders/properties/propertiesObject";
@@ -236,6 +236,7 @@ public final class PropertiesDataObject extends MultiDataObject {
 
 /*
  * <<Log>>
+ *  18   Gandalf   1.17        8/18/99  Petr Jiricka    Some fix
  *  17   Gandalf   1.16        8/17/99  Petr Jiricka    Changed node 
  *       initialization
  *  16   Gandalf   1.15        6/24/99  Petr Jiricka    

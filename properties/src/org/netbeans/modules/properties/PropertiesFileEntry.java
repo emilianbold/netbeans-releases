@@ -109,8 +109,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
       editorSupport = new PropertiesEditorSupport(this);
     return editorSupport;
   }
-
-
+  
   /* Renames underlying fileobject. This implementation returns the
   * same file.
   *
