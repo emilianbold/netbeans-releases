@@ -373,7 +373,7 @@ public abstract class DataLoader extends SharedClassObject {
             }
             if (main == null && !isdefault) {
                 // Whole action list was successfully read.
-                setActions ((SystemAction[])ll.toArray(new SystemAction[0]));
+                setActions ((SystemAction[])ll.toArray(new SystemAction[ll.size()]));
             } // Else do not try to override the default action list if it is incomplete anyway.
         }
         

@@ -235,6 +235,6 @@ public class NbClassLoader extends URLClassLoader {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
-        return (URL[])list.toArray (new URL[0]);
+        return (URL[])list.toArray (new URL[list.size()]);
     }
 }

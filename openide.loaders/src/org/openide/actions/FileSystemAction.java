@@ -58,7 +58,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
         } else {
             c = java.util.Collections.EMPTY_LIST;
         }
-        return (Node[])c.toArray(new Node[0]);
+        return (Node[])c.toArray(new Node[c.size()]);
     }
 
     /** Creates menu for currently selected nodes.
