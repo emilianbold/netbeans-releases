@@ -58,26 +58,13 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
             KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F1, 0), ACTION_INVOKE_HELP);
         map.put(ACTION_INVOKE_HELP, helpAction);
-        initSaveAction(map);
-    }
-
-    private void initSaveAction(final ActionMap map) {
         
-        SaveAction act = (SaveAction) SaveAction.findObject(SaveAction.class);
-        if (act != null) {
-            KeyStroke stroke = (KeyStroke) act.getValue(Action.ACCELERATOR_KEY);
-            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(stroke, "save"); //NOI18N
-            map.put("save", act); //NOI18N
-            // following line tells the top component which lookup should be associated with it
-            associateLookup(ExplorerUtils.createLookup(manager, map));
-        } else {
-            // let's try it later
-            org.openide.util.RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    initSaveAction(map);
-                }
-            }, 500);
-        }
+        SaveAction act = (SaveAction) org.openide.util.actions.SystemAction.get(SaveAction.class);
+        KeyStroke stroke = KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK);
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(stroke, "save"); //NOI18N
+        map.put("save", act); //NOI18N  
+       
+        associateLookup(ExplorerUtils.createLookup(manager, map));
     }
 
     /**
