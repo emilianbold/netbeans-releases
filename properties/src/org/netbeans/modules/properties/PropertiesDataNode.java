@@ -117,7 +117,7 @@ public class PropertiesDataNode extends DataNode {
                         Element.ItemElem item1 = (Element.ItemElem)it.next();
                         Element.ItemElem item2 = new Element.ItemElem(null, 
                           new Element.KeyElem(null, item1.getKey()),
-                          new Element.ValueElem(null, ""),
+                          new Element.ValueElem(null, item1.getValue()),
                           new Element.CommentElem(null, item1.getComment()));
                         String ps = item2.printString();
                         bw.write(ps, 0, ps.length());
