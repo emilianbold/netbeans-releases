@@ -850,6 +850,10 @@
   <mapID target="org.openide.awt.HtmlBrowser$BrowserComponent" url="webbrowser/swingbrowser.html" />
   <mapID target="org.openide.execution.ProcessExecutor" url="run/external.html" />
   <mapID target="org.openide.execution.ThreadExecutor" url="run/internal.html" />
+  
+<!--ID for Waiting For Tasks to Finish dialog box-->
+    <mapID target="org.netbeans.core.execution.Install.pending" url="pending.html" />
+    
   <mapID target="org.netbeans.modules.java.JavaProcessExecutor" url="run/external.html" />
 
   <mapID target="org.netbeans.modules.debugger.multisession.DebuggerExecutor" url="run/debugexecutor.html" />
