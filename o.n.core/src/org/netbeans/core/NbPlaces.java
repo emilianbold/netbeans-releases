@@ -244,6 +244,12 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
       if (fo == null) {
         // resource not found, try to create new folder
         fo = NbTopManager.getDefaultRepository ().getDefaultFileSystem ().getRoot ().createFolder (name);
+        try {
+          fo.setAttribute ("SystemFileSystem.localizingBundle", "com.netbeans.developer.impl.Bundle"); // NOI18N
+        } catch (java.io.IOException ioe) {
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
+            ioe.printStackTrace ();
+        }
       }
 
       DataFolder df = DataFolder.findFolder(fo);
@@ -257,6 +263,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  34   Gandalf   1.33        1/19/00  Jesse Glick     Localized filenames.
 *  33   Gandalf   1.32        1/13/00  Jaroslav Tulach I18N
 *  32   Gandalf   1.31        11/29/99 Jaroslav Tulach new packages 
 *       implementation.
