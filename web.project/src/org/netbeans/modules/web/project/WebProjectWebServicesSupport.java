@@ -86,38 +86,38 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         String featurePropertyName = "wscompile.service." + serviceName + ".features"; // NOI18N
         String defaultFeatures = fromWSDL ? wsdlServiceStub.getDefaultFeaturesAsArgument() :
             seiServiceStub.getDefaultFeaturesAsArgument();
-        ep.put(featurePropertyName, defaultFeatures);
-        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-        //Add web-services information in project.xml
-        Element data = helper.getPrimaryConfigurationData(true);
-        Document doc = data.getOwnerDocument();
-        NodeList nodes = data.getElementsByTagName(WEB_SERVICES); //NOI18N
-        Element webservices = null;
-        if(nodes.getLength() == 0){
-            webservices = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICES); //NOI18N
-            data.appendChild(webservices);
-        }
-        else{
-            webservices = (Element)nodes.item(0);
-        }
-        Element webservice = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE); //NOI18N
-        webservices.appendChild(webservice);
-        Element webserviceName = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE_NAME); //NOI18N
-        webservice.appendChild(webserviceName);
-        webserviceName.appendChild(doc.createTextNode(serviceName));
-        if(fromWSDL) {
-            Element fromWSDLElem = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "from-wsdl");
-            webservice.appendChild(fromWSDLElem);
-        }
-        helper.putPrimaryConfigurationData(data, true);
-        // Update wscompile related properties.  boolean return indicates whether
-        // any changes were made.
-        updateWsCompileProperties(serviceName);
-        try {
-            ProjectManager.getDefault().saveProject(project);
-        }catch(java.io.IOException ioe){
-            throw new RuntimeException(ioe.getMessage());
-        }
+            ep.put(featurePropertyName, defaultFeatures);
+            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+            //Add web-services information in project.xml
+            Element data = helper.getPrimaryConfigurationData(true);
+            Document doc = data.getOwnerDocument();
+            NodeList nodes = data.getElementsByTagName(WEB_SERVICES); //NOI18N
+            Element webservices = null;
+            if(nodes.getLength() == 0){
+                webservices = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICES); //NOI18N
+                data.appendChild(webservices);
+            }
+            else{
+                webservices = (Element)nodes.item(0);
+            }
+            Element webservice = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE); //NOI18N
+            webservices.appendChild(webservice);
+            Element webserviceName = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE_NAME); //NOI18N
+            webservice.appendChild(webserviceName);
+            webserviceName.appendChild(doc.createTextNode(serviceName));
+            if(fromWSDL) {
+                Element fromWSDLElem = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "from-wsdl");
+                webservice.appendChild(fromWSDLElem);
+            }
+            helper.putPrimaryConfigurationData(data, true);
+            // Update wscompile related properties.  boolean return indicates whether
+            // any changes were made.
+            updateWsCompileProperties(serviceName);
+            try {
+                ProjectManager.getDefault().saveProject(project);
+            }catch(java.io.IOException ioe){
+                throw new RuntimeException(ioe.getMessage());
+            }
     }
     
     private WebApp getWebApp() {
@@ -201,6 +201,42 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
             }
         }
         return null;
+    }
+    
+    public boolean isFromWSDL(String serviceName) {
+        Element data = helper.getPrimaryConfigurationData(true);
+        Document doc = data.getOwnerDocument();
+        NodeList nodes = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+        WEB_SERVICES); //NOI18N
+        Element webservices = null;
+        Element wsNameNode = null;
+        if(nodes.getLength() == 1){
+            webservices = (Element)nodes.item(0);
+            NodeList wsNodes = webservices.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+            WEB_SERVICE); //NOI18N
+            for(int j = 0; j < wsNodes.getLength(); j++) {
+                Element wsNode = (Element)wsNodes.item(j);
+                NodeList wsNameNodes = wsNode.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+                WEB_SERVICE_NAME); //NOI18N
+                if(wsNameNodes.getLength() == 1) {
+                    wsNameNode = (Element)wsNameNodes.item(0);
+                    NodeList nl = wsNameNode.getChildNodes();
+                    if(nl.getLength() == 1) {
+                        Node n = nl.item(0);
+                        if(n.getNodeType() == Node.TEXT_NODE) {
+                            if(serviceName.equals(n.getNodeValue())) {
+                                NodeList fromWSDLNodes = wsNode.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+                                WebServicesConstants.WEB_SERVICE_FROM_WSDL); //NOI18N
+                                if(fromWSDLNodes.getLength() == 1) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
     
     public void removeProjectEntries(String serviceName) {
@@ -323,8 +359,8 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     public ReferenceHelper getReferenceHelper(){
         return referenceHelper;
     }
-
-    /** !PW This method is exposed in the service support API.  Though it's 
+    
+    /** !PW This method is exposed in the service support API.  Though it's
      *  implementation makes more sense here than anywhere else, perhaps this
      *  and the other project.xml/project.properties related methods in this
      *  object should be refactored into another object that this one delegates
@@ -333,30 +369,30 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
      *  probably does not belong at this time.
      */
     private static final String [] WSCOMPILE_SEI_SERVICE_FEATURES = {
-//        "datahandleronly", // WSDL - portable
+        //        "datahandleronly", // WSDL - portable
         "documentliteral", // SEI ONLY - portable
         "rpcliteral", // SEI ONLY - portable
-//        "explicitcontext", // WSDL - portable
-//        "infix:<name>", // difficult handle with current API
-//        "jaxbenumtype", // WSDL
-//        "nodatabinding", // WSDL - portable
+        //        "explicitcontext", // WSDL - portable
+        //        "infix:<name>", // difficult handle with current API
+        //        "jaxbenumtype", // WSDL
+        //        "nodatabinding", // WSDL - portable
         "noencodedtypes",
         "nomultirefs",
-//        "norpcstructures", // import only - portable
-//        "novalidation", // WSDL - portable
-//        "resolveidref", // WSDL
-//        "searchschema", // WSDL - portable
+        //        "norpcstructures", // import only - portable
+        //        "novalidation", // WSDL - portable
+        //        "resolveidref", // WSDL
+        //        "searchschema", // WSDL - portable
         "serializeinterfaces",
         "strict", // - portable
         "useonewayoperations", // SEI ONLY - portable
-//        "wsi", // WSDL - portable
-//        "unwrap", // WSDL - portable
+        //        "wsi", // WSDL - portable
+        //        "unwrap", // WSDL - portable
         "donotoverride", // - portable
-//        "donotunwrap", // WSDL - portable
+        //        "donotunwrap", // WSDL - portable
     };
-
+    
     private static final List allSeiServiceFeatures = Arrays.asList(WSCOMPILE_SEI_SERVICE_FEATURES);
-
+    
     private static final String [] WSCOMPILE_KEY_SEI_SERVICE_FEATURES = {
         "documentliteral",
         "rpcliteral",
@@ -364,15 +400,15 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         "useonewayoperations",
         "donotoverride"
     };
-
+    
     private static final List importantSeiServiceFeatures = Arrays.asList(WSCOMPILE_KEY_SEI_SERVICE_FEATURES);
-
+    
     private static final String [] WSCOMPILE_WSDL_SERVICE_FEATURES = {
         "datahandleronly", // WSDL - portable
-//        "documentliteral", // SEI ONLY - portable
-//        "rpcliteral", // SEI ONLY - portable
+        //        "documentliteral", // SEI ONLY - portable
+        //        "rpcliteral", // SEI ONLY - portable
         "explicitcontext", // WSDL - portable
-//        "infix:<name>", // difficult handle with current API
+        //        "infix:<name>", // difficult handle with current API
         "jaxbenumtype", // WSDL
         "nodatabinding", // WSDL - portable
         "noencodedtypes",
@@ -383,26 +419,26 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         "searchschema", // WSDL - portable
         "serializeinterfaces",
         "strict", // - portable
-//        "useonewayoperations", // SEI ONLY - portable
+        //        "useonewayoperations", // SEI ONLY - portable
         "wsi", // WSDL - portable
         "unwrap", // WSDL - portable
         "donotoverride", // - portable
         "donotunwrap", // WSDL - portable
     };
-
+    
     private static final List allWsdlServiceFeatures = Arrays.asList(WSCOMPILE_WSDL_SERVICE_FEATURES);
-
+    
     private static final String [] WSCOMPILE_KEY_WSDL_SERVICE_FEATURES = {
-        "wsi", 
+        "wsi",
         "strict",
-        "unwrap", 
+        "unwrap",
         "donotunwrap",
-        "donotoverride", 
-        "datahandleronly", 
-        "nodatabinding", 
-        "novalidation", 
-        "searchschema", 
-        "explicitcontext", 
+        "donotoverride",
+        "datahandleronly",
+        "nodatabinding",
+        "novalidation",
+        "searchschema",
+        "explicitcontext",
     };
     
     private static final List importantWsdlServiceFeatures = Arrays.asList(WSCOMPILE_KEY_WSDL_SERVICE_FEATURES);
@@ -413,11 +449,11 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         Element data = helper.getPrimaryConfigurationData(true);
         NodeList nodes = data.getElementsByTagName(WebServicesConstants.WEB_SERVICES);
         EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-
+        
         if(nodes.getLength() != 0) {
             Element serviceElements = (Element) nodes.item(0);
             NodeList serviceNameList = serviceElements.getElementsByTagNameNS(
-                WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_NAME);
+            WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_NAME);
             for(int i = 0; i < serviceNameList.getLength(); i++ ) {
                 Element serviceNameElement = (Element) serviceNameList.item(i);
                 NodeList nl = serviceNameElement.getChildNodes();
@@ -436,14 +472,14 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                                 currentFeatures = seiServiceStub.getDefaultFeaturesAsArgument();
                             }
                             settings = new WsCompileEditorSupport.ServiceSettings(
-                                serviceName, stubType, currentFeatures, allSeiServiceFeatures, importantSeiServiceFeatures);
+                            serviceName, stubType, currentFeatures, allSeiServiceFeatures, importantSeiServiceFeatures);
                         } else { // Should only ever be wsdl node here.)
                             if(currentFeatures == null) {
                                 // default for WSDL generation
                                 currentFeatures = wsdlServiceStub.getDefaultFeaturesAsArgument();
                             }
                             settings = new WsCompileEditorSupport.ServiceSettings(
-                                serviceName, stubType, currentFeatures, allWsdlServiceFeatures, importantWsdlServiceFeatures);
+                            serviceName, stubType, currentFeatures, allWsdlServiceFeatures, importantWsdlServiceFeatures);
                         }
                         serviceList.add(settings);
                     } else {
@@ -454,17 +490,17 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                 }
             }
         }
-
+        
         return serviceList;
     }
-
+    
     private StubDescriptor getServiceStubDescriptor(org.w3c.dom.Node parentNode) {
         StubDescriptor result = null;
         
         if(parentNode instanceof Element) {
             Element parentElement = (Element) parentNode;
             NodeList fromWsdlList = parentElement.getElementsByTagNameNS(
-                WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_FROM_WSDL);
+            WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_FROM_WSDL);
             if(fromWsdlList.getLength() == 1) {
                 result = wsdlServiceStub;
             } else {
@@ -730,7 +766,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         //    Side effect: Regenerate build-impl.xsl
         //    Optional - if last service, remove properties we generated.
         boolean needsSave = false;
-
+        
         /** Remove properties from project.properties
          */
         String featureProperty = "wscompile.client." + serviceName + ".features"; // NOI18N
@@ -809,7 +845,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
             // Create was specified, but no WEB-INF was found, so how do we create it?
             // Expect an NPE if we return null for this case, but log it anyway.
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
-                NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_WebInfNotFoundForWsdlFolder"));
+            NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_WebInfNotFoundForWsdlFolder"));
         }
         
         return wsdlFolder;
@@ -828,7 +864,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     private boolean isProjectOpened() {
         Project[] projects = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i < projects.length; i++) {
-            if (projects[i].equals(project)) 
+            if (projects[i].equals(project))
                 return true;
         }
         return false;
@@ -868,15 +904,15 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     private static final List allClientFeatures = Arrays.asList(WSCOMPILE_CLIENT_FEATURES);
     
     private static final String [] WSCOMPILE_KEY_CLIENT_FEATURES = {
-        "wsi", 
-        "strict", 
-        "norpcstructures", 
-        "unwrap", 
+        "wsi",
+        "strict",
+        "norpcstructures",
+        "unwrap",
         "donotunwrap",
-        "donotoverride", 
+        "donotoverride",
         "datahandleronly",
         "nodatabinding",
-        "novalidation", 
+        "novalidation",
         "searchschema",
     };
     
@@ -902,18 +938,18 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                         String serviceName = n.getNodeValue();
                         String currentFeatures = projectProperties.getProperty("wscompile.client." + serviceName + ".features");
                         if(currentFeatures == null) {
-                            // !PW should probably retrieve default features for stub type.  
+                            // !PW should probably retrieve default features for stub type.
                             // For now, this will work because this is the same value we'd get doing that.
                             //
-                            // Defaults if we can't find any feature property for this client 
+                            // Defaults if we can't find any feature property for this client
                             // Mostly for upgrading EA1, EA2 projects which did not have
                             // this property, but also useful if the user deletes it from
                             // project.properties.
-                            currentFeatures = "wsi, strict"; 
+                            currentFeatures = "wsi, strict";
                         }
                         StubDescriptor stubType = getClientStubDescriptor(clientNameElement.getParentNode());
                         WsCompileEditorSupport.ServiceSettings settings = new WsCompileEditorSupport.ServiceSettings(
-                            serviceName, stubType, currentFeatures, allClientFeatures, importantClientFeatures);
+                        serviceName, stubType, currentFeatures, allClientFeatures, importantClientFeatures);
                         serviceNames.add(settings);
                     } else {
                         // !PW FIXME node is wrong type?! - log message or trace?
@@ -926,14 +962,14 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         
         return serviceNames;
     }
-            
+    
     private StubDescriptor getClientStubDescriptor(org.w3c.dom.Node parentNode) {
         StubDescriptor result = null;
         
         if(parentNode instanceof Element) {
             Element parentElement = (Element) parentNode;
             NodeList clientNameList = parentElement.getElementsByTagNameNS(
-                WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_STUB_TYPE);
+            WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_STUB_TYPE);
             if(clientNameList.getLength() == 1) {
                 Element clientStubElement = (Element) clientNameList.item(0);
                 NodeList nl = clientStubElement.getChildNodes();
@@ -953,7 +989,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         
         return result;
     }
-
+    
     public String getWsdlSource(String serviceName) {
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -962,7 +998,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         Element clientElement = getWebServiceClientNode(data, serviceName);
         if(clientElement != null) {
             NodeList fromWsdlList = clientElement.getElementsByTagNameNS(
-                WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.CLIENT_SOURCE_URL);
+            WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.CLIENT_SOURCE_URL);
             if(fromWsdlList.getLength() == 1) {
                 Element fromWsdlElement = (Element) fromWsdlList.item(0);
                 NodeList nl = fromWsdlElement.getChildNodes();
@@ -982,11 +1018,11 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         boolean needsSave = false;
-
+        
         Element clientElement = getWebServiceClientNode(data, serviceName);
         if(clientElement != null) {
             NodeList fromWsdlList = clientElement.getElementsByTagNameNS(
-                WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.CLIENT_SOURCE_URL);
+            WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.CLIENT_SOURCE_URL);
             if(fromWsdlList.getLength() > 0) {
                 Element fromWsdlElement = (Element) fromWsdlList.item(0);
                 NodeList nl = fromWsdlElement.getChildNodes();
@@ -1025,7 +1061,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         if(nodes.getLength() != 0) {
             Element clientElements = (Element) nodes.item(0);
             NodeList clientNameList = clientElements.getElementsByTagNameNS(
-                WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_CLIENT_NAME);
+            WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_CLIENT_NAME);
             for(int i = 0; i < clientNameList.getLength(); i++ ) {
                 Element clientNameElement = (Element) clientNameList.item(i);
                 NodeList nl = clientNameElement.getChildNodes();
@@ -1050,26 +1086,26 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     
     // Service stub descriptors
     private static final JAXRPCStubDescriptor seiServiceStub = new JAXRPCStubDescriptor(
-        StubDescriptor.SEI_SERVICE_STUB,
-        NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_SEIServiceStub"),
-        new String [] { "documentliteral", "strict" });
+    StubDescriptor.SEI_SERVICE_STUB,
+    NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_SEIServiceStub"),
+    new String [] { "documentliteral", "strict" });
     
     private static final JAXRPCStubDescriptor wsdlServiceStub = new JAXRPCStubDescriptor(
-        StubDescriptor.WSDL_SERVICE_STUB,
-        NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_WSDLServiceStub"),
-        new String [] { "wsi", "strict" });
+    StubDescriptor.WSDL_SERVICE_STUB,
+    NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_WSDLServiceStub"),
+    new String [] { "wsi", "strict" });
     
     
     // Client stub descriptors
     private static final JAXRPCStubDescriptor jsr109ClientStub = new JAXRPCStubDescriptor(
-        StubDescriptor.JSR109_CLIENT_STUB,
-        NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_JSR109ClientStub"),
-        new String [] { "wsi", "strict" });
+    StubDescriptor.JSR109_CLIENT_STUB,
+    NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_JSR109ClientStub"),
+    new String [] { "wsi", "strict" });
     
     private static final JAXRPCStubDescriptor jaxrpcClientStub = new JAXRPCStubDescriptor(
-        StubDescriptor.JAXRPC_CLIENT_STUB,
-        NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_JAXRPCStaticClientStub"),
-        new String [] { "wsi", "strict" });
+    StubDescriptor.JAXRPC_CLIENT_STUB,
+    NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_JAXRPCStaticClientStub"),
+    new String [] { "wsi", "strict" });
     
     /** Stub descriptor for services and clients supported by this project type.
      */
