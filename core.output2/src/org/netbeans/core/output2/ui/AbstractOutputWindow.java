@@ -44,6 +44,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         pane.addChangeListener (this);
         pane.addPropertyChangeListener (CloseButtonTabbedPane.PROP_CLOSE, this);
         setFocusable(true);
+        setBackground (UIManager.getColor("text"));
     }
 
     public void propertyChange (PropertyChangeEvent pce) {
@@ -266,4 +267,22 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
     }
 
     protected abstract void selectionChanged (AbstractOutputTab former, AbstractOutputTab current);
+    
+    private final boolean isGtk = "GTK".equals(UIManager.getLookAndFeel().getID()) || //NOI18N
+        UIManager.getLookAndFeel().getClass().getSuperclass().getName().indexOf ("Synth") != -1; //NOI18N
+    /**
+     * Overridden to fill in the background color, since Synth/GTKLookAndFeel ignores
+     * setOpaque(true).
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=43024
+     */
+    public void paint (Graphics g) {
+        if (isGtk) {
+            //Presumably we can get this fixed for JDK 1.5.1
+            Color c = getBackground();
+            if (c == null) c = Color.WHITE;
+            g.setColor (c);
+            g.fillRect (0, 0, getWidth(), getHeight());
+        }
+        super.paint(g);
+    }    
 }
