@@ -50,6 +50,9 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
 
     /** Structural view of the dataobject */
     private transient BundleStructure bundleStructure;
+    
+    /** Open support for this data object. Provides editable table view on bundle. */
+    private transient PropertiesOpen openSupport;
 
     /** Generated Serialized Version UID. */
     static final long serialVersionUID = 4795737295255253334L;
@@ -73,14 +76,14 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
     /** Implements <code>CookieSet.Factory</code> interface method. */
     public Node.Cookie createCookie(Class clazz) {
         if(clazz.isAssignableFrom(PropertiesOpen.class)) {
-            return new PropertiesOpen(this);
+            return getOpenSupport();
         } else if(clazz.isAssignableFrom(PropertiesEditorSupport.class)) {
             return ((PropertiesFileEntry)getPrimaryEntry()).getPropertiesEditor();
         } else
             return null;
     }
     
-    // PEDING very ugly, has to be revised.
+    // PENDING very ugly, has to be revised.
     /** Hack to removeSecondaryEntry(MultiDataObject.Entry) method. */
     void removeSecondaryEntryHack(MultiDataObject.Entry entry) {
         super.removeSecondaryEntry(entry);
@@ -96,9 +99,16 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
         getPrimaryEntry().delete();
     }
 
-    /** Returns the support object for JTable-editing. Should be used by all subentries as well */
-    public PropertiesOpen getOpenSupport () {
-        return (PropertiesOpen)getCookie(OpenCookie.class);
+    /** Returns open support. It's used by all subentries as open support too. */
+    public PropertiesOpen getOpenSupport() {
+        if(openSupport == null) {
+            synchronized(this) {
+                if(openSupport == null)
+                    openSupport = new PropertiesOpen(this);
+            }
+        }
+        
+        return openSupport;
     }
 
     /** Updates modification status of this dataobject from its entries. */

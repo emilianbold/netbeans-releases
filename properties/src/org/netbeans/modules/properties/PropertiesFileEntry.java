@@ -51,6 +51,9 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
     
     /** Structure handler for .properties file represented by this instance. */
     private transient StructHandler propStruct;
+    
+    /** Editor support for this entry. */
+    private transient PropertiesEditorSupport editorSupport;
 
     /** Generated serial version UID. */    
     static final long serialVersionUID =-3882240297814143015L;
@@ -72,7 +75,7 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
     /** Implements <code>CookieSet.Factory</code> interface method. */
     public Node.Cookie createCookie(Class clazz) {
         if(clazz.isAssignableFrom(PropertiesEditorSupport.class)) {
-            return new PropertiesEditorSupport(this);
+            return getPropertiesEditor();
         } else
             return null;
     }
@@ -103,7 +106,14 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
     /** Gets editor support for this entry.
      * @return <code>PropertiesEditorSupport</code> instance for this entry */
     protected PropertiesEditorSupport getPropertiesEditor() {
-        return (PropertiesEditorSupport)getCookieSet().getCookie(EditCookie.class);
+        if(editorSupport == null) {
+            synchronized(this) {
+                if(editorSupport == null)
+                    editorSupport = new PropertiesEditorSupport(this);
+            }
+        }
+            
+        return editorSupport;
     }
 
     /** Renames underlying fileobject. This implementation returns the same file.
