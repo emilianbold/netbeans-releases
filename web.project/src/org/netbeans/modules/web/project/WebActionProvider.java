@@ -109,23 +109,12 @@ class WebActionProvider implements ActionProvider {
         Properties p;
         String[] targetNames = (String[])commands.get(command);
         
-//        J2eeDeploymentLookup jdl = (J2eeDeploymentLookup)project.getLookup().lookup(J2eeDeploymentLookup.class);
-//        Target t = null;
-//        Target[] targs = (new DeploymentTargetImpl(jdl.getJ2eeProfileSettings(), jdl)).getServer().toTargets();
-//        if (targs != null && targs.length > 0) {
-//            t = targs[0];
-//        }
-//        StartServer ss = jdl.getJ2eeProfileSettings().getServerString().getServerInstance().getStartServer();
-//        ServerDebugInfo sdi = ss.getDebugInfo(t);
-
         if (command.equals (COMMAND_RUN)) {             
             p = new Properties();
             p.setProperty("client.urlPart", project.getWebModule().getUrl());
         } else if (command.equals (COMMAND_DEBUG)) {
             p = new Properties();
             p.setProperty("client.urlPart", project.getWebModule().getUrl());
-//            p.setProperty("jpda.port", Integer.toString(sdi.getPort()));
-//            p.setProperty("jpda.host", sdi.getHost());
         } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             FileObject[] files = findSources( context );
             p = new Properties();
