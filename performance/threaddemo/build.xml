@@ -23,6 +23,8 @@ Microsystems, Inc. All Rights Reserved.
     <property name="looks" location="???/openidex/looks"/>
     <property name="looks.jar" location="${looks}/netbeans/modules/autoload/looks.jar"/>
     <property name="Spin.jar" location="???/spin-1.1/Spin.jar"/>
+    <!-- only needed for optit target: -->
+    <property name="optit" location="???/optit"/>
     
     <!-- Root directory of the file browsers: -->
     <property name="testdir" location="/tmp"/>
@@ -66,6 +68,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="threaddemo.jar"/>
             </classpath>
             <arg file="${testdir}"/>
+            <jvmarg value="-Xmx32m"/>
         </java>
     </target>
     
@@ -76,10 +79,30 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="threaddemo.jar"/>
             </classpath>
             <arg file="${testdir}"/>
+            <jvmarg value="-Xmx32m"/>
             <jvmarg value="-Xdebug"/>
             <jvmarg value="-Xnoagent"/>
             <jvmarg value="-Djava.compiler=none"/>
             <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8888,suspend=n"/>
+        </java>
+    </target>
+    
+    <target name="optit" depends="build">
+        <java classname="intuitive.audit.Audit" fork="true" failonerror="true">
+            <classpath>
+                <path refid="cp"/>
+                <pathelement location="threaddemo.jar"/>
+                <pathelement location="${optit}/lib/optit.jar"/>
+            </classpath>
+            <arg value="-startCPUprofiler:type=sampler,samplingPeriod=1,onlyCPU=true"/>
+            <arg value="threaddemo.Main"/>
+            <arg file="${testdir}"/>
+            <jvmarg value="-Xmx32m"/>
+            <sysproperty key="OPTITDIR" file="${optit}"/>
+            <env key="LD_LIBRARY_PATH" path="${optit}/lib"/>
+            <jvmarg value="-Xbootclasspath/a:${optit}/lib/oibcp.jar"/>
+            <jvmarg value="-Xboundthreads"/>
+            <jvmarg value="-Xrunpri"/>
         </java>
     </target>
     
