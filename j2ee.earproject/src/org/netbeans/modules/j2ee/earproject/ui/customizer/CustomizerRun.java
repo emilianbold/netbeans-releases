@@ -35,6 +35,9 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
     
     // Helper for storing properties
     private VisualPropertySupport vps;
+    // VisualPropertySupport currently does not support more combo boxes when
+    // item values differ from their display texts - see #53893
+    private VisualPropertySupport vps1;
     //private VisualArchiveIncludesSupport vws;
     private VisualClasspathSupport vws;
     private ProjectEar wm;
@@ -64,6 +67,7 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
 
         this.wm = wm;
         vps = new VisualPropertySupport(webProperties);
+        vps1 = new VisualPropertySupport(webProperties);
     }
     
     public void initValues() {
@@ -94,7 +98,7 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
 //            webProperties.initProperty(WebProjectProperties.CLIENT_MODULE_URI, propertyInfo);
         }
 //
-        vps.register(clientModuleUriCombo, webProperties.getWebUris(),
+        vps1.register(clientModuleUriCombo, webProperties.getWebUris(),
             EarProjectProperties.CLIENT_MODULE_URI);
 
         jTextFieldRelativeURL.setEditable(jCheckBoxDisplayBrowser.isSelected());
