@@ -113,43 +113,17 @@ public class Utils {
     
     static Collection getTestSourceGroups(Project project) {
         
-        /* 1) get all source groups: */
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] sourceGroups = sources.getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA);
-        
-        if (sourceGroups.length == 0) {
-            return Collections.EMPTY_LIST;
+        Collection col = getSourceGroupPairs(project);
+        Iterator it = col.iterator();
+        Collection ret = new ArrayList(col.size());
+        while (it.hasNext()) {
+            SourceGroup [] pair = (SourceGroup [])it.next();
+            ret.add(pair[1]);
         }
-        
-        /* 2) find test SourceGroups: */
-        Collection testSourceGroups = new HashSet(sourceGroups.length * 2, .5f);
-        
-        /* test SourceGroups are those that are recognized as test root folders
-           for at least one SourceGroup: */
-        Iterator i = new ArrayList(Arrays.asList(sourceGroups)).iterator();
-        while (i.hasNext()) {
-            FileObject rootFolder = ((SourceGroup) i.next()).getRootFolder();
-            URL testRootURL = UnitTestForSourceQuery.findUnitTest(rootFolder);
-            if (testRootURL != null) {
-                FileObject testFolder = URLMapper.findFileObject(testRootURL);
-                if (testFolder != null) {
-                    SourceGroup testSourceGroup = findSourceGroup(sourceGroups,
-                                                                  testFolder);
-                    if (testSourceGroup != null) {
-                        testSourceGroups.add(testSourceGroup);
-                    }
-                }
-            }
-        }
-        
-        if (testSourceGroups.size() == 0) {
-            return Collections.EMPTY_LIST;
-        }
-        List result = new ArrayList(testSourceGroups);
-        return Collections.unmodifiableList(result);
+
+        return ret;
     }
-    
+
     private static Map getFolder2SourceGroupMap(SourceGroup[] sourceGroups) {
         if (sourceGroups.length == 0) {
             return Collections.EMPTY_MAP;
@@ -187,27 +161,32 @@ public class Utils {
             URL oppositeURL;
             
             boolean reverse = false;
-            
+            SourceGroup oppositeSourceGroup = null;            
+
             oppositeURL = UnitTestForSourceQuery.findUnitTest(rootFolder);
             if (oppositeURL == null) {
                 reverse = true;
                 oppositeURL = UnitTestForSourceQuery.findSource(rootFolder);
-            }
+            } 
+
             if (oppositeURL != null) {
-                
                 //PENDING - more checks should be performed
-                
                 opposite = URLMapper.findFileObject(oppositeURL);
                 if (opposite != null) {
-                    SourceGroup oppositeSourceGroup
-                            = (SourceGroup) folder2sourceGroup.get(opposite);
-                    pairs.add(new SourceGroup[] {
-                            reverse ? oppositeSourceGroup : sourceGroup,
-                            reverse ? sourceGroup : oppositeSourceGroup});
-                    processed.add(oppositeSourceGroup);
+                    oppositeSourceGroup =(SourceGroup)folder2sourceGroup.get(opposite);
                 }
+            } else {
+                oppositeSourceGroup = sourceGroup;
             }
+
+
+            pairs.add(new SourceGroup[] {
+                reverse ? oppositeSourceGroup : sourceGroup,
+                reverse ? sourceGroup : oppositeSourceGroup});
+            processed.add(oppositeSourceGroup);
+
         }
+
         if (pairs.isEmpty()) {
             return Collections.EMPTY_LIST;
         }

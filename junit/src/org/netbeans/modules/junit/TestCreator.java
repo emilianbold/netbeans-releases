@@ -589,7 +589,7 @@ public class TestCreator extends java.lang.Object {
         suiteMethod.setJavadoc(jd);
         
         StringBuffer newBody = new StringBuffer();
-        generateSuiteBody(tgtClass.getSimpleName(), newBody, listMembers, true);
+        generateSuiteBody(pkg, tgtClass.getSimpleName(), newBody, listMembers, true);
         suiteMethod.setBodyText(newBody.toString());
         tgtClass.getFeatures().add(suiteMethod);
 
@@ -598,7 +598,7 @@ public class TestCreator extends java.lang.Object {
 
     
 
-    static private void generateSuiteBody(String testName, StringBuffer body, List members, boolean alreadyExists) {
+    static private void generateSuiteBody(JavaModelPackage pkg, String testName, StringBuffer body, List members, boolean alreadyExists) {
         Iterator    li;
         String      name;
         
@@ -609,10 +609,18 @@ public class TestCreator extends java.lang.Object {
         body.append("junit.framework.TestSuite suite = new junit.framework.TestSuite(\"" + testName + "\");\n");
         
         li = members.listIterator();
-        
+        TypeClass typeClass = pkg.getType();
+
         while (li.hasNext()) {
             name = (String) li.next();
-            body.append("suite.addTest(" + name + ".suite());\n");
+            
+            Type ty = (Type)typeClass.resolve(name);
+            if (ty instanceof ClassDefinition) {
+                Method suiteMethod = ((ClassDefinition)ty).getMethod("suite", Collections.EMPTY_LIST, true);
+                if (suiteMethod != null && 
+                    ((suiteMethod.getModifiers() & Modifier.STATIC) == Modifier.STATIC))
+                    body.append("suite.addTest(" + name + ".suite());\n");
+            }
         }
 
         body.append("return suite;\n");

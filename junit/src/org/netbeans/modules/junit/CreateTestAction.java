@@ -170,18 +170,22 @@ public class CreateTestAction extends CookieAction {
                         "MSG_no_project", fo));
                     continue;
                 }
+                ClassPath testClassPath = null;
+
                 FileObject packageRoot = cp.findOwnerRoot(fo);
                 String resource = cp.getResourceName(fo, '/', false);
                 
                 URL testRoot = UnitTestForSourceQuery.findUnitTest(packageRoot);
                 if (testRoot == null) {
-                    TestUtil.notifyUser(NbBundle.getMessage(CreateTestAction.class,
-                        "MSG_no_tests_in_project", fo));
-                    continue;
+                    testClassPath = cp;
+//                     TestUtil.notifyUser(NbBundle.getMessage(CreateTestAction.class,
+//                         "MSG_no_tests_in_project", fo));
+//                     continue;
+                } else {
+                    ArrayList cpItems = new ArrayList();
+                    cpItems.add(ClassPathSupport.createResource(testRoot));
+                    testClassPath = ClassPathSupport.createClassPath(cpItems);
                 }
-                ArrayList cpItems = new ArrayList();
-                cpItems.add(ClassPathSupport.createResource(testRoot));
-                ClassPath testClassPath = ClassPathSupport.createClassPath(cpItems);
 
                 try {
                     results.combine(createTests(testClassPath, fo, doTestTempl, doSuiteTempl, null, progress));
