@@ -15,11 +15,21 @@ package com.netbeans.developer.impl.beaninfo;
 
 import java.beans.*;
 
-import org.openide.loaders.UniFileLoader;
+import org.openide.loaders.*;
 import org.openide.util.NbBundle;
 
 /** BeanInfo for {@link UniFileLoader}. */
 public class UniFileLoaderBeanInfo extends SimpleBeanInfo {
+  
+  public BeanInfo[] getAdditionalBeanInfo () {
+    try {
+      return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
+    } catch (IntrospectionException ie) {
+      if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+        ie.printStackTrace ();
+      return null;
+    }
+  }
   
   public PropertyDescriptor[] getPropertyDescriptors () {
     try {
@@ -38,6 +48,8 @@ public class UniFileLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  2    Gandalf   1.1         11/25/99 Jesse Glick     representationClass 
+ *       expert loader property.
  *  1    Gandalf   1.0         11/3/99  Jesse Glick     
  * $
  */
