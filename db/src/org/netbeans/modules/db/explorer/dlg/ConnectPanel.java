@@ -16,6 +16,7 @@ package org.netbeans.modules.db.explorer.dlg;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import javax.swing.SwingUtilities;
 
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
@@ -48,16 +49,20 @@ public class ConnectPanel extends javax.swing.JPanel implements DocumentListener
         initAccessibility();
 
         PropertyChangeListener connectionListener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
-                if (event.getPropertyName().equals("connecting")) { //NOI18N
-                    startProgress();
-                }
-                if (event.getPropertyName().equals("connected")) { //NOI18N
-                    stopProgress(true);
-                }
-                if (event.getPropertyName().equals("failed")) { //NOI18N
-                    stopProgress(false);
-                }
+            public void propertyChange(final PropertyChangeEvent event) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        if (event.getPropertyName().equals("connecting")) { //NOI18N
+                            startProgress();
+                        }
+                        if (event.getPropertyName().equals("connected")) { //NOI18N
+                            stopProgress(true);
+                        }
+                        if (event.getPropertyName().equals("failed")) { //NOI18N
+                            stopProgress(false);
+                        }
+                    }
+                });
             }
         };
         this.connection.addPropertyChangeListener(connectionListener);
