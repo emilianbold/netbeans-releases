@@ -441,12 +441,9 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             try {
                 EjbJarProxy newEjbJar = (EjbJarProxy) EjbJarDDUtils.createEjbJar(is);
                 if (ejbJar != null && oldEjbJar.getOriginal() != null) {
-                    System.out.println(".............. "+this);
-                    System.out.println("************** before merge");
                     merging = true;
                     ejbJar.merge(newEjbJar, EjbJar.MERGE_UPDATE);
                     merging = false;
-                    System.out.println("************** after merge");
                 } else {
                     setEjbJar(oldEjbJar, newEjbJar);
                 }
@@ -492,10 +489,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             ejbJarChangeListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (!merging) {
-                        System.out.println("======== before updateModelFromSource()");
                         updateDocument();
-                        //updateModelFromSource();
-                        System.out.println("======== after updateModelFromSource()");
                     }
                 }
             };
