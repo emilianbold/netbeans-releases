@@ -227,7 +227,7 @@ The platform module does not provide any persistence mechanism.
 
 <answer id="dep-nb">
 <p>
-   Openide, openide.loaders (<code>FolderInstance</code> is used only internally, <code>TemplateWizard</code>),
+   Openide, openide.loaders (<code>FolderInstance</code> is used only internally),
    Java Support APIs (to return <q>bootstrap libraries</q> and <q>standard libraries</q> as a<code>ClassPath</code>).
 </p>
 </answer>
