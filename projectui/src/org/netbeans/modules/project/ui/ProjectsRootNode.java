@@ -32,7 +32,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.LogicalViews;
 import org.openide.DialogDisplayer;
@@ -271,10 +270,7 @@ public class ProjectsRootNode extends AbstractNode {
                 assert project != null;
 
                 /* get the Sources object: */
-                Sources sources = (Sources) project.getLookup().lookup(Sources.class);
-                if (sources == null) {
-                    sources = GenericSources.genericOnly(project);
-                }
+                Sources sources = ProjectUtils.getSources(project);
 
                 /* build a delegated SearchInfo object: */
                 SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
