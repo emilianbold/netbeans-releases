@@ -457,10 +457,15 @@ implements java.io.Serializable {
                 }
             } // else don't worry about it (compatibility)
             try {
+                ClassLoader load = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+                if (load == null) {
+                    load = DataLoaderPool.class.getClassLoader ();
+                }
+                
                 Class loaderClass = Class.forName (
                 assignedLoaderName,
                 true,
-                (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)
+                load
                 );
                 return DataLoader.getLoader(loaderClass);
             } catch (Exception ex) {
