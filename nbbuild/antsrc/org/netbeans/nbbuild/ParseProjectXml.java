@@ -327,6 +327,7 @@ public final class ParseProjectXml extends Task {
         public String codenamebase;
         public String release = null;
         public String spec = null;
+        public String impl = null;
         // XXX handle impl deps too
         public String toString() {
             StringBuffer b = new StringBuffer(codenamebase);
@@ -337,6 +338,10 @@ public final class ParseProjectXml extends Task {
             if (spec != null) {
                 b.append(" > "); //NOI18N
                 b.append(spec);
+            }
+            if (impl != null) {
+                b.append(" = "); // NO18N
+                b.append(impl);
             }
             return b.toString();
         }
@@ -383,6 +388,14 @@ public final class ParseProjectXml extends Task {
                         throw new BuildException("No text in <specification-version>", getLocation());
                     }
                     d.spec = t;
+                }
+                Element iv = XMLUtil.findElement(rd, "implementation-version", NBM_NS); //NOI18N
+                if (iv != null) {
+                    t = XMLUtil.findText(iv);
+                    if (t == null) {
+                        throw new BuildException("No text in <implementation-version>", getLocation());
+                    }
+                    d.impl = t;
                 }
                 deps.add(d);
             }
