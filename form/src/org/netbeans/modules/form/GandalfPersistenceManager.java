@@ -312,11 +312,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
         catch (Throwable ex) {
             if (ex instanceof ThreadDeath)
                 throw (ThreadDeath) ex;
-            ex.printStackTrace();
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                ex.printStackTrace();
         }
 
         if (formModel.getFormBaseClass() == null) {
-            // derive the form type from the FormInfo type saved in form file
+            // Declared superclass cannot be used as the form base class,
+            // try to derive it from the FormInfo type saved in form file.
             // [user should be warned that the form type is not taken from java]
             Class formClass = getCompatibleFormClass(formInfoName);
             if (formClass != null) {
@@ -327,8 +329,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 catch (Throwable ex) {
                     if (ex instanceof ThreadDeath)
                         throw (ThreadDeath) ex;
-                    ex.printStackTrace();
+                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                        ex.printStackTrace();
                 }
+            }
+            else { // no FormInfo type, form cannot be created
+                org.openide.src.ClassElement ce =
+                    formObject.getSource().getClasses()[0];
+                if (ce != null)
+                    throw new IOException(java.text.MessageFormat.format(
+                        FormEditor.getFormBundle().getString("FMT_ERR_FormBaseClass"), // NOI18N
+                        new Object[] { ce.getSuperclass().getFullName() }));
             }
 
             if (formModel.getFormBaseClass() == null) {
@@ -4051,7 +4062,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * @return class corresponding to given FormInfo class name
      */
     private static Class getCompatibleFormClass(String formInfoName) {
-        if (formInfoName == null)
+        if (formInfoName == null || "".equals(formInfoName))
             return null; // no FormInfo name found in form file
 
         Class formClass = getClassForKnownFormInfo(formInfoName);
