@@ -118,7 +118,7 @@ public class OptionsAction extends CallableSystemAction {
         /** Formatted title of this view */
         private static MessageFormat formatTitle;
 
-        public OptionsPanel () {
+        private OptionsPanel () {
             setRootContext (initRC ());
             // show only name of top component is typical case
             putClientProperty(ModeImpl.NAMING_TYPE, ModeImpl.BOTH_ONLY_COMP_NAME);
