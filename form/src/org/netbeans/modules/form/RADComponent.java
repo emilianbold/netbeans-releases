@@ -43,8 +43,8 @@ public class RADComponent {
 // -----------------------------------------------------------------------------
 // Static variables
 
-  public static final String SYNTHETIC_PREFIX = "synthetic_"; /* NO_I18N */
-  public static final String PROP_NAME = SYNTHETIC_PREFIX + "Name"; /* NO_I18N */
+  public static final String SYNTHETIC_PREFIX = "synthetic_"; /* NO I18N */
+  public static final String PROP_NAME = SYNTHETIC_PREFIX + "Name"; /* NO I18N */
 
   static final NewType[] NO_NEW_TYPES = {};
   static final Node.Property[] NO_PROPERTIES = {};
@@ -81,8 +81,8 @@ public class RADComponent {
   // FINALIZE DEBUG METHOD
   public void finalize () throws Throwable {
     super.finalize ();
-    if (System.getProperty ("netbeans.debug.form.finalize") != null) { /* NO_I18N */
-      System.out.println("finalized: "+this.getClass ().getName ()+", instance: "+this); /* NO_I18N */
+    if (System.getProperty ("netbeans.debug.form.finalize") != null) { /* NO I18N */
+      System.out.println("finalized: "+this.getClass ().getName ()+", instance: "+this); /* NO I18N */
     }
   } // FINALIZE DEBUG METHOD
   
@@ -109,7 +109,7 @@ public class RADComponent {
   */
   public void setComponent (Class beanClass) {
     if (this.beanClass != null) {
-      throw new InternalError ("Component already initialized: current: "+this.beanClass +", new: "+beanClass);/* NO_I18N */
+      throw new InternalError ("Component already initialized: current: "+this.beanClass +", new: "+beanClass);/* NO I18N */
     }
 
     this.beanClass = beanClass;
@@ -127,7 +127,7 @@ public class RADComponent {
   */
   public void setInstance (Object beanInstance) {
     if (this.beanClass != null) {
-      throw new InternalError ("Component already initialized: current: "+this.beanClass +", new: "+beanClass); /* NO_I18N */
+      throw new InternalError ("Component already initialized: current: "+this.beanClass +", new: "+beanClass); /* NO I18N */
     }
     this.beanClass = beanInstance.getClass ();
     this.beanInstance = beanInstance;
@@ -173,7 +173,7 @@ public class RADComponent {
     this.componentNode = node;
     componentNode.addPropertyChangeListener (new java.beans.PropertyChangeListener () {
         public void propertyChange (java.beans.PropertyChangeEvent evt) {
-          if (evt.getPropertyName () != null && evt.getPropertyName ().equals ("variableName")) { /* NO_I18N */ // [CHECK]
+          if (evt.getPropertyName () != null && evt.getPropertyName ().equals ("variableName")) { /* NO I18N */ // [CHECK]
             String oldName = (String) evt.getOldValue();
             String newName = (String) evt.getNewValue();
             EventsList.EventSet[] esets = getEventsList().getEventSets ();
@@ -238,7 +238,7 @@ public class RADComponent {
   * @return true if the component has hidden state, false otherwise
   */
   public boolean hasHiddenState () {
-    return (getBeanInfo ().getBeanDescriptor ().getValue ("hidden-state") != null); /* NO_I18N */
+    return (getBeanInfo ().getBeanDescriptor ().getValue ("hidden-state") != null); /* NO I18N */
   }
   
   /** Getter for the Name property of the component - usually maps to variable declaration for holding the 
@@ -569,7 +569,7 @@ public class RADComponent {
                 formManager.fireEventRemoved (RADComponent.this, handler);
               }
             }
-            String newSelectedHandler = ""; /* NO_I18N */
+            String newSelectedHandler = ""; /* NO I18N */
             if (event.getHandlers ().size () >0)
               newSelectedHandler = ((EventsManager.EventHandler) event.getHandlers ().get (0)).getName ();
             getNodeReference ().firePropertyChangeHelper (this.getName (), lastSelectedHandler, newSelectedHandler);
@@ -609,7 +609,7 @@ public class RADComponent {
     if (readMethod == null && desc.getPropertyType().equals(java.awt.Cursor.class) 
       && java.awt.Component.class.isAssignableFrom (beanClass)) {
       try {
-        readMethod = java.awt.Component.class.getMethod("getCursor", new Class[0]); /* NO_I18N */
+        readMethod = java.awt.Component.class.getMethod("getCursor", new Class[0]); /* NO I18N */
       } catch (NoSuchMethodException e) {
         // silently catch
         e.printStackTrace();
@@ -625,8 +625,8 @@ public class RADComponent {
     cacheValue (desc, value);
 
     // [PENDING - property names to cache]
-    if ("enabled".equals (desc.getName ()) || /* NO_I18N */
-        "visible".equals (desc.getName ())) /* NO_I18N */
+    if ("enabled".equals (desc.getName ()) || /* NO I18N */
+        "visible".equals (desc.getName ())) /* NO I18N */
     {
       // values of these properties are just cached, not represented during design-time
       return;
@@ -686,24 +686,24 @@ public class RADComponent {
 // Debug methods
 
   public java.lang.String toString () {
-    return super.toString () + ", name: "+getName ()+", class: "+getBeanClass ()+", beaninfo: "+getBeanInfo () + ", instance: "+getBeanInstance (); /* NO_I18N */
+    return super.toString () + ", name: "+getName ()+", class: "+getBeanClass ()+", beaninfo: "+getBeanInfo () + ", instance: "+getBeanInstance (); /* NO I18N */
   }
   
   public void debugChangedValues () {
-    if (System.getProperty ("netbeans.debug.form.full") != null) { /* NO_I18N */
-      System.out.println("-- debug.form: Changed property values in: "+this+" -------------------------"); /* NO_I18N */
+    if (System.getProperty ("netbeans.debug.form.full") != null) { /* NO I18N */
+      System.out.println("-- debug.form: Changed property values in: "+this+" -------------------------"); /* NO I18N */
       for (java.util.Iterator it = nameToProperty.values ().iterator (); it.hasNext ();) {
         RADProperty prop = (RADProperty)it.next ();
         if (prop.isChanged ()) {
           PropertyDescriptor desc = prop.getPropertyDescriptor ();
           try {
-            System.out.println("Changed Property: "+desc.getName ()+", value: "+prop.getValue ()); /* NO_I18N */
+            System.out.println("Changed Property: "+desc.getName ()+", value: "+prop.getValue ()); /* NO I18N */
           } catch (Exception e) {
             // ignore problems
           }
         }
       }
-      System.out.println("--------------------------------------------------------------------------------------"); /* NO_I18N */
+      System.out.println("--------------------------------------------------------------------------------------"); /* NO I18N */
     }
   }
 
@@ -946,7 +946,7 @@ public class RADComponent {
         try {
           return (PropertyEditor) desc.getPropertyEditorClass ().newInstance ();
         } catch (Exception ex) {
-          if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace (); /* NO_I18N */
+          if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace (); /* NO I18N */
         }
       } 
       return null;
@@ -1174,7 +1174,7 @@ public class RADComponent {
         try {
           return (PropertyEditor) desc.getPropertyEditorClass ().newInstance ();
         } catch (Exception ex) {
-          if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace (); /* NO_I18N */
+          if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace (); /* NO I18N */
         }
       } 
       return null;
@@ -1270,7 +1270,7 @@ public class RADComponent {
     if (valueType == null) {
       try {
         valueType = org.openide.TopManager.getDefault ().currentClassLoader ().loadClass (
-          "[L" + desc.getIndexedPropertyType ().getName () + ";" /* NO_I18N */
+          "[L" + desc.getIndexedPropertyType ().getName () + ";" /* NO I18N */
         );
       } catch (Exception e) {
         valueType = Object[].class;
@@ -1457,6 +1457,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  67   Gandalf   1.66        1/3/00   Ian Formanek    
  *  66   Gandalf   1.65        1/2/00   Ian Formanek    Fixed to compile
  *  65   Gandalf   1.64        1/1/00   Ian Formanek    Syntheti tab renamed to 
  *       Code Generation, I18Nzed
