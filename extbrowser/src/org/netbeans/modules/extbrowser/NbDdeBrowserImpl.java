@@ -320,17 +320,21 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
 
                 String winID;
                 // activate browser window (doesn't work on Win9x)
-                if (!win9xHack (task) && !mozillaHack (task)) {
+                if (!win9xHack (task)) {
                     TopManager.getDefault ().setStatusText (NbBundle.getMessage (NbDdeBrowserImpl.class, "MSG_activatingBrowser"));
                     // IE problem
                     if (task.browser.realDDEServer().equals(WinWebBrowser.IEXPLORE))
                         winID = "0xFFFFFFFF";   // NOI18N
-                    else
+                    else if (task.browser.realDDEServer().equals(WinWebBrowser.NETSCAPE6) || task.browser.realDDEServer().equals(WinWebBrowser.MOZILLA))
+                        winID = "-1";   // NOI18N
+                    else {
                         winID = "0x00000000"+Integer.toHexString(hasNoWindow? 0: task.browser.currWinID).toUpperCase(); // NOI18N
-                    if (winID.length() > 10) winID = "0x"+winID.substring(winID.length()-8); // NOI18N
+                        if (winID.length() > 10) winID = "0x"+winID.substring(winID.length()-8); // NOI18N
+                    }
+                    winID += ",0xO"; // this ensures that value is passed correctly, NOI18N
 
                     try {
-                        data = task.browser.reqDdeMessage(task.browser.realDDEServer(),WWW_ACTIVATE,winID,5000);
+                        data = task.browser.reqDdeMessage(task.browser.realDDEServer(),WWW_ACTIVATE,winID,15000);
                     }
                     catch (NbBrowserException ex) {
                         startBrowser (task);
@@ -357,6 +361,10 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 if (task.browser.realDDEServer().equals(WinWebBrowser.IEXPLORE)) {
                     winID = (hasNoWindow && !win9xHack(task))? "0": "-1";   // NOI18N
                 }
+                else if (task.browser.realDDEServer().equals(WinWebBrowser.NETSCAPE6) 
+                || task.browser.realDDEServer().equals(WinWebBrowser.MOZILLA)) {
+                    winID = "0xFFFFFFFF"; // NOI18N
+                }
                 else {
                     winID = "0x00000000"+Integer.toHexString(hasNoWindow? 0: task.browser.currWinID).toUpperCase(); // NOI18N
                     if (winID.length() > 10) 
@@ -365,7 +373,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                     
                 String args1;
                 args1="\""+url.toString()+"\",,"+winID+",0x1,,,"+(task.browser.ddeProgressSrvName==null?"":task.browser.ddeProgressSrvName);  // NOI18N
-                if (!win9xHack (task) && !mozillaHack (task)) {
+                if (!win9xHack (task)) {
                     data = task.browser.reqDdeMessage(task.browser.realDDEServer(),WWW_OPEN_URL,args1,3000);
                 }
                 else {
@@ -419,11 +427,6 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                       ||  Utilities.getOperatingSystem() == Utilities.OS_WIN95);
         }
 
-        private boolean mozillaHack (DisplayTask task) {
-            return task.browser.realDDEServer().equals(WinWebBrowser.MOZILLA)
-                || task.browser.realDDEServer().equals(WinWebBrowser.NETSCAPE6);
-        }
-        
         /** 
          * Utility function that tries to start new browser process.
          *
