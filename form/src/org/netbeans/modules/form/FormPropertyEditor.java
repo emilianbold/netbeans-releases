@@ -72,11 +72,12 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   
   void commitModifiedEditor () {
     radProperty.setCurrentEditor (modifiedEditor);
+    if (radComponent.getNodeReference () != null) radComponent.getNodeReference ().notifyPropertySetsChange (); 
   }
 
   void setModifiedEditor (PropertyEditor editor) {
     modifiedEditor.removePropertyChangeListener (this);
-    modifiedEditor = editor;
+    modifiedEditor = editor; 
     modifiedEditor.addPropertyChangeListener (this);
   }
 
@@ -340,6 +341,11 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
 
 /*
  * Log
+ *  18   Gandalf   1.17        1/10/00  Ian Formanek    Fixed bug 4935 - When 
+ *       the property editor type is changed for JavaBean's properties in the 
+ *       Component Inspector using the custom editor, the property sheet is not 
+ *       updated and it is necessary to swith to other component and back to 
+ *       have it properly render the property value.
  *  17   Gandalf   1.16        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  16   Gandalf   1.15        10/6/99  Ian Formanek    Fixed bug 3494 - When 
