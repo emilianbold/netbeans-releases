@@ -32,6 +32,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance" />
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDocumentHandlerAction.instance" />
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDOMScannerAction.instance" />
+
+            <file name="org-netbeans-modules-xml-tools-transform-actions-TransformAction.instance" />
         </folder>
     </folder>
 
