@@ -15,7 +15,9 @@ package org.netbeans.modules.form.layoutsupport.delegates;
 
 import java.awt.*;
 import java.util.*;
+import org.openide.nodes.Node;
 import org.netbeans.modules.form.layoutsupport.*;
+import org.netbeans.modules.form.codestructure.*;
 
 /**
  * @author Tran Duc Trung
@@ -116,5 +118,29 @@ public class GridLayoutSupport extends AbstractLayoutSupport
 
         g.drawRect(x, y, w, h);
         return true;
+    }
+
+    // ------------
+
+    // overriding this method because "rows" and "columns" properties are
+    // dependent (so not true JavaBean properties)
+    protected void readInitLayoutCode(CodeExpression layoutExp,
+                                      CodeGroup initLayoutCode)
+    {
+        CodeExpression[] params = layoutExp.getOrigin().getCreationParameters();
+        if (params.length > 0) {
+            Object rowsValue = params[0].getOrigin().getValue();
+            if (rowsValue instanceof Integer
+                && ((Integer)rowsValue).intValue() == 0)
+            {   // number of rows is to be set to 0, we must preset
+                // columns property to something else than 0
+                try {
+                    getProperty("columns").setValue(new Integer(1));
+                }
+                catch (Exception ex) {} // ignore
+            }
+        }
+
+        super.readInitLayoutCode(layoutExp, initLayoutCode);
     }
 }
