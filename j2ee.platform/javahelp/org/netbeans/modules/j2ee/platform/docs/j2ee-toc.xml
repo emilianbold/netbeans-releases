@@ -137,22 +137,11 @@
       </tocitem> <!-- Working With Applets -->
    </tocitem>
    <tocitem text="Configuring Web Applications" >
-	    <tocitem text="About Configuring Web Applications" target="tbd" />
-	    <tocitem text="context.xml" >
- 		<tocitem text="About context.xml" target="tbd" />  
-		<tocitem text="Editing context.xml" target="tbd" />
-	    </tocitem>
-            <tocitem text="sun-web.xml" >
- 		<tocitem text="About sun-web.xml" target="tbd" />  
-		<tocitem text="Editing sun-web.xml" target="tbd" />
-	    </tocitem>
-	    <tocitem text="web.xml" >
- 		<tocitem text="About web.xml" target="webmod_editdd" />  
-		<tocitem text="Editing web.xml" target="concepts_deploydes" />
-	    </tocitem>
-	    <tocitem text="Adding a Web Application Module to a J2EE Application" target="add_web_to_j2ee_app" />
-        </tocitem>
-	<tocitem text="Building Web Applications"> 
+	   <tocitem text="About Configuring Web Applications" target="tbd" />
+           <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
+           <tocitem text="Configuring Web Application Deployment Descriptors" target="concepts_deploydes" />  
+   </tocitem>
+   <tocitem text="Building Web Applications"> 
 	    <tocitem text="About Building Web Applications" target="concepts_war"  />
             <tocitem text="Building a WAR File" target="webmod_packagewar" />
 	    <tocitem text="Adding External Resources to a WAR File">
