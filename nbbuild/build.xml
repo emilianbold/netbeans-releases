@@ -195,7 +195,7 @@ workspaceswitcher
     <echo message="Building module objectbrowser..."/>
     <ant dir="../objectbrowser" target="netbeans"/>
   </target>
-  <target name="all-projects" depends="all-openide,all-openidex,all-java">
+  <target name="all-projects" depends="all-openide,all-openidex">
     <echo message="Building module projects..."/>
     <ant dir="../projects" target="netbeans"/>
   </target>
