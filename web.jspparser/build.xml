@@ -38,8 +38,6 @@ Microsystems, Inc. All Rights Reserved.
       <pathelement location="../external/jasper-runtime-5.0.19.jar"/>
       <pathelement location="../external/commons-logging-api.jar"/>
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-      <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-      <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/> <!-- used only indirectly -->
     </path>
   </target>
 
