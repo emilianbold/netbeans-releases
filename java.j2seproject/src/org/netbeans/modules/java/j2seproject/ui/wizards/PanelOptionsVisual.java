@@ -110,9 +110,8 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 
         setLayout(new java.awt.GridBagLayout());
 
-        setAsMainCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_SetAsMain_CheckBoxMnemonic").charAt(0));
         setAsMainCheckBox.setSelected(true);
-        setAsMainCheckBox.setText("Set as Main Project");
+        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_setAsMainCheckBox"));
         setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -120,16 +119,19 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(setAsMainCheckBox, gridBagConstraints);
+        setAsMainCheckBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("ACSN_setAsMainCheckBox"));
+        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("ACSD_setAsMainCheckBox"));
 
-        createMainCheckBox.setText("Create Main Class:");
         createMainCheckBox.setSelected(true);
-        createMainCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_CreateMainClass_CheckBoxMnemonic").charAt(0));
+        org.openide.awt.Mnemonics.setLocalizedText(createMainCheckBox, java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_createMainCheckBox"));
         createMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(createMainCheckBox, gridBagConstraints);
+        createMainCheckBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("ACSN_createMainCheckBox"));
+        createMainCheckBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("ACSD_createMainCheckBox"));
 
         mainClassTextField.setText("com.myapp.Main");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -140,6 +142,8 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         add(mainClassTextField, gridBagConstraints);
+        mainClassTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/Bundle").getString("ASCN_mainClassTextFiled"));
+        mainClassTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("ASCD_mainClassTextFiled"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -149,6 +153,8 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
+        jPanel1.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("ACSN_jPanel1"));
+        jPanel1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("ASCD_jPanel1"));
 
     }//GEN-END:initComponents
     
