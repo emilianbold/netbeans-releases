@@ -30,8 +30,8 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
             <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
             <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
-            <pathelement location="${core/output.dir}/${nb.modules/autoload.dir}/core-output.jar"/>
-            <pathelement location="${core/execution.dir}/${nb.modules/autoload.dir}/core-execution.jar"/>
+            <pathelement location="${core/output.dir}/${nb.modules/autoload.dir}/org-netbeans-core-output.jar"/>
+            <pathelement location="${core/execution.dir}/${nb.modules/autoload.dir}/org-netbeans-core-execution.jar"/>
             <!-- project support classpath -->
             <pathelement location="${projects/projectapi.dir}/${nb.modules/autoload.dir}/org-netbeans-modules-projectapi.jar"/>
             <pathelement location="${projects/projectui.dir}/${nb.modules.dir}/org-netbeans-modules-projectui.jar"/>

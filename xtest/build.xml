@@ -97,7 +97,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-plugins">
     <mkdir dir="${plugins.install.dir}"/>
 
-    <ant dir="plugins_src/deprecated" target="deploy"/>
+<!--    <ant dir="plugins_src/deprecated" target="deploy"/> -->
     <ant dir="plugins_src/base" target="deploy"/>
     <ant dir="plugins_src/jvm" target="deploy"/>    
     <ant dir="plugins_src/ide" target="deploy"/>
