@@ -331,8 +331,10 @@ public class MetaComponentCreator {
                 return TARGET_MENU;
         }
 
-        if (Component.class.isAssignableFrom(beanClass)) {
-            // visual component
+        if (Component.class.isAssignableFrom(beanClass)
+            && !java.awt.Window.class.isAssignableFrom(beanClass)
+            && !java.applet.Applet.class.isAssignableFrom(beanClass))
+        {   // visual component
             if (targetComp == null)
                 return TARGET_VISUAL;
 
@@ -341,19 +343,6 @@ public class MetaComponentCreator {
 
             if (!canUseParent && !(targetComp instanceof RADVisualContainer))
                 return NO_TARGET; // no visual container target
-
-            RADVisualContainer targetCont;
-            if (targetComp instanceof RADVisualContainer)
-                targetCont = (RADVisualContainer) targetComp;
-            else
-                targetCont = targetComp instanceof RADVisualComponent ?
-                    (RADVisualContainer) targetComp.getParentComponent() :
-                    null;
-
-            if (targetCont != null
-                && (java.awt.Window.class.isAssignableFrom(beanClass)
-                    || java.applet.Applet.class.isAssignableFrom(beanClass)))
-                return NO_TARGET; // cannot add Window or Applet to any container
 
             return TARGET_VISUAL;
         }

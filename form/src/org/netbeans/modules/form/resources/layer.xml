@@ -271,6 +271,16 @@ SystemFileSystem
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JFileChooserColor16.gif" />
                 <attr name="beaninfo" boolvalue="false"/>
             </file>
+            <file name="javax-swing-JFrame.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JFrameColor16.gif" />
+                <attr name="beaninfo" boolvalue="false"/>
+            </file>
+            <file name="javax-swing-JDialog.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JDialogColor16.gif" />
+                <attr name="beaninfo" boolvalue="false"/>
+            </file>
 
             <attr name="javax-swing-JSlider.instance/javax-swing-JProgressBar.instance" boolvalue="true" />
             <attr name="javax-swing-JProgressBar.instance/javax-swing-JSplitPane.instance" boolvalue="true" />
@@ -287,6 +297,8 @@ SystemFileSystem
             <attr name="javax-swing-JDesktopPane.instance/javax-swing-JOptionPane.instance" boolvalue="true" />
             <attr name="javax-swing-JOptionPane.instance/javax-swing-JColorChooser.instance" boolvalue="true" />
             <attr name="javax-swing-JColorChooser.instance/javax-swing-JFileChooser.instance" boolvalue="true" />
+            <attr name="javax-swing-JFileChooser.instance/javax-swing-JFrame.instance" boolvalue="true" />
+            <attr name="javax-swing-JFrame.instance/javax-swing-JDialog.instance" boolvalue="true" />
         </folder>
 
         <folder name="AWT">
