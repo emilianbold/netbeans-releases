@@ -15,7 +15,6 @@ package org.netbeans.modules.form.layoutsupport;
 
 import java.awt.*;
 import java.util.*;
-//import java.lang.reflect.*;
 
 import org.openide.nodes.Node;
 import org.netbeans.modules.form.*;
@@ -31,7 +30,7 @@ public class LayoutSupportRegistry {
     private static HashMap layoutToLayoutSupport;
 
     // --------------
-    // finding methods
+    // getting methods
 
     public static Class getLayoutSupportForContainer(Class containerClass) {
         String className = (String)
@@ -71,6 +70,27 @@ public class LayoutSupportRegistry {
 
     public static String getLayoutSupportForLayout(String layoutClassName) {
         return (String) getLayoutsMap().get(layoutClassName);
+    }
+
+    public static Node.Property[] getLayoutProperties(LayoutSupport ls) {
+        Node.PropertySet[] propsets = ls.getPropertySets();
+        if (propsets == null || propsets.length == 0)
+            return new Node.Property[0];
+        if (propsets.length == 1)
+            return propsets[0].getProperties();
+
+        ArrayList proplist = new ArrayList(10);
+        for (int i=0; i < propsets.length; i++) {
+            if ("properties".equals(propsets[i].getName()) // NOI18N
+                    || "properties2".equals(propsets[i].getName())) { // NOI18N
+                Node.Property[] props = propsets[i].getProperties();
+                for (int j=0; j < props.length; j++)
+                    proplist.add(props[j]);
+            }
+        }
+        Node.Property[] properties = new Node.Property[proplist.size()];
+        proplist.toArray(properties);
+        return properties;
     }
 
     // ------------
@@ -123,8 +143,8 @@ public class LayoutSupportRegistry {
         if (newLaysup == null) return null;
         newLaysup.initialize(targetCont);
 
-        Node.Property[] sourceProps = getLayoutSupportProperties(laysup);
-        Node.Property[] targetProps = getLayoutSupportProperties(newLaysup);
+        Node.Property[] sourceProps = getLayoutProperties(laysup);
+        Node.Property[] targetProps = getLayoutProperties(newLaysup);
         FormUtils.copyProperties(sourceProps, targetProps, true, false);
 
         return newLaysup;
@@ -174,26 +194,5 @@ public class LayoutSupportRegistry {
                 "org.netbeans.modules.form.layoutsupport.CardLayoutSupport");
         }
         return layoutToLayoutSupport;
-    }
-
-    private static Node.Property[] getLayoutSupportProperties(LayoutSupport ls) {
-        Node.PropertySet[] propsets = ls.getPropertySets();
-        if (propsets == null || propsets.length == 0)
-            return new Node.Property[0];
-        if (propsets.length == 1)
-            return propsets[0].getProperties();
-
-        ArrayList proplist = new ArrayList(10);
-        for (int i=0; i < propsets.length; i++) {
-            if ("properties".equals(propsets[i].getName()) // NOI18N
-                    || "properties2".equals(propsets[i].getName())) { // NOI18N
-                Node.Property[] props = propsets[i].getProperties();
-                for (int j=0; j < props.length; j++)
-                    proplist.add(props[j]);
-            }
-        }
-        Node.Property[] properties = new Node.Property[proplist.size()];
-        proplist.toArray(properties);
-        return properties;
     }
 }

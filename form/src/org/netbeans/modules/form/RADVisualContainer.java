@@ -119,46 +119,14 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
     boolean shouldHaveLayoutNode() {
         return layoutSupport != null && layoutSupport.getLayoutClass() != null;
+//               && (layoutSupport.getLayoutClass() != null
+//                   || layoutSupport instanceof NullLayoutSupport);
     }
 
     // -----------------------------------------------------------------------------
     // Layout Manager management
 
-//      public DesignLayout getPreviousDesignLayout() {
-//          return previousLayout;
-//      }
-
-//      public DesignLayout getDesignLayout() {
-//          return designLayout;
-//      }
-
-//      /** Must be called after initSubComponents!!! */
-//      public void setDesignLayout(DesignLayout layout) {
-//          if (designLayout instanceof DesignSupportLayout) {
-//              throw new InternalError("Cannot change a design layout on this container"); // NOI18N
-//          }
-//          if (designLayout != null) {
-//              if (layout.getClass().equals(designLayout.getClass())) return;
-//              designLayout.setRADContainer(null);
-//          }
-//          if (layout == null) return;
-
-//          previousLayout = designLayout;
-//          designLayout = layout;
-//          designLayout.setRADContainer(this);
-
-//          RADVisualComponent[] children = getSubComponents();
-//          for (int i = 0; i < children.length; i++) {
-//              designLayout.addComponent(children[i]);
-//          }
-
-//          getContainer().validate();
-//          getContainer().repaint();
-
-//      }
-
     public void setLayoutSupport(LayoutSupport laySup) {
-//        LayoutSupport oldLayoutSupport = this.layoutSupport;
         RADVisualComponent[] comps = getSubComponents();
 
         // remove components from current layout
@@ -188,6 +156,35 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
     public LayoutSupport getLayoutSupport() {
         return layoutSupport;
+    }
+
+    public boolean isLayoutChanged() {
+        if (layoutSupport == null)
+            return false; // throw new IllegalStateException();
+
+        boolean nullLayout = layoutSupport instanceof NullLayoutSupport;
+        if (layoutSupport.getLayoutClass() == null && !nullLayout)
+            return false; // dedicated LayoutSupport
+
+        Object defaultContainer = BeanSupport.getDefaultInstance(getBeanClass());
+        Container defaultDelegate = getContainerDelegate(defaultContainer);
+        LayoutManager defaultLM = defaultDelegate.getLayout();
+
+        if (defaultLM == null)
+            return !nullLayout;
+        if (defaultLM.getClass() != layoutSupport.getLayoutClass())
+            return true;
+
+        Node.Property[] props =
+            LayoutSupportRegistry.getLayoutProperties(layoutSupport);
+
+        for (int i=0; i < props.length; i++) {
+            if (props[i] instanceof FormProperty
+                    && ((FormProperty)props[i]).isChanged())
+                return true;
+        }
+
+        return false; // default layout, no changed properties
     }
 
     /** Called to obtain a Java code to be used to generate code to access the

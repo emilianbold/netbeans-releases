@@ -474,10 +474,13 @@ class JavaCodeGenerator extends CodeGenerator {
                 addCreateCode(nonVisualComponents[i], initCodeWriter);
             }
             addCreateCode(top, initCodeWriter);
+            initCodeWriter.write("\n");
 
             for (int i = 0; i < nonVisualComponents.length; i++) {
                 addInitCode(nonVisualComponents[i], initCodeWriter, initCodeBuffer, 0);
             }
+            if (nonVisualComponents.length > 0)
+                initCodeWriter.write("\n");
             addInitCode(top, initCodeWriter, initCodeBuffer, 0);
 
             // for visual forms append sizing text
@@ -772,12 +775,13 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private void generateComponentInit(RADComponent comp, Writer initCodeWriter) throws IOException {
         if (comp instanceof RADVisualContainer) {
-            LayoutSupport layoutSupp = ((RADVisualContainer)comp).getLayoutSupport();
-            if (layoutSupp != null) {
-                String setlayout =
-                    layoutSupp.getJavaSetLayoutString(/*(RADVisualContainer)comp*/);
-                if (setlayout != null) {
-                    initCodeWriter.write(setlayout);
+            RADVisualContainer container = (RADVisualContainer) comp;
+            if (container.isLayoutChanged()) {
+                String setLayoutString =
+                    container.getLayoutSupport().getJavaSetLayoutString();
+                if (setLayoutString != null) {
+                    initCodeWriter.write(setLayoutString);
+                    initCodeWriter.write("\n");
                 }
             }
         }
@@ -953,7 +957,7 @@ class JavaCodeGenerator extends CodeGenerator {
             if (shouldGenerate) {
                 Method eventAddMethod = eventSetDesc.getAddListenerMethod();
 
-                initCodeWriter.write("\n"); // NOI18n
+//                initCodeWriter.write("\n"); // NOI18n
                 
                 boolean unicastEvent = false;
                 if ((eventAddMethod.getExceptionTypes().length == 1) &&
@@ -1013,9 +1017,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
 
                 // end of the innerclass
-                initCodeWriter.write("}\n"); // NOI18N
-                initCodeWriter.write(");\n\n"); // NOI18N
-
+                initCodeWriter.write("});\n\n"); // NOI18N
 
                 // if the event is unicast, generate the catch for TooManyListenersException
                 if (unicastEvent) {
