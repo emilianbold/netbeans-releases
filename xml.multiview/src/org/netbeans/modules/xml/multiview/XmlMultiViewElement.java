@@ -47,11 +47,7 @@ public class XmlMultiViewElement implements MultiViewElement, java.io.Serializab
     }
     
     public CloseOperationState canCloseElement() {
-        //if (this.support.getDataObject().isModified()) {
-        //    return MultiViewFactory.createUnsafeCloseState("XMLView:Data object modified", null, null);
-        //} else {
-            return CloseOperationState.STATE_OK;
-        //}
+        return CloseOperationState.STATE_OK;
     }
 
     public void componentOpened() {
