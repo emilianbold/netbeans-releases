@@ -1,3 +1,4 @@
+
 public class TestFile {
     
     /** Utility field holding the ActionListener. */
@@ -31,7 +32,7 @@ public class TestFile {
      * @param event The event to be fired
      *
      */
-    private void fireActionListenerActionPerformed(ActionEvent event) {
+    private void fireActionListenerActionPerformed(java.awt.event.ActionEvent event) {
         if (actionListener == null) return;
         actionListener.actionPerformed(event);
     }

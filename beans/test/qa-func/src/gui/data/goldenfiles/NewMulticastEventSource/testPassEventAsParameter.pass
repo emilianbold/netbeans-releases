@@ -1,3 +1,4 @@
+
 public class TestFile {
     
     /** Utility field used by event firing mechanism. */
@@ -31,7 +32,7 @@ public class TestFile {
      * @param event The event to be fired
      *
      */
-    private void fireActionListenerActionPerformed(ActionEvent event) {
+    private void fireActionListenerActionPerformed(java.awt.event.ActionEvent event) {
         if (listenerList == null) return;
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length-2; i>=0; i-=2) {

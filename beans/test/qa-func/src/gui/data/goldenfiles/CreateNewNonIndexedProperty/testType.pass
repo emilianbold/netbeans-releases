@@ -1,3 +1,4 @@
+
 public class TestFile {
     
     /** Creates a new instance of TestFile */
@@ -8,14 +9,14 @@ public class TestFile {
      * @return Value of property nonIndexProperty.
      *
      */
-    public double getNonIndexProperty() {
+    public Double getNonIndexProperty() {
     }
     
     /** Setter for property nonIndexProperty.
      * @param nonIndexProperty New value of property nonIndexProperty.
      *
      */
-    public void setNonIndexProperty(double nonIndexProperty) {
+    public void setNonIndexProperty(Double nonIndexProperty) {
     }
     
 }

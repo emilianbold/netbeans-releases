@@ -1,3 +1,4 @@
+
 public class TestFile {
     
     /** Creates a new instance of TestFile */
@@ -9,7 +10,7 @@ public class TestFile {
      * @return Value of the property at <CODE>index</CODE>.
      *
      */
-    public double getIndexProperty(int index) {
+    public Double getIndexProperty(int index) {
     }
     
     /** Indexed setter for property indexProperty.
@@ -17,7 +18,7 @@ public class TestFile {
      * @param indexProperty New value of the property at <CODE>index</CODE>.
      *
      */
-    public void setIndexProperty(int index, double indexProperty) {
+    public void setIndexProperty(int index, Double indexProperty) {
     }
     
 }
