@@ -207,7 +207,13 @@ public class Utils {
     }
 
     public static String getPackage(String ejbClass) {
-        return ejbClass.substring(0, ejbClass.lastIndexOf('.'));
+        final int i = ejbClass.lastIndexOf('.');
+        if (i < 0) {
+            return "";
+        } else {
+            return ejbClass.substring(0, i);
+        }
+
     }
 
     public static void notifyError(Exception ex) {
