@@ -28,6 +28,9 @@ public class Specification implements DBSpec {
 	/** Used JDBC Connection */
 	private Connection jdbccon;
 	
+	/** Owned factory */
+	SpecificationFactory factory;
+	
 	public static final String CREATE_TABLE = "CreateTableCommand";
 	public static final String RENAME_TABLE = "RenameTableCommand";
 	public static final String DROP_TABLE = "DropTableCommand";
@@ -40,6 +43,7 @@ public class Specification implements DBSpec {
 	public static final String ADD_CONSTRAINT = "AddConstraintCommand";
 	public static final String DROP_CONSTRAINT = "DropConstraintCommand";	
 	public static final String CREATE_VIEW = "CreateViewCommand";
+	public static final String RENAME_VIEW = "RenameViewCommand";
 	public static final String DROP_VIEW = "DropViewCommand";
 	public static final String CREATE_PROCEDURE = "CreateProcedureCommand";
 	public static final String DROP_PROCEDURE = "DropProcedureCommand";
@@ -70,6 +74,16 @@ public class Specification implements DBSpec {
 	public DBConnection getConnection()
 	{
 		return (DBConnection)desc.get("connection");
+	}
+
+	public DBSpecFactory getSpecificationFactory()
+	{
+		return factory;
+	}
+	
+	public void setSpecificationFactory(DBSpecFactory fac)
+	{
+		factory = (SpecificationFactory)fac;
 	}
 
 	/** Opens JDBC Connection. 
@@ -135,10 +149,12 @@ public class Specification implements DBSpec {
 	public DDLCommand createCommand(String commandName, String tableName)
 	throws CommandNotSupportedException
 	{
+		String classname;
 		Class cmdclass;
 		AbstractCommand cmd;
 		HashMap cprops = (HashMap)desc.get(commandName);
-		String classname = (String)cprops.get("Class");
+		if (cprops != null) classname = (String)cprops.get("Class");
+		else throw new CommandNotSupportedException(commandName, "command "+commandName+" is not supported by system");
 		try {
 			cmdclass = Class.forName(classname);
 			cmd = (AbstractCommand)cmdclass.newInstance();
@@ -247,6 +263,17 @@ public class Specification implements DBSpec {
 	{
 		return (CreateView)createCommand(CREATE_VIEW, viewname);
 	}	
+
+	/** Drop table command
+	* @param tableName Name of the table
+	*/
+	public RenameView createCommandRenameView(String tableName, String newName)
+	throws CommandNotSupportedException
+	{
+		RenameView cmd = (RenameView)createCommand(RENAME_VIEW, tableName);
+		cmd.setNewName(newName);
+		return cmd;
+	}
 	
 	/** Drop view
 	* @param viewname Name of index
@@ -354,6 +381,8 @@ public class Specification implements DBSpec {
 
 /*
 * <<Log>>
+*  3    Gandalf   1.2         4/23/99  Slavek Psenicka Opravy v souvislosti se 
+*       spravnym throwovanim :) CommandNotImplementedException
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
 * $

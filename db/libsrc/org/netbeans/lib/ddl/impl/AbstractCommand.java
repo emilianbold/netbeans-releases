@@ -140,26 +140,27 @@ public class AbstractCommand implements DDLCommand
 		
 		try {
 			fcmd = getCommand();
-			System.out.println(fcmd);
 		} catch (Exception e) {
 			throw new DDLException("unable to format a command "+format+": "+e.getMessage());
 		}
 		
-		try {
-			fcon = spec.getJDBCConnection();
-			if (fcon == null) {
-				fcon = spec.openJDBCConnection();
-				opened = true;
+		// In case of debug mode, you simply print command and don't execute
+		if (!spec.getSpecificationFactory().isDebugMode()) {					
+			try {
+				fcon = spec.getJDBCConnection();
+				if (fcon == null) {
+					fcon = spec.openJDBCConnection();
+					opened = true;
+				}
+				
+				Statement stat = fcon.createStatement();
+				stat.executeUpdate(fcmd);
+			} catch (Exception e) {
+				if (opened && fcon != null) spec.closeJDBCConnection();
+				throw new DDLException("unable to execute a command "+fcmd+": "+e.getMessage());
 			}
-			
-			Statement stat = fcon.createStatement();
-			stat.executeUpdate(fcmd);
-		} catch (Exception e) {
-			if (opened && fcon != null) spec.closeJDBCConnection();
-			throw new DDLException("unable to execute a command "+fcmd+": "+e.getMessage());
-		}
-			
-		if (opened) spec.closeJDBCConnection();
+			if (opened) spec.closeJDBCConnection();
+		} else System.out.println("cmd: "+fcmd);
 	}
 
 	/** 
@@ -183,6 +184,8 @@ public class AbstractCommand implements DDLCommand
 
 /*
 * <<Log>>
+*  3    Gandalf   1.2         4/23/99  Slavek Psenicka Opravy v souvislosti se 
+*       spravnym throwovanim :) CommandNotImplementedException
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
 * $
