@@ -80,7 +80,9 @@ public class TestGenerateJavadoc extends JellyTestCase {
         // javadoc is generated to default location ${netbeans.user}/javadoc
         
         // generate for MemoryView.java
-        Node memoryViewNode = new Node(new Node(repoTabOper.getRootNode(), path), "examples|advanced|MemoryView"); // NOI18N
+        Node memoryViewNode = new Node(new Node(repoTabOper.getRootNode(), topNode.getPath() + sep + 
+                            "org" + sep + "netbeans" + sep + "test" + sep + "gui" + sep + // NOI18N
+                            "javadoc" + sep + "data" + sep + "sampledir"), "examples|advanced|MemoryView"); // NOI18N
         generateJDoc.perform(memoryViewNode);
 
         NbDialogOperator nbDialogOper_1 = new NbDialogOperator(questionWinTitle);
