@@ -762,7 +762,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
         }
 
         public String getDisplayName() {
-            return NbBundle.getMessage(GeneralPanel.class, "LBL_ProjectCustomizer_Category_Targets");
+            return NbBundle.getMessage(TargetMappingPanel.class, "LBL_ProjectCustomizer_Category_Targets");
         }
 
         public JComponent getComponent() {
@@ -773,7 +773,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
         }
 
         public int getPreferredPosition() {
-            return 200;
+            return 1000;
         }
         
     }

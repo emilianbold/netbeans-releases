@@ -32,6 +32,7 @@ import org.netbeans.modules.java.freeform.JavaProjectNature;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -66,7 +67,13 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         testFolders.getSelectionModel().addListSelectionListener(this);
         initSourceLevel();
         updateColumnWidths();
-        jLabel1.setVisible(!isWizard);
+        jLabel1.setVisible(isWizard);
+        projectFolderLabel.setVisible(!isWizard);
+        projectContentLabel.setVisible(!isWizard);
+        buildScriptLabel.setVisible(!isWizard);
+        projectFolder.setVisible(!isWizard);
+        contentFolder.setVisible(!isWizard);
+        buildScript.setVisible(!isWizard);
     }
 
     public HelpCtx getHelpCtx() {
@@ -149,6 +156,12 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         downFolder = new javax.swing.JButton();
         downTestFolder = new javax.swing.JButton();
         upTestFolder = new javax.swing.JButton();
+        projectFolderLabel = new javax.swing.JLabel();
+        projectContentLabel = new javax.swing.JLabel();
+        buildScriptLabel = new javax.swing.JLabel();
+        projectFolder = new javax.swing.JTextField();
+        contentFolder = new javax.swing.JTextField();
+        buildScript = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -157,6 +170,8 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         jLabel1.setLabelFor(this);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_jLabel1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -168,7 +183,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_jLabel2"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -179,7 +194,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_jLabel3"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 14;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(jLabel3, gridBagConstraints);
@@ -193,7 +208,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 14;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
@@ -208,7 +223,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(addFolder, gridBagConstraints);
@@ -223,7 +238,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
@@ -242,7 +257,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.gridheight = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -257,7 +272,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.gridheight = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -270,7 +285,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_TestSourceFoldersPanel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -285,7 +300,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(addTestFolder, gridBagConstraints);
@@ -299,7 +314,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
@@ -314,7 +329,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
@@ -329,7 +344,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
@@ -344,7 +359,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
@@ -359,11 +374,65 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(upTestFolder, gridBagConstraints);
+
+        projectFolderLabel.setText(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_ProjFolderLabel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
+        add(projectFolderLabel, gridBagConstraints);
+
+        projectContentLabel.setText(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_ProjContentLabel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
+        add(projectContentLabel, gridBagConstraints);
+
+        buildScriptLabel.setText(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_BuildScriptLabel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
+        add(buildScriptLabel, gridBagConstraints);
+
+        projectFolder.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        add(projectFolder, gridBagConstraints);
+
+        contentFolder.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        add(contentFolder, gridBagConstraints);
+
+        buildScript.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        add(buildScript, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -574,7 +643,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         }
 
         public int getPreferredPosition() {
-            return 300;
+            return 100;
         }
         
     }
@@ -582,6 +651,9 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addFolder;
     private javax.swing.JButton addTestFolder;
+    private javax.swing.JTextField buildScript;
+    private javax.swing.JLabel buildScriptLabel;
+    private javax.swing.JTextField contentFolder;
     private javax.swing.JButton downFolder;
     private javax.swing.JButton downTestFolder;
     private javax.swing.JLabel jLabel1;
@@ -590,6 +662,9 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
     private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel projectContentLabel;
+    private javax.swing.JTextField projectFolder;
+    private javax.swing.JLabel projectFolderLabel;
     private javax.swing.JButton removeFolder;
     private javax.swing.JButton removeTestFolder;
     private javax.swing.JTable sourceFolders;
@@ -606,8 +681,33 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         updateButtons();
         sourceFoldersModel.fireTableDataChanged();
         updateColumnWidths();
+        if (!isWizard) {
+            projectFolder.setText(FileUtil.getFileDisplayName(projectHelper.getProjectDirectory()));
+            contentFolder.setText(model.getBaseFolder().getAbsolutePath());
+            FileObject fo = getAntScript(projectHelper, model.getEvaluator());
+            if (fo != null) {
+                buildScript.setText(FileUtil.getFileDisplayName(fo));
+            }
+        }
     }
 
+    // XXX: this is copy of FreeformProjectGenerator.getAntScript
+    private static FileObject getAntScript(AntProjectHelper helper, PropertyEvaluator ev) {
+        //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
+        String antScript = ev.getProperty(ProjectConstants.PROP_ANT_SCRIPT);
+        if (antScript != null) {
+            File f= helper.resolveFile(antScript);
+            if (!f.exists()) {
+                return null;
+            }
+            FileObject fo = FileUtil.toFileObject(f);
+            return fo;
+        } else {
+            FileObject fo = helper.getProjectDirectory().getFileObject("build.xml"); // NOI18N
+            return fo;
+        }
+    }
+    
     private void updateColumnWidths() {
         FontMetrics fm = sourceFolders.getFontMetrics(sourceFolders.getFont());
         

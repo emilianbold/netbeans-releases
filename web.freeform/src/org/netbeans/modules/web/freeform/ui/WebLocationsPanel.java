@@ -353,7 +353,7 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         }
 
         public int getPreferredPosition() {
-            return 250; // before Java sources panel
+            return 50; // before Java sources panel
         }
     }
     

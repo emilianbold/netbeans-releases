@@ -566,7 +566,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
 
         public int getPreferredPosition() {
-            return 400;
+            return 200;
         }
         
     }

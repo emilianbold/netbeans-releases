@@ -519,7 +519,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         }
 
         public int getPreferredPosition() {
-            return 500;
+            return 300;
         }
         
     }
