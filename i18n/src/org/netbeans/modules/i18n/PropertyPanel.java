@@ -136,9 +136,7 @@ public class PropertyPanel extends JPanel {
         replaceFormatLabel = new javax.swing.JLabel();
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
-        
         commentLabel.setText(I18nUtil.getBundle().getString("LBL_Comment"));
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 1;
@@ -146,18 +144,17 @@ public class PropertyPanel extends JPanel {
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(commentLabel, gridBagConstraints1);
         
-        
-        
         commentText.setColumns(40);
         commentText.setRows(3);
+        
         commentText.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 commentTextFocusLost(evt);
             }
         }
         );
-        commentScroll.setViewportView(commentText);
         
+        commentScroll.setViewportView(commentText);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
@@ -169,9 +166,7 @@ public class PropertyPanel extends JPanel {
         gridBagConstraints1.weighty = 1.0;
         add(commentScroll, gridBagConstraints1);
         
-        
         keyLabel.setText(I18nUtil.getBundle().getString("LBL_Key"));
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 2;
@@ -179,9 +174,7 @@ public class PropertyPanel extends JPanel {
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(keyLabel, gridBagConstraints1);
         
-        
         valueLabel.setText(I18nUtil.getBundle().getString("LBL_Value"));
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 3;
@@ -189,18 +182,17 @@ public class PropertyPanel extends JPanel {
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(valueLabel, gridBagConstraints1);
         
-        
-        
         valueText.setColumns(40);
         valueText.setRows(3);
+        
         valueText.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 valueTextFocusLost(evt);
             }
         }
         );
-        valueScroll.setViewportView(valueText);
         
+        valueScroll.setViewportView(valueText);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
@@ -212,8 +204,8 @@ public class PropertyPanel extends JPanel {
         gridBagConstraints1.weighty = 1.0;
         add(valueScroll, gridBagConstraints1);
         
-        
         keyBundleCombo.setEditable(true);
+        
         keyBundleCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 keyBundleComboActionPerformed(evt);
@@ -229,9 +221,8 @@ public class PropertyPanel extends JPanel {
         gridBagConstraints1.insets = new java.awt.Insets(7, 12, 0, 11);
         add(keyBundleCombo, gridBagConstraints1);
         
-        
         replaceFormatTextField.setEditable(false);
-        
+        replaceFormatTextField.setColumns(40);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
         gridBagConstraints1.gridy = 0;
@@ -240,8 +231,8 @@ public class PropertyPanel extends JPanel {
         gridBagConstraints1.weightx = 1.0;
         add(replaceFormatTextField, gridBagConstraints1);
         
-        
         replaceFormatButton.setText(I18nUtil.getBundle().getString("CTL_Format"));
+        
         replaceFormatButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 replaceFormatButtonActionPerformed(evt);
@@ -256,9 +247,7 @@ public class PropertyPanel extends JPanel {
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.EAST;
         add(replaceFormatButton, gridBagConstraints1);
         
-        
         replaceFormatLabel.setText(I18nUtil.getBundle().getString("LBL_ReplaceFormat"));
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 0;

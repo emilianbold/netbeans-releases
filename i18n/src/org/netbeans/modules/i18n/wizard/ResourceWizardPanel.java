@@ -39,6 +39,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.i18n.FactoryRegistry;
 import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.I18nSupport;
+import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.properties.PropertiesDataObject; // PENDING
 
 import org.openide.cookies.EditorCookie;
@@ -281,7 +282,7 @@ public class ResourceWizardPanel extends JPanel {
             return (DataObject)selectedNodes[0].getCookie(DataObject.class);
             
         } catch (UserCancelException uce) {
-            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+            if(I18nUtil.isDebug())
                 System.err.println("I18N module: User cancelled selection"); // NOI18N
             
             return null;
@@ -414,7 +415,7 @@ public class ResourceWizardPanel extends JPanel {
             
             showProgressPanel(progressPanel);
             
-            progressPanel.setMainText(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_SearchingIn"));
+            progressPanel.setMainText(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_Loading"));
             progressPanel.setMainProgress(0);
             
             // Do search.
@@ -426,7 +427,8 @@ public class ResourceWizardPanel extends JPanel {
             for(int i=0; sourceIterator.hasNext(); i++) {
                 DataObject source = (DataObject)sourceIterator.next();
 
-                progressPanel.setMainText(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_SearchingIn")+" "+source.getPrimaryFile().getPackageName('.')); // NOI18N
+                progressPanel.setMainText(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_Loading") 
+                    + " " + source.getPrimaryFile().getPackageName('.')); // NOI18N
 
                 // Get source data.
                 SourceData sourceData = (SourceData)sourceMap.get(source);
@@ -439,8 +441,8 @@ public class ResourceWizardPanel extends JPanel {
                     try {
                         support = FactoryRegistry.getFactory(source.getClass().getName()).create(source);
                     } catch(IOException ioe) {
-                        if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                            System.err.println("I18N: Document could noy be loaded for "+source.getName()); // NOI18N
+                        if(I18nUtil.isDebug())
+                            System.err.println("I18N: Document could noy be loaded for " + source.getName()); // NOI18N
 
                         // Remove source from settings.
                         sourceMap.remove(source);
@@ -453,15 +455,12 @@ public class ResourceWizardPanel extends JPanel {
                     sourceMap.put(source, sourceData);
                 }
 
-
+                progressPanel.setMainText(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_SearchingIn")
+                    + " " + source.getPrimaryFile().getPackageName('.')); // NOI18N
+                
                 // Get string map.
                 Map stringMap = sourceData.getStringMap();
 
-                if(stringMap != null && !testWizard)
-                    // Search was already performed.
-                    continue;
-
-                
                 HardCodedString[] foundStrings;
                 
                 if(testWizard) {

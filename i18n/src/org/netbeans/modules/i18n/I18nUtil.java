@@ -168,4 +168,9 @@ public abstract class I18nUtil {
         return (I18nOptions)SharedClassObject.findObject(I18nOptions.class, true);
     }
     
+    /** Indicates debug mode. */
+    public static boolean isDebug() {
+        return Boolean.getBoolean("netbeans.debug.exceptions"); // NOI18N
+    }
+    
 }

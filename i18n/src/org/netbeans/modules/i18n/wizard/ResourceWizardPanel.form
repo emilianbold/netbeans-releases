@@ -34,9 +34,6 @@
               <Connection code="tableModel" type="code"/>
             </Property>
           </Properties>
-          <Constraints>
-            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout$JScrollPaneConstraintsDescription"/>
-          </Constraints>
         </Component>
       </SubComponents>
     </Container>
