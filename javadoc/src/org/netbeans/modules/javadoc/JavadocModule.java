@@ -33,6 +33,7 @@ import org.openide.loaders.*;
 
 import com.netbeans.developer.modules.javadoc.settings.StdDocletSettings;
 import com.netbeans.developer.modules.javadoc.comments.JavaDocPropertySupportFactory;
+import com.netbeans.developer.modules.javadoc.comments.AutoCommentAction;
 import com.netbeans.developer.modules.javadoc.search.SearchDocAction;
 import com.netbeans.developer.modules.javadoc.search.DocFileSystem;
 
@@ -58,8 +59,9 @@ public class JavadocModule extends ModuleInstall {
         "ModuleHelp", true, true, false, true); // NOI18N
       
       // Create Action in action pool
-      DataFolder helpActions = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help"); // NOI18N
-      Utilities2.createAction (SearchDocAction.class, helpActions);
+      Utilities2.createAction (SearchDocAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); // NOI18N
+      Utilities2.createAction (GenerateDocAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Build")); // NOI18N
+      Utilities2.createAction (AutoCommentAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Tools")); // NOI18N
     } 
     catch (IOException e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) {
@@ -81,8 +83,9 @@ public class JavadocModule extends ModuleInstall {
         DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help")); // NOI18N
       
       // remove actions from action pool
-      DataFolder helpActions = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help"); // NOI18N
-      Utilities2.removeAction (SearchDocAction.class, helpActions);
+      Utilities2.removeAction (SearchDocAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); // NOI18N
+      Utilities2.removeAction (GenerateDocAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Build")); // NOI18N
+      Utilities2.removeAction (AutoCommentAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Tools")); // NOI18N
 
     } 
     catch (Exception e) {
@@ -267,6 +270,7 @@ public class JavadocModule extends ModuleInstall {
 
 /* 
  * Log
+ *  24   Gandalf   1.23        1/16/00  Jesse Glick     Actions pool.
  *  23   Gandalf   1.22        1/15/00  Jesse Glick     Actions pool 
  *       installation.
  *  22   Gandalf   1.21        1/12/00  Petr Hrebejk    i18n
