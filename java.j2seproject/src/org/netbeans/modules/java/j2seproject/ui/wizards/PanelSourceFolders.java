@@ -174,29 +174,38 @@ public class PanelSourceFolders extends SettingsPanel {
     }
     
     boolean valid (WizardDescriptor settings) {
-        if ( projectName.getText().length() == 0 ) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectName"));
-            return false; // Display name not specified
+        String result = checkValidity (this.projectName.getText(), this.projectLocation.getText(),
+            this.sources.getText(), this.tests.getText());
+        if (result == null) {
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage","");   //NOI18N
+            return true;
+        }
+        else {
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage",result);       //NOI18N
+            return false;
+        }
+    }
+
+    static String checkValidity (final String projectName, final String projectLocation, final String sources, final String tests ) {
+        if ( projectName.length() == 0 ) {
+            // Display name not specified
+            return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectName");
         }
 
-        File projLoc = new File (this.projectLocation.getText()).getAbsoluteFile();
+        File projLoc = new File (projectLocation).getAbsoluteFile();
 
         if (PanelProjectLocationVisual.getCanonicalFile(projLoc) == null) {
-            String message = NbBundle.getMessage (PanelProjectLocationVisual.class,"MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
-            return false;
+            return NbBundle.getMessage (PanelProjectLocationVisual.class,"MSG_IllegalProjectLocation");
         }
 
         while (projLoc != null && !projLoc.exists()) {
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
-            NbBundle.getMessage(PanelSourceFolders.class,"MSG_ProjectFolderReadOnly"));
-            return false;
+            return NbBundle.getMessage(PanelSourceFolders.class,"MSG_ProjectFolderReadOnly");
         }
 
-        File destFolder = new File( projectLocation.getText() );
+        File destFolder = FileUtil.normalizeFile(new File( projectLocation ));
         File[] kids = destFolder.listFiles();
         if ( destFolder.exists() && kids != null && kids.length > 0) {
             String file = null;
@@ -206,28 +215,27 @@ public class PanelSourceFolders extends SettingsPanel {
                     file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_NetBeansProject");
                 }
                 else if ("build".equals(childName)) {    //NOI18N
-                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_BuildFolder");                                        
+                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_BuildFolder");
                 }
                 else if ("dist".equals(childName)) {   //NOI18N
-                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_DistFolder");                    
+                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_DistFolder");
                 }
                 else if ("build.xml".equals(childName)) {   //NOI18N
-                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_BuildXML");                    
+                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_BuildXML");
                 }
                 else if ("manifest.mf".equals(childName)) { //NOI18N
-                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_Manifest");                    
+                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_Manifest");
                 }
                 if (file != null) {
                     String format = NbBundle.getMessage (PanelSourceFolders.class,"MSG_ProjectFolderInvalid");
-                    wizardDescriptor.putProperty( "WizardPanel_errorMessage", MessageFormat.format(format, new Object[] {file}));  //NOI18N
-                    return false;
+                    return MessageFormat.format(format, new Object[] {file});
                 }
             }
         }
-        
+
         // #47611: if there is a live project still residing here, forbid project creation.
         if (destFolder.isDirectory()) {
-            FileObject destFO = FileUtil.toFileObject(FileUtil.normalizeFile(destFolder));
+            FileObject destFO = FileUtil.toFileObject(destFolder);
             assert destFO != null : "No FileObject for " + destFolder;
             boolean clear = false;
             try {
@@ -236,40 +244,36 @@ public class PanelSourceFolders extends SettingsPanel {
                 // need not report here; clear remains false -> error
             }
             if (!clear) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
-                    NbBundle.getMessage(PanelSourceFolders.class, "MSG_ProjectFolderHasDeletedProject"));
-                return false;
+                return NbBundle.getMessage(PanelSourceFolders.class, "MSG_ProjectFolderHasDeletedProject");
             }
         }
 
-        String fileName = sources.getText();
-        if (fileName.length()==0) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", "");  //NOI18N
-            return false;
+
+        if (sources.length()==0) {
+            return "";  //NOI18N
         }
-        File f = new File (fileName);        
+        File f = FileUtil.normalizeFile(new File (sources));
         if (!f.isDirectory() || !f.canRead()) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalSources"));
-            return false;
+            return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalSources");
         }
-        
-        String ploc = new File (this.projectLocation.getText ()).getAbsolutePath ();
+
+        String ploc = destFolder.getAbsolutePath ();
         String sloc = f.getAbsolutePath ();
         if (ploc.equals (sloc) || ploc.startsWith (sloc)) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectFolder"));
-            return false;
+            return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectFolder");
         }
-        
-        fileName = tests.getText ();
-        if (fileName.length()>0) {
-            File tf = new File (fileName);
-            if (f.equals(tf)) {
-                wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalTests"));
-                return false;
+
+        if (tests.length()>0) {
+            File tf = FileUtil.normalizeFile(new File (tests));
+            String tloc = tf.getAbsolutePath();
+            if (ploc.equals(tloc) || ploc.startsWith(tloc)) {
+                return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectFolder");
             }
-        }        
-        wizardDescriptor.putProperty( "WizardPanel_errorMessage", "");  //NOI18N
-        return true;
+            if (tloc.equals(sloc) || tloc.startsWith(sloc) || sloc.startsWith(tloc)) {
+                return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalTests");
+            }
+        }
+        return null;
     }
 
     /** This method is called from within the constructor to
