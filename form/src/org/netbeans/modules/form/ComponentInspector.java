@@ -160,21 +160,28 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
             .getCurrentWorkspace();
         Workspace visualWorkspace = TopManager.getDefault().getWindowManager()
             .findWorkspace(FormEditor.GUI_EDITING_WORKSPACE_NAME);
-        
-        Mode ourMode = realWorkspace.findMode(this);
-        if ((ourMode == null) && workspace.equals(visualWorkspace)) {
-            // create new mode for CI and set the bounds properly
-            ourMode = workspace.createMode("ComponentInspector",  //NOI18N
-                                           formBundle.getString("CTL_InspectorTitle"), // NOI18N
-                                           iconURL);
-            Rectangle workingSpace = workspace.getBounds();
-            ourMode.setBounds(new Rectangle(
-                workingSpace.x +(workingSpace.width * 3 / 10),
-                workingSpace.y,
-                workingSpace.width * 2 / 10,
-                workingSpace.height / 2));
-            ourMode.dockInto(this);
+
+        if (workspace.equals(visualWorkspace)) {
+            Mode ourMode = workspace.findMode(this);
+            if (ourMode == null) {
+                ourMode = workspace.findMode("ComponentInspector"); // NOI18N
+                if (ourMode == null) {
+                    // create new mode for CI
+                    ourMode = workspace.createMode(
+                                "ComponentInspector",  //NOI18N
+                                formBundle.getString("CTL_InspectorTitle"), // NOI18N
+                                iconURL);
+                    Rectangle workingSpace = workspace.getBounds();
+                    ourMode.setBounds(new Rectangle(
+                                workingSpace.x + (workingSpace.width * 3 / 10),
+                                workingSpace.y,
+                                workingSpace.width * 2 / 10,
+                                workingSpace.height / 2));
+                }
+                ourMode.dockInto(this);
+            }
         }
+
         super.open(workspace);
     }
 
