@@ -49,6 +49,11 @@ public class RunToCursorActionProvider extends ActionsProviderSupport implements
         Context.addPropertyChangeListener (this);
     }
     
+    private void destroy () {
+        debugger.removePropertyChangeListener (debugger.PROP_STATE, this);
+        Context.removePropertyChangeListener (this);
+    }
+    
     public void propertyChange (PropertyChangeEvent evt) {
         setEnabled (
             DebuggerManager.ACTION_RUN_TO_CURSOR,
@@ -62,6 +67,8 @@ public class RunToCursorActionProvider extends ActionsProviderSupport implements
             DebuggerManager.getDebuggerManager ().removeBreakpoint (breakpoint);
             breakpoint = null;
         }
+        if (debugger.getState () == debugger.STATE_DISCONNECTED) 
+            destroy ();
     }
     
     public Set getActions () {

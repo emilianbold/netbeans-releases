@@ -61,14 +61,22 @@ public class Operator {
      *                    (may be <TT>null</TT>)
     */
     public Operator (
-        final VirtualMachine virtualMachine,
-        final Executor starter,
-        final Runnable finalizer
+        VirtualMachine virtualMachine,
+        Executor starter,
+        Runnable finalizer
     ) {
         if (virtualMachine == null) 
             throw new NullPointerException ();
+        final Object[] params = new Object[] {virtualMachine, starter, finalizer};
         thread = new Thread (new Runnable () {
-         public void run () {
+        public void run () {
+            VirtualMachine virtualMachine = (VirtualMachine) params [0];
+            Executor starter = (Executor) params [1];
+            Runnable finalizer = (Runnable) params [2];
+            params [0] = null;
+            params [1] = null;
+            params [2] = null;
+            
              EventQueue queue = virtualMachine.eventQueue ();
              try {
                  for (;;) {
@@ -86,7 +94,10 @@ public class Operator {
 //                             disconnected = true;
                              if (finalizer != null) finalizer.run ();
                              //S ystem.out.println ("EVENT: " + e); // NOI18N
-                             //S ystem.out.println ("Operator end"); // NOI18N
+                             //S ystem.out.println ("Operator end2"); // NOI18N
+                             finalizer = null;
+                             virtualMachine = null;
+                             starter = null;
                              return;
                          }
                          
@@ -134,6 +145,9 @@ public class Operator {
              }
              if (finalizer != null) finalizer.run ();
              //S ystem.out.println ("Operator end"); // NOI18N
+             finalizer = null;
+             virtualMachine = null;
+             starter = null;
          }
      }, "Debugger operator thread"); // NOI18N
     }

@@ -58,9 +58,6 @@ public class IOManager {
     /** Error process output constant. */
     public static final int                 ERR_OUT = 2;
     
-    //private static Hashtable                closedOutputs = new Hashtable ();
-    //private static final boolean            sepatated = true;
-    //private static final boolean            per_session = false;
     private static Hashtable                debuggerToProcesIO = new Hashtable ();
     private static Hashtable                debuggerToDebuggerIO = new Hashtable ();
     private static DebuggerEngine           currentEngine;
@@ -68,18 +65,13 @@ public class IOManager {
     
     // variables ...............................................................
     
-//    protected InputOutput                   processIO = null;
     protected InputOutput                   debuggerIO = null;
     private DebuggerEngine                  engine;
     
-//    private OutputWriter                    processOut;
     private OutputWriter                    debuggerOut;
     private String                          name;
     
     /** output writer Thread */
-    private Thread                          inputThread = null;
-    private Thread                          outputThread = null;
-    private Thread                          errorThread = null;
     private Hashtable                       lines = new Hashtable ();
     private Listener                        listener = new Listener ();
     private static DListener                dListener;
@@ -91,25 +83,16 @@ public class IOManager {
         DebuggerEngine engine
     ) {
         this.engine = engine;
-        InputOutput debuggerIO = IOProvider.getDefault ().getIO 
-            (loc("CTL_DebuggerConsole_Title"), true);
-            //S ystem.out.println("IO " + debuggerIO.getClass ());
-            //debuggerIO.setOutputVisible (true);
-            //debuggerIO.setErrVisible (true);
-            //debuggerIO.setInputVisible (false);
-            debuggerIO.setFocusTaken (false);
-            debuggerOut = debuggerIO.getOut ();
-//        processIO = IOProvider.getDefault ().getIO (loc("CTL_ProcessOutput_Title"), true);
-            //processIO.setOutputVisible (true);
-            //processIO.setErrVisible (true);
-            //processIO.setInputVisible (false);
-            //processIO.setFocusTaken (true);
-//            processOut = processIO.getOut ();
-            //processIO.select ();
+        InputOutput debuggerIO = IOProvider.getDefault ().getIO ( 
+            NbBundle.getBundle (IOManager.class).getString 
+                ("CTL_DebuggerConsole_Title"), 
+            true
+        );
+        debuggerIO.setFocusTaken (false);
+        debuggerOut = debuggerIO.getOut ();
         ((TopComponent) debuggerIO).setVisible(false);
         
         debuggerToDebuggerIO.put (engine, debuggerIO);
-//        debuggerToProcesIO.put (engine, processIO);
         final DebuggerManager manager = DebuggerManager.getDebuggerManager ();
         if (dListener == null) {
             dListener = new DListener ();
@@ -119,9 +102,6 @@ public class IOManager {
             public void run () {
                 // close old tab from previous debugging session on engine start
                 // hide current tab and set this engine current
-
-                //S ystem.out.println("IOManager.init - #debuggers " + manager.getDebuggers ().length);
-                //S ystem.out.println("IOManager.init - #currentEngine " + currentEngine);
                 if (currentEngine == null) {
                     currentEngine = IOManager.this.engine;
                     return;
@@ -150,47 +130,9 @@ public class IOManager {
             }
         });
     }
-
-    private String loc(String key) {
-        return NbBundle.getBundle(IOManager.class).getString(key);
-    }
     
     
     // public interface ........................................................
-    
-    /**
-    * 
-    */
-    public void select () {
-//        processIO.select ();
-    }
-    
-    /**
-    * Prints given text to the output.
-    */
-    public void print (final String text, final int where) {
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-//                if ((where & PROCESS_OUT) != 0) processOut.print (text);
-                if ((where & DEBUGGER_OUT) != 0) debuggerOut.print (text);
-                if ((where & STATUS_OUT) != 0) StatusDisplayer.getDefault ().setStatusText (text);
-            }
-        });
-    }
-//
-//    /**
-//    * Prints given text to the output.
-//    */
-//    public void println (final String text) {
-//        println (text, DEBUGGER_OUT);
-//    }
-//    
-//    /**
-//    * Prints given text to the output.
-//    */
-//    public void println (final String text, final int where) {
-//        println (text, where, null);
-//    }
 
     private LinkedList buffer = new LinkedList ();
     private RequestProcessor.Task task;
@@ -212,15 +154,6 @@ public class IOManager {
                         for (i = 0; i < k; i++) {
                             Text t = (Text) buffer.removeFirst ();
                             try {
-/*
-                                if ((t.where & PROCESS_OUT) != 0) {
-                                    if (t.line != null) {
-                                        processOut.println (t.text, listener);
-                                        lines.put (t.text, t.line);
-                                    } else
-                                        processOut.println (t.text);
-                                }
-*/
                                 if ((t.where & DEBUGGER_OUT) != 0) {
                                     if (t.line != null) {
                                         debuggerOut.println (t.text, listener);
@@ -239,89 +172,12 @@ public class IOManager {
             }, 500, Thread.MIN_PRIORITY);
         else 
             task.schedule (500);
-        
-//        SwingUtilities.invokeLater (new Runnable () {
-//            public void run () {
-//                try {
-//                    if ((where & PROCESS_OUT) != 0) {
-//                        if (line != null) {
-//                            processOut.println (text, listener);
-//                            lines.put (text, line);
-//                        } else
-//                            processOut.println (text);
-//                    }
-//                    if ((where & DEBUGGER_OUT) != 0) {
-//                        if (line != null) {
-//                            debuggerOut.println (text, listener);
-//                            lines.put (text, line);
-//                        } else
-//                            debuggerOut.println (text);
-//                    }
-//                    if ((where & STATUS_OUT) != 0) 
-//                        IOProvider.getDefault ().setStatusText (text);
-//                } catch (IOException e) {
-//                }
-//            }
-//        });
-    }
-
-    /**
-    * Shows output and error from this proces in output window.
-    */
-    public void showOutput (final Process process, int what, final int where) {
-        if (process == null) throw new NullPointerException ();
-        if ((what | STD_OUT) != 0) {
-            (outputThread = new CopyMaker (
-                "DebuggerManager output writer thread",
-                new InputStreamReader (process.getInputStream ()), 
-                debuggerOut,
-//                ((where & PROCESS_OUT) != 0) ? processOut : debuggerOut,
-                false
-            )).start ();
-        }
-
-        if ((what | ERR_OUT) != 0) {
-            (errorThread = new CopyMaker (
-                "DebuggerManager error writer thread",
-                new InputStreamReader (process.getErrorStream ()), 
-                debuggerOut,
-//                ((where & PROCESS_OUT) != 0) ? processOut : debuggerOut,
-                false
-            )).start ();
-        }
-    }
-
-    public void connectInput (final Process process) {
-        if (process == null) throw new NullPointerException ();
-/*
-        if (processIO == null) return;
-        processIO.setInputVisible (true);
-        processIO.flushReader ();
-        (inputThread = new CopyMaker (
-            "DebuggerManager input reader thread",
-            processIO.getIn (), 
-            new OutputStreamWriter (process.getOutputStream ()),
-            true
-        )).start ();
-*/
     }
 
     /**
      * Stops communication between InputOutput and process.
      */
     public void stop () {
-        if (errorThread != null) {
-            errorThread.interrupt ();
-            errorThread = null;
-        }
-        if (outputThread != null) {
-            outputThread.interrupt ();
-            outputThread = null;
-        }
-        if (inputThread != null) {
-            inputThread.interrupt ();
-            inputThread = null;
-        }
         DebuggerManager manager = DebuggerManager.getDebuggerManager ();
         if (manager.getSessions ().length > 1) {
             SwingUtilities.invokeLater (new Runnable () {
@@ -339,6 +195,7 @@ public class IOManager {
                 }
             });
         }
+        manager.removeDebuggerListener (dListener);
     }
     
     
@@ -348,13 +205,10 @@ public class IOManager {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 DebuggerEngine d = DebuggerManager.getDebuggerManager ().getCurrentEngine ();
-                //S ystem.out.println("IOManager.switch old d: " + currentEngine);
-                //S ystem.out.println("IOManager.switch new d: " + d);
                 if ( (currentEngine != null) &&
                      (currentEngine != d) && (d != null)
                 ) {
                     // hides current engine
-                    //S ystem.out.println("IOManager.switch Tab Hidden " + currentEngine);
                     InputOutput io = (InputOutput) debuggerToProcesIO.get 
                         (currentEngine);
                     if (io != null)
@@ -365,7 +219,6 @@ public class IOManager {
                     currentEngine = null;
                 }
                 if (d != null) {
-                    //S ystem.out.println("IOManager.switch Tab Showen " + d);
                     InputOutput io = (InputOutput) debuggerToDebuggerIO.get (d);
                     if (io != null)
                         io.setOutputVisible (true);
@@ -377,19 +230,6 @@ public class IOManager {
             }
         });
     }
-    
-    
-/*    private static synchronized void addClosedOutput (
-        String name, 
-        InputOutput io
-    ) {
-        List list = (List) closedOutputs.get (name);
-        if (list == null) {
-            list = new LinkedList ();
-            closedOutputs.put (name, list);
-        }
-        list.add (io);
-    }*/
     
     
     // innerclasses ............................................................
@@ -407,63 +247,6 @@ public class IOManager {
             lines = new Hashtable ();
         }
     }
-
-
-    /** 
-     * This thread simply reads from given Reader and writes 
-     * read chars to given Writer. 
-     */
-    private static class CopyMaker extends Thread {
-        final Writer os;
-        final Reader is;
-        /** 
-         * while set to false at streams that writes to the OutputWindow 
-         * it must be true for a stream that reads from the window.
-         */
-        final boolean autoflush;
-
-        CopyMaker (String name, Reader is, Writer os, boolean b) {
-            super (name);
-            this.os = os;
-            this.is = is;
-            autoflush = b;
-            setPriority (Thread.MIN_PRIORITY);
-        }
-
-        /* Makes copy. */
-        public void run() {
-            int read;
-            char[] buff = new char [256];
-            try {                
-                while ((read = read(is, buff, 0, 256)) > 0x0) {
-                    os.write(buff,0,read);
-                    if (autoflush) os.flush();
-                }
-            } catch (IOException ex) {
-            } catch (InterruptedException e) {
-            }
-        }
-        
-        private int read (
-            Reader is, 
-            char[] buff, 
-            int start, 
-            int count
-        ) throws InterruptedException, IOException {
-            // XXX (anovak) IBM JDK 1.3.x on OS/2 is broken
-            // is.ready()/available() returns false/0 until
-            // at least one byte from the stream is read.
-            // Then it works as advertised.
-            // isao 2001-11-12: ditto for JDK 1.3 on OpenVMS
-            
-            if (Utilities.getOperatingSystem() != Utilities.OS_OS2
-                && Utilities.getOperatingSystem() != Utilities.OS_VMS
-                ) {
-                while (!is.ready()) sleep(100);
-            }
-            return is.read(buff, start, count);
-        }
-    } // end of CopyMaker
     
     private static class DListener extends DebuggerManagerAdapter {
         public void propertyChange (PropertyChangeEvent e) {

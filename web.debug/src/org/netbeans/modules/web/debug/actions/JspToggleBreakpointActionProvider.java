@@ -34,13 +34,32 @@ import org.netbeans.modules.web.debug.breakpoints.JspLineBreakpoint;
 public class JspToggleBreakpointActionProvider extends ActionsProviderSupport implements PropertyChangeListener {
     
     
-    public JspToggleBreakpointActionProvider() {
+    private JPDADebugger debugger;
+
+    
+    public JspToggleBreakpointActionProvider () {
         Context.addPropertyChangeListener (this);
+    }
+    
+    public JspToggleBreakpointActionProvider (LookupProvider lookupProvider) {
+        debugger = (JPDADebugger) lookupProvider.lookupFirst 
+                (JPDADebugger.class);
+        debugger.addPropertyChangeListener (debugger.PROP_STATE, this);
+        Context.addPropertyChangeListener (this);
+    }
+    
+    private void destroy () {
+        debugger.removePropertyChangeListener (debugger.PROP_STATE, this);
+        Context.removePropertyChangeListener (this);
     }
     
     public void propertyChange (PropertyChangeEvent evt) {
         boolean isJsp = Utils.isJsp(Context.getCurrentURL());
         setEnabled(DebuggerManager.ACTION_TOGGLE_BREAKPOINT, isJsp);
+        if ( debugger != null && 
+             debugger.getState () == debugger.STATE_DISCONNECTED
+        ) 
+            destroy ();
     }
     
     public Set getActions () {

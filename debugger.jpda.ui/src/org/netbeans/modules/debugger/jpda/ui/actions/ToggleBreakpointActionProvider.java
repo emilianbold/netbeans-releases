@@ -34,9 +34,23 @@ import org.netbeans.spi.debugger.ActionsProviderSupport;
 public class ToggleBreakpointActionProvider extends ActionsProviderSupport 
 implements PropertyChangeListener {
     
+    private JPDADebugger debugger;
+
     
     public ToggleBreakpointActionProvider () {
         Context.addPropertyChangeListener (this);
+    }
+    
+    public ToggleBreakpointActionProvider (LookupProvider lookupProvider) {
+        debugger = (JPDADebugger) lookupProvider.lookupFirst 
+                (JPDADebugger.class);
+        debugger.addPropertyChangeListener (debugger.PROP_STATE, this);
+        Context.addPropertyChangeListener (this);
+    }
+    
+    private void destroy () {
+        debugger.removePropertyChangeListener (debugger.PROP_STATE, this);
+        Context.removePropertyChangeListener (this);
     }
     
     public void propertyChange (PropertyChangeEvent evt) {
@@ -45,6 +59,10 @@ implements PropertyChangeListener {
             (Context.getCurrentLineNumber () >= 0) && 
             (Context.getCurrentURL ().endsWith (".java"))
         );
+        if ( debugger != null && 
+             debugger.getState () == debugger.STATE_DISCONNECTED
+        ) 
+            destroy ();
     }
     
     public Set getActions () {

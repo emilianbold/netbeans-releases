@@ -83,7 +83,7 @@ public class BreakpointOutput extends LazyActionsManagerListener
         } catch (Throwable e) {
             e.printStackTrace();
         }
-        ioManager.print(printText + "\n", IOManager.DEBUGGER_OUT);
+        ioManager.println (printText, IOManager.DEBUGGER_OUT, null);
     }
 
     /**
@@ -136,7 +136,7 @@ public class BreakpointOutput extends LazyActionsManagerListener
             } catch (InvalidExpressionException e) {
                 // expression is invalid or cannot be evaluated
                 String msg = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-                ioManager.print("Cannot evaluate expression '" + expression + "' : " + msg + "\n", IOManager.DEBUGGER_OUT);
+                ioManager.println ("Cannot evaluate expression '" + expression + "' : " + msg, IOManager.DEBUGGER_OUT, null);
             }
             printText = m.replaceFirst(value);
         }
