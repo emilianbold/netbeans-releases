@@ -211,7 +211,7 @@ public class EditPanel extends javax.swing.JPanel implements
 
     public void actionPerformed(ActionEvent e) {
 	
-	boolean debug = true;
+	boolean debug = false;
 	
 	if(debug) System.out.println("EditPanel got action"); //NOI18N
 	 

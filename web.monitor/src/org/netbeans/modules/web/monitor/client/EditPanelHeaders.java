@@ -46,7 +46,7 @@ import org.netbeans.modules.web.monitor.data.*;
 
 public class EditPanelHeaders extends DataDisplay {
 
-    private final static boolean debug = true;
+    private final static boolean debug = false;
     private static final ResourceBundle msgs =
 	NbBundle.getBundle(TransactionView.class);
     
@@ -82,7 +82,7 @@ public class EditPanelHeaders extends DataDisplay {
 
 	this.monitorData = md;
 	
-	if(debug) System.out.println("in RequestDisplay.setData()"); // NOI18N
+	if(debug) System.out.println("in EditPanelHeaders.setData()"); // NOI18N
 	 
 	this.removeAll();
 	

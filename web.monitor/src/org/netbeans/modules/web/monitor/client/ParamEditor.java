@@ -47,7 +47,7 @@ import org.openide.util.NbBundle;
 
 public class ParamEditor extends javax.swing.JPanel implements ActionListener {
 
-    private final static boolean debug = true;
+    private final static boolean debug = false;
     private static final ResourceBundle msgs =
 	NbBundle.getBundle(TransactionView.class);
     
