@@ -92,8 +92,13 @@ is divided into following sections:
                 <property file="nbproject/project.properties"/>
             </target>
 
-            <target name="-do-init">
+            <target name="-do-ear-init">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
+                <property value="${{build.ear.web.dir}}/META-INF" name="build.meta.inf.dir"/>
+            </target>
+    
+            <target name="-do-init">
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property, -do-ear-init</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:explicit-platform">
                     <webproject1:property name="platform.home" value="platforms.${{platform.active}}.home"/>
                     <webproject1:property name="platform.bootcp" value="platforms.${{platform.active}}.bootclasspath"/>
@@ -146,6 +151,7 @@ is divided into following sections:
                     <istrue value="${{display.browser}}"/>
                 </condition>
                 <available file="${{conf.dir}}/MANIFEST.MF" property="has.custom.manifest"/>
+                <property value="${{build.web.dir}}/META-INF" name="build.meta.inf.dir"/>
             </target>
 
             <target name="-post-init">
@@ -544,7 +550,7 @@ is divided into following sections:
             </target>
 
             <target name="-do-compile">
-                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile</xsl:attribute>
+                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest</xsl:attribute>
                 <xsl:attribute name="unless">dist.ear.dir</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
                     <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment> 
@@ -570,12 +576,6 @@ is divided into following sections:
                   </fileset>
                 </copy>
                 
-                <property name="build.meta.inf.dir" value="${{build.web.dir}}/META-INF"/>
-                <mkdir dir="${{build.meta.inf.dir}}"/>
-                <copy todir="${{build.meta.inf.dir}}">
-                    <fileset includes="MANIFEST.MF" dir="${{conf.dir}}"/>
-                </copy>
-
                 <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
                     <xsl:comment>For web services, refresh web.xml and sun-web.xml</xsl:comment>  
                     <copy todir="${{build.web.dir}}" overwrite="true"> 
@@ -596,7 +596,7 @@ is divided into following sections:
             </target>
 
             <target name="-do-ear-compile">
-                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile</xsl:attribute>
+                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest</xsl:attribute>
                 <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
                 
                 <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
@@ -621,13 +621,6 @@ is divided into following sections:
                      <xsl:attribute name="excludes">WEB-INF/classes/** WEB-INF/web.xml WEB/sun-web.xml</xsl:attribute>
                    </xsl:if>
                   </fileset>
-                  <fileset includes="META-INF/MANIFEST.MF" dir="${{conf.dir}}"/>
-                </copy>
-
-                <property name="build.meta.inf.dir" value="${{build.ear.web.dir}}/META-INF"/>
-                <mkdir dir="${{build.meta.inf.dir}}"/>
-                <copy todir="${{build.meta.inf.dir}}">
-                    <fileset includes="MANIFEST.MF" dir="${{conf.dir}}"/>
                 </copy>
                 
                 <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
@@ -637,6 +630,14 @@ is divided into following sections:
                     </copy>
                  </xsl:if>
             </target>
+            
+            <target name="-copy-manifest" if="conf.dir">
+                <mkdir dir="${{build.meta.inf.dir}}"/>
+                <copy todir="${{build.meta.inf.dir}}">
+                    <fileset dir="${{conf.dir}}" includes="MANIFEST.MF"/>
+                </copy>
+            </target>
+            
             
             <target name="-post-compile">
 				<xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
