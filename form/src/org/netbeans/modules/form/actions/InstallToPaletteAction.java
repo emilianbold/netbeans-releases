@@ -55,6 +55,10 @@ public class InstallToPaletteAction extends CookieAction {
     protected boolean enable(Node[] activatedNodes) {
         if (super.enable(activatedNodes)) {
             for (int i = 0; i < activatedNodes.length; i++) {
+                InstanceCookie ic = (InstanceCookie)
+                                    activatedNodes[i].getCookie(InstanceCookie.class);
+                if (ic == null)
+                    return false;
                 DataObject dobj = (DataObject)
                                   activatedNodes[i].getCookie(DataObject.class);
                 try {
