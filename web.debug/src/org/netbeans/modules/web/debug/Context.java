@@ -53,9 +53,10 @@ public class Context {
      */
     public static boolean showSource (
         String url,
-        int lineNumber
+        int lineNumber,
+        Object timeStamp
     ) {
-        return getContext ().showSource (url, lineNumber);
+        return getContext ().showSource (url, lineNumber, timeStamp);
     }
 
     /**
@@ -70,9 +71,10 @@ public class Context {
     public static Object annotate (
         String url,
         int lineNumber,
-        String annotationType
+        String annotationType,
+        Object timeStamp
     ) {
-        return getContext ().annotate (url, lineNumber, annotationType);
+        return getContext ().annotate (url, lineNumber, annotationType, timeStamp);
     }
 
     /**
@@ -80,10 +82,10 @@ public class Context {
      *
      * @return true if annotation has been successfully removed
      */
-    public static boolean removeAnnotation (
+    public static void removeAnnotation (
         Object annotation
     ) {
-        return getContext ().removeAnnotation (annotation);
+        getContext ().removeAnnotation (annotation);
     }
     
     /**
@@ -162,11 +164,13 @@ public class Context {
         if (b.getLineNumber () < 1)
             return Context.showSource (
                 b.getURL (),
-                1
+                1,
+                null
             );
         return Context.showSource (
             b.getURL (),
-            b.getLineNumber ()
+            b.getLineNumber (),
+            null
         );
     }
 
@@ -190,7 +194,8 @@ public class Context {
         return annotate (
             url,
             lineNumber,
-            annotationType
+            annotationType,
+            null
         );
     }
     
