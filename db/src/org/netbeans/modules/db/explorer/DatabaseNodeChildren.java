@@ -40,15 +40,6 @@ public class DatabaseNodeChildren extends Children.Array
         try {
             Vector chlist = nodeinfo.getChildren();
             
-            //is there pointbase driver (is there pointbase installed)?
-            boolean isPointbaseDriver;
-            try {
-                Class.forName("com.pointbase.jdbc.jdbcUniversalDriver"); //NOI18N
-                isPointbaseDriver = true;
-            } catch (ClassNotFoundException e) {
-                isPointbaseDriver = false;
-            }
-            
             for (int i=0;i<chlist.size();i++) {
                 Node snode = null;
                 Object sinfo = chlist.elementAt(i);
@@ -56,73 +47,18 @@ public class DatabaseNodeChildren extends Children.Array
                 if (sinfo instanceof DatabaseNodeInfo) {
                     DatabaseNodeInfo dni = (DatabaseNodeInfo) sinfo;
                     if (dni.getName().equals("Connection")) //NOI18N
-                        dni.setName(dni.getName() + " " + dni.getDatabase());
+                        //dni.setName(dni.getName() + " " + dni.getDatabase());
+                        dni.setName(dni.getDatabase());
 
                     // aware! in this method is clone of instance dni created    
                     snode = createNode(dni);
                     
-                    // if specific connection to pointbase is restored then this connection is opened
-                    // and embedded pointbase driver is installed
-                    if ( dni.getName().startsWith("Connection") //NOI18N
-                        && dni.getDriver().equals("com.pointbase.jdbc.jdbcUniversalDriver") //NOI18N
-                        && dni.getDatabase().equals("jdbc:pointbase://embedded/sample") //NOI18N
-                        && dni.getUser().equals("public") //NOI18N
-                        && isPointbaseDriver ) {
-
-                            // node reference to ConnectionNodeInfo is set
-                            final ConnectionNodeInfo cinfo = (ConnectionNodeInfo)((DatabaseNode)snode).getInfo();
-
-                            // set password
-                            cinfo.setPassword("public"); //NOI18N
-                            cinfo.put(DatabaseNodeInfo.REMEMBER_PWD, new Boolean(true));
-
-                            try {
-                                cinfo.connect(ConnectionNodeInfo.AUTOPBCONN);
-                            } catch(Exception ex) {}
-                    }
                 }
                 else
                     if (sinfo instanceof Node)
                         snode = (Node)sinfo;
                 if (snode != null)
                     children.add(snode);
-            }
-            
-            /* if this database module is newly installed and embedded pointbase driver is installed
-               then connection to pointbase is created (and opened) (as a son of Database node) */
-            if (DatabaseModule.isNewlyInstalled && (nodeinfo.getName().startsWith("Databases")) && isPointbaseDriver) { //NOI18N
-
-                ConnectionNodeInfo cni = (ConnectionNodeInfo)DatabaseNodeInfo.createNodeInfo(nodeinfo, DatabaseNode.CONNECTION);
-                cni.setName( "jdbc:pointbase://embedded/sample" ); //NOI18N
-                cni.setUser( "public" ); //NOI18N
-                cni.setDriver( "com.pointbase.jdbc.jdbcUniversalDriver" ); //NOI18N
-                cni.setDatabase( "jdbc:pointbase://embedded/sample" ); //NOI18N
-
-                // create of node
-                // aware! in this method is clone of instance cni created
-                Node cnode = createNode(cni);
-
-                // node reference to ConnectionNodeInfo is set
-                ConnectionNodeInfo cinfo = (ConnectionNodeInfo)((DatabaseNode)cnode).getInfo();
-
-                // set password
-                cinfo.setPassword("public"); //NOI18N
-                cinfo.put(DatabaseNodeInfo.REMEMBER_PWD, new Boolean(true));
-
-                // adding connection to list (in DatabaseOption class)
-                Vector cons = RootNode.getOption().getConnections();
-                DatabaseConnection conn = (DatabaseConnection)cinfo.getDatabaseConnection();
-                cons.add(conn);
-
-                // open connection
-                try {
-                    cinfo.connect(ConnectionNodeInfo.AUTOPBCONN);
-                } catch(Exception ex) {
-                }
-
-                // adding node into children of Database node
-                children.add(cnode);
-
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -131,16 +67,7 @@ public class DatabaseNodeChildren extends Children.Array
 
         return children;
     }
-    /*
-    	protected Node[] createNodes()
-    	{
-    		Node[] nodeorg = super.createNodes();
-    		DatabaseNodeInfo nodeinfo = ((DatabaseNode)getNode()).getInfo();
-    		java.util.Map nodeord = (java.util.Map)nodeinfo.get(DatabaseNodeInfo.CHILDREN_ORDERING);
-    		if (nodeord != null) Arrays.sort(nodeorg, new NodeComparator(nodeord));
-    		return nodeorg;
-    	}
-    */
+
     class NodeComparator implements Comparator
     {
         private java.util.Map map = null;
