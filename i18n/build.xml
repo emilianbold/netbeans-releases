@@ -44,14 +44,8 @@ Microsystems, Inc. All Rights Reserved.
       <locale name="ja"/>
     </locjar>
   </target>
-<!--
-  <target name="javahelp">
-    <copy todir="netbeans/docs">
-      <fileset dir="javahelp"/>
-    </copy>
-  </target>
--->
-  <target name="netbeans" depends="jars"/> <!-- javahelp removed -->
+
+  <target name="netbeans" depends="jars"/>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="i18n.nbm"
