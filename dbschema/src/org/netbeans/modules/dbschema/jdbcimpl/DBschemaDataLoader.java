@@ -49,6 +49,7 @@ public class DBschemaDataLoader extends UniFileLoader {
     protected SystemAction[] defaultActions() {
         return new SystemAction[] {
             SystemAction.get (FileSystemAction.class),
+            SystemAction.get (RecaptureSchemaAction.class),
             null,
             SystemAction.get (CutAction.class),
             SystemAction.get (CopyAction.class),
