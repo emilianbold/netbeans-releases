@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
@@ -275,7 +275,7 @@ public class TestUtil {
      * well formed.
      */
     static String fileToClassName(String fileName) {
-        if (fileName.endsWith(".java")) {
+        if (fileName.endsWith(".java")) {                               //NOI18N
             return (fileName.substring(0, fileName.length()-5)).replace('/','.');
         } else
             return null;
@@ -572,7 +572,7 @@ public class TestUtil {
      *
      * @author  Marian Petras
      */
-    private static Object[] skipNulls(final Object[] objs) {
+    public static Object[] skipNulls(final Object[] objs) {
         List resultList = new ArrayList(objs.length);
         
         for (int i = 0; i < objs.length; i++) {
@@ -588,7 +588,7 @@ public class TestUtil {
      *
      * @author  Marian Petras
      */
-    private static Map getFileObject2SourceGroupMap(Project project) {
+    public static Map getFileObject2SourceGroupMap(Project project) {
         final Sources sources = ProjectUtils.getSources(project);
         final SourceGroup[] sourceGroups = sources.getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
