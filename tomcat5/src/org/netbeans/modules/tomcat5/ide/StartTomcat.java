@@ -144,15 +144,24 @@ public final class StartTomcat extends StartServer implements Runnable, Progress
     boolean running = false;
     public boolean isRunning() {
         // PENDING should this be cached? see #37937
-        return URLWait.waitForStartup (tm, 1000);
-//        return running;
+        running = URLWait.waitForStartup (tm, 1000);
+        if (!running) {
+            isDebugMode = false;
+        }
+        return running;
     }
 
     /**
      * Returns true if this target is in debug mode.
      */
     public boolean isDebuggable(Target target) { 
-        return isDebugMode; // TODO
+        if (!isDebugMode) {
+            return false;
+        }
+        if (!isRunning()) {
+            return false;
+        } 
+        return true;
     }
 
     /**
@@ -288,7 +297,7 @@ public final class StartTomcat extends StartServer implements Runnable, Progress
                 );
                 Process p;
                 String transportStr = "JPDA_TRANSPORT=dt_socket";         // NOI18N
-                String addressStr = "JPDA_ADDRESS=11555";
+                String addressStr = "JPDA_ADDRESS=11555";                 // NOI18N
                 
                 if (org.openide.util.Utilities.isWindows()) {
                     String dbgType = tm.getDebugType();
@@ -370,16 +379,20 @@ public final class StartTomcat extends StartServer implements Runnable, Progress
                (command == CommandType.STOP && URLWait.waitForStartup (tm, 1000))) {    //still getting feedback when stopping
             pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, NbBundle.getMessage (StartTomcat.class, "MSG_waiting"), StateType.RUNNING));
         }
-        if (command == CommandType.START)
-        try {
-            TargetModuleID modules [] = tm.getAvailableModules (ModuleType.WAR, tm.getTargets ());
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (command == CommandType.START) {
+            try {
+                TargetModuleID modules [] = tm.getAvailableModules (ModuleType.WAR, tm.getTargets ());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
+        
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, "", StateType.COMPLETED));
         running = command.equals (CommandType.START);
         if (startDebugMode) {
-            isDebugMode = (command.equals (CommandType.START));
+            isDebugMode = running;
+        } else {
+            isDebugMode = false;
         }
     }
     
@@ -478,7 +491,7 @@ public final class StartTomcat extends StartServer implements Runnable, Progress
             String [] patternTo = new String [] { 
                 null, 
                 null, 
-                "<Context path=\"\" docBase=\""+new File (homeDir, "webapps/Root").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
+                "<Context path=\"\" docBase=\""+new File (homeDir, "webapps/ROOT").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
                 "<Context path=\"/jsp-examples\" docBase=\""+new File (homeDir, "webapps/jsp-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
                 "<Context path=\"/servlets-examples\" docBase=\""+new File (homeDir, "webapps/servlets-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
                 "</Host>",   // NOI18N
