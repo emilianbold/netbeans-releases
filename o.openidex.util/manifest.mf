@@ -1,9 +1,5 @@
 OpenIDE-Module: org.openidex.util/1
-OpenIDE-Module-Name: Common Utilities
-OpenIDE-Module-Display-Category: Infrastructure
+OpenIDE-Module-Localizing-Bundle: org/openidex/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.9
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/openidex/resources/mf-layer.xml
-OpenIDE-Module-Short-Description: API extensions used by various modules.
-OpenIDE-Module-Long-Description: The Common Utilities module provides various extensions to the
-  APIs, which other modules rely on, but it does not provide any user-visible features.
