@@ -464,7 +464,7 @@ implements ChangeListener {
 
                     if (errLog) {
                         err.log (ErrorManager.INFORMATIONAL, "waitTillNotified: " + Thread.currentThread()); // NOI18N
-                        err.log (ErrorManager.INFORMATIONAL, "      waitingFor: " + obj.getPrimaryFile()); // NOI18N
+                        err.log (ErrorManager.INFORMATIONAL, "      waitingFor: " + obj.getPrimaryFile ().getPath ()); // NOI18N
                     }
 
                     wait ();
