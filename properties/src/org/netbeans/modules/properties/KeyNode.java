@@ -57,11 +57,13 @@ public class KeyNode extends AbstractNode {
      * @param propStructure structure of .properties file to work with
      * @param itemKey key value of item in properties structure
      */
-    public KeyNode (PropertiesStructure propStructure, String itemKey) {
+    public KeyNode (PropertiesStructure propStructure, Element.ItemElem item) {
         super(Children.LEAF);
         
         this.propStructure = propStructure;
-        this.itemKey = itemKey;
+        this.itemKey = item.getKeyElem().getValue();
+
+        item.setItemNode(this);
         
         super.setName(UtilConvert.unicodesToChars(itemKey));
         
@@ -145,17 +147,22 @@ public class KeyNode extends AbstractNode {
      * @param name new name for the object
      */
     public void setName(String name) {
+        itemKey = name;
+        super.setName(UtilConvert.unicodesToChars(name));
+        setShortDescription();
+    }
+
+    
+    void renameItem(String name) {
         // The new name is same -> do nothing.
         if(name.equals(UtilConvert.unicodesToChars(itemKey)))
             return;
         
-        String oldKey = itemKey;
         name = UtilConvert.charsToUnicodes(UtilConvert.escapePropertiesSpecialChars(name));
-        itemKey = name;
-        if (!propStructure.renameItem(oldKey, name)) {
-            itemKey = oldKey;
+
+        if (!propStructure.renameItem(itemKey, name)) {
             NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                NbBundle.getBundle(KeyNode.class).getString("MSG_CannotRenameKey"),
+                NbBundle.getBundle(KeyNode.class).getString("MSG_CannotRenameKey"), //NOI18N
                 NotifyDescriptor.ERROR_MESSAGE
             );
             TopManager.getDefault().notify(msg);
@@ -193,7 +200,7 @@ public class KeyNode extends AbstractNode {
                     String keyValue = UtilConvert.charsToUnicodes(
                                         UtilConvert.escapeJavaSpecialChars(
                                         UtilConvert.escapePropertiesSpecialChars((String)val)));
-                    KeyNode.this.setName(keyValue);
+                    KeyNode.this.renameItem(keyValue);
                 }
             };
         property.setName(Element.ItemElem.PROP_ITEM_KEY);
@@ -219,6 +226,7 @@ public class KeyNode extends AbstractNode {
                                         UtilConvert.escapeJavaSpecialChars(
                                         UtilConvert.escapeLineContinuationChar((String)val)));
                     getItem().setValue(valueValue);
+                    KeyNode.this.setShortDescription();
                 }
             };
         property.setName(Element.ItemElem.PROP_ITEM_VALUE);

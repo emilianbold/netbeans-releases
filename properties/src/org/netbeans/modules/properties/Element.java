@@ -18,7 +18,7 @@ package org.netbeans.modules.properties;
 import java.beans.*;
 import java.io.*;
 import javax.swing.text.BadLocationException;
-
+       
 import org.openide.nodes.Node;
 import org.openide.text.PositionBounds;
 
@@ -37,6 +37,7 @@ public abstract class Element extends Object implements Serializable {
      * be null indicating the element is not part of properties structure yet. */
     protected PositionBounds bounds;
 
+    private Node itemNode;    
     
     /** Create a new element. */
     protected Element(PositionBounds bounds) {
@@ -49,6 +50,15 @@ public abstract class Element extends Object implements Serializable {
         return bounds;
     }
 
+    Node getItemNode() {
+        return itemNode;
+    }
+
+    void setItemNode(Node node) {
+        itemNode = node;
+    }
+    
+    
     /** Updates the element fields. This method is called after reparsing.
     * @param bounds the carrier of new information.
     */
@@ -390,7 +400,9 @@ public abstract class Element extends Object implements Serializable {
                     key.print();
                 
                 value.setValue(newValue);
+                
                 getParent().itemChanged(this);
+                
                 this.firePropertyChange(PROP_ITEM_VALUE, oldValue, newValue);
             }
         }

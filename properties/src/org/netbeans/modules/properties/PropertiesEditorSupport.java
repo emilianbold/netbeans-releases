@@ -780,7 +780,8 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
             Element.ItemElem item = myEntry.getHandler().getStructure().getItem(key);
             if (item != null) {
                 int offset = item.getKeyElem().getBounds().getBegin().getOffset();
-                editor.getPane().getCaret().setDot(offset);
+                if (editor.getPane() != null && editor.getPane().getCaret() !=null)
+                    editor.getPane().getCaret().setDot(offset);
             }
         }
     } // End of inner class PropertiesEditAt.
