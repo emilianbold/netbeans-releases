@@ -18,6 +18,7 @@ package org.netbeans.core.windows.model;
 import java.awt.Frame;
 import java.awt.Rectangle;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -425,112 +426,202 @@ final class DefaultModel implements Model {
     // Mutators
     /** Sets state. */
     public void setModeState(ModeImpl mode, int state) {
-        getModelForMode(mode).setState(state);
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            modeModel.setState(state);
+        }
     }
     
     /** Sets bounds. */
     public void setModeBounds(ModeImpl mode, Rectangle bounds) {
-        getModelForMode(mode).setBounds(bounds);
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            modeModel.setBounds(bounds);
+        }
     }
     
     /** Sets frame state. */
     public void setModeFrameState(ModeImpl mode, int frameState) {
-        getModelForMode(mode).setFrameState(frameState);
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            modeModel.setFrameState(frameState);
+        }
     } 
     
     /** Sets seleted TopComponent. */
     public void setModeSelectedTopComponent(ModeImpl mode, TopComponent selected) {
-        getModelForMode(mode).setSelectedTopComponent(selected);
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            modeModel.setSelectedTopComponent(selected);
+        }
     }
     
     /** Adds opened TopComponent. */
     public void addModeOpenedTopComponent(ModeImpl mode, TopComponent tc) {
-        getModelForMode(mode).addOpenedTopComponent(tc);
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            modeModel.addOpenedTopComponent(tc);
+        }
     }
 
     /** Inserts opened TopComponent. */
     public void insertModeOpenedTopComponent(ModeImpl mode, TopComponent tc, int index) {
-        getModelForMode(mode).insertOpenedTopComponent(tc, index);
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            modeModel.insertOpenedTopComponent(tc, index);
+        }
     }
     
     /** Adds closed TopComponent. */
     public void addModeClosedTopComponent(ModeImpl mode, TopComponent tc) {
-        getModelForMode(mode).addClosedTopComponent(tc);
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            modeModel.addClosedTopComponent(tc);
+        }
     }
     
     // XXX
     public void addModeUnloadedTopComponent(ModeImpl mode, String tcID) {
-        getModelForMode(mode).addUnloadedTopComponent(tcID);
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            modeModel.addUnloadedTopComponent(tcID);
+        }
     }
     
     // XXX
     public void setModeUnloadedSelectedTopComponent(ModeImpl mode, String tcID) {
-        getModelForMode(mode).setUnloadedSelectedTopComponent(tcID);
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            modeModel.setUnloadedSelectedTopComponent(tcID);
+        }
     }
     
     /** */
     public void removeModeTopComponent(ModeImpl mode, TopComponent tc) {
-        getModelForMode(mode).removeTopComponent(tc);
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            modeModel.removeTopComponent(tc);
+        }
     }
     
     // Accessors
     /** Gets programatic name of mode. */
     public String getModeName(ModeImpl mode) {
-        return getModelForMode(mode).getName();
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            return modeModel.getName();
+        } else {
+            return null;
+        }
     }
     
     /** Gets bounds. */
     public Rectangle getModeBounds(ModeImpl mode) {
-        return getModelForMode(mode).getBounds();
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            return modeModel.getBounds();
+        } else {
+            return null;
+        }
     }
     
     public Rectangle getModeBoundsSeparatedHelp(ModeImpl mode) {
-        return getModelForMode(mode).getBoundsSeparatedHelp();
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            return modeModel.getBoundsSeparatedHelp();
+        } else {
+            return null;
+        }
     }
     
     /** Gets state. */
     public int getModeState(ModeImpl mode) {
-        return getModelForMode(mode).getState();
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            return modeModel.getState();
+        } else {
+            return -1;
+        }
     }
     
     /** Gets kind. */
     public int getModeKind(ModeImpl mode) {
-        return getModelForMode(mode).getKind();
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            return modeModel.getKind();
+        } else {
+            return -1;
+        }
     }
     
     /** Gets frame state. */
     public int getModeFrameState(ModeImpl mode) {
-        return getModelForMode(mode).getFrameState();
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            return modeModel.getFrameState();
+        } else {
+            return -1;
+        }
     }
     
     /** Gets used defined. */
     public boolean isModePermanent(ModeImpl mode) {
-        return getModelForMode(mode).isPermanent();
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            return modeModel.isPermanent();
+        } else {
+            return false;
+        }
     }
     
     /** Indicates whether the mode is empty. */
     public boolean isModeEmpty(ModeImpl mode) {
-        return getModelForMode(mode).isEmpty();
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            return modeModel.isEmpty();
+        } else {
+            return false;
+        }
     }
     
     /** Indicates whether the mode contains the TopComponent. */
     public boolean containsModeTopComponent(ModeImpl mode, TopComponent tc) {
-        return getModelForMode(mode).containsTopComponent(tc);
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            return modeModel.containsTopComponent(tc);
+        } else {
+            return false;
+        }
     }
     
     /** Gets selected TopComponent. */
     public TopComponent getModeSelectedTopComponent(ModeImpl mode) {
-        return getModelForMode(mode).getSelectedTopComponent();
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            return modeModel.getSelectedTopComponent();
+        } else {
+            return null;
+        }
     }
     
     /** Gets list of top components. */
     public List getModeTopComponents(ModeImpl mode) {
-        return getModelForMode(mode).getTopComponents();
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            return modeModel.getTopComponents();
+        } else {
+            return Collections.EMPTY_LIST;
+        }
     }
     
     /** Gets list of top components. */
     public List getModeOpenedTopComponents(ModeImpl mode) {
-        return getModelForMode(mode).getOpenedTopComponents();
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            return modeModel.getOpenedTopComponents();
+        } else {
+            return Collections.EMPTY_LIST;
+        }
     }
     // End of mode specific.
 
@@ -559,70 +650,151 @@ final class DefaultModel implements Model {
 
     /** Gets programatic name of mode. */
     public String getGroupName(TopComponentGroupImpl tcGroup) {
-        return getModelForGroup(tcGroup).getName();
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.getName();
+        } else {
+            return null;
+        }
     }
     
     public void openGroup(TopComponentGroupImpl tcGroup, Collection openedTopComponents) {
-        getModelForGroup(tcGroup).open(openedTopComponents);
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            groupModel.open(openedTopComponents);
+        }
     }
     
     public void closeGroup(TopComponentGroupImpl tcGroup) {
-        getModelForGroup(tcGroup).close();
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            groupModel.close();
+        } 
     }
     
     public boolean isGroupOpened(TopComponentGroupImpl tcGroup) {
-        return getModelForGroup(tcGroup).isOpened();
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.isOpened();
+        } else {
+            return false;
+        }
     }
     
     public Set getGroupTopComponents(TopComponentGroupImpl tcGroup) {
-        return getModelForGroup(tcGroup).getTopComponents();
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.getTopComponents();
+        } else {
+            return Collections.EMPTY_SET;
+        }
     }
     
     public Set getGroupOpenedTopComponents(TopComponentGroupImpl tcGroup) {
-        return getModelForGroup(tcGroup).getOpenedTopComponents();
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.getOpenedTopComponents();
+        } else {
+            return Collections.EMPTY_SET;
+        }
     }
     
     public Set getGroupOpeningTopComponents(TopComponentGroupImpl tcGroup) {
-        return getModelForGroup(tcGroup).getOpeningTopComponents();
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.getOpeningTopComponents();
+        } else {
+            return Collections.EMPTY_SET;
+        }
     }
     
     public Set getGroupClosingTopComponents(TopComponentGroupImpl tcGroup) {
-        return getModelForGroup(tcGroup).getClosingTopComponents();
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.getClosingTopComponents();
+        } else {
+            return Collections.EMPTY_SET;
+        }
     }
 
     public boolean addGroupUnloadedTopComponent(TopComponentGroupImpl tcGroup, String tcID) {
-        return getModelForGroup(tcGroup).addUnloadedTopComponent(tcID);
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.addUnloadedTopComponent(tcID);
+        } else {
+            return false;
+        }
     }
     
     public boolean removeGroupUnloadedTopComponent(TopComponentGroupImpl tcGroup, String tcID) {
-        return getModelForGroup(tcGroup).removeUnloadedTopComponent(tcID);
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.removeUnloadedTopComponent(tcID);
+        } else {
+            return false;
+        }
     }
     
     public boolean addGroupOpeningTopComponent(TopComponentGroupImpl tcGroup, TopComponent tc) {
-        return getModelForGroup(tcGroup).addOpeningTopComponent(tc);
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.addOpeningTopComponent(tc);
+        } else {
+            return false;
+        }
     }
     
     public boolean removeGroupOpeningTopComponent(TopComponentGroupImpl tcGroup, TopComponent tc) {
-        return getModelForGroup(tcGroup).removeOpeningTopComponent(tc);
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.removeOpeningTopComponent(tc);
+        } else {
+            return false;
+        }
     }
     
     public boolean addGroupUnloadedOpeningTopComponent(TopComponentGroupImpl tcGroup, String tcID) {
-        return getModelForGroup(tcGroup).addUnloadedOpeningTopComponent(tcID);
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.addUnloadedOpeningTopComponent(tcID);
+        } else {
+            return false;
+        }
     }
     
     public boolean removeGroupUnloadedOpeningTopComponent(TopComponentGroupImpl tcGroup, String tcID) {
-        return getModelForGroup(tcGroup).removeUnloadedOpeningTopComponent(tcID);
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.removeUnloadedOpeningTopComponent(tcID);
+        } else {
+            return false;
+        }
     }
     
     public boolean addGroupUnloadedClosingTopComponent(TopComponentGroupImpl tcGroup, String tcID) {
-        return getModelForGroup(tcGroup).addUnloadedClosingTopComponent(tcID);
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.addUnloadedClosingTopComponent(tcID);
+        } else {
+            return false;
+        }
     }
     public boolean removeGroupUnloadedClosingTopComponent(TopComponentGroupImpl tcGroup, String tcID) {
-        return getModelForGroup(tcGroup).removeUnloadedClosingTopComponent(tcID);
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.removeUnloadedClosingTopComponent(tcID);
+        } else {
+            return false;
+        }
     }
     // XXX
     public boolean addGroupUnloadedOpenedTopComponent(TopComponentGroupImpl tcGroup, String tcID) {
-        return getModelForGroup(tcGroup).addUnloadedOpenedTopComponent(tcID);
+        TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
+        if(groupModel != null) {
+            return groupModel.addUnloadedOpenedTopComponent(tcID);
+        } else {
+            return false;
+        }
     }
     // TopComponentGroup specific <<
     ////////////////////////////////////
@@ -667,7 +839,10 @@ final class DefaultModel implements Model {
     }
     
     public void setModeBoundsSeparatedHelp(ModeImpl mode, Rectangle bounds) {
-        getModelForMode(mode).setBoundsSeparatedHelp(bounds);
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null) {
+            modeModel.setBoundsSeparatedHelp(bounds);
+        }
     }
     
     public void setSplitWeights(ModelElement firstElement, double firstSplitWeight,
