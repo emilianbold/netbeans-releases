@@ -153,7 +153,7 @@
 
 
 <mapID target="refactor.aboutRefactoring" url="refactor/aboutRefactoring.html" />
-<mapID target="refactor.Undo" url="refactor/Undo.html" />
+<mapID target="refactor.Undo" url="refactor/undo.html" />
 <mapID target="refactor.findClass" url="refactor/findClass.html" />
 <mapID target="refactor.findMethod" url="refactor/findMethod.html" />
 <mapID target="refactor.findField" url="refactor/findField.html" />
@@ -447,6 +447,7 @@
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJar" url="project/csh/proj_j2sestand_props4.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJavadoc" url="project/csh/proj_j2sestand_props5.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerRun" url="project/csh/proj_j2sestand_props6.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerRunTest" url="project/csh/proj_j2sestand_props7.html" />
 
 <!-- Standard Web Project Properties dialog-->
 <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerGeneral" url="web/overvw/WebCustomizerGeneral.html" />
@@ -806,6 +807,7 @@
    <mapID target="org.netbeans.modules.javadoc.comments.AutoCommentAction" url="pending.html" />
    <mapID target="org.netbeans.modules.javadoc.comments.CorrectJavaDocAction" url="javadoc/accuracy.html" />
    <mapID target="javadoc.auto.comment" url="javadoc/auto_comment_window.html" />
+   <mapID target="javadoc.search.window" url="javadoc/show_in_editor.html" />
    
    <mapID target="org.netbeans.modules.java.support.AutoCommentAction" url="pending.html"  />
    <mapID target="org.netbeans.modules.java.support.AutoCommentAction.dialog" url="pending.html"  />
