@@ -109,8 +109,13 @@ public class EjbJarProjectProperties {
     public static final String BUILD_GENERATED_DIR = "build.generated.dir";
     public static final String BUILD_CLASSES_DIR = "build.classes.dir";
     public static final String BUILD_EAR_CLASSES_DIR = "build.ear.classes.dir";
-    public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
     public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes";
+    
+    public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
+    public static final String BUILD_TEST_RESULTS_DIR = "build.test.results.dir"; // NOI18N
+    public static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath"; // NOI18N
+    public static final String RUN_TEST_CLASSPATH = "run.test.classpath"; // NOI18N
+    public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath"; // NOI18N
     
     public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir";
     public static final String JAVADOC_PRIVATE="javadoc.private";
@@ -168,6 +173,7 @@ public class EjbJarProjectProperties {
         new PropertyDescriptor( JAVAC_TARGET, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVAC_ARGS, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( SRC_DIR, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( TEST_SRC_DIR, PROJECT, STRING_PARSER ),                
         new PropertyDescriptor( RESOURCE_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_CLASSES_DIR, PROJECT, STRING_PARSER ),
@@ -175,6 +181,12 @@ public class EjbJarProjectProperties {
         new PropertyDescriptor( BUILD_CLASSES_EXCLUDES, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_JAVADOC_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVA_PLATFORM, PROJECT, PLATFORM_PARSER ),
+                
+        new PropertyDescriptor( JAVAC_TEST_CLASSPATH, PROJECT, PATH_PARSER ),
+        new PropertyDescriptor( RUN_TEST_CLASSPATH, PROJECT, PATH_PARSER ),
+        new PropertyDescriptor( BUILD_TEST_CLASSES_DIR, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( BUILD_TEST_RESULTS_DIR, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( DEBUG_TEST_CLASSPATH, PROJECT, PATH_PARSER ),
         
         new PropertyDescriptor( JAVADOC_PRIVATE, PROJECT, BOOLEAN_PARSER ),
         new PropertyDescriptor( JAVADOC_NO_TREE, PROJECT, INVERSE_BOOLEAN_PARSER ),
@@ -468,7 +480,7 @@ public class EjbJarProjectProperties {
      */
     private void resolveProjectDependencies() {
     
-        String allPaths[] = { JAVAC_CLASSPATH,  DEBUG_CLASSPATH };
+        String allPaths[] = { JAVAC_CLASSPATH,  DEBUG_CLASSPATH, JAVAC_TEST_CLASSPATH, DEBUG_TEST_CLASSPATH };
         
         // Create a set of old and new artifacts.
         Set oldArtifacts = new HashSet();

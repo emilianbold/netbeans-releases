@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.ActionProvider;
@@ -66,6 +67,9 @@ class EjbJarActionProvider implements ActionProvider {
         J2eeProjectConstants.COMMAND_DEPLOY,
         COMMAND_DEBUG_SINGLE, 
         JavaProjectConstants.COMMAND_JAVADOC, 
+        COMMAND_TEST, 
+        COMMAND_TEST_SINGLE, 
+        COMMAND_DEBUG_TEST_SINGLE, 
         JavaProjectConstants.COMMAND_DEBUG_FIX,
         COMMAND_COMPILE,
         COMMAND_VERIFY,
@@ -94,6 +98,9 @@ class EjbJarActionProvider implements ActionProvider {
         commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
         commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug"}); // NOI18N
         commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
+        commands.put(COMMAND_TEST, new String[] {"test"}); // NOI18N
+        commands.put(COMMAND_TEST_SINGLE, new String[] {"test-single"}); // NOI18N
+        commands.put(COMMAND_DEBUG_TEST_SINGLE, new String[] {"debug-test"}); // NOI18N
         commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
         commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
         commands.put(COMMAND_VERIFY, new String[] {"verify"}); // NOI18N
@@ -183,6 +190,16 @@ class EjbJarActionProvider implements ActionProvider {
                 p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots,files[0]))); // NOI18N
             } else {
             }
+        // TEST PART
+        } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
+            FileObject[] files = findTestSourcesForSources(context);
+            p = new Properties();
+            targetNames = setupTestSingle(p, files);
+        } 
+        else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
+            FileObject[] files = findTestSourcesForSources(context);
+            p = new Properties();
+            targetNames = setupDebugTestSingle(p, files);
         } else {
             p = null;
             if (targetNames == null) {
@@ -198,6 +215,23 @@ class EjbJarActionProvider implements ActionProvider {
         }
     }
     
+    private String[] setupTestSingle(Properties p, FileObject[] files) {
+        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
+        FileObject root = getRoot(testSrcPath, files[0]);
+        p.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
+        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
+        return new String[] {"test-single"}; // NOI18N
+    }
+    
+    private String[] setupDebugTestSingle(Properties p, FileObject[] files) {
+        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
+        FileObject root = getRoot(testSrcPath, files[0]);
+        String path = FileUtil.getRelativePath(root, files[0]);
+        // Convert foo/FooTest.java -> foo.FooTest
+        p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
+        return new String[] {"debug-test"}; // NOI18N
+    }
+    
     public boolean isActionEnabled( String command, Lookup context ) {
         
         if ( findBuildXml() == null ) {
@@ -208,6 +242,13 @@ class EjbJarActionProvider implements ActionProvider {
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             return true; // findJavaSources( context ) != null || findJsps (context) != null;
+        }
+        else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
+            return findTestSourcesForSources(context) != null;
+        }
+        else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
+            FileObject[] files = findTestSourcesForSources(context);
+            return files != null && files.length == 1;
         } else {
             // other actions are global
             return true;
@@ -218,6 +259,8 @@ class EjbJarActionProvider implements ActionProvider {
     
     // Private methods -----------------------------------------------------
     
+    private static final String SUBST = "Test.java"; // NOI18N
+    private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
     
     /** Find selected java sources 
      */
@@ -258,6 +301,28 @@ class EjbJarActionProvider implements ActionProvider {
         }
         return null;
     }
+    
+    /** Find tests corresponding to selected sources.
+     */
+    private FileObject[] findTestSourcesForSources(Lookup context) {
+        FileObject[] sourceFiles = findSources(context);
+        if (sourceFiles == null) {
+            return null;
+        }
+        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
+        if (testSrcPath.length == 0) {
+            return null;
+        }
+        FileObject[] srcPath = project.getSourceRoots().getRoots();
+        FileObject srcDir = getRoot(srcPath, sourceFiles[0]);
+        for (int i=0; i<testSrcPath.length; i++) {
+            FileObject[] files2 = ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, testSrcPath[i], SUBST, true);
+            if (files2 != null) {
+                return files2;
+            }
+        }
+        return null;
+    }      
     
     private FileObject getRoot (FileObject[] roots, FileObject file) {
         FileObject srcDir = null;
@@ -364,5 +429,16 @@ class EjbJarActionProvider implements ActionProvider {
         EjbJarProjectProperties wpp = new EjbJarProjectProperties(project, antProjectHelper, refHelper);
         wpp.put(EjbJarProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceId);
         wpp.store ();
+    }
+    
+    private FileObject[] findSources(Lookup context) {
+        FileObject[] srcPath = project.getSourceRoots().getRoots();
+        for (int i=0; i< srcPath.length; i++) {
+            FileObject[] files = ActionUtils.findSelectedFiles(context, srcPath[i], ".java", true); // NOI18N
+            if (files != null) {
+                return files;
+            }
+        }
+        return null;
     }
 }

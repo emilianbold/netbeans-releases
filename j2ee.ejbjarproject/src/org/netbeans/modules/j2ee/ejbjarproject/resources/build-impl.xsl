@@ -113,6 +113,12 @@ is divided into following sections:
                     <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:test-roots"/>
                     <xsl:with-param name="propName">have.tests</xsl:with-param>
                 </xsl:call-template>
+                <condition property="netbeans.home+have.tests">
+                    <and>
+                        <isset property="netbeans.home"/>
+                        <isset property="have.tests"/>
+                    </and>
+                </condition>
                 <condition property="no.javadoc.preview">
                     <isfalse value="${{javadoc.preview}}"/>
                 </condition>
@@ -196,7 +202,7 @@ is divided into following sections:
                  </macrodef>
             </target>
 
-            <target name="-init-macrodef-junit">
+            <target name="init-macrodef-junit">
                 <macrodef>
                     <xsl:attribute name="name">junit</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-ejbjarproject/2</xsl:attribute>
@@ -320,7 +326,7 @@ is divided into following sections:
 
             
             <target name="init">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-macrodef-javac,init-macrodef-nbjpda,init-macrodef-debug,init-taskdefs</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-macrodef-javac,init-macrodef-junit,init-macrodef-nbjpda,init-macrodef-debug,init-taskdefs</xsl:attribute>
             </target>
 
             <xsl:comment>
