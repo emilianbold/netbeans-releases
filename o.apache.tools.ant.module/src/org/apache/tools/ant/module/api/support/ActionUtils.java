@@ -50,6 +50,9 @@ public final class ActionUtils {
      * @throws IllegalArgumentException if you did not provide any targets
      */
     public static ExecutorTask runTarget(FileObject buildXml, String[] targetNames, Properties properties) throws IOException, IllegalArgumentException {
+        if (buildXml == null) {
+            throw new NullPointerException("Must pass non-null build script"); // NOI18N
+        }
         if (targetNames != null && targetNames.length == 0) {
             throw new IllegalArgumentException("No targets supplied"); // NOI18N
         }
