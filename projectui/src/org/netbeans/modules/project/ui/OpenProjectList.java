@@ -65,27 +65,36 @@ public final class OpenProjectList {
         recentProjects = new RecentProjectList( 5 ); 
     }
     
+        
     public static OpenProjectList getDefault() {
-        if ( INSTANCE == null ) {
-            INSTANCE = new OpenProjectList();
-            INSTANCE.openProjects = loadProjectList();
-            Iterator it = INSTANCE.openProjects.iterator();
-            String mainProjectDir = OpenProjectListSettings.getInstance().getMainProjectDir();
-            while (it.hasNext()) {
+        boolean needNotify = false;
+        
+        synchronized ( OpenProjectList.class ) {
+            if ( INSTANCE == null ) {
+                needNotify = true;
+                INSTANCE = new OpenProjectList();
+                INSTANCE.openProjects = loadProjectList();                
+                String mainProjectDir = OpenProjectListSettings.getInstance().getMainProjectDir();
+                // Load recent project list
+                INSTANCE.recentProjects.load();
+                for( Iterator it = INSTANCE.openProjects.iterator(); it.hasNext(); ) {
+                    Project p = (Project)it.next();
+                    // Set main project
+                    if ( mainProjectDir != null && 
+                         mainProjectDir.equals( FileUtil.toFile( p.getProjectDirectory() ).getPath() ) ) {
+                        INSTANCE.mainProject = p;
+                    }
+                }            
+            }
+        }
+        if ( needNotify ) {            
+            for( Iterator it = INSTANCE.openProjects.iterator(); it.hasNext(); ) {
                 Project p = (Project)it.next();
-                notifyOpened(p);
-                
-                // Set main project
-                if ( mainProjectDir != null && 
-                     mainProjectDir.equals( FileUtil.toFile( p.getProjectDirectory() ).getPath() ) ) {
-                    INSTANCE.mainProject = p;
-                }
+                notifyOpened(p);             
             }
             
-            // Load recent project list
-            INSTANCE.recentProjects.load();
         }
-                
+        
         return INSTANCE;
     }
     
