@@ -46,6 +46,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         j2eeSpecLabel = new javax.swing.JLabel();
         j2eeSpecComboBox = new javax.swing.JComboBox();
         j2eeSpecDescLabel = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
         j2eeSpecDescTextPane = new javax.swing.JTextPane();
 
         setLayout(new java.awt.GridBagLayout());
@@ -117,20 +118,19 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
         add(j2eeSpecDescLabel, gridBagConstraints);
 
-        j2eeSpecDescTextPane.setBorder(new javax.swing.border.BevelBorder(javax.swing.border.BevelBorder.LOWERED));
         j2eeSpecDescTextPane.setEditable(false);
         j2eeSpecDescTextPane.setFocusable(false);
         j2eeSpecDescTextPane.setEnabled(false);
+        jScrollPane1.setViewportView(j2eeSpecDescTextPane);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        add(j2eeSpecDescTextPane, gridBagConstraints);
+        add(jScrollPane1, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -165,6 +165,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     private javax.swing.JTextPane j2eeSpecDescTextPane;
     private javax.swing.JLabel j2eeSpecLabel;
     private javax.swing.JLabel jLabelContextPath;
+    private javax.swing.JScrollPane jScrollPane1;
     protected javax.swing.JTextField jTextFieldContextPath;
     private javax.swing.JCheckBox setAsMainCheckBox;
     // End of variables declaration//GEN-END:variables
